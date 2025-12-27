@@ -1,0 +1,125 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">GreenSwamp.Alpaca.Server</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.Cameras)
+        {
+            string path = $"/setup/v1/Camera/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-camera-slr" aria-hidden="true"></span> Camera - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.CoverCalibrators)
+        {
+            string path = $"/setup/v1/covercalibrator/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-contrast" aria-hidden="true"></span> CoverCalibrator - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.Domes)
+        {
+            string path = $"/setup/v1/dome/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-aperture" aria-hidden="true"></span> Dome - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.FilterWheels)
+        {
+            string path = $"/setup/v1/filterwheel/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-sun" aria-hidden="true"></span> Filter Wheel - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.Focusers)
+        {
+            string path = $"/setup/v1/focuser/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-elevator" aria-hidden="true"></span> Focuser - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.ObservingConditions)
+        {
+            string path = $"/setup/v1/ObservingConditions/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-cloudy" aria-hidden="true"></span> ObservingConditions - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.Rotators)
+        {
+            string path = $"/setup/v1/rotator/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-loop-circular" aria-hidden="true"></span> Rotator - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.SafetyMonitors)
+        {
+            string path = $"/setup/v1/SafetyMonitor/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-ban" aria-hidden="true"></span> SafetyMonitor - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.Switches)
+        {
+            string path = $"/setup/v1/switch/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-circle-check" aria-hidden="true"></span> Switch - @device.Key
+                </NavLink>
+            </div>
+        }
+        @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes)
+        {
+            string path = $"/setup/v1/telescope/{device.Key}/setup";
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
+                    <span class="oi oi-star" aria-hidden="true"></span> Telescope - @device.Key
+                </NavLink>
+            </div>
+        }
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/setup" Match="NavLinkMatch.All">
+                <span class="oi oi-cog" aria-hidden="true"></span> Settings
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    #nullable enable
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

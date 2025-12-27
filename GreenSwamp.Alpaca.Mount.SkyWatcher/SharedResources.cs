@@ -1,0 +1,270 @@
+﻿/* Copyright(C) 2019-2025 Rob  Morgan (robert.morgan.e@gmail.com)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
+
+namespace GreenSwamp.Alpaca.Mount.SkyWatcher
+{
+    [Serializable]
+    public class MountControlException : Exception
+    {
+        public ErrorCode ErrorCode { get; }
+
+        public MountControlException()
+        {
+        }
+
+        public MountControlException(ErrorCode err) : base($"Mount: {err}")
+        {
+            ErrorCode = err;
+        }
+
+        public MountControlException(ErrorCode err, string message) : base($"Mount: {err}, {message}")
+        {
+            ErrorCode = err;
+        }
+
+        public MountControlException(ErrorCode err, string message, Exception inner) : base($"Mount: {err}, {message}", inner)
+        {
+            ErrorCode = err;
+        }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        // Constructor should be protected for unsealed classes, private for sealed classes.
+        // (The Serializer invokes this constructor through reflection, so it can be private)
+        protected MountControlException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            Enum.TryParse("err", out ErrorCode err);
+            ErrorCode = err;
+        }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+            info.AddValue("err", ErrorCode.ToString());
+            // MUST call through to the base class to let it save its own state
+            base.GetObjectData(info, context);
+        }
+    }
+    internal static class Constant
+    {
+        //public const double SiderealRate in rad = 2 * Math.PI / 360;
+        public const double SiderealRate = 2 * Math.PI / 86164.09065;
+    }
+    internal static class BasicMath
+    {
+        //public const double Rad1 = Math.PI / 180;
+        //public static double AngleDistance(double ang1, double ang2)
+        //{
+        //    ang1 = UniformAngle(ang1);
+        //    ang2 = UniformAngle(ang2);
+        //    var d = ang2 - ang1;
+        //    return UniformAngle(d);
+        //}
+
+        //private static double UniformAngle(double source)
+        //{
+        //    source %= (Math.PI * 2);
+        //    if (source > Math.PI)
+        //        return source - 2 * Math.PI;
+        //    if (source < -Math.PI)
+        //        return source + 2 * Math.PI;
+        //    return source;
+        //}
+
+        internal static double DegToRad(double degree) { return (degree / 180.0 * Math.PI); }
+        //internal static double RadToDeg(double rad) { return (rad / Math.PI * 180.0); }
+        //internal static double RadToMin(double rad) { return (rad / Math.PI * 180.0 * 60.0); }
+        //internal static double RadToSec(double rad) { return (rad / Math.PI * 180.0 * 60.0 * 60.0); }
+        //internal static double SecToRad(double sec) { return (sec * Math.PI / 180.0 * 60.0 * 60.0); }
+        //internal static double MilToRad(int millisecond) { return SecToRad(Convert.ToDouble(millisecond / 1000)); }
+    }
+    public struct AxisStatus
+    {
+        /// <summary>
+        /// 4 different state
+        /// 1. FullStop
+        /// 2. Slewing
+        /// 3. SlewingTo
+        /// 4. NotInitialized
+        /// </summary>
+
+        public bool FullStop;
+        public bool Slewing;
+        public bool SlewingTo;
+        public bool SlewingForward;
+        public bool HighSpeed;
+        public bool Initialized;
+        public bool TrajectoryMode; 
+        public string StepSpeed;
+        public string Response;
+        public bool LowVoltageEventState;
+
+        public void SetFullStop()
+        {
+            FullStop = true;
+            SlewingTo = Slewing = false;
+            StepSpeed = "*";
+        }
+        public void SetSlewing(bool forward, bool highSpeed)
+        {
+            FullStop = SlewingTo = false;
+            Slewing = true;
+
+            SlewingForward = forward;
+            HighSpeed = highSpeed;
+        }
+        public void SetSlewingTo(bool forward, bool highSpeed)
+        {
+            FullStop = Slewing = false;
+            SlewingTo = true;
+
+            SlewingForward = forward;
+            HighSpeed = highSpeed;
+        }
+
+
+        //// Mask for axis status
+        //public const long AXIS_FULL_STOPPED = 0x0001;		// The axis is at a complete stop
+        //public const long AXIS_SLEWING = 0x0002;			// The axis is running at a constant speed
+        //public const long AXIS_SLEWING_TO = 0x0004;		// The axis is in the process of traveling to the specified target position
+        //public const long AXIS_SLEWING_FORWARD = 0x0008;	// The shaft runs forward
+        //public const long AXIS_SLEWING_HIGHSPEED = 0x0010;// The axis is running at high speed
+        //public const long AXIS_NOT_INITIALIZED = 0x0020;  // MC controller has not been initialized
+    }
+    
+    public enum ErrorCode
+    {
+        ErrInvalidId = 1,			    // Invalid mount ID
+        ErrAlreadyConnected = 2,	    // Already connected to another mount ID
+        ErrNotConnected = 3,		    // Telescope not connected.
+        ErrInvalidData = 4, 		    // Invalid data, over range etc
+        ErrSerialPortBusy = 5, 	        // Serial port is busy.
+        ErrMountNotFound = 6,           // Serial test command did not get correct response
+        ErrNoResponseAxis1 = 100,	    // No response from axis1
+        ErrNoResponseAxis2 = 101,	    // The secondary axis of the telescope does not respond
+        ErrAxisBusy = 102,			    // This operation cannot be performed temporarily
+        ErrMaxPitch = 103,              // Target position elevation angle is too high
+        ErrMinPitch = 104,			    // Target position elevation angle is too low
+        ErrUserInterrupt = 105,	        // User forced termination
+        ErrAlignFailed = 200,		    // Calibration telescope failed
+        ErrUnimplemented = 300,           // Unimplemented method
+        ErrWrongAlignmentData = 400,	// The alignment data is incorrect.
+        ErrQueueFailed = 500,             // Queue timeout or not running
+        ErrTooManyRetries = 501         // retries hit max limit
+    };
+    public enum Mountid
+    {
+        // Telescope ID, they must be started from 0 and coded continuously.
+        IdCelestronAz = 0,              // Celestron Alt/Az Mount
+        IdCelestronEq = 1,              // Celestron EQ Mount
+        IdSkywatcherAz = 2,             // Skywatcher Alt/Az Mount
+        IdSkywatcherEq = 3,             // Skywatcher EQ Mount
+        IdOrionEqg = 4,                 // Orion EQ Mount
+        IdOrionTeletrack = 5,           // Orion TeleTrack Mount
+        IdEqEmulator = 6,               // EQ Mount Emulator
+        IdAzEmulator = 7,               // Alt/Az Mount Emulator
+        IdNexstargt80 = 8,              // NexStarGT-80 mount
+        IdNexstargt114 = 9,             // NexStarGT-114 mount
+        IdStarseeker80 = 10,                // NexStarGT-80 mount
+        IdStarseeker114 = 11,			// NexStarGT-114 mount
+    }
+
+    
+    public enum McModel
+    {
+        // List Updated on 10/22/2025
+        [Description("EQ6(EQ6 MC)")] Eq6 = 0,
+        [Description("HEQ5(HEQ5 MC)")] Heq5 = 1,
+        [Description("EQ5 Goto mount(MC002)")] Eq52 = 2,
+        [Description("EQ3 Goto mount(MC002)")] Eq32 = 3,
+        [Description("EQ8(MC009)")] Eq8 = 4,
+        [Description("AZ-EQ6 and EQ6-R(MC007)")] AzEq6Eq6R = 5,
+        [Description("AZ-EQ5 (MC0011)")] AzEq5 = 6,
+        [Description("Star Adventurer(MC012)")] StarAdventurer = 7,
+        [Description("Star Adventurer Mini(MC013)")] StarAdventurerMini = 8,
+        [Description("EQAL55(MC016)")] EqAl55 = 9,
+        [Description("Star Adventurer WiFi(MC017)")] StarAdventurerWifi = 10,
+        [Description("Avant(MC018)")] AvAnt = 11,
+        [Description("Star Adventurer GTi(MC021)")] StarAdventurerGTi = 12,
+        [Description("Star Adventurer Mini Gen2(MC013)")] StarAdventurerMiniGen2 = 12,
+        [Description("EQM35(MC002)")] Eqm35 = 26,
+        [Description("EQ8-R(MC015)")] Eq8R = 32,
+        [Description("EQ8(MC015)")] Eq8A = 33,
+        [Description("AZ-EQ6(MC015)")] AzEq6 = 34,
+        [Description("EQ6-R(MC015)")] Eq6R = 35,
+        [Description("NEQ6 PRO(MC015)")] Neq6Pro = 36,
+        [Description("CQ350(MC015)")] Cq350 = 37,
+        [Description("HEQ5R(MC015)")] Heq5R = 38,
+        [Description("EQ3(MC019)")] Eq3 = 48,
+        [Description("EQ5(MC019)")] Eq5 = 49,
+        [Description("EQM35(MC019)")] EQm35 = 50,
+        [Description("Prototyping(MC019)")] Prototyping = 55,
+        [Description("HEQ5(MC020)")] Heq5A = 56,
+        [Description("HEQ5R(MC030)")] Heq5Ra = 65,
+        [Description("Wave 100i(MC030)")] Wave100I = 68,
+        [Description("Wave 150i(MC030)")] Wave150I = 69,
+        [Description("SynTrek hand control")] SynTrekHc = 127,
+        [Description("80GT(MC001)")] A80Gt = 128,
+        [Description("Multi-Function mount Bushnell(MC001)")] MultiFunctionBushnell = 129,
+        [Description("114GT(MC001)")] A114Gt = 130,
+        [Description("80GT(MC001)")] B80Gt = 131,
+        [Description("Multi-Function mount Merlin(MC001)")] MultiFunctionMerlin = 132,
+        [Description("114GT(MC001)")] B114Gt = 133,
+        [Description("80GTSLT (MC001)")] C80GtSlt = 134,
+        [Description("114GT SynScan AZ 360(MC001)")] C114GtSlt = 135,
+        [Description("MiniAz(MC021)")] MiniAz = 136,
+        [Description("EQ5DC(MC021)")] Eq5Dc = 139,
+        [Description("Dob Tracking 8 to 12(MC003)")] DobTracking8To12 = 144,
+        [Description("Dob Goto 8 to 12(MC003)")] DobGoto8To12 = 145,
+        [Description("Dob Goto 8 to 12 Clutchless)(MC004)")] DobGoto8To12Cl = 152,
+        [Description("Dob Goto 14 to 16(MC004)")] DobGoto14To16 = 153,
+        [Description("Dob Goto 8 to 12 Clutch(MC003)")] DobGoto8To12C = 154,
+        [Description("AllView(MC005)")] AllView = 160,
+        [Description("DobMini Tracking(MC006)")] DobMini = 161,
+        [Description("Star Discovery(MC006)")] StarDiscovery = 162,
+        [Description("Dob 18 StarGate(MC009)")] Dob18StarGate = 164,
+        [Description("AZ-GTi(MC014)")] AzGti = 165,
+        [Description("Discovery(MC014)")] DiscoverySolar = 166,
+        [Description("Merlin(MC014)")] Merlin = 167,
+        [Description("SynScan AZ 130GT(MC014)")] SynScanAz130Gt = 168,
+        [Description("DOB 18/20(MC014)")] Dob1820 = 169,
+        [Description("DOB 8/10/12 Clutch(MC014)")] Dob81012C = 170,
+        [Description("DOB 8/10/12 Clutchless(MC014)")] Dob81012Cl = 171,
+        [Description("DOB 14/16 Clutch(MC014)")] Dob1416 = 172,
+        [Description("SynScan 80GT(MC014)")] SynScan80Gt = 173,
+        [Description("Dob14 StarGate(MC007)")] Dob14StarGate = 182,
+        [Description("DOB 18(MC015)")] Dob18 = 183,
+        [Description("Stargate 16(MC015)")] Stargate = 184,
+        [Description("Fusion-120i(MC029)")] Fusion120I = 192,
+        [Description("AZGTi(MC029)")] AzGtiA = 197,
+        [Description("Discovery(MC029)")] Discovery = 198,
+        [Description("SynScan AZ 130GT(MC029)")] Az130Gt = 200,
+        [Description("DOB 8/10/12 Clutch(MC029)")] Dob81012 = 202,
+        [Description("DOB 8/10/12 NoClutch(MC029)")] Dob81012No = 203,
+        [Description("DOB 14/16 Clutch(MC029)")] Dob1416A = 204,
+        [Description("Virtuoso GTi(MC029)")] Virtuoso = 207,
+        [Description("SynScan WiFi Adapter")] WiFiAdapter = 253,
+        [Description("SHC001 hand control")] Shc001 = 254,
+        [Description("Undefined")] Undefined = 999
+    }
+}

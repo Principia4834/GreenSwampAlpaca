@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ASCOM.AstrometryTools" Version="2.2.1" />
+    <PackageReference Include="ASCOM.Tools" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ASCOM.Alpaca.Razor\ASCOM.Alpaca.Razor.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.MountControl\GreenSwamp.Alpaca.MountControl.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Principles\GreenSwamp.Alpaca.Principles.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Shared\GreenSwamp.Alpaca.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

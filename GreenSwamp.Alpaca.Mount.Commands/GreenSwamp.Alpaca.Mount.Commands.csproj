@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Resources\ASCOM.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Principles\GreenSwamp.Alpaca.Principles.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Shared\GreenSwamp.Alpaca.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
