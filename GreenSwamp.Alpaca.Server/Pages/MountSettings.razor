@@ -4,6 +4,7 @@
 
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.Settings.Services
+@using System.Text.Json
 @inject IVersionedSettingsService SettingsService
 @inject ILogger<MountSettings> Logger
 
@@ -51,6 +52,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link @(_activeTab == "mount" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "mount")">
                 Mount Config
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "park" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "park")">
+                Park & Positions
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -223,9 +229,11 @@
                     <div class="mb-3">
                         <label class="form-label">Coordinate Type</label>
                         <InputSelect @bind-Value="_settings.EquatorialCoordinateType" class="form-select">
+                            <option value="Other">Other</option>
                             <option value="Topocentric">Topocentric</option>
                             <option value="J2000">J2000</option>
-                            <option value="JNow">JNow</option>
+                            <option value="J2050">J2050</option>
+                            <option value="B1950">B1950</option>
                         </InputSelect>
                     </div>
 
@@ -251,17 +259,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <h4>Park & Model</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Park Name</label>
-                        <InputText @bind-Value="_settings.ParkName" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.ParkDialog" class="form-check-input" id="parkDialog" />
-                        <label class="form-check-label" for="parkDialog">Show Park Dialog</label>
-                    </div>
+                    <h4>Model Settings</h4>
 
                     <div class="mb-3 form-check">
                         <InputCheckbox @bind-Value="_settings.HomeDialog" class="form-check-input" id="homeDialog" />
@@ -289,6 +287,70 @@
                             <option value="Left">Left</option>
                             <option value="Right">Right</option>
                         </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Axis Model Offsets (JSON)</label>
+                        <InputTextArea @bind-Value="_axisModelOffsetsJson" class="form-control" rows="3" />
+                        <small class="form-text text-muted">JSON format: {"X":90.0,"Y":-90.0,"Z":0.0}</small>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (_activeTab == "park")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Park Settings</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Park Name</label>
+                        <InputText @bind-Value="_settings.ParkName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.ParkDialog" class="form-check-input" id="parkDialog2" />
+                        <label class="form-check-label" for="parkDialog2">Show Park Dialog</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Park Limit Name</label>
+                        <InputText @bind-Value="_settings.ParkLimitName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Park Horizon Limit Name</label>
+                        <InputText @bind-Value="_settings.ParkHzLimitName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Park Axes (JSON)</label>
+                        <InputTextArea @bind-Value="_parkAxesJson" class="form-control" rows="2" />
+                        <small class="form-text text-muted">JSON format: [90, 90]</small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Park Positions (JSON)</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Park Positions</label>
+                        <InputTextArea @bind-Value="_parkPositionsJson" class="form-control" rows="8" />
+                        <small class="form-text text-muted">
+                            JSON format:<br/>
+                            [<br/>
+                            &nbsp;&nbsp;{"Name":"Default","X":90.0,"Y":90.0},<br/>
+                            &nbsp;&nbsp;{"Name":"Home","X":90.0,"Y":90.0}<br/>
+                            ]
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hand Controller Pulse Guides (JSON)</label>
+                        <InputTextArea @bind-Value="_hcPulseGuidesJson" class="form-control" rows="8" />
+                        <small class="form-text text-muted">
+                            JSON format: Array of objects with Speed, Duration, Interval, Rate
+                        </small>
                     </div>
                 </div>
             </div>
@@ -673,6 +735,12 @@
     private bool _isError;
     private string _activeTab = "connection";
     private string _utcOffsetString = "00:00:00";
+    
+    // JSON string properties for complex types
+    private string _axisModelOffsetsJson = string.Empty;
+    private string _parkAxesJson = string.Empty;
+    private string _parkPositionsJson = string.Empty;
+    private string _hcPulseGuidesJson = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -685,6 +753,12 @@
     {
         _settings = SettingsService.GetSettings();
         _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
+        
+        // Serialize complex types to JSON strings
+        _axisModelOffsetsJson = JsonSerializer.Serialize(_settings.AxisModelOffsets, new JsonSerializerOptions { WriteIndented = true });
+        _parkAxesJson = JsonSerializer.Serialize(_settings.ParkAxes);
+        _parkPositionsJson = JsonSerializer.Serialize(_settings.ParkPositions, new JsonSerializerOptions { WriteIndented = true });
+        _hcPulseGuidesJson = JsonSerializer.Serialize(_settings.HcPulseGuides, new JsonSerializerOptions { WriteIndented = true });
     }
 
     private void CheckForMigration()
@@ -708,6 +782,55 @@
 
         try
         {
+            // Deserialize JSON strings back to complex types
+            try
+            {
+                _settings.AxisModelOffsets = JsonSerializer.Deserialize<SkySettings.AxisModelOffset>(_axisModelOffsetsJson) ?? new SkySettings.AxisModelOffset();
+            }
+            catch (JsonException ex)
+            {
+                _message = $"Invalid JSON for Axis Model Offsets: {ex.Message}";
+                _isError = true;
+                _saving = false;
+                return;
+            }
+            
+            try
+            {
+                _settings.ParkAxes = JsonSerializer.Deserialize<double[]>(_parkAxesJson) ?? Array.Empty<double>();
+            }
+            catch (JsonException ex)
+            {
+                _message = $"Invalid JSON for Park Axes: {ex.Message}";
+                _isError = true;
+                _saving = false;
+                return;
+            }
+            
+            try
+            {
+                _settings.ParkPositions = JsonSerializer.Deserialize<List<SkySettings.ParkPosition>>(_parkPositionsJson) ?? new List<SkySettings.ParkPosition>();
+            }
+            catch (JsonException ex)
+            {
+                _message = $"Invalid JSON for Park Positions: {ex.Message}";
+                _isError = true;
+                _saving = false;
+                return;
+            }
+            
+            try
+            {
+                _settings.HcPulseGuides = JsonSerializer.Deserialize<List<SkySettings.HcPulseGuide>>(_hcPulseGuidesJson) ?? new List<SkySettings.HcPulseGuide>();
+            }
+            catch (JsonException ex)
+            {
+                _message = $"Invalid JSON for Hand Controller Pulse Guides: {ex.Message}";
+                _isError = true;
+                _saving = false;
+                return;
+            }
+            
             await SettingsService.SaveSettingsAsync(_settings);
             _message = "Settings saved successfully!";
             _isError = false;
@@ -785,6 +908,13 @@
     {
         _settings = newSettings;
         _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
+        
+        // Update JSON strings when settings change
+        _axisModelOffsetsJson = JsonSerializer.Serialize(_settings.AxisModelOffsets, new JsonSerializerOptions { WriteIndented = true });
+        _parkAxesJson = JsonSerializer.Serialize(_settings.ParkAxes);
+        _parkPositionsJson = JsonSerializer.Serialize(_settings.ParkPositions, new JsonSerializerOptions { WriteIndented = true });
+        _hcPulseGuidesJson = JsonSerializer.Serialize(_settings.HcPulseGuides, new JsonSerializerOptions { WriteIndented = true });
+        
         InvokeAsync(StateHasChanged);
     }
 

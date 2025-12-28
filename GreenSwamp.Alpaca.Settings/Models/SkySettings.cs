@@ -78,8 +78,9 @@ namespace GreenSwamp.Alpaca.Settings.Models
         // Backlash
         public int RaBacklash { get; set; }
         public int DecBacklash { get; set; }
-        
+
         // Pulse Guide Settings
+        public List<HcPulseGuide> HcPulseGuides { get; set; } = new();
         public int MinPulseRa { get; set; }
         public int MinPulseDec { get; set; }
         public bool DecPulseToGoTo { get; set; }
@@ -105,12 +106,12 @@ namespace GreenSwamp.Alpaca.Settings.Models
         
         // Park Settings
         public string ParkName { get; set; } = null!;
-        public string ParkPositions { get; set; } = null!;
-        public string ParkAxes { get; set; } = null!;
         public bool LimitPark { get; set; }
         public string ParkLimitName { get; set; } = null!;
         public bool ParkDialog { get; set; }
-        
+        public List<ParkPosition> ParkPositions { get; set; } = new();
+        public double[] ParkAxes { get; set; } = Array.Empty<double>();
+
         // Limit Settings
         public bool LimitTracking { get; set; }
         public double HourAngleLimit { get; set; }
@@ -145,7 +146,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public bool HcAntiDec { get; set; }
         public bool HcFlipEW { get; set; }
         public bool HcFlipNS { get; set; }
-        public string HcPulseGuides { get; set; } = null!;
         public bool DisableKeysOnGoTo { get; set; }
         
         // Spiral Search Settings
@@ -220,12 +220,35 @@ namespace GreenSwamp.Alpaca.Settings.Models
         
         // Model Settings
         public string ModelType { get; set; } = null!;
-        public string AxisModelOffsets { get; set; } = null!;
-        
+        public AxisModelOffset AxisModelOffsets { get; set; } = new();
+
         // Alt-Az Tracking
         public int AltAzTrackingUpdateInterval { get; set; }
         
         // Polar Alignment
         public string PolarMode { get; set; } = null!;
+
+        public class ParkPosition
+        {
+            public string Name { get; set; } = string.Empty;
+            public double X { get; set; }
+            public double Y { get; set; }
+        }
+
+        public class HcPulseGuide
+        {
+            public int Speed { get; set; }
+            public int Duration { get; set; }
+            public int Interval { get; set; }
+            public double Rate { get; set; }
+        }
+
+        public class AxisModelOffset
+        {
+            public double X { get; set; }
+            public double Y { get; set; }
+            public double Z { get; set; }
+        }
+
     }
 }
