@@ -194,7 +194,38 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.MinPulseRa = newSettings.MinPulseRa;
                 SkySettings.MinPulseDec = newSettings.MinPulseDec;
                 
-                LogBridge($"Synced 71 properties from new ? old (Phase 4 Batch 1-6)");
+                // Phase 4 Batch 7: Tracking Rate & Slew Properties
+                SkySettings.SiderealRate = newSettings.SiderealRate;
+                SkySettings.LunarRate = newSettings.LunarRate;
+                SkySettings.SolarRate = newSettings.SolarRate;
+                SkySettings.KingRate = newSettings.KingRate;
+                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;
+                SkySettings.DisplayInterval = newSettings.DisplayInterval;
+                SkySettings.St4GuideRate = newSettings.St4Guiderate;
+                
+                // Phase 4 Batch 8: Serial Communication Settings (7 properties)
+                // Note: Some have private setters (ReadTimeout, DataBits, DTREnable, RTSEnable, HandShake)
+                // These can only be read from new settings, not written back from old
+                // Using reflection to set these read-only properties
+                try 
+                {
+                    var handshakeValue = ParseHandshake(newSettings.Handshake);
+                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.HandShake), handshakeValue);
+                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.ReadTimeout), newSettings.ReadTimeout);
+                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.DataBits), newSettings.DataBits);
+                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.DtrEnable), newSettings.DTREnable);
+                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.RtsEnable), newSettings.RTSEnable);
+                }
+                catch (Exception ex)
+                {
+                    LogBridge($"Warning: Could not sync read-only serial properties: {ex.Message}");
+                }
+                
+                // GPS settings - handle port name/number conversion
+                SkySettings.GpsComPort = ParseGpsPortNumber(newSettings.GpsPort);
+                SkySettings.GpsBaudRate = ParseSerialSpeed(ParseGpsBaudRateString(newSettings.GpsBaudRate));
+                
+                LogBridge($"Synced 85 properties from new ? old (Phase 4 Batch 1-8)");
             }
             catch (Exception ex)
             {
@@ -315,10 +346,28 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.MinPulseRa = SkySettings.MinPulseRa;
                 newSettings.MinPulseDec = SkySettings.MinPulseDec;
                 
+                // Phase 4 Batch 7: Tracking Rate & Slew Properties
+                newSettings.SiderealRate = SkySettings.SiderealRate;
+                newSettings.LunarRate = SkySettings.LunarRate;
+                newSettings.SolarRate = SkySettings.SolarRate;
+                newSettings.KingRate = SkySettings.KingRate;
+                newSettings.MaximumSlewRate = SkySettings.MaxSlewRate;
+                newSettings.DisplayInterval = SkySettings.DisplayInterval;
+                newSettings.St4Guiderate = SkySettings.St4GuideRate;
+                
+                // Phase 4 Batch 8: Serial Communication Settings (7 properties)
+                // Note: Read-only properties in old system are NOT synced back (they shouldn't change)
+                // Only GPS settings can be synced from old ? new
+                newSettings.GpsPort = ParseGpsPortString(SkySettings.GpsComPort);
+                newSettings.GpsBaudRate = ((int)SkySettings.GpsBaudRate).ToString();
+                
+                // The following are read-only in old system, so they're not synced from old ? new:
+                // HandShake, ReadTimeout, DataBits, DTREnable, RTSEnable
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 71 properties old ? new settings (Phase 4 Batch 1-6)");
+                LogBridge("Saved 85 properties old ? new settings (Phase 4 Batch 1-8)");
             }
             catch (Exception ex)
             {
@@ -354,12 +403,18 @@ namespace GreenSwamp.Alpaca.MountControl
             // Map baud rate integer to SerialSpeed enum
             return value switch
             {
+                300 => SerialSpeed.ps300,
+                1200 => SerialSpeed.ps1200,
+                2400 => SerialSpeed.ps2400,
                 4800 => SerialSpeed.ps4800,
                 9600 => SerialSpeed.ps9600,
+                14400 => SerialSpeed.ps14400,
                 19200 => SerialSpeed.ps19200,
+                28800 => SerialSpeed.ps28800,
                 38400 => SerialSpeed.ps38400,
                 57600 => SerialSpeed.ps57600,
                 115200 => SerialSpeed.ps115200,
+                230400 => SerialSpeed.ps230400,
                 _ => SerialSpeed.ps9600
             };
         }
@@ -397,6 +452,52 @@ namespace GreenSwamp.Alpaca.MountControl
             return Enum.TryParse<HcMode>(value, true, out var result) 
                 ? result 
                 : HcMode.Guiding;
+        }
+        
+        private static Handshake ParseHandshake(string value)
+        {
+            return Enum.TryParse<Handshake>(value, true, out var result) 
+                ? result 
+                : Handshake.None;
+        }
+        
+        private static string ParseGpsPortNumber(int portNumber)
+        {
+            // Convert port number to COM port string (e.g., 1 ? "COM1")
+            return portNumber > 0 ? $"COM{portNumber}" : string.Empty;
+        }
+        
+        private static int ParseGpsPortString(string portString)
+        {
+            // Convert COM port string to port number (e.g., "COM1" ? 1)
+            if (string.IsNullOrEmpty(portString)) return 0;
+            
+            var cleaned = portString.Replace("COM", "", StringComparison.OrdinalIgnoreCase).Trim();
+            return int.TryParse(cleaned, out var portNum) ? portNum : 0;
+        }
+        
+        private static int ParseGpsBaudRateString(string baudRateString)
+        {
+            // Parse baud rate from string to integer
+            return int.TryParse(baudRateString, out var baudRate) ? baudRate : 9600;
+        }
+        
+        /// <summary>
+        /// Set a private property using reflection (for read-only properties in old system)
+        /// </summary>
+        private static void SetPrivateProperty(Type type, string propertyName, object value)
+        {
+            var property = type.GetProperty(propertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (property != null)
+            {
+                var backingField = type.GetField($"_{char.ToLower(propertyName[0])}{propertyName.Substring(1)}", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                
+                if (backingField != null)
+                {
+                    backingField.SetValue(null, value);
+                }
+            }
         }
         
         #endregion
@@ -471,6 +572,24 @@ namespace GreenSwamp.Alpaca.MountControl
             public const string DisableKeysOnGoTo = "DisableKeysOnGoTo";
             public const string MinPulseRa = "MinPulseRa";
             public const string MinPulseDec = "MinPulseDec";
+            
+            // Phase 4 Batch 7: Tracking Rate & Slew Properties
+            public const string SiderealRate = "SiderealRate";
+            public const string LunarRate = "LunarRate";
+            public const string SolarRate = "SolarRate";
+            public const string KingRate = "KingRate";
+            public const string MaxSlewRate = "MaxSlewRate";
+            public const string DisplayInterval = "DisplayInterval";
+            public const string St4GuideRate = "St4GuideRate";
+            
+            // Phase 4 Batch 8: Serial Communication Settings
+            public const string Handshake = "Handshake";
+            public const string ReadTimeout = "ReadTimeout";
+            public const string DataBits = "DataBits";
+            public const string DtrEnable = "DtrEnable";
+            public const string RtsEnable = "RtsEnable";
+            public const string GpsComPort = "GpsComPort";
+            public const string GpsBaudRate = "GpsBaudRate";
         }
         
         // Helper method for setting JSON values safely
