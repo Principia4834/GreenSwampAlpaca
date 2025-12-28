@@ -187,6 +187,25 @@ namespace GreenSwamp.Alpaca.Server
 
             var app = builder.Build();
 
+            // Phase 1: Test new settings system initialization
+            #if DEBUG
+            try
+            {
+                var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
+                var testSettings = settingsService.GetSettings();
+                Logger.LogInformation("? Phase 1: New settings system initialized successfully");
+                Logger.LogInformation($"  Settings Version: {settingsService.CurrentVersion}");
+                Logger.LogInformation($"  Mount Type: {testSettings.Mount}");
+                Logger.LogInformation($"  Serial Port: {testSettings.Port}");
+                Logger.LogInformation($"  Settings Path: {settingsService.UserSettingsPath}");
+                Logger.LogInformation($"  Available Versions: {string.Join(", ", settingsService.AvailableVersions)}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInformation($"Phase 1 settings check: {ex.Message}");
+            }
+            #endif
+
             // Migrate user settings if needed
             try
             {
