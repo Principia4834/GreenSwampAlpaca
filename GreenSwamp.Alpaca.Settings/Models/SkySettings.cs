@@ -23,6 +23,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
     /// </summary>
     public class SkySettings
     {
+        // Connection Settings
         [Required]
         public string Mount { get; set; } = null!;
         
@@ -30,7 +31,13 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public string Port { get; set; } = null!;
         
         public int BaudRate { get; set; }
+        public int DataBits { get; set; }
+        public string Handshake { get; set; } = null!;
+        public int ReadTimeout { get; set; }
+        public bool DTREnable { get; set; }
+        public bool RTSEnable { get; set; }
         
+        // Location Settings
         [Range(-90, 90)]
         public double Latitude { get; set; }
         
@@ -40,50 +47,185 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [Range(-500, 9000)]
         public double Elevation { get; set; }
         
+        public TimeSpan UTCOffset { get; set; }
+        
+        // Mount Configuration
         public bool AutoTrack { get; set; }
-        
         public string AlignmentMode { get; set; } = null!;
-        
         public string EquatorialCoordinateType { get; set; } = null!;
+        public bool AtPark { get; set; }
+        public bool DisconnectOnPark { get; set; }
         
+        // Optical Settings
+        public double ApertureDiameter { get; set; }
+        public double ApertureArea { get; set; }
+        public double FocalLength { get; set; }
+        
+        // Environmental Settings
         public bool Refraction { get; set; }
-        
         public double Temperature { get; set; }
-        
         public double Pressure { get; set; }
         
-        // Custom gearing
+        // Custom Gearing
         public bool CustomGearing { get; set; }
         public int CustomRa360Steps { get; set; }
         public int CustomRaWormTeeth { get; set; }
         public int CustomDec360Steps { get; set; }
         public int CustomDecWormTeeth { get; set; }
+        public int CustomRaTrackingOffset { get; set; }
+        public int CustomDecTrackingOffset { get; set; }
         
         // Backlash
         public int RaBacklash { get; set; }
         public int DecBacklash { get; set; }
         
-        // Pulse guide settings
-        public int MinPulseDurationRa { get; set; }
-        public int MinPulseDurationDec { get; set; }
-        public bool DecPulseGoTo { get; set; }
+        // Pulse Guide Settings
+        public int MinPulseRa { get; set; }
+        public int MinPulseDec { get; set; }
+        public bool DecPulseToGoTo { get; set; }
+        public int St4Guiderate { get; set; }
+        public double GuideRateOffsetX { get; set; }
+        public double GuideRateOffsetY { get; set; }
         
-        // Advanced settings
-        public bool UseAdvancedCommands { get; set; }
-        public bool MonitorPulse { get; set; }
-        public bool AlternatingPPec { get; set; }
+        // Tracking Settings
+        public string TrackingRate { get; set; } = null!;
+        public double SiderealRate { get; set; }
+        public double LunarRate { get; set; }
+        public double SolarRate { get; set; }
+        public double KingRate { get; set; }
+        public int RATrackingOffset { get; set; }
         
-        // Rate settings
-        public double CustomRateRa { get; set; }
-        public double CustomRateDec { get; set; }
+        // Home Settings
+        public double HomeAxisX { get; set; }
+        public double HomeAxisY { get; set; }
+        public double AutoHomeAxisX { get; set; }
+        public double AutoHomeAxisY { get; set; }
+        public bool HomeWarning { get; set; }
+        public bool HomeDialog { get; set; }
         
-        // Tracking
-        public string TrackingMode { get; set; } = null!;
-        public double TrackingRate { get; set; }
+        // Park Settings
+        public string ParkName { get; set; } = null!;
+        public string ParkPositions { get; set; } = null!;
+        public string ParkAxes { get; set; } = null!;
+        public bool LimitPark { get; set; }
+        public string ParkLimitName { get; set; } = null!;
+        public bool ParkDialog { get; set; }
         
-        // Limits
-        public bool UseLimits { get; set; }
-        public double AltitudeLimit { get; set; }
-        public double HorizonLimit { get; set; }
+        // Limit Settings
+        public bool LimitTracking { get; set; }
+        public double HourAngleLimit { get; set; }
+        public bool NoSyncPastMeridian { get; set; }
+        public int SyncLimit { get; set; }
+        public bool SyncLimitOn { get; set; }
+        public double AxisTrackingLimit { get; set; }
+        public bool HzLimitTracking { get; set; }
+        public string ParkHzLimitName { get; set; } = null!;
+        public bool HzLimitPark { get; set; }
+        public double AxisHzTrackingLimit { get; set; }
+        public double AxisUpperLimitY { get; set; }
+        public double AxisLowerLimitY { get; set; }
+        public double AxisLimitX { get; set; }
+        
+        // PEC/PPEC Settings
+        public bool PecOn { get; set; }
+        public bool PpecOn { get; set; }
+        public bool AlternatingPPEC { get; set; }
+        public int PecOffSet { get; set; }
+        public string PecWormFile { get; set; } = null!;
+        public string Pec360File { get; set; } = null!;
+        public string PecMode { get; set; } = null!;
+        
+        // Encoders
+        public bool EncodersOn { get; set; }
+        
+        // Hand Controller Settings
+        public string HcSpeed { get; set; } = null!;
+        public string HcMode { get; set; } = null!;
+        public bool HcAntiRa { get; set; }
+        public bool HcAntiDec { get; set; }
+        public bool HcFlipEW { get; set; }
+        public bool HcFlipNS { get; set; }
+        public string HcPulseGuides { get; set; } = null!;
+        public bool DisableKeysOnGoTo { get; set; }
+        
+        // Spiral Search Settings
+        public int SpiralPause { get; set; }
+        public int SpiralSpeed { get; set; }
+        public int SpiralFov { get; set; }
+        public int SpiralWidth { get; set; }
+        public int SpiralHeight { get; set; }
+        public double SpiralDistance { get; set; }
+        public bool SpiralLimits { get; set; }
+        
+        // Camera/Eyepiece Settings
+        public double CameraWidth { get; set; }
+        public double CameraHeight { get; set; }
+        public double EyepieceFS { get; set; }
+        
+        // Capabilities
+        public bool CanAlignMode { get; set; }
+        public bool CanAltAz { get; set; }
+        public bool CanDoesRefraction { get; set; }
+        public bool CanEquatorial { get; set; }
+        public bool CanFindHome { get; set; }
+        public bool CanLatLongElev { get; set; }
+        public bool CanOptics { get; set; }
+        public bool CanPark { get; set; }
+        public bool CanPierSide { get; set; }
+        public bool CanPulseGuide { get; set; }
+        public bool CanSetEquRates { get; set; }
+        public bool CanSetGuideRates { get; set; }
+        public bool CanSetPark { get; set; }
+        public bool CanSetPierSide { get; set; }
+        public bool CanSetTracking { get; set; }
+        public bool CanSiderealTime { get; set; }
+        public bool CanSlew { get; set; }
+        public bool CanSlewAltAz { get; set; }
+        public bool CanSlewAltAzAsync { get; set; }
+        public bool CanSlewAsync { get; set; }
+        public bool CanSync { get; set; }
+        public bool CanSyncAltAz { get; set; }
+        public bool CanUnpark { get; set; }
+        public bool CanTrackingRates { get; set; }
+        public bool CanSetDeclinationRate { get; set; }
+        public bool CanSetRightAscensionRate { get; set; }
+        
+        // Advanced Settings
+        public bool AllowAdvancedCommandSet { get; set; }
+        public double MaximumSlewRate { get; set; }
+        public double GotoPrecision { get; set; }
+        public bool FullCurrent { get; set; }
+        public int NumMoveAxis { get; set; }
+        public bool VersionOne { get; set; }
+        public bool GlobalStopOn { get; set; }
+        
+        // Display Settings
+        public int DisplayInterval { get; set; }
+        public bool TraceLogger { get; set; }
+        public int PolarLedLevel { get; set; }
+        public bool RaGaugeFlip { get; set; }
+        public string FrontGraphic { get; set; } = null!;
+        
+        // GPS Settings
+        public int GpsPort { get; set; }
+        public string GpsBaudRate { get; set; } = null!;
+        
+        // Cartes du Ciel Integration
+        public string CdCip { get; set; } = null!;
+        public int CdCport { get; set; }
+        
+        // Instrument Info
+        public string InstrumentDescription { get; set; } = null!;
+        public string InstrumentName { get; set; } = null!;
+        
+        // Model Settings
+        public string ModelType { get; set; } = null!;
+        public string AxisModelOffsets { get; set; } = null!;
+        
+        // Alt-Az Tracking
+        public int AltAzTrackingUpdateInterval { get; set; }
+        
+        // Polar Alignment
+        public string PolarMode { get; set; } = null!;
     }
 }

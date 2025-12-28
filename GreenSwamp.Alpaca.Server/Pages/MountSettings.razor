@@ -27,8 +27,9 @@
 
 @if (_message != null)
 {
-    <div class="alert alert-@(_isError ? "danger" : "success")">
+    <div class="alert alert-@(_isError ? "danger" : "success") alert-dismissible fade show">
         @_message
+        <button type="button" class="btn-close" @onclick="@(() => _message = null)"></button>
     </div>
 }
 
@@ -36,50 +37,593 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Connection</h4>
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "connection" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "connection")">
+                Connection
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "location" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "location")">
+                Location
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "mount" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "mount")">
+                Mount Config
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "optics" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "optics")">
+                Optics
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "tracking" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "tracking")">
+                Tracking
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "guiding" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "guiding")">
+                Guiding
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "limits" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "limits")">
+                Limits
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(_activeTab == "advanced" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "advanced")">
+                Advanced
+            </button>
+        </li>
+    </ul>
 
-            <div class="mb-3">
-                <label class="form-label">Mount Type</label>
-                <InputSelect @bind-Value="_settings.Mount" class="form-select">
-                    <option value="Simulator">Simulator</option>
-                    <option value="SkyWatcher">SkyWatcher</option>
-                </InputSelect>
+    <div class="tab-content">
+        @if (_activeTab == "connection")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Connection Settings</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mount Type</label>
+                        <InputSelect @bind-Value="_settings.Mount" class="form-select">
+                            <option value="Simulator">Simulator</option>
+                            <option value="SkyWatcher">SkyWatcher</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Serial Port</label>
+                        <InputText @bind-Value="_settings.Port" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Baud Rate</label>
+                        <InputSelect @bind-Value="_settings.BaudRate" class="form-select">
+                            <option value="4800">4800</option>
+                            <option value="9600">9600</option>
+                            <option value="19200">19200</option>
+                            <option value="38400">38400</option>
+                            <option value="57600">57600</option>
+                            <option value="115200">115200</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Data Bits</label>
+                        <InputSelect @bind-Value="_settings.DataBits" class="form-select">
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Serial Settings</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Handshake</label>
+                        <InputSelect @bind-Value="_settings.Handshake" class="form-select">
+                            <option value="None">None</option>
+                            <option value="XOnXOff">XOn/XOff</option>
+                            <option value="RequestToSend">RTS</option>
+                            <option value="RequestToSendXOnXOff">RTS + XOn/XOff</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Read Timeout (ms)</label>
+                        <InputNumber @bind-Value="_settings.ReadTimeout" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.DTREnable" class="form-check-input" id="dtrEnable" />
+                        <label class="form-check-label" for="dtrEnable">Enable DTR</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.RTSEnable" class="form-check-input" id="rtsEnable" />
+                        <label class="form-check-label" for="rtsEnable">Enable RTS</label>
+                    </div>
+                </div>
             </div>
+        }
+        else if (_activeTab == "location")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Observer Location</h4>
 
-            <div class="mb-3">
-                <label class="form-label">Serial Port</label>
-                <InputText @bind-Value="_settings.Port" class="form-control" />
+                    <div class="mb-3">
+                        <label class="form-label">Latitude (°)</label>
+                        <InputNumber @bind-Value="_settings.Latitude" class="form-control" />
+                        <small class="form-text text-muted">Range: -90 to 90 (North positive)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Longitude (°)</label>
+                        <InputNumber @bind-Value="_settings.Longitude" class="form-control" />
+                        <small class="form-text text-muted">Range: -180 to 180 (East positive)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Elevation (m)</label>
+                        <InputNumber @bind-Value="_settings.Elevation" class="form-control" />
+                        <small class="form-text text-muted">Meters above sea level</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">UTC Offset (hh:mm:ss)</label>
+                        <InputText @bind-Value="_utcOffsetString" class="form-control" @onchange="ParseUtcOffset" />
+                        <small class="form-text text-muted">e.g., -05:00:00 for EST</small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Environmental</h4>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.Refraction" class="form-check-input" id="refraction" />
+                        <label class="form-check-label" for="refraction">Apply Refraction Correction</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Temperature (°C)</label>
+                        <InputNumber @bind-Value="_settings.Temperature" class="form-control" />
+                        <small class="form-text text-muted">For refraction calculation</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Pressure (mbar)</label>
+                        <InputNumber @bind-Value="_settings.Pressure" class="form-control" />
+                        <small class="form-text text-muted">Atmospheric pressure</small>
+                    </div>
+                </div>
             </div>
+        }
+        else if (_activeTab == "mount")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Mount Configuration</h4>
 
-            <div class="mb-3">
-                <label class="form-label">Baud Rate</label>
-                <InputNumber @bind-Value="_settings.BaudRate" class="form-control" />
+                    <div class="mb-3">
+                        <label class="form-label">Alignment Mode</label>
+                        <InputSelect @bind-Value="_settings.AlignmentMode" class="form-select">
+                            <option value="">Not Set</option>
+                            <option value="AltAz">Alt-Az</option>
+                            <option value="Polar">Polar</option>
+                            <option value="GermanPolar">German Equatorial</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Coordinate Type</label>
+                        <InputSelect @bind-Value="_settings.EquatorialCoordinateType" class="form-select">
+                            <option value="Topocentric">Topocentric</option>
+                            <option value="J2000">J2000</option>
+                            <option value="JNow">JNow</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.AutoTrack" class="form-check-input" id="autoTrack" />
+                        <label class="form-check-label" for="autoTrack">Auto Track on Connect</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.DisconnectOnPark" class="form-check-input" id="disconnectPark" />
+                        <label class="form-check-label" for="disconnectPark">Disconnect on Park</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Home Position X (RA/Az)</label>
+                        <InputNumber @bind-Value="_settings.HomeAxisX" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Home Position Y (Dec/Alt)</label>
+                        <InputNumber @bind-Value="_settings.HomeAxisY" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Park & Model</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Park Name</label>
+                        <InputText @bind-Value="_settings.ParkName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.ParkDialog" class="form-check-input" id="parkDialog" />
+                        <label class="form-check-label" for="parkDialog">Show Park Dialog</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.HomeDialog" class="form-check-input" id="homeDialog" />
+                        <label class="form-check-label" for="homeDialog">Show Home Dialog</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.HomeWarning" class="form-check-input" id="homeWarning" />
+                        <label class="form-check-label" for="homeWarning">Show Home Warning</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Model Type</label>
+                        <InputSelect @bind-Value="_settings.ModelType" class="form-select">
+                            <option value="">None</option>
+                            <option value="Default">Default</option>
+                            <option value="DualTelescope">Dual Telescope</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Polar Mode</label>
+                        <InputSelect @bind-Value="_settings.PolarMode" class="form-select">
+                            <option value="">Not Set</option>
+                            <option value="Left">Left</option>
+                            <option value="Right">Right</option>
+                        </InputSelect>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
+        else if (_activeTab == "optics")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Telescope Optics</h4>
 
-        <div class="col-md-6">
-            <h4>Location</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Aperture Diameter (m)</label>
+                        <InputNumber @bind-Value="_settings.ApertureDiameter" class="form-control" />
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Latitude (°)</label>
-                <InputNumber @bind-Value="_settings.Latitude" class="form-control" />
+                    <div class="mb-3">
+                        <label class="form-label">Aperture Area (m²)</label>
+                        <InputNumber @bind-Value="_settings.ApertureArea" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Focal Length (m)</label>
+                        <InputNumber @bind-Value="_settings.FocalLength" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Imaging</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Camera Width (mm)</label>
+                        <InputNumber @bind-Value="_settings.CameraWidth" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Camera Height (mm)</label>
+                        <InputNumber @bind-Value="_settings.CameraHeight" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Eyepiece Field Stop (mm)</label>
+                        <InputNumber @bind-Value="_settings.EyepieceFS" class="form-control" />
+                    </div>
+                </div>
             </div>
+        }
+        else if (_activeTab == "tracking")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Tracking Settings</h4>
 
-            <div class="mb-3">
-                <label class="form-label">Longitude (°)</label>
-                <InputNumber @bind-Value="_settings.Longitude" class="form-control" />
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tracking Rate</label>
+                        <InputSelect @bind-Value="_settings.TrackingRate" class="form-select">
+                            <option value="Sidereal">Sidereal</option>
+                            <option value="Lunar">Lunar</option>
+                            <option value="Solar">Solar</option>
+                            <option value="King">King</option>
+                        </InputSelect>
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Elevation (m)</label>
-                <InputNumber @bind-Value="_settings.Elevation" class="form-control" />
+                    <div class="mb-3">
+                        <label class="form-label">Sidereal Rate (arcsec/sec)</label>
+                        <InputNumber @bind-Value="_settings.SiderealRate" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Lunar Rate (arcsec/sec)</label>
+                        <InputNumber @bind-Value="_settings.LunarRate" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Solar Rate (arcsec/sec)</label>
+                        <InputNumber @bind-Value="_settings.SolarRate" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">King Rate (arcsec/sec)</label>
+                        <InputNumber @bind-Value="_settings.KingRate" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Custom Gearing</h4>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.CustomGearing" class="form-check-input" id="customGearing" />
+                        <label class="form-check-label" for="customGearing">Use Custom Gearing</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">RA 360° Steps</label>
+                        <InputNumber @bind-Value="_settings.CustomRa360Steps" class="form-control" disabled="@(!_settings.CustomGearing)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">RA Worm Teeth</label>
+                        <InputNumber @bind-Value="_settings.CustomRaWormTeeth" class="form-control" disabled="@(!_settings.CustomGearing)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dec 360° Steps</label>
+                        <InputNumber @bind-Value="_settings.CustomDec360Steps" class="form-control" disabled="@(!_settings.CustomGearing)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dec Worm Teeth</label>
+                        <InputNumber @bind-Value="_settings.CustomDecWormTeeth" class="form-control" disabled="@(!_settings.CustomGearing)" />
+                    </div>
+                </div>
             </div>
-        </div>
+        }
+        else if (_activeTab == "guiding")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Pulse Guiding</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Min Pulse Duration RA (ms)</label>
+                        <InputNumber @bind-Value="_settings.MinPulseRa" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Min Pulse Duration Dec (ms)</label>
+                        <InputNumber @bind-Value="_settings.MinPulseDec" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.DecPulseToGoTo" class="form-check-input" id="decPulseGoto" />
+                        <label class="form-check-label" for="decPulseGoto">Dec Pulse uses GOTO</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">ST4 Guide Rate</label>
+                        <InputSelect @bind-Value="_settings.St4Guiderate" class="form-select">
+                            <option value="1">1 - Slowest</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8 - Fastest</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Guide Rate Offset X</label>
+                        <InputNumber @bind-Value="_settings.GuideRateOffsetX" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Guide Rate Offset Y</label>
+                        <InputNumber @bind-Value="_settings.GuideRateOffsetY" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Backlash & PEC</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">RA Backlash (steps)</label>
+                        <InputNumber @bind-Value="_settings.RaBacklash" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dec Backlash (steps)</label>
+                        <InputNumber @bind-Value="_settings.DecBacklash" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.PecOn" class="form-check-input" id="pecOn" />
+                        <label class="form-check-label" for="pecOn">Enable PEC</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.PpecOn" class="form-check-input" id="ppecOn" />
+                        <label class="form-check-label" for="ppecOn">Enable PPEC</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.AlternatingPPEC" class="form-check-input" id="altPpec" />
+                        <label class="form-check-label" for="altPpec">Alternating PPEC</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">PEC Mode</label>
+                        <InputSelect @bind-Value="_settings.PecMode" class="form-select">
+                            <option value="PecWorm">PEC Worm</option>
+                            <option value="Pec360">PEC 360</option>
+                        </InputSelect>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (_activeTab == "limits")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Axis Limits</h4>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.LimitTracking" class="form-check-input" id="limitTracking" />
+                        <label class="form-check-label" for="limitTracking">Enable Tracking Limits</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hour Angle Limit (hours)</label>
+                        <InputNumber @bind-Value="_settings.HourAngleLimit" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Axis Limit X (degrees)</label>
+                        <InputNumber @bind-Value="_settings.AxisLimitX" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Axis Upper Limit Y (degrees)</label>
+                        <InputNumber @bind-Value="_settings.AxisUpperLimitY" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Axis Lower Limit Y (degrees)</label>
+                        <InputNumber @bind-Value="_settings.AxisLowerLimitY" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Sync & Safety</h4>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.SyncLimitOn" class="form-check-input" id="syncLimit" />
+                        <label class="form-check-label" for="syncLimit">Enable Sync Limit</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Sync Limit (degrees)</label>
+                        <InputNumber @bind-Value="_settings.SyncLimit" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.NoSyncPastMeridian" class="form-check-input" id="noSyncMeridian" />
+                        <label class="form-check-label" for="noSyncMeridian">No Sync Past Meridian</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.LimitPark" class="form-check-input" id="limitPark" />
+                        <label class="form-check-label" for="limitPark">Enable Park Limit</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.HzLimitTracking" class="form-check-input" id="hzLimitTrack" />
+                        <label class="form-check-label" for="hzLimitTrack">Enable Horizon Limit Tracking</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.EncodersOn" class="form-check-input" id="encoders" />
+                        <label class="form-check-label" for="encoders">Enable Encoders</label>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (_activeTab == "advanced")
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Advanced Settings</h4>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.AllowAdvancedCommandSet" class="form-check-input" id="advCommands" />
+                        <label class="form-check-label" for="advCommands">Allow Advanced Commands</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Maximum Slew Rate (°/sec)</label>
+                        <InputNumber @bind-Value="_settings.MaximumSlewRate" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">GOTO Precision (degrees)</label>
+                        <InputNumber @bind-Value="_settings.GotoPrecision" class="form-control" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.FullCurrent" class="form-check-input" id="fullCurrent" />
+                        <label class="form-check-label" for="fullCurrent">Full Current Mode</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.GlobalStopOn" class="form-check-input" id="globalStop" />
+                        <label class="form-check-label" for="globalStop">Global Stop Enabled</label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox @bind-Value="_settings.TraceLogger" class="form-check-input" id="traceLogger" />
+                        <label class="form-check-label" for="traceLogger">Enable Trace Logging</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Display Interval (ms)</label>
+                        <InputNumber @bind-Value="_settings.DisplayInterval" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Instrument Info</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">Instrument Name</label>
+                        <InputText @bind-Value="_settings.InstrumentName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Instrument Description</label>
+                        <InputText @bind-Value="_settings.InstrumentDescription" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Alt-Az Update Interval (ms)</label>
+                        <InputNumber @bind-Value="_settings.AltAzTrackingUpdateInterval" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Polar LED Level</label>
+                        <InputNumber @bind-Value="_settings.PolarLedLevel" class="form-control" />
+                        <small class="form-text text-muted">-1 to disable, 0-255 for brightness</small>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 
-    <div class="mt-3">
+    <div class="mt-3 border-top pt-3">
         <button type="submit" class="btn btn-primary" disabled="@_saving">
             @if (_saving)
             {
@@ -127,6 +671,8 @@
     private string? _previousVersion;
     private string? _message;
     private bool _isError;
+    private string _activeTab = "connection";
+    private string _utcOffsetString = "00:00:00";
 
     protected override void OnInitialized()
     {
@@ -138,6 +684,7 @@
     private void LoadSettings()
     {
         _settings = SettingsService.GetSettings();
+        _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
     }
 
     private void CheckForMigration()
@@ -226,9 +773,18 @@
         _isError = false;
     }
 
+    private void ParseUtcOffset()
+    {
+        if (TimeSpan.TryParse(_utcOffsetString, out var offset))
+        {
+            _settings.UTCOffset = offset;
+        }
+    }
+
     private void OnSettingsChanged(object? sender, SkySettings newSettings)
     {
         _settings = newSettings;
+        _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
         InvokeAsync(StateHasChanged);
     }
 
