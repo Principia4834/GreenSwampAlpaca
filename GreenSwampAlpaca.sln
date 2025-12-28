@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenSwamp.Alpaca.Mount.Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenSwamp.Alpaca.Mount.SkyWatcher", "GreenSwamp.Alpaca.Mount.SkyWatcher\GreenSwamp.Alpaca.Mount.SkyWatcher.csproj", "{CF8285B0-130B-4397-BE31-0057B6AD9310}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenSwamp.Alpaca.Settings", "GreenSwamp.Alpaca.Settings\GreenSwamp.Alpaca.Settings.csproj", "{AAE169B3-A1FC-4F1A-AC06-2C2D771B8416}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{CF8285B0-130B-4397-BE31-0057B6AD9310}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF8285B0-130B-4397-BE31-0057B6AD9310}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF8285B0-130B-4397-BE31-0057B6AD9310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAE169B3-A1FC-4F1A-AC06-2C2D771B8416}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAE169B3-A1FC-4F1A-AC06-2C2D771B8416}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAE169B3-A1FC-4F1A-AC06-2C2D771B8416}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAE169B3-A1FC-4F1A-AC06-2C2D771B8416}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
