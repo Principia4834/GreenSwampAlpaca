@@ -241,15 +241,37 @@ namespace GreenSwamp.Alpaca.MountControl
                 // PolarMode - bidirectional sync
                 SkySettings.PolarMode = ParsePolarMode(newSettings.PolarMode);
                 
-                LogBridge($"Synced 88 properties from new ? old (Phase 4 Batch 1-10)");
+                // Phase 4 Batch 11: Horizon & Alt-Az Tracking Settings (4 properties)
+                SkySettings.HzLimitPark = newSettings.HzLimitPark;
+                SkySettings.ParkHzLimitName = newSettings.ParkHzLimitName;
+                SkySettings.HzLimitTracking = newSettings.HzLimitTracking;
+                SkySettings.AxisHzTrackingLimit = newSettings.AxisHzTrackingLimit;
+                SkySettings.AltAzTrackingUpdateInterval = newSettings.AltAzTrackingUpdateInterval;
+                
+                // Note: InstrumentDescription and InstrumentName are read-only in old system (private setters)
+                // They should only be synced from old ? new, not new ? old
+                
+                // Phase 4 Batch 12: Final Simple Properties & Cartes du Ciel Integration
+                // Note: The following properties exist ONLY in new system (Settings.Models.SkySettings):
+                // - CdCip (string) - Cartes du Ciel IP address for planetarium integration
+                // - CdCport (int) - Cartes du Ciel port for planetarium integration
+                // These cannot be synced from old system as they don't exist in MountControl.SkySettings
+                
+                // Note: The following properties have private setters in old system:
+                // - RaTrackingOffset (int) - Tracking offset, computed/derived value
+                // - SyncLimit (int) - Sync limit in degrees, computed/derived value
+                // These are read-only and shouldn't be synced FROM old system
+                
+                // All other properties have been synced in previous batches
+                
+                // Save asynchronously (use Wait for synchronous context)
+                _settingsService.SaveSettingsAsync(newSettings).Wait();
+                
+                LogBridge("Saved 93 properties old ? new settings (Phase 4 Batch 1-12 complete)");
             }
             catch (Exception ex)
             {
-                LogBridge($"Error in SyncNewToOld: {ex.Message}");
-            }
-            finally
-            {
-                _isUpdating = false;
+                LogBridge($"Error in SyncOldToNew: {ex.Message}");
             }
         }
 
@@ -401,10 +423,33 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Bidirectional property:
                 newSettings.PolarMode = SkySettings.PolarMode.ToString();
                 
+                // Phase 4 Batch 11: Horizon & Alt-Az Tracking Settings
+                newSettings.HzLimitPark = SkySettings.HzLimitPark;
+                newSettings.ParkHzLimitName = SkySettings.ParkHzLimitName;
+                newSettings.HzLimitTracking = SkySettings.HzLimitTracking;
+                newSettings.AxisHzTrackingLimit = SkySettings.AxisHzTrackingLimit;
+                newSettings.AltAzTrackingUpdateInterval = SkySettings.AltAzTrackingUpdateInterval;
+                
+                // InstrumentDescription and InstrumentName can be synced FROM old system
+                // (they're read-only in old but can be written in new)
+                newSettings.InstrumentDescription = SkySettings.InstrumentDescription;
+                newSettings.InstrumentName = SkySettings.InstrumentName;
+                
+                // Phase 4 Batch 12: Final Simple Properties & Cartes du Ciel Integration
+                // Note: The following properties exist ONLY in new system, cannot sync from old:
+                // - CdCip, CdCport: Cartes du Ciel integration (not in old SkySettings)
+                //   These are new-system-only configuration for planetarium integration
+                
+                // Note: The following properties are read-only in old system:
+                // - RaTrackingOffset (private set) - cannot sync from old to new
+                // - SyncLimit (private set) - cannot sync from old to new
+                
+                // All other properties have been synced in previous batches
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 88 properties old ? new settings (Phase 4 Batch 1-10)");
+                LogBridge("Saved 93 properties old ? new settings (Phase 4 Batch 1-12 complete)");
             }
             catch (Exception ex)
             {
@@ -656,6 +701,26 @@ namespace GreenSwamp.Alpaca.MountControl
             // - VersionOne (read-only in old)
             // - NumMoveAxis (read-only in old)
             // - NoSyncPastMeridian (read-only in old)
+            
+            // Phase 4 Batch 11: Horizon & Alt-Az Tracking Settings
+            public const string HzLimitPark = "HzLimitPark";
+            public const string ParkHzLimitName = "ParkHzLimitName";
+            public const string HzLimitTracking = "HzLimitTracking";
+            public const string AxisHzTrackingLimit = "AxisHzTrackingLimit";
+            public const string AltAzTrackingUpdateInterval = "AltAzTrackingUpdateInterval";
+            public const string InstrumentDescription = "InstrumentDescription";
+            public const string InstrumentName = "InstrumentName";
+            
+            // Phase 4 Batch 12: Final Simple Properties & Cartes du Ciel Integration
+            // Note: The following properties exist ONLY in new system (Settings.Models.SkySettings):
+            // - CdCip (string) - Cartes du Ciel IP address for planetarium integration
+            // - CdCport (int) - Cartes du Ciel port for planetarium integration
+            // These cannot be synced from old system as they don't exist in MountControl.SkySettings
+            
+            // Note: The following properties have private setters in old system:
+            // - RaTrackingOffset (int) - Tracking offset, computed/derived value
+            // - SyncLimit (int) - Sync limit in degrees, computed/derived value
+            // These are read-only and shouldn't be synced FROM old system
         }
         
         // Helper method for setting JSON values safely
