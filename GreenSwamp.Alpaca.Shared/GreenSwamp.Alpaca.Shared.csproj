@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GreenSwamp.Alpaca.Principles\GreenSwamp.Alpaca.Principles.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Settings\GreenSwamp.Alpaca.Settings.csproj" />
   </ItemGroup>
 
   <ItemGroup>

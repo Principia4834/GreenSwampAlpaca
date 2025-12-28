@@ -2473,7 +2473,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <remarks>This method adjusts the Y-coordinates of the park positions to account for the
         /// absolute value of the latitude  and sets the park state to its default configuration. The updated park
-        /// positions are serialized and saved  to the application settings.</remarks>
+        /// positions are serialized and saved  to the application's settings.</remarks>
         public static void ResetParkPositions()
         {
             var parkPositions = JsonConvert.DeserializeObject<List<ParkPosition>>(Properties.Profiles.Polar.Default.ParkPositions);
@@ -2494,6 +2494,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             Properties.SkyTelescope.Default.Save();
             Properties.SkyTelescope.Default.Reload();
+            
+            // Phase 2: Sync to new settings system via bridge
+            SkySettingsBridge.OnOldSettingsSaved();
         }
 
         /// <summary>

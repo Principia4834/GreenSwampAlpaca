@@ -376,6 +376,9 @@ namespace GreenSwamp.Alpaca.Shared
         {
             Properties.Monitor.Default.Save();
             Properties.Monitor.Default.Reload();
+            
+            // Phase 2: Sync to new settings system via bridge
+            MonitorSettingsBridge.OnMonitorSettingsSaved();
         }
 
         /// <summary>

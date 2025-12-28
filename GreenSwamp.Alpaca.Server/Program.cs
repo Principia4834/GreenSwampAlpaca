@@ -206,6 +206,26 @@ namespace GreenSwamp.Alpaca.Server
             }
             #endif
 
+            // Phase 2: Initialize settings bridges for bidirectional sync
+            try
+            {
+                var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
+                
+                // Initialize SkySettings bridge (syncs 8 critical properties)
+                GreenSwamp.Alpaca.MountControl.SkySettingsBridge.Initialize(settingsService);
+                Logger.LogInformation("? Phase 2: SkySettings bridge initialized");
+                
+                // Initialize Monitor settings bridge (minimal Phase 2 implementation)
+                GreenSwamp.Alpaca.Shared.MonitorSettingsBridge.Initialize(settingsService);
+                Logger.LogInformation("? Phase 2: Monitor settings bridge initialized");
+                
+                Logger.LogInformation("Settings bridges active - old and new systems synchronized");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInformation($"Failed to initialize settings bridges: {ex.Message}");
+            }
+
             // Migrate user settings if needed
             try
             {

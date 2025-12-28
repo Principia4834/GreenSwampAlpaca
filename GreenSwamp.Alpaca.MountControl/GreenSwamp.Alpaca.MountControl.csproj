@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GreenSwamp.Alpaca.Mount.SkyWatcher\GreenSwamp.Alpaca.Mount.SkyWatcher.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.Principles\GreenSwamp.Alpaca.Principles.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Settings\GreenSwamp.Alpaca.Settings.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.Shared\GreenSwamp.Alpaca.Shared.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.Simulator\GreenSwamp.Alpaca.Mount.Simulator.csproj" />
   </ItemGroup>
