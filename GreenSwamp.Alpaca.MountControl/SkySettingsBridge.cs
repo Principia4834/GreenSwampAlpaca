@@ -136,7 +136,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.RaBacklash = newSettings.RaBacklash;
                 SkySettings.DecBacklash = newSettings.DecBacklash;
                 
-                LogBridge($"Synced 26 properties from new ? old (Phase 3b)");
+                // Phase 3c: Optics (4 properties - ApertureDiameter/Area are read-only in old system)
+                SkySettings.FocalLength = newSettings.FocalLength;
+                SkySettings.CameraWidth = newSettings.CameraWidth;
+                SkySettings.CameraHeight = newSettings.CameraHeight;
+                SkySettings.EyepieceFs = newSettings.EyepieceFS;
+                
+                LogBridge($"Synced 30 properties from new ? old (Phase 3c)");
             }
             catch (Exception ex)
             {
@@ -196,10 +202,16 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.RaBacklash = SkySettings.RaBacklash;
                 newSettings.DecBacklash = SkySettings.DecBacklash;
                 
+                // Phase 3c: Optics (4 properties - ApertureDiameter/Area are read-only in old system)
+                newSettings.FocalLength = SkySettings.FocalLength;
+                newSettings.CameraWidth = SkySettings.CameraWidth;
+                newSettings.CameraHeight = SkySettings.CameraHeight;
+                newSettings.EyepieceFS = SkySettings.EyepieceFs;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 26 properties old ? new settings (Phase 3b)");
+                LogBridge("Saved 30 properties old ? new settings (Phase 3c)");
             }
             catch (Exception ex)
             {
