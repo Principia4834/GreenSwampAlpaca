@@ -8,6 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="appsettings.json" />
+    <Content Remove="appsettings.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json" />
+    <None Include="appsettings.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ASCOM.AstrometryTools" Version="2.2.1" />
     <PackageReference Include="ASCOM.Tools" Version="2.2.1" />
   </ItemGroup>
@@ -16,6 +26,7 @@
     <ProjectReference Include="..\ASCOM.Alpaca.Razor\ASCOM.Alpaca.Razor.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.MountControl\GreenSwamp.Alpaca.MountControl.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.Principles\GreenSwamp.Alpaca.Principles.csproj" />
+    <ProjectReference Include="..\GreenSwamp.Alpaca.Settings\GreenSwamp.Alpaca.Settings.csproj" />
     <ProjectReference Include="..\GreenSwamp.Alpaca.Shared\GreenSwamp.Alpaca.Shared.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,7 @@
 using ASCOM.Alpaca;
 using ASCOM.Common;
+using GreenSwamp.Alpaca.Settings.Extensions;
+using GreenSwamp.Alpaca.Settings.Services;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
@@ -10,8 +12,7 @@ namespace GreenSwamp.Alpaca.Server
 {
     public class Program
     {
-        //ToDo
-        //Fill this with your driver name
+        //Driver name
         internal const string DriverID = "GreenSwamp.Alpaca";
 
         //Change this to a unique value
@@ -19,7 +20,7 @@ namespace GreenSwamp.Alpaca.Server
         //This supports --urls=http://*:port by default.
         internal const int DefaultPort = 31426;
 
-        //Fill these out
+        //Driver information
         internal const string Manufacturer = "Green Swamp Software";
 
         internal const string ServerName = "Green Swamp Alpaca Server";
@@ -29,7 +30,7 @@ namespace GreenSwamp.Alpaca.Server
 
         internal static IHostApplicationLifetime? Lifetime;
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             //First fill in information for your driver in the Alpaca Configuration Class. Some of these you may want to store in a user changeable settings file.
             //Then fill in the ToDos in this file. Each is marked with a //ToDo
@@ -136,6 +137,18 @@ namespace GreenSwamp.Alpaca.Server
 
             var builder = WebApplication.CreateBuilder(args ?? []);
 
+            // Load versioned user settings support
+            builder.Configuration.AddVersionedUserSettings();
+            // Register VersionedSettingsService for IVersionedSettingsService
+            builder.Services.AddSingleton<IVersionedSettingsService>(sp =>
+                new VersionedSettingsService(
+                    builder.Configuration,
+                    sp.GetService<ILogger<VersionedSettingsService>>()
+                )
+            );
+            // Configure Server Settings from configuration
+            builder.Services.Configure<GreenSwamp.Alpaca.Settings.Models.SkySettings>(builder.Configuration.GetSection("SkySettings"));
+
             #endregion Startup and Logging
 
             //ToDo you can add devices here
@@ -173,6 +186,17 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddScoped<IUserService, Data.UserService>();
 
             var app = builder.Build();
+
+            // Migrate user settings if needed
+            try
+            {
+                var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
+                await settingsService.MigrateFromPreviousVersionAsync();
+            }
+            catch (Exception ex)
+            {
+                app.Logger.LogWarning(ex, "Could not migrate settings");
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
