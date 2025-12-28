@@ -142,7 +142,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.CameraHeight = newSettings.CameraHeight;
                 SkySettings.EyepieceFs = newSettings.EyepieceFS;
                 
-                LogBridge($"Synced 30 properties from new ? old (Phase 3c)");
+                // Phase 3d: Advanced (6 properties - GotoPrecision read-only, TraceLogger not in old system)
+                SkySettings.AllowAdvancedCommandSet = newSettings.AllowAdvancedCommandSet;
+                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;
+                SkySettings.FullCurrent = newSettings.FullCurrent;
+                SkySettings.GlobalStopOn = newSettings.GlobalStopOn;
+                SkySettings.DisplayInterval = newSettings.DisplayInterval;
+                SkySettings.Refraction = newSettings.Refraction;
+                
+                LogBridge($"Synced 36 properties from new ? old (Phase 3d)");
             }
             catch (Exception ex)
             {
@@ -208,10 +216,18 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.CameraHeight = SkySettings.CameraHeight;
                 newSettings.EyepieceFS = SkySettings.EyepieceFs;
                 
+                // Phase 3d: Advanced (6 properties - GotoPrecision read-only, TraceLogger not in old system)
+                newSettings.AllowAdvancedCommandSet = SkySettings.AllowAdvancedCommandSet;
+                newSettings.MaximumSlewRate = SkySettings.MaxSlewRate;
+                newSettings.FullCurrent = SkySettings.FullCurrent;
+                newSettings.GlobalStopOn = SkySettings.GlobalStopOn;
+                newSettings.DisplayInterval = SkySettings.DisplayInterval;
+                newSettings.Refraction = SkySettings.Refraction;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 30 properties old ? new settings (Phase 3c)");
+                LogBridge("Saved 36 properties old ? new settings (Phase 3d)");
             }
             catch (Exception ex)
             {
