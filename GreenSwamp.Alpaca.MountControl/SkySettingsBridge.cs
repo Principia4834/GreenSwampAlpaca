@@ -182,7 +182,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.Pec360File = newSettings.Pec360File;
                 SkySettings.PolarLedLevel = newSettings.PolarLedLevel;
                 
-                LogBridge($"Synced 61 properties from new ? old (Phase 4 Batch 1-5)");
+                // Phase 4 Batch 6: Encoder & Hand Controller Properties
+                SkySettings.Encoders = newSettings.EncodersOn;
+                SkySettings.HcSpeed = ParseSlewSpeed(newSettings.HcSpeed);
+                SkySettings.HcMode = ParseHcMode(newSettings.HcMode);
+                SkySettings.HcAntiRa = newSettings.HcAntiRa;
+                SkySettings.HcAntiDec = newSettings.HcAntiDec;
+                SkySettings.HcFlipEw = newSettings.HcFlipEW;
+                SkySettings.HcFlipNs = newSettings.HcFlipNS;
+                SkySettings.DisableKeysOnGoTo = newSettings.DisableKeysOnGoTo;
+                SkySettings.MinPulseRa = newSettings.MinPulseRa;
+                SkySettings.MinPulseDec = newSettings.MinPulseDec;
+                
+                LogBridge($"Synced 71 properties from new ? old (Phase 4 Batch 1-6)");
             }
             catch (Exception ex)
             {
@@ -291,10 +303,22 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.Pec360File = SkySettings.Pec360File;
                 newSettings.PolarLedLevel = SkySettings.PolarLedLevel;
                 
+                // Phase 4 Batch 6: Encoder & Hand Controller Properties
+                newSettings.EncodersOn = SkySettings.Encoders;
+                newSettings.HcSpeed = SkySettings.HcSpeed.ToString();
+                newSettings.HcMode = SkySettings.HcMode.ToString();
+                newSettings.HcAntiRa = SkySettings.HcAntiRa;
+                newSettings.HcAntiDec = SkySettings.HcAntiDec;
+                newSettings.HcFlipEW = SkySettings.HcFlipEw;
+                newSettings.HcFlipNS = SkySettings.HcFlipNs;
+                newSettings.DisableKeysOnGoTo = SkySettings.DisableKeysOnGoTo;
+                newSettings.MinPulseRa = SkySettings.MinPulseRa;
+                newSettings.MinPulseDec = SkySettings.MinPulseDec;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 62 properties old ? new settings (Phase 4 Batch 1-5)");
+                LogBridge("Saved 71 properties old ? new settings (Phase 4 Batch 1-6)");
             }
             catch (Exception ex)
             {
@@ -361,6 +385,20 @@ namespace GreenSwamp.Alpaca.MountControl
                 : PecMode.PecWorm;
         }
         
+        private static SlewSpeed ParseSlewSpeed(string value)
+        {
+            return Enum.TryParse<SlewSpeed>(value, true, out var result) 
+                ? result 
+                : SlewSpeed.Eight;
+        }
+        
+        private static HcMode ParseHcMode(string value)
+        {
+            return Enum.TryParse<HcMode>(value, true, out var result) 
+                ? result 
+                : HcMode.Guiding;
+        }
+        
         #endregion
 
         private static void LogBridge(string message)
@@ -421,6 +459,18 @@ namespace GreenSwamp.Alpaca.MountControl
             public const string PecWormFile = "PecWormFile";
             public const string Pec360File = "Pec360File";
             public const string PolarLedLevel = "PolarLedLevel";
+            
+            // Phase 4 Batch 6: Encoder & Hand Controller Properties
+            public const string Encoders = "Encoders";
+            public const string HcSpeed = "HcSpeed";
+            public const string HcMode = "HcMode";
+            public const string HcAntiRa = "HcAntiRa";
+            public const string HcAntiDec = "HcAntiDec";
+            public const string HcFlipEw = "HcFlipEw";
+            public const string HcFlipNs = "HcFlipNs";
+            public const string DisableKeysOnGoTo = "DisableKeysOnGoTo";
+            public const string MinPulseRa = "MinPulseRa";
+            public const string MinPulseDec = "MinPulseDec";
         }
         
         // Helper method for setting JSON values safely
