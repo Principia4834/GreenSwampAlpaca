@@ -164,7 +164,25 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.LimitPark = newSettings.LimitPark;
                 SkySettings.ParkLimitName = newSettings.ParkLimitName;
                 
-                LogBridge($"Synced 47 properties from new ? old (Phase 4 Batch 1 + 3)");
+                // Phase 4 Batch 4: Axis Limit Properties
+                SkySettings.HourAngleLimit = newSettings.HourAngleLimit;
+                SkySettings.AxisLimitX = newSettings.AxisLimitX;
+                SkySettings.AxisUpperLimitY = newSettings.AxisUpperLimitY;
+                SkySettings.AxisLowerLimitY = newSettings.AxisLowerLimitY;
+                SkySettings.LimitTracking = newSettings.LimitTracking;
+                SkySettings.SyncLimitOn = newSettings.SyncLimitOn;
+                
+                // Phase 4 Batch 5: PEC & PPEC Properties
+                SkySettings.PecOn = newSettings.PecOn;
+                SkySettings.PPecOn = newSettings.PpecOn;
+                SkySettings.AlternatingPPec = newSettings.AlternatingPPEC;
+                SkySettings.PecMode = ParsePecMode(newSettings.PecMode);
+                SkySettings.PecOffSet = newSettings.PecOffSet;
+                SkySettings.PecWormFile = newSettings.PecWormFile;
+                SkySettings.Pec360File = newSettings.Pec360File;
+                SkySettings.PolarLedLevel = newSettings.PolarLedLevel;
+                
+                LogBridge($"Synced 61 properties from new ? old (Phase 4 Batch 1-5)");
             }
             catch (Exception ex)
             {
@@ -255,10 +273,28 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.LimitPark = SkySettings.LimitPark;
                 newSettings.ParkLimitName = SkySettings.ParkLimitName;
                 
+                // Phase 4 Batch 4: Axis Limit Properties
+                newSettings.HourAngleLimit = SkySettings.HourAngleLimit;
+                newSettings.AxisLimitX = SkySettings.AxisLimitX;
+                newSettings.AxisUpperLimitY = SkySettings.AxisUpperLimitY;
+                newSettings.AxisLowerLimitY = SkySettings.AxisLowerLimitY;
+                newSettings.LimitTracking = SkySettings.LimitTracking;
+                newSettings.SyncLimitOn = SkySettings.SyncLimitOn;
+                
+                // Phase 4 Batch 5: PEC & PPEC Properties
+                newSettings.PecOn = SkySettings.PecOn;
+                newSettings.PpecOn = SkySettings.PPecOn;
+                newSettings.AlternatingPPEC = SkySettings.AlternatingPPec;
+                newSettings.PecMode = SkySettings.PecMode.ToString();
+                newSettings.PecOffSet = SkySettings.PecOffSet;
+                newSettings.PecWormFile = SkySettings.PecWormFile;
+                newSettings.Pec360File = SkySettings.Pec360File;
+                newSettings.PolarLedLevel = SkySettings.PolarLedLevel;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 48 properties old ? new settings (Phase 4 Batch 1 + 2 + 3)");
+                LogBridge("Saved 62 properties old ? new settings (Phase 4 Batch 1-5)");
             }
             catch (Exception ex)
             {
@@ -318,6 +354,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 : DriveRate.Sidereal;
         }
         
+        private static PecMode ParsePecMode(string value)
+        {
+            return Enum.TryParse<PecMode>(value, true, out var result) 
+                ? result 
+                : PecMode.PecWorm;
+        }
+        
         #endregion
 
         private static void LogBridge(string message)
@@ -346,7 +389,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static partial class Keys
         {
             public const string HomeAxisX = "HomeAxisX";
-            public const string HomeAxisY = "HomeAxisY";
+            public const string HomeAxisY = "AutoHomeAxisY";
             public const string AutoHomeAxisX = "AutoHomeAxisX";
             public const string AutoHomeAxisY = "AutoHomeAxisY";
             public const string HomeWarning = "HomeWarning";
@@ -360,6 +403,24 @@ namespace GreenSwamp.Alpaca.MountControl
             public const string ParkDialog = "ParkDialog";
             public const string LimitPark = "LimitPark";
             public const string ParkLimitName = "ParkLimitName";
+            
+            // Phase 4 Batch 4: Axis Limit Properties
+            public const string HourAngleLimit = "HourAngleLimit";
+            public const string AxisLimitX = "AxisLimitX";
+            public const string AxisUpperLimitY = "AxisUpperLimitY";
+            public const string AxisLowerLimitY = "AxisLowerLimitY";
+            public const string LimitTracking = "LimitTracking";
+            public const string SyncLimitOn = "SyncLimitOn";
+            
+            // Phase 4 Batch 5: PEC & PPEC Properties
+            public const string PecOn = "PecOn";
+            public const string PPecOn = "PPecOn";
+            public const string AlternatingPPec = "AlternatingPPec";
+            public const string PecMode = "PecMode";
+            public const string PecOffSet = "PecOffSet";
+            public const string PecWormFile = "PecWormFile";
+            public const string Pec360File = "Pec360File";
+            public const string PolarLedLevel = "PolarLedLevel";
         }
         
         // Helper method for setting JSON values safely
