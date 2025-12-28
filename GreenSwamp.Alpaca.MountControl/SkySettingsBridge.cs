@@ -225,7 +225,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.GpsComPort = ParseGpsPortNumber(newSettings.GpsPort);
                 SkySettings.GpsBaudRate = ParseSerialSpeed(ParseGpsBaudRateString(newSettings.GpsBaudRate));
                 
-                LogBridge($"Synced 85 properties from new ? old (Phase 4 Batch 1-8)");
+                // Phase 4 Batch 9: UI & Display Settings (2 properties)
+                // Note: TraceLogger is new system only, doesn't sync from old
+                SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
+                SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
+                
+                LogBridge($"Synced 87 properties from new ? old (Phase 4 Batch 1-9)");
             }
             catch (Exception ex)
             {
@@ -364,10 +369,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 // The following are read-only in old system, so they're not synced from old ? new:
                 // HandShake, ReadTimeout, DataBits, DTREnable, RTSEnable
                 
+                // Phase 4 Batch 9: UI & Display Settings (2 properties)
+                // Note: TraceLogger is new system only, doesn't sync from old
+                newSettings.FrontGraphic = SkySettings.FrontGraphic.ToString();
+                newSettings.RaGaugeFlip = SkySettings.RaGaugeFlip;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 85 properties old ? new settings (Phase 4 Batch 1-8)");
+                LogBridge("Saved 87 properties old ? new settings (Phase 4 Batch 1-9)");
             }
             catch (Exception ex)
             {
@@ -459,6 +469,13 @@ namespace GreenSwamp.Alpaca.MountControl
             return Enum.TryParse<Handshake>(value, true, out var result) 
                 ? result 
                 : Handshake.None;
+        }
+        
+        private static FrontGraphic ParseFrontGraphic(string value)
+        {
+            return Enum.TryParse<FrontGraphic>(value, true, out var result) 
+                ? result 
+                : FrontGraphic.None;
         }
         
         private static string ParseGpsPortNumber(int portNumber)
@@ -590,6 +607,10 @@ namespace GreenSwamp.Alpaca.MountControl
             public const string RtsEnable = "RtsEnable";
             public const string GpsComPort = "GpsComPort";
             public const string GpsBaudRate = "GpsBaudRate";
+            
+            // Phase 4 Batch 9: UI & Display Settings
+            public const string FrontGraphic = "FrontGraphic";
+            public const string RaGaugeFlip = "RaGaugeFlip";
         }
         
         // Helper method for setting JSON values safely
