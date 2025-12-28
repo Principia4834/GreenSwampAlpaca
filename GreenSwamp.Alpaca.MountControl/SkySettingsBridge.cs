@@ -114,7 +114,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.AlignmentMode = ParseAlignmentMode(newSettings.AlignmentMode);
                 SkySettings.AtPark = newSettings.AtPark;
                 
-                LogBridge($"Synced 8 critical properties from new ? old");
+                // Phase 3a: Tracking & Rates (10 properties)
+                SkySettings.TrackingRate = ParseDriveRate(newSettings.TrackingRate);
+                SkySettings.SiderealRate = newSettings.SiderealRate;
+                SkySettings.LunarRate = newSettings.LunarRate;
+                SkySettings.SolarRate = newSettings.SolarRate;
+                SkySettings.KingRate = newSettings.KingRate;
+                SkySettings.CustomGearing = newSettings.CustomGearing;
+                SkySettings.CustomRa360Steps = newSettings.CustomRa360Steps;
+                SkySettings.CustomRaWormTeeth = newSettings.CustomRaWormTeeth;
+                SkySettings.CustomDec360Steps = newSettings.CustomDec360Steps;
+                SkySettings.CustomDecWormTeeth = newSettings.CustomDecWormTeeth;
+                
+                LogBridge($"Synced 18 properties from new ? old (Phase 3a)");
             }
             catch (Exception ex)
             {
@@ -152,10 +164,22 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.AlignmentMode = SkySettings.AlignmentMode.ToString();
                 newSettings.AtPark = SkySettings.AtPark;
                 
+                // Phase 3a: Tracking & Rates (10 properties)
+                newSettings.TrackingRate = SkySettings.TrackingRate.ToString();
+                newSettings.SiderealRate = SkySettings.SiderealRate;
+                newSettings.LunarRate = SkySettings.LunarRate;
+                newSettings.SolarRate = SkySettings.SolarRate;
+                newSettings.KingRate = SkySettings.KingRate;
+                newSettings.CustomGearing = SkySettings.CustomGearing;
+                newSettings.CustomRa360Steps = SkySettings.CustomRa360Steps;
+                newSettings.CustomRaWormTeeth = SkySettings.CustomRaWormTeeth;
+                newSettings.CustomDec360Steps = SkySettings.CustomDec360Steps;
+                newSettings.CustomDecWormTeeth = SkySettings.CustomDecWormTeeth;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 8 properties old ? new settings");
+                LogBridge("Saved 18 properties old ? new settings (Phase 3a)");
             }
             catch (Exception ex)
             {
@@ -206,6 +230,13 @@ namespace GreenSwamp.Alpaca.MountControl
             return Enum.TryParse<AlignmentMode>(value, true, out var result) 
                 ? result 
                 : AlignmentMode.GermanPolar;
+        }
+        
+        private static DriveRate ParseDriveRate(string value)
+        {
+            return Enum.TryParse<DriveRate>(value, true, out var result) 
+                ? result 
+                : DriveRate.Sidereal;
         }
         
         #endregion
