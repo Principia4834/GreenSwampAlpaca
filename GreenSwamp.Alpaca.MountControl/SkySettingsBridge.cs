@@ -126,7 +126,17 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.CustomDec360Steps = newSettings.CustomDec360Steps;
                 SkySettings.CustomDecWormTeeth = newSettings.CustomDecWormTeeth;
                 
-                LogBridge($"Synced 18 properties from new ? old (Phase 3a)");
+                // Phase 3b: Guiding (8 properties)
+                SkySettings.MinPulseRa = newSettings.MinPulseRa;
+                SkySettings.MinPulseDec = newSettings.MinPulseDec;
+                SkySettings.DecPulseToGoTo = newSettings.DecPulseToGoTo;
+                SkySettings.St4GuideRate = newSettings.St4Guiderate;
+                SkySettings.GuideRateOffsetX = newSettings.GuideRateOffsetX;
+                SkySettings.GuideRateOffsetY = newSettings.GuideRateOffsetY;
+                SkySettings.RaBacklash = newSettings.RaBacklash;
+                SkySettings.DecBacklash = newSettings.DecBacklash;
+                
+                LogBridge($"Synced 26 properties from new ? old (Phase 3b)");
             }
             catch (Exception ex)
             {
@@ -176,10 +186,20 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.CustomDec360Steps = SkySettings.CustomDec360Steps;
                 newSettings.CustomDecWormTeeth = SkySettings.CustomDecWormTeeth;
                 
+                // Phase 3b: Guiding (8 properties)
+                newSettings.MinPulseRa = SkySettings.MinPulseRa;
+                newSettings.MinPulseDec = SkySettings.MinPulseDec;
+                newSettings.DecPulseToGoTo = SkySettings.DecPulseToGoTo;
+                newSettings.St4Guiderate = SkySettings.St4GuideRate;
+                newSettings.GuideRateOffsetX = SkySettings.GuideRateOffsetX;
+                newSettings.GuideRateOffsetY = SkySettings.GuideRateOffsetY;
+                newSettings.RaBacklash = SkySettings.RaBacklash;
+                newSettings.DecBacklash = SkySettings.DecBacklash;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 18 properties old ? new settings (Phase 3a)");
+                LogBridge("Saved 26 properties old ? new settings (Phase 3b)");
             }
             catch (Exception ex)
             {
