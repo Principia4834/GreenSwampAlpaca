@@ -226,11 +226,22 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.GpsBaudRate = ParseSerialSpeed(ParseGpsBaudRateString(newSettings.GpsBaudRate));
                 
                 // Phase 4 Batch 9: UI & Display Settings (2 properties)
-                // Note: TraceLogger is new system only, doesn't sync from old
+                // Note: TraceLogger doesn't exist in old system, skip it
                 SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
                 SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
                 
-                LogBridge($"Synced 87 properties from new ? old (Phase 4 Batch 1-9)");
+                // Phase 4 Batch 10: Mount Behavior & Capability Settings (3 properties)
+                // Note: Several properties only exist in new system or are read-only in old system
+                // DisconnectOnPark - new system only, skip
+                // AutoTrack - read-only in old, skip (can't sync from new)
+                // ModelType - new system only, skip
+                // Pressure - new system only, skip
+                // VersionOne, NumMoveAxis, NoSyncPastMeridian - all read-only in old, skip
+                
+                // PolarMode - bidirectional sync
+                SkySettings.PolarMode = ParsePolarMode(newSettings.PolarMode);
+                
+                LogBridge($"Synced 88 properties from new ? old (Phase 4 Batch 1-10)");
             }
             catch (Exception ex)
             {
@@ -374,10 +385,26 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.FrontGraphic = SkySettings.FrontGraphic.ToString();
                 newSettings.RaGaugeFlip = SkySettings.RaGaugeFlip;
                 
+                // Phase 4 Batch 10: Mount Behavior & Capability Settings
+                // New system properties (can't sync FROM old system):
+                // - DisconnectOnPark (new only)
+                // - ModelType (new only)
+                // - Pressure (new only)
+                // - TraceLogger (already handled in Batch 9)
+                
+                // Read-only in old system (can't sync FROM old, they're computed/derived):
+                // - AutoTrack (private set in old)
+                // - VersionOne (private set in old)
+                // - NumMoveAxis (private set in old)
+                // - NoSyncPastMeridian (private set in old)
+                
+                // Bidirectional property:
+                newSettings.PolarMode = SkySettings.PolarMode.ToString();
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 87 properties old ? new settings (Phase 4 Batch 1-9)");
+                LogBridge("Saved 88 properties old ? new settings (Phase 4 Batch 1-10)");
             }
             catch (Exception ex)
             {
@@ -476,6 +503,13 @@ namespace GreenSwamp.Alpaca.MountControl
             return Enum.TryParse<FrontGraphic>(value, true, out var result) 
                 ? result 
                 : FrontGraphic.None;
+        }
+        
+        private static PolarMode ParsePolarMode(string value)
+        {
+            return Enum.TryParse<PolarMode>(value, true, out var result) 
+                ? result 
+                : PolarMode.Left; // Default to Left if parsing fails
         }
         
         private static string ParseGpsPortNumber(int portNumber)
@@ -611,6 +645,17 @@ namespace GreenSwamp.Alpaca.MountControl
             // Phase 4 Batch 9: UI & Display Settings
             public const string FrontGraphic = "FrontGraphic";
             public const string RaGaugeFlip = "RaGaugeFlip";
+            
+            // Phase 4 Batch 10: Mount Behavior & Capability Settings
+            public const string PolarMode = "PolarMode";
+            // Note: The following are new system only or read-only in old system:
+            // - DisconnectOnPark (new only)
+            // - AutoTrack (read-only in old)
+            // - ModelType (new only)
+            // - Pressure (new only)
+            // - VersionOne (read-only in old)
+            // - NumMoveAxis (read-only in old)
+            // - NoSyncPastMeridian (read-only in old)
         }
         
         // Helper method for setting JSON values safely
