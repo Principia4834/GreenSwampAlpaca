@@ -150,7 +150,21 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.DisplayInterval = newSettings.DisplayInterval;
                 SkySettings.Refraction = newSettings.Refraction;
                 
-                LogBridge($"Synced 36 properties from new ? old (Phase 3d)");
+                // Phase 4 Batch 1: Home Position Properties
+                SkySettings.HomeAxisX = newSettings.HomeAxisX;
+                SkySettings.HomeAxisY = newSettings.HomeAxisY;
+                SkySettings.AutoHomeAxisX = newSettings.AutoHomeAxisX;
+                SkySettings.AutoHomeAxisY = newSettings.AutoHomeAxisY;
+                SkySettings.HomeWarning = newSettings.HomeWarning;
+                
+                // Phase 4 Batch 3: Environmental & Park Properties
+                SkySettings.Temperature = newSettings.Temperature;
+                SkySettings.ParkName = newSettings.ParkName;
+                SkySettings.ParkDialog = newSettings.ParkDialog;
+                SkySettings.LimitPark = newSettings.LimitPark;
+                SkySettings.ParkLimitName = newSettings.ParkLimitName;
+                
+                LogBridge($"Synced 47 properties from new ? old (Phase 4 Batch 1 + 3)");
             }
             catch (Exception ex)
             {
@@ -224,10 +238,27 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.DisplayInterval = SkySettings.DisplayInterval;
                 newSettings.Refraction = SkySettings.Refraction;
                 
+                // Phase 4 Batch 1: Home Position Properties
+                newSettings.HomeAxisX = SkySettings.HomeAxisX;
+                newSettings.HomeAxisY = SkySettings.HomeAxisY;
+                newSettings.AutoHomeAxisX = SkySettings.AutoHomeAxisX;
+                newSettings.AutoHomeAxisY = SkySettings.AutoHomeAxisY;
+                newSettings.HomeWarning = SkySettings.HomeWarning;
+                
+                // Phase 4 Batch 2: Home Dialog Property
+                newSettings.HomeDialog = SkySettings.HomeDialog;
+                
+                // Phase 4 Batch 3: Environmental & Park Properties
+                newSettings.Temperature = SkySettings.Temperature;
+                newSettings.ParkName = SkySettings.ParkName;
+                newSettings.ParkDialog = SkySettings.ParkDialog;
+                newSettings.LimitPark = SkySettings.LimitPark;
+                newSettings.ParkLimitName = SkySettings.ParkLimitName;
+                
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 36 properties old ? new settings (Phase 3d)");
+                LogBridge("Saved 48 properties old ? new settings (Phase 4 Batch 1 + 2 + 3)");
             }
             catch (Exception ex)
             {
@@ -308,6 +339,76 @@ namespace GreenSwamp.Alpaca.MountControl
             catch
             {
                 // Fail silently if logging fails
+            }
+        }
+
+        // Phase 4 Batch 1: Home Position Properties
+        internal static partial class Keys
+        {
+            public const string HomeAxisX = "HomeAxisX";
+            public const string HomeAxisY = "HomeAxisY";
+            public const string AutoHomeAxisX = "AutoHomeAxisX";
+            public const string AutoHomeAxisY = "AutoHomeAxisY";
+            public const string HomeWarning = "HomeWarning";
+            
+            // Phase 4 Batch 2: Home Dialog Property
+            public const string HomeDialog = "HomeDialog";
+            
+            // Phase 4 Batch 3: Environmental & Park Properties
+            public const string Temperature = "Temperature";
+            public const string ParkName = "ParkName";
+            public const string ParkDialog = "ParkDialog";
+            public const string LimitPark = "LimitPark";
+            public const string ParkLimitName = "ParkLimitName";
+        }
+        
+        // Helper method for setting JSON values safely
+        private static void SetJsonSetting<T>(string key, T value)
+        {
+            if (_settingsService == null || _isUpdating)
+            {
+                return;
+            }
+
+            try
+            {
+                _isUpdating = true;
+                var settings = _settingsService.GetSettings();
+                
+                // Use reflection to set the property
+                var property = typeof(Settings.Models.SkySettings).GetProperty(key);
+                if (property != null && property.CanWrite)
+                {
+                    property.SetValue(settings, value);
+                    _settingsService.SaveSettingsAsync(settings).Wait();
+                    LogBridge($"Updated {key} = {value}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogBridge($"Error setting {key}: {ex.Message}");
+            }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
+        
+        // Helper method for safe execution
+        private static void SafeExecute(Action action)
+        {
+            if (_settingsService == null || _isUpdating)
+            {
+                return;
+            }
+
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                LogBridge($"Error in SafeExecute: {ex.Message}");
             }
         }
     }
