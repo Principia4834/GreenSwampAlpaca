@@ -62,6 +62,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private static MediaTimer _mediaTimer;
         private static MediaTimer _altAzTrackingTimer;
         private static Int32 _altAzTrackingLock;
+        // Phase A: Instance-based settings support
+        private static SkySettingsInstance _settings;
 
         // Slew and HC speeds
         private static double _slewSpeedOne;
@@ -597,6 +599,26 @@ namespace GreenSwamp.Alpaca.MountControl
             //}
         }
 
+        /// <summary>
+        /// Initialize SkyServer with instance-based settings
+        /// </summary>
+        public static void Initialize(SkySettingsInstance settings)
+        {
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "SkyServer initialized with instance settings"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+        }       
+        
         #endregion
 
         #region Position Update Methods

@@ -225,6 +225,12 @@ namespace GreenSwamp.Alpaca.Server
                 // This must happen BEFORE bridge initialization
                 GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Initialize();
                 Logger.LogInformation("? Phase A.2: SkySettingsInstance initialized (singleton)");
+
+                // Phase A Step A.3: Initialize SkyServer with the settings instance
+                // This connects the static SkyServer to the instance-based settings
+                var settingsInstance = app.Services.GetRequiredService<GreenSwamp.Alpaca.MountControl.SkySettingsInstance>();
+                GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
+                Logger.LogInformation("? Phase A.3: SkyServer initialized with instance settings");
                 
                 // Initialize SkySettings bridge (syncs 8 critical properties)
                 GreenSwamp.Alpaca.MountControl.SkySettingsBridge.Initialize(settingsService);

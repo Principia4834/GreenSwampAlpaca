@@ -644,6 +644,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="tracking">Optional. A boolean value indicating whether tracking should be enabled after the GoTo operation completes.
         /// Defaults to <see langword="false"/>.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if an unsupported mount type or slew type is specified.</exception>
+        // Lock for synchronizing GoToAsync operations
+        private static readonly object _goToAsyncLock = new object();
         private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false)
         {
             MonitorEntry monitorItem;
@@ -653,45 +655,55 @@ namespace GreenSwamp.Alpaca.MountControl
                 return;
             }
 
-            CancelAllAsync();
-            while (_ctsGoTo != null) Thread.Sleep(10);
-            if (IsSlewing)
+            bool trackingState;
+            SlewType startingState;
+
+            // Synchronize access to prevent race conditions with cancellation token
+            lock (_goToAsyncLock)
             {
-                SlewState = SlewType.SlewNone;
-                var stopped = AxesStopValidate();
-                if (!stopped)
+                CancelAllAsync();
+                while (_ctsGoTo != null) Thread.Sleep(10);
+                if (IsSlewing)
                 {
-                    AbortSlew(true);
-                    monitorItem = new MonitorEntry
+                    SlewState = SlewType.SlewNone;
+                    var stopped = AxesStopValidate();
+                    if (!stopped)
                     {
-                        Datetime = HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Server,
-                        Type = MonitorType.Warning,
-                        Method = MonitorLog.GetCurrentMethod(),
-                        Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = "Timeout stopping axes"
-                    };
-                    MonitorLog.LogToMonitor(monitorItem);
-                    return;
+                        AbortSlew(true);
+                        monitorItem = new MonitorEntry
+                        {
+                            Datetime = HiResDateTime.UtcNow,
+                            Device = MonitorDevice.Server,
+                            Category = MonitorCategory.Server,
+                            Type = MonitorType.Warning,
+                            Method = MonitorLog.GetCurrentMethod(),
+                            Thread = Thread.CurrentThread.ManagedThreadId,
+                            Message = "Timeout stopping axes"
+                        };
+                        MonitorLog.LogToMonitor(monitorItem);
+                        return;
+                    }
                 }
-            }
 
-            SlewState = slewState;
-            var startingState = slewState;
-            // Planetarium fix to set Tracking for non-ASCOM compliant programs - set true by GoToCoordinatesAsync()
-            var trackingState = tracking || Tracking;
-            // ToDo re-enable voice prompt later
-            // TrackingSpeak = false;
-            Tracking = false;
-            if (slewState == SlewType.SlewRaDec)
-            {
-                SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
-            }
-            IsSlewing = true;
-            goToStarted.Set(); // Signal that GoTo has started so async ASCOM operations can return with Slewing = true
+                SlewState = slewState;
+                startingState = slewState;
+                // Planetarium fix to set Tracking for non-ASCOM compliant programs - set true by GoToCoordinatesAsync()
+                trackingState = tracking || Tracking;
+                // ToDo re-enable voice prompt later
+                // TrackingSpeak = false;
+                Tracking = false;
+                if (slewState == SlewType.SlewRaDec)
+                {
+                    SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
+                }
+                IsSlewing = true;
+                goToStarted.Set(); // Signal that GoTo has started so async ASCOM operations can return with Slewing = true
 
-            // Assume fail
+                // Create new cancellation token source INSIDE the lock
+                _ctsGoTo = new CancellationTokenSource();
+            } // Release lock before starting the potentially long-running slew operation
+
+        // Assume fail
             try
             {
                 _ctsGoTo = new CancellationTokenSource();
