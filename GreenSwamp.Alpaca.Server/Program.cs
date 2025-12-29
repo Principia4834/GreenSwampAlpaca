@@ -149,6 +149,16 @@ namespace GreenSwamp.Alpaca.Server
             // Configure Server Settings from configuration
             builder.Services.Configure<GreenSwamp.Alpaca.Settings.Models.SkySettings>(builder.Configuration.GetSection("SkySettings"));
 
+            // Phase A Step A.2: Register SkySettingsInstance for dependency injection
+            // Note: The singleton is initialized later in the Phase 2 section after app.Build()
+            // This registration allows services to receive SkySettingsInstance via constructor injection
+            builder.Services.AddSingleton(sp =>
+            {
+                // The instance will be initialized after app.Build() but before first use
+                return GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Instance;
+            });
+            Logger.LogInformation("? Phase A.2: SkySettingsInstance registered in DI container");
+
             #endregion Startup and Logging
 
             //ToDo you can add devices here
@@ -210,6 +220,11 @@ namespace GreenSwamp.Alpaca.Server
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
+                
+                // Phase A Step A.2: Initialize SkySettingsInstance singleton
+                // This must happen BEFORE bridge initialization
+                GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Initialize();
+                Logger.LogInformation("? Phase A.2: SkySettingsInstance initialized (singleton)");
                 
                 // Initialize SkySettings bridge (syncs 8 critical properties)
                 GreenSwamp.Alpaca.MountControl.SkySettingsBridge.Initialize(settingsService);
