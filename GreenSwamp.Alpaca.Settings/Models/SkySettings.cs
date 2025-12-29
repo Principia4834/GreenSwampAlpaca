@@ -64,7 +64,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         // Environmental Settings
         public bool Refraction { get; set; }
         public double Temperature { get; set; }
-        public double Pressure { get; set; }
         
         // Custom Gearing
         public bool CustomGearing { get; set; }
@@ -147,15 +146,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public bool HcFlipEW { get; set; }
         public bool HcFlipNS { get; set; }
         public bool DisableKeysOnGoTo { get; set; }
-        
-        // Spiral Search Settings
-        public int SpiralPause { get; set; }
-        public int SpiralSpeed { get; set; }
-        public int SpiralFov { get; set; }
-        public int SpiralWidth { get; set; }
-        public int SpiralHeight { get; set; }
-        public double SpiralDistance { get; set; }
-        public bool SpiralLimits { get; set; }
         
         // Camera/Eyepiece Settings
         public double CameraWidth { get; set; }
