@@ -31,20 +31,19 @@
 // Dependencies: Used by both TelescopeAPI and UI partial classes
 // ============================================================================
 
+using ASCOM.Common.DeviceInterfaces;
+using ASCOM.Tools;
 using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.Simulator;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Server.MountControl;
 using GreenSwamp.Alpaca.Shared;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
-using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using ASCOM.Common.DeviceInterfaces;
-using ASCOM.Tools;
-using GreenSwamp.Alpaca.Server.MountControl;
 using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
@@ -120,7 +119,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 MonitorLog.LogToMonitor(monitorItem);
 
                 // load default or user property settings
-                SkySettings.Load();
+                // SkySettings.Load();
 
                 // load some things
                 Defaults();

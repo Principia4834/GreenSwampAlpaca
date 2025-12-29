@@ -14,17 +14,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 using ASCOM.Common.DeviceInterfaces;
-using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.MountControl.Pulses;
 using GreenSwamp.Alpaca.Shared;
+using GreenSwamp.Alpaca.Shared.Transport;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Configuration;
 using System.Numerics;
 using System.Reflection;
-using System.IO.Ports;
 using System.Runtime.CompilerServices;
-using GreenSwamp.Alpaca.MountControl.Pulses;
-using GreenSwamp.Alpaca.Shared.Transport;
 using Handshake = System.IO.Ports.Handshake;
 
 namespace GreenSwamp.Alpaca.MountControl
@@ -47,7 +45,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canAlignMode == value) return;
                 _canAlignMode = value;
-                Properties.SkyTelescope.Default.CanAlignMode = value;
+                // Properties.SkyTelescope.Default.CanAlignMode = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -61,7 +59,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canAltAz == value) return;
                 _canAltAz = value;
-                Properties.SkyTelescope.Default.CanAltAz = value;
+                // Properties.SkyTelescope.Default.CanAltAz = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -90,7 +88,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canEquatorial == value) return;
                 _canEquatorial = value;
-                Properties.SkyTelescope.Default.CanEquatorial = value;
+                // Properties.SkyTelescope.Default.CanEquatorial = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -104,7 +102,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canFindHome == value) return;
                 _canFindHome = value;
-                Properties.SkyTelescope.Default.CanFindHome = value;
+                // Properties.SkyTelescope.Default.CanFindHome = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -118,7 +116,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canLatLongElev == value) return;
                 _canLatLongElev = value;
-                Properties.SkyTelescope.Default.CanLatLongElev = value;
+                // Properties.SkyTelescope.Default.CanLatLongElev = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -132,7 +130,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canOptics == value) return;
                 _canOptics = value;
-                Properties.SkyTelescope.Default.CanOptics = value;
+                // Properties.SkyTelescope.Default.CanOptics = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -146,7 +144,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canPark == value) return;
                 _canPark = value;
-                Properties.SkyTelescope.Default.CanPark = value;
+                // Properties.SkyTelescope.Default.CanPark = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -160,7 +158,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canPulseGuide == value) return;
                 _canPulseGuide = value;
-                Properties.SkyTelescope.Default.CanPulseGuide = value;
+                // Properties.SkyTelescope.Default.CanPulseGuide = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -174,7 +172,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetEquRates == value) return;
                 _canSetEquRates = value;
-                Properties.SkyTelescope.Default.CanSetEquRates = value;
+                // Properties.SkyTelescope.Default.CanSetEquRates = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -188,7 +186,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetDeclinationRate == value) return;
                 _canSetDeclinationRate = value;
-                Properties.SkyTelescope.Default.CanSetDeclinationRate = value;
+                // Properties.SkyTelescope.Default.CanSetDeclinationRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -202,7 +200,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetGuideRates == value) return;
                 _canSetGuideRates = value;
-                Properties.SkyTelescope.Default.CanSetGuideRates = value;
+                // Properties.SkyTelescope.Default.CanSetGuideRates = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -216,7 +214,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetPark == value) return;
                 _canSetPark = value;
-                Properties.SkyTelescope.Default.CanSetPark = value;
+                // Properties.SkyTelescope.Default.CanSetPark = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -230,7 +228,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetPierSide == value) return;
                 _canSetPierSide = value;
-                Properties.SkyTelescope.Default.CanSetPierSide = value;
+                // Properties.SkyTelescope.Default.CanSetPierSide = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -244,7 +242,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetRightAscensionRate == value) return;
                 _canSetRightAscensionRate = value;
-                Properties.SkyTelescope.Default.CanSetRightAscensionRate = value;
+                // Properties.SkyTelescope.Default.CanSetRightAscensionRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -258,7 +256,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSetTracking == value) return;
                 _canSetTracking = value;
-                Properties.SkyTelescope.Default.CanSetTracking = value;
+                // Properties.SkyTelescope.Default.CanSetTracking = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -272,7 +270,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSiderealTime == value) return;
                 _canSiderealTime = value;
-                Properties.SkyTelescope.Default.CanSiderealTime = value;
+                // Properties.SkyTelescope.Default.CanSiderealTime = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -286,7 +284,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSlew == value) return;
                 _canSlew = value;
-                Properties.SkyTelescope.Default.CanSlew = value;
+                // Properties.SkyTelescope.Default.CanSlew = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -300,7 +298,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSlewAltAz == value) return;
                 _canSlewAltAz = value;
-                Properties.SkyTelescope.Default.CanSlewAltAz = value;
+                // Properties.SkyTelescope.Default.CanSlewAltAz = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -314,7 +312,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSlewAltAzAsync == value) return;
                 _canSlewAltAzAsync = value;
-                Properties.SkyTelescope.Default.CanSlewAltAzAsync = value;
+                // Properties.SkyTelescope.Default.CanSlewAltAzAsync = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -328,7 +326,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSlewAsync == value) return;
                 _canSlewAsync = value;
-                Properties.SkyTelescope.Default.CanSlewAsync = value;
+                // Properties.SkyTelescope.Default.CanSlewAsync = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -342,7 +340,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSync == value) return;
                 _canSync = value;
-                Properties.SkyTelescope.Default.CanSync = value;
+                // Properties.SkyTelescope.Default.CanSync = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -356,7 +354,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canSyncAltAz == value) return;
                 _canSyncAltAz = value;
-                Properties.SkyTelescope.Default.CanSyncAltAz = value;
+                // Properties.SkyTelescope.Default.CanSyncAltAz = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -370,7 +368,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canTrackingRates == value) return;
                 _canTrackingRates = value;
-                Properties.SkyTelescope.Default.CanTrackingRates = value;
+                // Properties.SkyTelescope.Default.CanTrackingRates = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -384,7 +382,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_canUnPark == value) return;
                 _canUnPark = value;
-                Properties.SkyTelescope.Default.CanUnpark = value;
+                // Properties.SkyTelescope.Default.CanUnpark = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -398,7 +396,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_noSyncPastMeridian == value) return;
                 _noSyncPastMeridian = value;
-                Properties.SkyTelescope.Default.NoSyncPastMeridian = value;
+                // Properties.SkyTelescope.Default.NoSyncPastMeridian = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -412,7 +410,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_numMoveAxis == value) return;
                 _numMoveAxis = value;
-                Properties.SkyTelescope.Default.NumMoveAxis = value;
+                // Properties.SkyTelescope.Default.NumMoveAxis = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -426,7 +424,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_versionOne == value) return;
                 _versionOne = value;
-                Properties.SkyTelescope.Default.VersionOne = value;
+                // Properties.SkyTelescope.Default.VersionOne = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -444,7 +442,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_alignmentMode == value) return;
                 _alignmentMode = value;
-                Properties.SkyTelescope.Default.AlignmentMode = value.ToString();
+                // Properties.SkyTelescope.Default.AlignmentMode = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -471,7 +469,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_baudRate == value) return;
                 _baudRate = value;
-                Properties.SkyTelescope.Default.BaudRate = value.ToString();
+                // Properties.SkyTelescope.Default.BaudRate = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -485,7 +483,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_allowAdvancedCommandSet == value) return;
                 _allowAdvancedCommandSet = value;
-                Properties.SkyTelescope.Default.AllowAdvancedCommandSet = value;
+                // Properties.SkyTelescope.Default.AllowAdvancedCommandSet = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -499,7 +497,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customDec360Steps == value) return;
                 _customDec360Steps = value;
-                Properties.SkyTelescope.Default.CustomDec360Steps = value;
+                // Properties.SkyTelescope.Default.CustomDec360Steps = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -513,7 +511,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customDecTrackingOffset == value) return;
                 _customDecTrackingOffset = value;
-                Properties.SkyTelescope.Default.CustomDecTrackingOffset = value;
+                // Properties.SkyTelescope.Default.CustomDecTrackingOffset = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -527,7 +525,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customDecWormTeeth == value) return;
                 _customDecWormTeeth = value;
-                Properties.SkyTelescope.Default.CustomDecWormTeeth = value;
+                // Properties.SkyTelescope.Default.CustomDecWormTeeth = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -541,7 +539,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customRa360Steps == value) return;
                 _customRa360Steps = value;
-                Properties.SkyTelescope.Default.CustomRa360Steps = value;
+                // Properties.SkyTelescope.Default.CustomRa360Steps = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -555,7 +553,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customRaTrackingOffset == value) return;
                 _customRaTrackingOffset = value;
-                Properties.SkyTelescope.Default.CustomRaTrackingOffset = value;
+                // Properties.SkyTelescope.Default.CustomRaTrackingOffset = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -569,7 +567,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customRaWormTeeth == value) return;
                 _customRaWormTeeth = value;
-                Properties.SkyTelescope.Default.CustomRaWormTeeth = value;
+                // Properties.SkyTelescope.Default.CustomRaWormTeeth = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -583,7 +581,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_customGearing == value) return;
                 _customGearing = value;
-                Properties.SkyTelescope.Default.CustomGearing = value;
+                // Properties.SkyTelescope.Default.CustomGearing = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -599,7 +597,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _gpsComPort = value;
                 var i = Strings.GetNumberFromString(value);
                 var vi = i ?? 0;
-                Properties.SkyTelescope.Default.GpsPort = vi;
+                // Properties.SkyTelescope.Default.GpsPort = vi;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{vi}");
                 OnStaticPropertyChanged();
             }
@@ -613,7 +611,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_gpsBaudRate == value) return;
                 _gpsBaudRate = value;
-                Properties.SkyTelescope.Default.GpsBaudRate = value.ToString();
+                // Properties.SkyTelescope.Default.GpsBaudRate = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
             }
         }
@@ -626,7 +624,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_equatorialCoordinateType == value) return;
                 _equatorialCoordinateType = value;
-                Properties.SkyTelescope.Default.EquatorialCoordinateType = value.ToString();
+                // Properties.SkyTelescope.Default.EquatorialCoordinateType = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -647,7 +645,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyServer.RateRaOrg = 0;
                     SkyServer.RateRa = 0;
                 }
-                Properties.SkyTelescope.Default.TrackingRate = value.ToString();
+                // Properties.SkyTelescope.Default.TrackingRate = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -661,7 +659,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_frontGraphic == value) return;
                 _frontGraphic = value;
-                Properties.SkyTelescope.Default.FrontGraphic = value.ToString();
+                // Properties.SkyTelescope.Default.FrontGraphic = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -675,7 +673,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hcSpeed == value) return;
                 _hcSpeed = value;
-                Properties.SkyTelescope.Default.HcSpeed = value.ToString();
+                // Properties.SkyTelescope.Default.HcSpeed = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -689,7 +687,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_handShake == value) return;
                 _handShake = value;
-                Properties.SkyTelescope.Default.HandShake = value.ToString();
+                // Properties.SkyTelescope.Default.HandShake = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
             }
         }
@@ -702,7 +700,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hcMode == value) return;
                 _hcMode = value;
-                Properties.SkyTelescope.Default.HCMode = value.ToString();
+                // Properties.SkyTelescope.Default.HCMode = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -716,7 +714,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_mount == value) return;
                 _mount = value;
-                Properties.SkyTelescope.Default.Mount = $"{value}";
+                // Properties.SkyTelescope.Default.Mount = $"{value}";
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 SkyServer.IsMountRunning = false;
                 OnStaticPropertyChanged();
@@ -731,7 +729,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_pecMode == value) return;
                 _pecMode = value;
-                Properties.SkyTelescope.Default.PecMode = $"{value}";
+                // Properties.SkyTelescope.Default.PecMode = $"{value}";
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
             }
@@ -745,7 +743,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_alternatingPPec == value) return;
                 _alternatingPPec = value;
-                Properties.SkyTelescope.Default.AlternatingPPEC = value;
+                // Properties.SkyTelescope.Default.AlternatingPPEC = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
                 OnStaticPropertyChanged();
                 SkyServer.SkyTasks(MountTaskName.AlternatingPpec);
@@ -760,7 +758,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_apertureArea - value) < 0.0) return;
                 _apertureArea = value;
-                Properties.SkyTelescope.Default.ApertureArea = value;
+                // Properties.SkyTelescope.Default.ApertureArea = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -774,7 +772,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_apertureDiameter - value) < 0.0) return;
                 _apertureDiameter = value;
-                Properties.SkyTelescope.Default.ApertureDiameter = value;
+                // Properties.SkyTelescope.Default.ApertureDiameter = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -788,7 +786,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_atPark == value) return;
                 _atPark = value;
-                Properties.SkyTelescope.Default.AtPark = value;
+                // Properties.SkyTelescope.Default.AtPark = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -804,7 +802,7 @@ namespace GreenSwamp.Alpaca.MountControl
             set
             {
                 _autoHomeAxisX = value;
-                Properties.SkyTelescope.Default.AutoHomeAxisX = value;
+                // Properties.SkyTelescope.Default.AutoHomeAxisX = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -821,7 +819,7 @@ namespace GreenSwamp.Alpaca.MountControl
             set
             {
                 _autoHomeAxisY = value;
-                Properties.SkyTelescope.Default.AutoHomeAxisY = value;
+                // Properties.SkyTelescope.Default.AutoHomeAxisY = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -835,7 +833,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_autoTrack == value) return;
                 _autoTrack = value;
-                Properties.SkyTelescope.Default.AutoTrack = value;
+                // Properties.SkyTelescope.Default.AutoTrack = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -849,7 +847,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_axisTrackingLimit - value) < 0.0000000000001) return;
                 _axisTrackingLimit = value;
-                Properties.SkyTelescope.Default.AxisTrackingLimit = value;
+                // Properties.SkyTelescope.Default.AxisTrackingLimit = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -863,7 +861,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_axisHzTrackingLimit - value) < 0.0000000000001) return;
                 _axisHzTrackingLimit = value;
-                Properties.SkyTelescope.Default.AxisHzTrackingLimit = value;
+                // Properties.SkyTelescope.Default.AxisHzTrackingLimit = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -877,7 +875,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_cameraHeight - value) < 0.0) return;
                 _cameraHeight = value;
-                Properties.SkyTelescope.Default.CameraHeight = value;
+                // Properties.SkyTelescope.Default.CameraHeight = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -891,7 +889,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_cameraWidth - value) < 0.0) return;
                 _cameraWidth = value;
-                Properties.SkyTelescope.Default.CameraWidth = value;
+                // Properties.SkyTelescope.Default.CameraWidth = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -905,7 +903,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_port == value){return;}
                 _port = value;
-                Properties.SkyTelescope.Default.Port = value;
+                // Properties.SkyTelescope.Default.Port = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, value);
                 OnStaticPropertyChanged();
             }
@@ -919,7 +917,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_dataBits == value) return;
                 _dataBits = value;
-                Properties.SkyTelescope.Default.DataBits = value;
+                // Properties.SkyTelescope.Default.DataBits = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -933,7 +931,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_decBacklash == value) return;
                 _decBacklash = value;
-                Properties.SkyTelescope.Default.DecBacklash = value;
+                // Properties.SkyTelescope.Default.DecBacklash = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -947,7 +945,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_decPulseToGoTo == value) return;
                 _decPulseToGoTo = value;
-                Properties.SkyTelescope.Default.DecPulseToGoTo = value;
+                // Properties.SkyTelescope.Default.DecPulseToGoTo = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SkyTasks(MountTaskName.DecPulseToGoTo);
@@ -962,7 +960,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_disableKeysOnGoTo == value) return;
                 _disableKeysOnGoTo = value;
-                Properties.SkyTelescope.Default.DisableKeysOnGoTo = value;
+                // Properties.SkyTelescope.Default.DisableKeysOnGoTo = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -976,7 +974,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_dtrEnable == value) return;
                 _dtrEnable = value;
-                Properties.SkyTelescope.Default.DTREnable = value;
+                // Properties.SkyTelescope.Default.DTREnable = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -990,7 +988,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_elevation - value) <= 0) return;
                 _elevation = value;
-                Properties.SkyTelescope.Default.Elevation = value;
+                // Properties.SkyTelescope.Default.Elevation = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1004,7 +1002,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_encoders == value) return;
                 _encoders = value;
-                Properties.SkyTelescope.Default.EncodersOn = value;
+                // Properties.SkyTelescope.Default.EncodersOn = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 SkyServer.SkyTasks(MountTaskName.Encoders);
             }
@@ -1018,7 +1016,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_eyepieceFs - value) < 0.0) return;
                 _eyepieceFs = value;
-                Properties.SkyTelescope.Default.EyepieceFS = value;
+                // Properties.SkyTelescope.Default.EyepieceFS = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1032,7 +1030,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_fullCurrent == value) return;
                 _fullCurrent = value;
-                Properties.SkyTelescope.Default.FullCurrent = value;
+                // Properties.SkyTelescope.Default.FullCurrent = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 SkyServer.SkyTasks(MountTaskName.FullCurrent);
             }
@@ -1046,7 +1044,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_focalLength - value) <= 0) return;
                 _focalLength = value;
-                Properties.SkyTelescope.Default.FocalLength = value;
+                // Properties.SkyTelescope.Default.FocalLength = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1060,7 +1058,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_globalStopOn == value) return;
                 _globalStopOn = value;
-                Properties.SkyTelescope.Default.GlobalStopOn = value;
+                // Properties.SkyTelescope.Default.GlobalStopOn = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
             }
         }
@@ -1072,7 +1070,7 @@ namespace GreenSwamp.Alpaca.MountControl
             private set
             {
                 _gotoPrecision = value;
-                Properties.SkyTelescope.Default.GotoPrecision = value;
+                // Properties.SkyTelescope.Default.GotoPrecision = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1086,7 +1084,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_guideRateOffsetX - value) < 0.0000000000001) return;
                 _guideRateOffsetX = value;
-                Properties.SkyTelescope.Default.GuideRateOffsetX = value;
+                // Properties.SkyTelescope.Default.GuideRateOffsetX = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SetGuideRates();
@@ -1101,7 +1099,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_guideRateOffsetY - value) < 0.0000000000001) return;
                 _guideRateOffsetY = value;
-                Properties.SkyTelescope.Default.GuideRateOffsetY = value;
+                // Properties.SkyTelescope.Default.GuideRateOffsetY = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SetGuideRates();
@@ -1116,7 +1114,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hcAntiDec == value) return;
                 _hcAntiDec = value;
-                Properties.SkyTelescope.Default.HcAntiDec = value;
+                // Properties.SkyTelescope.Default.HcAntiDec = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1130,7 +1128,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hcAntiRa == value) return;
                 _hcAntiRa = value;
-                Properties.SkyTelescope.Default.HcAntiRa = value;
+                // Properties.SkyTelescope.Default.HcAntiRa = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1144,7 +1142,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hcFlipEw == value) return;
                 _hcFlipEw = value;
-                Properties.SkyTelescope.Default.HcFlipEW = value;
+                // Properties.SkyTelescope.Default.HcFlipEW = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1158,7 +1156,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hcFlipNs == value) return;
                 _hcFlipNs = value;
-                Properties.SkyTelescope.Default.HcFlipNS = value;
+                // Properties.SkyTelescope.Default.HcFlipNS = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1173,7 +1171,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // if (_hcPulseGuides == value) return;
                 _hcPulseGuides = value.OrderBy(hcPulseGuide => hcPulseGuide.Speed).ToList();
                 var output = JsonConvert.SerializeObject(_hcPulseGuides);
-                Properties.SkyTelescope.Default.HcPulseGuides = output;
+                // Properties.SkyTelescope.Default.HcPulseGuides = output;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{output}");
                 OnStaticPropertyChanged();
             }
@@ -1193,7 +1191,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_homeAxisX - value) <= 0.0000000000001) return;
                 _homeAxisX = value;
-                Properties.SkyTelescope.Default.HomeAxisX = value;
+                // Properties.SkyTelescope.Default.HomeAxisX = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1213,7 +1211,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_homeAxisY - value) <= 0.0000000000001) return;
                 _homeAxisY = value;
-                Properties.SkyTelescope.Default.HomeAxisY = value;
+                // Properties.SkyTelescope.Default.HomeAxisY = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1227,7 +1225,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_hourAngleLimit - value) < 0.0000000000001) return;
                 _hourAngleLimit = value;
-                Properties.SkyTelescope.Default.HourAngleLimit = value;
+                // Properties.SkyTelescope.Default.HourAngleLimit = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1241,7 +1239,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_homeDialog == value) return;
                 _homeDialog = value;
-                Properties.SkyTelescope.Default.HomeDialog = value;
+                // Properties.SkyTelescope.Default.HomeDialog = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1255,7 +1253,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_homeWarning == value) return;
                 _homeWarning = value;
-                Properties.SkyTelescope.Default.HomeWarning = value;
+                // Properties.SkyTelescope.Default.HomeWarning = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1269,7 +1267,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hzLimitTracking == value) return;
                 _hzLimitTracking = value;
-                Properties.SkyTelescope.Default.HzLimitTracking = value;
+                // Properties.SkyTelescope.Default.HzLimitTracking = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1283,7 +1281,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_hzLimitPark == value) return;
                 _hzLimitPark = value;
-                Properties.SkyTelescope.Default.HzLimitPark = value;
+                // Properties.SkyTelescope.Default.HzLimitPark = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1297,7 +1295,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_instrumentDescription == value) return;
                 _instrumentDescription = value;
-                Properties.SkyTelescope.Default.InstrumentDescription = value;
+                // Properties.SkyTelescope.Default.InstrumentDescription = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1311,7 +1309,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_instrumentName == value) return;
                 _instrumentName = value;
-                Properties.SkyTelescope.Default.InstrumentName = value;
+                // Properties.SkyTelescope.Default.InstrumentName = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1325,7 +1323,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_kingRate - value) < 0.0000000000001) return;
                 _kingRate = value;
-                Properties.SkyTelescope.Default.KingRate = value;
+                // Properties.SkyTelescope.Default.KingRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1339,7 +1337,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_latitude - value) < 0.0000000000001) return;
                 _latitude = value;
-                Properties.SkyTelescope.Default.Latitude = value;
+                // Properties.SkyTelescope.Default.Latitude = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 SkyServer.SkyTasks(MountTaskName.SetSouthernHemisphere);
                 OnStaticPropertyChanged();
@@ -1354,7 +1352,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_limitTracking == value) return;
                 _limitTracking = value;
-                Properties.SkyTelescope.Default.LimitTracking = value;
+                // Properties.SkyTelescope.Default.LimitTracking = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1368,7 +1366,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_limitPark == value) return;
                 _limitPark = value;
-                Properties.SkyTelescope.Default.LimitPark = value;
+                // Properties.SkyTelescope.Default.LimitPark = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1382,7 +1380,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_longitude - value) < 0.0000000000001) return;
                 _longitude = value;
-                Properties.SkyTelescope.Default.Longitude = value;
+                // Properties.SkyTelescope.Default.Longitude = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1396,7 +1394,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_lunarRate - value) < 0.0000000000001) return;
                 _lunarRate = value;
-                Properties.SkyTelescope.Default.LunarRate = value;
+                // Properties.SkyTelescope.Default.LunarRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1410,7 +1408,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_maxSlewRate - value) < 0.0000000000001) return;
                 _maxSlewRate = value;
-                Properties.SkyTelescope.Default.MaximumSlewRate = value;
+                // Properties.SkyTelescope.Default.MaximumSlewRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SetSlewRates(value);
@@ -1425,7 +1423,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_minPulseDec == value) return;
                 _minPulseDec = value;
-                Properties.SkyTelescope.Default.MinPulseDec = value;
+                // Properties.SkyTelescope.Default.MinPulseDec = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SkyTasks(MountTaskName.MinPulseDec);
@@ -1440,7 +1438,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_minPulseRa == value) return;
                 _minPulseRa = value;
-                Properties.SkyTelescope.Default.MinPulseRa = value;
+                // Properties.SkyTelescope.Default.MinPulseRa = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SkyTasks(MountTaskName.MinPulseRa);
@@ -1461,7 +1459,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _parkAxes = value;
                 value[0] = Math.Round(value[0], 6);
                 value[1] = Math.Round(value[1], 6);
-                Properties.SkyTelescope.Default.ParkAxes = JsonConvert.SerializeObject(value);
+                // Properties.SkyTelescope.Default.ParkAxes = JsonConvert.SerializeObject(value);
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1475,7 +1473,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_parkDialog == value) return;
                 _parkDialog = value;
-                Properties.SkyTelescope.Default.ParkDialog = value;
+                // Properties.SkyTelescope.Default.ParkDialog = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1489,7 +1487,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_pecOn == value) return;
                 _pecOn = value;
-                Properties.SkyTelescope.Default.PecOn = value;
+                // Properties.SkyTelescope.Default.PecOn = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1503,7 +1501,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_pecOffSet == value) return;
                 _pecOffSet = value;
-                Properties.SkyTelescope.Default.PecOffSet = value;
+                // Properties.SkyTelescope.Default.PecOffSet = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1517,7 +1515,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_pecWormFile == value) return;
                 _pecWormFile = value;
-                Properties.SkyTelescope.Default.PecWormFile = value;
+                // Properties.SkyTelescope.Default.PecWormFile = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1531,7 +1529,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_pec360File == value) return;
                 _pec360File = value;
-                Properties.SkyTelescope.Default.Pec360File = value;
+                // Properties.SkyTelescope.Default.Pec360File = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1545,7 +1543,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_pPecOn == value) return;
                 _pPecOn = value;
-                Properties.SkyTelescope.Default.PpecOn = value;
+                // Properties.SkyTelescope.Default.PpecOn = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1559,7 +1557,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_polarLedLevel == value) return;
                 _polarLedLevel = value;
-                Properties.SkyTelescope.Default.PolarLedLevel = value;
+                // Properties.SkyTelescope.Default.PolarLedLevel = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1573,7 +1571,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_polarMode == value) return;
                 _polarMode = value;
-                Properties.SkyTelescope.Default.PolarMode = value.ToString();
+                // Properties.SkyTelescope.Default.PolarMode = value.ToString();
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1601,7 +1599,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_raBacklash == value) return;
                 _raBacklash = value;
-                Properties.SkyTelescope.Default.RaBacklash = value;
+                // Properties.SkyTelescope.Default.RaBacklash = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1615,7 +1613,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_readTimeout == value) return;
                 _readTimeout = value;
-                Properties.SkyTelescope.Default.ReadTimeout = value;
+                // Properties.SkyTelescope.Default.ReadTimeout = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1629,7 +1627,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_refraction == value) return;
                 _refraction = value;
-                Properties.SkyTelescope.Default.Refraction = value;
+                // Properties.SkyTelescope.Default.Refraction = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1643,7 +1641,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_raGaugeFlip == value) return;
                 _raGaugeFlip = value;
-                Properties.SkyTelescope.Default.RaGaugeFlip = value;
+                // Properties.SkyTelescope.Default.RaGaugeFlip = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1670,7 +1668,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_rtsEnable == value) return;
                 _rtsEnable = value;
-                Properties.SkyTelescope.Default.RTSEnable = value;
+                // Properties.SkyTelescope.Default.RTSEnable = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1684,7 +1682,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_axisLimitX - value) < 0.0000000000001) return;
                 _axisLimitX = value;
-                Properties.SkyTelescope.Default.AxisLimitX = value;
+                // Properties.SkyTelescope.Default.AxisLimitX = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1698,7 +1696,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_siderealRate - value) < 0.0000000000001) return;
                 _siderealRate = value;
-                Properties.SkyTelescope.Default.SiderealRate = value;
+                // Properties.SkyTelescope.Default.SiderealRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1811,7 +1809,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_displayInterval == value) return;
                 _displayInterval = value;
-                Properties.SkyTelescope.Default.DisplayInterval = value;
+                // Properties.SkyTelescope.Default.DisplayInterval = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1825,7 +1823,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_st4GuideRate == value) return;
                 _st4GuideRate = value;
-                Properties.SkyTelescope.Default.St4Guiderate = value;
+                // Properties.SkyTelescope.Default.St4Guiderate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
                 SkyServer.SkyTasks(MountTaskName.SetSt4Guiderate);
@@ -1840,7 +1838,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_solarRate - value) < 0.0000000000001) return;
                 _solarRate = value;
-                Properties.SkyTelescope.Default.SolarRate = value;
+                // Properties.SkyTelescope.Default.SolarRate = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1854,7 +1852,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_syncLimit == value) return;
                 _syncLimit = value;
-                Properties.SkyTelescope.Default.SyncLimit = value;
+                // Properties.SkyTelescope.Default.SyncLimit = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -1867,7 +1865,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_syncLimitOn == value) return;
                 _syncLimitOn = value;
-                Properties.SkyTelescope.Default.SyncLimitOn = value;
+                // Properties.SkyTelescope.Default.SyncLimitOn = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -1880,7 +1878,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_temperature - value) < 0) return;
                 _temperature = value;
-                Properties.SkyTelescope.Default.Temperature = value;
+                // Properties.SkyTelescope.Default.Temperature = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1913,7 +1911,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     _parkPositions = value.OrderBy(parkPosition => parkPosition.Name).ToList();
                     var output = JsonConvert.SerializeObject(_parkPositions);
-                    Properties.SkyTelescope.Default.ParkPositions = output;
+                    // Properties.SkyTelescope.Default.ParkPositions = output;
                     LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{output}");
                     OnStaticPropertyChanged();
                 }
@@ -1928,7 +1926,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_parkName == value) return;
                 _parkName = value;
-                Properties.SkyTelescope.Default.ParkName = value;
+                // Properties.SkyTelescope.Default.ParkName = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1942,7 +1940,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_parkLimitName == value) return;
                 _parkLimitName = value;
-                Properties.SkyTelescope.Default.ParkLimitName = value;
+                // Properties.SkyTelescope.Default.ParkLimitName = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1956,7 +1954,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_parkHzLimitName == value) return;
                 _parkHzLimitName = value;
-                Properties.SkyTelescope.Default.ParkHzLimitName = value;
+                // Properties.SkyTelescope.Default.ParkHzLimitName = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1970,7 +1968,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_altAzTrackingUpdateInterval == value) return;
                 _altAzTrackingUpdateInterval = value;
-                Properties.SkyTelescope.Default.AltAzTrackingUpdateInterval = value;
+                // Properties.SkyTelescope.Default.AltAzTrackingUpdateInterval = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1984,7 +1982,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_axisLowerLimitY - value) < 0.000001) return;
                 _axisLowerLimitY = value;
-                Properties.SkyTelescope.Default.AxisLowerLimitY = value;
+                // Properties.SkyTelescope.Default.AxisLowerLimitY = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -1998,7 +1996,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_axisUpperLimitY - value) < 0.000001) return;
                 _axisUpperLimitY = value;
-                Properties.SkyTelescope.Default.AxisUpperLimitY = value;
+                // Properties.SkyTelescope.Default.AxisUpperLimitY = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -2015,167 +2013,168 @@ namespace GreenSwamp.Alpaca.MountControl
         /// initialize  the application's state. It sets various capabilities, server configurations, and mount
         /// properties  based on the loaded settings. This method also handles deserialization of complex settings and 
         /// ensures that all required properties are properly initialized.</remarks>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         public static void Load()
         {
-            // Load settings from user.config handles create new, update or migrate settings as needed 
-            LoadConfigSettings();
+            //// Load settings from user.config handles create new, update or migrate settings as needed 
+            //LoadConfigSettings();
 
-            //capabilities
-            CanAlignMode = Properties.SkyTelescope.Default.CanAlignMode;
-            CanAltAz = Properties.SkyTelescope.Default.CanAltAz;
-            //CanDoesRefraction = Properties.SkyTelescope.Default.CanDoesRefraction;
-            CanEquatorial = Properties.SkyTelescope.Default.CanEquatorial;
-            CanFindHome = Properties.SkyTelescope.Default.CanFindHome;
-            CanLatLongElev = Properties.SkyTelescope.Default.CanLatLongElev;
-            CanOptics = Properties.SkyTelescope.Default.CanOptics;
-            CanPark = Properties.SkyTelescope.Default.CanPark;
-            CanPulseGuide = Properties.SkyTelescope.Default.CanPulseGuide;
-            CanSetEquRates = Properties.SkyTelescope.Default.CanSetEquRates;
-            CanSetDeclinationRate = Properties.SkyTelescope.Default.CanSetDeclinationRate;
-            CanSetGuideRates = Properties.SkyTelescope.Default.CanSetGuideRates;
-            CanSetPark = Properties.SkyTelescope.Default.CanSetPark;
-            CanSetPierSide = Properties.SkyTelescope.Default.CanSetPierSide;
-            CanSetRightAscensionRate = Properties.SkyTelescope.Default.CanSetRightAscensionRate;
-            CanSetTracking = Properties.SkyTelescope.Default.CanSetTracking;
-            CanSiderealTime = Properties.SkyTelescope.Default.CanSiderealTime;
-            CanSlew = Properties.SkyTelescope.Default.CanSlew;
-            CanSlewAltAz = Properties.SkyTelescope.Default.CanSlewAltAz;
-            CanSlewAltAzAsync = Properties.SkyTelescope.Default.CanSlewAltAzAsync;
-            CanSlewAsync = Properties.SkyTelescope.Default.CanSlewAsync;
-            CanSync = Properties.SkyTelescope.Default.CanSync;
-            CanSyncAltAz = Properties.SkyTelescope.Default.CanSyncAltAz;
-            CanTrackingRates = Properties.SkyTelescope.Default.CanTrackingRates;
-            CanUnPark = Properties.SkyTelescope.Default.CanUnpark;
-            NoSyncPastMeridian = Properties.SkyTelescope.Default.NoSyncPastMeridian;
-            NumMoveAxis = Properties.SkyTelescope.Default.NumMoveAxis;
-            VersionOne = Properties.SkyTelescope.Default.VersionOne;
+            ////capabilities
+            //CanAlignMode = Properties.SkyTelescope.Default.CanAlignMode;
+            //CanAltAz = Properties.SkyTelescope.Default.CanAltAz;
+            ////CanDoesRefraction = Properties.SkyTelescope.Default.CanDoesRefraction;
+            //CanEquatorial = Properties.SkyTelescope.Default.CanEquatorial;
+            //CanFindHome = Properties.SkyTelescope.Default.CanFindHome;
+            //CanLatLongElev = Properties.SkyTelescope.Default.CanLatLongElev;
+            //CanOptics = Properties.SkyTelescope.Default.CanOptics;
+            //CanPark = Properties.SkyTelescope.Default.CanPark;
+            //CanPulseGuide = Properties.SkyTelescope.Default.CanPulseGuide;
+            //CanSetEquRates = Properties.SkyTelescope.Default.CanSetEquRates;
+            //CanSetDeclinationRate = Properties.SkyTelescope.Default.CanSetDeclinationRate;
+            //CanSetGuideRates = Properties.SkyTelescope.Default.CanSetGuideRates;
+            //CanSetPark = Properties.SkyTelescope.Default.CanSetPark;
+            //CanSetPierSide = Properties.SkyTelescope.Default.CanSetPierSide;
+            //CanSetRightAscensionRate = Properties.SkyTelescope.Default.CanSetRightAscensionRate;
+            //CanSetTracking = Properties.SkyTelescope.Default.CanSetTracking;
+            //CanSiderealTime = Properties.SkyTelescope.Default.CanSiderealTime;
+            //CanSlew = Properties.SkyTelescope.Default.CanSlew;
+            //CanSlewAltAz = Properties.SkyTelescope.Default.CanSlewAltAz;
+            //CanSlewAltAzAsync = Properties.SkyTelescope.Default.CanSlewAltAzAsync;
+            //CanSlewAsync = Properties.SkyTelescope.Default.CanSlewAsync;
+            //CanSync = Properties.SkyTelescope.Default.CanSync;
+            //CanSyncAltAz = Properties.SkyTelescope.Default.CanSyncAltAz;
+            //CanTrackingRates = Properties.SkyTelescope.Default.CanTrackingRates;
+            //CanUnPark = Properties.SkyTelescope.Default.CanUnpark;
+            //NoSyncPastMeridian = Properties.SkyTelescope.Default.NoSyncPastMeridian;
+            //NumMoveAxis = Properties.SkyTelescope.Default.NumMoveAxis;
+            //VersionOne = Properties.SkyTelescope.Default.VersionOne;
 
-            //Server
+            ////Server
 
-            Enum.TryParse<EquatorialCoordinateType>(Properties.SkyTelescope.Default.EquatorialCoordinateType, true, out var eParse);
-            EquatorialCoordinateType = eParse;
-            Enum.TryParse<AlignmentMode>(Properties.SkyTelescope.Default.AlignmentMode, true, out var aParse);
-            AlignmentMode = aParse;
-            Enum.TryParse<FrontGraphic>(Properties.SkyTelescope.Default.FrontGraphic, true, out var fParse);
-            FrontGraphic = fParse;
-            Enum.TryParse<DriveRate>(Properties.SkyTelescope.Default.TrackingRate, true, out var dParse);
-            TrackingRate = dParse;
-            Enum.TryParse<SlewSpeed>(Properties.SkyTelescope.Default.HcSpeed, true, out var hParse);
-            HcSpeed = hParse;
-            var hcModeBol = Enum.TryParse<HcMode>(Properties.SkyTelescope.Default.HCMode, true, out var hcParse);
-            if (!hcModeBol) hcParse = HcMode.Guiding;// getting rid of compass mode
-            HcMode = hcParse;
-            Enum.TryParse<MountType>(Properties.SkyTelescope.Default.Mount, true, out var mountParse);
-            Mount = mountParse;
-            Enum.TryParse<Handshake>(Properties.SkyTelescope.Default.HandShake, true, out var hsParse);
-            HandShake = hsParse;
-            Enum.TryParse<SerialSpeed>(Properties.SkyTelescope.Default.BaudRate, true, out var bRateParse);
-            BaudRate = bRateParse;
-            Enum.TryParse<SerialSpeed>(Properties.SkyTelescope.Default.GpsBaudRate, true, out var grateParse);
-            GpsBaudRate = grateParse;
-            Enum.TryParse<PecMode>(Properties.SkyTelescope.Default.PecMode, true, out var pecParse);
-            PecMode = pecParse;
+            //Enum.TryParse<EquatorialCoordinateType>(Properties.SkyTelescope.Default.EquatorialCoordinateType, true, out var eParse);
+            //EquatorialCoordinateType = eParse;
+            //Enum.TryParse<AlignmentMode>(Properties.SkyTelescope.Default.AlignmentMode, true, out var aParse);
+            //AlignmentMode = aParse;
+            //Enum.TryParse<FrontGraphic>(Properties.SkyTelescope.Default.FrontGraphic, true, out var fParse);
+            //FrontGraphic = fParse;
+            //Enum.TryParse<DriveRate>(Properties.SkyTelescope.Default.TrackingRate, true, out var dParse);
+            //TrackingRate = dParse;
+            //Enum.TryParse<SlewSpeed>(Properties.SkyTelescope.Default.HcSpeed, true, out var hParse);
+            //HcSpeed = hParse;
+            //var hcModeBol = Enum.TryParse<HcMode>(Properties.SkyTelescope.Default.HCMode, true, out var hcParse);
+            //if (!hcModeBol) hcParse = HcMode.Guiding;// getting rid of compass mode
+            //HcMode = hcParse;
+            //Enum.TryParse<MountType>(Properties.SkyTelescope.Default.Mount, true, out var mountParse);
+            //Mount = mountParse;
+            //Enum.TryParse<Handshake>(Properties.SkyTelescope.Default.HandShake, true, out var hsParse);
+            //HandShake = hsParse;
+            //Enum.TryParse<SerialSpeed>(Properties.SkyTelescope.Default.BaudRate, true, out var bRateParse);
+            //BaudRate = bRateParse;
+            //Enum.TryParse<SerialSpeed>(Properties.SkyTelescope.Default.GpsBaudRate, true, out var grateParse);
+            //GpsBaudRate = grateParse;
+            //Enum.TryParse<PecMode>(Properties.SkyTelescope.Default.PecMode, true, out var pecParse);
+            //PecMode = pecParse;
 
-            AllowAdvancedCommandSet = Properties.SkyTelescope.Default.AllowAdvancedCommandSet;
-            AlternatingPPec = Properties.SkyTelescope.Default.AlternatingPPEC;
-            ApertureArea = Properties.SkyTelescope.Default.ApertureArea;
-            ApertureDiameter = Properties.SkyTelescope.Default.ApertureDiameter;
-            AtPark = Properties.SkyTelescope.Default.AtPark;
-            AutoTrack = Properties.SkyTelescope.Default.AutoTrack;
-            AxisLowerLimitY = Properties.SkyTelescope.Default.AxisLowerLimitY;
-            AxisModelOffsets = JsonConvert.DeserializeObject<Vector3>(Properties.SkyTelescope.Default.AxisModelOffsets);
-            AxisUpperLimitY = Properties.SkyTelescope.Default.AxisUpperLimitY;
-            AxisLimitX = Properties.SkyTelescope.Default.AxisLimitX;
-            AxisTrackingLimit = Properties.SkyTelescope.Default.AxisTrackingLimit;
-            AxisHzTrackingLimit = Properties.SkyTelescope.Default.AxisHzTrackingLimit;
-            CameraHeight = Properties.SkyTelescope.Default.CameraHeight;
-            CameraWidth = Properties.SkyTelescope.Default.CameraWidth;
-            Port = Properties.SkyTelescope.Default.Port;
-            CustomDec360Steps = Properties.SkyTelescope.Default.CustomDec360Steps;
-            CustomDecTrackingOffset = Properties.SkyTelescope.Default.CustomDecTrackingOffset;
-            CustomDecWormTeeth = Properties.SkyTelescope.Default.CustomDecWormTeeth;
-            CustomRa360Steps = Properties.SkyTelescope.Default.CustomRa360Steps;
-            CustomRaTrackingOffset = Properties.SkyTelescope.Default.CustomRaTrackingOffset;
-            CustomRaWormTeeth = Properties.SkyTelescope.Default.CustomRaWormTeeth;
-            CustomGearing = Properties.SkyTelescope.Default.CustomGearing;
-            DataBits = Properties.SkyTelescope.Default.DataBits;
-            DecBacklash = Properties.SkyTelescope.Default.DecBacklash;
-            DecPulseToGoTo = Properties.SkyTelescope.Default.DecPulseToGoTo;
-            DisplayInterval = Properties.SkyTelescope.Default.DisplayInterval;
-            DisableKeysOnGoTo = Properties.SkyTelescope.Default.DisableKeysOnGoTo;
-            DtrEnable = Properties.SkyTelescope.Default.DTREnable;
-            Elevation = Properties.SkyTelescope.Default.Elevation;
-            Encoders = Properties.SkyTelescope.Default.EncodersOn;
-            EyepieceFs = Properties.SkyTelescope.Default.EyepieceFS;
-            FocalLength = Properties.SkyTelescope.Default.FocalLength;
-            FullCurrent = Properties.SkyTelescope.Default.FullCurrent;
-            HcAntiDec = Properties.SkyTelescope.Default.HcAntiDec;
-            HcAntiRa = Properties.SkyTelescope.Default.HcAntiRa;
-            HcFlipEw = Properties.SkyTelescope.Default.HcFlipEW;
-            HcFlipNs = Properties.SkyTelescope.Default.HcFlipNS;
-            GlobalStopOn = Properties.SkyTelescope.Default.GlobalStopOn;
-            GotoPrecision = Properties.SkyTelescope.Default.GotoPrecision;
-            GpsComPort = "COM" + Properties.SkyTelescope.Default.GpsPort;
-            GuideRateOffsetY = Properties.SkyTelescope.Default.GuideRateOffsetY;
-            GuideRateOffsetX = Properties.SkyTelescope.Default.GuideRateOffsetX;
-            HcPulseGuides = JsonConvert.DeserializeObject<List<HcPulseGuide>>(Properties.SkyTelescope.Default.HcPulseGuides);
-            HourAngleLimit = Properties.SkyTelescope.Default.HourAngleLimit;
-            HomeWarning = Properties.SkyTelescope.Default.HomeWarning;
-            HomeDialog = Properties.SkyTelescope.Default.HomeDialog;
-            HzLimitTracking = Properties.SkyTelescope.Default.HzLimitTracking;
-            HzLimitPark = Properties.SkyTelescope.Default.HzLimitPark;
-            InstrumentDescription = Properties.SkyTelescope.Default.InstrumentDescription;
-            InstrumentName = Properties.SkyTelescope.Default.InstrumentName;
-            KingRate = Properties.SkyTelescope.Default.KingRate;
-            Latitude = Properties.SkyTelescope.Default.Latitude;
-            LimitTracking = Properties.SkyTelescope.Default.LimitTracking;
-            LimitPark = Properties.SkyTelescope.Default.LimitPark;
-            Longitude = Properties.SkyTelescope.Default.Longitude;
-            LunarRate = Properties.SkyTelescope.Default.LunarRate;
-            MaxSlewRate = Properties.SkyTelescope.Default.MaximumSlewRate;
-            MinPulseDec = Properties.SkyTelescope.Default.MinPulseDec;
-            MinPulseRa = Properties.SkyTelescope.Default.MinPulseRa;
-            ParkAxes = JsonConvert.DeserializeObject<double[]>(Properties.SkyTelescope.Default.ParkAxes);
-            ParkDialog = Properties.SkyTelescope.Default.ParkDialog;
-            ParkName = Properties.SkyTelescope.Default.ParkName;
-            ParkLimitName = Properties.SkyTelescope.Default.ParkLimitName;
-            ParkHzLimitName = Properties.SkyTelescope.Default.ParkHzLimitName;
-            PecOn = Properties.SkyTelescope.Default.PecOn;
-            PecOffSet = Properties.SkyTelescope.Default.PecOffSet;
-            PPecOn = Properties.SkyTelescope.Default.PpecOn;
-            PecWormFile = Properties.SkyTelescope.Default.PecWormFile;
-            Pec360File = Properties.SkyTelescope.Default.Pec360File;
-            PolarLedLevel = Properties.SkyTelescope.Default.PolarLedLevel;
-            Enum.TryParse<PolarMode>(Properties.SkyTelescope.Default.PolarMode, true, out var pParse);
-            PolarMode = pParse;
-            RaBacklash = Properties.SkyTelescope.Default.RaBacklash;
-            RaGaugeFlip = Properties.SkyTelescope.Default.RaGaugeFlip;
-            ReadTimeout = Properties.SkyTelescope.Default.ReadTimeout;
-            Refraction = Properties.SkyTelescope.Default.Refraction;
-            RaTrackingOffset = Properties.SkyTelescope.Default.RATrackingOffset;
-            RtsEnable = Properties.SkyTelescope.Default.RTSEnable;
-            SiderealRate = Properties.SkyTelescope.Default.SiderealRate;
-            // ToDo: Remove if not needed
-            //SpiralDistance = Properties.SkyTelescope.Default.SpiralDistance;
-            //SpiralLimits = Properties.SkyTelescope.Default.SpiralLimits;
-            //SpiralHeight = Properties.SkyTelescope.Default.SpiralHeight;
-            //SpiralWidth = Properties.SkyTelescope.Default.SpiralWidth;
-            SolarRate = Properties.SkyTelescope.Default.SolarRate;
-            St4GuideRate = Properties.SkyTelescope.Default.St4Guiderate;
-            SyncLimit = Properties.SkyTelescope.Default.SyncLimit;
-            SyncLimitOn = Properties.SkyTelescope.Default.SyncLimitOn;
-            Temperature = Properties.SkyTelescope.Default.Temperature;
-            AltAzTrackingUpdateInterval = Properties.SkyTelescope.Default.AltAzTrackingUpdateInterval;
-            // Enum.TryParse<Model3DType>(Properties.SkyTelescope.Default.ModelType, true, out var mtParse);
-            // Settings.Settings.ModelType = mtParse;
+            //AllowAdvancedCommandSet = Properties.SkyTelescope.Default.AllowAdvancedCommandSet;
+            //AlternatingPPec = Properties.SkyTelescope.Default.AlternatingPPEC;
+            //ApertureArea = Properties.SkyTelescope.Default.ApertureArea;
+            //ApertureDiameter = Properties.SkyTelescope.Default.ApertureDiameter;
+            //AtPark = Properties.SkyTelescope.Default.AtPark;
+            //AutoTrack = Properties.SkyTelescope.Default.AutoTrack;
+            //AxisLowerLimitY = Properties.SkyTelescope.Default.AxisLowerLimitY;
+            //AxisModelOffsets = JsonConvert.DeserializeObject<Vector3>(Properties.SkyTelescope.Default.AxisModelOffsets);
+            //AxisUpperLimitY = Properties.SkyTelescope.Default.AxisUpperLimitY;
+            //AxisLimitX = Properties.SkyTelescope.Default.AxisLimitX;
+            //AxisTrackingLimit = Properties.SkyTelescope.Default.AxisTrackingLimit;
+            //AxisHzTrackingLimit = Properties.SkyTelescope.Default.AxisHzTrackingLimit;
+            //CameraHeight = Properties.SkyTelescope.Default.CameraHeight;
+            //CameraWidth = Properties.SkyTelescope.Default.CameraWidth;
+            //Port = Properties.SkyTelescope.Default.Port;
+            //CustomDec360Steps = Properties.SkyTelescope.Default.CustomDec360Steps;
+            //CustomDecTrackingOffset = Properties.SkyTelescope.Default.CustomDecTrackingOffset;
+            //CustomDecWormTeeth = Properties.SkyTelescope.Default.CustomDecWormTeeth;
+            //CustomRa360Steps = Properties.SkyTelescope.Default.CustomRa360Steps;
+            //CustomRaTrackingOffset = Properties.SkyTelescope.Default.CustomRaTrackingOffset;
+            //CustomRaWormTeeth = Properties.SkyTelescope.Default.CustomRaWormTeeth;
+            //CustomGearing = Properties.SkyTelescope.Default.CustomGearing;
+            //DataBits = Properties.SkyTelescope.Default.DataBits;
+            //DecBacklash = Properties.SkyTelescope.Default.DecBacklash;
+            //DecPulseToGoTo = Properties.SkyTelescope.Default.DecPulseToGoTo;
+            //DisplayInterval = Properties.SkyTelescope.Default.DisplayInterval;
+            //DisableKeysOnGoTo = Properties.SkyTelescope.Default.DisableKeysOnGoTo;
+            //DtrEnable = Properties.SkyTelescope.Default.DTREnable;
+            //Elevation = Properties.SkyTelescope.Default.Elevation;
+            //Encoders = Properties.SkyTelescope.Default.EncodersOn;
+            //EyepieceFs = Properties.SkyTelescope.Default.EyepieceFS;
+            //FocalLength = Properties.SkyTelescope.Default.FocalLength;
+            //FullCurrent = Properties.SkyTelescope.Default.FullCurrent;
+            //HcAntiDec = Properties.SkyTelescope.Default.HcAntiDec;
+            //HcAntiRa = Properties.SkyTelescope.Default.HcAntiRa;
+            //HcFlipEw = Properties.SkyTelescope.Default.HcFlipEW;
+            //HcFlipNs = Properties.SkyTelescope.Default.HcFlipNS;
+            //GlobalStopOn = Properties.SkyTelescope.Default.GlobalStopOn;
+            //GotoPrecision = Properties.SkyTelescope.Default.GotoPrecision;
+            //GpsComPort = "COM" + Properties.SkyTelescope.Default.GpsPort;
+            //GuideRateOffsetY = Properties.SkyTelescope.Default.GuideRateOffsetY;
+            //GuideRateOffsetX = Properties.SkyTelescope.Default.GuideRateOffsetX;
+            //HcPulseGuides = JsonConvert.DeserializeObject<List<HcPulseGuide>>(Properties.SkyTelescope.Default.HcPulseGuides);
+            //HourAngleLimit = Properties.SkyTelescope.Default.HourAngleLimit;
+            //HomeWarning = Properties.SkyTelescope.Default.HomeWarning;
+            //HomeDialog = Properties.SkyTelescope.Default.HomeDialog;
+            //HzLimitTracking = Properties.SkyTelescope.Default.HzLimitTracking;
+            //HzLimitPark = Properties.SkyTelescope.Default.HzLimitPark;
+            //InstrumentDescription = Properties.SkyTelescope.Default.InstrumentDescription;
+            //InstrumentName = Properties.SkyTelescope.Default.InstrumentName;
+            //KingRate = Properties.SkyTelescope.Default.KingRate;
+            //Latitude = Properties.SkyTelescope.Default.Latitude;
+            //LimitTracking = Properties.SkyTelescope.Default.LimitTracking;
+            //LimitPark = Properties.SkyTelescope.Default.LimitPark;
+            //Longitude = Properties.SkyTelescope.Default.Longitude;
+            //LunarRate = Properties.SkyTelescope.Default.LunarRate;
+            //MaxSlewRate = Properties.SkyTelescope.Default.MaximumSlewRate;
+            //MinPulseDec = Properties.SkyTelescope.Default.MinPulseDec;
+            //MinPulseRa = Properties.SkyTelescope.Default.MinPulseRa;
+            //ParkAxes = JsonConvert.DeserializeObject<double[]>(Properties.SkyTelescope.Default.ParkAxes);
+            //ParkDialog = Properties.SkyTelescope.Default.ParkDialog;
+            //ParkName = Properties.SkyTelescope.Default.ParkName;
+            //ParkLimitName = Properties.SkyTelescope.Default.ParkLimitName;
+            //ParkHzLimitName = Properties.SkyTelescope.Default.ParkHzLimitName;
+            //PecOn = Properties.SkyTelescope.Default.PecOn;
+            //PecOffSet = Properties.SkyTelescope.Default.PecOffSet;
+            //PPecOn = Properties.SkyTelescope.Default.PpecOn;
+            //PecWormFile = Properties.SkyTelescope.Default.PecWormFile;
+            //Pec360File = Properties.SkyTelescope.Default.Pec360File;
+            //PolarLedLevel = Properties.SkyTelescope.Default.PolarLedLevel;
+            //Enum.TryParse<PolarMode>(Properties.SkyTelescope.Default.PolarMode, true, out var pParse);
+            //PolarMode = pParse;
+            //RaBacklash = Properties.SkyTelescope.Default.RaBacklash;
+            //RaGaugeFlip = Properties.SkyTelescope.Default.RaGaugeFlip;
+            //ReadTimeout = Properties.SkyTelescope.Default.ReadTimeout;
+            //Refraction = Properties.SkyTelescope.Default.Refraction;
+            //RaTrackingOffset = Properties.SkyTelescope.Default.RATrackingOffset;
+            //RtsEnable = Properties.SkyTelescope.Default.RTSEnable;
+            //SiderealRate = Properties.SkyTelescope.Default.SiderealRate;
+            //// ToDo: Remove if not needed
+            ////SpiralDistance = Properties.SkyTelescope.Default.SpiralDistance;
+            ////SpiralLimits = Properties.SkyTelescope.Default.SpiralLimits;
+            ////SpiralHeight = Properties.SkyTelescope.Default.SpiralHeight;
+            ////SpiralWidth = Properties.SkyTelescope.Default.SpiralWidth;
+            //SolarRate = Properties.SkyTelescope.Default.SolarRate;
+            //St4GuideRate = Properties.SkyTelescope.Default.St4Guiderate;
+            //SyncLimit = Properties.SkyTelescope.Default.SyncLimit;
+            //SyncLimitOn = Properties.SkyTelescope.Default.SyncLimitOn;
+            //Temperature = Properties.SkyTelescope.Default.Temperature;
+            //AltAzTrackingUpdateInterval = Properties.SkyTelescope.Default.AltAzTrackingUpdateInterval;
+            //// Enum.TryParse<Model3DType>(Properties.SkyTelescope.Default.ModelType, true, out var mtParse);
+            //// Settings.Settings.ModelType = mtParse;
 
-            // Set home axis amd park position information once all mount properties are loaded
-            HomeAxisX = Properties.SkyTelescope.Default.HomeAxisX;
-            HomeAxisY = Properties.SkyTelescope.Default.HomeAxisY;
-            AutoHomeAxisX = Properties.SkyTelescope.Default.AutoHomeAxisX;
-            AutoHomeAxisY = Properties.SkyTelescope.Default.AutoHomeAxisY;
-            ParkPositions = JsonConvert.DeserializeObject<List<ParkPosition>>(Properties.SkyTelescope.Default.ParkPositions);
-            //UTCDateOffset = Properties.SkyTelescope.Default.UTCOffset;
+            //// Set home axis amd park position information once all mount properties are loaded
+            //HomeAxisX = Properties.SkyTelescope.Default.HomeAxisX;
+            //HomeAxisY = Properties.SkyTelescope.Default.HomeAxisY;
+            //AutoHomeAxisX = Properties.SkyTelescope.Default.AutoHomeAxisX;
+            //AutoHomeAxisY = Properties.SkyTelescope.Default.AutoHomeAxisY;
+            //ParkPositions = JsonConvert.DeserializeObject<List<ParkPosition>>(Properties.SkyTelescope.Default.ParkPositions);
+            ////UTCDateOffset = Properties.SkyTelescope.Default.UTCOffset;
         }
 
         /// <summary>
@@ -2191,160 +2190,161 @@ namespace GreenSwamp.Alpaca.MountControl
         /// no previous or current configuration files exist, it initializes new settings using default values from the
         /// application's configuration.</description> </item> </list> This method ensures that the application's
         /// settings are consistent and up-to-date across different versions and profiles.</remarks>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         private static void LoadConfigSettings()
         {
-            var zeroVersion = new Version("0.0.0.0");
-            // Get version information for assembly and current config
-            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
-            var configExists = Properties.SkyTelescope.Default.Version != "0";
+            //var zeroVersion = new Version("0.0.0.0");
+            //// Get version information for assembly and current config
+            //var currentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            //Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
+            //var configExists = Properties.SkyTelescope.Default.Version != "0";
 
-            // Get version information for earlier user config if it exists
-            var prevVersionObj = Properties.Server.Default.GetPreviousVersion("Version");
-            var earlierVersion = prevVersionObj != null ? new Version(prevVersionObj.ToString()) : zeroVersion;
-            var earlierConfigExists = earlierVersion != zeroVersion;
-            var isConfigProfile = earlierConfigExists && earlierVersion >= new Version("1.2.0.7");
+            //// Get version information for earlier user config if it exists
+            //var prevVersionObj = Properties.Server.Default.GetPreviousVersion("Version");
+            //var earlierVersion = prevVersionObj != null ? new Version(prevVersionObj.ToString()) : zeroVersion;
+            //var earlierConfigExists = earlierVersion != zeroVersion;
+            //var isConfigProfile = earlierConfigExists && earlierVersion >= new Version("1.2.0.7");
 
-            //// Alpha profile handling will be removed for beta and later releases
-            //var isAlphaProfile = earlierConfigExists && 
-            //                     new Version("1.2.0.0") <= earlierVersion && earlierVersion <= new Version("1.2.0.6");
-            // Drop through to Scenario 1: user.config exists, profile settings available, settings loaded at end of function
-            if (!configExists)
-            {
-                // Scenario 2, 3 or 4
-                if (isConfigProfile)
-                {
-                    // Scenario 2:. user.config does not exist, previous version profile based settings available
-                    // Copy settings from previous version profile settings
-                    // Set version and force write of profile settings to user.config
-                    Properties.Profile.Default.Upgrade();
-                    Properties.Profile.Default.Version = currentVersion;
-                    Properties.Profile.Default.PropertyValues["Current"].IsDirty = true;
-                    Properties.Profile.Default.Save();
-                    foreach (var mountType in Properties.Profile.Default.List.Split(','))
-                    {
-                        SettingsPropertyCollection profileDefaultProperties = GetProfileProperties(mountType);
-                        // Copy settings from previous version into dictionary - deleted settings are not copied 
-                        Properties.SkyTelescope.Default.SettingsKey = mountType;
-                        Dictionary<string, object> previousSettings = new Dictionary<string, object>(256);
-                        foreach (SettingsPropertyValue propertyValue in Properties.SkyTelescope.Default.PropertyValues)
-                        {
-                            var name = propertyValue.Name;
-                            if (Properties.SkyTelescope.Default.GetPreviousVersion(name)?.GetType() !=
-                                null)
-                            {
-                                Properties.SkyTelescope.Default[name] = Properties.SkyTelescope.Default.GetPreviousVersion(name);
-                            }
-                            else
-                            {
-                                // Settings does not exist in previous version so set to default value from profile section of app.config
-                                SettingsProperty settingsProperty;
-                                if ((settingsProperty = profileDefaultProperties[name]) != null)
-                                {
-                                    Properties.SkyTelescope.Default[name] =
-                                        // ReSharper disable twice PossibleNullReferenceException
-                                        Convert.ChangeType(settingsProperty.DefaultValue, settingsProperty.PropertyType);
-                                }
-                            }
-                            // Force write of setting to user.config
-                            Properties.SkyTelescope.Default.PropertyValues[name].IsDirty = true;
-                        }
-                        Properties.SkyTelescope.Default.Version = currentVersion;
-                        Properties.SkyTelescope.Default.PropertyValues["Version"].IsDirty = true;
-                        //if (isAlphaProfile && mountType == "Polar")
-                        //{
-                        //    // Fix up alpha profile settings: ParkPositions, AtPark, ParkName
-                        //    ResetParkPositions();
-                        //}
-                        Properties.SkyTelescope.Default.Save();
-                    }
-                    Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
-                }
-                else // Scenarios 3 or 4: user.config does not exist, no previous version profile based settings available
-                {
-                    // Setup new profile settings
-                    Properties.Profile.Default.Version = currentVersion;
-                    Properties.Profile.Default.PropertyValues["Current"].IsDirty = true;
-                    Properties.Profile.Default.Save();
+            ////// Alpha profile handling will be removed for beta and later releases
+            ////var isAlphaProfile = earlierConfigExists && 
+            ////                     new Version("1.2.0.0") <= earlierVersion && earlierVersion <= new Version("1.2.0.6");
+            //// Drop through to Scenario 1: user.config exists, profile settings available, settings loaded at end of function
+            //if (!configExists)
+            //{
+            //    // Scenario 2, 3 or 4
+            //    if (isConfigProfile)
+            //    {
+            //        // Scenario 2:. user.config does not exist, previous version profile based settings available
+            //        // Copy settings from previous version profile settings
+            //        // Set version and force write of profile settings to user.config
+            //        Properties.Profile.Default.Upgrade();
+            //        Properties.Profile.Default.Version = currentVersion;
+            //        Properties.Profile.Default.PropertyValues["Current"].IsDirty = true;
+            //        Properties.Profile.Default.Save();
+            //        foreach (var mountType in Properties.Profile.Default.List.Split(','))
+            //        {
+            //            SettingsPropertyCollection profileDefaultProperties = GetProfileProperties(mountType);
+            //            // Copy settings from previous version into dictionary - deleted settings are not copied 
+            //            Properties.SkyTelescope.Default.SettingsKey = mountType;
+            //            Dictionary<string, object> previousSettings = new Dictionary<string, object>(256);
+            //            foreach (SettingsPropertyValue propertyValue in Properties.SkyTelescope.Default.PropertyValues)
+            //            {
+            //                var name = propertyValue.Name;
+            //                if (Properties.SkyTelescope.Default.GetPreviousVersion(name)?.GetType() !=
+            //                    null)
+            //                {
+            //                    Properties.SkyTelescope.Default[name] = Properties.SkyTelescope.Default.GetPreviousVersion(name);
+            //                }
+            //                else
+            //                {
+            //                    // Settings does not exist in previous version so set to default value from profile section of app.config
+            //                    SettingsProperty settingsProperty;
+            //                    if ((settingsProperty = profileDefaultProperties[name]) != null)
+            //                    {
+            //                        Properties.SkyTelescope.Default[name] =
+            //                            // ReSharper disable twice PossibleNullReferenceException
+            //                            Convert.ChangeType(settingsProperty.DefaultValue, settingsProperty.PropertyType);
+            //                    }
+            //                }
+            //                // Force write of setting to user.config
+            //                Properties.SkyTelescope.Default.PropertyValues[name].IsDirty = true;
+            //            }
+            //            Properties.SkyTelescope.Default.Version = currentVersion;
+            //            Properties.SkyTelescope.Default.PropertyValues["Version"].IsDirty = true;
+            //            //if (isAlphaProfile && mountType == "Polar")
+            //            //{
+            //            //    // Fix up alpha profile settings: ParkPositions, AtPark, ParkName
+            //            //    ResetParkPositions();
+            //            //}
+            //            Properties.SkyTelescope.Default.Save();
+            //        }
+            //        Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
+            //    }
+            //    else // Scenarios 3 or 4: user.config does not exist, no previous version profile based settings available
+            //    {
+            //        // Setup new profile settings
+            //        Properties.Profile.Default.Version = currentVersion;
+            //        Properties.Profile.Default.PropertyValues["Current"].IsDirty = true;
+            //        Properties.Profile.Default.Save();
 
-                    // Create new settings file from app.config defaults for cases 3 and 4
-                    Properties.SkyTelescope.Default.Reset();
-                    Properties.SkyTelescope.Default.Version = currentVersion;
-                    foreach (var mountType in Properties.Profile.Default.List.Split(','))
-                    {
-                        InitSettingsFile(mountType, currentVersion);
-                    }
+            //        // Create new settings file from app.config defaults for cases 3 and 4
+            //        Properties.SkyTelescope.Default.Reset();
+            //        Properties.SkyTelescope.Default.Version = currentVersion;
+            //        foreach (var mountType in Properties.Profile.Default.List.Split(','))
+            //        {
+            //            InitSettingsFile(mountType, currentVersion);
+            //        }
 
-                    Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
-                    Properties.SkyTelescope.Default.Save();
-                    Properties.SkyTelescope.Default.Reload();
-                    if (earlierConfigExists) // Case 3: previous version config file exists so copy applicable settings
-                    {
-                        Dictionary<string, object> previousSettings = new Dictionary<string, object>(256);
-                        Properties.SkyTelescope.Default.SettingsKey = "";
-                        _ = Properties.SkyTelescope.Default["Version"]; // Force read of properties.SkyTelescope.Default
-                        // Get the settings from the previous version
-                        foreach (SettingsPropertyValue propertyValue in Properties.SkyTelescope.Default.PropertyValues)
-                        {
-                            if (Properties.SkyTelescope.Default.GetPreviousVersion(propertyValue.Name)?.GetType() !=
-                                null)
-                            {
-                                previousSettings[propertyValue.Name] =
-                                    Properties.SkyTelescope.Default.GetPreviousVersion(propertyValue.Name);
-                            }
-                        }
-                        // Get model type from previous version Server properties
-                        previousSettings["ModelType"] = Properties.Server.Default.GetPreviousVersion("ModelType");
-                        // Get the mount type from the previous version
-                        var alignMentMode = previousSettings["AlignmentMode"]?.ToString() ?? "GermanPolar";
-                        // Remove settings that are always mount type specific
-                        foreach (var name in new [] { "AlignmentMode", "AxisModelOffsets", "HomeAxisX", "HomeAxisY", "AtPark", "ParkName", "ParkPositions", "PolarMode", "Version"}) previousSettings.Remove(name);
-                        // Copy settings from previous version into all AltAz and German Polar mount types
-                        CopyEarlierConfigSettings(previousSettings, "AltAz");
-                        CopyEarlierConfigSettings(previousSettings, "GermanPolar");
+            //        Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
+            //        Properties.SkyTelescope.Default.Save();
+            //        Properties.SkyTelescope.Default.Reload();
+            //        if (earlierConfigExists) // Case 3: previous version config file exists so copy applicable settings
+            //        {
+            //            Dictionary<string, object> previousSettings = new Dictionary<string, object>(256);
+            //            Properties.SkyTelescope.Default.SettingsKey = "";
+            //            _ = Properties.SkyTelescope.Default["Version"]; // Force read of properties.SkyTelescope.Default
+            //            // Get the settings from the previous version
+            //            foreach (SettingsPropertyValue propertyValue in Properties.SkyTelescope.Default.PropertyValues)
+            //            {
+            //                if (Properties.SkyTelescope.Default.GetPreviousVersion(propertyValue.Name)?.GetType() !=
+            //                    null)
+            //                {
+            //                    previousSettings[propertyValue.Name] =
+            //                        Properties.SkyTelescope.Default.GetPreviousVersion(propertyValue.Name);
+            //                }
+            //            }
+            //            // Get model type from previous version Server properties
+            //            previousSettings["ModelType"] = Properties.Server.Default.GetPreviousVersion("ModelType");
+            //            // Get the mount type from the previous version
+            //            var alignMentMode = previousSettings["AlignmentMode"]?.ToString() ?? "GermanPolar";
+            //            // Remove settings that are always mount type specific
+            //            foreach (var name in new [] { "AlignmentMode", "AxisModelOffsets", "HomeAxisX", "HomeAxisY", "AtPark", "ParkName", "ParkPositions", "PolarMode", "Version"}) previousSettings.Remove(name);
+            //            // Copy settings from previous version into all AltAz and German Polar mount types
+            //            CopyEarlierConfigSettings(previousSettings, "AltAz");
+            //            CopyEarlierConfigSettings(previousSettings, "GermanPolar");
                         
-                        // Remove settings that are Polar mount type specific
-                        foreach (var name in new[] { "AxisLimitX", "AxisLowerLimitY", "AxisUpperLimitY", "HourAngleLimit", "ModelType" }) 
-                            previousSettings.Remove(name);
-                        // Copy settings from previous version into all Polar mount types
-                        CopyEarlierConfigSettings(previousSettings, "Polar");
+            //            // Remove settings that are Polar mount type specific
+            //            foreach (var name in new[] { "AxisLimitX", "AxisLowerLimitY", "AxisUpperLimitY", "HourAngleLimit", "ModelType" }) 
+            //                previousSettings.Remove(name);
+            //            // Copy settings from previous version into all Polar mount types
+            //            CopyEarlierConfigSettings(previousSettings, "Polar");
 
-                        // Get the park and limit settings from previous version
-                        previousSettings.Clear();
-                        foreach (var propertyName in new[] {
-                                     "ParkPositionsAltAz", "ParkPositionsEQ", "ParkPositions",
-                                     "ParkAxisX", "ParkAxisY",
-                                     "ParkAxisAz", "ParkAxisAlt",
-                                     "AtPark", 
-                                     // "AzSlewLimit", "AltAxisLowerLimit", "AltAxisUpperLimit",
-                                     // "AltAzAxesLimitOn", "AltAxisLimitOn",
-                                     "AlignmentMode", "Mount" }
-                                ) AddPropertyValue(previousSettings, propertyName, Properties.SkyTelescope.Default);
-                        // Migrate park and limit settings for German Polar and AltAz mounts. No action for Polar mounts
-                        if (String.IsNullOrEmpty((string)previousSettings["ParkPositions"]))
-                        {
-                            RestoreParkSettings(previousSettings, "GermanPolar", "ParkPositionsEQ", "ParkAxisX", "ParkAxisY");
-                            RestoreParkSettings(previousSettings, "AltAz", "ParkPositionsAltAz", "ParkAxisAz", "ParkAxisAlt");
-                        }
-                        else
-                        {
-                            RestoreParkSettings(previousSettings, "GermanPolar", "ParkPositions", "ParkAxisX", "ParkAxisY");
-                        }
-                        Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
-                        Properties.SkyTelescope.Default.AtPark = (bool)previousSettings["AtPark"];
-                    }
-                    // Scenario 4: user.config does not exist, no previous user.config
-                    // Must initialise Polar ParkPositions based on latitude
-                    // Set profile to Polar and get list of polar ParkPositions from app.config with default = (0, 0) and home = (0, 5)
-                    Properties.SkyTelescope.Default.SettingsKey = "Polar";
-                    ResetParkPositions();
-                    Save();
-                    // 
-                    // No migration needed, user.config has been created just set the current settings key
-                    Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
-                }
-            }
-            Properties.SkyTelescope.Default.Reload();
+            //            // Get the park and limit settings from previous version
+            //            previousSettings.Clear();
+            //            foreach (var propertyName in new[] {
+            //                         "ParkPositionsAltAz", "ParkPositionsEQ", "ParkPositions",
+            //                         "ParkAxisX", "ParkAxisY",
+            //                         "ParkAxisAz", "ParkAxisAlt",
+            //                         "AtPark", 
+            //                         // "AzSlewLimit", "AltAxisLowerLimit", "AltAxisUpperLimit",
+            //                         // "AltAzAxesLimitOn", "AltAxisLimitOn",
+            //                         "AlignmentMode", "Mount" }
+            //                    ) AddPropertyValue(previousSettings, propertyName, Properties.SkyTelescope.Default);
+            //            // Migrate park and limit settings for German Polar and AltAz mounts. No action for Polar mounts
+            //            if (String.IsNullOrEmpty((string)previousSettings["ParkPositions"]))
+            //            {
+            //                RestoreParkSettings(previousSettings, "GermanPolar", "ParkPositionsEQ", "ParkAxisX", "ParkAxisY");
+            //                RestoreParkSettings(previousSettings, "AltAz", "ParkPositionsAltAz", "ParkAxisAz", "ParkAxisAlt");
+            //            }
+            //            else
+            //            {
+            //                RestoreParkSettings(previousSettings, "GermanPolar", "ParkPositions", "ParkAxisX", "ParkAxisY");
+            //            }
+            //            Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
+            //            Properties.SkyTelescope.Default.AtPark = (bool)previousSettings["AtPark"];
+            //        }
+            //        // Scenario 4: user.config does not exist, no previous user.config
+            //        // Must initialise Polar ParkPositions based on latitude
+            //        // Set profile to Polar and get list of polar ParkPositions from app.config with default = (0, 0) and home = (0, 5)
+            //        Properties.SkyTelescope.Default.SettingsKey = "Polar";
+            //        ResetParkPositions();
+            //        Save();
+            //        // 
+            //        // No migration needed, user.config has been created just set the current settings key
+            //        Properties.SkyTelescope.Default.SettingsKey = Properties.Profile.Default.Current;
+            //    }
+            //}
+            //Properties.SkyTelescope.Default.Reload();
         }
 
         /// <summary>
@@ -2357,43 +2357,44 @@ namespace GreenSwamp.Alpaca.MountControl
         /// message.</remarks>
         /// <param name="settingsKey">The key identifying the configuration profile to load (e.g., "AltAz", "GermanPolar", or "Polar").</param>
         /// <param name="version">The version string to associate with the settings file.</param>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         private static void InitSettingsFile(string settingsKey, string version)
         {
-            // Load SettingsKey to access config section
-            Properties.SkyTelescope.Default.SettingsKey = settingsKey;
-            Properties.SkyTelescope.Default.Reload();
-            // Set version to current assembly
-            Properties.SkyTelescope.Default.Version = version;
-            // Initialise user.config section with mount type specific values from app.config
-            SettingsPropertyCollection profileProperties = GetProfileProperties(settingsKey);
-            // Copy the mount type specific app.config defaults to user.config
-            foreach (SettingsProperty profileProperty in profileProperties)
-            {
-                try
-                {
-                    Properties.SkyTelescope.Default.PropertyValues[profileProperty.Name].PropertyValue =
-                        Convert.ChangeType(profileProperty.DefaultValue, profileProperty.PropertyType);
-                }
-                catch (Exception e) //Log unknown properties removed from current version
-                {
-                    MonitorLog.LogToMonitor(new MonitorEntry
-                    {
-                        Datetime = HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Server,
-                        Type = MonitorType.Information,
-                        Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"{profileProperty.Name} removed from current settings version: {e.Message}"
-                    });
-                }
-            }
-            // Iterate over all settings and mark as dirty to force write on save
-            foreach (SettingsPropertyValue propertyValue in Properties.SkyTelescope.Default.PropertyValues)
-            {
-                propertyValue.IsDirty = true;
-            }
-            Properties.SkyTelescope.Default.Save();
+            //// Load SettingsKey to access config section
+            //Properties.SkyTelescope.Default.SettingsKey = settingsKey;
+            //Properties.SkyTelescope.Default.Reload();
+            //// Set version to current assembly
+            //Properties.SkyTelescope.Default.Version = version;
+            //// Initialise user.config section with mount type specific values from app.config
+            //SettingsPropertyCollection profileProperties = GetProfileProperties(settingsKey);
+            //// Copy the mount type specific app.config defaults to user.config
+            //foreach (SettingsProperty profileProperty in profileProperties)
+            //{
+            //    try
+            //    {
+            //        Properties.SkyTelescope.Default.PropertyValues[profileProperty.Name].PropertyValue =
+            //            Convert.ChangeType(profileProperty.DefaultValue, profileProperty.PropertyType);
+            //    }
+            //    catch (Exception e) //Log unknown properties removed from current version
+            //    {
+            //        MonitorLog.LogToMonitor(new MonitorEntry
+            //        {
+            //            Datetime = HiResDateTime.UtcNow,
+            //            Device = MonitorDevice.Server,
+            //            Category = MonitorCategory.Server,
+            //            Type = MonitorType.Information,
+            //            Method = MethodBase.GetCurrentMethod()?.Name,
+            //            Thread = Thread.CurrentThread.ManagedThreadId,
+            //            Message = $"{profileProperty.Name} removed from current settings version: {e.Message}"
+            //        });
+            //    }
+            //}
+            //// Iterate over all settings and mark as dirty to force write on save
+            //foreach (SettingsPropertyValue propertyValue in Properties.SkyTelescope.Default.PropertyValues)
+            //{
+            //    propertyValue.IsDirty = true;
+            //}
+            //Properties.SkyTelescope.Default.Save();
         }
 
         /// <summary>
@@ -2403,36 +2404,38 @@ namespace GreenSwamp.Alpaca.MountControl
         /// "GermanPolar", and "Polar".</param>
         /// <returns>A <see cref="SettingsPropertyCollection"/> containing the properties of the profile  associated with the
         /// specified key, or <see langword="null"/> if the key does not match any profile.</returns>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         private static SettingsPropertyCollection GetProfileProperties(string settingsKey)
         {
             SettingsPropertyCollection profileProperties = null;
-            switch (settingsKey)
-            {
-                case "AltAz":
-                    profileProperties = Properties.Profiles.AltAz.Default.Properties;
-                    break;
-                case "GermanPolar":
-                    profileProperties = Properties.Profiles.GermanPolar.Default.Properties;
-                    break;
-                case "Polar":
-                    profileProperties = Properties.Profiles.Polar.Default.Properties;
-                    break;
-            }
+            //switch (settingsKey)
+            //{
+            //    case "AltAz":
+            //        profileProperties = Properties.Profiles.AltAz.Default.Properties;
+            //        break;
+            //    case "GermanPolar":
+            //        profileProperties = Properties.Profiles.GermanPolar.Default.Properties;
+            //        break;
+            //    case "Polar":
+            //        profileProperties = Properties.Profiles.Polar.Default.Properties;
+            //        break;
+            //}
             return profileProperties;
         }
 
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         static void  CopyEarlierConfigSettings(Dictionary<string, object> previousSettings, string mountType)
         {
-            // Copy settings from previous version into dictionary - deleted settings are not copied 
-            Properties.SkyTelescope.Default.SettingsKey = mountType;
-            _ = Properties.SkyTelescope.Default["Version"]; // Force read of properties.SkyTelescope.Default
-            foreach (var setting in previousSettings)
-            {
-                var name = setting.Key;
-                Properties.SkyTelescope.Default[name] = setting.Value;
-                Properties.SkyTelescope.Default.PropertyValues[name].IsDirty = true;
-            }
-            Properties.SkyTelescope.Default.Save();
+            //// Copy settings from previous version into dictionary - deleted settings are not copied 
+            //Properties.SkyTelescope.Default.SettingsKey = mountType;
+            //_ = Properties.SkyTelescope.Default["Version"]; // Force read of properties.SkyTelescope.Default
+            //foreach (var setting in previousSettings)
+            //{
+            //    var name = setting.Key;
+            //    Properties.SkyTelescope.Default[name] = setting.Value;
+            //    Properties.SkyTelescope.Default.PropertyValues[name].IsDirty = true;
+            //}
+            //Properties.SkyTelescope.Default.Save();
         }
 
         /// <summary>
@@ -2443,29 +2446,30 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="parkPositions"></param>
         /// <param name="axisX"></param>
         /// <param name="axisY"></param>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         private static void RestoreParkSettings(Dictionary<string, object> previousSettings, string settingsKey, string parkPositions, string axisX, string axisY)
         {
-            Properties.SkyTelescope.Default.SettingsKey = settingsKey;
-            Properties.SkyTelescope.Default.Reload();
-            if (previousSettings.TryGetValue(parkPositions, out var value))
-            {
-                Properties.SkyTelescope.Default["ParkPositions"] = value;
-            }
+            //Properties.SkyTelescope.Default.SettingsKey = settingsKey;
+            //Properties.SkyTelescope.Default.Reload();
+            //if (previousSettings.TryGetValue(parkPositions, out var value))
+            //{
+            //    Properties.SkyTelescope.Default["ParkPositions"] = value;
+            //}
 
-            if ((previousSettings.TryGetValue(axisX, out var valueX)) &&
-                (previousSettings.TryGetValue(axisY, out var valueY)))
-            {
-                try
-                {
-                    var parkAxes = new[] { Double.Parse((string)valueX), Double.Parse((string)valueY) };
-                    Properties.SkyTelescope.Default.ParkAxes = JsonConvert.SerializeObject(parkAxes);
+            //if ((previousSettings.TryGetValue(axisX, out var valueX)) &&
+            //    (previousSettings.TryGetValue(axisY, out var valueY)))
+            //{
+            //    try
+            //    {
+            //        var parkAxes = new[] { Double.Parse((string)valueX), Double.Parse((string)valueY) };
+            //        Properties.SkyTelescope.Default.ParkAxes = JsonConvert.SerializeObject(parkAxes);
 
-                }
-                catch (Exception e) when (e is ArgumentException || e is FormatException)
-                {
-                }
-            }
-            Save();
+            //    }
+            //    catch (Exception e) when (e is ArgumentException || e is FormatException)
+            //    {
+            //    }
+            //}
+            //Save();
         }
 
         /// <summary>
@@ -2476,27 +2480,42 @@ namespace GreenSwamp.Alpaca.MountControl
         /// positions are serialized and saved  to the application's settings.</remarks>
         public static void ResetParkPositions()
         {
-            var parkPositions = JsonConvert.DeserializeObject<List<ParkPosition>>(Properties.Profiles.Polar.Default.ParkPositions);
-            parkPositions[0].Y = parkPositions[0].Y + Math.Abs(Properties.SkyTelescope.Default.Latitude) - 90.0;
-            parkPositions[0].Y = Math.Round(parkPositions[0].Y, 6);
-            parkPositions[1].Y = parkPositions[1].Y + Math.Abs(Properties.SkyTelescope.Default.Latitude) - 90.0;
-            parkPositions[1].Y = Math.Round(parkPositions[1].Y, 6);
-            Properties.SkyTelescope.Default.ParkPositions = JsonConvert.SerializeObject(parkPositions);
-            Properties.SkyTelescope.Default.AtPark = false;
-            Properties.SkyTelescope.Default.ParkName = "Default";
+            // Phase A.5: Updated to use static properties and hardcoded defaults instead of app.config
+            // Default park positions for Polar mount: (0, 0) and (0, 5) adjusted for latitude
+            
+            var parkPositions = new List<ParkPosition>
+            {
+                new ParkPosition
+                {
+                    Name = "Default",
+                    X = 0.0,
+                    Y = Math.Round(Math.Abs(Latitude) - 90.0, 6)
+                },
+                new ParkPosition
+                {
+                    Name = "Home",
+                    X = 0.0,
+                    Y = Math.Round(Math.Abs(Latitude) - 85.0, 6) // 5 degrees from default
+                }
+            };
+            
+            // Update static properties directly (bridge will handle JSON persistence)
             ParkPositions = parkPositions;
+            AtPark = false;
+            ParkName = "Default";
         }
 
         /// <summary>
         /// save and reload using current SettingsKey
         /// </summary>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         public static void Save()
         {
-            Properties.SkyTelescope.Default.Save();
-            Properties.SkyTelescope.Default.Reload();
+            //Properties.SkyTelescope.Default.Save();
+            //Properties.SkyTelescope.Default.Reload();
             
-            // Phase 2: Sync to new settings system via bridge
-            SkySettingsBridge.OnOldSettingsSaved();
+            //// Phase 2: Sync to new settings system via bridge
+            //SkySettingsBridge.OnOldSettingsSaved();
         }
 
         /// <summary>
@@ -2506,27 +2525,28 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="settingName">The name of the setting to get previous version</param>
         /// <param name="properties">Properties instance containing setting as property</param>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         private static void GetPropertyValue(string settingName, ApplicationSettingsBase properties)
         {
-            try
-            {
-                // Create setting property ready for get
-                SettingsAttributeDictionary settingsAttributeDictionary = new SettingsAttributeDictionary();
-                settingsAttributeDictionary.Add(typeof(UserScopedSettingAttribute), new UserScopedSettingAttribute());
-                SettingsProperty p = new SettingsProperty(settingName, typeof(string),
-                    properties.Providers["LocalFileSettingsProvider"],
-                    false, String.Empty,
-                    SettingsSerializeAs.String, settingsAttributeDictionary,
-                    false, false);
-                properties.Properties.Add(p);
-                var settingValue = properties.GetPreviousVersion(settingName);
-                // Remove setting
-                properties.Properties.Remove(settingName);
-            }
-            catch (ArgumentException)
-            {
-                // Setting already exists - just get the value
-            }
+            //try
+            //{
+            //    // Create setting property ready for get
+            //    SettingsAttributeDictionary settingsAttributeDictionary = new SettingsAttributeDictionary();
+            //    settingsAttributeDictionary.Add(typeof(UserScopedSettingAttribute), new UserScopedSettingAttribute());
+            //    SettingsProperty p = new SettingsProperty(settingName, typeof(string),
+            //        properties.Providers["LocalFileSettingsProvider"],
+            //        false, String.Empty,
+            //        SettingsSerializeAs.String, settingsAttributeDictionary,
+            //        false, false);
+            //    properties.Properties.Add(p);
+            //    var settingValue = properties.GetPreviousVersion(settingName);
+            //    // Remove setting
+            //    properties.Properties.Remove(settingName);
+            //}
+            //catch (ArgumentException)
+            //{
+            //    // Setting already exists - just get the value
+            //}
         }
 
         /// <summary>
@@ -2537,31 +2557,32 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="previousSettings">Dictionary to hold settings keyed by setting name</param>
         /// <param name="settingName">The name of the setting to get previous version</param>
         /// <param name="properties">Properties instance containing setting as property</param>
+        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         private static void AddPropertyValue(Dictionary<string, object> previousSettings, string settingName, ApplicationSettingsBase properties)
         {
-            try
-            {
-                // No profile
-                properties.SettingsKey = "";
-                // Create setting property ready for get
-                SettingsAttributeDictionary settingsAttributeDictionary = new SettingsAttributeDictionary();
-                settingsAttributeDictionary.Add(typeof(UserScopedSettingAttribute), new UserScopedSettingAttribute());
-                SettingsProperty p = new SettingsProperty(settingName, typeof(string),
-                    properties.Providers["LocalFileSettingsProvider"],
-                    false, String.Empty,
-                    SettingsSerializeAs.String, settingsAttributeDictionary,
-                    false, false);
-                properties.Properties.Add(p);
-                var settingValue = properties.GetPreviousVersion(settingName);
-                if (settingValue != null) previousSettings.Add(settingName, settingValue);
-                // Remove setting
-                properties.Properties.Remove(settingName);
-            }
-            catch (ArgumentException)
-            {
-                // Setting already exists - just get the value
-                previousSettings.Add(settingName, properties.GetPreviousVersion(settingName));
-            }
+            //try
+            //{
+            //    // No profile
+            //    properties.SettingsKey = "";
+            //    // Create setting property ready for get
+            //    SettingsAttributeDictionary settingsAttributeDictionary = new SettingsAttributeDictionary();
+            //    settingsAttributeDictionary.Add(typeof(UserScopedSettingAttribute), new UserScopedSettingAttribute());
+            //    SettingsProperty p = new SettingsProperty(settingName, typeof(string),
+            //        properties.Providers["LocalFileSettingsProvider"],
+            //        false, String.Empty,
+            //        SettingsSerializeAs.String, settingsAttributeDictionary,
+            //        false, false);
+            //    properties.Properties.Add(p);
+            //    var settingValue = properties.GetPreviousVersion(settingName);
+            //    if (settingValue != null) previousSettings.Add(settingName, settingValue);
+            //    // Remove setting
+            //    properties.Properties.Remove(settingName);
+            //}
+            //catch (ArgumentException)
+            //{
+            //    // Setting already exists - just get the value
+            //    previousSettings.Add(settingName, properties.GetPreviousVersion(settingName));
+            //}
         }
 
         /// <summary>
