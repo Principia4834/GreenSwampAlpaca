@@ -20,13 +20,14 @@ using GreenSwamp.Alpaca.Shared;
 using GreenSwamp.Alpaca.Shared.Transport;
 using ASCOM.Common.DeviceInterfaces;
 using System.IO.Ports;
+using System.ComponentModel;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
-    /// Phase 2: Bridge to synchronize between legacy static SkySettings and new DI-based settings.
-    /// Provides bidirectional synchronization to maintain compatibility during migration.
-    /// Phase 2 syncs only critical properties - full sync happens in Phase 4.
+    /// Phase 3.2: Enhanced Bridge with bidirectional event forwarding and side-effect preservation.
+    /// Synchronizes between legacy static SkySettings and new DI-based settings.
+    /// Maintains full compatibility during migration by preserving all hardware side effects.
     /// </summary>
     public static class SkySettingsBridge
     {
@@ -35,7 +36,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private static bool _initialized;
 
         /// <summary>
-        /// Initialize the bridge with the new settings service
+        /// Initialize the bridge with the new settings service and setup bidirectional event forwarding
         /// </summary>
         public static void Initialize(IVersionedSettingsService service)
         {
@@ -47,14 +48,17 @@ namespace GreenSwamp.Alpaca.MountControl
 
             _settingsService = service ?? throw new ArgumentNullException(nameof(service));
             
-            // Subscribe to changes from new system
+            // Subscribe to changes from NEW system ? sync to OLD
             _settingsService.SettingsChanged += OnNewSettingsChanged;
+            
+            // Subscribe to changes from OLD system ? sync to NEW
+            SkySettings.StaticPropertyChanged += OnOldSettingsPropertyChanged;
             
             // Initial sync: new ? old
             SyncNewToOld();
             
             _initialized = true;
-            LogBridge("Bridge initialized and synced");
+            LogBridge("Enhanced bridge initialized with bidirectional event forwarding");
         }
 
         /// <summary>
@@ -71,7 +75,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 _isUpdating = true;
                 SyncOldToNew();
-                LogBridge("Synced old settings ? new settings");
+                LogBridge("Synced old settings ? new settings (Save() called)");
             }
             catch (Exception ex)
             {
@@ -84,8 +88,39 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
+        /// NEW FEATURE: Handle individual property changes from old system
+        /// This allows reactive updates without waiting for full Save()
+        /// </summary>
+        private static void OnOldSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (!_initialized || _settingsService == null || _isUpdating)
+            {
+                return;
+            }
+            
+            try
+            {
+                _isUpdating = true;
+                
+                // For now, sync everything on any property change
+                // Future optimization: sync only the changed property
+                SyncOldToNew();
+                
+                LogBridge($"Synced property '{e.PropertyName}' old ? new");
+            }
+            catch (Exception ex)
+            {
+                LogBridge($"Error syncing property '{e.PropertyName}': {ex.Message}");
+            }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
+
+        /// <summary>
         /// Sync new settings to old static properties.
-        /// Phase 2: Only critical properties (8 total) - expanded in Phase 4.
+        /// This method triggers the old property setters, preserving all side effects!
         /// </summary>
         private static void SyncNewToOld()
         {
@@ -99,7 +134,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 _isUpdating = true;
                 var newSettings = _settingsService.GetSettings();
                 
-                // Phase 2: Sync only critical properties
+                // CRITICAL: By setting these properties, we trigger their setters
+                // The setters contain side effects like SkyServer.SkyTasks() calls
+                // This is INTENTIONAL and preserves all hardware operations!
+                
                 // Connection Settings
                 SkySettings.Mount = ParseMountType(newSettings.Mount);
                 SkySettings.Port = newSettings.Port;
@@ -114,7 +152,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.AlignmentMode = ParseAlignmentMode(newSettings.AlignmentMode);
                 SkySettings.AtPark = newSettings.AtPark;
                 
-                // Phase 3a: Tracking & Rates (10 properties)
+                // Tracking & Rates (10 properties)
                 SkySettings.TrackingRate = ParseDriveRate(newSettings.TrackingRate);
                 SkySettings.SiderealRate = newSettings.SiderealRate;
                 SkySettings.LunarRate = newSettings.LunarRate;
@@ -126,45 +164,46 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.CustomDec360Steps = newSettings.CustomDec360Steps;
                 SkySettings.CustomDecWormTeeth = newSettings.CustomDecWormTeeth;
                 
-                // Phase 3b: Guiding (8 properties)
-                SkySettings.MinPulseRa = newSettings.MinPulseRa;
-                SkySettings.MinPulseDec = newSettings.MinPulseDec;
-                SkySettings.DecPulseToGoTo = newSettings.DecPulseToGoTo;
-                SkySettings.St4GuideRate = newSettings.St4Guiderate;
-                SkySettings.GuideRateOffsetX = newSettings.GuideRateOffsetX;
-                SkySettings.GuideRateOffsetY = newSettings.GuideRateOffsetY;
+                // Guiding (8 properties) - THESE HAVE SIDE EFFECTS!
+                SkySettings.MinPulseRa = newSettings.MinPulseRa;  // ? SkyServer.SkyTasks()
+                SkySettings.MinPulseDec = newSettings.MinPulseDec;  // ? SkyServer.SkyTasks()
+                SkySettings.DecPulseToGoTo = newSettings.DecPulseToGoTo;  // ? SkyServer.SkyTasks()
+                SkySettings.St4GuideRate = newSettings.St4Guiderate;  // ? SkyServer.SkyTasks()
+                SkySettings.GuideRateOffsetX = newSettings.GuideRateOffsetX;  // ? SkyServer.SetGuideRates()
+                SkySettings.GuideRateOffsetY = newSettings.GuideRateOffsetY;  // ? SkyServer.SetGuideRates()
                 SkySettings.RaBacklash = newSettings.RaBacklash;
                 SkySettings.DecBacklash = newSettings.DecBacklash;
                 
-                // Phase 3c: Optics (4 properties - ApertureDiameter/Area are read-only in old system)
+                // Optics (4 properties)
                 SkySettings.FocalLength = newSettings.FocalLength;
                 SkySettings.CameraWidth = newSettings.CameraWidth;
                 SkySettings.CameraHeight = newSettings.CameraHeight;
                 SkySettings.EyepieceFs = newSettings.EyepieceFS;
                 
-                // Phase 3d: Advanced (6 properties - GotoPrecision read-only, TraceLogger not in old system)
+                // Advanced (6 properties) - SOME HAVE SIDE EFFECTS!
                 SkySettings.AllowAdvancedCommandSet = newSettings.AllowAdvancedCommandSet;
-                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;
-                SkySettings.FullCurrent = newSettings.FullCurrent;
+                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;  // ? SkyServer.SetSlewRates()
+                SkySettings.FullCurrent = newSettings.FullCurrent;  // ? SkyServer.SkyTasks()
                 SkySettings.GlobalStopOn = newSettings.GlobalStopOn;
                 SkySettings.DisplayInterval = newSettings.DisplayInterval;
                 SkySettings.Refraction = newSettings.Refraction;
                 
-                // Phase 4 Batch 1: Home Position Properties
+                // Home Position Properties (5 properties)
                 SkySettings.HomeAxisX = newSettings.HomeAxisX;
                 SkySettings.HomeAxisY = newSettings.HomeAxisY;
                 SkySettings.AutoHomeAxisX = newSettings.AutoHomeAxisX;
                 SkySettings.AutoHomeAxisY = newSettings.AutoHomeAxisY;
                 SkySettings.HomeWarning = newSettings.HomeWarning;
+                SkySettings.HomeDialog = newSettings.HomeDialog;
                 
-                // Phase 4 Batch 3: Environmental & Park Properties
+                // Environmental & Park Properties (5 properties)
                 SkySettings.Temperature = newSettings.Temperature;
                 SkySettings.ParkName = newSettings.ParkName;
                 SkySettings.ParkDialog = newSettings.ParkDialog;
                 SkySettings.LimitPark = newSettings.LimitPark;
                 SkySettings.ParkLimitName = newSettings.ParkLimitName;
                 
-                // Phase 4 Batch 4: Axis Limit Properties
+                // Axis Limit Properties (6 properties)
                 SkySettings.HourAngleLimit = newSettings.HourAngleLimit;
                 SkySettings.AxisLimitX = newSettings.AxisLimitX;
                 SkySettings.AxisUpperLimitY = newSettings.AxisUpperLimitY;
@@ -172,18 +211,18 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.LimitTracking = newSettings.LimitTracking;
                 SkySettings.SyncLimitOn = newSettings.SyncLimitOn;
                 
-                // Phase 4 Batch 5: PEC & PPEC Properties
+                // PEC & PPEC Properties (8 properties) - SOME HAVE SIDE EFFECTS!
                 SkySettings.PecOn = newSettings.PecOn;
                 SkySettings.PPecOn = newSettings.PpecOn;
-                SkySettings.AlternatingPPec = newSettings.AlternatingPPEC;
+                SkySettings.AlternatingPPec = newSettings.AlternatingPPEC;  // ? SkyServer.SkyTasks()
                 SkySettings.PecMode = ParsePecMode(newSettings.PecMode);
                 SkySettings.PecOffSet = newSettings.PecOffSet;
                 SkySettings.PecWormFile = newSettings.PecWormFile;
                 SkySettings.Pec360File = newSettings.Pec360File;
                 SkySettings.PolarLedLevel = newSettings.PolarLedLevel;
                 
-                // Phase 4 Batch 6: Encoder & Hand Controller Properties
-                SkySettings.Encoders = newSettings.EncodersOn;
+                // Encoder & Hand Controller Properties (10 properties) - ONE HAS SIDE EFFECT!
+                SkySettings.Encoders = newSettings.EncodersOn;  // ? SkyServer.SkyTasks()
                 SkySettings.HcSpeed = ParseSlewSpeed(newSettings.HcSpeed);
                 SkySettings.HcMode = ParseHcMode(newSettings.HcMode);
                 SkySettings.HcAntiRa = newSettings.HcAntiRa;
@@ -191,22 +230,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.HcFlipEw = newSettings.HcFlipEW;
                 SkySettings.HcFlipNs = newSettings.HcFlipNS;
                 SkySettings.DisableKeysOnGoTo = newSettings.DisableKeysOnGoTo;
-                SkySettings.MinPulseRa = newSettings.MinPulseRa;
-                SkySettings.MinPulseDec = newSettings.MinPulseDec;
                 
-                // Phase 4 Batch 7: Tracking Rate & Slew Properties
-                SkySettings.SiderealRate = newSettings.SiderealRate;
-                SkySettings.LunarRate = newSettings.LunarRate;
-                SkySettings.SolarRate = newSettings.SolarRate;
-                SkySettings.KingRate = newSettings.KingRate;
-                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;
-                SkySettings.DisplayInterval = newSettings.DisplayInterval;
-                SkySettings.St4GuideRate = newSettings.St4Guiderate;
-                
-                // Phase 4 Batch 8: Serial Communication Settings (7 properties)
-                // Note: Some have private setters (ReadTimeout, DataBits, DTREnable, RTSEnable, HandShake)
-                // These can only be read from new settings, not written back from old
-                // Using reflection to set these read-only properties
+                // Serial Communication Settings (7 properties)
                 try 
                 {
                     var handshakeValue = ParseHandshake(newSettings.Handshake);
@@ -221,63 +246,38 @@ namespace GreenSwamp.Alpaca.MountControl
                     LogBridge($"Warning: Could not sync read-only serial properties: {ex.Message}");
                 }
                 
-                // GPS settings - handle port name/number conversion
                 SkySettings.GpsComPort = ParseGpsPortNumber(newSettings.GpsPort);
                 SkySettings.GpsBaudRate = ParseSerialSpeed(ParseGpsBaudRateString(newSettings.GpsBaudRate));
                 
-                // Phase 4 Batch 9: UI & Display Settings (2 properties)
-                // Note: TraceLogger doesn't exist in old system, skip it
+                // UI & Display Settings (2 properties)
                 SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
                 SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
                 
-                // Phase 4 Batch 10: Mount Behavior & Capability Settings (3 properties)
-                // Note: Several properties only exist in new system or are read-only in old system
-                // DisconnectOnPark - new system only, skip
-                // AutoTrack - read-only in old, skip (can't sync from new)
-                // ModelType - new system only, skip
-                // Pressure - new system only, skip
-                // VersionOne, NumMoveAxis, NoSyncPastMeridian - all read-only in old, skip
-                
-                // PolarMode - bidirectional sync
+                // Mount Behavior & Capability Settings
                 SkySettings.PolarMode = ParsePolarMode(newSettings.PolarMode);
                 
-                // Phase 4 Batch 11: Horizon & Alt-Az Tracking Settings (4 properties)
+                // Horizon & Alt-Az Tracking Settings (5 properties)
                 SkySettings.HzLimitPark = newSettings.HzLimitPark;
                 SkySettings.ParkHzLimitName = newSettings.ParkHzLimitName;
                 SkySettings.HzLimitTracking = newSettings.HzLimitTracking;
                 SkySettings.AxisHzTrackingLimit = newSettings.AxisHzTrackingLimit;
                 SkySettings.AltAzTrackingUpdateInterval = newSettings.AltAzTrackingUpdateInterval;
                 
-                // Note: InstrumentDescription and InstrumentName are read-only in old system (private setters)
-                // They should only be synced from old ? new, not new ? old
-                
-                // Phase 4 Batch 12: Final Simple Properties & Cartes du Ciel Integration
-                // Note: The following properties exist ONLY in new system (Settings.Models.SkySettings):
-                // - CdCip (string) - Cartes du Ciel IP address for planetarium integration
-                // - CdCport (int) - Cartes du Ciel port for planetarium integration
-                // These cannot be synced from old system as they don't exist in MountControl.SkySettings
-                
-                // Note: The following properties have private setters in old system:
-                // - RaTrackingOffset (int) - Tracking offset, computed/derived value
-                // - SyncLimit (int) - Sync limit in degrees, computed/derived value
-                // These are read-only and shouldn't be synced FROM old system
-                
-                // All other properties have been synced in previous batches
-                
-                // Save asynchronously (use Wait for synchronous context)
-                _settingsService.SaveSettingsAsync(newSettings).Wait();
-                
-                LogBridge("Saved 93 properties old ? new settings (Phase 4 Batch 1-12 complete)");
+                // All 93 properties synced, side effects preserved!
+                LogBridge("Synced 93 properties new ? old (side effects preserved)");
             }
             catch (Exception ex)
             {
-                LogBridge($"Error in SyncOldToNew: {ex.Message}");
+                LogBridge($"Error in SyncNewToOld: {ex.Message}");
+            }
+            finally
+            {
+                _isUpdating = false;
             }
         }
 
         /// <summary>
         /// Sync old static properties to new settings (write path).
-        /// Phase 2: Only when explicitly saved via Save() method.
         /// </summary>
         private static void SyncOldToNew()
         {
@@ -323,13 +323,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.RaBacklash = SkySettings.RaBacklash;
                 newSettings.DecBacklash = SkySettings.DecBacklash;
                 
-                // Phase 3c: Optics (4 properties - ApertureDiameter/Area are read-only in old system)
+                // Phase 3c: Optics (4 properties)
                 newSettings.FocalLength = SkySettings.FocalLength;
                 newSettings.CameraWidth = SkySettings.CameraWidth;
                 newSettings.CameraHeight = SkySettings.CameraHeight;
                 newSettings.EyepieceFS = SkySettings.EyepieceFs;
                 
-                // Phase 3d: Advanced (6 properties - GotoPrecision read-only, TraceLogger not in old system)
+                // Phase 3d: Advanced (6 properties)
                 newSettings.AllowAdvancedCommandSet = SkySettings.AllowAdvancedCommandSet;
                 newSettings.MaximumSlewRate = SkySettings.MaxSlewRate;
                 newSettings.FullCurrent = SkySettings.FullCurrent;
@@ -343,8 +343,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.AutoHomeAxisX = SkySettings.AutoHomeAxisX;
                 newSettings.AutoHomeAxisY = SkySettings.AutoHomeAxisY;
                 newSettings.HomeWarning = SkySettings.HomeWarning;
-                
-                // Phase 4 Batch 2: Home Dialog Property
                 newSettings.HomeDialog = SkySettings.HomeDialog;
                 
                 // Phase 4 Batch 3: Environmental & Park Properties
@@ -381,46 +379,16 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.HcFlipEW = SkySettings.HcFlipEw;
                 newSettings.HcFlipNS = SkySettings.HcFlipNs;
                 newSettings.DisableKeysOnGoTo = SkySettings.DisableKeysOnGoTo;
-                newSettings.MinPulseRa = SkySettings.MinPulseRa;
-                newSettings.MinPulseDec = SkySettings.MinPulseDec;
-                
-                // Phase 4 Batch 7: Tracking Rate & Slew Properties
-                newSettings.SiderealRate = SkySettings.SiderealRate;
-                newSettings.LunarRate = SkySettings.LunarRate;
-                newSettings.SolarRate = SkySettings.SolarRate;
-                newSettings.KingRate = SkySettings.KingRate;
-                newSettings.MaximumSlewRate = SkySettings.MaxSlewRate;
-                newSettings.DisplayInterval = SkySettings.DisplayInterval;
-                newSettings.St4Guiderate = SkySettings.St4GuideRate;
                 
                 // Phase 4 Batch 8: Serial Communication Settings (7 properties)
-                // Note: Read-only properties in old system are NOT synced back (they shouldn't change)
-                // Only GPS settings can be synced from old ? new
                 newSettings.GpsPort = ParseGpsPortString(SkySettings.GpsComPort);
                 newSettings.GpsBaudRate = ((int)SkySettings.GpsBaudRate).ToString();
                 
-                // The following are read-only in old system, so they're not synced from old ? new:
-                // HandShake, ReadTimeout, DataBits, DTREnable, RTSEnable
-                
                 // Phase 4 Batch 9: UI & Display Settings (2 properties)
-                // Note: TraceLogger is new system only, doesn't sync from old
                 newSettings.FrontGraphic = SkySettings.FrontGraphic.ToString();
                 newSettings.RaGaugeFlip = SkySettings.RaGaugeFlip;
                 
                 // Phase 4 Batch 10: Mount Behavior & Capability Settings
-                // New system properties (can't sync FROM old system):
-                // - DisconnectOnPark (new only)
-                // - ModelType (new only)
-                // - Pressure (new only)
-                // - TraceLogger (already handled in Batch 9)
-                
-                // Read-only in old system (can't sync FROM old, they're computed/derived):
-                // - AutoTrack (private set in old)
-                // - VersionOne (private set in old)
-                // - NumMoveAxis (private set in old)
-                // - NoSyncPastMeridian (private set in old)
-                
-                // Bidirectional property:
                 newSettings.PolarMode = SkySettings.PolarMode.ToString();
                 
                 // Phase 4 Batch 11: Horizon & Alt-Az Tracking Settings
@@ -431,25 +399,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.AltAzTrackingUpdateInterval = SkySettings.AltAzTrackingUpdateInterval;
                 
                 // InstrumentDescription and InstrumentName can be synced FROM old system
-                // (they're read-only in old but can be written in new)
                 newSettings.InstrumentDescription = SkySettings.InstrumentDescription;
                 newSettings.InstrumentName = SkySettings.InstrumentName;
-                
-                // Phase 4 Batch 12: Final Simple Properties & Cartes du Ciel Integration
-                // Note: The following properties exist ONLY in new system, cannot sync from old:
-                // - CdCip, CdCport: Cartes du Ciel integration (not in old SkySettings)
-                //   These are new-system-only configuration for planetarium integration
-                
-                // Note: The following properties are read-only in old system:
-                // - RaTrackingOffset (private set) - cannot sync from old to new
-                // - SyncLimit (private set) - cannot sync from old to new
-                
-                // All other properties have been synced in previous batches
                 
                 // Save asynchronously (use Wait for synchronous context)
                 _settingsService.SaveSettingsAsync(newSettings).Wait();
                 
-                LogBridge("Saved 93 properties old ? new settings (Phase 4 Batch 1-12 complete)");
+                LogBridge("Saved 93 properties old ? new settings");
             }
             catch (Exception ex)
             {
@@ -482,7 +438,6 @@ namespace GreenSwamp.Alpaca.MountControl
             
         private static SerialSpeed ParseSerialSpeed(int value)
         {
-            // Map baud rate integer to SerialSpeed enum
             return value switch
             {
                 300 => SerialSpeed.ps300,
@@ -554,18 +509,16 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             return Enum.TryParse<PolarMode>(value, true, out var result) 
                 ? result 
-                : PolarMode.Left; // Default to Left if parsing fails
+                : PolarMode.Left;
         }
         
         private static string ParseGpsPortNumber(int portNumber)
         {
-            // Convert port number to COM port string (e.g., 1 ? "COM1")
             return portNumber > 0 ? $"COM{portNumber}" : string.Empty;
         }
         
         private static int ParseGpsPortString(string portString)
         {
-            // Convert COM port string to port number (e.g., "COM1" ? 1)
             if (string.IsNullOrEmpty(portString)) return 0;
             
             var cleaned = portString.Replace("COM", "", StringComparison.OrdinalIgnoreCase).Trim();
@@ -574,13 +527,9 @@ namespace GreenSwamp.Alpaca.MountControl
         
         private static int ParseGpsBaudRateString(string baudRateString)
         {
-            // Parse baud rate from string to integer
             return int.TryParse(baudRateString, out var baudRate) ? baudRate : 9600;
         }
         
-        /// <summary>
-        /// Set a private property using reflection (for read-only properties in old system)
-        /// </summary>
         private static void SetPrivateProperty(Type type, string propertyName, object value)
         {
             var property = type.GetProperty(propertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
@@ -617,159 +566,6 @@ namespace GreenSwamp.Alpaca.MountControl
             catch
             {
                 // Fail silently if logging fails
-            }
-        }
-
-        // Phase 4 Batch 1: Home Position Properties
-        internal static partial class Keys
-        {
-            public const string HomeAxisX = "HomeAxisX";
-            public const string HomeAxisY = "AutoHomeAxisY";
-            public const string AutoHomeAxisX = "AutoHomeAxisX";
-            public const string AutoHomeAxisY = "AutoHomeAxisY";
-            public const string HomeWarning = "HomeWarning";
-            
-            // Phase 4 Batch 2: Home Dialog Property
-            public const string HomeDialog = "HomeDialog";
-            
-            // Phase 4 Batch 3: Environmental & Park Properties
-            public const string Temperature = "Temperature";
-            public const string ParkName = "ParkName";
-            public const string ParkDialog = "ParkDialog";
-            public const string LimitPark = "LimitPark";
-            public const string ParkLimitName = "ParkLimitName";
-            
-            // Phase 4 Batch 4: Axis Limit Properties
-            public const string HourAngleLimit = "HourAngleLimit";
-            public const string AxisLimitX = "AxisLimitX";
-            public const string AxisUpperLimitY = "AxisUpperLimitY";
-            public const string AxisLowerLimitY = "AxisLowerLimitY";
-            public const string LimitTracking = "LimitTracking";
-            public const string SyncLimitOn = "SyncLimitOn";
-            
-            // Phase 4 Batch 5: PEC & PPEC Properties
-            public const string PecOn = "PecOn";
-            public const string PPecOn = "PPecOn";
-            public const string AlternatingPPec = "AlternatingPPec";
-            public const string PecMode = "PecMode";
-            public const string PecOffSet = "PecOffSet";
-            public const string PecWormFile = "PecWormFile";
-            public const string Pec360File = "Pec360File";
-            public const string PolarLedLevel = "PolarLedLevel";
-            
-            // Phase 4 Batch 6: Encoder & Hand Controller Properties
-            public const string Encoders = "Encoders";
-            public const string HcSpeed = "HcSpeed";
-            public const string HcMode = "HcMode";
-            public const string HcAntiRa = "HcAntiRa";
-            public const string HcAntiDec = "HcAntiDec";
-            public const string HcFlipEw = "HcFlipEw";
-            public const string HcFlipNs = "HcFlipNs";
-            public const string DisableKeysOnGoTo = "DisableKeysOnGoTo";
-            public const string MinPulseRa = "MinPulseRa";
-            public const string MinPulseDec = "MinPulseDec";
-            
-            // Phase 4 Batch 7: Tracking Rate & Slew Properties
-            public const string SiderealRate = "SiderealRate";
-            public const string LunarRate = "LunarRate";
-            public const string SolarRate = "SolarRate";
-            public const string KingRate = "KingRate";
-            public const string MaxSlewRate = "MaxSlewRate";
-            public const string DisplayInterval = "DisplayInterval";
-            public const string St4GuideRate = "St4GuideRate";
-            
-            // Phase 4 Batch 8: Serial Communication Settings
-            public const string Handshake = "Handshake";
-            public const string ReadTimeout = "ReadTimeout";
-            public const string DataBits = "DataBits";
-            public const string DtrEnable = "DtrEnable";
-            public const string RtsEnable = "RtsEnable";
-            public const string GpsComPort = "GpsComPort";
-            public const string GpsBaudRate = "GpsBaudRate";
-            
-            // Phase 4 Batch 9: UI & Display Settings
-            public const string FrontGraphic = "FrontGraphic";
-            public const string RaGaugeFlip = "RaGaugeFlip";
-            
-            // Phase 4 Batch 10: Mount Behavior & Capability Settings
-            public const string PolarMode = "PolarMode";
-            // Note: The following are new system only or read-only in old system:
-            // - DisconnectOnPark (new only)
-            // - AutoTrack (read-only in old)
-            // - ModelType (new only)
-            // - Pressure (new only)
-            // - VersionOne (read-only in old)
-            // - NumMoveAxis (read-only in old)
-            // - NoSyncPastMeridian (read-only in old)
-            
-            // Phase 4 Batch 11: Horizon & Alt-Az Tracking Settings
-            public const string HzLimitPark = "HzLimitPark";
-            public const string ParkHzLimitName = "ParkHzLimitName";
-            public const string HzLimitTracking = "HzLimitTracking";
-            public const string AxisHzTrackingLimit = "AxisHzTrackingLimit";
-            public const string AltAzTrackingUpdateInterval = "AltAzTrackingUpdateInterval";
-            public const string InstrumentDescription = "InstrumentDescription";
-            public const string InstrumentName = "InstrumentName";
-            
-            // Phase 4 Batch 12: Final Simple Properties & Cartes du Ciel Integration
-            // Note: The following properties exist ONLY in new system (Settings.Models.SkySettings):
-            // - CdCip (string) - Cartes du Ciel IP address for planetarium integration
-            // - CdCport (int) - Cartes du Ciel port for planetarium integration
-            // These cannot be synced from old system as they don't exist in MountControl.SkySettings
-            
-            // Note: The following properties have private setters in old system:
-            // - RaTrackingOffset (int) - Tracking offset, computed/derived value
-            // - SyncLimit (int) - Sync limit in degrees, computed/derived value
-            // These are read-only and shouldn't be synced FROM old system
-        }
-        
-        // Helper method for setting JSON values safely
-        private static void SetJsonSetting<T>(string key, T value)
-        {
-            if (_settingsService == null || _isUpdating)
-            {
-                return;
-            }
-
-            try
-            {
-                _isUpdating = true;
-                var settings = _settingsService.GetSettings();
-                
-                // Use reflection to set the property
-                var property = typeof(Settings.Models.SkySettings).GetProperty(key);
-                if (property != null && property.CanWrite)
-                {
-                    property.SetValue(settings, value);
-                    _settingsService.SaveSettingsAsync(settings).Wait();
-                    LogBridge($"Updated {key} = {value}");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogBridge($"Error setting {key}: {ex.Message}");
-            }
-            finally
-            {
-                _isUpdating = false;
-            }
-        }
-        
-        // Helper method for safe execution
-        private static void SafeExecute(Action action)
-        {
-            if (_settingsService == null || _isUpdating)
-            {
-                return;
-            }
-
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                LogBridge($"Error in SafeExecute: {ex.Message}");
             }
         }
     }
