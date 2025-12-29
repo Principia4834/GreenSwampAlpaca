@@ -655,12 +655,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 return;
             }
 
-            bool trackingState;
-            SlewType startingState;
+            // bool trackingState;
+            // SlewType startingState;
 
             // Synchronize access to prevent race conditions with cancellation token
-            lock (_goToAsyncLock)
-            {
+            //lock (_goToAsyncLock)
+            //{
                 CancelAllAsync();
                 while (_ctsGoTo != null) Thread.Sleep(10);
                 if (IsSlewing)
@@ -686,9 +686,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 SlewState = slewState;
-                startingState = slewState;
+                var startingState = slewState;
                 // Planetarium fix to set Tracking for non-ASCOM compliant programs - set true by GoToCoordinatesAsync()
-                trackingState = tracking || Tracking;
+                var trackingState = tracking || Tracking;
                 // ToDo re-enable voice prompt later
                 // TrackingSpeak = false;
                 Tracking = false;
@@ -701,9 +701,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Create new cancellation token source INSIDE the lock
                 _ctsGoTo = new CancellationTokenSource();
-            } // Release lock before starting the potentially long-running slew operation
+            // } // Release lock before starting the potentially long-running slew operation
 
-        // Assume fail
+            // Assume fail
             try
             {
                 _ctsGoTo = new CancellationTokenSource();

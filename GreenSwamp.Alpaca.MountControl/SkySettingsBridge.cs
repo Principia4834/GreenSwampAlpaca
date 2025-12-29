@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -124,34 +124,29 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private static void SyncNewToOld()
         {
-            if (_settingsService == null || _isUpdating)
-            {
-                return;
-            }
-            
+            if (_settingsService == null || _isUpdating) return;
+
             try
             {
                 _isUpdating = true;
                 var newSettings = _settingsService.GetSettings();
-                
-                // CRITICAL: By setting these properties, we trigger their setters
-                // The setters contain side effects like SkyServer.SkyTasks() calls
-                // This is INTENTIONAL and preserves all hardware operations!
-                
-                // Connection Settings
+
+                // =================================================================
+                // PART 1: Sync 93 writable properties (via public setters - preserves side effects)
+                // =================================================================
+
+                // Connection Settings (5 properties)
                 SkySettings.Mount = ParseMountType(newSettings.Mount);
                 SkySettings.Port = newSettings.Port;
                 SkySettings.BaudRate = ParseSerialSpeed(newSettings.BaudRate);
-                
-                // Location Settings
+                SkySettings.AlignmentMode = ParseAlignmentMode(newSettings.AlignmentMode);
+                SkySettings.AtPark = newSettings.AtPark;
+
+                // Location Settings (3 properties)
                 SkySettings.Latitude = newSettings.Latitude;
                 SkySettings.Longitude = newSettings.Longitude;
                 SkySettings.Elevation = newSettings.Elevation;
-                
-                // Mount Configuration
-                SkySettings.AlignmentMode = ParseAlignmentMode(newSettings.AlignmentMode);
-                SkySettings.AtPark = newSettings.AtPark;
-                
+
                 // Tracking & Rates (10 properties)
                 SkySettings.TrackingRate = ParseDriveRate(newSettings.TrackingRate);
                 SkySettings.SiderealRate = newSettings.SiderealRate;
@@ -163,66 +158,78 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.CustomRaWormTeeth = newSettings.CustomRaWormTeeth;
                 SkySettings.CustomDec360Steps = newSettings.CustomDec360Steps;
                 SkySettings.CustomDecWormTeeth = newSettings.CustomDecWormTeeth;
-                
-                // Guiding (8 properties) - THESE HAVE SIDE EFFECTS!
-                SkySettings.MinPulseRa = newSettings.MinPulseRa;  // ? SkyServer.SkyTasks()
-                SkySettings.MinPulseDec = newSettings.MinPulseDec;  // ? SkyServer.SkyTasks()
-                SkySettings.DecPulseToGoTo = newSettings.DecPulseToGoTo;  // ? SkyServer.SkyTasks()
-                SkySettings.St4GuideRate = newSettings.St4Guiderate;  // ? SkyServer.SkyTasks()
-                SkySettings.GuideRateOffsetX = newSettings.GuideRateOffsetX;  // ? SkyServer.SetGuideRates()
-                SkySettings.GuideRateOffsetY = newSettings.GuideRateOffsetY;  // ? SkyServer.SetGuideRates()
+                SkySettings.CustomRaTrackingOffset = newSettings.CustomRaTrackingOffset;
+                SkySettings.CustomDecTrackingOffset = newSettings.CustomDecTrackingOffset;
+
+                // Guiding (8 properties - with side effects!)
+                SkySettings.MinPulseRa = newSettings.MinPulseRa;
+                SkySettings.MinPulseDec = newSettings.MinPulseDec;
+                SkySettings.DecPulseToGoTo = newSettings.DecPulseToGoTo;
+                SkySettings.St4GuideRate = newSettings.St4Guiderate;
+                SkySettings.GuideRateOffsetX = newSettings.GuideRateOffsetX;
+                SkySettings.GuideRateOffsetY = newSettings.GuideRateOffsetY;
                 SkySettings.RaBacklash = newSettings.RaBacklash;
                 SkySettings.DecBacklash = newSettings.DecBacklash;
-                
+
                 // Optics (4 properties)
                 SkySettings.FocalLength = newSettings.FocalLength;
                 SkySettings.CameraWidth = newSettings.CameraWidth;
                 SkySettings.CameraHeight = newSettings.CameraHeight;
                 SkySettings.EyepieceFs = newSettings.EyepieceFS;
-                
-                // Advanced (6 properties) - SOME HAVE SIDE EFFECTS!
+
+                // Advanced Settings (7 properties - some with side effects!)
                 SkySettings.AllowAdvancedCommandSet = newSettings.AllowAdvancedCommandSet;
-                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;  // ? SkyServer.SetSlewRates()
-                SkySettings.FullCurrent = newSettings.FullCurrent;  // ? SkyServer.SkyTasks()
+                SkySettings.MaxSlewRate = newSettings.MaximumSlewRate;  // Side effect: SetSlewRates()
+                SkySettings.FullCurrent = newSettings.FullCurrent;      // Side effect: SkyTasks()
+                SkySettings.Encoders = newSettings.EncodersOn;          // Side effect: SkyTasks()
+                SkySettings.AlternatingPPec = newSettings.AlternatingPPEC;  // Side effect: SkyTasks()
                 SkySettings.GlobalStopOn = newSettings.GlobalStopOn;
-                SkySettings.DisplayInterval = newSettings.DisplayInterval;
                 SkySettings.Refraction = newSettings.Refraction;
-                
-                // Home Position Properties (5 properties)
+
+                // Display Settings (3 properties)
+                SkySettings.DisplayInterval = newSettings.DisplayInterval;
+                SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
+                SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
+
+                // Home Position (6 properties)
                 SkySettings.HomeAxisX = newSettings.HomeAxisX;
                 SkySettings.HomeAxisY = newSettings.HomeAxisY;
                 SkySettings.AutoHomeAxisX = newSettings.AutoHomeAxisX;
                 SkySettings.AutoHomeAxisY = newSettings.AutoHomeAxisY;
                 SkySettings.HomeWarning = newSettings.HomeWarning;
                 SkySettings.HomeDialog = newSettings.HomeDialog;
-                
-                // Environmental & Park Properties (5 properties)
-                SkySettings.Temperature = newSettings.Temperature;
+
+                // Park Settings (4 properties)
                 SkySettings.ParkName = newSettings.ParkName;
                 SkySettings.ParkDialog = newSettings.ParkDialog;
                 SkySettings.LimitPark = newSettings.LimitPark;
                 SkySettings.ParkLimitName = newSettings.ParkLimitName;
-                
-                // Axis Limit Properties (6 properties)
+
+                // Axis Limits (6 properties)
                 SkySettings.HourAngleLimit = newSettings.HourAngleLimit;
                 SkySettings.AxisLimitX = newSettings.AxisLimitX;
                 SkySettings.AxisUpperLimitY = newSettings.AxisUpperLimitY;
                 SkySettings.AxisLowerLimitY = newSettings.AxisLowerLimitY;
                 SkySettings.LimitTracking = newSettings.LimitTracking;
                 SkySettings.SyncLimitOn = newSettings.SyncLimitOn;
-                
-                // PEC & PPEC Properties (8 properties) - SOME HAVE SIDE EFFECTS!
+                SkySettings.AxisTrackingLimit = newSettings.AxisTrackingLimit;
+
+                // Horizon Limits (3 properties)
+                SkySettings.HzLimitPark = newSettings.HzLimitPark;
+                SkySettings.ParkHzLimitName = newSettings.ParkHzLimitName;
+                SkySettings.HzLimitTracking = newSettings.HzLimitTracking;
+                SkySettings.AxisHzTrackingLimit = newSettings.AxisHzTrackingLimit;
+
+                // PEC Settings (8 properties)
                 SkySettings.PecOn = newSettings.PecOn;
                 SkySettings.PPecOn = newSettings.PpecOn;
-                SkySettings.AlternatingPPec = newSettings.AlternatingPPEC;  // ? SkyServer.SkyTasks()
                 SkySettings.PecMode = ParsePecMode(newSettings.PecMode);
                 SkySettings.PecOffSet = newSettings.PecOffSet;
                 SkySettings.PecWormFile = newSettings.PecWormFile;
                 SkySettings.Pec360File = newSettings.Pec360File;
                 SkySettings.PolarLedLevel = newSettings.PolarLedLevel;
-                
-                // Encoder & Hand Controller Properties (10 properties) - ONE HAS SIDE EFFECT!
-                SkySettings.Encoders = newSettings.EncodersOn;  // ? SkyServer.SkyTasks()
+
+                // Hand Controller (8 properties)
                 SkySettings.HcSpeed = ParseSlewSpeed(newSettings.HcSpeed);
                 SkySettings.HcMode = ParseHcMode(newSettings.HcMode);
                 SkySettings.HcAntiRa = newSettings.HcAntiRa;
@@ -230,52 +237,42 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.HcFlipEw = newSettings.HcFlipEW;
                 SkySettings.HcFlipNs = newSettings.HcFlipNS;
                 SkySettings.DisableKeysOnGoTo = newSettings.DisableKeysOnGoTo;
-                
-                // Serial Communication Settings (7 properties)
-                try 
-                {
-                    var handshakeValue = ParseHandshake(newSettings.Handshake);
-                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.HandShake), handshakeValue);
-                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.ReadTimeout), newSettings.ReadTimeout);
-                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.DataBits), newSettings.DataBits);
-                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.DtrEnable), newSettings.DTREnable);
-                    SetPrivateProperty(typeof(SkySettings), nameof(SkySettings.RtsEnable), newSettings.RTSEnable);
-                }
-                catch (Exception ex)
-                {
-                    LogBridge($"Warning: Could not sync read-only serial properties: {ex.Message}");
-                }
-                
+
+                // GPS Settings (2 properties)
                 SkySettings.GpsComPort = ParseGpsPortNumber(newSettings.GpsPort);
                 SkySettings.GpsBaudRate = ParseSerialSpeed(ParseGpsBaudRateString(newSettings.GpsBaudRate));
-                
-                // UI & Display Settings (2 properties)
-                SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
-                SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
-                
-                // Mount Behavior & Capability Settings
+
+                // Mount Settings (2 properties)
                 SkySettings.PolarMode = ParsePolarMode(newSettings.PolarMode);
-                
-                // Horizon & Alt-Az Tracking Settings (5 properties)
-                SkySettings.HzLimitPark = newSettings.HzLimitPark;
-                SkySettings.ParkHzLimitName = newSettings.ParkHzLimitName;
-                SkySettings.HzLimitTracking = newSettings.HzLimitTracking;
-                SkySettings.AxisHzTrackingLimit = newSettings.AxisHzTrackingLimit;
+                SkySettings.EquatorialCoordinateType = Enum.TryParse<EquatorialCoordinateType>(
+                    newSettings.EquatorialCoordinateType, true, out var eqType)
+                    ? eqType
+                    : EquatorialCoordinateType.Other;
+
+                // Environmental (1 property)
+                SkySettings.Temperature = newSettings.Temperature;
+
+                // Alt-Az Tracking (1 property)
                 SkySettings.AltAzTrackingUpdateInterval = newSettings.AltAzTrackingUpdateInterval;
-                
-                // All 93 properties synced, side effects preserved!
-                LogBridge("Synced 93 properties new ? old (side effects preserved)");
-            }
-            catch (Exception ex)
-            {
-                LogBridge($"Error in SyncNewToOld: {ex.Message}");
+
+                // CanSetPark and CanSetPierSide have public setters (not read-only)
+                SkySettings.CanSetPark = newSettings.CanSetPark;
+                SkySettings.CanSetPierSide = newSettings.CanSetPierSide;
+
+                // =================================================================
+                // PART 2: Sync 41 read-only properties (via backing fields - direct access)
+                // =================================================================
+                // ✅ NEW: Use the JSON-based method instead of the instance-based one
+                SkySettings.SetCapabilitiesAndReadOnlyFromJson(newSettings);
+
+                LogBridge("Synced 134 properties new → old (93 writable + 41 read-only)");
             }
             finally
             {
                 _isUpdating = false;
             }
         }
-
+        
         /// <summary>
         /// Sync old static properties to new settings (write path).
         /// </summary>

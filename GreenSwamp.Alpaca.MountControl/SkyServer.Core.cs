@@ -118,15 +118,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                // load default or user property settings
+                // Phase A.6: Settings loaded via SkySettingsBridge from JSON
+                // Bridge handles all 121 properties (93 public + 28 capabilities + 13 read-only)
+                // Load() is no longer needed - kept for backward compatibility but not called
                 // SkySettings.Load();
 
                 // load some things
                 Defaults();
-
-                // ToDo: Remove if not needed
-                // SpiralCollection = new List<SpiralPoint>();
-
+                
                 // set local to NaN for constructor
                 _appAxes = new Vector(double.NaN, double.NaN);
 
@@ -549,15 +548,18 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static void MountReset()
         {
-            // Load all settings
-            SkySettings.Load();
-            // Set home positions
+            // Phase A.6: Settings already loaded from JSON via bridge
+            // Bridge keeps settings current - no need to reload from user.config
+            // All 121 properties are synced bidirectionally by the bridge
+            // SkySettings.Load();
+
+            // Set home positions using current settings (already loaded)
             _homeAxes = GetHomeAxes(SkySettings.HomeAxisX, SkySettings.HomeAxisY);
             // Set axis positions
             _appAxisX = _homeAxes.X;
             _appAxisY = _homeAxes.Y;
         }
-
+        
         /// <summary>
         /// Get home axes adjusted for angle offset
         /// </summary>

@@ -1,5 +1,6 @@
-using ASCOM.Alpaca;
+﻿using ASCOM.Alpaca;
 using ASCOM.Common;
+using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Settings.Extensions;
 using GreenSwamp.Alpaca.Settings.Services;
 using System.Diagnostics;
@@ -220,22 +221,25 @@ namespace GreenSwamp.Alpaca.Server
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
-                
-                // Phase A Step A.2: Initialize SkySettingsInstance singleton
-                // This must happen BEFORE bridge initialization
-                GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Initialize();
-                Logger.LogInformation("? Phase A.2: SkySettingsInstance initialized (singleton)");
 
-                // Phase A Step A.3: Initialize SkyServer with the settings instance
-                // This connects the static SkyServer to the instance-based settings
-                var settingsInstance = app.Services.GetRequiredService<GreenSwamp.Alpaca.MountControl.SkySettingsInstance>();
+                // Phase A Step A.2: Initialize SkySettingsInstance singleton
+                GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Initialize();
+                Logger.LogInformation("✅ Phase A.2: SkySettingsInstance initialized (singleton)");
+
+                // Phase A Step A.3: Initialize SkyServer with instance settings
+                var settingsInstance = app.Services.GetRequiredService<SkySettingsInstance>();
                 GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
-                Logger.LogInformation("? Phase A.3: SkyServer initialized with instance settings");
-                
-                // Initialize SkySettings bridge (syncs 8 critical properties)
+                Logger.LogInformation("✅ Phase A.3: SkyServer initialized with instance settings");
+
+                // Initialize SkySettings bridge (loads settings from JSON → static SkySettings)
                 GreenSwamp.Alpaca.MountControl.SkySettingsBridge.Initialize(settingsService);
-                Logger.LogInformation("? Phase 2: SkySettings bridge initialized");
-                
+                Logger.LogInformation("✅ Phase 2: SkySettings bridge initialized");
+
+                // Phase A Step A.4: Initialize SkySystem (MUST be after bridge!)
+                // This is critical - SkySystem needs SkySettings.Port and BaudRate to be loaded
+                GreenSwamp.Alpaca.MountControl.SkySystem.Initialize();
+                Logger.LogInformation("✅ Phase A.4: SkySystem initialized (serial settings loaded)");
+
                 // Initialize Monitor settings bridge (minimal Phase 2 implementation)
                 GreenSwamp.Alpaca.Shared.MonitorSettingsBridge.Initialize(settingsService);
                 Logger.LogInformation("? Phase 2: Monitor settings bridge initialized");

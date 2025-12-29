@@ -2013,7 +2013,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// initialize  the application's state. It sets various capabilities, server configurations, and mount
         /// properties  based on the loaded settings. This method also handles deserialization of complex settings and 
         /// ensures that all required properties are properly initialized.</remarks>
-        [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
+        // [Obsolete("Settings loaded via SkySettingsBridge. This method is no longer needed.")]
         public static void Load()
         {
             //// Load settings from user.config handles create new, update or migrate settings as needed 
@@ -2154,11 +2154,6 @@ namespace GreenSwamp.Alpaca.MountControl
             //RaTrackingOffset = Properties.SkyTelescope.Default.RATrackingOffset;
             //RtsEnable = Properties.SkyTelescope.Default.RTSEnable;
             //SiderealRate = Properties.SkyTelescope.Default.SiderealRate;
-            //// ToDo: Remove if not needed
-            ////SpiralDistance = Properties.SkyTelescope.Default.SpiralDistance;
-            ////SpiralLimits = Properties.SkyTelescope.Default.SpiralLimits;
-            ////SpiralHeight = Properties.SkyTelescope.Default.SpiralHeight;
-            ////SpiralWidth = Properties.SkyTelescope.Default.SpiralWidth;
             //SolarRate = Properties.SkyTelescope.Default.SolarRate;
             //St4GuideRate = Properties.SkyTelescope.Default.St4Guiderate;
             //SyncLimit = Properties.SkyTelescope.Default.SyncLimit;
@@ -2174,7 +2169,6 @@ namespace GreenSwamp.Alpaca.MountControl
             //AutoHomeAxisX = Properties.SkyTelescope.Default.AutoHomeAxisX;
             //AutoHomeAxisY = Properties.SkyTelescope.Default.AutoHomeAxisY;
             //ParkPositions = JsonConvert.DeserializeObject<List<ParkPosition>>(Properties.SkyTelescope.Default.ParkPositions);
-            ////UTCDateOffset = Properties.SkyTelescope.Default.UTCOffset;
         }
 
         /// <summary>
@@ -2606,6 +2600,223 @@ namespace GreenSwamp.Alpaca.MountControl
             StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
         }
 
+        /// <summary>
+        /// Internal method for SkySettingsBridge to set properties with private setters from JSON.
+        /// This bypasses private setters by directly accessing backing fields.
+        /// Phase A.6: Bridge capability sync - handles 28 capabilities + 13 read-only properties = 41 total
+        /// </summary>
+        /// <param name="instance">The SkySettingsInstance containing values loaded from JSON</param>
+        internal static void SetCapabilitiesAndReadOnlyFromInstance(SkySettingsInstance instance)
+        {
+            try
+            {
+                // =================================================================
+                // 28 CAPABILITY PROPERTIES (all have private setters)
+                // =================================================================
+                _canAlignMode = instance.CanAlignMode;
+                _canAltAz = instance.CanAltAz;
+                _canEquatorial = instance.CanEquatorial;
+                _canFindHome = instance.CanFindHome;
+                _canLatLongElev = instance.CanLatLongElev;
+                _canOptics = instance.CanOptics;
+                _canPark = instance.CanPark;
+                _canPulseGuide = instance.CanPulseGuide;
+                _canSetEquRates = instance.CanSetEquRates;
+                _canSetDeclinationRate = instance.CanSetDeclinationRate;
+                _canSetGuideRates = instance.CanSetGuideRates;
+                _canSetRightAscensionRate = instance.CanSetRightAscensionRate;
+                _canSetTracking = instance.CanSetTracking;
+                _canSiderealTime = instance.CanSiderealTime;
+                _canSlew = instance.CanSlew;
+                _canSlewAltAz = instance.CanSlewAltAz;
+                _canSlewAltAzAsync = instance.CanSlewAltAzAsync;
+                _canSlewAsync = instance.CanSlewAsync;
+                _canSync = instance.CanSync;
+                _canSyncAltAz = instance.CanSyncAltAz;
+                _canTrackingRates = instance.CanTrackingRates;
+                _canUnPark = instance.CanUnPark;
+                _noSyncPastMeridian = instance.NoSyncPastMeridian;
+                _numMoveAxis = instance.NumMoveAxis;
+                _versionOne = instance.VersionOne;
+
+                // Note: CanSetPark and CanSetPierSide have public setters - 
+                // handled by bridge's normal sync (no backing field access needed)
+
+                // =================================================================
+                // 13 SERVER SETTINGS WITH PRIVATE SETTERS
+                // =================================================================
+
+                // Vector3 (no PropertyChanged event, just direct assignment)
+                _axisModelOffsets = instance.AxisModelOffsets;
+
+                // Handshake enum - directly accessible as read-only property
+                _handShake = instance.HandShake;
+
+                // Optics properties
+                _apertureArea = instance.ApertureArea;
+                _apertureDiameter = instance.ApertureDiameter;
+
+                // Behavior properties
+                _autoTrack = instance.AutoTrack;
+                _gotoPrecision = instance.GotoPrecision;
+                _syncLimit = instance.SyncLimit;
+
+                // Serial communication properties (FIXED property names)
+                _dataBits = instance.DataBits;
+                _dtrEnable = instance.DtrEnable;       // FIXED: was DTREnable
+                _readTimeout = instance.ReadTimeout;
+                _rtsEnable = instance.RtsEnable;        // FIXED: was RTSEnable
+
+                // Tracking offset (FIXED property name)
+                _raTrackingOffset = instance.RaTrackingOffset;  // FIXED: was RATrackingOffset
+
+                // Instrument metadata
+                _instrumentDescription = instance.InstrumentDescription;
+                _instrumentName = instance.InstrumentName;
+
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = Principles.HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "Set 41 properties via backing fields (28 capabilities + 13 read-only)"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            catch (Exception ex)
+            {
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = Principles.HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Failed to set capabilities/read-only properties: {ex.Message}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Internal method for SkySettingsBridge to set properties with private setters directly from JSON.
+        /// This bypasses the SkySettingsInstance wrapper and reads directly from the JSON settings model.
+        /// Phase A.6: Bridge capability sync - handles 28 capabilities + 13 read-only properties = 41 total
+        /// </summary>
+        /// <param name="jsonSettings">The Settings.Models.SkySettings loaded from JSON</param>
+        internal static void SetCapabilitiesAndReadOnlyFromJson(Settings.Models.SkySettings jsonSettings)
+        {
+            try
+            {
+                // =================================================================
+                // 28 CAPABILITY PROPERTIES (all have private setters)
+                // =================================================================
+                _canAlignMode = jsonSettings.CanAlignMode;
+                _canAltAz = jsonSettings.CanAltAz;
+                _canEquatorial = jsonSettings.CanEquatorial;
+                _canFindHome = jsonSettings.CanFindHome;
+                _canLatLongElev = jsonSettings.CanLatLongElev;
+                _canOptics = jsonSettings.CanOptics;
+                _canPark = jsonSettings.CanPark;
+                _canPulseGuide = jsonSettings.CanPulseGuide;
+                _canSetEquRates = jsonSettings.CanSetEquRates;
+                _canSetDeclinationRate = jsonSettings.CanSetDeclinationRate;
+                _canSetGuideRates = jsonSettings.CanSetGuideRates;
+                _canSetRightAscensionRate = jsonSettings.CanSetRightAscensionRate;
+                _canSetTracking = jsonSettings.CanSetTracking;
+                _canSiderealTime = jsonSettings.CanSiderealTime;
+                _canSlew = jsonSettings.CanSlew;
+                _canSlewAltAz = jsonSettings.CanSlewAltAz;
+                _canSlewAltAzAsync = jsonSettings.CanSlewAltAzAsync;
+                _canSlewAsync = jsonSettings.CanSlewAsync;
+                _canSync = jsonSettings.CanSync;
+                _canSyncAltAz = jsonSettings.CanSyncAltAz;
+                _canTrackingRates = jsonSettings.CanTrackingRates;
+                _canUnPark = jsonSettings.CanUnpark;  // Note: JSON has "CanUnpark" not "CanUnPark"
+                _noSyncPastMeridian = jsonSettings.NoSyncPastMeridian;
+                _numMoveAxis = jsonSettings.NumMoveAxis;
+                _versionOne = jsonSettings.VersionOne;
+
+                // Note: CanSetPark and CanSetPierSide have public setters in static SkySettings
+                // They're handled by bridge's normal sync
+
+                // =================================================================
+                // 13 SERVER SETTINGS WITH PRIVATE SETTERS
+                // =================================================================
+
+                // Vector3 - needs conversion from AxisModelOffset class
+                _axisModelOffsets = new System.Numerics.Vector3(
+                    (float)jsonSettings.AxisModelOffsets.X,
+                    (float)jsonSettings.AxisModelOffsets.Y,
+                    (float)jsonSettings.AxisModelOffsets.Z
+                );
+
+                // Handshake enum - parse from string (use bridge's method or inline parse)
+                if (Enum.TryParse<Handshake>(jsonSettings.Handshake, true, out var handshakeResult))
+                {
+                    _handShake = handshakeResult;
+                }
+                else
+                {
+                    _handShake = Handshake.None; // Default fallback
+                }
+
+                // Optics properties (calculated, but can be set from JSON if present)
+                _apertureArea = jsonSettings.ApertureArea;
+                _apertureDiameter = jsonSettings.ApertureDiameter;
+
+                // Behavior properties
+                _autoTrack = jsonSettings.AutoTrack;
+                _gotoPrecision = jsonSettings.GotoPrecision;
+                _syncLimit = jsonSettings.SyncLimit;
+
+                // Serial communication properties
+                _dataBits = jsonSettings.DataBits;
+                _dtrEnable = jsonSettings.DTREnable;       // JSON has DTREnable
+                _readTimeout = jsonSettings.ReadTimeout;
+                _rtsEnable = jsonSettings.RTSEnable;       // JSON has RTSEnable
+
+                // Tracking offset
+                _raTrackingOffset = jsonSettings.RATrackingOffset;  // JSON has RATrackingOffset
+
+                // Instrument metadata
+                _instrumentDescription = jsonSettings.InstrumentDescription;
+                _instrumentName = jsonSettings.InstrumentName;
+
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = Principles.HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "Set 41 properties from JSON (28 capabilities + 13 read-only)"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            catch (Exception ex)
+            {
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = Principles.HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Failed to set capabilities/read-only from JSON: {ex.Message}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+                throw;
+            }
+        }
+        
         #endregion
     }
 }
