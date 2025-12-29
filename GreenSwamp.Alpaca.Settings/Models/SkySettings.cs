@@ -54,7 +54,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public string AlignmentMode { get; set; } = null!;
         public string EquatorialCoordinateType { get; set; } = null!;
         public bool AtPark { get; set; }
-        public bool DisconnectOnPark { get; set; }
         
         // Optical Settings
         public double ApertureDiameter { get; set; }
@@ -199,10 +198,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         // GPS Settings
         public int GpsPort { get; set; }
         public string GpsBaudRate { get; set; } = null!;
-        
-        // Cartes du Ciel Integration
-        public string CdCip { get; set; } = null!;
-        public int CdCport { get; set; }
         
         // Instrument Info
         public string InstrumentDescription { get; set; } = null!;
