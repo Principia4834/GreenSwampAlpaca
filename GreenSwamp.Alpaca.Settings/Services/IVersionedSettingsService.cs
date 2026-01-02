@@ -34,6 +34,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
         Task SaveSettingsAsync(SkySettings settings);
         
         /// <summary>
+        /// Gets the current monitor settings
+        /// </summary>
+        MonitorSettings GetMonitorSettings();
+        
+        /// <summary>
+        /// Saves monitor settings to the current version folder
+        /// </summary>
+        Task SaveMonitorSettingsAsync(MonitorSettings settings);
+        
+        /// <summary>
         /// Migrates settings from the most recent previous version
         /// </summary>
         Task<bool> MigrateFromPreviousVersionAsync();
@@ -62,5 +72,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// Event raised when settings are changed
         /// </summary>
         event EventHandler<SkySettings>? SettingsChanged;
+        
+        /// <summary>
+        /// Event raised when monitor settings are changed
+        /// </summary>
+        event EventHandler<MonitorSettings>? MonitorSettingsChanged;
     }
 }

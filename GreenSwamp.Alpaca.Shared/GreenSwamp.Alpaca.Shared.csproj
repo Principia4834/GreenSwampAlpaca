@@ -23,14 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Monitor.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Monitor.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Properties\Monitor.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Monitor.Designer.cs</LastGenOutput>

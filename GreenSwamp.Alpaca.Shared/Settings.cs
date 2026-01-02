@@ -16,19 +16,25 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using GreenSwamp.Alpaca.Settings.Services;
 
 namespace GreenSwamp.Alpaca.Shared
 {
     public static class Settings
     {
-
         #region Events
 
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
         #endregion
 
-        #region  Properties Device
+        #region Fields
+
+        private static IVersionedSettingsService? _settingsService;
+
+        #endregion
+
+        #region Properties Device
 
         private static bool _serverDevice;
         public static bool ServerDevice
@@ -38,7 +44,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_serverDevice == value) return;
                 _serverDevice = value;
-                Properties.Monitor.Default.ServerDevice = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -52,7 +57,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_telescope == value) return;
                 _telescope = value;
-                Properties.Monitor.Default.Telescope = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -66,7 +70,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_uI == value) return;
                 _uI = value;
-                Properties.Monitor.Default.Ui = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -84,7 +87,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_other == value) return;
                 _other = value;
-                Properties.Monitor.Default.Other = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -98,7 +100,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_driver == value) return;
                 _driver = value;
-                Properties.Monitor.Default.Driver = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -112,7 +113,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_interface == value) return;
                 _interface = value;
-                Properties.Monitor.Default.Interface = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -126,7 +126,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_server == value) return;
                 _server = value;
-                Properties.Monitor.Default.Server = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -140,7 +139,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_mount == value) return;
                 _mount = value;
-                Properties.Monitor.Default.Mount = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -154,7 +152,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_alignment == value) return;
                 _alignment = value;
-                Properties.Monitor.Default.Alignment = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -172,7 +169,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_information == value) return;
                 _information = value;
-                Properties.Monitor.Default.Information = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -186,7 +182,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_data == value) return;
                 _data = value;
-                Properties.Monitor.Default.Data = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -200,7 +195,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_warning == value) return;
                 _warning = value;
-                Properties.Monitor.Default.Warning = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -214,7 +208,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_error == value) return;
                 _error = value;
-                Properties.Monitor.Default.Error = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -228,7 +221,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_debug == value) return;
                 _debug = value;
-                Properties.Monitor.Default.Debug = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -246,7 +238,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_language == value) return;
                 _language = value;
-                Properties.Monitor.Default.Language = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -260,7 +251,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_logMonitor == value) return;
                 _logMonitor = value;
-                Properties.Monitor.Default.LogMonitor = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -274,7 +264,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_logCharting == value) return;
                 _logCharting = value;
-                Properties.Monitor.Default.LogCharting = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -288,7 +277,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_logPath == value) return;
                 _logPath = value;
-                Properties.Monitor.Default.LogPath = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -305,7 +293,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_logSession == value) return;
                 _logSession = value;
-                Properties.Monitor.Default.LogSession = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
             }
         }
@@ -318,7 +305,6 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (_startMonitor == value) return;
                 _startMonitor = value;
-                Properties.Monitor.Default.StartMonitor = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
@@ -326,59 +312,124 @@ namespace GreenSwamp.Alpaca.Shared
 
         #endregion
 
+        #region Methods
+
         /// <summary>
-        /// will upgrade if necessary
+        /// Initialize the settings with the versioned settings service
+        /// </summary>
+        public static void Initialize(IVersionedSettingsService service)
+        {
+            _settingsService = service ?? throw new ArgumentNullException(nameof(service));
+            
+            // Subscribe to settings changes from service
+            _settingsService.MonitorSettingsChanged += (sender, settings) =>
+            {
+                // Settings were changed externally, reload
+                LoadFromService(settings);
+            };
+            
+            LogSetting("Initialize", "Settings service initialized");
+        }
+
+        /// <summary>
+        /// Load settings from the versioned settings service
         /// </summary>
         public static void Load()
         {
-            Upgrade();
+            if (_settingsService == null)
+            {
+                throw new InvalidOperationException("Settings service not initialized. Call Initialize() first.");
+            }
 
-            ServerDevice = Properties.Monitor.Default.ServerDevice;
-            Server = Properties.Monitor.Default.Server;
-            Ui = Properties.Monitor.Default.Ui;
-            Interface = Properties.Monitor.Default.Interface;
-            Driver = Properties.Monitor.Default.Driver;
-            Other = Properties.Monitor.Default.Other;
-            Error = Properties.Monitor.Default.Error;
-            Warning = Properties.Monitor.Default.Warning;
-            Data = Properties.Monitor.Default.Data;
-            Information = Properties.Monitor.Default.Information;
-            Telescope = Properties.Monitor.Default.Telescope;
-            Mount = Properties.Monitor.Default.Mount;
-            LogMonitor = Properties.Monitor.Default.LogMonitor;
-            LogPath = Properties.Monitor.Default.LogPath;
-            StartMonitor = Properties.Monitor.Default.StartMonitor;
-            Language = Properties.Monitor.Default.Language;
-            LogCharting = Properties.Monitor.Default.LogCharting;
-            LogSession = Properties.Monitor.Default.LogSession;
-            Alignment = Properties.Monitor.Default.Alignment;
-            Debug = Properties.Monitor.Default.Debug;
+            var settings = _settingsService.GetMonitorSettings();
+            LoadFromService(settings);
+            
+            LogSetting("Load", "Settings loaded from service");
         }
 
         /// <summary>
-        /// upgrade and set new version
+        /// Internal method to load from MonitorSettings model
         /// </summary>
-        private static void Upgrade()
+        private static void LoadFromService(GreenSwamp.Alpaca.Settings.Models.MonitorSettings settings)
         {
-            var assembly = Assembly.GetExecutingAssembly().GetName().Version;
-            var version = Properties.Monitor.Default.Version;
-
-            if (version == assembly.ToString()) return;
-            Properties.Monitor.Default.Upgrade();
-            Properties.Monitor.Default.Version = assembly.ToString();
-            Save();
+            // MonitorDevice
+            ServerDevice = settings.ServerDevice;
+            Telescope = settings.Telescope;
+            Ui = settings.Ui;
+            
+            // MonitorCategory
+            Other = settings.Other;
+            Driver = settings.Driver;
+            Interface = settings.Interface;
+            Server = settings.Server;
+            Mount = settings.Mount;
+            Alignment = settings.Alignment;
+            
+            // MonitorType
+            Information = settings.Information;
+            Data = settings.Data;
+            Warning = settings.Warning;
+            Error = settings.Error;
+            Debug = settings.Debug;
+            
+            // Logging Options
+            LogMonitor = settings.LogMonitor;
+            LogSession = settings.LogSession;
+            LogCharting = settings.LogCharting;
+            StartMonitor = settings.StartMonitor;
+            
+            // Miscellaneous
+            Language = settings.Language;
+            LogPath = settings.LogPath;
         }
 
         /// <summary>
-        /// save and reload
+        /// Save and reload settings through the versioned settings service
         /// </summary>
         public static void Save()
         {
-            Properties.Monitor.Default.Save();
-            Properties.Monitor.Default.Reload();
+            if (_settingsService == null)
+            {
+                throw new InvalidOperationException("Settings service not initialized. Call Initialize() first.");
+            }
+
+            var settings = new GreenSwamp.Alpaca.Settings.Models.MonitorSettings
+            {
+                // MonitorDevice
+                ServerDevice = ServerDevice,
+                Telescope = Telescope,
+                Ui = Ui,
+                
+                // MonitorCategory
+                Other = Other,
+                Driver = Driver,
+                Interface = Interface,
+                Server = Server,
+                Mount = Mount,
+                Alignment = Alignment,
+                
+                // MonitorType
+                Information = Information,
+                Data = Data,
+                Warning = Warning,
+                Error = Error,
+                Debug = Debug,
+                
+                // Logging Options
+                LogMonitor = LogMonitor,
+                LogSession = LogSession,
+                LogCharting = LogCharting,
+                StartMonitor = StartMonitor,
+                
+                // Miscellaneous
+                Language = Language,
+                LogPath = LogPath,
+                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0"
+            };
+
+            _settingsService.SaveMonitorSettingsAsync(settings).Wait();
             
-            // Phase 2: Sync to new settings system via bridge
-            MonitorSettingsBridge.OnMonitorSettingsSaved();
+            LogSetting("Save", "Settings saved through service");
         }
 
         /// <summary>
@@ -401,5 +452,7 @@ namespace GreenSwamp.Alpaca.Shared
         {
             StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
         }
+
+        #endregion
     }
 }

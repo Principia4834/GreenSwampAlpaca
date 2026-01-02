@@ -39,6 +39,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         public string UserSettingsPath => GetUserSettingsPath(CurrentVersion);
 
         public event EventHandler<SkySettings>? SettingsChanged;
+        public event EventHandler<MonitorSettings>? MonitorSettingsChanged;
 
         public VersionedSettingsService(
             IConfiguration configuration,
@@ -92,6 +93,48 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 
                 // Raise settings changed event
                 SettingsChanged?.Invoke(this, settings);
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+        }
+
+        public MonitorSettings GetMonitorSettings()
+        {
+            var settings = new MonitorSettings();
+            _configuration.GetSection("MonitorSettings").Bind(settings);
+            return settings;
+        }
+
+        public async Task SaveMonitorSettingsAsync(MonitorSettings settings)
+        {
+            await _fileLock.WaitAsync();
+            try
+            {
+                var userSettingsPath = GetUserSettingsPath(CurrentVersion);
+                
+                var userSettings = await ReadUserSettingsFileAsync(userSettingsPath);
+                userSettings["MonitorSettings"] = JsonSerializer.SerializeToElement(settings);
+                
+                // Update version and timestamp if not already present
+                if (!userSettings.ContainsKey("Version"))
+                {
+                    userSettings["Version"] = JsonSerializer.SerializeToElement(CurrentVersion);
+                }
+                userSettings["LastModified"] = JsonSerializer.SerializeToElement(DateTime.UtcNow);
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var json = JsonSerializer.Serialize(userSettings, options);
+                await File.WriteAllTextAsync(userSettingsPath, json);
+
+                // Update version file
+                await File.WriteAllTextAsync(_versionFile, CurrentVersion);
+
+                _logger?.LogInformation("Monitor settings saved to version {Version}", CurrentVersion);
+                
+                // Raise settings changed event
+                MonitorSettingsChanged?.Invoke(this, settings);
             }
             finally
             {

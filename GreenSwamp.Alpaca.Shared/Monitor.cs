@@ -62,9 +62,8 @@ namespace GreenSwamp.Alpaca.Shared
             if (Settings.Error){TypesToMonitor(MonitorType.Error, Settings.Error);}
             if (Settings.Debug){TypesToMonitor(MonitorType.Debug, Settings.Debug);}
 
-            Settings.LogMonitor = Properties.Monitor.Default.LogMonitor;
-            Settings.LogSession = Properties.Monitor.Default.LogSession;
-            Settings.StartMonitor = Properties.Monitor.Default.StartMonitor;
+            // These settings are loaded from Settings.cs which reads from JSON
+            // No need for Properties.Monitor.Default anymore
         }
 
         private static void Save_MonitorDevice(MonitorDevice monitorDevice, bool value)

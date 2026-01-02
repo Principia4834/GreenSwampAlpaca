@@ -1,0 +1,374 @@
+@page "/monitorsettings"
+
+@inject NavigationManager NavManager
+
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Settings.Services
+@inject IVersionedSettingsService SettingsService
+@inject ILogger<MonitorSettings> Logger
+
+<PageTitle>Monitor Settings</PageTitle>
+
+<h3>Monitor Settings - Version @SettingsService.CurrentVersion</h3>
+
+@if (_message != null)
+{
+    <div class="alert alert-@(_isError ? "danger" : "success") alert-dismissible fade show">
+        @_message
+        <button type="button" class="btn-close" @onclick="@(() => _message = null)"></button>
+    </div>
+}
+
+<EditForm Model="_settings" OnValidSubmit="SaveSettings">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-6">
+            <!-- Device Filters Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Device Filters</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Select which devices to monitor</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.ServerDevice" class="form-check-input" id="deviceServer" />
+                                <label class="form-check-label" for="deviceServer">Server</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Telescope" class="form-check-input" id="deviceTelescope" />
+                                <label class="form-check-label" for="deviceTelescope">Telescope</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Ui" class="form-check-input" id="deviceUi" />
+                                <label class="form-check-label" for="deviceUi">UI</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Filters Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Category Filters</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Select which categories to monitor</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Other" class="form-check-input" id="catOther" />
+                                <label class="form-check-label" for="catOther">Other</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Driver" class="form-check-input" id="catDriver" />
+                                <label class="form-check-label" for="catDriver">Driver</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Interface" class="form-check-input" id="catInterface" />
+                                <label class="form-check-label" for="catInterface">Interface</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Server" class="form-check-input" id="catServer" />
+                                <label class="form-check-label" for="catServer">Server</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Mount" class="form-check-input" id="catMount" />
+                                <label class="form-check-label" for="catMount">Mount</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Alignment" class="form-check-input" id="catAlignment" />
+                                <label class="form-check-label" for="catAlignment">Alignment</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type Filters Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Type Filters</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Select which message types to monitor</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Information" class="form-check-input" id="typeInfo" />
+                                <label class="form-check-label" for="typeInfo">Information</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Data" class="form-check-input" id="typeData" />
+                                <label class="form-check-label" for="typeData">Data</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Warning" class="form-check-input" id="typeWarning" />
+                                <label class="form-check-label" for="typeWarning">Warning</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Error" class="form-check-input" id="typeError" />
+                                <label class="form-check-label" for="typeError">Error</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.Debug" class="form-check-input" id="typeDebug" />
+                                <label class="form-check-label" for="typeDebug">Debug</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-6">
+            <!-- Logging Options Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Logging Options</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Configure logging behavior</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.LogMonitor" class="form-check-input" id="logMonitor" />
+                                <label class="form-check-label" for="logMonitor">Log Monitor</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.LogSession" class="form-check-input" id="logSession" />
+                                <label class="form-check-label" for="logSession">Log Session</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.LogCharting" class="form-check-input" id="logCharting" />
+                                <label class="form-check-label" for="logCharting">Log Charting</label>
+                            </div>
+                            <div class="mb-2 form-check">
+                                <InputCheckbox @bind-Value="_settings.StartMonitor" class="form-check-input" id="startMonitor" />
+                                <label class="form-check-label" for="startMonitor">Start Monitor</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Miscellaneous Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Miscellaneous</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Language</label>
+                        <InputSelect @bind-Value="_settings.Language" class="form-select">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (GB)</option>
+                            <option value="de-DE">German</option>
+                            <option value="fr-FR">French</option>
+                            <option value="es-ES">Spanish</option>
+                        </InputSelect>
+                        <small class="form-text text-muted">UI language preference</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Log Path</label>
+                        <InputText @bind-Value="_settings.LogPath" class="form-control" placeholder="0 = use default" />
+                        <small class="form-text text-muted">Custom log file path (0 = use default location)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Version</label>
+                        <InputText @bind-Value="_settings.Version" class="form-control" readonly />
+                        <small class="form-text text-muted">Settings version (read-only)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary" @onclick="SelectAllDevices">
+                            Select All Devices
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" @onclick="SelectAllCategories">
+                            Select All Categories
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" @onclick="SelectAllTypes">
+                            Select All Types
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="ClearAllFilters">
+                            Clear All Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 border-top pt-3">
+        <button type="submit" class="btn btn-primary btn-lg" disabled="@_saving">
+            @if (_saving)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Save Changes
+        </button>
+
+        <button type="button" class="btn btn-secondary btn-lg" @onclick="ResetToDefaults" disabled="@_saving">
+            Reset to Defaults
+        </button>
+
+        <button type="button" class="btn btn-info btn-lg" @onclick="ReloadSettings">
+            Reload
+        </button>
+    </div>
+</EditForm>
+
+<div class="mt-4">
+    <small class="text-muted">
+        Settings file: @SettingsService.UserSettingsPath
+    </small>
+</div>
+
+@code {
+    private GreenSwamp.Alpaca.Settings.Models.MonitorSettings _settings = new();
+    private bool _saving;
+    private string? _message;
+    private bool _isError;
+
+    protected override void OnInitialized()
+    {
+        LoadSettings();
+        SettingsService.MonitorSettingsChanged += OnSettingsChanged;
+    }
+
+    private void LoadSettings()
+    {
+        _settings = SettingsService.GetMonitorSettings();
+    }
+
+    private async Task SaveSettings()
+    {
+        _saving = true;
+        _message = null;
+
+        try
+        {
+            await SettingsService.SaveMonitorSettingsAsync(_settings);
+            _message = "Monitor settings saved successfully!";
+            _isError = false;
+            Logger.LogInformation("Monitor settings saved by user");
+        }
+        catch (Exception ex)
+        {
+            _message = $"Error saving settings: {ex.Message}";
+            _isError = true;
+            Logger.LogError(ex, "Failed to save monitor settings");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void ResetToDefaults()
+    {
+        _settings = new GreenSwamp.Alpaca.Settings.Models.MonitorSettings();
+        _message = "Settings reset to defaults (not saved yet)";
+        _isError = false;
+    }
+
+    private void ReloadSettings()
+    {
+        LoadSettings();
+        _message = "Settings reloaded from file";
+        _isError = false;
+    }
+
+    private void SelectAllDevices()
+    {
+        _settings.ServerDevice = true;
+        _settings.Telescope = true;
+        _settings.Ui = true;
+        _message = "All devices selected";
+        _isError = false;
+    }
+
+    private void SelectAllCategories()
+    {
+        _settings.Other = true;
+        _settings.Driver = true;
+        _settings.Interface = true;
+        _settings.Server = true;
+        _settings.Mount = true;
+        _settings.Alignment = true;
+        _message = "All categories selected";
+        _isError = false;
+    }
+
+    private void SelectAllTypes()
+    {
+        _settings.Information = true;
+        _settings.Data = true;
+        _settings.Warning = true;
+        _settings.Error = true;
+        _settings.Debug = true;
+        _message = "All types selected";
+        _isError = false;
+    }
+
+    private void ClearAllFilters()
+    {
+        _settings.ServerDevice = false;
+        _settings.Telescope = false;
+        _settings.Ui = false;
+        _settings.Other = false;
+        _settings.Driver = false;
+        _settings.Interface = false;
+        _settings.Server = false;
+        _settings.Mount = false;
+        _settings.Alignment = false;
+        _settings.Information = false;
+        _settings.Data = false;
+        _settings.Warning = false;
+        _settings.Error = false;
+        _settings.Debug = false;
+        _message = "All filters cleared";
+        _isError = false;
+    }
+
+    private void OnSettingsChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.MonitorSettings newSettings)
+    {
+        _settings = newSettings;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SettingsService.MonitorSettingsChanged -= OnSettingsChanged;
+    }
+}

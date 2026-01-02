@@ -240,9 +240,10 @@ namespace GreenSwamp.Alpaca.Server
                 GreenSwamp.Alpaca.MountControl.SkySystem.Initialize();
                 Logger.LogInformation("✅ Phase A.4: SkySystem initialized (serial settings loaded)");
 
-                // Initialize Monitor settings bridge (minimal Phase 2 implementation)
-                GreenSwamp.Alpaca.Shared.MonitorSettingsBridge.Initialize(settingsService);
-                Logger.LogInformation("? Phase 2: Monitor settings bridge initialized");
+                // Initialize Monitor settings (direct JSON access, no bridge needed)
+                GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
+                GreenSwamp.Alpaca.Shared.Settings.Load();
+                Logger.LogInformation("✅ Monitor settings initialized - direct JSON access");
                 
                 Logger.LogInformation("Settings bridges active - old and new systems synchronized");
             }
