@@ -88,7 +88,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Can mount do PPec
         /// </summary>
-        private static bool CanPPec
+        internal static bool CanPPec
         {
             get => _canPPec;
             set
@@ -116,7 +116,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Pec status
         /// </summary>
-        private static bool PecOn
+        internal static bool PecOn
         {
             get => SkySettings.PecOn;
             set
@@ -147,7 +147,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Pec Worm count bins
         /// </summary>
-        private static int PecBinCount { get; set; }
+        internal static int PecBinCount { get; set; }
 
         /// <summary>
         /// Pec size by steps
@@ -668,7 +668,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Actual positions in degrees
         /// </summary>
-        private static double ActualAxisX
+        internal static double ActualAxisX
         {
             get => _actualAxisX;
             set
@@ -682,7 +682,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Actual positions in degrees
         /// </summary>
-        private static double ActualAxisY
+        internal static double ActualAxisY
         {
             get => _actualAxisY;
             set

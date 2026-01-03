@@ -189,7 +189,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private static bool MountConnect()
         {
             _targetRaDec = new Vector(double.NaN, double.NaN); // invalid target position
-            var positions = GetDefaultPositions();
+            var positions = GetDefaultPositions_Internal();
             double[] rawPositions = null;
             var counter = 0;
             int raWormTeeth;
@@ -692,9 +692,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             IsMountRunning = false;
         }
-        
+
         #endregion
-        
+
         #endregion
 
         #region Position Update Methods
@@ -703,9 +703,19 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Gets current converted positions from the mount in degrees
+        /// Phase 3.2: Renamed to _Internal, delegated to instance
+        /// </summary>
+        internal static double[]? GetRawDegrees()
+        {
+            // Delegate to default instance
+            return _defaultInstance?.GetRawDegrees() ?? GetRawDegrees_Internal();
+        }
+        
+        /// <summary>
+        /// Gets current converted positions from the mount in degrees
         /// </summary>
         /// <returns></returns>
-        private static double[] GetRawDegrees()
+        private static double[] GetRawDegrees_Internal()
         {
             var actualDegrees = new[] { double.NaN, double.NaN };
             if (!IsMountRunning) { return actualDegrees; }
@@ -727,11 +737,21 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Convert steps to degrees
+        /// Phase 3.2: Renamed to _Internal, delegated to instance
+        /// </summary>
+        internal static double ConvertStepsToDegrees(double steps, int axis)
+        {
+            // Delegate to default instance
+            return _defaultInstance?.ConvertStepsToDegrees(steps, axis) ?? ConvertStepsToDegrees_Internal(steps, axis);
+        }
+
+        /// <summary>
+        /// Convert steps to degrees
         /// </summary>
         /// <param name="steps"></param>
         /// <param name="axis"></param>
         /// <returns>degrees</returns>
-        private static double ConvertStepsToDegrees(double steps, int axis)
+        private static double ConvertStepsToDegrees_Internal(double steps, int axis)
         {
             double degrees;
             switch (SkySettings.Mount)
@@ -750,9 +770,19 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Get steps from the mount
+        /// Phase 3.2: Renamed to _Internal, delegated to instance
+        /// </summary>
+        internal static double[]? GetRawSteps()
+        {
+            // Delegate to default instance
+            return _defaultInstance?.GetRawSteps() ?? GetRawSteps_Internal();
+        }
+
+        /// <summary>
+        /// Get steps from the mount
         /// </summary>
         /// <returns>double array</returns>
-        private static double[] GetRawSteps()
+        private static double[] GetRawSteps_Internal()
         {
             var steps = new[] { double.NaN, double.NaN };
             if (!IsMountRunning) { return steps; }
@@ -924,7 +954,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Used when the mount is first turned on and the instance is created
         /// </summary>
-        private static double[] GetDefaultPositions()
+        internal static double[] GetDefaultPositions_Internal()
         {
             // set default home position or get home override from the settings 
             double[] positions = { 0, 0 };
@@ -1398,7 +1428,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Initialize alignment model connection with current mount parameters
         /// </summary>
-        private static void ConnectAlignmentModel()
+        internal static void ConnectAlignmentModel()
         {
             // ToDo: Remove if not needed
             // AlignmentModel.Connect(_homeAxes.X, _homeAxes.Y, StepsPerRevolution, AlignmentSettings.ClearModelOnStartup);
@@ -2013,7 +2043,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Adjust tracking rate for Custom Mount Gearing Offset settings
         /// </summary>
         /// <returns>difference in rates</returns>
-        private static void CalcCustomTrackingOffset()
+        internal static void CalcCustomTrackingOffset()
         {
             _trackingOffsetRate = new Vector(0.0, 0.0);
 
