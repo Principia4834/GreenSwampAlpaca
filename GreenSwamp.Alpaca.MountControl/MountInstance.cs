@@ -67,6 +67,19 @@ namespace GreenSwamp.Alpaca.MountControl
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
         private readonly object _lastUpdateLock = new object();
 
+        // Phase 3.2: Slew speed fields
+        private double _slewSpeedOne;
+        private double _slewSpeedTwo;
+        private double _slewSpeedThree;
+        private double _slewSpeedFour;
+        private double _slewSpeedFive;
+        private double _slewSpeedSix;
+        private double _slewSpeedSeven;
+        private double _slewSpeedEight;
+
+        // Phase 3.2: Guide rate field
+        private Vector _guideRate;
+        
         public MountInstance(string id, SkySettingsInstance settings)
         {
             _id = id ?? throw new ArgumentNullException(nameof(id));
@@ -450,11 +463,10 @@ namespace GreenSwamp.Alpaca.MountControl
         public void Reset()
         {
             LogMount($"Reset() called on instance {_id}");
-            
-            // Phase 3.1: Delegate to static
-            SkyServer.MountReset();
-        }
 
+            // Phase 3.2: Call instance method directly
+            MountReset();
+        }
         /// <summary>
         /// Emergency stop - halt all motion immediately
         /// Phase 3.1: Delegates to static method
@@ -678,6 +690,86 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        /// <summary>
+        /// Get home axes adjusted for angle offset
+        /// Phase 3.2: Migrated from SkyServer.GetHomeAxes()
+        /// </summary>
+        /// <param name="xAxis">X axis position</param>
+        /// <param name="yAxis">Y axis position</param>
+        /// <returns>Home axes vector adjusted for alignment mode and hemisphere</returns>
+        internal Vector GetHomeAxes(double xAxis, double yAxis)
+        {
+            var home = new[] { xAxis, yAxis };
+            if (_settings.AlignmentMode != AlignmentMode.Polar)
+            {
+                home = Axes.AxesAppToMount(new[] { xAxis, yAxis });
+            }
+            else
+            {
+                var angleOffset = SkyServer.SouthernHemisphere ? 180.0 : 0.0;
+                home[0] -= angleOffset;
+                home = Axes.AzAltToAxesXy(home);
+            }
+            return new Vector(home[0], home[1]);
+        }
+
+        #endregion
+
+        #region Phase 3.2: Core Operations (Migrated from static)
+
+        /// <summary>
+        /// Load default settings and slew rates
+        /// Phase 3.2: Migrated from SkyServer.Defaults()
+        /// </summary>
+        internal void Defaults()
+        {
+            SkyServer.SlewSettleTime = 0;
+
+            // Initialize FactorStep array (already initialized in constructor, but keep for compatibility)
+            // _factorStep is already initialized as new double[2]
+
+            // home axes
+            _homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
+
+            // set the slew speeds, the longest distance is using the higher speed for longer
+            _slewSpeedOne = Principles.Units.Deg2Rad1((int)_settings.HcSpeed * (15.0 / 3600)); //1x 15"/s
+            _slewSpeedTwo = _slewSpeedOne * 2; //2x
+            _slewSpeedThree = _slewSpeedOne * 8; //8x
+            _slewSpeedFour = _slewSpeedOne * 16; //16x
+            _slewSpeedFive = _slewSpeedOne * 32; //32x
+            _slewSpeedSix = _slewSpeedOne * 64; //64x
+            _slewSpeedSeven = _slewSpeedOne * 600; //600x
+            _slewSpeedEight = _slewSpeedOne * 800; //800x
+
+            var maxSlew = Principles.Units.Deg2Rad1(_settings.MaxSlewRate);
+            SkyServer.SetSlewRates(maxSlew);
+
+            // set the guiderates
+            _guideRate = new Vector(_settings.GuideRateOffsetY, _settings.GuideRateOffsetX);
+            SkyServer.SetGuideRates();
+        }
+
+        /// <summary>
+        /// Reset mount to home position
+        /// Phase 3.2: Migrated from SkyServer.MountReset()
+        /// </summary>
+        internal void MountReset()
+        {
+            // Phase A.6: Settings already loaded from JSON via bridge
+            // Bridge keeps settings current - no need to reload from user.config
+            // All 121 properties are synced bidirectionally by the bridge
+
+            // Set home positions using current settings (already loaded)
+            _homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
+
+            // Set axis positions
+            _appAxes = new Vector(_homeAxes.X, _homeAxes.Y);
+        }
+
+        // Phase 3.2: Expose internal state for static facade backward compatibility
+        internal Vector HomeAxes => _homeAxes;
+        internal Vector AppAxes => _appAxes;
+        
         #endregion
 
         #region Logging

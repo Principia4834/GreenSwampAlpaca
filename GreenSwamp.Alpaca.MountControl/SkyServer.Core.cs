@@ -575,27 +575,42 @@ namespace GreenSwamp.Alpaca.MountControl
             SkySystem.ConnectSerial = false;
         }
 
+        /// <summary>
+        /// Reset mount to home position
+        /// Phase 3.2: Delegated to instance
+        /// </summary>
         public static void MountReset()
         {
-            // Phase A.6: Settings already loaded from JSON via bridge
-            // Bridge keeps settings current - no need to reload from user.config
-            // All 121 properties are synced bidirectionally by the bridge
-            // SkySettings.Load();
+            if (_defaultInstance != null)
+            {
+                _defaultInstance.MountReset();
 
-            // Set home positions using current settings (already loaded)
-            _homeAxes = GetHomeAxes(SkySettings.HomeAxisX, SkySettings.HomeAxisY);
-            // Set axis positions
-            _appAxisX = _homeAxes.X;
-            _appAxisY = _homeAxes.Y;
-        }
-        
-        /// <summary>
-        /// Get home axes adjusted for angle offset
-        /// </summary>
-        /// <param name="xAxis"></param>
-        /// <param name="yAxis"></param>
-        /// <returns></returns>
+                // Update static fields for backward compatibility
+                _homeAxes = _defaultInstance.HomeAxes;
+                _appAxisX = _defaultInstance.AppAxes.X;
+                _appAxisY = _defaultInstance.AppAxes.Y;
+            }
+            else
+            {
+                // Fallback for backward compatibility
+                _homeAxes = GetHomeAxes(SkySettings.HomeAxisX, SkySettings.HomeAxisY);
+                _appAxisX = _homeAxes.X;
+                _appAxisY = _homeAxes.Y;
+            }
+        }        /// <summary>
+                 /// Get home axes adjusted for angle offset
+                 /// Phase 3.2: Delegated to instance
+                 /// </summary>
         public static Vector GetHomeAxes(double xAxis, double yAxis)
+        {
+            return _defaultInstance?.GetHomeAxes(xAxis, yAxis) ?? GetHomeAxes_Internal(xAxis, yAxis);
+        }
+
+        /// <summary>
+        /// INTERNAL: Original implementation (fallback)
+        /// Phase 3.2: Will be removed in Phase 3.5
+        /// </summary>
+        private static Vector GetHomeAxes_Internal(double xAxis, double yAxis)
         {
             var home = new[] { xAxis, yAxis };
             if (SkySettings.AlignmentMode != AlignmentMode.Polar)
@@ -609,11 +624,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 home = Axes.AzAltToAxesXy(home);
             }
             return new Vector(home[0], home[1]);
-        }
-
-        /// <summary>
-        /// Shuts down everything and exists
-        /// </summary>
+        }        /// <summary>
+                 /// Shuts down everything and exists
+                 /// </summary>
         public static void ShutdownServer()
         {
             IsMountRunning = false;
@@ -1125,36 +1138,12 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Load default settings and slew rates
+        /// Phase 3.2: Delegated to instance
         /// </summary>
         private static void Defaults()
         {
-            SlewSettleTime = 0;
-
-            // Initialize FactorStep array
-            if (FactorStep == null)
-            {
-                FactorStep = new double[2];
-            }
-
-            // home axes
-            _homeAxes = GetHomeAxes(SkySettings.HomeAxisX, SkySettings.HomeAxisY);
-
-            // set the slew speeds, the longest distance is using the higher speed for longer
-            _slewSpeedOne = Principles.Units.Deg2Rad1((int)SkySettings.HcSpeed * (15.0 / 3600)); //1x 15"/s
-            _slewSpeedTwo = _slewSpeedOne * 2; //2x
-            _slewSpeedThree = _slewSpeedOne * 8; //8x
-            _slewSpeedFour = _slewSpeedOne * 16; //16x
-            _slewSpeedFive = _slewSpeedOne * 32; //32x
-            _slewSpeedSix = _slewSpeedOne * 64; //64x
-            _slewSpeedSeven = _slewSpeedOne * 600; //600x
-            SlewSpeedEight = _slewSpeedOne * 800; //800x
-
-            var maxSlew = Principles.Units.Deg2Rad1(SkySettings.MaxSlewRate);
-            SetSlewRates(maxSlew);
-
-            // set the guiderates
-            _guideRate = new Vector(SkySettings.GuideRateOffsetY, SkySettings.GuideRateOffsetX);
-            SetGuideRates();
+            _defaultInstance?.Defaults();
+            // Fallback not needed - this is internal initialization only
         }
 
         /// <summary>
