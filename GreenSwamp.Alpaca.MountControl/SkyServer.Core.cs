@@ -476,8 +476,26 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Start connection, queues, and events
+        /// Phase 3.2: Delegated to instance
         /// </summary>
         private static void MountStart()
+        {
+            if (_defaultInstance != null)
+            {
+                _defaultInstance.MountStart();
+            }
+            else
+            {
+                // Fallback for backward compatibility
+                MountStart_Internal();
+            }
+        }
+
+        /// <summary>
+        /// INTERNAL: Original implementation (fallback)
+        /// Phase 3.2: Will be removed in Phase 3.5
+        /// </summary>
+        private static void MountStart_Internal()
         {
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{SkySettings.Mount}" };
@@ -547,8 +565,26 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Stop queues and events
+        /// Phase 3.2: Delegated to instance
         /// </summary>
         private static void MountStop()
+        {
+            if (_defaultInstance != null)
+            {
+                _defaultInstance.MountStop();
+            }
+            else
+            {
+                // Fallback for backward compatibility
+                MountStop_Internal();
+            }
+        }
+
+        /// <summary>
+        /// INTERNAL: Original implementation (fallback)
+        /// Phase 3.2: Will be removed in Phase 3.5
+        /// </summary>
+        private static void MountStop_Internal()
         {
             var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{SkySettings.Mount}" };
@@ -1286,7 +1322,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Update the Server and UI from the axis positions
         /// Main position update loop - runs every display interval
         /// </summary>
-        private static void UpdateServerEvent(object sender, EventArgs e)
+        internal static void UpdateServerEvent(object sender, EventArgs e)
         {
             var hasLock = false;
             try
@@ -1353,7 +1389,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Handles the event triggered when a low voltage condition is detected.
         /// </summary>
-        private static void LowVoltageEventSet(object sender, EventArgs e)
+        internal static void LowVoltageEventSet(object sender, EventArgs e)
         {
             LowVoltageEventState = true;
             var monitorItem = new MonitorEntry
@@ -2667,7 +2703,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Makes sure the axes are at full stop
         /// </summary>
         /// <returns></returns>
-        private static bool AxesStopValidate()
+        internal static bool AxesStopValidate()
         {
             if (!IsMountRunning) { return true; }
             Stopwatch stopwatch;

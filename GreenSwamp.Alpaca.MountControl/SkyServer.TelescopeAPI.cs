@@ -2341,7 +2341,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Event handler for timed update AltAz tracking
         /// </summary>
-        private static void AltAzTrackingTimerEvent(object sender, EventArgs e)
+        internal static void AltAzTrackingTimerEvent(object sender, EventArgs e)
         {
             var monitorItem = new MonitorEntry
             {

@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Diagnostics;
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.Simulator;
@@ -439,9 +440,9 @@ namespace GreenSwamp.Alpaca.MountControl
         public void Start()
         {
             LogMount($"Start() called on instance {_id}");
-            
-            // Phase 3.1: Delegate to static
-            SkyServer.Start_Stub();
+
+            // Phase 3.2: Call instance method directly
+            MountStart();
         }
 
         /// <summary>
@@ -451,9 +452,9 @@ namespace GreenSwamp.Alpaca.MountControl
         public void Stop()
         {
             LogMount($"Stop() called on instance {_id}");
-            
-            // Phase 3.1: Delegate to static
-            SkyServer.Stop_Stub();
+
+            // Phase 3.2: Call instance method directly
+            MountStop();
         }
 
         /// <summary>
@@ -769,7 +770,110 @@ namespace GreenSwamp.Alpaca.MountControl
         // Phase 3.2: Expose internal state for static facade backward compatibility
         internal Vector HomeAxes => _homeAxes;
         internal Vector AppAxes => _appAxes;
-        
+
+        /// <summary>
+        /// Start connection, queues, and events
+        /// Phase 3.2: Migrated from SkyServer.MountStart()
+        /// </summary>
+        internal void MountStart()
+        {
+            var monitorItem = new MonitorEntry
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings.Mount}" };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // setup server defaults, stop auto-discovery, connect serial port, start queues
+            Defaults();
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    Mount.Simulator.Settings.AutoHomeAxisX = (int)_settings.AutoHomeAxisX;
+                    Mount.Simulator.Settings.AutoHomeAxisY = (int)_settings.AutoHomeAxisY;
+                    MountQueue.Start();
+                    if (MountQueue.IsRunning) { SkyServer.ConnectAlignmentModel(); }
+                    else
+                    { throw new Exception("Failed to start simulator queue"); }
+
+                    break;
+                case MountType.SkyWatcher:
+                    // open serial port
+                    SkySystem.ConnectSerial = false;
+                    SkySystem.ConnectSerial = true;
+                    if (!SkySystem.ConnectSerial)
+                    {
+                        throw new SkyServerException(ErrorCode.ErrSerialFailed,
+                            $"Connection Failed: {SkySystem.Error}");
+                    }
+                    // Start up, pass custom mount gearing if needed
+                    var custom360Steps = new[] { 0, 0 };
+                    var customWormSteps = new[] { 0.0, 0.0 };
+                    if (_settings.CustomGearing)
+                    {
+                        custom360Steps = new[] { _settings.CustomRa360Steps, _settings.CustomDec360Steps };
+                        customWormSteps = new[] { (double)_settings.CustomRa360Steps / _settings.CustomRaWormTeeth, (double)_settings.CustomDec360Steps / _settings.CustomDecWormTeeth };
+                    }
+
+                    SkyQueue.Start(SkySystem.Serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
+                    if (!SkyQueue.IsRunning)
+                    {
+                        throw new SkyServerException(ErrorCode.ErrMount, "Failed to start sky queue");
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            // Run mount default commands and start the UI updates
+            if (MountConnect())
+            {
+                // start with a stop
+                SkyServer.AxesStopValidate();
+
+                // Event to get mount positions and update UI
+                _mediaTimer = new MediaTimer { Period = _settings.DisplayInterval, Resolution = 5 };
+                _mediaTimer.Tick += SkyServer.UpdateServerEvent;
+                _mediaTimer.Start();
+
+                // Event to update AltAz tracking rate
+                _altAzTrackingTimer = new MediaTimer { Period = _settings.AltAzTrackingUpdateInterval, Resolution = 5 };
+                _altAzTrackingTimer.Tick += SkyServer.AltAzTrackingTimerEvent;
+            }
+            else
+            {
+                MountStop();
+            }
+        }
+
+        /// <summary>
+        /// Stop queues and events
+        /// Phase 3.2: Migrated from SkyServer.MountStop()
+        /// </summary>
+        internal void MountStop()
+        {
+            var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings.Mount}" };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // Stop all asynchronous operations
+            SkyServer.Tracking = false;
+            SkyServer.CancelAllAsync();
+            SkyServer.AxesStopValidate();
+            if (_mediaTimer != null) { _mediaTimer.Tick -= SkyServer.UpdateServerEvent; }
+            _mediaTimer?.Stop();
+            _mediaTimer?.Dispose();
+            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= SkyServer.AltAzTrackingTimerEvent; }
+            _altAzTrackingTimer?.Stop();
+            _altAzTrackingTimer?.Dispose();
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed.TotalMilliseconds < 1000) { } //change
+            sw.Stop();
+
+            if (MountQueue.IsRunning) { MountQueue.Stop(); }
+
+            if (!SkyQueue.IsRunning) return;
+            SkyQueue.Stop();
+            SkySystem.ConnectSerial = false;
+        }
+
         #endregion
 
         #region Logging
