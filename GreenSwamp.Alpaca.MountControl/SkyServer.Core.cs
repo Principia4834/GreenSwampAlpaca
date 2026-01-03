@@ -62,6 +62,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private static Int32 _altAzTrackingLock;
         // Phase A: Instance-based settings support
         private static SkySettingsInstance _settings;
+        // Phase 3.1: Default mount instance for backward compatibility
+        private static MountInstance? _defaultInstance;
 
         // Slew and HC speeds
         private static double _slewSpeedOne;
@@ -629,10 +631,14 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Initialize SkyServer with instance-based settings
+        /// Phase 3.1: Also creates default MountInstance
         /// </summary>
         public static void Initialize(SkySettingsInstance settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+
+            // Phase 3.1: Create default mount instance
+            _defaultInstance = new MountInstance("default", settings);
 
             var monitorItem = new MonitorEntry
             {
@@ -642,10 +648,52 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = "SkyServer initialized with instance settings"
+                Message = "SkyServer initialized with instance settings and default MountInstance"
             };
             MonitorLog.LogToMonitor(monitorItem);
-        }       
+        }
+
+        #region Phase 3.1 Temporary Stub Methods
+        // These methods are temporary stubs for MountInstance delegation.
+        // They will be removed/replaced in Phase 3.2 when implementation moves to instance.
+        
+        /// <summary>
+        /// Phase 3.1 TEMPORARY: Stub for Connect - delegates to MountConnect
+        /// Will be removed in Phase 3.2
+        /// </summary>
+        internal static bool Connect_Stub()
+        {
+            return IsMountRunning;  // Temporary - just return current state
+        }
+
+        /// <summary>
+        /// Phase 3.1 TEMPORARY: Stub for Disconnect - stops mount
+        /// Will be removed in Phase 3.2
+        /// </summary>
+        internal static void Disconnect_Stub()
+        {
+            IsMountRunning = false;
+        }
+
+        /// <summary>
+        /// Phase 3.1 TEMPORARY: Stub for Start - sets running state
+        /// Will be removed in Phase 3.2
+        /// </summary>
+        internal static void Start_Stub()
+        {
+            // Temporary - actual implementation in MountStart()
+        }
+
+        /// <summary>
+        /// Phase 3.1 TEMPORARY: Stub for Stop - clears running state
+        /// Will be removed in Phase 3.2
+        /// </summary>
+        internal static void Stop_Stub()
+        {
+            IsMountRunning = false;
+        }
+        
+        #endregion
         
         #endregion
 
@@ -1750,7 +1798,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (axis1AtTarget && axis2AtTarget) { break; }
                     if (!axis1AtTarget)
                     {
-                        token.ThrowIfCancellationRequested();
+                    token.ThrowIfCancellationRequested();
                         object _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]); //move to target RA / Az
                     }
                     if (!axis2AtTarget)
@@ -2193,7 +2241,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         var status1 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
                         axis1Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status1).Result);
-                    }
+                      }
                     if (axis1Done) { break; }
                 }
 
