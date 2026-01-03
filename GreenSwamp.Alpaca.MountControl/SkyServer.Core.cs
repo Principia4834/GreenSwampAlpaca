@@ -40,7 +40,6 @@ using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.MountControl;
 using GreenSwamp.Alpaca.Shared;
 using System.ComponentModel;
-using System.Configuration;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -422,23 +421,51 @@ namespace GreenSwamp.Alpaca.MountControl
 
             try
             {
-                // Get the app's configuration
-                var userConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
-                // User config file copy from path
-                var userConfigFilepath = userConfig.FilePath;
-                // User config file copy to directory path
-                var logDirectoryPath = GsFile.GetLogPath();
-                // Copy the user config file to the log directory
-                File.Copy(userConfigFilepath, Path.Combine(logDirectoryPath, "user.config"), true);
+                // Get path to current version's appsettings.user.json file
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 
-                monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Copied user.config to {logDirectoryPath}" };
-                MonitorLog.LogToMonitor(monitorItem);
+                // Get version from assembly (matches VersionedSettingsService logic)
+                var infoVersionAttr = assembly
+                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
+                    .FirstOrDefault() as AssemblyInformationalVersionAttribute;
+
+                var version = infoVersionAttr?.InformationalVersion
+                    ?? assembly.GetName().Version?.ToString()
+                    ?? "1.0.0";
+
+                // Remove build metadata (e.g., +commitHash)
+                var plusIndex = version.IndexOf('+');
+                if (plusIndex > 0)
+                {
+                    version = version.Substring(0, plusIndex);
+                }
+
+                var userSettingsPath = Path.Combine(appData, "GreenSwampAlpaca", version, "appsettings.user.json");
+                var logDirectoryPath = GsFile.GetLogPath();
+
+                if (File.Exists(userSettingsPath))
+                {
+                    // Copy the appsettings.user.json file to the log directory
+                    var destinationPath = Path.Combine(logDirectoryPath, "appsettings.user.json");
+                    File.Copy(userSettingsPath, destinationPath, true);
+
+                    monitorItem = new MonitorEntry
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Copied appsettings.user.json to {logDirectoryPath}" };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
+                else
+                {
+                    // Settings file doesn't exist yet - log info (it will be created later by the settings service)
+                    monitorItem = new MonitorEntry
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"appsettings.user.json not found at {userSettingsPath} - will be created on first settings save" };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
             }
-            catch (Exception e) when (e is ConfigurationErrorsException || e is ArgumentException) // All other exceptions mean app cannot function
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
             {
                 monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Cannot copy user.config. {e.Message} " };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Cannot copy appsettings.user.json. {e.Message}" };
                 MonitorLog.LogToMonitor(monitorItem);
             }
 

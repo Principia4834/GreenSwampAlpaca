@@ -11,26 +11,110 @@
    ```
    - **If build fails:** STOP. Report the issue. Do NOT proceed with changes.
    - **If build succeeds:** Document this baseline state before proceeding.
+   - **Record the baseline**: "Build SUCCESS - 0 errors"
 
-2. **UNDERSTAND THE FILE STRUCTURE**
+2. **CAPTURE FILE STATE (MANDATORY)**
+   ```powershell
+   # Before ANY edit, capture:
+   $linesBefore = (Get-Content "path/to/file.cs").Count
+   Write-Host "File has $linesBefore lines before edit"
+   ```
+
+3. **UNDERSTAND THE FILE STRUCTURE**
    - This solution uses **partial classes extensively**
    - NEVER assume a method/field is missing without verification
    - Use `file_search` to locate all partial class files
    - Use `code_search` to find method/field definitions across files
 
-3. **MAKE MINIMAL, TARGETED CHANGES**
+4. **MAKE MINIMAL, TARGETED CHANGES**
    - Edit only what is necessary
    - Avoid large code block replacements
    - Use precise line ranges when possible
+   - **For files >2000 lines: Use get_file_with_lines for context, edit ONLY the specific section**
 
-4. **VERIFY IMMEDIATELY AFTER CHANGES**
-   ```
+5. **VERIFY IMMEDIATELY AFTER EACH EDIT (MANDATORY)**
+   ```powershell
+   # After EVERY edit_file call:
+   
+   # Step 1: Check line count
+   $linesAfter = (Get-Content "path/to/file.cs").Count
+   $change = $linesAfter - $linesBefore
+   Write-Host "Line change: $change (expected: -1 for delete, +10 for add, etc.)"
+   
+   # Step 2: If change is > ±10 from expected ? STOP AND REVERT
+   if ([Math]::Abs($change - $expectedChange) > 10) {
+       Write-Host "ERROR: Unexpected line count change! REVERTING..."
+       # Ask user to revert
+   }
+   
+   # Step 3: Check git diff
+   git diff --stat path/to/file.cs
+   # Should match expected change (e.g., "1 insertion(+), 1 deletion(-)")
+   
+   # Step 4: Build
    run_build
    ```
-   - Compare errors to baseline
-   - **If NEW errors appear:** They are YOUR FAULT
-   - Do NOT blame "pre-existing errors"
-   - Revert or fix immediately
+
+6. **COMPARE BUILD RESULTS**
+   - Baseline: X errors
+   - After edit: Y errors
+   - **If Y > X:** YOU broke it. Revert immediately.
+   - **If Y < X:** Verify the fix actually worked.
+   - **If Y = X:** Verify no new errors in different locations.
+
+---
+
+## ?? LARGE FILE HANDLING (3000+ lines)
+
+### Critical Rules for Large Files:
+
+**Files like `SkyServer.Core.cs` (3000+ lines) require special care:**
+
+1. **NEVER replace entire switch statements or large blocks**
+   - The edit_file tool can corrupt large structures
+   - Edit ONLY the specific case/method/block you need to change
+
+2. **Use targeted edits with context:**
+   ```csharp
+   // ? CORRECT - Minimal context
+   case SomeCase:
+       // ...existing code...
+       newCode(); // Change here
+       // ...existing code...
+       break;
+   ```
+
+3. **For settings file copying in MountConnect():**
+   - **Target ONLY the try-catch block** (lines ~318-335)
+   - Do NOT include surrounding switch cases
+   - Verify line numbers with get_file_with_lines first
+
+4. **If edit fails:**
+   - STOP immediately
+   - Do NOT attempt multiple fixes
+   - Ask user to revert
+   - Try with smaller scope
+
+### Example: Replacing Settings Code Block
+
+**WRONG (too much context):**
+```csharp
+// Including entire switch case and surrounding code
+```
+
+**CORRECT (minimal context):**
+```csharp
+            try
+            {
+                // Get path to current version's appsettings.user.json file
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                // ...new implementation...
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
+            {
+                // ...error handling...
+            }
+```
 
 ---
 
@@ -334,14 +418,93 @@ If you break the build:
 
 ---
 
-**Last Updated:** 2025-01-XX
-**Solution:** GreenSwamp Alpaca Mount Control
-**Maintainer:** Rob Morgan (robert.morgan.e@gmail.com)
-
----
-
 ## ?? Remember
 
 > **Build first. Edit small. Verify immediately. Own your mistakes.**
 
 This is a production astronomy mount control system. Breaking the build wastes telescope time and frustrates users. ALWAYS follow the verification workflow.
+
+---
+
+## ?? Specific Task Instructions
+
+### Task: Replace user.config with appsettings.user.json in MountConnect()
+
+**Location:** `GreenSwamp.Alpaca.MountControl/SkyServer.Core.cs` lines ~318-335
+
+**Critical Requirements:**
+
+1. **Use get_file_with_lines to read the exact block first:**
+   ```
+   get_file_with_lines "GreenSwamp.Alpaca.MountControl/SkyServer.Core.cs" [{"start": 310, "end": 340}]
+   ```
+
+2. **Remove the using directive at the top:**
+   - Line ~42: `using System.Configuration;` ? DELETE THIS
+
+3. **Replace ONLY the try-catch block** (NOT surrounding code):
+   ```csharp
+   try
+   {
+       // Get path to current version's appsettings.user.json file
+       var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+       var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+       
+       // Get version from assembly (matches VersionedSettingsService logic)
+       var infoVersionAttr = assembly
+           .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
+           .FirstOrDefault() as AssemblyInformationalVersionAttribute;
+       
+       var version = infoVersionAttr?.InformationalVersion 
+           ?? assembly.GetName().Version?.ToString() 
+           ?? "1.0.0";
+       
+       // Remove build metadata (e.g., +commitHash)
+       var plusIndex = version.IndexOf('+');
+       if (plusIndex > 0)
+       {
+           version = version.Substring(0, plusIndex);
+       }
+       
+       var userSettingsPath = Path.Combine(appData, "GreenSwampAlpaca", version, "appsettings.user.json");
+       var logDirectoryPath = GsFile.GetLogPath();
+       
+       if (File.Exists(userSettingsPath))
+       {
+           // Copy the appsettings.user.json file to the log directory
+           var destinationPath = Path.Combine(logDirectoryPath, "appsettings.user.json");
+           File.Copy(userSettingsPath, destinationPath, true);
+           
+           monitorItem = new MonitorEntry
+           { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Copied appsettings.user.json to {logDirectoryPath}" };
+           MonitorLog.LogToMonitor(monitorItem);
+       }
+       else
+       {
+           // Settings file doesn't exist yet - log info (it will be created later by the settings service)
+           monitorItem = new MonitorEntry
+           { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"appsettings.user.json not found at {userSettingsPath} - will be created on first settings save" };
+           MonitorLog.LogToMonitor(monitorItem);
+       }
+   }
+   catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
+   {
+       monitorItem = new MonitorEntry
+       { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Cannot copy appsettings.user.json. {e.Message}" };
+       MonitorLog.LogToMonitor(monitorItem);
+   }
+   ```
+
+4. **Make TWO separate edits:**
+   - Edit 1: Remove `using System.Configuration;` from top of file
+   - Edit 2: Replace the try-catch block with new code
+
+5. **Run build after EACH edit**
+
+6. **DO NOT:**
+   - Include surrounding case statements in the edit
+   - Replace entire methods
+   - Touch any switch statement structure
+   - Edit more than the exact lines specified
+
+**Rationale:** This replaces legacy .NET Framework XML config with modern JSON settings.
