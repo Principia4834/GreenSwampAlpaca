@@ -61,7 +61,13 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _pecBinSteps;
 
         // Phase 3.2: Mount state
-        private bool _atPark; public MountInstance(string id, SkySettingsInstance settings)
+        private bool _atPark;
+
+        // Phase 3.2: UpdateSteps fields
+        private DateTime _lastUpdateStepsTime = DateTime.MinValue;
+        private readonly object _lastUpdateLock = new object();
+
+        public MountInstance(string id, SkySettingsInstance settings)
         {
             _id = id ?? throw new ArgumentNullException(nameof(id));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -475,6 +481,48 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Phase 3.2: Position Methods (Migrated from static)
 
         /// <summary>
+        /// Maps a slew target to the corresponding axes based on the specified slew type.
+        /// Phase 3.2: Migrated from SkyServer.MapSlewTargetToAxes()
+        /// </summary>
+        /// <remarks>The mapping behavior depends on the specified slew type:
+        /// - For SlewRaDec: target is converted to RA/Dec axes and synchronized
+        /// - For SlewAltAz: target is converted to Alt/Az axes
+        /// - For SlewPark, SlewHome, SlewMoveAxis: target is converted to mount-specific axes
+        /// </remarks>
+        /// <param name="target">Target coordinates to be mapped</param>
+        /// <param name="slewType">Type of slew operation</param>
+        /// <returns>Target coordinates mapped to appropriate axes</returns>        
+        public double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
+        {
+            // Convert target to axes based on slew type
+            switch (slewType)
+            {
+                case SlewType.SlewRaDec:
+                    // convert target to axis for Ra / Dec slew
+                    target = Axes.RaDecToAxesXy(target);
+                    // Convert to synced axes
+                    target = SkyServer.GetSyncedAxes(target);
+                    break;
+                case SlewType.SlewAltAz:
+                    // convert target to axis for Az / Alt slew
+                    target = Axes.AzAltToAxesXy(target);
+                    break;
+                case SlewType.SlewHome:
+                    break;
+                case SlewType.SlewPark:
+                    // convert to mount coordinates for park
+                    target = Axes.AxesAppToMount(target);
+                    break;
+                case SlewType.SlewMoveAxis:
+                    target = Axes.AxesAppToMount(target);
+                    break;
+                default:
+                    break;
+            }
+            return target;
+        }
+
+        /// <summary>
         /// Gets current converted positions from the mount in degrees
         /// Phase 3.2: Migrated from SkyServer.GetRawDegrees()
         /// </summary>
@@ -557,6 +605,77 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             return steps;
+        }
+
+        /// <summary>
+        /// Gets current positions from the mount in steps for a specific axis
+        /// Phase 3.2: Migrated from SkyServer.GetRawSteps(int axis)
+        /// </summary>
+        /// <param name="axis">Axis index (0 = RA/Az, 1 = Dec/Alt)</param>
+        /// <returns>Position in steps, or null if not available</returns>
+        internal double? GetRawSteps(int axis)
+        {
+            if (!_isMountRunning) { return null; }
+
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    var simPositions = new CmdAxisSteps(MountQueue.NewId);
+                    var a = (int[])MountQueue.GetCommandResult(simPositions).Result;
+
+                    switch (axis)
+                    {
+                        case 0:
+                            return Convert.ToDouble(a[0]);
+                        case 1:
+                            return Convert.ToDouble(a[1]);
+                        default:
+                            return null;
+                    }
+
+                case MountType.SkyWatcher:
+                    switch (axis)
+                    {
+                        case 0:
+                            var b = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis1);
+                            return Convert.ToDouble(SkyQueue.GetCommandResult(b).Result);
+                        case 1:
+                            var c = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis2);
+                            return Convert.ToDouble(SkyQueue.GetCommandResult(c).Result);
+                        default:
+                            return null;
+                    }
+
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Main get for the Steps
+        /// Phase 3.2: Migrated from SkyServer.UpdateSteps()
+        /// </summary>
+        internal void UpdateSteps()
+        {
+            lock (_lastUpdateLock)
+            {
+                if (_isMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
+                {
+                    switch (_settings.Mount)
+                    {
+                        case MountType.Simulator:
+                            _ = new CmdAxesSteps(MountQueue.NewId);
+                            break;
+                        case MountType.SkyWatcher:
+                            _ = new SkyUpdateSteps(SkyQueue.NewId);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    _lastUpdateStepsTime = HiResDateTime.UtcNow;
+                }
+            }
         }
 
         #endregion

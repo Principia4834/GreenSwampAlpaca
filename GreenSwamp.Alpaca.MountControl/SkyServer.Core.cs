@@ -810,29 +810,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Main get for the Steps
+        /// Phase 3.2: Delegated to instance
         /// </summary>
-        /// <returns></returns>
-        public static void UpdateSteps()
+        private static void UpdateSteps()
         {
-            lock (lastUpdateLock)
-            {
-                if (IsMountRunning || (lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
-                {
-                    switch (SkySettings.Mount)
-                    {
-                        case MountType.Simulator:
-                            _ = new CmdAxesSteps(MountQueue.NewId);
-                            break;
-                        case MountType.SkyWatcher:
-                            _ = new SkyUpdateSteps(SkyQueue.NewId);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-
-                    lastUpdateStepsTime = HiResDateTime.UtcNow;
-                }
-            }
+            _defaultInstance?.UpdateSteps();
         }
 
         /// <summary>
@@ -910,20 +892,19 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Maps a slew target to the corresponding axes based on the specified slew type.
+        /// Phase 3.2: Delegated to instance
         /// </summary>
-        /// <remarks>The mapping behavior depends on the specified <paramref name="slewType">: <list
-        /// type="bullet"> <item> <description> For <see cref="SlewType.SlewRaDec"/>, the target is converted to RA/Dec
-        /// axes and synchronized. </description> </item> <item> <description> For <see cref="SlewType.SlewAltAz"/>, the
-        /// target is converted to Alt/Az axes. </description> </item> <item> <description> For <see
-        /// cref="SlewType.SlewPark"/>, <see cref="SlewType.SlewHome"/>, or <see cref="SlewType.SlewMoveAxis"/>,  the
-        /// target is converted to mount-specific axes. </description> </item> </list> If the <paramref
-        /// name="slewType"/> is not recognized, the method returns the input target unchanged.</remarks>
-        /// <param name="target">An array of doubles representing the target coordinates to be mapped.</param>
-        /// <param name="slewType">The type of slew operation to perform, which determines how the target is mapped to axes.</param>
-        /// <returns>An array of doubles representing the target coordinates mapped to the appropriate axes.</returns>
         public static double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
         {
-            // Convert target to axes based on slew type
+            return _defaultInstance?.MapSlewTargetToAxes(target, slewType)
+                   ?? MapSlewTargetToAxes_Internal(target, slewType);
+        }
+
+        /// <summary>
+        /// INTERNAL: Original implementation (fallback)
+        /// </summary>
+        private static double[] MapSlewTargetToAxes_Internal(double[] target, SlewType slewType)
+        {            // Convert target to axes based on slew type
             switch (slewType)
             {
                 case SlewType.SlewRaDec:
