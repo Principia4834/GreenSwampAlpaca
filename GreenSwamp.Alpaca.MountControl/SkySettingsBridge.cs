@@ -198,8 +198,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.AutoHomeAxisY = newSettings.AutoHomeAxisY;
                 SkySettings.HomeWarning = newSettings.HomeWarning;
 
-                // Park Settings (3 properties)
+                // Park Settings (4 properties)
                 SkySettings.ParkName = newSettings.ParkName;
+                SkySettings.ParkAxes = newSettings.ParkAxes;
                 SkySettings.LimitPark = newSettings.LimitPark;
                 SkySettings.ParkLimitName = newSettings.ParkLimitName;
 
