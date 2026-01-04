@@ -1,0 +1,85 @@
+/* Telescope State Display Styles */
+
+.state-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.state-section {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.state-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px 20px;
+}
+
+.state-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bs-secondary-bg);
+    border-radius: 4px;
+}
+
+.state-label {
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin-right: 10px;
+}
+
+.state-value {
+    font-family: 'Courier New', monospace;
+    color: var(--bs-emphasis-color);
+    font-weight: 500;
+}
+
+.status-active {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-inactive {
+    color: #6c757d;
+}
+
+.status-warning {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .state-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .state-container {
+        padding: 10px;
+    }
+}
+
+/* Animation for value changes */
+@keyframes valueChange {
+    0% { background-color: var(--bs-info-bg-subtle); }
+    100% { background-color: var(--bs-secondary-bg); }
+}
+
+.state-item:has(.state-value:focus-within) {
+    animation: valueChange 0.3s ease-in-out;
+}

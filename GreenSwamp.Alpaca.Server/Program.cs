@@ -195,6 +195,10 @@ namespace GreenSwamp.Alpaca.Server
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureAuthentication(builder.Services);
             //Add User Service
             builder.Services.AddScoped<IUserService, Data.UserService>();
+            
+            // Register TelescopeStateService for real-time state updates
+            builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
+            Logger.LogInformation("? TelescopeStateService registered for real-time state updates");
 
             var app = builder.Build();
 

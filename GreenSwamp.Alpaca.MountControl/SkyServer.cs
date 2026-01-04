@@ -789,7 +789,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Factor to convert steps, Sky Watcher in rad
         /// </summary>
-        private static double[] FactorStep { get; set; } = { 0.0, 0.0 };
+        internal static double[] FactorStep { get; set; } = { 0.0, 0.0 };
 
         /// <summary>
         /// applies backlash to pulse

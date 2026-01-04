@@ -45,8 +45,9 @@ namespace GreenSwamp.Alpaca.MountControl
         private Exception? _mountError;
 
         // Phase 3.2: Factor steps (conversion ratios)
-        private readonly double[] _factorStep = new double[2];
-        private readonly long[] _stepsPerRevolution = new long[2];
+        private double[] _factorStep => SkyServer.FactorStep;  // Read from static
+        private long[] _stepsPerRevolution => SkyServer.StepsPerRevolution;  // Read from static
+        private double[] _stepsWormPerRevolution => SkyServer.StepsWormPerRevolution;  // Read from static
 
         // Phase 3.2: Tracking state
         private bool _tracking;
@@ -57,7 +58,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector _skyTrackingRate;
 
         // Phase 3.2: PEC fields
-        private double[] _stepsWormPerRevolution = new double[2];
         private int[] _wormTeethCount = new int[2];
         private double _pecBinSteps;
 
