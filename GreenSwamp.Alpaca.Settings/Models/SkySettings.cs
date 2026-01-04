@@ -99,7 +99,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public double HomeAxisY { get; set; }
         public double AutoHomeAxisX { get; set; }
         public double AutoHomeAxisY { get; set; }
-        public bool HomeWarning { get; set; }
         
         // Park Settings
         public string ParkName { get; set; } = null!;
@@ -190,8 +189,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public int DisplayInterval { get; set; }
         public bool TraceLogger { get; set; }
         public int PolarLedLevel { get; set; }
-        public bool RaGaugeFlip { get; set; }
-        public string FrontGraphic { get; set; } = null!;
         
         // GPS Settings
         public int GpsPort { get; set; }

@@ -1368,13 +1368,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         break;
                 }
-                //var t = SkySettings.DisplayInterval; // Event interval time set for UI performance 
-                //_mediaTimer.Period = t;
-
-                //if (LoopCounter % (ulong)Settings.Settings.ModelIntFactor == 0)
-                //{
-                //    Rotate3DModel = true;
-                //}
             }
             catch (Exception ex)
             {

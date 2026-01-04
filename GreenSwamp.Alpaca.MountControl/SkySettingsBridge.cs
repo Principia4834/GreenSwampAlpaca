@@ -186,17 +186,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.GlobalStopOn = newSettings.GlobalStopOn;
                 SkySettings.Refraction = newSettings.Refraction;
 
-                // Display Settings (3 properties)
+                // Display Settings (1 property)
                 SkySettings.DisplayInterval = newSettings.DisplayInterval;
-                SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
-                SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
 
-                // Home Position (5 properties)
+                // Home Position (4 properties)
                 SkySettings.HomeAxisX = newSettings.HomeAxisX;
                 SkySettings.HomeAxisY = newSettings.HomeAxisY;
                 SkySettings.AutoHomeAxisX = newSettings.AutoHomeAxisX;
                 SkySettings.AutoHomeAxisY = newSettings.AutoHomeAxisY;
-                SkySettings.HomeWarning = newSettings.HomeWarning;
 
                 // Park Settings (4 properties)
                 SkySettings.ParkName = newSettings.ParkName;
@@ -338,7 +335,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.HomeAxisY = SkySettings.HomeAxisY;
                 newSettings.AutoHomeAxisX = SkySettings.AutoHomeAxisX;
                 newSettings.AutoHomeAxisY = SkySettings.AutoHomeAxisY;
-                newSettings.HomeWarning = SkySettings.HomeWarning;
                 
                 // Phase 4 Batch 3: Environmental & Park Properties
                 newSettings.Temperature = SkySettings.Temperature;
@@ -377,10 +373,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Phase 4 Batch 8: Serial Communication Settings (7 properties)
                 newSettings.GpsPort = ParseGpsPortString(SkySettings.GpsComPort);
                 newSettings.GpsBaudRate = ((int)SkySettings.GpsBaudRate).ToString();
-                
-                // Phase 4 Batch 9: UI & Display Settings (2 properties)
-                newSettings.FrontGraphic = SkySettings.FrontGraphic.ToString();
-                newSettings.RaGaugeFlip = SkySettings.RaGaugeFlip;
                 
                 // Phase 4 Batch 10: Mount Behavior & Capability Settings
                 newSettings.PolarMode = SkySettings.PolarMode.ToString();
@@ -490,13 +482,6 @@ namespace GreenSwamp.Alpaca.MountControl
             return Enum.TryParse<Handshake>(value, true, out var result) 
                 ? result 
                 : Handshake.None;
-        }
-        
-        private static FrontGraphic ParseFrontGraphic(string value)
-        {
-            return Enum.TryParse<FrontGraphic>(value, true, out var result) 
-                ? result 
-                : FrontGraphic.None;
         }
         
         private static PolarMode ParsePolarMode(string value)

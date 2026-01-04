@@ -187,15 +187,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Front panel graphic display mode
-        /// </summary>
-        public FrontGraphic FrontGraphic
-        {
-            get => SkySettings.FrontGraphic;
-            set => SkySettings.FrontGraphic = value;
-        }
-
-        /// <summary>
         /// Hand controller slew speed
         /// </summary>
         public SlewSpeed HcSpeed
@@ -651,15 +642,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Show home warning dialog
-        /// </summary>
-        public bool HomeWarning
-        {
-            get => SkySettings.HomeWarning;
-            set => SkySettings.HomeWarning = value;
-        }
-
-        /// <summary>
         /// Current park position name
         /// </summary>
         public string ParkName
@@ -937,15 +919,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Axis model offsets (read-only)
         /// </summary>
         public Vector3 AxisModelOffsets => SkySettings.AxisModelOffsets;
-
-        /// <summary>
-        /// Flip RA gauge display
-        /// </summary>
-        public bool RaGaugeFlip
-        {
-            get => SkySettings.RaGaugeFlip;
-            set => SkySettings.RaGaugeFlip = value;
-        }
 
         /// <summary>
         /// Auto track enabled (read-only)

@@ -595,19 +595,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static FrontGraphic _frontGraphic;
-        public static FrontGraphic FrontGraphic
-        {
-            get => _frontGraphic;
-            set
-            {
-                if (_frontGraphic == value) return;
-                _frontGraphic = value;
-                LogSetting(MethodBase.GetCurrentMethod()?.Name, value.ToString());
-                OnStaticPropertyChanged();
-            }
-        }
-
         private static SlewSpeed _hcSpeed;
         public static SlewSpeed HcSpeed
         {
@@ -1135,19 +1122,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static bool _homeWarning;
-        public static bool HomeWarning
-        {
-            get => _homeWarning;
-            set
-            {
-                if (_homeWarning == value) return;
-                _homeWarning = value;
-                LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
-                OnStaticPropertyChanged();
-            }
-        }
-        
         private static bool _hzLimitTracking;
         public static bool HzLimitTracking
         {
@@ -1478,19 +1452,6 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_refraction == value) return;
                 _refraction = value;
-                LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
-                OnStaticPropertyChanged();
-            }
-        }
-
-        private static bool _raGaugeFlip;
-        public static bool RaGaugeFlip
-        {
-            get => _raGaugeFlip;
-            set
-            {
-                if (_raGaugeFlip == value) return;
-                _raGaugeFlip = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }
