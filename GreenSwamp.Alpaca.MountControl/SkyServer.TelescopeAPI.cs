@@ -662,7 +662,8 @@ namespace GreenSwamp.Alpaca.MountControl
             //lock (_goToAsyncLock)
             //{
                 CancelAllAsync();
-                while (_ctsGoTo != null) Thread.Sleep(10);
+                var swCts = Stopwatch.StartNew();
+                while (_ctsGoTo != null && swCts.ElapsedMilliseconds < 5000) Thread.Sleep(10);
                 if (IsSlewing)
                 {
                     SlewState = SlewType.SlewNone;
@@ -2951,7 +2952,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _ctsPulseGuideRa?.Cancel();
                 _ctsHcPulseGuide?.Cancel();
                 var sw = Stopwatch.StartNew();
-                while (_ctsGoTo != null && _ctsPulseGuideDec != null && _ctsPulseGuideRa != null && _ctsHcPulseGuide != null && sw.ElapsedMilliseconds < 2000)
+                while (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null && sw.ElapsedMilliseconds < 2000)
                     Thread.Sleep(200); // wait for any pending pulse guide operations to wake up and cancel
             }
         }

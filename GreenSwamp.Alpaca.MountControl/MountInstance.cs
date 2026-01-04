@@ -44,10 +44,10 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector _targetRaDec;
         private Exception? _mountError;
 
-        // Phase 3.2: Factor steps (conversion ratios)
-        private double[] _factorStep => SkyServer.FactorStep;  // Read from static
-        private long[] _stepsPerRevolution => SkyServer.StepsPerRevolution;  // Read from static
-        private double[] _stepsWormPerRevolution => SkyServer.StepsWormPerRevolution;  // Read from static
+        // Phase 4.1: Factor steps (conversion ratios) - instance-owned
+        private double[] _factorStep = new double[2];
+        private long[] _stepsPerRevolution = new long[2];
+        private double[] _stepsWormPerRevolution = new double[2];
 
         // Phase 3.2: Tracking state
         private bool _tracking;
@@ -61,6 +61,16 @@ namespace GreenSwamp.Alpaca.MountControl
         private int[] _wormTeethCount = new int[2];
         private double _pecBinSteps;
 
+
+        // Phase 4.1: Mount capabilities (instance-owned)
+        private bool _canPPec;
+        private bool _canHomeSensor;
+        private bool _canPolarLed;
+        private bool _canAdvancedCmdSupport;
+        private string _mountName = string.Empty;
+        private string _mountVersion = string.Empty;
+        private string _capabilities = string.Empty;
+        
         // Phase 3.2: Mount state
         private bool _atPark;
 
@@ -155,6 +165,37 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyServer.SimTasks(MountTaskName.CanHomeSensor);
                     SkyServer.SimTasks(MountTaskName.GetFactorStep);
                     SkyServer.SimTasks(MountTaskName.Capabilities);
+
+
+                    // Phase 4.1: Copy static values to instance fields
+                    Array.Copy(SkyServer.StepsPerRevolution, _stepsPerRevolution, 2);
+                    Array.Copy(SkyServer.StepsWormPerRevolution, _stepsWormPerRevolution, 2);
+                    Array.Copy(SkyServer.FactorStep, _factorStep, 2);
+
+                    // Phase 4.1: Copy capabilities from static
+                    _canPPec = SkyServer.CanPPec;
+                    _canHomeSensor = SkyServer.CanHomeSensor;
+                    _canPolarLed = SkyServer.CanPolarLed;
+                    _canAdvancedCmdSupport = SkyServer.CanAdvancedCmdSupport;
+                    _mountName = SkyServer.MountName ?? string.Empty;
+                    _mountVersion = SkyServer.MountVersion ?? string.Empty;
+                    _capabilities = SkyServer.Capabilities ?? string.Empty;
+
+                    // Phase 4.1: Log instance values for verification
+                    monitorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Mount,
+                        Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"Phase4.1|Instance:{_id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
+                                  $"FactorStep:{_factorStep[0]:F10},{_factorStep[1]:F10}|" +
+                                  $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
+                                  $"CanPPec:{_canPPec}|MountName:{_mountName}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
 
                     raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
                     decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
@@ -263,6 +304,37 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyServer.SkyTasks(MountTaskName.Capabilities);
                     SkyServer.SkyTasks(MountTaskName.CanAdvancedCmdSupport);
                     if (SkyServer.CanPPec) SkyServer.SkyTasks(MountTaskName.Pec);
+
+
+                    // Phase 4.1: Copy static values to instance fields
+                    Array.Copy(SkyServer.StepsPerRevolution, _stepsPerRevolution, 2);
+                    Array.Copy(SkyServer.StepsWormPerRevolution, _stepsWormPerRevolution, 2);
+                    Array.Copy(SkyServer.FactorStep, _factorStep, 2);
+
+                    // Phase 4.1: Copy capabilities from static
+                    _canPPec = SkyServer.CanPPec;
+                    _canHomeSensor = SkyServer.CanHomeSensor;
+                    _canPolarLed = SkyServer.CanPolarLed;
+                    _canAdvancedCmdSupport = SkyServer.CanAdvancedCmdSupport;
+                    _mountName = SkyServer.MountName ?? string.Empty;
+                    _mountVersion = SkyServer.MountVersion ?? string.Empty;
+                    _capabilities = SkyServer.Capabilities ?? string.Empty;
+
+                    // Phase 4.1: Log instance values for verification
+                    var monitorItemSky = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Mount,
+                        Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"Phase4.1|Instance:{_id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
+                                  $"FactorStep:{_factorStep[0]:F10},{_factorStep[1]:F10}|" +
+                                  $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
+                                  $"CanPPec:{_canPPec}|MountName:{_mountName}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItemSky);
 
                     //CanHomeSensor = true; //test auto home
 
