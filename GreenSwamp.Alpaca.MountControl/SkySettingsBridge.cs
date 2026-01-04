@@ -191,17 +191,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkySettings.FrontGraphic = ParseFrontGraphic(newSettings.FrontGraphic);
                 SkySettings.RaGaugeFlip = newSettings.RaGaugeFlip;
 
-                // Home Position (6 properties)
+                // Home Position (5 properties)
                 SkySettings.HomeAxisX = newSettings.HomeAxisX;
                 SkySettings.HomeAxisY = newSettings.HomeAxisY;
                 SkySettings.AutoHomeAxisX = newSettings.AutoHomeAxisX;
                 SkySettings.AutoHomeAxisY = newSettings.AutoHomeAxisY;
                 SkySettings.HomeWarning = newSettings.HomeWarning;
-                SkySettings.HomeDialog = newSettings.HomeDialog;
 
-                // Park Settings (4 properties)
+                // Park Settings (3 properties)
                 SkySettings.ParkName = newSettings.ParkName;
-                SkySettings.ParkDialog = newSettings.ParkDialog;
                 SkySettings.LimitPark = newSettings.LimitPark;
                 SkySettings.ParkLimitName = newSettings.ParkLimitName;
 
@@ -340,12 +338,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 newSettings.AutoHomeAxisX = SkySettings.AutoHomeAxisX;
                 newSettings.AutoHomeAxisY = SkySettings.AutoHomeAxisY;
                 newSettings.HomeWarning = SkySettings.HomeWarning;
-                newSettings.HomeDialog = SkySettings.HomeDialog;
                 
                 // Phase 4 Batch 3: Environmental & Park Properties
                 newSettings.Temperature = SkySettings.Temperature;
                 newSettings.ParkName = SkySettings.ParkName;
-                newSettings.ParkDialog = SkySettings.ParkDialog;
                 newSettings.LimitPark = SkySettings.LimitPark;
                 newSettings.ParkLimitName = SkySettings.ParkLimitName;
                 

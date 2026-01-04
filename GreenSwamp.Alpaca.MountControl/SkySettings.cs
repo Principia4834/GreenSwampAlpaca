@@ -1135,19 +1135,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static bool _homeDialog;
-        public static bool HomeDialog
-        {
-            get => _homeDialog;
-            set
-            {
-                if (_homeDialog == value) return;
-                _homeDialog = value;
-                LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
-                OnStaticPropertyChanged();
-            }
-        }
-
         private static bool _homeWarning;
         public static bool HomeWarning
         {
@@ -1348,19 +1335,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _parkAxes = value;
                 value[0] = Math.Round(value[0], 6);
                 value[1] = Math.Round(value[1], 6);
-                LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
-                OnStaticPropertyChanged();
-            }
-        }
-
-        private static bool _parkDialog;
-        public static bool ParkDialog
-        {
-            get => _parkDialog;
-            set
-            {
-                if (_parkDialog == value) return;
-                _parkDialog = value;
                 LogSetting(MethodBase.GetCurrentMethod()?.Name, $"{value}");
                 OnStaticPropertyChanged();
             }

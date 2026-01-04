@@ -250,16 +250,6 @@
                 <div class="col-md-6">
                     <h4>Model Settings</h4>
 
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.HomeDialog" class="form-check-input" id="homeDialog" />
-                        <label class="form-check-label" for="homeDialog">Show Home Dialog</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.HomeWarning" class="form-check-input" id="homeWarning" />
-                        <label class="form-check-label" for="homeWarning">Show Home Warning</label>
-                    </div>
-
                     <div class="mb-3">
                         <label class="form-label">Model Type</label>
                         <InputSelect @bind-Value="_settings.ModelType" class="form-select">
@@ -295,11 +285,6 @@
                     <div class="mb-3">
                         <label class="form-label">Park Name</label>
                         <InputText @bind-Value="_settings.ParkName" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.ParkDialog" class="form-check-input" id="parkDialog2" />
-                        <label class="form-check-label" for="parkDialog2">Show Park Dialog</label>
                     </div>
 
                     <div class="mb-3">

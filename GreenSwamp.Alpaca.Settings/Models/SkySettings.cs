@@ -100,13 +100,11 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public double AutoHomeAxisX { get; set; }
         public double AutoHomeAxisY { get; set; }
         public bool HomeWarning { get; set; }
-        public bool HomeDialog { get; set; }
         
         // Park Settings
         public string ParkName { get; set; } = null!;
         public bool LimitPark { get; set; }
         public string ParkLimitName { get; set; } = null!;
-        public bool ParkDialog { get; set; }
         public List<ParkPosition> ParkPositions { get; set; } = new();
         public double[] ParkAxes { get; set; } = Array.Empty<double>();
 

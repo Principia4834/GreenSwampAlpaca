@@ -700,7 +700,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 goToStarted.Set(); // Signal that GoTo has started so async ASCOM operations can return with Slewing = true
 
                 // Create new cancellation token source INSIDE the lock
-                _ctsGoTo = new CancellationTokenSource();
+                // _ctsGoTo = new CancellationTokenSource();
             // } // Release lock before starting the potentially long-running slew operation
 
             // Assume fail

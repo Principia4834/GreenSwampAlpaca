@@ -660,30 +660,12 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Show home dialog
-        /// </summary>
-        public bool HomeDialog
-        {
-            get => SkySettings.HomeDialog;
-            set => SkySettings.HomeDialog = value;
-        }
-
-        /// <summary>
         /// Current park position name
         /// </summary>
         public string ParkName
         {
             get => SkySettings.ParkName;
             set => SkySettings.ParkName = value;
-        }
-
-        /// <summary>
-        /// Show park dialog
-        /// </summary>
-        public bool ParkDialog
-        {
-            get => SkySettings.ParkDialog;
-            set => SkySettings.ParkDialog = value;
         }
 
         /// <summary>
