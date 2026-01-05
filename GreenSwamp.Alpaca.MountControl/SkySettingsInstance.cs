@@ -15,10 +15,14 @@
  */
 
 using ASCOM.Common.DeviceInterfaces;
+using GreenSwamp.Alpaca.MountControl.Pulses;
+using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Settings.Services;
+using GreenSwamp.Alpaca.Shared;
 using GreenSwamp.Alpaca.Shared.Transport;
 using System.ComponentModel;
 using System.Numerics;
-using GreenSwamp.Alpaca.MountControl.Pulses;
+using System.Reflection;
 using Handshake = System.IO.Ports.Handshake;
 
 namespace GreenSwamp.Alpaca.MountControl
@@ -30,39 +34,30 @@ namespace GreenSwamp.Alpaca.MountControl
     /// </summary>
     public class SkySettingsInstance
     {
-        #region Singleton Pattern
-        
-        private static SkySettingsInstance? _instance;
-        
-        /// <summary>
-        /// Gets the singleton instance. Throws if not initialized.
-        /// </summary>
-        public static SkySettingsInstance Instance => _instance 
-            ?? throw new InvalidOperationException("SkySettingsInstance not initialized. Call Initialize() first.");
+        private readonly string _settingsFilePath;
+        private readonly IVersionedSettingsService _settingsService;
 
         /// <summary>
-        /// Initialize the singleton instance and load settings from static SkySettings.
+        /// Phase 4.2: Constructor for instance-specific settings
         /// </summary>
-        public static void Initialize()
+        /// <param name="settingsFilePath">Optional path to settings file. If null, uses shared settings.</param>
+        /// <param name="settingsService">Settings service for loading/saving</param>
+        public SkySettingsInstance(string settingsFilePath = null, IVersionedSettingsService settingsService = null)
         {
-            if (_instance != null)
+            _settingsFilePath = settingsFilePath;
+            _settingsService = settingsService;
+
+            // Phase 4.2: Load from file if path provided, otherwise use static
+            if (!string.IsNullOrEmpty(_settingsFilePath) && _settingsService != null)
             {
-                throw new InvalidOperationException("SkySettingsInstance already initialized");
+                LoadFromFile();
             }
-            
-            _instance = new SkySettingsInstance();
-            SkySettings.Load(); // Use existing Load() method
-        }
-
-        /// <summary>
-        /// Private constructor for singleton pattern
-        /// </summary>
-        private SkySettingsInstance()
-        {
-        }
-
-        #endregion
-
+            else
+            {
+                LoadFromStatic();
+            }
+        }        
+        
         #region Events
 
         /// <summary>
@@ -1107,5 +1102,267 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         #endregion
+
+        /// <summary>
+        /// Phase 4.2: Load settings from instance-specific file
+        /// </summary>
+        private void LoadFromFile()
+        {
+            try
+            {
+                var settings = _settingsService.GetSettings();
+
+                // Mount configuration - with enum parsing
+                if (Enum.TryParse<MountType>(settings.Mount, true, out var mountType))
+                    Mount = mountType;
+                Port = settings.Port ?? "COM3";
+                BaudRate = (SerialSpeed)settings.BaudRate;
+
+                // Location
+                Latitude = settings.Latitude;
+                Longitude = settings.Longitude;
+                Elevation = settings.Elevation;
+
+                // Alignment - with enum parsing
+                if (Enum.TryParse<AlignmentMode>(settings.AlignmentMode, true, out var alignmentMode))
+                    AlignmentMode = alignmentMode;
+                if (Enum.TryParse<PolarMode>(settings.PolarMode, true, out var polarMode))
+                    PolarMode = polarMode;
+
+                // Limits
+                HourAngleLimit = settings.HourAngleLimit;
+                AxisLimitX = settings.AxisLimitX;
+                AxisLowerLimitY = settings.AxisLowerLimitY;
+                AxisUpperLimitY = settings.AxisUpperLimitY;
+
+                // Tracking - with enum parsing
+                if (Enum.TryParse<DriveRate>(settings.TrackingRate, true, out var trackingRate))
+                    TrackingRate = trackingRate;
+                SiderealRate = settings.SiderealRate;
+                LunarRate = settings.LunarRate;
+                SolarRate = settings.SolarRate;
+                KingRate = settings.KingRate;
+
+                // Guide rates
+                GuideRateOffsetX = settings.GuideRateOffsetX;
+                GuideRateOffsetY = settings.GuideRateOffsetY;
+
+                // Backlash
+                DecBacklash = settings.DecBacklash;
+
+                // Park positions
+                ParkName = settings.ParkName ?? "Park";
+                ParkAxes = settings.ParkAxes ?? new[] { 0.0, 0.0 };
+
+                // PEC - note: PpecOn not PPecOn
+                PecOn = settings.PecOn;
+                PPecOn = settings.PpecOn;  // Note: model uses "PpecOn"
+
+                // Encoders - note: EncodersOn not Encoders
+                Encoders = settings.EncodersOn;  // Note: model uses "EncodersOn"
+
+                // Other settings
+                AtPark = settings.AtPark;
+                // Note: RaTrackingOffset is read-only, so we don't set it here
+
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Phase4.2|LoadFromFile|Path:{_settingsFilePath}|Mount:{Mount}|Port:{Port}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            catch (Exception ex)
+            {
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Phase4.2|LoadFromFile failed|{ex.Message}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
+                // Fall back to static settings
+                LoadFromStatic();
+            }
+        }
+
+        /// <summary>
+        /// Phase 4.2: Load settings from static SkySettings (backward compatibility)
+        /// </summary>
+        private void LoadFromStatic()
+        {
+            // Mount configuration
+            Mount = SkySettings.Mount;
+            Port = SkySettings.Port;
+            BaudRate = SkySettings.BaudRate;
+
+            // Location
+            Latitude = SkySettings.Latitude;
+            Longitude = SkySettings.Longitude;
+            Elevation = SkySettings.Elevation;
+
+            // Alignment
+            AlignmentMode = SkySettings.AlignmentMode;
+            PolarMode = SkySettings.PolarMode;
+
+            // Limits
+            HourAngleLimit = SkySettings.HourAngleLimit;
+            AxisLimitX = SkySettings.AxisLimitX;
+            AxisLowerLimitY = SkySettings.AxisLowerLimitY;
+            AxisUpperLimitY = SkySettings.AxisUpperLimitY;
+
+            // Tracking
+            TrackingRate = SkySettings.TrackingRate;
+            SiderealRate = SkySettings.SiderealRate;
+            LunarRate = SkySettings.LunarRate;
+            SolarRate = SkySettings.SolarRate;
+            KingRate = SkySettings.KingRate;
+
+            // Guide rates
+            GuideRateOffsetX = SkySettings.GuideRateOffsetX;
+            GuideRateOffsetY = SkySettings.GuideRateOffsetY;
+
+            // Backlash
+            DecBacklash = SkySettings.DecBacklash;
+
+            // Park positions
+            ParkName = SkySettings.ParkName;
+            ParkAxes = SkySettings.ParkAxes;
+
+            // PEC
+            PecOn = SkySettings.PecOn;
+            PPecOn = SkySettings.PPecOn;
+
+            // Encoders
+            Encoders = SkySettings.Encoders;
+
+            // Other settings
+            AtPark = SkySettings.AtPark;
+            // Note: RaTrackingOffset is read-only
+
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Mount,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Phase4.2|LoadFromStatic|Mount:{Mount}|Port:{Port}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+        }
+
+        /// <summary>
+        /// Phase 4.2: Save current settings to instance-specific file
+        /// </summary>
+        public void SaveSettings()
+        {
+            if (string.IsNullOrEmpty(_settingsFilePath) || _settingsService == null)
+            {
+                // No file path - save to static instead (backward compatibility)
+                SaveToStatic();
+                return;
+            }
+
+            try
+            {
+                var settings = _settingsService.GetSettings();
+
+                // Update settings object - with enum to string conversion
+                settings.Mount = Mount.ToString();
+                settings.Port = Port;
+                settings.BaudRate = (int)BaudRate;
+                settings.Latitude = Latitude;
+                settings.Longitude = Longitude;
+                settings.Elevation = Elevation;
+                settings.AlignmentMode = AlignmentMode.ToString();
+                settings.PolarMode = PolarMode.ToString();
+                settings.HourAngleLimit = HourAngleLimit;
+                settings.AxisLimitX = AxisLimitX;
+                settings.AxisLowerLimitY = AxisLowerLimitY;
+                settings.AxisUpperLimitY = AxisUpperLimitY;
+                settings.TrackingRate = TrackingRate.ToString();
+                settings.GuideRateOffsetX = GuideRateOffsetX;
+                settings.GuideRateOffsetY = GuideRateOffsetY;
+                settings.DecBacklash = DecBacklash;
+                settings.ParkName = ParkName;
+                settings.ParkAxes = ParkAxes;
+                settings.PecOn = PecOn;
+                settings.PpecOn = PPecOn;  // Note: model uses "PpecOn"
+                settings.EncodersOn = Encoders;  // Note: model uses "EncodersOn"
+                settings.AtPark = AtPark;
+                // Note: RaTrackingOffset is read-only, use RATrackingOffset on model
+                settings.RATrackingOffset = RaTrackingOffset;
+
+                // Save using SaveSettingsAsync
+                _settingsService.SaveSettingsAsync(settings).GetAwaiter().GetResult();
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Phase4.2|SaveToFile|Path:{_settingsFilePath}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            catch (Exception ex)
+            {
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Phase4.2|SaveToFile failed|{ex.Message}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+        }
+
+        /// <summary>
+        /// Phase 4.2: Save to static SkySettings (backward compatibility)
+        /// </summary>
+        private void SaveToStatic()
+        {
+            SkySettings.Mount = Mount;
+            SkySettings.Port = Port;
+            SkySettings.BaudRate = BaudRate;
+            SkySettings.Latitude = Latitude;
+            SkySettings.Longitude = Longitude;
+            SkySettings.Elevation = Elevation;
+            SkySettings.AlignmentMode = AlignmentMode;
+            SkySettings.PolarMode = PolarMode;
+            SkySettings.HourAngleLimit = HourAngleLimit;
+            SkySettings.AxisLimitX = AxisLimitX;
+            SkySettings.AxisLowerLimitY = AxisLowerLimitY;
+            SkySettings.AxisUpperLimitY = AxisUpperLimitY;
+            SkySettings.TrackingRate = TrackingRate;
+            SkySettings.GuideRateOffsetX = GuideRateOffsetX;
+            SkySettings.GuideRateOffsetY = GuideRateOffsetY;
+            SkySettings.DecBacklash = DecBacklash;
+            SkySettings.ParkName = ParkName;
+            SkySettings.ParkAxes = ParkAxes;
+            SkySettings.PecOn = PecOn;
+            SkySettings.PPecOn = PPecOn;
+            SkySettings.Encoders = Encoders;
+            SkySettings.AtPark = AtPark;
+            // Note: RaTrackingOffset setter is inaccessible in static
+        }
     }
 }

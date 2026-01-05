@@ -148,18 +148,13 @@ namespace GreenSwamp.Alpaca.Server
                 )
             );
             // Configure Server Settings from configuration
-            builder.Services.Configure<GreenSwamp.Alpaca.Settings.Models.SkySettings>(builder.Configuration.GetSection("SkySettings"));
-
-            // Phase A Step A.2: Register SkySettingsInstance for dependency injection
-            // Note: The singleton is initialized later in the Phase 2 section after app.Build()
-            // This registration allows services to receive SkySettingsInstance via constructor injection
             builder.Services.AddSingleton(sp =>
             {
-                // The instance will be initialized after app.Build() but before first use
-                return GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Instance;
+                // Phase 4.2: Create instance with default (static) settings
+                var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
+                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(null, settingsService);
             });
-            Logger.LogInformation("? Phase A.2: SkySettingsInstance registered in DI container");
-
+            Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance registered in DI container");
             #endregion Startup and Logging
 
             //ToDo you can add devices here
@@ -226,12 +221,11 @@ namespace GreenSwamp.Alpaca.Server
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
 
-                // Phase A Step A.2: Initialize SkySettingsInstance singleton
-                GreenSwamp.Alpaca.MountControl.SkySettingsInstance.Initialize();
-                Logger.LogInformation("✅ Phase A.2: SkySettingsInstance initialized (singleton)");
+                // Phase 4.2: Get SkySettingsInstance from DI (already initialized via constructor)
+                var settingsInstance = app.Services.GetRequiredService<SkySettingsInstance>();
+                Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance retrieved from DI");
 
                 // Phase A Step A.3: Initialize SkyServer with instance settings
-                var settingsInstance = app.Services.GetRequiredService<SkySettingsInstance>();
                 GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
                 Logger.LogInformation("✅ Phase A.3: SkyServer initialized with instance settings");
 

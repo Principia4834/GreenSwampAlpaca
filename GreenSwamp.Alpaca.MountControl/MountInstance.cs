@@ -90,22 +90,30 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // Phase 3.2: Guide rate field
         private Vector _guideRate;
-        
+
+        /// <summary>
+        /// Phase 4.2: Constructor with optional settings file path
+        /// </summary>
+        /// <param name="id">Unique instance identifier (e.g., "telescope-0")</param>
+        /// <param name="settings">Settings instance (can be file-based or static)</param>
         public MountInstance(string id, SkySettingsInstance settings)
         {
-            _id = id ?? throw new ArgumentNullException(nameof(id));
+            _id = id ?? "mount-0";
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            // Phase 3.2: Initialize instance state
-            _isMountRunning = false;
-            _appAxes = new Vector(double.NaN, double.NaN);
-            _targetRaDec = new Vector(double.NaN, double.NaN);
-            _skyHcRate = new Vector(0, 0);
-            _skyTrackingRate = new Vector(0, 0);
-            _atPark = false;
-
-            LogMount($"MountInstance created: {_id}");
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Mount,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Phase4.2|MountInstance created|ID:{_id}|Mount:{_settings.Mount}|Port:{_settings.Port}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
         }
+
         #region IMountController Implementation (Phase 3.1: Delegation)
 
         /// <summary>

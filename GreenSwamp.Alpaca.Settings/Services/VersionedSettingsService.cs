@@ -33,10 +33,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger? _logger;
         private static readonly SemaphoreSlim _fileLock = new(1, 1);
+        private readonly string? _customSettingsPath;
 
-        public string CurrentVersion { get; }
+        // Phase 4.2: Custom path support
+        public string CurrentVersion { get; private set; }
         public string[] AvailableVersions => GetAvailableVersions();
-        public string UserSettingsPath => GetUserSettingsPath(CurrentVersion);
+        public string UserSettingsPath => _customSettingsPath ?? GetUserSettingsPath(CurrentVersion);
 
         public event EventHandler<SkySettings>? SettingsChanged;
         public event EventHandler<MonitorSettings>? MonitorSettingsChanged;
@@ -58,6 +60,54 @@ namespace GreenSwamp.Alpaca.Settings.Services
             _versionFile = Path.Combine(_appDataRoot, "current.version");
 
             Directory.CreateDirectory(_currentVersionPath);
+
+            // Initialize versioned settings
+            InitializeVersionedSettings();
+        }
+
+
+        /// <summary>
+        /// Phase 4.2: Constructor with custom settings file path
+        /// </summary>
+        /// <param name="configuration">Configuration root</param>
+        /// <param name="logger">Logger instance</param>
+        /// <param name="customSettingsPath">Custom path to settings file (overrides default)</param>
+        public VersionedSettingsService(
+            IConfiguration configuration,
+            ILogger? logger,
+            string customSettingsPath)
+        {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _logger = logger;
+            _customSettingsPath = customSettingsPath;
+
+            if (!string.IsNullOrEmpty(_customSettingsPath))
+            {
+                // Phase 4.2: Extract version and setup from custom path
+                CurrentVersion = GetVersionFromPath(_customSettingsPath);
+                var customDir = Path.GetDirectoryName(_customSettingsPath) ??
+                               Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GreenSwampAlpaca", CurrentVersion);
+
+                _appDataRoot = Path.GetDirectoryName(customDir) ??
+                              Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GreenSwampAlpaca");
+                _currentVersionPath = customDir;
+                _versionFile = Path.Combine(_appDataRoot, "current.version");
+
+                Directory.CreateDirectory(_currentVersionPath);
+
+                _logger?.LogInformation("Phase 4.2: Using custom settings path: {Path}", _customSettingsPath);
+            }
+            else
+            {
+                // Use default path logic
+                CurrentVersion = GetAssemblyVersion();
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                _appDataRoot = Path.Combine(appData, "GreenSwampAlpaca");
+                _currentVersionPath = Path.Combine(_appDataRoot, CurrentVersion);
+                _versionFile = Path.Combine(_appDataRoot, "current.version");
+
+                Directory.CreateDirectory(_currentVersionPath);
+            }
 
             // Initialize versioned settings
             InitializeVersionedSettings();
@@ -351,6 +401,32 @@ namespace GreenSwamp.Alpaca.Settings.Services
             
             // Fall back to assembly version
             return assembly.GetName().Version?.ToString() ?? "1.0.0";
+        }
+
+        /// <summary>
+        /// Phase 4.2: Extract version from custom settings path
+        /// </summary>
+        private string GetVersionFromPath(string path)
+        {
+            try
+            {
+                // Try to extract version from path like: .../GreenSwampAlpaca/1.2.3/telescope-0.json
+                var parts = path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                for (int i = parts.Length - 1; i >= 0; i--)
+                {
+                    if (!string.IsNullOrEmpty(parts[i]) && Version.TryParse(parts[i], out _))
+                    {
+                        return parts[i];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Could not parse version from path: {Path}", path);
+            }
+
+            // Fall back to current assembly version
+            return GetAssemblyVersion();
         }
     }
 }
