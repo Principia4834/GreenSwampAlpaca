@@ -118,10 +118,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal static bool PecOn
         {
-            get => SkySettings.PecOn;
+            get => _settings!.PecOn;
             set
             {
-                SkySettings.PecOn = value;
+                _settings!.PecOn = value;
                 // set back to normal tracking
                 if (!value && Tracking) { SetTracking(); }
                 OnStaticPropertyChanged();
@@ -159,10 +159,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private static bool PPecOn
         {
-            get => SkySettings.PPecOn;
+            get => _settings!.PPecOn;
             set
             {
-                SkySettings.PPecOn = value;
+                _settings!.PPecOn = value;
                 SkyTasks(MountTaskName.Pec);
                 OnStaticPropertyChanged();
             }
@@ -543,10 +543,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 case PecFileType.GsPecWorm:
                     var master = MakeWormMaster(bins);
                     UpdateWormMaster(master, PecMergeType.Replace);
-                    SkySettings.PecWormFile = fileName;
+                    _settings!.PecWormFile = fileName;
                     break;
                 case PecFileType.GsPec360:
-                    SkySettings.Pec360File = fileName;
+                    _settings!.Pec360File = fileName;
                     break;
                 case PecFileType.GsPecDebug:
                     break;
@@ -631,14 +631,14 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case PecMergeType.Replace:
                     PecWormMaster = mBins;
-                    SkySettings.PecOffSet = 0; // reset offset
+                    _settings!.PecOffSet = 0; // reset offset
                     return;
                 case PecMergeType.Merge:
                     var pecBins = PecWormMaster;
                     if (pecBins == null)
                     {
                         PecWormMaster = mBins;
-                        SkySettings.PecOffSet = 0;
+                        _settings!.PecOffSet = 0;
                         return;
                     }
                     for (var i = 0; i < mBins.Count; i++)
@@ -760,9 +760,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             get
             {
-                if (SkySettings.AlignmentMode == AlignmentMode.Polar)
+                if (_settings!.AlignmentMode == AlignmentMode.Polar)
                 {
-                    return SkySettings.Mount == MountType.SkyWatcher ? SkySettings.PolarMode : PolarMode.Right;
+                    return _settings!.Mount == MountType.SkyWatcher ? _settings!.PolarMode : PolarMode.Right;
                 }
                 else
                 {
@@ -903,7 +903,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Set slewing state
                 SetRateMoveSlewState();
                 // Move axis at requested rate
-                switch (SkySettings.Mount)
+                switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
                         _ = new CmdMoveAxisRate(0, Axis.Axis2, -_rateMoveAxes.Y);
@@ -948,7 +948,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Set slewing state
                 SetRateMoveSlewState();
                 // Move axis at requested rate
-                switch (SkySettings.Mount)
+                switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
                         _ = new CmdMoveAxisRate(0, Axis.Axis1, _rateMoveAxes.X);
@@ -1072,7 +1072,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Southern alignment status
         /// </summary>
-        public static bool SouthernHemisphere => SkySettings.Latitude < 0;
+        public static bool SouthernHemisphere => _settings!.Latitude < 0;
 
         /// <summary>
         /// Counts any overlapping events with updating UI that might occur
@@ -1211,7 +1211,7 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            switch (SkySettings.Mount) // mount type check
+            switch (_settings!.Mount) // mount type check
             {
                 case MountType.Simulator:
                     SimTasks(MountTaskName.StopAxes);
@@ -1287,7 +1287,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static ParkPosition GetStoredParkPosition()
         {
-            var p = new ParkPosition { Name = SkySettings.ParkName, X = SkySettings.ParkAxes[0], Y = SkySettings.ParkAxes[1] };
+            var p = new ParkPosition { Name = _settings!.ParkName, X = _settings!.ParkAxes[0], Y = _settings!.ParkAxes[1] };
             return p;
         }
 
@@ -1359,7 +1359,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             get
             {
-                switch (SkySettings.Mount)
+                switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
                         _mountRunning = MountQueue.IsRunning;
