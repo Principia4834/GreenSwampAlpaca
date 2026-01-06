@@ -30,6 +30,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private readonly ILogger<SettingsProfileService> _logger;
         private readonly ISettingsTemplateService _templateService;
         private static readonly SemaphoreSlim _fileLock = new(1, 1);
+        private static readonly SemaphoreSlim _initLock = new(1, 1);
+        private bool _initialized;
         
         public SettingsProfileService(
             ILogger<SettingsProfileService> logger,
@@ -47,8 +49,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             
             _logger.LogInformation("SettingsProfileService initialized | Profiles path: {Path}", _profilesPath);
             
-            // Initialize default profiles if they don't exist
-            InitializeDefaultProfiles();
+            // Don't initialize here - do it lazily on first use to avoid blocking
         }
         
         /// <summary>
@@ -76,12 +77,17 @@ namespace GreenSwamp.Alpaca.Settings.Services
         }
         
         /// <summary>
-        /// Initialize default profiles for each alignment mode
+        /// Initialize default profiles for each alignment mode (lazy initialization)
         /// </summary>
-        private void InitializeDefaultProfiles()
+        private async Task EnsureInitializedAsync()
         {
+            if (_initialized) return;
+            
+            await _initLock.WaitAsync();
             try
             {
+                if (_initialized) return; // Double-check after acquiring lock
+                
                 foreach (AlignmentMode mode in Enum.GetValues(typeof(AlignmentMode)))
                 {
                     var defaultName = GetDefaultProfileName(mode);
@@ -89,13 +95,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     
                     if (!File.Exists(filePath))
                     {
-                        var profile = CreateDefaultProfile(defaultName, mode);
-                        SaveProfileAsync(profile).Wait();
+                        var profile = await CreateDefaultProfileAsync(defaultName, mode);
+                        await SaveProfileAsync(profile);
                         
                         _logger.LogInformation("Created default profile: {Name}", defaultName);
                     }
                 }
                 
+                _initialized = true;
                 _logger.LogInformation("Default profile initialization complete");
             }
             catch (Exception ex)
@@ -103,10 +110,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 _logger.LogError(ex, "Failed to initialize default profiles");
                 throw;
             }
+            finally
+            {
+                _initLock.Release();
+            }
         }
         
         public async Task<SettingsProfile> CreateProfileAsync(string name, AlignmentMode mode, string? copyFromProfile = null)
         {
+            await EnsureInitializedAsync();
+            
             try
             {
                 // Validate name
@@ -163,6 +176,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
         
         public async Task<SettingsProfile> GetProfileAsync(string name)
         {
+            await EnsureInitializedAsync();
+            
             try
             {
                 var filePath = GetProfilePath(name);
@@ -195,8 +210,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
         }
         
+        private async Task<bool> ProfileExistsAsync(string name)
+        {
+            var filePath = GetProfilePath(name);
+            return File.Exists(filePath);
+        }
+        
         public async Task<IEnumerable<SettingsProfile>> GetAllProfilesAsync()
         {
+            await EnsureInitializedAsync();
+            
             try
             {
                 var profiles = new List<SettingsProfile>();
@@ -298,6 +321,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
         
         public async Task<SettingsProfile> GetActiveProfileAsync()
         {
+            await EnsureInitializedAsync();
+            
             try
             {
                 var name = await GetActiveProfileNameAsync();
@@ -341,6 +366,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
         
         public async Task<SettingsProfile> GetDefaultProfileAsync(AlignmentMode mode)
         {
+            await EnsureInitializedAsync();
+            
             try
             {
                 var defaultName = GetDefaultProfileName(mode);
@@ -469,10 +496,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
         
         // Helper methods
         
-        private SettingsProfile CreateDefaultProfile(string name, AlignmentMode mode)
+        private async Task<SettingsProfile> CreateDefaultProfileAsync(string name, AlignmentMode mode)
         {
-            // Load settings from template
-            var settings = _templateService.LoadTemplateAsync(mode).Result;
+            // Load settings from template asynchronously
+            var settings = await _templateService.LoadTemplateAsync(mode);
             
             return new SettingsProfile
             {
@@ -550,12 +577,6 @@ namespace GreenSwamp.Alpaca.Settings.Services
             
             // Default to GermanPolar if no active profile set
             return GetDefaultProfileName(AlignmentMode.GermanPolar);
-        }
-        
-        private async Task<bool> ProfileExistsAsync(string name)
-        {
-            var filePath = GetProfilePath(name);
-            return File.Exists(filePath);
         }
     }
 }

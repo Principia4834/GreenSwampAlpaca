@@ -1,0 +1,300 @@
+@page "/profile-edit/{ProfileName}"
+
+@inject NavigationManager NavManager
+@inject ISettingsProfileService ProfileService
+@inject ILogger<ProfileEdit> Logger
+
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Settings.Services
+
+<PageTitle>Edit Profile - @ProfileName</PageTitle>
+
+<h3>Edit Profile: @(_profile?.DisplayName ?? ProfileName)</h3>
+
+<div class="mb-3">
+    <button class="btn btn-secondary" @onclick="GoBack">
+        <i class="oi oi-arrow-left"></i> Back to Profiles
+    </button>
+</div>
+
+@if (_message != null)
+{
+    <div class="alert alert-@(_isError ? "danger" : "success") alert-dismissible fade show">
+        @_message
+        <button type="button" class="btn-close" @onclick="@(() => _message = null)"></button>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (_profile != null)
+{
+    <EditForm Model="_profile" OnValidSubmit="SaveProfile">
+        <DataAnnotationsValidator />
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5>Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Display Name</label>
+                        <InputText class="form-control" @bind-Value="_profile.DisplayName" disabled="@_profile.IsReadOnly" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Alignment Mode</label>
+                        <InputSelect class="form-select" @bind-Value="_profile.AlignmentMode" disabled="@_profile.IsReadOnly">
+                            <option value="@AlignmentMode.GermanPolar">German Equatorial</option>
+                            <option value="@AlignmentMode.Polar">Fork Equatorial</option>
+                            <option value="@AlignmentMode.AltAz">Alt-Azimuth</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <InputTextArea class="form-control" @bind-Value="_profile.Description" rows="2" disabled="@_profile.IsReadOnly" />
+                </div>
+                @if (_profile.IsReadOnly)
+                {
+                    <div class="alert alert-warning">
+                        <strong>Read-Only Profile:</strong> This is a default profile and cannot be modified. Clone it to create an editable copy.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(_activeTab == "connection" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "connection")">
+                    Connection
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(_activeTab == "location" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "location")">
+                    Location
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(_activeTab == "mount" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "mount")">
+                    Mount Config
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(_activeTab == "tracking" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "tracking")">
+                    Tracking
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            @if (_activeTab == "connection")
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Connection Settings</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mount Type</label>
+                                <InputText class="form-control" @bind-Value="_profile.Settings.Mount" disabled="@_profile.IsReadOnly" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Port</label>
+                                <InputText class="form-control" @bind-Value="_profile.Settings.Port" disabled="@_profile.IsReadOnly" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Baud Rate</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.BaudRate" disabled="@_profile.IsReadOnly" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Data Bits</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.DataBits" disabled="@_profile.IsReadOnly" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "location")
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Location Settings</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Latitude (°)</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.Latitude" disabled="@_profile.IsReadOnly" />
+                                <small class="form-text text-muted">Range: -90 to 90</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Longitude (°)</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.Longitude" disabled="@_profile.IsReadOnly" />
+                                <small class="form-text text-muted">Range: -180 to 180</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Elevation (m)</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.Elevation" disabled="@_profile.IsReadOnly" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "mount")
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Mount Configuration</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Home Axis X (°)</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.HomeAxisX" disabled="@_profile.IsReadOnly" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Home Axis Y (°)</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.HomeAxisY" disabled="@_profile.IsReadOnly" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Park Name</label>
+                            <InputText class="form-control" @bind-Value="_profile.Settings.ParkName" disabled="@_profile.IsReadOnly" />
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (_activeTab == "tracking")
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Tracking Settings</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tracking Rate</label>
+                                <InputText class="form-control" @bind-Value="_profile.Settings.TrackingRate" disabled="@_profile.IsReadOnly" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sidereal Rate (°/hr)</label>
+                                <InputNumber class="form-control" @bind-Value="_profile.Settings.SiderealRate" disabled="@_profile.IsReadOnly" />
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <InputCheckbox class="form-check-input" @bind-Value="_profile.Settings.AutoTrack" disabled="@_profile.IsReadOnly" />
+                            <label class="form-check-label">Auto Track</label>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="mt-3">
+            <ValidationSummary />
+        </div>
+
+        <div class="mt-3">
+            @if (!_profile.IsReadOnly)
+            {
+                <button type="submit" class="btn btn-primary" disabled="@_saving">
+                    @if (_saving)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    Save Changes
+                </button>
+            }
+            <button type="button" class="btn btn-secondary" @onclick="GoBack">
+                Cancel
+            </button>
+        </div>
+    </EditForm>
+}
+else
+{
+    <div class="alert alert-danger">
+        Profile not found.
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string ProfileName { get; set; } = string.Empty;
+
+    private SettingsProfile? _profile;
+    private bool _loading = true;
+    private bool _saving;
+    private string? _message;
+    private bool _isError;
+    private string _activeTab = "connection";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            _profile = await ProfileService.GetProfileAsync(ProfileName);
+
+            _loading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load profile: {ProfileName}", ProfileName);
+            ShowError("Failed to load profile: " + ex.Message);
+            _loading = false;
+        }
+    }
+
+    private async Task SaveProfile()
+    {
+        if (_profile == null || _profile.IsReadOnly)
+            return;
+
+        try
+        {
+            _saving = true;
+            StateHasChanged();
+
+            await ProfileService.UpdateProfileAsync(_profile);
+
+            ShowSuccess("Profile saved successfully");
+            _saving = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save profile: {ProfileName}", ProfileName);
+            ShowError("Failed to save profile: " + ex.Message);
+            _saving = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/profiles");
+    }
+
+    private void ShowSuccess(string message)
+    {
+        _message = message;
+        _isError = false;
+        StateHasChanged();
+    }
+
+    private void ShowError(string message)
+    {
+        _message = message;
+        _isError = true;
+        StateHasChanged();
+    }
+}

@@ -140,13 +140,10 @@ namespace GreenSwamp.Alpaca.Server
 
             // Load versioned user settings support
             builder.Configuration.AddVersionedUserSettings();
-            // Register VersionedSettingsService for IVersionedSettingsService
-            builder.Services.AddSingleton<IVersionedSettingsService>(sp =>
-                new VersionedSettingsService(
-                    builder.Configuration,
-                    sp.GetService<ILogger<VersionedSettingsService>>()
-                )
-            );
+            
+            // Register all settings services (VersionedSettings, Template, Profile)
+            builder.Services.AddVersionedSettings(builder.Configuration);
+            
             // Configure Server Settings from configuration
             builder.Services.AddSingleton(sp =>
             {
@@ -155,6 +152,7 @@ namespace GreenSwamp.Alpaca.Server
                 return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
             });
             Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance registered in DI container");
+            Logger.LogInformation("✅ Settings services registered: VersionedSettings, Template, Profile");
             #endregion Startup and Logging
 
             //ToDo you can add devices here

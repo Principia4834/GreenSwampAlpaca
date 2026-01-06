@@ -43,6 +43,12 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
                 var logger = loggerFactory?.CreateLogger(typeof(VersionedSettingsService).FullName ?? "VersionedSettingsService");
                 return new VersionedSettingsService(configuration, logger);
             });
+            
+            // Register template service as singleton
+            services.AddSingleton<ISettingsTemplateService, SettingsTemplateService>();
+            
+            // Register profile service as singleton
+            services.AddSingleton<ISettingsProfileService, SettingsProfileService>();
 
             return services;
         }

@@ -1,0 +1,335 @@
+@page "/profiles"
+
+@inject NavigationManager NavManager
+@inject ISettingsProfileService ProfileService
+@inject ILogger<Profiles> Logger
+
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Settings.Services
+
+<PageTitle>Settings Profiles</PageTitle>
+
+<h3>Settings Profiles</h3>
+
+@if (_message != null)
+{
+    <div class="alert alert-@(_isError ? "danger" : "success") alert-dismissible fade show">
+        @_message
+        <button type="button" class="btn-close" @onclick="@(() => _message = null)"></button>
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <button class="btn btn-primary" @onclick="ShowCreateProfileDialog">
+            <i class="oi oi-plus"></i> New Profile
+        </button>
+        <button class="btn btn-secondary" @onclick="LoadProfiles">
+            <i class="oi oi-reload"></i> Refresh
+        </button>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (_profiles != null && _profiles.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Alignment Mode</th>
+                    <th>Description</th>
+                    <th>Created</th>
+                    <th>Modified</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var profile in _profiles)
+                {
+                    <tr class="@(profile.Name == _activeProfileName ? "table-success" : "")">
+                        <td>
+                            <strong>@profile.DisplayName</strong>
+                            @if (profile.IsReadOnly)
+                            {
+                                <span class="badge bg-secondary">Default</span>
+                            }
+                        </td>
+                        <td>@profile.AlignmentMode</td>
+                        <td>@profile.Description</td>
+                        <td>@profile.Created.ToLocalTime().ToString("g")</td>
+                        <td>@profile.LastModified.ToLocalTime().ToString("g")</td>
+                        <td>
+                            @if (profile.Name == _activeProfileName)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                        </td>
+                        <td>
+                            @if (profile.Name != _activeProfileName)
+                            {
+                                <button class="btn btn-sm btn-success" @onclick="@(() => SetActiveProfile(profile.Name))">
+                                    Activate
+                                </button>
+                            }
+                            <button class="btn btn-sm btn-primary" @onclick="@(() => EditProfile(profile.Name))">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-info" @onclick="@(() => CloneProfile(profile.Name))">
+                                Clone
+                            </button>
+                            @if (!profile.IsReadOnly && profile.Name != _activeProfileName)
+                            {
+                                <button class="btn btn-sm btn-danger" @onclick="@(() => DeleteProfile(profile.Name))">
+                                    Delete
+                                </button>
+                            }
+                            <button class="btn btn-sm btn-secondary" @onclick="@(() => ExportProfile(profile.Name))">
+                                Export
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No profiles found. Create your first profile to get started.
+    </div>
+}
+
+@* Create Profile Dialog *@
+@if (_showCreateDialog)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Profile</h5>
+                    <button type="button" class="btn-close" @onclick="HideCreateProfileDialog"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Profile Name</label>
+                        <input type="text" class="form-control" @bind="_newProfileName" placeholder="e.g., my-eq6r" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alignment Mode</label>
+                        <select class="form-select" @bind="_newProfileMode">
+                            <option value="@AlignmentMode.GermanPolar">German Equatorial</option>
+                            <option value="@AlignmentMode.Polar">Fork Equatorial</option>
+                            <option value="@AlignmentMode.AltAz">Alt-Azimuth</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Copy From (Optional)</label>
+                        <select class="form-select" @bind="_copyFromProfile">
+                            <option value="">-- Create from template --</option>
+                            @if (_profiles != null)
+                            {
+                                @foreach (var p in _profiles)
+                                {
+                                    <option value="@p.Name">@p.DisplayName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideCreateProfileDialog">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="CreateProfile">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+@code {
+    private List<SettingsProfile>? _profiles;
+    private string? _activeProfileName;
+    private bool _loading = true;
+    private string? _message;
+    private bool _isError;
+
+    // Create dialog
+    private bool _showCreateDialog;
+    private string _newProfileName = "";
+    private AlignmentMode _newProfileMode = AlignmentMode.GermanPolar;
+    private string _copyFromProfile = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfiles();
+    }
+
+    private async Task LoadProfiles()
+    {
+        try
+        {
+            _loading = true;
+            StateHasChanged();
+
+            var profiles = await ProfileService.GetAllProfilesAsync();
+            _profiles = profiles.OrderBy(p => p.IsReadOnly ? 0 : 1).ThenBy(p => p.Name).ToList();
+
+            var activeProfile = await ProfileService.GetActiveProfileAsync();
+            _activeProfileName = activeProfile?.Name;
+
+            _loading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load profiles");
+            ShowError("Failed to load profiles: " + ex.Message);
+            _loading = false;
+        }
+    }
+
+    private async Task SetActiveProfile(string name)
+    {
+        try
+        {
+            await ProfileService.SetActiveProfileAsync(name);
+            _activeProfileName = name;
+            ShowSuccess($"Profile '{name}' is now active. Restart the application to apply changes.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to set active profile");
+            ShowError("Failed to activate profile: " + ex.Message);
+        }
+    }
+
+    private void EditProfile(string name)
+    {
+        NavManager.NavigateTo($"/profile-edit/{name}");
+    }
+
+    private async Task CloneProfile(string name)
+    {
+        try
+        {
+            var newName = $"{name}-copy";
+            var counter = 1;
+            while (_profiles?.Any(p => p.Name == newName) == true)
+            {
+                newName = $"{name}-copy-{counter++}";
+            }
+
+            var profile = await ProfileService.GetProfileAsync(name);
+            await ProfileService.CreateProfileAsync(newName, profile.AlignmentMode, name);
+
+            ShowSuccess($"Profile cloned as '{newName}'");
+            await LoadProfiles();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to clone profile");
+            ShowError("Failed to clone profile: " + ex.Message);
+        }
+    }
+
+    private async Task DeleteProfile(string name)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete profile '{name}'?"))
+            return;
+
+        try
+        {
+            await ProfileService.DeleteProfileAsync(name);
+            ShowSuccess($"Profile '{name}' deleted");
+            await LoadProfiles();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to delete profile");
+            ShowError("Failed to delete profile: " + ex.Message);
+        }
+    }
+
+    private async Task ExportProfile(string name)
+    {
+        try
+        {
+            var fileName = $"{name}-{DateTime.Now:yyyyMMdd}.json";
+            var downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var destinationPath = Path.Combine(downloadsPath, "Downloads", fileName);
+
+            await ProfileService.ExportProfileAsync(name, destinationPath);
+            ShowSuccess($"Profile exported to: {destinationPath}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to export profile");
+            ShowError("Failed to export profile: " + ex.Message);
+        }
+    }
+
+    private void ShowCreateProfileDialog()
+    {
+        _newProfileName = "";
+        _newProfileMode = AlignmentMode.GermanPolar;
+        _copyFromProfile = "";
+        _showCreateDialog = true;
+    }
+
+    private void HideCreateProfileDialog()
+    {
+        _showCreateDialog = false;
+    }
+
+    private async Task CreateProfile()
+    {
+        if (string.IsNullOrWhiteSpace(_newProfileName))
+        {
+            ShowError("Profile name is required");
+            return;
+        }
+
+        try
+        {
+            var copyFrom = string.IsNullOrWhiteSpace(_copyFromProfile) ? null : _copyFromProfile;
+            await ProfileService.CreateProfileAsync(_newProfileName, _newProfileMode, copyFrom);
+
+            ShowSuccess($"Profile '{_newProfileName}' created");
+            HideCreateProfileDialog();
+            await LoadProfiles();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create profile");
+            ShowError("Failed to create profile: " + ex.Message);
+        }
+    }
+
+    private void ShowSuccess(string message)
+    {
+        _message = message;
+        _isError = false;
+        StateHasChanged();
+    }
+
+    private void ShowError(string message)
+    {
+        _message = message;
+        _isError = true;
+        StateHasChanged();
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+}
