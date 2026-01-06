@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenswampalpaca.com/schemas/settings-override.schema.json",
+  "title": "Settings Override Template",
+  "description": "Schema for GreenSwamp Alpaca alignment mode-specific override templates",
+  "type": "object",
+  "required": ["Description", "AlignmentMode", "Overrides"],
+  "properties": {
+    "Description": {
+      "type": "string",
+      "description": "Human-readable description of this override template"
+    },
+    "AlignmentMode": {
+      "type": "string",
+      "enum": ["GermanPolar", "Polar", "AltAz"],
+      "description": "Alignment mode this override applies to"
+    },
+    "Overrides": {
+      "type": "object",
+      "description": "Settings that override common template values for this alignment mode",
+      "properties": {
+        "AlignmentMode": {
+          "type": "string",
+          "enum": ["GermanPolar", "Polar", "AltAz"],
+          "description": "Alignment mode (must match parent AlignmentMode)"
+        },
+        "HomeAxisX": {
+          "type": "number",
+          "description": "Home position for X axis in degrees (mode-specific)"
+        },
+        "HomeAxisY": {
+          "type": "number",
+          "description": "Home position for Y axis in degrees (mode-specific)"
+        },
+        "AutoHomeAxisX": {
+          "type": "number",
+          "description": "Auto-home position for X axis in degrees (mode-specific)"
+        },
+        "AutoHomeAxisY": {
+          "type": "number",
+          "description": "Auto-home position for Y axis in degrees (mode-specific)"
+        },
+        "ParkName": {
+          "type": "string",
+          "description": "Name of the selected park position"
+        },
+        "ParkAxes": {
+          "type": "array",
+          "description": "Park axes positions [X, Y] specific to this alignment mode",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        },
+        "ParkPositions": {
+          "type": "array",
+          "description": "Park positions specific to this alignment mode",
+          "items": {
+            "type": "object",
+            "required": ["Name", "X", "Y"],
+            "properties": {
+              "Name": {
+                "type": "string",
+                "description": "Park position name"
+              },
+              "X": {
+                "type": "number",
+                "description": "X axis position in degrees"
+              },
+              "Y": {
+                "type": "number",
+                "description": "Y axis position in degrees"
+              }
+            }
+          }
+        },
+        "NoSyncPastMeridian": {
+          "type": "boolean",
+          "description": "Prevent sync past meridian (typically false for AltAz)"
+        },
+        "HourAngleLimit": {
+          "type": "number",
+          "description": "Hour angle limit in hours (typically 0 for AltAz)"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -17,4 +17,13 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\common.json" />
+    <EmbeddedResource Include="Templates\germanpolar-overrides.json" />
+    <EmbeddedResource Include="Templates\polar-overrides.json" />
+    <EmbeddedResource Include="Templates\altaz-overrides.json" />
+    <EmbeddedResource Include="Templates\settings-template.schema.json" />
+    <EmbeddedResource Include="Templates\settings-override.schema.json" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,31 @@
+{
+  "$schema": "./settings-override.schema.json",
+  "Description": "German Equatorial mount-specific settings",
+  "AlignmentMode": "GermanPolar",
+  "Overrides": {
+    "AlignmentMode": "GermanPolar",
+    "HomeAxisX": 0.0,
+    "HomeAxisY": 90.0,
+    "AutoHomeAxisX": 0.0,
+    "AutoHomeAxisY": 90.0,
+    "ParkName": "Default",
+    "ParkAxes": [180.0, 90.0],
+    "ParkPositions": [
+      {
+        "Name": "Default",
+        "X": 180.0,
+        "Y": 90.0
+      },
+      {
+        "Name": "Home",
+        "X": 0.0,
+        "Y": 90.0
+      },
+      {
+        "Name": "Zenith",
+        "X": 0.0,
+        "Y": 0.0
+      }
+    ]
+  }
+}

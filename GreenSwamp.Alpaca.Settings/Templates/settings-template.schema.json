@@ -1,0 +1,420 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenswampalpaca.com/schemas/settings-template.schema.json",
+  "title": "Settings Template",
+  "description": "Schema for GreenSwamp Alpaca settings template files",
+  "type": "object",
+  "required": ["Description", "Version", "Settings"],
+  "properties": {
+    "Description": {
+      "type": "string",
+      "description": "Human-readable description of this template"
+    },
+    "Version": {
+      "type": "string",
+      "description": "Template version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "Settings": {
+      "type": "object",
+      "description": "Mount settings configuration",
+      "required": ["Mount", "Port", "AlignmentMode"],
+      "properties": {
+        "Mount": {
+          "type": "string",
+          "enum": ["Simulator", "SkyWatcher"],
+          "description": "Mount type"
+        },
+        "Port": {
+          "type": "string",
+          "description": "Serial port (e.g., COM1, COM3)"
+        },
+        "BaudRate": {
+          "type": "integer",
+          "minimum": 300,
+          "maximum": 921600,
+          "description": "Serial communication baud rate"
+        },
+        "DataBits": {
+          "type": "integer",
+          "enum": [5, 6, 7, 8],
+          "description": "Data bits for serial communication"
+        },
+        "Handshake": {
+          "type": "string",
+          "enum": ["None", "XOnXOff", "RequestToSend", "RequestToSendXOnXOff"],
+          "description": "Serial handshake protocol"
+        },
+        "ReadTimeout": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Read timeout in milliseconds"
+        },
+        "DTREnable": {
+          "type": "boolean",
+          "description": "Enable Data Terminal Ready signal"
+        },
+        "RTSEnable": {
+          "type": "boolean",
+          "description": "Enable Request To Send signal"
+        },
+        "Latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "Observer latitude in degrees"
+        },
+        "Longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "description": "Observer longitude in degrees"
+        },
+        "Elevation": {
+          "type": "number",
+          "minimum": -500,
+          "maximum": 9000,
+          "description": "Observer elevation in meters"
+        },
+        "UTCOffset": {
+          "type": "string",
+          "pattern": "^-?\\d{2}:\\d{2}:\\d{2}$",
+          "description": "UTC offset (e.g., 00:00:00, -05:00:00)"
+        },
+        "AutoTrack": {
+          "type": "boolean",
+          "description": "Enable automatic tracking"
+        },
+        "AlignmentMode": {
+          "type": "string",
+          "enum": ["GermanPolar", "Polar", "AltAz"],
+          "description": "Mount alignment mode"
+        },
+        "EquatorialCoordinateType": {
+          "type": "string",
+          "enum": ["Topocentric", "J2000", "JNOW", "B1950", "Other"],
+          "description": "Equatorial coordinate system type"
+        },
+        "AtPark": {
+          "type": "boolean",
+          "description": "Mount is at park position"
+        },
+        "ApertureDiameter": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Telescope aperture diameter in meters"
+        },
+        "ApertureArea": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Telescope aperture area in square meters"
+        },
+        "FocalLength": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Telescope focal length in meters"
+        },
+        "Refraction": {
+          "type": "boolean",
+          "description": "Apply atmospheric refraction correction"
+        },
+        "Temperature": {
+          "type": "number",
+          "description": "Ambient temperature in Celsius"
+        },
+        "CustomGearing": {
+          "type": "boolean",
+          "description": "Use custom gearing settings"
+        },
+        "CustomRa360Steps": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Custom RA steps per 360 degrees"
+        },
+        "CustomRaWormTeeth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Custom RA worm gear teeth count"
+        },
+        "CustomDec360Steps": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Custom Dec steps per 360 degrees"
+        },
+        "CustomDecWormTeeth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Custom Dec worm gear teeth count"
+        },
+        "CustomRaTrackingOffset": {
+          "type": "integer",
+          "description": "Custom RA tracking offset"
+        },
+        "CustomDecTrackingOffset": {
+          "type": "integer",
+          "description": "Custom Dec tracking offset"
+        },
+        "RaBacklash": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "RA backlash compensation in steps"
+        },
+        "DecBacklash": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Dec backlash compensation in steps"
+        },
+        "MinPulseRa": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum RA pulse guide duration in milliseconds"
+        },
+        "MinPulseDec": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum Dec pulse guide duration in milliseconds"
+        },
+        "DecPulseToGoTo": {
+          "type": "boolean",
+          "description": "Use GoTo for Dec pulse guiding"
+        },
+        "St4Guiderate": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9,
+          "description": "ST4 guide rate (0-9)"
+        },
+        "GuideRateOffsetX": {
+          "type": "number",
+          "description": "Guide rate offset for X axis"
+        },
+        "GuideRateOffsetY": {
+          "type": "number",
+          "description": "Guide rate offset for Y axis"
+        },
+        "TrackingRate": {
+          "type": "string",
+          "enum": ["Sidereal", "Lunar", "Solar", "King", "Custom"],
+          "description": "Tracking rate mode"
+        },
+        "SiderealRate": {
+          "type": "number",
+          "description": "Sidereal tracking rate in degrees per hour"
+        },
+        "LunarRate": {
+          "type": "number",
+          "description": "Lunar tracking rate in degrees per hour"
+        },
+        "SolarRate": {
+          "type": "number",
+          "description": "Solar tracking rate in degrees per hour"
+        },
+        "KingRate": {
+          "type": "number",
+          "description": "King tracking rate in degrees per hour"
+        },
+        "RATrackingOffset": {
+          "type": "integer",
+          "description": "RA tracking offset"
+        },
+        "HomeAxisX": {
+          "type": "number",
+          "description": "Home position for X axis in degrees"
+        },
+        "HomeAxisY": {
+          "type": "number",
+          "description": "Home position for Y axis in degrees"
+        },
+        "AutoHomeAxisX": {
+          "type": "number",
+          "description": "Auto-home position for X axis in degrees"
+        },
+        "AutoHomeAxisY": {
+          "type": "number",
+          "description": "Auto-home position for Y axis in degrees"
+        },
+        "ParkName": {
+          "type": "string",
+          "description": "Name of the selected park position"
+        },
+        "ParkPositions": {
+          "type": "array",
+          "description": "List of available park positions",
+          "items": {
+            "type": "object",
+            "required": ["Name", "X", "Y"],
+            "properties": {
+              "Name": {
+                "type": "string",
+                "description": "Park position name"
+              },
+              "X": {
+                "type": "number",
+                "description": "X axis position in degrees"
+              },
+              "Y": {
+                "type": "number",
+                "description": "Y axis position in degrees"
+              }
+            }
+          }
+        },
+        "ParkAxes": {
+          "type": "array",
+          "description": "Current park axes positions [X, Y]",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        },
+        "LimitPark": {
+          "type": "boolean",
+          "description": "Enable park limits"
+        },
+        "ParkLimitName": {
+          "type": "string",
+          "description": "Name of park limit"
+        },
+        "LimitTracking": {
+          "type": "boolean",
+          "description": "Enable tracking limits"
+        },
+        "HourAngleLimit": {
+          "type": "number",
+          "description": "Hour angle limit in hours"
+        },
+        "NoSyncPastMeridian": {
+          "type": "boolean",
+          "description": "Prevent sync past meridian"
+        },
+        "SyncLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sync limit in degrees"
+        },
+        "SyncLimitOn": {
+          "type": "boolean",
+          "description": "Enable sync limit"
+        },
+        "AxisTrackingLimit": {
+          "type": "number",
+          "description": "Axis tracking limit"
+        },
+        "HzLimitTracking": {
+          "type": "boolean",
+          "description": "Enable horizon tracking limit"
+        },
+        "ParkHzLimitName": {
+          "type": "string",
+          "description": "Horizon park limit name"
+        },
+        "HzLimitPark": {
+          "type": "boolean",
+          "description": "Enable horizon park limit"
+        },
+        "AxisHzTrackingLimit": {
+          "type": "number",
+          "description": "Horizon axis tracking limit"
+        },
+        "AxisUpperLimitY": {
+          "type": "number",
+          "description": "Upper limit for Y axis in degrees"
+        },
+        "AxisLowerLimitY": {
+          "type": "number",
+          "description": "Lower limit for Y axis in degrees"
+        },
+        "AxisLimitX": {
+          "type": "number",
+          "description": "Limit for X axis in degrees"
+        },
+        "PecOn": {
+          "type": "boolean",
+          "description": "Enable Periodic Error Correction"
+        },
+        "PpecOn": {
+          "type": "boolean",
+          "description": "Enable Permanent Periodic Error Correction"
+        },
+        "AlternatingPPEC": {
+          "type": "boolean",
+          "description": "Enable alternating PPEC"
+        },
+        "PecOffSet": {
+          "type": "integer",
+          "description": "PEC offset"
+        },
+        "PecWormFile": {
+          "type": "string",
+          "description": "Path to PEC worm file"
+        },
+        "Pec360File": {
+          "type": "string",
+          "description": "Path to PEC 360 file"
+        },
+        "PecMode": {
+          "type": "string",
+          "enum": ["PecWorm", "Pec360"],
+          "description": "PEC mode"
+        },
+        "EncodersOn": {
+          "type": "boolean",
+          "description": "Enable encoders"
+        },
+        "HcSpeed": {
+          "type": "string",
+          "enum": ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"],
+          "description": "Hand controller speed"
+        },
+        "HcMode": {
+          "type": "string",
+          "enum": ["Axes", "RaDec", "AltAz"],
+          "description": "Hand controller mode"
+        },
+        "HcAntiRa": {
+          "type": "boolean",
+          "description": "Hand controller RA anti-backlash"
+        },
+        "HcAntiDec": {
+          "type": "boolean",
+          "description": "Hand controller Dec anti-backlash"
+        },
+        "HcFlipEW": {
+          "type": "boolean",
+          "description": "Flip East/West buttons"
+        },
+        "HcFlipNS": {
+          "type": "boolean",
+          "description": "Flip North/South buttons"
+        },
+        "DisableKeysOnGoTo": {
+          "type": "boolean",
+          "description": "Disable hand controller keys during GoTo"
+        },
+        "CameraWidth": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Camera sensor width in mm"
+        },
+        "CameraHeight": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Camera sensor height in mm"
+        },
+        "EyepieceFS": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Eyepiece field stop in mm"
+        },
+        "HcPulseGuides": {
+          "type": "array",
+          "description": "Hand controller pulse guide settings",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

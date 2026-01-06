@@ -1,0 +1,31 @@
+{
+  "$schema": "./settings-override.schema.json",
+  "Description": "Fork Equatorial mount-specific settings",
+  "AlignmentMode": "Polar",
+  "Overrides": {
+    "AlignmentMode": "Polar",
+    "HomeAxisX": 0.0,
+    "HomeAxisY": 0.0,
+    "AutoHomeAxisX": 0.0,
+    "AutoHomeAxisY": 0.0,
+    "ParkName": "Default",
+    "ParkAxes": [0.0, 90.0],
+    "ParkPositions": [
+      {
+        "Name": "Default",
+        "X": 0.0,
+        "Y": 90.0
+      },
+      {
+        "Name": "Home",
+        "X": 0.0,
+        "Y": 0.0
+      },
+      {
+        "Name": "Horizon",
+        "X": 0.0,
+        "Y": 0.0
+      }
+    ]
+  }
+}
