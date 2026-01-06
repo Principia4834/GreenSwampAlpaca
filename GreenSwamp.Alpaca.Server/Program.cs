@@ -231,8 +231,8 @@ namespace GreenSwamp.Alpaca.Server
 
                 // OPTIONAL: Initialize static facade for backward compatibility
                 // (Only if you're keeping static SkySettings temporarily)
-                // GreenSwamp.Alpaca.MountControl.SkySettings.Initialize(settingsInstance);
-                // Logger.LogInformation("✅ Static SkySettings facade initialized (temporary backward compatibility)");
+                GreenSwamp.Alpaca.MountControl.SkySettings.Initialize(settingsInstance);
+                Logger.LogInformation("✅ Static SkySettings facade initialized (temporary backward compatibility)");
 
                 // Initialize SkySystem with instance settings (not static!)
                 GreenSwamp.Alpaca.MountControl.SkySystem.Initialize(settingsInstance);
