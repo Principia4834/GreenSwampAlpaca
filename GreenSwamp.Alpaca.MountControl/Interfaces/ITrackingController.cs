@@ -19,7 +19,7 @@ using ASCOM.Common.DeviceInterfaces;
 namespace GreenSwamp.Alpaca.MountControl.Interfaces
 {
     /// <summary>
-    /// Phase 3.0: Tracking controller interface for managing mount tracking behavior.
+    /// Tracking controller interface for managing mount tracking behavior.
     /// Defines the contract for starting/stopping tracking and managing tracking rates.
     /// </summary>
     public interface ITrackingController

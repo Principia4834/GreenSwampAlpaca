@@ -152,7 +152,7 @@ namespace GreenSwamp.Alpaca.Server
             {
                 // Phase 4.2: Create instance with default (static) settings
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
-                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(null, settingsService);
+                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
             });
             Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance registered in DI container");
             #endregion Startup and Logging
@@ -214,42 +214,43 @@ namespace GreenSwamp.Alpaca.Server
             {
                 Logger.LogInformation($"Phase 1 settings check: {ex.Message}");
             }
-            #endif
+#endif
 
             // Phase 2: Initialize settings bridges for bidirectional sync
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
 
-                // Phase 4.2: Get SkySettingsInstance from DI (already initialized via constructor)
-                var settingsInstance = app.Services.GetRequiredService<SkySettingsInstance>();
-                Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance retrieved from DI");
+                // Phase 2: Create instance-based settings (no bridge)
+                var settingsInstance = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
+                Logger.LogInformation("✅ Phase 2: SkySettingsInstance created with direct JSON persistence");
 
-                // Phase A Step A.3: Initialize SkyServer with instance settings
+                // Initialize SkyServer with instance settings
                 GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
-                Logger.LogInformation("✅ Phase A.3: SkyServer initialized with instance settings");
+                Logger.LogInformation("✅ SkyServer initialized with instance settings");
 
-                // Initialize SkySettings bridge (loads settings from JSON → static SkySettings)
-                GreenSwamp.Alpaca.MountControl.SkySettingsBridge.Initialize(settingsService);
-                Logger.LogInformation("✅ Phase 2: SkySettings bridge initialized");
+                // OPTIONAL: Initialize static facade for backward compatibility
+                // (Only if you're keeping static SkySettings temporarily)
+                // GreenSwamp.Alpaca.MountControl.SkySettings.Initialize(settingsInstance);
+                // Logger.LogInformation("✅ Static SkySettings facade initialized (temporary backward compatibility)");
 
-                // Phase A Step A.4: Initialize SkySystem (MUST be after bridge!)
-                // This is critical - SkySystem needs SkySettings.Port and BaudRate to be loaded
-                GreenSwamp.Alpaca.MountControl.SkySystem.Initialize();
-                Logger.LogInformation("✅ Phase A.4: SkySystem initialized (serial settings loaded)");
+                // Initialize SkySystem with instance settings (not static!)
+                GreenSwamp.Alpaca.MountControl.SkySystem.Initialize(settingsInstance);
+                Logger.LogInformation("✅ SkySystem initialized with instance settings");
 
                 // Initialize Monitor settings (direct JSON access, no bridge needed)
                 GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
                 GreenSwamp.Alpaca.Shared.Settings.Load();
                 Logger.LogInformation("✅ Monitor settings initialized - direct JSON access");
-                
-                Logger.LogInformation("Settings bridges active - old and new systems synchronized");
+
+                Logger.LogInformation("Instance-based settings active - no bridge required");
             }
             catch (Exception ex)
             {
-                Logger.LogInformation($"Failed to initialize settings bridges: {ex.Message}");
+                Logger.LogError($"Failed to initialize settings: {ex.Message}");
+                throw; // Re-throw to prevent app startup with broken settings
             }
-
+            
             // Migrate user settings if needed
             try
             {

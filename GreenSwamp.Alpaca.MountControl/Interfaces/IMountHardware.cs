@@ -17,7 +17,7 @@
 namespace GreenSwamp.Alpaca.MountControl.Interfaces
 {
     /// <summary>
-    /// Phase 3.0: Hardware abstraction interface for mount communication.
+    /// Hardware abstraction interface for mount communication.
     /// Defines the contract for low-level hardware operations, enabling testability and multiple mount types.
     /// </summary>
     public interface IMountHardware

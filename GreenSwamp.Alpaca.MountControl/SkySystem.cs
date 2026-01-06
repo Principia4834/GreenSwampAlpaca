@@ -30,6 +30,8 @@ namespace GreenSwamp.Alpaca.MountControl
     {
         public static event PropertyChangedEventHandler StaticPropertyChanged;
         private static long _idCount;
+        // Phase 2: Instance-based settings reference
+        private static SkySettingsInstance? _settings;
         private static ConcurrentDictionary<long, bool> _connectStates;
         private static bool _initialized;
         private static readonly ConcurrentDictionary<long, bool> _pendingConnections = new ConcurrentDictionary<long, bool>();
@@ -85,15 +87,17 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Initializes the SkySystem. Must be called after SkySettings are loaded.
         /// Thread-safe and idempotent - safe to call multiple times.
         /// </summary>
-        public static void Initialize()
+        public static void Initialize(SkySettingsInstance settings)
         {
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+
             if (_initialized) return;
 
             lock (typeof(SkySystem))
             {
                 if (_initialized) return;
 
-                // Validate that settings have been loaded
+                // Validate that settings have been loaded from instance
                 ValidateSettingsLoaded();
 
                 // Initialize fields that were in static constructor
@@ -133,21 +137,28 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private static void ValidateSettingsLoaded()
         {
-            // Check critical settings that must be loaded
-            if (string.IsNullOrEmpty(SkySettings.Port))
+            if (_settings == null)
             {
                 throw new InvalidOperationException(
-                    "SkySystem.Initialize() called before settings loaded. " +
-                    "SkySettings.Port is null or empty. " +
-                    "Ensure SkySettingsBridge.Initialize() is called first in Program.cs.");
+                    "SkySystem.Initialize() called with null settings instance. " +
+                    "Ensure valid SkySettingsInstance is passed to Initialize().");
             }
 
-            if (SkySettings.BaudRate == 0 || (int)SkySettings.BaudRate == 0)
+            // Check critical settings that must be loaded
+            if (string.IsNullOrEmpty(_settings.Port))
             {
                 throw new InvalidOperationException(
-                    "SkySystem.Initialize() called before settings loaded. " +
-                    "SkySettings.BaudRate is zero (default enum value). " +
-                    "Ensure SkySettingsBridge.Initialize() is called first in Program.cs.");
+                    "SkySystem.Initialize() called with invalid settings. " +
+                    "Settings.Port is null or empty. " +
+                    "Ensure settings are loaded from JSON before calling Initialize().");
+            }
+
+            if (_settings.BaudRate == 0 || (int)_settings.BaudRate == 0)
+            {
+                throw new InvalidOperationException(
+                    "SkySystem.Initialize() called with invalid settings. " +
+                    "Settings.BaudRate is zero (default enum value). " +
+                    "Ensure settings are loaded from JSON before calling Initialize().");
             }
 
             // Log successful validation
@@ -159,7 +170,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Settings validation passed: Port={SkySettings.Port}, BaudRate={(int)SkySettings.BaudRate}"
+                Message = $"Settings validation passed: Port={_settings.Port}, BaudRate={(int)_settings.BaudRate}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -254,7 +265,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             // Allow this method to be called during initialization (don't guard)
             // But validate settings if we're using them
-            if (_initialized && string.IsNullOrEmpty(SkySettings.Port))
+            if (_initialized && _settings != null && string.IsNullOrEmpty(_settings.Port))
             {
                 var monitorItem = new MonitorEntry
                 {
@@ -264,7 +275,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Warning,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = "SkySettings.Port is null or empty during DiscoverSerialDevices"
+                    Message = "Settings.Port is null or empty during DiscoverSerialDevices"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
                 Devices = new List<string>();
@@ -284,9 +295,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
 
-            if (!list.Contains(SkySettings.Port))
+            if (_settings != null && !string.IsNullOrEmpty(_settings.Port) && !list.Contains(_settings.Port))
             {
-                list.Add(SkySettings.Port);
+                list.Add(_settings.Port);
             }
             Devices = list;
         }
@@ -314,7 +325,10 @@ namespace GreenSwamp.Alpaca.MountControl
             if (list.Contains(ip)) return;
             list.Add(ip);
             Devices = list;
-            SkySettings.Port = ip;
+            if (_settings != null)
+            {
+                _settings.Port = ip;
+            }
         }
 
         public static bool ConnectSerial
@@ -347,27 +361,27 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (value)
                     {
-                        var readTimeout = TimeSpan.FromMilliseconds(SkySettings.ReadTimeout);
-                        if (SkySettings.Port.Contains("COM"))
+                        var readTimeout = TimeSpan.FromMilliseconds(_settings!.ReadTimeout);
+                        if (_settings.Port.Contains("COM"))
                         {
                             var options = SerialOptions.DiscardNull
-                                | (SkySettings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)
-                                | (SkySettings.RtsEnable ? SerialOptions.RtsEnable : SerialOptions.None);
+                                | (_settings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)
+                                | (_settings.RtsEnable ? SerialOptions.RtsEnable : SerialOptions.None);
 
                             Serial = new GsSerialPort(
-                                SkySettings.Port,
-                                (int)SkySettings.BaudRate,
+                                _settings.Port,
+                                (int)_settings.BaudRate,
                                 readTimeout,
-                                SkySettings.HandShake,
+                                _settings.HandShake,
                                 Parity.None,
                                 StopBits.One,
-                                SkySettings.DataBits,
+                                _settings.DataBits,
                                 options);
                             ConnType = ConnectType.Com;
                         }
                         else
                         {
-                            var endpoint = CreateIpEndPoint(SkySettings.Port);
+                            var endpoint = CreateIpEndPoint(_settings.Port);
                             Serial = new SerialOverUdpPort(endpoint, readTimeout);
                             ConnType = ConnectType.Wifi;
                         }

@@ -25,7 +25,7 @@ using System.ComponentModel;
 namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
-    /// Phase 3.2: Enhanced Bridge with bidirectional event forwarding and side-effect preservation.
+    /// Enhanced Bridge with bidirectional event forwarding and side-effect preservation.
     /// Synchronizes between legacy static SkySettings and new DI-based settings.
     /// Maintains full compatibility during migration by preserving all hardware side effects.
     /// </summary>

@@ -17,7 +17,7 @@
 namespace GreenSwamp.Alpaca.MountControl.Interfaces
 {
     /// <summary>
-    /// Phase 3.0: Core mount controller interface for managing telescope mount operations.
+    /// Core mount controller interface for managing telescope mount operations.
     /// Defines the contract for mount lifecycle, connection, and basic control operations.
     /// </summary>
     public interface IMountController

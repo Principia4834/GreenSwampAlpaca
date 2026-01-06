@@ -27,7 +27,7 @@ using System.Reflection;
 namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
-    /// Phase 3.1: Instance-based mount controller that initially delegates to static SkyServer.
+    /// Instance-based mount controller that initially delegates to static SkyServer.
     /// This class will gradually take over implementation from static methods in Phase 3.2+.
     /// </summary>
     public class MountInstance : IMountController
@@ -35,7 +35,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private readonly string _id;
         private readonly SkySettingsInstance _settings;
 
-        // Phase 3.2: Instance state fields (migrated from static)
+        // Instance state fields (migrated from static)
         private bool _isMountRunning;
         private MediaTimer? _mediaTimer;
         private MediaTimer? _altAzTrackingTimer;
@@ -44,25 +44,25 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector _targetRaDec;
         private Exception? _mountError;
 
-        // Phase 4.1: Factor steps (conversion ratios) - instance-owned
+        // Factor steps (conversion ratios) - instance-owned
         private double[] _factorStep = new double[2];
         private long[] _stepsPerRevolution = new long[2];
         private double[] _stepsWormPerRevolution = new double[2];
 
-        // Phase 3.2: Tracking state
+        // Tracking state
         private bool _tracking;
         private DriveRate _trackingRate = DriveRate.Sidereal;
 
-        // Phase 3.2: SkyWatcher tracking rates
+        // SkyWatcher tracking rates
         private Vector _skyHcRate;
         private Vector _skyTrackingRate;
 
-        // Phase 3.2: PEC fields
+        // PEC fields
         private int[] _wormTeethCount = new int[2];
         private double _pecBinSteps;
 
 
-        // Phase 4.1: Mount capabilities (instance-owned)
+        // Mount capabilities (instance-owned)
         private bool _canPPec;
         private bool _canHomeSensor;
         private bool _canPolarLed;
@@ -71,14 +71,14 @@ namespace GreenSwamp.Alpaca.MountControl
         private string _mountVersion = string.Empty;
         private string _capabilities = string.Empty;
         
-        // Phase 3.2: Mount state
+        // Mount state
         private bool _atPark;
 
-        // Phase 3.2: UpdateSteps fields
+        // UpdateSteps fields
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
         private readonly object _lastUpdateLock = new object();
 
-        // Phase 3.2: Slew speed fields
+        // Slew speed fields
         private double _slewSpeedOne;
         private double _slewSpeedTwo;
         private double _slewSpeedThree;
@@ -88,7 +88,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _slewSpeedSeven;
         private double _slewSpeedEight;
 
-        // Phase 3.2: Guide rate field
+        // Guide rate field
         private Vector _guideRate;
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
         }
 
-        #region IMountController Implementation (Phase 3.1: Delegation)
+        #region IMountController Implementation (Delegation)
 
         /// <summary>
         /// Gets the unique identifier for this mount instance
@@ -123,32 +123,32 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Gets whether the mount is currently connected
-        /// Phase 3.1: Delegates to static SkyServer
+        /// Delegates to static SkyServer
         /// </summary>
         public bool IsConnected => SkyServer.IsMountRunning;
 
         /// <summary>
         /// Gets whether the mount is currently running
-        /// Phase 3.1: Delegates to static SkyServer
+        /// Delegates to static SkyServer
         /// </summary>
         public bool IsRunning => SkyServer.IsMountRunning;
 
         /// <summary>
         /// Connect to mount hardware
-        /// Phase 3.2: Implemented (was stub in 3.1)
+        /// Implemented (was stub in 3.1)
         /// </summary>
         public bool Connect()
         {
             LogMount($"Connect() called on instance {_id}");
 
-            // Phase 3.2: Call the actual connect implementation
+            // Call the actual connect implementation
             // This will be MountConnect() migrated from static
             return MountConnect();
         }
 
         /// <summary>
         /// Sets up defaults after an established connection
-        /// Phase 3.2: Migrated from SkyServer.MountConnect()
+        /// Migrated from SkyServer.MountConnect()
         /// </summary>
         private bool MountConnect()
         {
@@ -175,12 +175,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyServer.SimTasks(MountTaskName.Capabilities);
 
 
-                    // Phase 4.1: Copy static values to instance fields
+                    // Copy static values to instance fields
                     Array.Copy(SkyServer.StepsPerRevolution, _stepsPerRevolution, 2);
                     Array.Copy(SkyServer.StepsWormPerRevolution, _stepsWormPerRevolution, 2);
                     Array.Copy(SkyServer.FactorStep, _factorStep, 2);
 
-                    // Phase 4.1: Copy capabilities from static
+                    // Copy capabilities from static
                     _canPPec = SkyServer.CanPPec;
                     _canHomeSensor = SkyServer.CanHomeSensor;
                     _canPolarLed = SkyServer.CanPolarLed;
@@ -189,7 +189,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mountVersion = SkyServer.MountVersion ?? string.Empty;
                     _capabilities = SkyServer.Capabilities ?? string.Empty;
 
-                    // Phase 4.1: Log instance values for verification
+                    // Log instance values for verification
                     monitorItem = new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow,
@@ -314,12 +314,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (SkyServer.CanPPec) SkyServer.SkyTasks(MountTaskName.Pec);
 
 
-                    // Phase 4.1: Copy static values to instance fields
+                    // Copy static values to instance fields
                     Array.Copy(SkyServer.StepsPerRevolution, _stepsPerRevolution, 2);
                     Array.Copy(SkyServer.StepsWormPerRevolution, _stepsWormPerRevolution, 2);
                     Array.Copy(SkyServer.FactorStep, _factorStep, 2);
 
-                    // Phase 4.1: Copy capabilities from static
+                    // Copy capabilities from static
                     _canPPec = SkyServer.CanPPec;
                     _canHomeSensor = SkyServer.CanHomeSensor;
                     _canPolarLed = SkyServer.CanPolarLed;
@@ -328,7 +328,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mountVersion = SkyServer.MountVersion ?? string.Empty;
                     _capabilities = SkyServer.Capabilities ?? string.Empty;
 
-                    // Phase 4.1: Log instance values for verification
+                    // Log instance values for verification
                     var monitorItemSky = new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow,
@@ -503,66 +503,66 @@ namespace GreenSwamp.Alpaca.MountControl
         
         /// <summary>
         /// Disconnect from mount hardware
-        /// Phase 3.1: Delegates to static method
+        /// Delegates to static method
         /// </summary>
         public void Disconnect()
         {
             LogMount($"Disconnect() called on instance {_id}");
             
-            // Phase 3.1: Delegate to static
+            // Delegate to static
             SkyServer.Disconnect_Stub();
         }
 
         /// <summary>
         /// Start mount operations
-        /// Phase 3.1: Delegates to static method
+        /// Delegates to static method
         /// </summary>
         public void Start()
         {
             LogMount($"Start() called on instance {_id}");
 
-            // Phase 3.2: Call instance method directly
+            // Call instance method directly
             MountStart();
         }
 
         /// <summary>
         /// Stop mount operations
-        /// Phase 3.1: Delegates to static method
+        /// Delegates to static method
         /// </summary>
         public void Stop()
         {
             LogMount($"Stop() called on instance {_id}");
 
-            // Phase 3.2: Call instance method directly
+            // Call instance method directly
             MountStop();
         }
 
         /// <summary>
         /// Reset mount to home position
-        /// Phase 3.1: Delegates to static method
+        /// Delegates to static method
         /// </summary>
         public void Reset()
         {
             LogMount($"Reset() called on instance {_id}");
 
-            // Phase 3.2: Call instance method directly
+            // Call instance method directly
             MountReset();
         }
         /// <summary>
         /// Emergency stop - halt all motion immediately
-        /// Phase 3.1: Delegates to static method
+        /// Delegates to static method
         /// </summary>
         public void EmergencyStop()
         {
             LogMount($"EmergencyStop() called on instance {_id}");
             
-            // Phase 3.1: Delegate to static
+            // Delegate to static
             SkyServer.AbortSlewAsync(speak: false);
         }
 
         /// <summary>
         /// Get last error from mount
-        /// Phase 3.1: Delegates to static property
+        /// Delegates to static property
         /// </summary>
         public Exception? GetLastError()
         {
@@ -571,11 +571,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Phase 3.2: Position Methods (Migrated from static)
+        #region Position Methods (Migrated from static)
 
         /// <summary>
         /// Maps a slew target to the corresponding axes based on the specified slew type.
-        /// Phase 3.2: Migrated from SkyServer.MapSlewTargetToAxes()
+        /// Migrated from SkyServer.MapSlewTargetToAxes()
         /// </summary>
         /// <remarks>The mapping behavior depends on the specified slew type:
         /// - For SlewRaDec: target is converted to RA/Dec axes and synchronized
@@ -617,7 +617,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Gets current converted positions from the mount in degrees
-        /// Phase 3.2: Migrated from SkyServer.GetRawDegrees()
+        /// Migrated from SkyServer.GetRawDegrees()
         /// </summary>
         internal double[]? GetRawDegrees()
         {
@@ -647,7 +647,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Convert steps to degrees
-        /// Phase 3.2: Migrated from SkyServer.ConvertStepsToDegrees()
+        /// Migrated from SkyServer.ConvertStepsToDegrees()
         /// </summary>
         internal double ConvertStepsToDegrees(double steps, int axis)
         {
@@ -670,7 +670,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Get steps from the mount
-        /// Phase 3.2: Migrated from SkyServer.GetRawSteps()
+        /// Migrated from SkyServer.GetRawSteps()
         /// </summary>
         internal double[]? GetRawSteps()
         {
@@ -702,7 +702,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Gets current positions from the mount in steps for a specific axis
-        /// Phase 3.2: Migrated from SkyServer.GetRawSteps(int axis)
+        /// Migrated from SkyServer.GetRawSteps(int axis)
         /// </summary>
         /// <param name="axis">Axis index (0 = RA/Az, 1 = Dec/Alt)</param>
         /// <returns>Position in steps, or null if not available</returns>
@@ -746,7 +746,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Main get for the Steps
-        /// Phase 3.2: Migrated from SkyServer.UpdateSteps()
+        /// Migrated from SkyServer.UpdateSteps()
         /// </summary>
         internal void UpdateSteps()
         {
@@ -773,7 +773,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Get home axes adjusted for angle offset
-        /// Phase 3.2: Migrated from SkyServer.GetHomeAxes()
+        /// Migrated from SkyServer.GetHomeAxes()
         /// </summary>
         /// <param name="xAxis">X axis position</param>
         /// <param name="yAxis">Y axis position</param>
@@ -796,11 +796,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Phase 3.2: Core Operations (Migrated from static)
+        #region Core Operations (Migrated from static)
 
         /// <summary>
         /// Load default settings and slew rates
-        /// Phase 3.2: Migrated from SkyServer.Defaults()
+        /// Migrated from SkyServer.Defaults()
         /// </summary>
         internal void Defaults()
         {
@@ -832,7 +832,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Reset mount to home position
-        /// Phase 3.2: Migrated from SkyServer.MountReset()
+        /// Migrated from SkyServer.MountReset()
         /// </summary>
         internal void MountReset()
         {
@@ -847,13 +847,13 @@ namespace GreenSwamp.Alpaca.MountControl
             _appAxes = new Vector(_homeAxes.X, _homeAxes.Y);
         }
 
-        // Phase 3.2: Expose internal state for static facade backward compatibility
+        // Expose internal state for static facade backward compatibility
         internal Vector HomeAxes => _homeAxes;
         internal Vector AppAxes => _appAxes;
 
         /// <summary>
         /// Start connection, queues, and events
-        /// Phase 3.2: Migrated from SkyServer.MountStart()
+        /// Migrated from SkyServer.MountStart()
         /// </summary>
         internal void MountStart()
         {
@@ -925,7 +925,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Stop queues and events
-        /// Phase 3.2: Migrated from SkyServer.MountStop()
+        /// Migrated from SkyServer.MountStop()
         /// </summary>
         internal void MountStop()
         {

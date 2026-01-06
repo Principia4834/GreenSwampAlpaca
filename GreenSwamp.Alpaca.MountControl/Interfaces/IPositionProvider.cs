@@ -17,7 +17,7 @@
 namespace GreenSwamp.Alpaca.MountControl.Interfaces
 {
     /// <summary>
-    /// Phase 3.0: Position provider interface for reading mount position data.
+    /// Position provider interface for reading mount position data.
     /// Defines the contract for accessing mount position in various coordinate systems.
     /// </summary>
     public interface IPositionProvider

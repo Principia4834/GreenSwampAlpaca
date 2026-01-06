@@ -19,7 +19,7 @@ using ASCOM.Common.DeviceInterfaces;
 namespace GreenSwamp.Alpaca.MountControl.Interfaces
 {
     /// <summary>
-    /// Phase 3.0: Slew controller interface for managing telescope mount slewing operations.
+    /// Slew controller interface for managing telescope mount slewing operations.
     /// Defines the contract for goto, sync, and slew operations.
     /// </summary>
     public interface ISlewController

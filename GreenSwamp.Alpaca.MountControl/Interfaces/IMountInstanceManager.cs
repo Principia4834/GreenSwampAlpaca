@@ -17,7 +17,7 @@
 namespace GreenSwamp.Alpaca.MountControl.Interfaces
 {
     /// <summary>
-    /// Phase 3.0: Mount instance manager interface for managing multiple mount instances.
+    /// Mount instance manager interface for managing multiple mount instances.
     /// Enables creation, retrieval, and lifecycle management of multiple telescope mounts.
     /// </summary>
     public interface IMountInstanceManager

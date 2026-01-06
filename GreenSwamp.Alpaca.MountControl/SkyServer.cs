@@ -788,7 +788,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Factor to convert steps, Sky Watcher in rad
-        /// Phase 4.1: Static for backward compatibility only
+        /// Static for backward compatibility only
         /// Multi-telescope: Use MountInstance._factorStep instead
         /// </summary>
         internal static double[] FactorStep { get; set; } = { 0.0, 0.0 };
@@ -992,7 +992,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Total steps per 360
-        /// Phase 4.1: Static for backward compatibility only
+        /// Static for backward compatibility only
         /// Multi-telescope: Use MountInstance._stepsPerRevolution instead
         /// </summary>
         public static long[] StepsPerRevolution { get; private set; } = { 0, 0 };
@@ -1064,7 +1064,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Total worm step per 360
-        /// Phase 4.1: Static for backward compatibility only
+        /// Static for backward compatibility only
         /// Multi-telescope: Use MountInstance._stepsWormPerRevolution instead
         /// </summary>
         public static double[] StepsWormPerRevolution { get; private set; } = { 0.0, 0.0 };

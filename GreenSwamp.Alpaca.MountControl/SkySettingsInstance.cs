@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -23,1346 +23,1792 @@ using GreenSwamp.Alpaca.Shared.Transport;
 using System.ComponentModel;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Handshake = System.IO.Ports.Handshake;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
-    /// Phase A: Instance-based wrapper around static SkySettings.
-    /// Converts static access to instance-based while keeping Properties.SkyTelescope backend.
-    /// All side effects are preserved by delegating to static setters.
+    /// Instance-based settings - owns all data (no static delegation).
+    /// Multi-telescope ready: each MountInstance has its own SkySettingsInstance.
+    /// Direct JSON persistence via IVersionedSettingsService (no bridge required).
     /// </summary>
-    public class SkySettingsInstance
+    public class SkySettingsInstance : INotifyPropertyChanged
     {
-        private readonly string _settingsFilePath;
+        #region Private Fields (134 backing fields)
+
+        // Services
         private readonly IVersionedSettingsService _settingsService;
+        private CancellationTokenSource? _saveCts;
+
+        // Batch 1: Connection & Mount Settings (20 fields)
+        private MountType _mount = MountType.Simulator;
+        private string _port = "COM3";
+        private SerialSpeed _baudRate = SerialSpeed.ps9600;
+        private Handshake _handShake = Handshake.None;
+        private int _dataBits = 8;
+        private int _readTimeout = 5000;
+        private bool _dtrEnable = false;
+        private bool _rtsEnable = false;
+        private AlignmentMode _alignmentMode = AlignmentMode.GermanPolar;
+        private EquatorialCoordinateType _equatorialCoordinateType = EquatorialCoordinateType.Other;
+        private bool _atPark = false;
+        private DriveRate _trackingRate = DriveRate.Sidereal;
+        private string _gpsComPort = string.Empty;
+        private SerialSpeed _gpsBaudRate = SerialSpeed.ps9600;
+        private SlewSpeed _hcSpeed = SlewSpeed.Eight;
+        private HcMode _hcMode = HcMode.Guiding;
+        private PecMode _pecMode = PecMode.PecWorm;
+        private PolarMode _polarMode = PolarMode.Left;
+
+        // Batch 2: Location & Custom Gearing (11 fields)
+        private double _latitude = 51.48;
+        private double _longitude = -0.0;
+        private double _elevation = 0.0;
+        private bool _customGearing = false;
+        private int _customRa360Steps = 9024000;
+        private int _customRaWormTeeth = 130;
+        private int _customDec360Steps = 9024000;
+        private int _customDecWormTeeth = 130;
+        private int _customRaTrackingOffset = 0;
+        private int _customDecTrackingOffset = 0;
+        private bool _allowAdvancedCommandSet = false;
+
+        // Batch 3: Tracking Rates (8 fields)
+        private double _siderealRate = 15.0410671786691;
+        private double _lunarRate = 14.511415534643;
+        private double _solarRate = 15.0;
+        private double _kingRate = 15.0369;
+        private double _axisTrackingLimit = 180.0;
+        private double _axisHzTrackingLimit = 180.0;
+        private int _displayInterval = 1000;
+        private int _altAzTrackingUpdateInterval = 10000;
+
+        // Batch 4: Guiding (8 fields)
+        private int _minPulseRa = 20;
+        private int _minPulseDec = 20;
+        private bool _decPulseToGoTo = false;
+        private int _st4GuideRate = 2;
+        private double _guideRateOffsetX = 0.5;
+        private double _guideRateOffsetY = 0.5;
+        private int _raBacklash = 0;
+        private int _decBacklash = 0;
+
+        // Batch 5: Optics & Camera (6 fields)
+        private double _focalLength = 1000.0;
+        private double _cameraWidth = 10.0;
+        private double _cameraHeight = 10.0;
+        private double _eyepieceFs = 50.0;
+        private double _apertureArea = 0.0;
+        private double _apertureDiameter = 0.0;
+
+        // Batch 6: Advanced Settings (7 fields)
+        private double _maxSlewRate = 3.4;
+        private bool _fullCurrent = false;
+        private bool _encoders = false;
+        private bool _alternatingPPec = false;
+        private bool _globalStopOn = false;
+        private bool _refraction = false;
+        private double _gotoPrecision = 0.001;
+
+        // Batch 7: Home & Park (9 fields)
+        private double _homeAxisX = 0.0;
+        private double _homeAxisY = 0.0;
+        private double _autoHomeAxisX = 0.0;
+        private double _autoHomeAxisY = 0.0;
+        private string _parkName = "Default";
+        private double[] _parkAxes = new[] { 0.0, 0.0 };
+        private List<ParkPosition> _parkPositions = new();
+        private bool _limitPark = false;
+        private string _parkLimitName = string.Empty;
+
+        // Batch 8: Limits (9 fields)
+        private double _hourAngleLimit = 180.0;
+        private double _axisLimitX = 180.0;
+        private double _axisUpperLimitY = 90.0;
+        private double _axisLowerLimitY = -90.0;
+        private bool _limitTracking = false;
+        private bool _syncLimitOn = false;
+        private bool _hzLimitTracking = false;
+        private bool _hzLimitPark = false;
+        private string _parkHzLimitName = string.Empty;
+        private int _syncLimit = 5;
+
+        // Batch 9: PEC (6 fields)
+        private bool _pecOn = false;
+        private bool _pPecOn = false;
+        private int _pecOffSet = 0;
+        private string _pecWormFile = string.Empty;
+        private string _pec360File = string.Empty;
+        private int _polarLedLevel = 0;
+
+        // Batch 10: Hand Controller (6 fields)
+        private bool _hcAntiRa = false;
+        private bool _hcAntiDec = false;
+        private bool _hcFlipEw = false;
+        private bool _hcFlipNs = false;
+        private List<HcPulseGuide> _hcPulseGuides = new();
+        private bool _disableKeysOnGoTo = false;
+
+        // Batch 11: Miscellaneous (6 fields)
+        private double _temperature = 15.0;
+        private string _instrumentDescription = "GreenSwamp Alpaca Server";
+        private string _instrumentName = "GreenSwamp Mount";
+        private Vector3 _axisModelOffsets = Vector3.Zero;
+        private bool _autoTrack = false;
+        private int _raTrackingOffset = 0;
+
+        // Batch 12: Capabilities (28 fields - read-only)
+        private bool _canAlignMode = true;
+        private bool _canAltAz = true;
+        private bool _canEquatorial = true;
+        private bool _canFindHome = true;
+        private bool _canLatLongElev = true;
+        private bool _canOptics = true;
+        private bool _canPark = true;
+        private bool _canPulseGuide = true;
+        private bool _canSetEquRates = true;
+        private bool _canSetDeclinationRate = true;
+        private bool _canSetGuideRates = true;
+        private bool _canSetPark = true;
+        private bool _canSetPierSide = true;
+        private bool _canSetRightAscensionRate = true;
+        private bool _canSetTracking = true;
+        private bool _canSiderealTime = true;
+        private bool _canSlew = true;
+        private bool _canSlewAltAz = true;
+        private bool _canSlewAltAzAsync = true;
+        private bool _canSlewAsync = true;
+        private bool _canSync = true;
+        private bool _canSyncAltAz = true;
+        private bool _canTrackingRates = true;
+        private bool _canUnPark = true;
+        private bool _noSyncPastMeridian = false;
+        private int _numMoveAxis = 2;
+        private bool _versionOne = true;
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
-        /// Phase 4.2: Constructor for instance-specific settings
+        /// Creates instance with direct JSON persistence (no bridge)
         /// </summary>
-        /// <param name="settingsFilePath">Optional path to settings file. If null, uses shared settings.</param>
-        /// <param name="settingsService">Settings service for loading/saving</param>
-        public SkySettingsInstance(string settingsFilePath = null, IVersionedSettingsService settingsService = null)
+        public SkySettingsInstance(IVersionedSettingsService settingsService)
         {
-            _settingsFilePath = settingsFilePath;
-            _settingsService = settingsService;
+            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
-            // Phase 4.2: Load from file if path provided, otherwise use static
-            if (!string.IsNullOrEmpty(_settingsFilePath) && _settingsService != null)
-            {
-                LoadFromFile();
-            }
-            else
-            {
-                LoadFromStatic();
-            }
-        }        
-        
+            // Initialize with defaults (already done via field initializers)
+
+            // Load from JSON (overwrites defaults)
+            LoadFromJson();
+
+            LogSettings("Initialized", $"Mount:{_mount}|Port:{_port}");
+        }
+
+        #endregion
+
         #region Events
 
-        /// <summary>
-        /// Forwards PropertyChanged events from static SkySettings
-        /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
-            add => SkySettings.StaticPropertyChanged += value;
-            remove => SkySettings.StaticPropertyChanged -= value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+            // Auto-save after property changes (debounced)
+            QueueSave();
         }
 
         #endregion
 
         #region Batch 1: Connection & Mount Settings (20 properties)
 
-        /// <summary>
-        /// Mount type (Simulator or SkyWatcher)
-        /// ?? SIDE EFFECT: Sets SkyServer.IsMountRunning = false
-        /// </summary>
         public MountType Mount
         {
-            get => SkySettings.Mount;
-            set => SkySettings.Mount = value;
+            get => _mount;
+            set
+            {
+                if (_mount != value)
+                {
+                    _mount = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Stop mount when type changes
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.IsMountRunning = false;
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Serial port or IP address
-        /// </summary>
         public string Port
         {
-            get => SkySettings.Port;
-            set => SkySettings.Port = value;
+            get => _port;
+            set
+            {
+                if (_port != value)
+                {
+                    _port = value ?? "COM3";
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Serial port baud rate
-        /// </summary>
         public SerialSpeed BaudRate
         {
-            get => SkySettings.BaudRate;
-            set => SkySettings.BaudRate = value;
+            get => _baudRate;
+            set
+            {
+                if (_baudRate != value)
+                {
+                    _baudRate = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Serial port handshake (read-only)
-        /// </summary>
-        public Handshake HandShake => SkySettings.HandShake;
+        public Handshake HandShake => _handShake;
+        public int DataBits => _dataBits;
+        public int ReadTimeout => _readTimeout;
+        public bool DtrEnable => _dtrEnable;
+        public bool RtsEnable => _rtsEnable;
 
-        /// <summary>
-        /// Serial port data bits (read-only)
-        /// </summary>
-        public int DataBits => SkySettings.DataBits;
-
-        /// <summary>
-        /// Serial port read timeout (read-only)
-        /// </summary>
-        public int ReadTimeout => SkySettings.ReadTimeout;
-
-        /// <summary>
-        /// DTR enable flag (read-only)
-        /// </summary>
-        public bool DtrEnable => SkySettings.DtrEnable;
-
-        /// <summary>
-        /// RTS enable flag (read-only)
-        /// </summary>
-        public bool RtsEnable => SkySettings.RtsEnable;
-
-        /// <summary>
-        /// Mount alignment mode (AltAz, GermanPolar, Polar)
-        /// </summary>
         public AlignmentMode AlignmentMode
         {
-            get => SkySettings.AlignmentMode;
-            set => SkySettings.AlignmentMode = value;
+            get => _alignmentMode;
+            set
+            {
+                if (_alignmentMode != value)
+                {
+                    _alignmentMode = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Equatorial coordinate type
-        /// </summary>
         public EquatorialCoordinateType EquatorialCoordinateType
         {
-            get => SkySettings.EquatorialCoordinateType;
-            set => SkySettings.EquatorialCoordinateType = value;
+            get => _equatorialCoordinateType;
+            set
+            {
+                if (_equatorialCoordinateType != value)
+                {
+                    _equatorialCoordinateType = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Mount is at park position
-        /// </summary>
         public bool AtPark
         {
-            get => SkySettings.AtPark;
-            set => SkySettings.AtPark = value;
+            get => _atPark;
+            set
+            {
+                if (_atPark != value)
+                {
+                    _atPark = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Tracking rate (Sidereal, Lunar, Solar, King)
-        /// ?? SIDE EFFECT: Resets rate values if not Sidereal
-        /// </summary>
         public DriveRate TrackingRate
         {
-            get => SkySettings.TrackingRate;
-            set => SkySettings.TrackingRate = value;
+            get => _trackingRate;
+            set
+            {
+                if (_trackingRate != value)
+                {
+                    _trackingRate = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Reset rate values if not Sidereal
+                    if (value != DriveRate.Sidereal)
+                    {
+                        // Rates are reset by the mount driver
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// GPS COM port
-        /// </summary>
         public string GpsComPort
         {
-            get => SkySettings.GpsComPort;
-            set => SkySettings.GpsComPort = value;
+            get => _gpsComPort;
+            set
+            {
+                if (_gpsComPort != value)
+                {
+                    _gpsComPort = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// GPS baud rate
-        /// </summary>
         public SerialSpeed GpsBaudRate
         {
-            get => SkySettings.GpsBaudRate;
-            set => SkySettings.GpsBaudRate = value;
+            get => _gpsBaudRate;
+            set
+            {
+                if (_gpsBaudRate != value)
+                {
+                    _gpsBaudRate = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Hand controller slew speed
-        /// </summary>
         public SlewSpeed HcSpeed
         {
-            get => SkySettings.HcSpeed;
-            set => SkySettings.HcSpeed = value;
+            get => _hcSpeed;
+            set
+            {
+                if (_hcSpeed != value)
+                {
+                    _hcSpeed = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Hand controller mode (Axes, Guiding, Pulse)
-        /// </summary>
         public HcMode HcMode
         {
-            get => SkySettings.HcMode;
-            set => SkySettings.HcMode = value;
+            get => _hcMode;
+            set
+            {
+                if (_hcMode != value)
+                {
+                    _hcMode = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// PEC mode (PecWorm or Pec360)
-        /// </summary>
         public PecMode PecMode
         {
-            get => SkySettings.PecMode;
-            set => SkySettings.PecMode = value;
+            get => _pecMode;
+            set
+            {
+                if (_pecMode != value)
+                {
+                    _pecMode = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Polar mode (Left or Right)
-        /// </summary>
         public PolarMode PolarMode
         {
-            get => SkySettings.PolarMode;
-            set => SkySettings.PolarMode = value;
+            get => _polarMode;
+            set
+            {
+                if (_polarMode != value)
+                {
+                    _polarMode = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
-        #region Batch 2: Location & Custom Gearing (15 properties)
+        #region Batch 2: Location & Custom Gearing (11 properties)
 
-        /// <summary>
-        /// Observatory latitude in degrees
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(SetSouthernHemisphere)
-        /// </summary>
         public double Latitude
         {
-            get => SkySettings.Latitude;
-            set => SkySettings.Latitude = value;
+            get => _latitude;
+            set
+            {
+                if (Math.Abs(_latitude - value) > 0.0001)
+                {
+                    _latitude = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Update southern hemisphere flag
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.SetSouthernHemisphere);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Observatory longitude in degrees
-        /// </summary>
         public double Longitude
         {
-            get => SkySettings.Longitude;
-            set => SkySettings.Longitude = value;
+            get => _longitude;
+            set
+            {
+                if (Math.Abs(_longitude - value) > 0.0001)
+                {
+                    _longitude = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Observatory elevation in meters
-        /// </summary>
         public double Elevation
         {
-            get => SkySettings.Elevation;
-            set => SkySettings.Elevation = value;
+            get => _elevation;
+            set
+            {
+                if (Math.Abs(_elevation - value) > 0.01)
+                {
+                    _elevation = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Use custom gearing settings
-        /// </summary>
         public bool CustomGearing
         {
-            get => SkySettings.CustomGearing;
-            set => SkySettings.CustomGearing = value;
+            get => _customGearing;
+            set
+            {
+                if (_customGearing != value)
+                {
+                    _customGearing = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Custom RA 360-degree steps
-        /// </summary>
         public int CustomRa360Steps
         {
-            get => SkySettings.CustomRa360Steps;
-            set => SkySettings.CustomRa360Steps = value;
+            get => _customRa360Steps;
+            set
+            {
+                if (_customRa360Steps != value)
+                {
+                    _customRa360Steps = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Custom RA worm teeth count
-        /// </summary>
         public int CustomRaWormTeeth
         {
-            get => SkySettings.CustomRaWormTeeth;
-            set => SkySettings.CustomRaWormTeeth = value;
+            get => _customRaWormTeeth;
+            set
+            {
+                if (_customRaWormTeeth != value)
+                {
+                    _customRaWormTeeth = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Custom Dec 360-degree steps
-        /// </summary>
         public int CustomDec360Steps
         {
-            get => SkySettings.CustomDec360Steps;
-            set => SkySettings.CustomDec360Steps = value;
+            get => _customDec360Steps;
+            set
+            {
+                if (_customDec360Steps != value)
+                {
+                    _customDec360Steps = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Custom Dec worm teeth count
-        /// </summary>
         public int CustomDecWormTeeth
         {
-            get => SkySettings.CustomDecWormTeeth;
-            set => SkySettings.CustomDecWormTeeth = value;
+            get => _customDecWormTeeth;
+            set
+            {
+                if (_customDecWormTeeth != value)
+                {
+                    _customDecWormTeeth = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Custom RA tracking offset
-        /// </summary>
         public int CustomRaTrackingOffset
         {
-            get => SkySettings.CustomRaTrackingOffset;
-            set => SkySettings.CustomRaTrackingOffset = value;
+            get => _customRaTrackingOffset;
+            set
+            {
+                if (_customRaTrackingOffset != value)
+                {
+                    _customRaTrackingOffset = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Custom Dec tracking offset
-        /// </summary>
         public int CustomDecTrackingOffset
         {
-            get => SkySettings.CustomDecTrackingOffset;
-            set => SkySettings.CustomDecTrackingOffset = value;
+            get => _customDecTrackingOffset;
+            set
+            {
+                if (_customDecTrackingOffset != value)
+                {
+                    _customDecTrackingOffset = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Allow advanced command set
-        /// </summary>
         public bool AllowAdvancedCommandSet
         {
-            get => SkySettings.AllowAdvancedCommandSet;
-            set => SkySettings.AllowAdvancedCommandSet = value;
+            get => _allowAdvancedCommandSet;
+            set
+            {
+                if (_allowAdvancedCommandSet != value)
+                {
+                    _allowAdvancedCommandSet = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
         #region Batch 3: Tracking Rates (8 properties)
 
-        /// <summary>
-        /// Sidereal tracking rate
-        /// </summary>
         public double SiderealRate
         {
-            get => SkySettings.SiderealRate;
-            set => SkySettings.SiderealRate = value;
+            get => _siderealRate;
+            set
+            {
+                if (Math.Abs(_siderealRate - value) > 0.0001)
+                {
+                    _siderealRate = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Lunar tracking rate
-        /// </summary>
         public double LunarRate
         {
-            get => SkySettings.LunarRate;
-            set => SkySettings.LunarRate = value;
+            get => _lunarRate;
+            set
+            {
+                if (Math.Abs(_lunarRate - value) > 0.0001)
+                {
+                    _lunarRate = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Solar tracking rate
-        /// </summary>
         public double SolarRate
         {
-            get => SkySettings.SolarRate;
-            set => SkySettings.SolarRate = value;
+            get => _solarRate;
+            set
+            {
+                if (Math.Abs(_solarRate - value) > 0.0001)
+                {
+                    _solarRate = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// King tracking rate
-        /// </summary>
         public double KingRate
         {
-            get => SkySettings.KingRate;
-            set => SkySettings.KingRate = value;
+            get => _kingRate;
+            set
+            {
+                if (Math.Abs(_kingRate - value) > 0.0001)
+                {
+                    _kingRate = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Axis tracking limit
-        /// </summary>
         public double AxisTrackingLimit
         {
-            get => SkySettings.AxisTrackingLimit;
-            set => SkySettings.AxisTrackingLimit = value;
+            get => _axisTrackingLimit;
+            set
+            {
+                if (Math.Abs(_axisTrackingLimit - value) > 0.01)
+                {
+                    _axisTrackingLimit = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Horizon axis tracking limit
-        /// </summary>
         public double AxisHzTrackingLimit
         {
-            get => SkySettings.AxisHzTrackingLimit;
-            set => SkySettings.AxisHzTrackingLimit = value;
+            get => _axisHzTrackingLimit;
+            set
+            {
+                if (Math.Abs(_axisHzTrackingLimit - value) > 0.01)
+                {
+                    _axisHzTrackingLimit = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Display update interval in milliseconds
-        /// </summary>
         public int DisplayInterval
         {
-            get => SkySettings.DisplayInterval;
-            set => SkySettings.DisplayInterval = value;
+            get => _displayInterval;
+            set
+            {
+                if (_displayInterval != value)
+                {
+                    _displayInterval = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Alt-Az tracking update interval
-        /// </summary>
         public int AltAzTrackingUpdateInterval
         {
-            get => SkySettings.AltAzTrackingUpdateInterval;
-            set => SkySettings.AltAzTrackingUpdateInterval = value;
+            get => _altAzTrackingUpdateInterval;
+            set
+            {
+                if (_altAzTrackingUpdateInterval != value)
+                {
+                    _altAzTrackingUpdateInterval = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
         #region Batch 4: Guiding (8 properties with SIDE EFFECTS)
 
-        /// <summary>
-        /// Minimum pulse duration for RA axis in milliseconds
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(MinPulseRa)
-        /// </summary>
         public int MinPulseRa
         {
-            get => SkySettings.MinPulseRa;
-            set => SkySettings.MinPulseRa = value;
+            get => _minPulseRa;
+            set
+            {
+                if (_minPulseRa != value)
+                {
+                    _minPulseRa = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.MinPulseRa);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Minimum pulse duration for Dec axis in milliseconds
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(MinPulseDec)
-        /// </summary>
         public int MinPulseDec
         {
-            get => SkySettings.MinPulseDec;
-            set => SkySettings.MinPulseDec = value;
+            get => _minPulseDec;
+            set
+            {
+                if (_minPulseDec != value)
+                {
+                    _minPulseDec = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.MinPulseDec);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Use Dec pulse for goto operations
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(DecPulseToGoTo)
-        /// </summary>
         public bool DecPulseToGoTo
         {
-            get => SkySettings.DecPulseToGoTo;
-            set => SkySettings.DecPulseToGoTo = value;
+            get => _decPulseToGoTo;
+            set
+            {
+                if (_decPulseToGoTo != value)
+                {
+                    _decPulseToGoTo = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.DecPulseToGoTo);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// ST4 guide rate
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(SetSt4Guiderate)
-        /// </summary>
         public int St4GuideRate
         {
-            get => SkySettings.St4GuideRate;
-            set => SkySettings.St4GuideRate = value;
+            get => _st4GuideRate;
+            set
+            {
+                if (_st4GuideRate != value)
+                {
+                    _st4GuideRate = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.SetSt4Guiderate);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Guide rate offset for X axis
-        /// ?? SIDE EFFECT: Calls SkyServer.SetGuideRates()
-        /// </summary>
         public double GuideRateOffsetX
         {
-            get => SkySettings.GuideRateOffsetX;
-            set => SkySettings.GuideRateOffsetX = value;
+            get => _guideRateOffsetX;
+            set
+            {
+                if (Math.Abs(_guideRateOffsetX - value) > 0.0001)
+                {
+                    _guideRateOffsetX = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Update guide rates
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SetGuideRates();
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Guide rate offset for Y axis
-        /// ?? SIDE EFFECT: Calls SkyServer.SetGuideRates()
-        /// </summary>
         public double GuideRateOffsetY
         {
-            get => SkySettings.GuideRateOffsetY;
-            set => SkySettings.GuideRateOffsetY = value;
+            get => _guideRateOffsetY;
+            set
+            {
+                if (Math.Abs(_guideRateOffsetY - value) > 0.0001)
+                {
+                    _guideRateOffsetY = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Update guide rates
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SetGuideRates();
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// RA backlash in steps
-        /// </summary>
         public int RaBacklash
         {
-            get => SkySettings.RaBacklash;
-            set => SkySettings.RaBacklash = value;
+            get => _raBacklash;
+            set
+            {
+                if (_raBacklash != value)
+                {
+                    _raBacklash = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Dec backlash in steps
-        /// </summary>
         public int DecBacklash
         {
-            get => SkySettings.DecBacklash;
-            set => SkySettings.DecBacklash = value;
+            get => _decBacklash;
+            set
+            {
+                if (_decBacklash != value)
+                {
+                    _decBacklash = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
         #region Batch 5: Optics & Camera (6 properties)
 
-        /// <summary>
-        /// Telescope focal length in millimeters
-        /// </summary>
         public double FocalLength
         {
-            get => SkySettings.FocalLength;
-            set => SkySettings.FocalLength = value;
+            get => _focalLength;
+            set
+            {
+                if (Math.Abs(_focalLength - value) > 0.01)
+                {
+                    _focalLength = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Camera sensor width in millimeters
-        /// </summary>
         public double CameraWidth
         {
-            get => SkySettings.CameraWidth;
-            set => SkySettings.CameraWidth = value;
+            get => _cameraWidth;
+            set
+            {
+                if (Math.Abs(_cameraWidth - value) > 0.01)
+                {
+                    _cameraWidth = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Camera sensor height in millimeters
-        /// </summary>
         public double CameraHeight
         {
-            get => SkySettings.CameraHeight;
-            set => SkySettings.CameraHeight = value;
+            get => _cameraHeight;
+            set
+            {
+                if (Math.Abs(_cameraHeight - value) > 0.01)
+                {
+                    _cameraHeight = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Eyepiece field stop
-        /// </summary>
         public double EyepieceFs
         {
-            get => SkySettings.EyepieceFs;
-            set => SkySettings.EyepieceFs = value;
+            get => _eyepieceFs;
+            set
+            {
+                if (Math.Abs(_eyepieceFs - value) > 0.01)
+                {
+                    _eyepieceFs = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Aperture area (read-only, calculated)
-        /// </summary>
-        public double ApertureArea => SkySettings.ApertureArea;
-
-        /// <summary>
-        /// Aperture diameter (read-only, calculated)
-        /// </summary>
-        public double ApertureDiameter => SkySettings.ApertureDiameter;
+        public double ApertureArea => _apertureArea;
+        public double ApertureDiameter => _apertureDiameter;
 
         #endregion
 
-        #region Batch 6: Advanced Settings (6 properties with SIDE EFFECTS)
+        #region Batch 6: Advanced Settings (7 properties with SIDE EFFECTS)
 
-        /// <summary>
-        /// Maximum slew rate
-        /// ?? SIDE EFFECT: Calls SkyServer.SetSlewRates(value)
-        /// </summary>
         public double MaxSlewRate
         {
-            get => SkySettings.MaxSlewRate;
-            set => SkySettings.MaxSlewRate = value;
+            get => _maxSlewRate;
+            set
+            {
+                if (Math.Abs(_maxSlewRate - value) > 0.001)
+                {
+                    _maxSlewRate = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Update slew rates
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SetSlewRates(value);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Use full current at low speed
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(FullCurrent)
-        /// </summary>
         public bool FullCurrent
         {
-            get => SkySettings.FullCurrent;
-            set => SkySettings.FullCurrent = value;
+            get => _fullCurrent;
+            set
+            {
+                if (_fullCurrent != value)
+                {
+                    _fullCurrent = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.FullCurrent);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable encoders
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(Encoders)
-        /// </summary>
         public bool Encoders
         {
-            get => SkySettings.Encoders;
-            set => SkySettings.Encoders = value;
+            get => _encoders;
+            set
+            {
+                if (_encoders != value)
+                {
+                    _encoders = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.Encoders);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Use alternating PPEC
-        /// ?? SIDE EFFECT: Calls SkyServer.SkyTasks(AlternatingPpec)
-        /// </summary>
         public bool AlternatingPPec
         {
-            get => SkySettings.AlternatingPPec;
-            set => SkySettings.AlternatingPPec = value;
+            get => _alternatingPPec;
+            set
+            {
+                if (_alternatingPPec != value)
+                {
+                    _alternatingPPec = value;
+                    OnPropertyChanged();
+
+                    // SIDE EFFECT: Send to mount
+                    if (SkyServer.IsMountRunning)
+                    {
+                        SkyServer.SkyTasks(MountTaskName.AlternatingPpec);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable global stop
-        /// </summary>
         public bool GlobalStopOn
         {
-            get => SkySettings.GlobalStopOn;
-            set => SkySettings.GlobalStopOn = value;
+            get => _globalStopOn;
+            set
+            {
+                if (_globalStopOn != value)
+                {
+                    _globalStopOn = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable refraction correction
-        /// </summary>
         public bool Refraction
         {
-            get => SkySettings.Refraction;
-            set => SkySettings.Refraction = value;
+            get => _refraction;
+            set
+            {
+                if (_refraction != value)
+                {
+                    _refraction = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Goto precision (read-only)
-        /// </summary>
-        public double GotoPrecision => SkySettings.GotoPrecision;
+        public double GotoPrecision => _gotoPrecision;
 
         #endregion
 
-        #region Batch 7: Home & Park (12 properties)
+        #region Batch 7: Home & Park (9 properties)
 
-        /// <summary>
-        /// Home position X axis in degrees
-        /// </summary>
         public double HomeAxisX
         {
-            get => SkySettings.HomeAxisX;
-            set => SkySettings.HomeAxisX = value;
+            get => _homeAxisX;
+            set
+            {
+                if (Math.Abs(_homeAxisX - value) > 0.001)
+                {
+                    _homeAxisX = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Home position Y axis in degrees
-        /// </summary>
         public double HomeAxisY
         {
-            get => SkySettings.HomeAxisY;
-            set => SkySettings.HomeAxisY = value;
+            get => _homeAxisY;
+            set
+            {
+                if (Math.Abs(_homeAxisY - value) > 0.001)
+                {
+                    _homeAxisY = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Auto home X axis sensor position in degrees
-        /// </summary>
         public double AutoHomeAxisX
         {
-            get => SkySettings.AutoHomeAxisX;
-            set => SkySettings.AutoHomeAxisX = value;
+            get => _autoHomeAxisX;
+            set
+            {
+                if (Math.Abs(_autoHomeAxisX - value) > 0.001)
+                {
+                    _autoHomeAxisX = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Auto home Y axis sensor position in degrees
-        /// </summary>
         public double AutoHomeAxisY
         {
-            get => SkySettings.AutoHomeAxisY;
-            set => SkySettings.AutoHomeAxisY = value;
+            get => _autoHomeAxisY;
+            set
+            {
+                if (Math.Abs(_autoHomeAxisY - value) > 0.001)
+                {
+                    _autoHomeAxisY = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Current park position name
-        /// </summary>
         public string ParkName
         {
-            get => SkySettings.ParkName;
-            set => SkySettings.ParkName = value;
+            get => _parkName;
+            set
+            {
+                if (_parkName != value)
+                {
+                    _parkName = value ?? "Default";
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Park axes position in mount axes values
-        /// </summary>
         public double[] ParkAxes
         {
-            get => SkySettings.ParkAxes;
-            set => SkySettings.ParkAxes = value;
+            get => _parkAxes;
+            set
+            {
+                _parkAxes = value ?? new[] { 0.0, 0.0 };
+                OnPropertyChanged();
+            }
         }
 
-        /// <summary>
-        /// List of park positions
-        /// </summary>
         public List<ParkPosition> ParkPositions
         {
-            get => SkySettings.ParkPositions;
-            set => SkySettings.ParkPositions = value;
+            get => _parkPositions;
+            set
+            {
+                _parkPositions = value ?? new List<ParkPosition>();
+                OnPropertyChanged();
+            }
         }
 
-        /// <summary>
-        /// Enable limit park
-        /// </summary>
         public bool LimitPark
         {
-            get => SkySettings.LimitPark;
-            set => SkySettings.LimitPark = value;
+            get => _limitPark;
+            set
+            {
+                if (_limitPark != value)
+                {
+                    _limitPark = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Park limit position name
-        /// </summary>
         public string ParkLimitName
         {
-            get => SkySettings.ParkLimitName;
-            set => SkySettings.ParkLimitName = value;
+            get => _parkLimitName;
+            set
+            {
+                if (_parkLimitName != value)
+                {
+                    _parkLimitName = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
-        #region Batch 8: Limits (9 properties)
+        #region Batch 8: Limits (10 properties)
 
-        /// <summary>
-        /// Hour angle limit in degrees
-        /// </summary>
         public double HourAngleLimit
         {
-            get => SkySettings.HourAngleLimit;
-            set => SkySettings.HourAngleLimit = value;
+            get => _hourAngleLimit;
+            set
+            {
+                if (Math.Abs(_hourAngleLimit - value) > 0.01)
+                {
+                    _hourAngleLimit = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// X axis limit in degrees
-        /// </summary>
         public double AxisLimitX
         {
-            get => SkySettings.AxisLimitX;
-            set => SkySettings.AxisLimitX = value;
+            get => _axisLimitX;
+            set
+            {
+                if (Math.Abs(_axisLimitX - value) > 0.01)
+                {
+                    _axisLimitX = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Y axis upper limit in degrees
-        /// </summary>
         public double AxisUpperLimitY
         {
-            get => SkySettings.AxisUpperLimitY;
-            set => SkySettings.AxisUpperLimitY = value;
+            get => _axisUpperLimitY;
+            set
+            {
+                if (Math.Abs(_axisUpperLimitY - value) > 0.01)
+                {
+                    _axisUpperLimitY = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Y axis lower limit in degrees
-        /// </summary>
         public double AxisLowerLimitY
         {
-            get => SkySettings.AxisLowerLimitY;
-            set => SkySettings.AxisLowerLimitY = value;
+            get => _axisLowerLimitY;
+            set
+            {
+                if (Math.Abs(_axisLowerLimitY - value) > 0.01)
+                {
+                    _axisLowerLimitY = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable tracking limits
-        /// </summary>
         public bool LimitTracking
         {
-            get => SkySettings.LimitTracking;
-            set => SkySettings.LimitTracking = value;
+            get => _limitTracking;
+            set
+            {
+                if (_limitTracking != value)
+                {
+                    _limitTracking = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable sync limits
-        /// </summary>
         public bool SyncLimitOn
         {
-            get => SkySettings.SyncLimitOn;
-            set => SkySettings.SyncLimitOn = value;
+            get => _syncLimitOn;
+            set
+            {
+                if (_syncLimitOn != value)
+                {
+                    _syncLimitOn = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable horizon limit tracking
-        /// </summary>
         public bool HzLimitTracking
         {
-            get => SkySettings.HzLimitTracking;
-            set => SkySettings.HzLimitTracking = value;
+            get => _hzLimitTracking;
+            set
+            {
+                if (_hzLimitTracking != value)
+                {
+                    _hzLimitTracking = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable horizon limit park
-        /// </summary>
         public bool HzLimitPark
         {
-            get => SkySettings.HzLimitPark;
-            set => SkySettings.HzLimitPark = value;
+            get => _hzLimitPark;
+            set
+            {
+                if (_hzLimitPark != value)
+                {
+                    _hzLimitPark = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Horizon park limit position name
-        /// </summary>
         public string ParkHzLimitName
         {
-            get => SkySettings.ParkHzLimitName;
-            set => SkySettings.ParkHzLimitName = value;
+            get => _parkHzLimitName;
+            set
+            {
+                if (_parkHzLimitName != value)
+                {
+                    _parkHzLimitName = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Sync limit value (read-only)
-        /// </summary>
-        public int SyncLimit => SkySettings.SyncLimit;
+        public int SyncLimit => _syncLimit;
 
         #endregion
 
         #region Batch 9: PEC (6 properties)
 
-        /// <summary>
-        /// Enable PEC
-        /// </summary>
         public bool PecOn
         {
-            get => SkySettings.PecOn;
-            set => SkySettings.PecOn = value;
+            get => _pecOn;
+            set
+            {
+                if (_pecOn != value)
+                {
+                    _pecOn = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Enable PPEC
-        /// </summary>
         public bool PPecOn
         {
-            get => SkySettings.PPecOn;
-            set => SkySettings.PPecOn = value;
+            get => _pPecOn;
+            set
+            {
+                if (_pPecOn != value)
+                {
+                    _pPecOn = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// PEC offset
-        /// </summary>
         public int PecOffSet
         {
-            get => SkySettings.PecOffSet;
-            set => SkySettings.PecOffSet = value;
+            get => _pecOffSet;
+            set
+            {
+                if (_pecOffSet != value)
+                {
+                    _pecOffSet = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// PEC worm file path
-        /// </summary>
         public string PecWormFile
         {
-            get => SkySettings.PecWormFile;
-            set => SkySettings.PecWormFile = value;
+            get => _pecWormFile;
+            set
+            {
+                if (_pecWormFile != value)
+                {
+                    _pecWormFile = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// PEC 360 file path
-        /// </summary>
         public string Pec360File
         {
-            get => SkySettings.Pec360File;
-            set => SkySettings.Pec360File = value;
+            get => _pec360File;
+            set
+            {
+                if (_pec360File != value)
+                {
+                    _pec360File = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Polar LED level (0-255)
-        /// </summary>
         public int PolarLedLevel
         {
-            get => SkySettings.PolarLedLevel;
-            set => SkySettings.PolarLedLevel = value;
+            get => _polarLedLevel;
+            set
+            {
+                if (_polarLedLevel != value)
+                {
+                    _polarLedLevel = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
-        #region Batch 10: Hand Controller (5 properties)
+        #region Batch 10: Hand Controller (6 properties)
 
-        /// <summary>
-        /// Invert RA hand controller direction
-        /// </summary>
         public bool HcAntiRa
         {
-            get => SkySettings.HcAntiRa;
-            set => SkySettings.HcAntiRa = value;
+            get => _hcAntiRa;
+            set
+            {
+                if (_hcAntiRa != value)
+                {
+                    _hcAntiRa = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Invert Dec hand controller direction
-        /// </summary>
         public bool HcAntiDec
         {
-            get => SkySettings.HcAntiDec;
-            set => SkySettings.HcAntiDec = value;
+            get => _hcAntiDec;
+            set
+            {
+                if (_hcAntiDec != value)
+                {
+                    _hcAntiDec = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Flip East/West direction
-        /// </summary>
         public bool HcFlipEw
         {
-            get => SkySettings.HcFlipEw;
-            set => SkySettings.HcFlipEw = value;
+            get => _hcFlipEw;
+            set
+            {
+                if (_hcFlipEw != value)
+                {
+                    _hcFlipEw = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Flip North/South direction
-        /// </summary>
         public bool HcFlipNs
         {
-            get => SkySettings.HcFlipNs;
-            set => SkySettings.HcFlipNs = value;
+            get => _hcFlipNs;
+            set
+            {
+                if (_hcFlipNs != value)
+                {
+                    _hcFlipNs = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Hand controller pulse guide settings
-        /// </summary>
         public List<HcPulseGuide> HcPulseGuides
         {
-            get => SkySettings.HcPulseGuides;
-            set => SkySettings.HcPulseGuides = value;
+            get => _hcPulseGuides;
+            set
+            {
+                _hcPulseGuides = value ?? new List<HcPulseGuide>();
+                OnPropertyChanged();
+            }
         }
 
-        /// <summary>
-        /// Disable keys during goto
-        /// </summary>
         public bool DisableKeysOnGoTo
         {
-            get => SkySettings.DisableKeysOnGoTo;
-            set => SkySettings.DisableKeysOnGoTo = value;
+            get => _disableKeysOnGoTo;
+            set
+            {
+                if (_disableKeysOnGoTo != value)
+                {
+                    _disableKeysOnGoTo = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         #endregion
 
-        #region Batch 11: Miscellaneous (5 properties)
+        #region Batch 11: Miscellaneous (6 properties)
 
-        /// <summary>
-        /// Ambient temperature in Celsius
-        /// </summary>
         public double Temperature
         {
-            get => SkySettings.Temperature;
-            set => SkySettings.Temperature = value;
+            get => _temperature;
+            set
+            {
+                if (Math.Abs(_temperature - value) > 0.01)
+                {
+                    _temperature = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Instrument description (read-only)
-        /// </summary>
-        public string InstrumentDescription => SkySettings.InstrumentDescription;
-
-        /// <summary>
-        /// Instrument name (read-only)
-        /// </summary>
-        public string InstrumentName => SkySettings.InstrumentName;
-
-        /// <summary>
-        /// Axis model offsets (read-only)
-        /// </summary>
-        public Vector3 AxisModelOffsets => SkySettings.AxisModelOffsets;
-
-        /// <summary>
-        /// Auto track enabled (read-only)
-        /// </summary>
-        public bool AutoTrack => SkySettings.AutoTrack;
-
-        /// <summary>
-        /// RA tracking offset (read-only)
-        /// </summary>
-        public int RaTrackingOffset => SkySettings.RaTrackingOffset;
+        public string InstrumentDescription => _instrumentDescription;
+        public string InstrumentName => _instrumentName;
+        public Vector3 AxisModelOffsets => _axisModelOffsets;
+        public bool AutoTrack => _autoTrack;
+        public int RaTrackingOffset => _raTrackingOffset;
 
         #endregion
 
-        #region Batch 12: Capabilities (28 read-only properties)
+        #region Batch 12: Capabilities (28 properties)
 
-        /// <summary>
-        /// Can set alignment mode
-        /// </summary>
-        public bool CanAlignMode => SkySettings.CanAlignMode;
+        public bool CanAlignMode => _canAlignMode;
+        public bool CanAltAz => _canAltAz;
+        public bool CanEquatorial => _canEquatorial;
+        public bool CanFindHome => _canFindHome;
+        public bool CanLatLongElev => _canLatLongElev;
+        public bool CanOptics => _canOptics;
+        public bool CanPark => _canPark;
+        public bool CanPulseGuide => _canPulseGuide;
+        public bool CanSetEquRates => _canSetEquRates;
+        public bool CanSetDeclinationRate => _canSetDeclinationRate;
+        public bool CanSetGuideRates => _canSetGuideRates;
 
-        /// <summary>
-        /// Can operate in Alt-Az mode
-        /// </summary>
-        public bool CanAltAz => SkySettings.CanAltAz;
-
-        /// <summary>
-        /// Can operate in equatorial mode
-        /// </summary>
-        public bool CanEquatorial => SkySettings.CanEquatorial;
-
-        /// <summary>
-        /// Can find home position
-        /// </summary>
-        public bool CanFindHome => SkySettings.CanFindHome;
-
-        /// <summary>
-        /// Can set latitude/longitude/elevation
-        /// </summary>
-        public bool CanLatLongElev => SkySettings.CanLatLongElev;
-
-        /// <summary>
-        /// Can set optical parameters
-        /// </summary>
-        public bool CanOptics => SkySettings.CanOptics;
-
-        /// <summary>
-        /// Can park
-        /// </summary>
-        public bool CanPark => SkySettings.CanPark;
-
-        /// <summary>
-        /// Can pulse guide
-        /// </summary>
-        public bool CanPulseGuide => SkySettings.CanPulseGuide;
-
-        /// <summary>
-        /// Can set equatorial rates
-        /// </summary>
-        public bool CanSetEquRates => SkySettings.CanSetEquRates;
-
-        /// <summary>
-        /// Can set declination rate
-        /// </summary>
-        public bool CanSetDeclinationRate => SkySettings.CanSetDeclinationRate;
-
-        /// <summary>
-        /// Can set guide rates
-        /// </summary>
-        public bool CanSetGuideRates => SkySettings.CanSetGuideRates;
-
-        /// <summary>
-        /// Can set park position
-        /// </summary>
         public bool CanSetPark
         {
-            get => SkySettings.CanSetPark;
-            set => SkySettings.CanSetPark = value;
+            get => _canSetPark;
+            set
+            {
+                if (_canSetPark != value)
+                {
+                    _canSetPark = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Can set pier side
-        /// </summary>
         public bool CanSetPierSide
         {
-            get => SkySettings.CanSetPierSide;
-            set => SkySettings.CanSetPierSide = value;
+            get => _canSetPierSide;
+            set
+            {
+                if (_canSetPierSide != value)
+                {
+                    _canSetPierSide = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        /// <summary>
-        /// Can set right ascension rate
-        /// </summary>
-        public bool CanSetRightAscensionRate => SkySettings.CanSetRightAscensionRate;
-
-        /// <summary>
-        /// Can set tracking
-        /// </summary>
-        public bool CanSetTracking => SkySettings.CanSetTracking;
-
-        /// <summary>
-        /// Can provide sidereal time
-        /// </summary>
-        public bool CanSiderealTime => SkySettings.CanSiderealTime;
-
-        /// <summary>
-        /// Can slew
-        /// </summary>
-        public bool CanSlew => SkySettings.CanSlew;
-
-        /// <summary>
-        /// Can slew Alt-Az
-        /// </summary>
-        public bool CanSlewAltAz => SkySettings.CanSlewAltAz;
-
-        /// <summary>
-        /// Can slew Alt-Az asynchronously
-        /// </summary>
-        public bool CanSlewAltAzAsync => SkySettings.CanSlewAltAzAsync;
-
-        /// <summary>
-        /// Can slew asynchronously
-        /// </summary>
-        public bool CanSlewAsync => SkySettings.CanSlewAsync;
-
-        /// <summary>
-        /// Can sync
-        /// </summary>
-        public bool CanSync => SkySettings.CanSync;
-
-        /// <summary>
-        /// Can sync Alt-Az
-        /// </summary>
-        public bool CanSyncAltAz => SkySettings.CanSyncAltAz;
-
-        /// <summary>
-        /// Can set tracking rates
-        /// </summary>
-        public bool CanTrackingRates => SkySettings.CanTrackingRates;
-
-        /// <summary>
-        /// Can unpark
-        /// </summary>
-        public bool CanUnPark => SkySettings.CanUnPark;
-
-        /// <summary>
-        /// Prevent sync past meridian
-        /// </summary>
-        public bool NoSyncPastMeridian => SkySettings.NoSyncPastMeridian;
-
-        /// <summary>
-        /// Number of move axis
-        /// </summary>
-        public int NumMoveAxis => SkySettings.NumMoveAxis;
-
-        /// <summary>
-        /// Version one protocol
-        /// </summary>
-        public bool VersionOne => SkySettings.VersionOne;
+        public bool CanSetRightAscensionRate => _canSetRightAscensionRate;
+        public bool CanSetTracking => _canSetTracking;
+        public bool CanSiderealTime => _canSiderealTime;
+        public bool CanSlew => _canSlew;
+        public bool CanSlewAltAz => _canSlewAltAz;
+        public bool CanSlewAltAzAsync => _canSlewAltAzAsync;
+        public bool CanSlewAsync => _canSlewAsync;
+        public bool CanSync => _canSync;
+        public bool CanSyncAltAz => _canSyncAltAz;
+        public bool CanTrackingRates => _canTrackingRates;
+        public bool CanUnPark => _canUnPark;
+        public bool NoSyncPastMeridian => _noSyncPastMeridian;
+        public int NumMoveAxis => _numMoveAxis;
+        public bool VersionOne => _versionOne;
 
         #endregion
 
-        #region Methods
+        #region JSON Persistence Methods
 
         /// <summary>
-        /// Saves settings using static SkySettings.Save()
-        /// This will trigger bridge sync to new settings system
+        /// Load all settings from JSON
         /// </summary>
-        public void Save()
+        private void LoadFromJson()
         {
-            SkySettings.Save();
+            try
+            {
+                var settings = _settingsService.GetSettings();
+
+                // Batch 1: Connection & Mount
+                if (Enum.TryParse<MountType>(settings.Mount, true, out var mountType))
+                    _mount = mountType;
+                _port = settings.Port ?? "COM3";
+                _baudRate = (SerialSpeed)settings.BaudRate;
+                if (Enum.TryParse<AlignmentMode>(settings.AlignmentMode, true, out var alignMode))
+                    _alignmentMode = alignMode;
+                if (Enum.TryParse<EquatorialCoordinateType>(settings.EquatorialCoordinateType, true, out var eqType))
+                    _equatorialCoordinateType = eqType;
+                _atPark = settings.AtPark;
+                if (Enum.TryParse<DriveRate>(settings.TrackingRate, true, out var trackRate))
+                    _trackingRate = trackRate;
+                // AWW ToDo check for correct type
+                _gpsComPort = settings.GpsPort.ToString() ?? string.Empty;
+                _gpsBaudRate = (SerialSpeed)int.Parse(settings.GpsBaudRate ?? "9600");
+                if (Enum.TryParse<SlewSpeed>(settings.HcSpeed, true, out var hcSpd))
+                    _hcSpeed = hcSpd;
+                if (Enum.TryParse<HcMode>(settings.HcMode, true, out var hcMd))
+                    _hcMode = hcMd;
+                if (Enum.TryParse<PecMode>(settings.PecMode, true, out var pecMd))
+                    _pecMode = pecMd;
+                if (Enum.TryParse<PolarMode>(settings.PolarMode, true, out var polMd))
+                    _polarMode = polMd;
+
+                // Batch 2: Location & Custom Gearing
+                _latitude = settings.Latitude;
+                _longitude = settings.Longitude;
+                _elevation = settings.Elevation;
+                _customGearing = settings.CustomGearing;
+                _customRa360Steps = settings.CustomRa360Steps;
+                _customRaWormTeeth = settings.CustomRaWormTeeth;
+                _customDec360Steps = settings.CustomDec360Steps;
+                _customDecWormTeeth = settings.CustomDecWormTeeth;
+                _customRaTrackingOffset = settings.CustomRaTrackingOffset;
+                _customDecTrackingOffset = settings.CustomDecTrackingOffset;
+                _allowAdvancedCommandSet = settings.AllowAdvancedCommandSet;
+
+                // Batch 3: Tracking Rates
+                _siderealRate = settings.SiderealRate;
+                _lunarRate = settings.LunarRate;
+                _solarRate = settings.SolarRate;
+                _kingRate = settings.KingRate;
+                _axisTrackingLimit = settings.AxisTrackingLimit;
+                _axisHzTrackingLimit = settings.AxisHzTrackingLimit;
+                _displayInterval = settings.DisplayInterval;
+                _altAzTrackingUpdateInterval = settings.AltAzTrackingUpdateInterval;
+
+                // Batch 4: Guiding
+                _minPulseRa = settings.MinPulseRa;
+                _minPulseDec = settings.MinPulseDec;
+                _decPulseToGoTo = settings.DecPulseToGoTo;
+                _st4GuideRate = settings.St4Guiderate;
+                _guideRateOffsetX = settings.GuideRateOffsetX;
+                _guideRateOffsetY = settings.GuideRateOffsetY;
+                _raBacklash = settings.RaBacklash;
+                _decBacklash = settings.DecBacklash;
+
+                // Batch 5: Optics
+                _focalLength = settings.FocalLength;
+                _cameraWidth = settings.CameraWidth;
+                _cameraHeight = settings.CameraHeight;
+                _eyepieceFs = settings.EyepieceFS;
+                _apertureArea = settings.ApertureArea;
+                _apertureDiameter = settings.ApertureDiameter;
+
+                // Batch 6: Advanced
+                _maxSlewRate = settings.MaximumSlewRate;
+                _fullCurrent = settings.FullCurrent;
+                _encoders = settings.EncodersOn;
+                _alternatingPPec = settings.AlternatingPPEC;
+                _globalStopOn = settings.GlobalStopOn;
+                _refraction = settings.Refraction;
+                _gotoPrecision = settings.GotoPrecision;
+
+                // Batch 7: Home & Park
+                _homeAxisX = settings.HomeAxisX;
+                _homeAxisY = settings.HomeAxisY;
+                _autoHomeAxisX = settings.AutoHomeAxisX;
+                _autoHomeAxisY = settings.AutoHomeAxisY;
+                _parkName = settings.ParkName ?? "Default";
+                _parkAxes = settings.ParkAxes ?? new[] { 0.0, 0.0 };
+                // ParkPositions list loaded separately if needed
+                _limitPark = settings.LimitPark;
+                _parkLimitName = settings.ParkLimitName ?? string.Empty;
+
+                // Batch 8: Limits
+                _hourAngleLimit = settings.HourAngleLimit;
+                _axisLimitX = settings.AxisLimitX;
+                _axisUpperLimitY = settings.AxisUpperLimitY;
+                _axisLowerLimitY = settings.AxisLowerLimitY;
+                _limitTracking = settings.LimitTracking;
+                _syncLimitOn = settings.SyncLimitOn;
+                _hzLimitTracking = settings.HzLimitTracking;
+                _hzLimitPark = settings.HzLimitPark;
+                _parkHzLimitName = settings.ParkHzLimitName ?? string.Empty;
+                _syncLimit = settings.SyncLimit;
+
+                // Batch 9: PEC
+                _pecOn = settings.PecOn;
+                _pPecOn = settings.PpecOn;
+                _pecOffSet = settings.PecOffSet;
+                _pecWormFile = settings.PecWormFile ?? string.Empty;
+                _pec360File = settings.Pec360File ?? string.Empty;
+                _polarLedLevel = settings.PolarLedLevel;
+
+                // Batch 10: Hand Controller
+                _hcAntiRa = settings.HcAntiRa;
+                _hcAntiDec = settings.HcAntiDec;
+                _hcFlipEw = settings.HcFlipEW;
+                _hcFlipNs = settings.HcFlipNS;
+                // HcPulseGuides list loaded separately if needed
+                _disableKeysOnGoTo = settings.DisableKeysOnGoTo;
+
+                // Batch 11: Miscellaneous
+                _temperature = settings.Temperature;
+                _instrumentDescription = settings.InstrumentDescription ?? "GreenSwamp Alpaca Server";
+                _instrumentName = settings.InstrumentName ?? "GreenSwamp Mount";
+                _autoTrack = settings.AutoTrack;
+                _raTrackingOffset = settings.RATrackingOffset;
+
+                // Batch 12: Capabilities (read-only)
+                _canAlignMode = settings.CanAlignMode;
+                _canAltAz = settings.CanAltAz;
+                _canEquatorial = settings.CanEquatorial;
+                _canFindHome = settings.CanFindHome;
+                _canLatLongElev = settings.CanLatLongElev;
+                _canOptics = settings.CanOptics;
+                _canPark = settings.CanPark;
+                _canPulseGuide = settings.CanPulseGuide;
+                _canSetEquRates = settings.CanSetEquRates;
+                _canSetDeclinationRate = settings.CanSetDeclinationRate;
+                _canSetGuideRates = settings.CanSetGuideRates;
+                _canSetPark = settings.CanSetPark;
+                _canSetPierSide = settings.CanSetPierSide;
+                _canSetRightAscensionRate = settings.CanSetRightAscensionRate;
+                _canSetTracking = settings.CanSetTracking;
+                _canSiderealTime = settings.CanSiderealTime;
+                _canSlew = settings.CanSlew;
+                _canSlewAltAz = settings.CanSlewAltAz;
+                _canSlewAltAzAsync = settings.CanSlewAltAzAsync;
+                _canSlewAsync = settings.CanSlewAsync;
+                _canSync = settings.CanSync;
+                _canSyncAltAz = settings.CanSyncAltAz;
+                _canTrackingRates = settings.CanTrackingRates;
+                _canUnPark = settings.CanUnpark;
+                _noSyncPastMeridian = settings.NoSyncPastMeridian;
+                _numMoveAxis = settings.NumMoveAxis;
+                _versionOne = settings.VersionOne;
+
+                LogSettings("LoadedFromJson", $"Mount:{_mount}|Port:{_port}");
+            }
+            catch (Exception ex)
+            {
+                LogSettings("LoadFromJsonFailed", ex.Message);
+            }
         }
 
         /// <summary>
-        /// Loads settings using static SkySettings.Load()
+        /// Queue auto-save (debounced 2 seconds)
         /// </summary>
-        public void Load()
+        private void QueueSave()
         {
-            SkySettings.Load();
+            _saveCts?.Cancel();
+            _saveCts = new CancellationTokenSource();
+
+            Task.Delay(2000, _saveCts.Token).ContinueWith(_ =>
+            {
+                if (!_.IsCanceled)
+                    SaveAsync().GetAwaiter().GetResult();
+            }, TaskScheduler.Default);
         }
 
         /// <summary>
-        /// Resets park positions using static SkySettings.ResetParkPositions()
+        /// Save all settings to JSON
+        /// </summary>
+        public async Task SaveAsync()
+        {
+            try
+            {
+                var settings = _settingsService.GetSettings();
+
+                // Map instance fields → JSON model (93 writable properties)
+                settings.Mount = _mount.ToString();
+                settings.Port = _port;
+                settings.BaudRate = (int)_baudRate;
+                settings.AlignmentMode = _alignmentMode.ToString();
+                settings.EquatorialCoordinateType = _equatorialCoordinateType.ToString();
+                settings.AtPark = _atPark;
+                settings.TrackingRate = _trackingRate.ToString();
+                // AWW ToDo check for correct type
+                // settings.GpsPort = _gpsComPort;
+                settings.GpsBaudRate = ((int)_gpsBaudRate).ToString();
+                settings.HcSpeed = _hcSpeed.ToString();
+                settings.HcMode = _hcMode.ToString();
+                settings.PecMode = _pecMode.ToString();
+                settings.PolarMode = _polarMode.ToString();
+
+                settings.Latitude = _latitude;
+                settings.Longitude = _longitude;
+                settings.Elevation = _elevation;
+                settings.CustomGearing = _customGearing;
+                settings.CustomRa360Steps = _customRa360Steps;
+                settings.CustomRaWormTeeth = _customRaWormTeeth;
+                settings.CustomDec360Steps = _customDec360Steps;
+                settings.CustomDecWormTeeth = _customDecWormTeeth;
+                settings.CustomRaTrackingOffset = _customRaTrackingOffset;
+                settings.CustomDecTrackingOffset = _customDecTrackingOffset;
+                settings.AllowAdvancedCommandSet = _allowAdvancedCommandSet;
+
+                settings.SiderealRate = _siderealRate;
+                settings.LunarRate = _lunarRate;
+                settings.SolarRate = _solarRate;
+                settings.KingRate = _kingRate;
+                settings.AxisTrackingLimit = _axisTrackingLimit;
+                settings.AxisHzTrackingLimit = _axisHzTrackingLimit;
+                settings.DisplayInterval = _displayInterval;
+                settings.AltAzTrackingUpdateInterval = _altAzTrackingUpdateInterval;
+
+                settings.MinPulseRa = _minPulseRa;
+                settings.MinPulseDec = _minPulseDec;
+                settings.DecPulseToGoTo = _decPulseToGoTo;
+                settings.St4Guiderate = _st4GuideRate;
+                settings.GuideRateOffsetX = _guideRateOffsetX;
+                settings.GuideRateOffsetY = _guideRateOffsetY;
+                settings.RaBacklash = _raBacklash;
+                settings.DecBacklash = _decBacklash;
+
+                settings.FocalLength = _focalLength;
+                settings.CameraWidth = _cameraWidth;
+                settings.CameraHeight = _cameraHeight;
+                settings.EyepieceFS = _eyepieceFs;
+
+                settings.MaximumSlewRate = _maxSlewRate;
+                settings.FullCurrent = _fullCurrent;
+                settings.EncodersOn = _encoders;
+                settings.AlternatingPPEC = _alternatingPPec;
+                settings.GlobalStopOn = _globalStopOn;
+                settings.Refraction = _refraction;
+
+                settings.HomeAxisX = _homeAxisX;
+                settings.HomeAxisY = _homeAxisY;
+                settings.AutoHomeAxisX = _autoHomeAxisX;
+                settings.AutoHomeAxisY = _autoHomeAxisY;
+                settings.ParkName = _parkName;
+                settings.ParkAxes = _parkAxes;
+                settings.LimitPark = _limitPark;
+                settings.ParkLimitName = _parkLimitName;
+
+                settings.HourAngleLimit = _hourAngleLimit;
+                settings.AxisLimitX = _axisLimitX;
+                settings.AxisUpperLimitY = _axisUpperLimitY;
+                settings.AxisLowerLimitY = _axisLowerLimitY;
+                settings.LimitTracking = _limitTracking;
+                settings.SyncLimitOn = _syncLimitOn;
+                settings.HzLimitTracking = _hzLimitTracking;
+                settings.HzLimitPark = _hzLimitPark;
+                settings.ParkHzLimitName = _parkHzLimitName;
+
+                settings.PecOn = _pecOn;
+                settings.PpecOn = _pPecOn;
+                settings.PecOffSet = _pecOffSet;
+                settings.PecWormFile = _pecWormFile;
+                settings.Pec360File = _pec360File;
+                settings.PolarLedLevel = _polarLedLevel;
+
+                settings.HcAntiRa = _hcAntiRa;
+                settings.HcAntiDec = _hcAntiDec;
+                settings.HcFlipEW = _hcFlipEw;
+                settings.HcFlipNS = _hcFlipNs;
+                settings.DisableKeysOnGoTo = _disableKeysOnGoTo;
+
+                settings.Temperature = _temperature;
+
+                await _settingsService.SaveSettingsAsync(settings);
+                LogSettings("SavedToJson", "Success");
+            }
+            catch (Exception ex)
+            {
+                LogSettings("SaveToJsonFailed", ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Reset park positions (called from UI/API)
         /// </summary>
         public void ResetParkPositions()
         {
-            SkySettings.ResetParkPositions();
+            var parkPositions = new List<ParkPosition>
+            {
+                new ParkPosition
+                {
+                    Name = "Default",
+                    X = 0.0,
+                    Y = Math.Round(Math.Abs(_latitude) - 90.0, 6)
+                },
+                new ParkPosition
+                {
+                    Name = "Home",
+                    X = 0.0,
+                    Y = Math.Round(Math.Abs(_latitude) - 85.0, 6)
+                }
+            };
+
+            ParkPositions = parkPositions;
+            AtPark = false;
+            ParkName = "Default";
+        }
+
+        private void LogSettings(string method, string message)
+        {
+            try
+            {
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = $"SkySettingsInstance.{method}",
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = message
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            catch
+            {
+                // Fail silently if logging fails
+            }
         }
 
         #endregion
-
-        /// <summary>
-        /// Phase 4.2: Load settings from instance-specific file
-        /// </summary>
-        private void LoadFromFile()
-        {
-            try
-            {
-                var settings = _settingsService.GetSettings();
-
-                // Mount configuration - with enum parsing
-                if (Enum.TryParse<MountType>(settings.Mount, true, out var mountType))
-                    Mount = mountType;
-                Port = settings.Port ?? "COM3";
-                BaudRate = (SerialSpeed)settings.BaudRate;
-
-                // Location
-                Latitude = settings.Latitude;
-                Longitude = settings.Longitude;
-                Elevation = settings.Elevation;
-
-                // Alignment - with enum parsing
-                if (Enum.TryParse<AlignmentMode>(settings.AlignmentMode, true, out var alignmentMode))
-                    AlignmentMode = alignmentMode;
-                if (Enum.TryParse<PolarMode>(settings.PolarMode, true, out var polarMode))
-                    PolarMode = polarMode;
-
-                // Limits
-                HourAngleLimit = settings.HourAngleLimit;
-                AxisLimitX = settings.AxisLimitX;
-                AxisLowerLimitY = settings.AxisLowerLimitY;
-                AxisUpperLimitY = settings.AxisUpperLimitY;
-
-                // Tracking - with enum parsing
-                if (Enum.TryParse<DriveRate>(settings.TrackingRate, true, out var trackingRate))
-                    TrackingRate = trackingRate;
-                SiderealRate = settings.SiderealRate;
-                LunarRate = settings.LunarRate;
-                SolarRate = settings.SolarRate;
-                KingRate = settings.KingRate;
-
-                // Guide rates
-                GuideRateOffsetX = settings.GuideRateOffsetX;
-                GuideRateOffsetY = settings.GuideRateOffsetY;
-
-                // Backlash
-                DecBacklash = settings.DecBacklash;
-
-                // Park positions
-                ParkName = settings.ParkName ?? "Park";
-                ParkAxes = settings.ParkAxes ?? new[] { 0.0, 0.0 };
-
-                // PEC - note: PpecOn not PPecOn
-                PecOn = settings.PecOn;
-                PPecOn = settings.PpecOn;  // Note: model uses "PpecOn"
-
-                // Encoders - note: EncodersOn not Encoders
-                Encoders = settings.EncodersOn;  // Note: model uses "EncodersOn"
-
-                // Other settings
-                AtPark = settings.AtPark;
-                // Note: RaTrackingOffset is read-only, so we don't set it here
-
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Phase4.2|LoadFromFile|Path:{_settingsFilePath}|Mount:{Mount}|Port:{Port}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-            }
-            catch (Exception ex)
-            {
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Error,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Phase4.2|LoadFromFile failed|{ex.Message}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-
-                // Fall back to static settings
-                LoadFromStatic();
-            }
-        }
-
-        /// <summary>
-        /// Phase 4.2: Load settings from static SkySettings (backward compatibility)
-        /// </summary>
-        private void LoadFromStatic()
-        {
-            // Mount configuration
-            Mount = SkySettings.Mount;
-            Port = SkySettings.Port;
-            BaudRate = SkySettings.BaudRate;
-
-            // Location
-            Latitude = SkySettings.Latitude;
-            Longitude = SkySettings.Longitude;
-            Elevation = SkySettings.Elevation;
-
-            // Alignment
-            AlignmentMode = SkySettings.AlignmentMode;
-            PolarMode = SkySettings.PolarMode;
-
-            // Limits
-            HourAngleLimit = SkySettings.HourAngleLimit;
-            AxisLimitX = SkySettings.AxisLimitX;
-            AxisLowerLimitY = SkySettings.AxisLowerLimitY;
-            AxisUpperLimitY = SkySettings.AxisUpperLimitY;
-
-            // Tracking
-            TrackingRate = SkySettings.TrackingRate;
-            SiderealRate = SkySettings.SiderealRate;
-            LunarRate = SkySettings.LunarRate;
-            SolarRate = SkySettings.SolarRate;
-            KingRate = SkySettings.KingRate;
-
-            // Guide rates
-            GuideRateOffsetX = SkySettings.GuideRateOffsetX;
-            GuideRateOffsetY = SkySettings.GuideRateOffsetY;
-
-            // Backlash
-            DecBacklash = SkySettings.DecBacklash;
-
-            // Park positions
-            ParkName = SkySettings.ParkName;
-            ParkAxes = SkySettings.ParkAxes;
-
-            // PEC
-            PecOn = SkySettings.PecOn;
-            PPecOn = SkySettings.PPecOn;
-
-            // Encoders
-            Encoders = SkySettings.Encoders;
-
-            // Other settings
-            AtPark = SkySettings.AtPark;
-            // Note: RaTrackingOffset is read-only
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Mount,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Phase4.2|LoadFromStatic|Mount:{Mount}|Port:{Port}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-        }
-
-        /// <summary>
-        /// Phase 4.2: Save current settings to instance-specific file
-        /// </summary>
-        public void SaveSettings()
-        {
-            if (string.IsNullOrEmpty(_settingsFilePath) || _settingsService == null)
-            {
-                // No file path - save to static instead (backward compatibility)
-                SaveToStatic();
-                return;
-            }
-
-            try
-            {
-                var settings = _settingsService.GetSettings();
-
-                // Update settings object - with enum to string conversion
-                settings.Mount = Mount.ToString();
-                settings.Port = Port;
-                settings.BaudRate = (int)BaudRate;
-                settings.Latitude = Latitude;
-                settings.Longitude = Longitude;
-                settings.Elevation = Elevation;
-                settings.AlignmentMode = AlignmentMode.ToString();
-                settings.PolarMode = PolarMode.ToString();
-                settings.HourAngleLimit = HourAngleLimit;
-                settings.AxisLimitX = AxisLimitX;
-                settings.AxisLowerLimitY = AxisLowerLimitY;
-                settings.AxisUpperLimitY = AxisUpperLimitY;
-                settings.TrackingRate = TrackingRate.ToString();
-                settings.GuideRateOffsetX = GuideRateOffsetX;
-                settings.GuideRateOffsetY = GuideRateOffsetY;
-                settings.DecBacklash = DecBacklash;
-                settings.ParkName = ParkName;
-                settings.ParkAxes = ParkAxes;
-                settings.PecOn = PecOn;
-                settings.PpecOn = PPecOn;  // Note: model uses "PpecOn"
-                settings.EncodersOn = Encoders;  // Note: model uses "EncodersOn"
-                settings.AtPark = AtPark;
-                // Note: RaTrackingOffset is read-only, use RATrackingOffset on model
-                settings.RATrackingOffset = RaTrackingOffset;
-
-                // Save using SaveSettingsAsync
-                _settingsService.SaveSettingsAsync(settings).GetAwaiter().GetResult();
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Phase4.2|SaveToFile|Path:{_settingsFilePath}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-            }
-            catch (Exception ex)
-            {
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Error,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Phase4.2|SaveToFile failed|{ex.Message}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-            }
-        }
-
-        /// <summary>
-        /// Phase 4.2: Save to static SkySettings (backward compatibility)
-        /// </summary>
-        private void SaveToStatic()
-        {
-            SkySettings.Mount = Mount;
-            SkySettings.Port = Port;
-            SkySettings.BaudRate = BaudRate;
-            SkySettings.Latitude = Latitude;
-            SkySettings.Longitude = Longitude;
-            SkySettings.Elevation = Elevation;
-            SkySettings.AlignmentMode = AlignmentMode;
-            SkySettings.PolarMode = PolarMode;
-            SkySettings.HourAngleLimit = HourAngleLimit;
-            SkySettings.AxisLimitX = AxisLimitX;
-            SkySettings.AxisLowerLimitY = AxisLowerLimitY;
-            SkySettings.AxisUpperLimitY = AxisUpperLimitY;
-            SkySettings.TrackingRate = TrackingRate;
-            SkySettings.GuideRateOffsetX = GuideRateOffsetX;
-            SkySettings.GuideRateOffsetY = GuideRateOffsetY;
-            SkySettings.DecBacklash = DecBacklash;
-            SkySettings.ParkName = ParkName;
-            SkySettings.ParkAxes = ParkAxes;
-            SkySettings.PecOn = PecOn;
-            SkySettings.PPecOn = PPecOn;
-            SkySettings.Encoders = Encoders;
-            SkySettings.AtPark = AtPark;
-            // Note: RaTrackingOffset setter is inaccessible in static
-        }
     }
 }
