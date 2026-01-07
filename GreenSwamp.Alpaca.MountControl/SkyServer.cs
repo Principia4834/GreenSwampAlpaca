@@ -673,7 +673,7 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _actualAxisX;
             set
             {
-                // if (Math.Abs(value - _actualAxisX) < 0.000000000000001) { return; }
+                if (Math.Abs(value - _actualAxisX) < 0.0001) { return; }
                 _actualAxisX = value;
                 OnStaticPropertyChanged();
             }
@@ -687,7 +687,7 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _actualAxisY;
             set
             {
-                // if (Math.Abs(value - _actualAxisY) < 0.000000000000001) { return; }
+                if (Math.Abs(value - _actualAxisY) < 0.0001) { return; }
                 _actualAxisY = value;
                 OnStaticPropertyChanged();
             }

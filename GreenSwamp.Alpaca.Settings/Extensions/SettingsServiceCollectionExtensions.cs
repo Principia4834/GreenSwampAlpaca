@@ -49,6 +49,9 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
             
             // Register profile service as singleton
             services.AddSingleton<ISettingsProfileService, SettingsProfileService>();
+            
+            // Register profile loader service as singleton
+            services.AddSingleton<IProfileLoaderService, ProfileLoaderService>();
 
             return services;
         }

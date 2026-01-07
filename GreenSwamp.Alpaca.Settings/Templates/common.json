@@ -19,6 +19,7 @@
     "AlignmentMode": "GermanPolar",
     "EquatorialCoordinateType": "Topocentric",
     "AtPark": false,
+    "CanSetPierSide": true,
     "ApertureDiameter": 0.2,
     "ApertureArea": 0.0269,
     "FocalLength": 1.26,

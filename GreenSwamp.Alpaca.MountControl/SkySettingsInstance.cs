@@ -39,6 +39,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // Services
         private readonly IVersionedSettingsService _settingsService;
+        private readonly IProfileLoaderService? _profileLoaderService;
         private CancellationTokenSource? _saveCts;
 
         // Batch 1: Connection & Mount Settings (20 fields)
@@ -192,16 +193,22 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Constructor
 
         /// <summary>
-        /// Creates instance with direct JSON persistence (no bridge)
+        /// Creates instance with direct JSON persistence and optional profile loading
         /// </summary>
-        public SkySettingsInstance(IVersionedSettingsService settingsService)
+        /// <param name="settingsService">Required: Settings service for JSON persistence</param>
+        /// <param name="profileLoaderService">Optional: Profile loader service (null for backward compatibility)</param>
+        public SkySettingsInstance(
+            IVersionedSettingsService settingsService,
+            IProfileLoaderService? profileLoaderService = null)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+            _profileLoaderService = profileLoaderService;
 
-            // Initialize with defaults (already done via field initializers)
+            // Load settings from profile or JSON
+            var settings = LoadSettingsFromSource();
 
-            // Load from JSON (overwrites defaults)
-            LoadFromJson();
+            // Apply settings to instance fields
+            ApplySettings(settings);
 
             LogSettings("Initialized", $"Mount:{_mount}|Port:{_port}");
         }
@@ -1467,14 +1474,43 @@ namespace GreenSwamp.Alpaca.MountControl
         #region JSON Persistence Methods
 
         /// <summary>
-        /// Load all settings from JSON
+        /// Load settings from active profile or fall back to JSON
         /// </summary>
-        private void LoadFromJson()
+        /// <returns>Settings model from profile or JSON</returns>
+        private Settings.Models.SkySettings LoadSettingsFromSource()
+        {
+            // Try to load from active profile first
+            if (_profileLoaderService != null)
+            {
+                try
+                {
+                    var profileSettings = _profileLoaderService.LoadActiveProfileAsync()
+                        .GetAwaiter()
+                        .GetResult();
+
+                    LogSettings("LoadedFromProfile", $"Active profile loaded successfully");
+                    return profileSettings;
+                }
+                catch (Exception ex)
+                {
+                    // Log failure and fall back to JSON
+                    LogSettings("ProfileLoadFailed", $"Falling back to JSON: {ex.Message}");
+                }
+            }
+
+            // Fall back to JSON (backward compatibility or no profile service)
+            return _settingsService.GetSettings();
+        }
+
+        /// <summary>
+        /// Apply settings from SkySettings model to instance fields
+        /// This is the single source of truth for all settings mapping
+        /// </summary>
+        /// <param name="settings">Settings model (from profile or JSON)</param>
+        private void ApplySettings(Settings.Models.SkySettings settings)
         {
             try
             {
-                var settings = _settingsService.GetSettings();
-
                 // Batch 1: Connection & Mount
                 if (Enum.TryParse<MountType>(settings.Mount, true, out var mountType))
                     _mount = mountType;
@@ -1624,11 +1660,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 _numMoveAxis = settings.NumMoveAxis;
                 _versionOne = settings.VersionOne;
 
-                LogSettings("LoadedFromJson", $"Mount:{_mount}|Port:{_port}");
+                LogSettings("AppliedSettings", $"Mount:{_mount}|Port:{_port}");
             }
             catch (Exception ex)
             {
-                LogSettings("LoadFromJsonFailed", ex.Message);
+                LogSettings("ApplySettingsFailed", ex.Message);
             }
         }
 

@@ -4,30 +4,38 @@
   "AlignmentMode": "AltAz",
   "Overrides": {
     "AlignmentMode": "AltAz",
+    "AtPark": false,
+    "CanSetPierSide": false,
     "HomeAxisX": 0.0,
     "HomeAxisY": 0.0,
     "AutoHomeAxisX": 0.0,
     "AutoHomeAxisY": 0.0,
     "ParkName": "Default",
-    "ParkAxes": [0.0, 90.0],
+    "ParkAxes": [0.0, 0.0],
     "ParkPositions": [
       {
         "Name": "Default",
         "X": 0.0,
-        "Y": 90.0
+        "Y": 0.0
       },
       {
         "Name": "Home",
         "X": 0.0,
         "Y": 0.0
-      },
-      {
-        "Name": "North-Horizon",
-        "X": 0.0,
-        "Y": 0.0
       }
     ],
-    "NoSyncPastMeridian": false,
-    "HourAngleLimit": 0.0
+    "HourAngleLimit": 0.0,
+    "AxisUpperLimitY": 80.0,
+    "AxisLowerLimitY": -10.0,
+    "AxisLimitX": 210.0,
+    "AxisHzTrackingLimit": 0.0,
+    "LimitTracking": false,
+    "LimitPark": false,
+    "ParkLimitName": "Default",
+    "HzLimitTracking": false,
+    "HzLimitPark": false,
+    "ParkHzLimitName": "Default",
+    "PolarMode": "Right",
+    "NoSyncPastMeridian": false
   }
 }

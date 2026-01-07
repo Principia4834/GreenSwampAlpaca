@@ -99,6 +99,10 @@
           "type": "boolean",
           "description": "Mount is at park position"
         },
+        "CanSetPierSide": {
+          "type": "boolean",
+          "description": "Mount can set pier side (for meridian flips)"
+        },
         "ApertureDiameter": {
           "type": "number",
           "minimum": 0,

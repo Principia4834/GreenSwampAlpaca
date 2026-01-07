@@ -24,6 +24,14 @@
           "enum": ["GermanPolar", "Polar", "AltAz"],
           "description": "Alignment mode (must match parent AlignmentMode)"
         },
+        "AtPark": {
+          "type": "boolean",
+          "description": "Mount is at park position (persists across restarts)"
+        },
+        "CanSetPierSide": {
+          "type": "boolean",
+          "description": "Mount can set pier side (false for AltAz, true for equatorial mounts that support pier flips)"
+        },
         "HomeAxisX": {
           "type": "number",
           "description": "Home position for X axis in degrees (mode-specific)"
@@ -75,13 +83,58 @@
             }
           }
         },
-        "NoSyncPastMeridian": {
-          "type": "boolean",
-          "description": "Prevent sync past meridian (typically false for AltAz)"
-        },
         "HourAngleLimit": {
           "type": "number",
           "description": "Hour angle limit in hours (typically 0 for AltAz)"
+        },
+        "AxisUpperLimitY": {
+          "type": "number",
+          "description": "Upper limit for Y axis in degrees"
+        },
+        "AxisLowerLimitY": {
+          "type": "number",
+          "description": "Lower limit for Y axis in degrees"
+        },
+        "AxisLimitX": {
+          "type": "number",
+          "description": "Limit for X axis in degrees"
+        },
+        "AxisHzTrackingLimit": {
+          "type": "number",
+          "description": "Horizontal tracking limit in degrees"
+        },
+        "LimitTracking": {
+          "type": "boolean",
+          "description": "Enable tracking limits"
+        },
+        "LimitPark": {
+          "type": "boolean",
+          "description": "Enable park limits"
+        },
+        "ParkLimitName": {
+          "type": "string",
+          "description": "Name of park limit"
+        },
+        "HzLimitTracking": {
+          "type": "boolean",
+          "description": "Enable horizontal tracking limits"
+        },
+        "HzLimitPark": {
+          "type": "boolean",
+          "description": "Enable horizontal park limits"
+        },
+        "ParkHzLimitName": {
+          "type": "string",
+          "description": "Name of horizontal park limit"
+        },
+        "PolarMode": {
+          "type": "string",
+          "enum": ["Left", "Right"],
+          "description": "Polar mode for fork mounts (Left) or GEM mounts (Right)"
+        },
+        "NoSyncPastMeridian": {
+          "type": "boolean",
+          "description": "Prevent sync past meridian (typically true for GEM, false for AltAz)"
         }
       },
       "additionalProperties": false

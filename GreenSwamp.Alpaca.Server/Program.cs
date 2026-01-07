@@ -143,13 +143,14 @@ namespace GreenSwamp.Alpaca.Server
             
             // Register all settings services (VersionedSettings, Template, Profile)
             builder.Services.AddVersionedSettings(builder.Configuration);
-            
-            // Configure Server Settings from configuration
+
+            // Configure Server Settings from configuration with profile support
             builder.Services.AddSingleton(sp =>
             {
-                // Phase 4.2: Create instance with default (static) settings
+                // Phase 4.2: Create instance with profile loading support
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
-                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
+                var profileLoader = sp.GetService<IProfileLoaderService>(); // Optional - may be null
+                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
             });
             Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance registered in DI container");
             Logger.LogInformation("✅ Settings services registered: VersionedSettings, Template, Profile");
