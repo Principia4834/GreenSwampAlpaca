@@ -42,7 +42,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private readonly IProfileLoaderService? _profileLoaderService;
         private CancellationTokenSource? _saveCts;
 
-        // Batch 1: Connection & Mount Settings (20 fields)
+        // Connection & Mount Settings (20 fields)
         private MountType _mount = MountType.Simulator;
         private string _port = "COM3";
         private SerialSpeed _baudRate = SerialSpeed.ps9600;
@@ -62,7 +62,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private PecMode _pecMode = PecMode.PecWorm;
         private PolarMode _polarMode = PolarMode.Left;
 
-        // Batch 2: Location & Custom Gearing (11 fields)
+        // Location & Custom Gearing (11 fields)
         private double _latitude = 51.48;
         private double _longitude = -0.0;
         private double _elevation = 0.0;
@@ -75,7 +75,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _customDecTrackingOffset = 0;
         private bool _allowAdvancedCommandSet = false;
 
-        // Batch 3: Tracking Rates (8 fields)
+        // Tracking Rates (8 fields)
         private double _siderealRate = 15.0410671786691;
         private double _lunarRate = 14.511415534643;
         private double _solarRate = 15.0;
@@ -85,7 +85,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _displayInterval = 1000;
         private int _altAzTrackingUpdateInterval = 10000;
 
-        // Batch 4: Guiding (8 fields)
+        // Guiding (8 fields)
         private int _minPulseRa = 20;
         private int _minPulseDec = 20;
         private bool _decPulseToGoTo = false;
@@ -95,7 +95,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _raBacklash = 0;
         private int _decBacklash = 0;
 
-        // Batch 5: Optics & Camera (6 fields)
+        // Optics & Camera (6 fields)
         private double _focalLength = 1000.0;
         private double _cameraWidth = 10.0;
         private double _cameraHeight = 10.0;
@@ -103,7 +103,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _apertureArea = 0.0;
         private double _apertureDiameter = 0.0;
 
-        // Batch 6: Advanced Settings (7 fields)
+        // Advanced Settings (7 fields)
         private double _maxSlewRate = 3.4;
         private bool _fullCurrent = false;
         private bool _encoders = false;
@@ -112,7 +112,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _refraction = false;
         private double _gotoPrecision = 0.001;
 
-        // Batch 7: Home & Park (9 fields)
+        // Home & Park (9 fields)
         private double _homeAxisX = 0.0;
         private double _homeAxisY = 0.0;
         private double _autoHomeAxisX = 0.0;
@@ -123,8 +123,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _limitPark = false;
         private string _parkLimitName = string.Empty;
 
-        // Batch 8: Limits (9 fields)
-        private double _hourAngleLimit = 180.0;
+        // Limits (9 fields)
+        private double _hourAngleLimit = 15.0;
         private double _axisLimitX = 180.0;
         private double _axisUpperLimitY = 90.0;
         private double _axisLowerLimitY = -90.0;
@@ -135,7 +135,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private string _parkHzLimitName = string.Empty;
         private int _syncLimit = 5;
 
-        // Batch 9: PEC (6 fields)
+        // PEC (6 fields)
         private bool _pecOn = false;
         private bool _pPecOn = false;
         private int _pecOffSet = 0;
@@ -143,7 +143,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private string _pec360File = string.Empty;
         private int _polarLedLevel = 0;
 
-        // Batch 10: Hand Controller (6 fields)
+        // Hand Controller (6 fields)
         private bool _hcAntiRa = false;
         private bool _hcAntiDec = false;
         private bool _hcFlipEw = false;
@@ -151,15 +151,14 @@ namespace GreenSwamp.Alpaca.MountControl
         private List<HcPulseGuide> _hcPulseGuides = new();
         private bool _disableKeysOnGoTo = false;
 
-        // Batch 11: Miscellaneous (6 fields)
+        // Miscellaneous (5 fields)
         private double _temperature = 15.0;
         private string _instrumentDescription = "GreenSwamp Alpaca Server";
         private string _instrumentName = "GreenSwamp Mount";
-        private Vector3 _axisModelOffsets = Vector3.Zero;
         private bool _autoTrack = false;
         private int _raTrackingOffset = 0;
 
-        // Batch 12: Capabilities (28 fields - read-only)
+        // Capabilities (28 fields - read-only)
         private bool _canAlignMode = true;
         private bool _canAltAz = true;
         private bool _canEquatorial = true;
@@ -1408,7 +1407,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public string InstrumentDescription => _instrumentDescription;
         public string InstrumentName => _instrumentName;
-        public Vector3 AxisModelOffsets => _axisModelOffsets;
         public bool AutoTrack => _autoTrack;
         public int RaTrackingOffset => _raTrackingOffset;
 

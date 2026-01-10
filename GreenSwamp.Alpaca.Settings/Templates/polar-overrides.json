@@ -5,13 +5,25 @@
   "Overrides": {
     "AlignmentMode": "Polar",
     "AtPark": false,
+    "AutoHomeAxisX": 90.0,
+    "AutoHomeAxisY": 90.0,
+    "AxisHzTrackingLimit": 0.0,
+    "AxisLimitX": 115.0,
+    "AxisLowerLimitY": -90.0,
+    "AxisUpperLimitY": 90.0,
     "CanSetPierSide": true,
     "HomeAxisX": 180.0,
     "HomeAxisY": 5.0,
-    "AutoHomeAxisX": 90.0,
-    "AutoHomeAxisY": 90.0,
+    "HourAngleLimit": 0.0,
+    "HzLimitPark": false,
+    "HzLimitTracking": false,
+    "LimitPark": false,
+    "LimitTracking": false,
+    "NoSyncPastMeridian": false,
+    "ParkAxes": [ 180.0, 0.0 ],
+    "ParkHzLimitName": "Default",
+    "ParkLimitName": "Default",
     "ParkName": "Default",
-    "ParkAxes": [180.0, 0.0],
     "ParkPositions": [
       {
         "Name": "Default",
@@ -24,18 +36,6 @@
         "Y": 5.0
       }
     ],
-    "HourAngleLimit": 0.0,
-    "AxisUpperLimitY": 90.0,
-    "AxisLowerLimitY": -90.0,
-    "AxisLimitX": 115.0,
-    "AxisHzTrackingLimit": 0.0,
-    "LimitTracking": false,
-    "LimitPark": false,
-    "ParkLimitName": "Default",
-    "HzLimitTracking": false,
-    "HzLimitPark": false,
-    "ParkHzLimitName": "Default",
-    "PolarMode": "Left",
-    "NoSyncPastMeridian": false
+    "PolarMode": "Left"
   }
 }

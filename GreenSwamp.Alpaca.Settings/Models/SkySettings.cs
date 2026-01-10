@@ -198,10 +198,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public string InstrumentDescription { get; set; } = null!;
         public string InstrumentName { get; set; } = null!;
         
-        // Model Settings
-        public string ModelType { get; set; } = null!;
-        public AxisModelOffset AxisModelOffsets { get; set; } = new();
-
         // Alt-Az Tracking
         public int AltAzTrackingUpdateInterval { get; set; }
         

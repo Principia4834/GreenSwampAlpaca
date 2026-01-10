@@ -81,7 +81,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     
                     // Pier side and timing
                     SideOfPier = SkyServer.SideOfPier,
-                    SiderealTime = SkyServer.SiderealTime,
+                    LocalHourAngle = SkyServer.Lha,
                     UTCDate = HiResDateTime.UtcNow,
                     LocalDate = DateTime.Now,
                     
@@ -99,8 +99,6 @@ namespace GreenSwamp.Alpaca.Server.Services
                     // Axis positions (use public properties)
                     ActualAxisX = SkyServer.AppAxisX,  // Use public AppAxisX instead
                     ActualAxisY = SkyServer.AppAxisY,  // Use public AppAxisY instead
-                    AppAxisX = SkyServer.AppAxisX,
-                    AppAxisY = SkyServer.AppAxisY,
                     
                     // Rates and guides
                     TrackingRate = DriveRate.Sidereal,  // Use constant for now

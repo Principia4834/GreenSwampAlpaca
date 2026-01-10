@@ -167,24 +167,8 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _isSideOfPier;
             private set
             {
-                if (value == IsSideOfPier) return;
-                // ToDo re-enable voice prompt later
-                //string sideOfPierVoice = string.Empty;
-                //switch (_settings!.AlignmentMode)
-                //{
-                //    case AlignmentMode.AltAz:
-                //        sideOfPierVoice = MediaTypeNames.Application.Current.Resources["vceSop" + ((PierSideUI)value + 4).ToString()].ToString();
-                //        break;
-                //    case AlignmentMode.Polar:
-                //        sideOfPierVoice = MediaTypeNames.Application.Current.Resources["vceSop" + ((PierSideUI)value + 2).ToString()].ToString();
-                //        break;
-                //    case AlignmentMode.GermanPolar:
-                //        sideOfPierVoice = MediaTypeNames.Application.Current.Resources["vceSop" + ((PierSideUI)value + 0).ToString()].ToString();
-                //        break;
-                //    default:
-                //        break;
-                //}
-                //Synthesizer.Speak(sideOfPierVoice.ToString());
+                if (value == _isSideOfPier) return;
+
                 _isSideOfPier = value;
                 OnStaticPropertyChanged();
 
@@ -552,9 +536,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double RateRaOrg { get; set; }
 
-        private static Vector _targetRaDec;
+        private static Vector _targetRaDec = new Vector(double.NaN, double.NaN);
         /// <summary>
         /// Dec target for slewing, epoch is same as EquatorialSystem Property
+        /// initialised to NaN to catch read before write
         /// convert to top-o-centric for any internal calculations
         /// </summary>
         public static double TargetDec
@@ -565,6 +550,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Ra target for slewing, epoch is same as EquatorialSystem Property
+        /// initialised to NaN to catch read before write
         /// convert to top-o-centric for any internal calculations
         /// </summary>
         public static double TargetRa
@@ -2678,7 +2664,7 @@ namespace GreenSwamp.Alpaca.MountControl
             //Meridian Limit Test,  combine flip angle and tracking limit for a total limit passed meridian
             var totLimit = _settings!.HourAngleLimit + _settings!.AxisTrackingLimit;
 
-            // Check the ranges of the axes primary axis must be in the range plus/minus Flip Anglefor AltAz or Polar
+            // Check the ranges of the axes primary axis must be in the range plus/minus Flip Angle for AltAz or Polar
             // and -hourAngleLimit to 180 + hourAngleLimit for german polar
             switch (_settings!.AlignmentMode)
             {

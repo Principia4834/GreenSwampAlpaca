@@ -251,15 +251,6 @@
                     <h4>Model Settings</h4>
 
                     <div class="mb-3">
-                        <label class="form-label">Model Type</label>
-                        <InputSelect @bind-Value="_settings.ModelType" class="form-select">
-                            <option value="">None</option>
-                            <option value="Default">Default</option>
-                            <option value="DualTelescope">Dual Telescope</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label">Polar Mode</label>
                         <InputSelect @bind-Value="_settings.PolarMode" class="form-select">
                             <option value="">Not Set</option>
@@ -268,11 +259,6 @@
                         </InputSelect>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Axis Model Offsets (JSON)</label>
-                        <InputTextArea @bind-Value="_axisModelOffsetsJson" class="form-control" rows="3" />
-                        <small class="form-text text-muted">JSON format: {"X":90.0,"Y":-90.0,"Z":0.0}</small>
-                    </div>
                 </div>
             </div>
         }
@@ -711,7 +697,6 @@
     private string _utcOffsetString = "00:00:00";
     
     // JSON string properties for complex types
-    private string _axisModelOffsetsJson = string.Empty;
     private string _parkAxesJson = string.Empty;
     private string _parkPositionsJson = string.Empty;
     private string _hcPulseGuidesJson = string.Empty;
@@ -729,7 +714,6 @@
         _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
         
         // Serialize complex types to JSON strings
-        _axisModelOffsetsJson = JsonSerializer.Serialize(_settings.AxisModelOffsets, new JsonSerializerOptions { WriteIndented = true });
         _parkAxesJson = JsonSerializer.Serialize(_settings.ParkAxes);
         _parkPositionsJson = JsonSerializer.Serialize(_settings.ParkPositions, new JsonSerializerOptions { WriteIndented = true });
         _hcPulseGuidesJson = JsonSerializer.Serialize(_settings.HcPulseGuides, new JsonSerializerOptions { WriteIndented = true });
@@ -757,17 +741,6 @@
         try
         {
             // Deserialize JSON strings back to complex types
-            try
-            {
-                _settings.AxisModelOffsets = JsonSerializer.Deserialize<SkySettings.AxisModelOffset>(_axisModelOffsetsJson) ?? new SkySettings.AxisModelOffset();
-            }
-            catch (JsonException ex)
-            {
-                _message = $"Invalid JSON for Axis Model Offsets: {ex.Message}";
-                _isError = true;
-                _saving = false;
-                return;
-            }
             
             try
             {
@@ -884,7 +857,6 @@
         _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
         
         // Update JSON strings when settings change
-        _axisModelOffsetsJson = JsonSerializer.Serialize(_settings.AxisModelOffsets, new JsonSerializerOptions { WriteIndented = true });
         _parkAxesJson = JsonSerializer.Serialize(_settings.ParkAxes);
         _parkPositionsJson = JsonSerializer.Serialize(_settings.ParkPositions, new JsonSerializerOptions { WriteIndented = true });
         _hcPulseGuidesJson = JsonSerializer.Serialize(_settings.HcPulseGuides, new JsonSerializerOptions { WriteIndented = true });

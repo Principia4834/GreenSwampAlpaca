@@ -64,8 +64,8 @@
                 <span class="state-value">@_state.SideOfPier</span>
             </div>
             <div class="state-item">
-                <span class="state-label">Sidereal Time:</span>
-                <span class="state-value">@FormatHMS(_state.SiderealTime)</span>
+                <span class="state-label">Local Hour Angle:</span>
+                <span class="state-value">@FormatHMS(_state.LocalHourAngle)</span>
             </div>
         </div>
     </div>
@@ -95,14 +95,6 @@
                 <span class="state-label">Actual Axis Y:</span>
                 <span class="state-value">@FormatDegrees(_state.ActualAxisY)</span>
             </div>
-            <div class="state-item">
-                <span class="state-label">App Axis X:</span>
-                <span class="state-value">@FormatDegrees(_state.AppAxisX)</span>
-            </div>
-            <div class="state-item">
-                <span class="state-label">App Axis Y:</span>
-                <span class="state-value">@FormatDegrees(_state.AppAxisY)</span>
-            </div>
         </div>
     </div>
 
@@ -110,16 +102,16 @@
         <h4>Tracking & Guiding</h4>
         <div class="state-grid">
             <div class="state-item">
-                <span class="state-label">Tracking Rate:</span>
-                <span class="state-value">@_state.TrackingRate</span>
-            </div>
-            <div class="state-item">
                 <span class="state-label">Pulse Guide RA:</span>
                 <span class="state-value @GetStatusClass(_state.IsPulseGuidingRa)">@_state.IsPulseGuidingRa</span>
             </div>
             <div class="state-item">
                 <span class="state-label">Pulse Guide Dec:</span>
                 <span class="state-value @GetStatusClass(_state.IsPulseGuidingDec)">@_state.IsPulseGuidingDec</span>
+            </div>
+            <div class="state-item">
+                <span class="state-label">Tracking Rate:</span>
+                <span class="state-value">@_state.TrackingRate</span>
             </div>
         </div>
     </div>
@@ -178,12 +170,16 @@
     {
         if (double.IsNaN(hours) || double.IsInfinity(hours))
             return "N/A";
+
+        var sign = hours < 0 ? "-" : "+";
+        hours = Math.Abs(hours);
+
         
         var h = (int)hours;
         var m = (int)((hours - h) * 60);
         var s = ((hours - h) * 60 - m) * 60;
         
-        return $"{h:00}h {m:00}m {s:00.00}s";
+        return $"{sign}{h:00}h {m:00}m {s:00.00}s";
     }
     
     private string FormatDMS(double degrees)

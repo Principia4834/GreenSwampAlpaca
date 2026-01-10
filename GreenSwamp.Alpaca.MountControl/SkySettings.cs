@@ -213,8 +213,6 @@ namespace GreenSwamp.Alpaca.MountControl
             set { if (_instance != null) _instance.AlignmentMode = value; }
         }
 
-        public static Vector3 AxisModelOffsets => _instance?.AxisModelOffsets ?? Vector3.Zero;
-
         public static SerialSpeed BaudRate
         {
             get => _instance?.BaudRate ?? default;

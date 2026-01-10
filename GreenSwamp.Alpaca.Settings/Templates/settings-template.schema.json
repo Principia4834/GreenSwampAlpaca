@@ -10,24 +10,63 @@
       "type": "string",
       "description": "Human-readable description of this template"
     },
-    "Version": {
-      "type": "string",
-      "description": "Template version",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$"
-    },
     "Settings": {
-      "type": "object",
       "description": "Mount settings configuration",
-      "required": ["Mount", "Port", "AlignmentMode"],
       "properties": {
-        "Mount": {
+        "AlignmentMode": {
           "type": "string",
-          "enum": ["Simulator", "SkyWatcher"],
-          "description": "Mount type"
+          "enum": [ "GermanPolar", "Polar", "AltAz" ],
+          "description": "Mount alignment mode"
         },
-        "Port": {
-          "type": "string",
-          "description": "Serial port (e.g., COM1, COM3)"
+        "AlternatingPPEC": {
+          "type": "boolean",
+          "description": "Enable alternating PPEC"
+        },
+        "ApertureArea": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Telescope aperture area in square meters"
+        },
+        "ApertureDiameter": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Telescope aperture diameter in meters"
+        },
+        "AtPark": {
+          "type": "boolean",
+          "description": "Mount is at park position"
+        },
+        "AutoHomeAxisX": {
+          "type": "number",
+          "description": "Auto-home position for X axis in degrees"
+        },
+        "AutoHomeAxisY": {
+          "type": "number",
+          "description": "Auto-home position for Y axis in degrees"
+        },
+        "AutoTrack": {
+          "type": "boolean",
+          "description": "Enable automatic tracking"
+        },
+        "AxisHzTrackingLimit": {
+          "type": "number",
+          "description": "Horizon axis tracking limit"
+        },
+        "AxisLimitX": {
+          "type": "number",
+          "description": "Limit for X axis in degrees"
+        },
+        "AxisLowerLimitY": {
+          "type": "number",
+          "description": "Lower limit for Y axis in degrees"
+        },
+        "AxisTrackingLimit": {
+          "type": "number",
+          "description": "Axis tracking limit"
+        },
+        "AxisUpperLimitY": {
+          "type": "number",
+          "description": "Upper limit for Y axis in degrees"
         },
         "BaudRate": {
           "type": "integer",
@@ -35,96 +74,33 @@
           "maximum": 921600,
           "description": "Serial communication baud rate"
         },
-        "DataBits": {
-          "type": "integer",
-          "enum": [5, 6, 7, 8],
-          "description": "Data bits for serial communication"
-        },
-        "Handshake": {
-          "type": "string",
-          "enum": ["None", "XOnXOff", "RequestToSend", "RequestToSendXOnXOff"],
-          "description": "Serial handshake protocol"
-        },
-        "ReadTimeout": {
-          "type": "integer",
-          "minimum": 100,
-          "description": "Read timeout in milliseconds"
-        },
-        "DTREnable": {
-          "type": "boolean",
-          "description": "Enable Data Terminal Ready signal"
-        },
-        "RTSEnable": {
-          "type": "boolean",
-          "description": "Enable Request To Send signal"
-        },
-        "Latitude": {
+        "CameraHeight": {
           "type": "number",
-          "minimum": -90,
-          "maximum": 90,
-          "description": "Observer latitude in degrees"
+          "minimum": 0,
+          "description": "Camera sensor height in mm"
         },
-        "Longitude": {
+        "CameraWidth": {
           "type": "number",
-          "minimum": -180,
-          "maximum": 180,
-          "description": "Observer longitude in degrees"
-        },
-        "Elevation": {
-          "type": "number",
-          "minimum": -500,
-          "maximum": 9000,
-          "description": "Observer elevation in meters"
-        },
-        "UTCOffset": {
-          "type": "string",
-          "pattern": "^-?\\d{2}:\\d{2}:\\d{2}$",
-          "description": "UTC offset (e.g., 00:00:00, -05:00:00)"
-        },
-        "AutoTrack": {
-          "type": "boolean",
-          "description": "Enable automatic tracking"
-        },
-        "AlignmentMode": {
-          "type": "string",
-          "enum": ["GermanPolar", "Polar", "AltAz"],
-          "description": "Mount alignment mode"
-        },
-        "EquatorialCoordinateType": {
-          "type": "string",
-          "enum": ["Topocentric", "J2000", "JNOW", "B1950", "Other"],
-          "description": "Equatorial coordinate system type"
-        },
-        "AtPark": {
-          "type": "boolean",
-          "description": "Mount is at park position"
+          "minimum": 0,
+          "description": "Camera sensor width in mm"
         },
         "CanSetPierSide": {
           "type": "boolean",
           "description": "Mount can set pier side (for meridian flips)"
         },
-        "ApertureDiameter": {
-          "type": "number",
+        "CustomDec360Steps": {
+          "type": "integer",
           "minimum": 0,
-          "description": "Telescope aperture diameter in meters"
+          "description": "Custom Dec steps per 360 degrees"
         },
-        "ApertureArea": {
-          "type": "number",
+        "CustomDecTrackingOffset": {
+          "type": "integer",
+          "description": "Custom Dec tracking offset"
+        },
+        "CustomDecWormTeeth": {
+          "type": "integer",
           "minimum": 0,
-          "description": "Telescope aperture area in square meters"
-        },
-        "FocalLength": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Telescope focal length in meters"
-        },
-        "Refraction": {
-          "type": "boolean",
-          "description": "Apply atmospheric refraction correction"
-        },
-        "Temperature": {
-          "type": "number",
-          "description": "Ambient temperature in Celsius"
+          "description": "Custom Dec worm gear teeth count"
         },
         "CustomGearing": {
           "type": "boolean",
@@ -135,58 +111,67 @@
           "minimum": 0,
           "description": "Custom RA steps per 360 degrees"
         },
+        "CustomRaTrackingOffset": {
+          "type": "integer",
+          "description": "Custom RA tracking offset"
+        },
         "CustomRaWormTeeth": {
           "type": "integer",
           "minimum": 0,
           "description": "Custom RA worm gear teeth count"
         },
-        "CustomDec360Steps": {
+        "DataBits": {
           "type": "integer",
-          "minimum": 0,
-          "description": "Custom Dec steps per 360 degrees"
-        },
-        "CustomDecWormTeeth": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Custom Dec worm gear teeth count"
-        },
-        "CustomRaTrackingOffset": {
-          "type": "integer",
-          "description": "Custom RA tracking offset"
-        },
-        "CustomDecTrackingOffset": {
-          "type": "integer",
-          "description": "Custom Dec tracking offset"
-        },
-        "RaBacklash": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "RA backlash compensation in steps"
+          "enum": [ 5, 6, 7, 8 ],
+          "description": "Data bits for serial communication"
         },
         "DecBacklash": {
           "type": "integer",
           "minimum": 0,
           "description": "Dec backlash compensation in steps"
         },
-        "MinPulseRa": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Minimum RA pulse guide duration in milliseconds"
-        },
-        "MinPulseDec": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Minimum Dec pulse guide duration in milliseconds"
-        },
         "DecPulseToGoTo": {
           "type": "boolean",
           "description": "Use GoTo for Dec pulse guiding"
         },
-        "St4Guiderate": {
-          "type": "integer",
+        "DisableKeysOnGoTo": {
+          "type": "boolean",
+          "description": "Disable hand controller keys during GoTo"
+        },
+        "Elevation": {
+          "type": "number",
+          "minimum": -500,
+          "maximum": 9000,
+          "description": "Observer elevation in meters"
+        },
+        "DTREnable": {
+          "type": "boolean",
+          "description": "Enable Data Terminal Ready signal"
+        },
+        "DisplayInterval": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 1000,
+          "description": "Display update interval in milliseconds"
+        },
+        "EncodersOn": {
+          "type": "boolean",
+          "description": "Enable encoders"
+        },
+        "EquatorialCoordinateType": {
+          "type": "string",
+          "enum": [ "Topocentric", "J2000", "JNOW", "B1950", "Other" ],
+          "description": "Equatorial coordinate system type"
+        },
+        "EyepieceFS": {
+          "type": "number",
           "minimum": 0,
-          "maximum": 9,
-          "description": "ST4 guide rate (0-9)"
+          "description": "Eyepiece field stop in mm"
+        },
+        "FocalLength": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Telescope focal length in meters"
         },
         "GuideRateOffsetX": {
           "type": "number",
@@ -196,30 +181,43 @@
           "type": "number",
           "description": "Guide rate offset for Y axis"
         },
-        "TrackingRate": {
+        "Handshake": {
           "type": "string",
-          "enum": ["Sidereal", "Lunar", "Solar", "King", "Custom"],
-          "description": "Tracking rate mode"
+          "enum": [ "None", "XOnXOff", "RequestToSend", "RequestToSendXOnXOff" ],
+          "description": "Serial handshake protocol"
         },
-        "SiderealRate": {
-          "type": "number",
-          "description": "Sidereal tracking rate in degrees per hour"
+        "HcAntiDec": {
+          "type": "boolean",
+          "description": "Hand controller Dec anti-backlash"
         },
-        "LunarRate": {
-          "type": "number",
-          "description": "Lunar tracking rate in degrees per hour"
+        "HcAntiRa": {
+          "type": "boolean",
+          "description": "Hand controller RA anti-backlash"
         },
-        "SolarRate": {
-          "type": "number",
-          "description": "Solar tracking rate in degrees per hour"
+        "HcFlipEW": {
+          "type": "boolean",
+          "description": "Flip East/West buttons"
         },
-        "KingRate": {
-          "type": "number",
-          "description": "King tracking rate in degrees per hour"
+        "HcFlipNS": {
+          "type": "boolean",
+          "description": "Flip North/South buttons"
         },
-        "RATrackingOffset": {
-          "type": "integer",
-          "description": "RA tracking offset"
+        "HcMode": {
+          "type": "string",
+          "enum": [ "Axes", "RaDec", "AltAz" ],
+          "description": "Hand controller mode"
+        },
+        "HcPulseGuides": {
+          "type": "array",
+          "description": "Hand controller pulse guide settings",
+          "items": {
+            "type": "object"
+          }
+        },
+        "HcSpeed": {
+          "type": "string",
+          "enum": [ "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight" ],
+          "description": "Hand controller speed"
         },
         "HomeAxisX": {
           "type": "number",
@@ -229,13 +227,81 @@
           "type": "number",
           "description": "Home position for Y axis in degrees"
         },
-        "AutoHomeAxisX": {
+        "HourAngleLimit": {
           "type": "number",
-          "description": "Auto-home position for X axis in degrees"
+          "description": "Hour angle limit in hours"
         },
-        "AutoHomeAxisY": {
+        "HzLimitPark": {
+          "type": "boolean",
+          "description": "Enable horizon park limit"
+        },
+        "HzLimitTracking": {
+          "type": "boolean",
+          "description": "Enable horizon tracking limit"
+        },
+        "KingRate": {
           "type": "number",
-          "description": "Auto-home position for Y axis in degrees"
+          "description": "King tracking rate in degrees per hour"
+        },
+        "Latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90,
+          "description": "Observer latitude in degrees"
+        },
+        "LimitPark": {
+          "type": "boolean",
+          "description": "Enable park limits"
+        },
+        "LimitTracking": {
+          "type": "boolean",
+          "description": "Enable tracking limits"
+        },
+        "Longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180,
+          "description": "Observer longitude in degrees"
+        },
+        "LunarRate": {
+          "type": "number",
+          "description": "Lunar tracking rate in degrees per hour"
+        },
+        "MinPulseDec": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum Dec pulse guide duration in milliseconds"
+        },
+        "MinPulseRa": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum RA pulse guide duration in milliseconds"
+        },
+        "Mount": {
+          "type": "string",
+          "enum": [ "Simulator", "SkyWatcher" ],
+          "description": "Mount type"
+        },
+        "NoSyncPastMeridian": {
+          "type": "boolean",
+          "description": "Prevent sync past meridian"
+        },
+        "ParkAxes": {
+          "type": "array",
+          "description": "Current park axes positions [X, Y]",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        },
+        "ParkHzLimitName": {
+          "type": "string",
+          "description": "Horizon park limit name"
+        },
+        "ParkLimitName": {
+          "type": "string",
+          "description": "Name of park limit"
         },
         "ParkName": {
           "type": "string",
@@ -246,7 +312,7 @@
           "description": "List of available park positions",
           "items": {
             "type": "object",
-            "required": ["Name", "X", "Y"],
+            "required": [ "Name", "X", "Y" ],
             "properties": {
               "Name": {
                 "type": "string",
@@ -263,34 +329,70 @@
             }
           }
         },
-        "ParkAxes": {
-          "type": "array",
-          "description": "Current park axes positions [X, Y]",
-          "minItems": 2,
-          "maxItems": 2,
-          "items": {
-            "type": "number"
-          }
-        },
-        "LimitPark": {
-          "type": "boolean",
-          "description": "Enable park limits"
-        },
-        "ParkLimitName": {
+        "Pec360File": {
           "type": "string",
-          "description": "Name of park limit"
+          "description": "Path to PEC 360 file"
         },
-        "LimitTracking": {
+        "PecMode": {
+          "type": "string",
+          "enum": [ "PecWorm", "Pec360" ],
+          "description": "PEC mode"
+        },
+        "PecOffSet": {
+          "type": "integer",
+          "description": "PEC offset"
+        },
+        "PecOn": {
           "type": "boolean",
-          "description": "Enable tracking limits"
+          "description": "Enable Periodic Error Correction"
         },
-        "HourAngleLimit": {
+        "PecWormFile": {
+          "type": "string",
+          "description": "Path to PEC worm file"
+        },
+        "Port": {
+          "type": "string",
+          "description": "Serial port (e.g., COM1, COM3)"
+        },
+        "PpecOn": {
+          "type": "boolean",
+          "description": "Enable Permanent Periodic Error Correction"
+        },
+        "RaBacklash": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "RA backlash compensation in steps"
+        },
+        "RATrackingOffset": {
+          "type": "integer",
+          "description": "RA tracking offset"
+        },
+        "ReadTimeout": {
+          "type": "integer",
+          "minimum": 100,
+          "description": "Read timeout in milliseconds"
+        },
+        "Refraction": {
+          "type": "boolean",
+          "description": "Apply atmospheric refraction correction"
+        },
+        "RTSEnable": {
+          "type": "boolean",
+          "description": "Enable Request To Send signal"
+        },
+        "SiderealRate": {
           "type": "number",
-          "description": "Hour angle limit in hours"
+          "description": "Sidereal tracking rate in degrees per hour"
         },
-        "NoSyncPastMeridian": {
-          "type": "boolean",
-          "description": "Prevent sync past meridian"
+        "SolarRate": {
+          "type": "number",
+          "description": "Solar tracking rate in degrees per hour"
+        },
+        "St4Guiderate": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9,
+          "description": "ST4 guide rate (0-9)"
         },
         "SyncLimit": {
           "type": "integer",
@@ -301,124 +403,28 @@
           "type": "boolean",
           "description": "Enable sync limit"
         },
-        "AxisTrackingLimit": {
+        "Temperature": {
           "type": "number",
-          "description": "Axis tracking limit"
+          "description": "Ambient temperature in Celsius"
         },
-        "HzLimitTracking": {
-          "type": "boolean",
-          "description": "Enable horizon tracking limit"
-        },
-        "ParkHzLimitName": {
+        "TrackingRate": {
           "type": "string",
-          "description": "Horizon park limit name"
+          "enum": [ "Sidereal", "Lunar", "Solar", "King", "Custom" ],
+          "description": "Tracking rate mode"
         },
-        "HzLimitPark": {
-          "type": "boolean",
-          "description": "Enable horizon park limit"
-        },
-        "AxisHzTrackingLimit": {
-          "type": "number",
-          "description": "Horizon axis tracking limit"
-        },
-        "AxisUpperLimitY": {
-          "type": "number",
-          "description": "Upper limit for Y axis in degrees"
-        },
-        "AxisLowerLimitY": {
-          "type": "number",
-          "description": "Lower limit for Y axis in degrees"
-        },
-        "AxisLimitX": {
-          "type": "number",
-          "description": "Limit for X axis in degrees"
-        },
-        "PecOn": {
-          "type": "boolean",
-          "description": "Enable Periodic Error Correction"
-        },
-        "PpecOn": {
-          "type": "boolean",
-          "description": "Enable Permanent Periodic Error Correction"
-        },
-        "AlternatingPPEC": {
-          "type": "boolean",
-          "description": "Enable alternating PPEC"
-        },
-        "PecOffSet": {
-          "type": "integer",
-          "description": "PEC offset"
-        },
-        "PecWormFile": {
+        "UTCOffset": {
           "type": "string",
-          "description": "Path to PEC worm file"
-        },
-        "Pec360File": {
-          "type": "string",
-          "description": "Path to PEC 360 file"
-        },
-        "PecMode": {
-          "type": "string",
-          "enum": ["PecWorm", "Pec360"],
-          "description": "PEC mode"
-        },
-        "EncodersOn": {
-          "type": "boolean",
-          "description": "Enable encoders"
-        },
-        "HcSpeed": {
-          "type": "string",
-          "enum": ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"],
-          "description": "Hand controller speed"
-        },
-        "HcMode": {
-          "type": "string",
-          "enum": ["Axes", "RaDec", "AltAz"],
-          "description": "Hand controller mode"
-        },
-        "HcAntiRa": {
-          "type": "boolean",
-          "description": "Hand controller RA anti-backlash"
-        },
-        "HcAntiDec": {
-          "type": "boolean",
-          "description": "Hand controller Dec anti-backlash"
-        },
-        "HcFlipEW": {
-          "type": "boolean",
-          "description": "Flip East/West buttons"
-        },
-        "HcFlipNS": {
-          "type": "boolean",
-          "description": "Flip North/South buttons"
-        },
-        "DisableKeysOnGoTo": {
-          "type": "boolean",
-          "description": "Disable hand controller keys during GoTo"
-        },
-        "CameraWidth": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Camera sensor width in mm"
-        },
-        "CameraHeight": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Camera sensor height in mm"
-        },
-        "EyepieceFS": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Eyepiece field stop in mm"
-        },
-        "HcPulseGuides": {
-          "type": "array",
-          "description": "Hand controller pulse guide settings",
-          "items": {
-            "type": "object"
-          }
+          "pattern": "^-?\\d{2}:\\d{2}:\\d{2}$",
+          "description": "UTC offset (e.g., 00:00:00, -05:00:00)"
         }
-      }
+      },
+      "required": [ "Mount", "Port", "AlignmentMode" ],
+      "type": "object"
+    },
+    "Version": {
+      "type": "string",
+      "description": "Template version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
     }
   }
 }

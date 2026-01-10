@@ -34,7 +34,7 @@ namespace GreenSwamp.Alpaca.Server.Models
         
         // Pier side and timing
         public PointingState SideOfPier { get; set; }
-        public double SiderealTime { get; set; }
+        public double LocalHourAngle { get; set; }
         public DateTime UTCDate { get; set; }
         public DateTime LocalDate { get; set; }
         
@@ -80,7 +80,7 @@ namespace GreenSwamp.Alpaca.Server.Models
             Declination = double.NaN;
             RightAscension = double.NaN;
             SideOfPier = PointingState.Unknown;
-            SiderealTime = 0;
+            LocalHourAngle = 0;
             UTCDate = DateTime.MinValue;
             LocalDate = DateTime.MinValue;
             Slewing = false;
@@ -92,8 +92,6 @@ namespace GreenSwamp.Alpaca.Server.Models
             TargetDeclination = double.NaN;
             ActualAxisX = double.NaN;
             ActualAxisY = double.NaN;
-            AppAxisX = double.NaN;
-            AppAxisY = double.NaN;
             TrackingRate = DriveRate.Sidereal;
             IsPulseGuidingRa = false;
             IsPulseGuidingDec = false;
