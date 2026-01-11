@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -909,12 +909,16 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyServer.AxesStopValidate();
 
                 // Event to get mount positions and update UI
-                _mediaTimer = new MediaTimer { Period = _settings.DisplayInterval, Resolution = 5 };
+                // Ensure DisplayInterval is valid for MediaTimer (must be > 0)
+                var displayInterval = _settings.DisplayInterval > 0 ? _settings.DisplayInterval : 300;
+                _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
                 _mediaTimer.Tick += SkyServer.UpdateServerEvent;
                 _mediaTimer.Start();
 
                 // Event to update AltAz tracking rate
-                _altAzTrackingTimer = new MediaTimer { Period = _settings.AltAzTrackingUpdateInterval, Resolution = 5 };
+                // Ensure AltAzTrackingUpdateInterval is valid for MediaTimer (must be > 0)
+                var altAzInterval = _settings.AltAzTrackingUpdateInterval > 0 ? _settings.AltAzTrackingUpdateInterval : 2500;
+                _altAzTrackingTimer = new MediaTimer { Period = altAzInterval, Resolution = 5 };
                 _altAzTrackingTimer.Tick += SkyServer.AltAzTrackingTimerEvent;
             }
             else

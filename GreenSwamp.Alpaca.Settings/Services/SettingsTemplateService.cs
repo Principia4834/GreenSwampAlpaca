@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -255,8 +255,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 
                 try
                 {
-                    // Handle different property types
-                    var value = ConvertValue(kvp.Value, property.PropertyType);
+                    // Get existing value from merged settings
+                    var existingValue = property.GetValue(merged);
+                    
+                    // Handle different property types - deep merge complex objects
+                    var value = ConvertValue(kvp.Value, property.PropertyType, existingValue);
                     property.SetValue(merged, value);
                     
                     _logger.LogTrace("Applied override: {Property} = {Value}", kvp.Key, value);
@@ -273,13 +276,19 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>
         /// Convert override value to target property type
         /// </summary>
-        private object? ConvertValue(object value, Type targetType)
+        private object? ConvertValue(object value, Type targetType, object? existingValue = null)
         {
             if (value == null) return null;
             
             // Handle JsonElement from deserialization
             if (value is JsonElement jsonElement)
             {
+                // For complex types, perform deep merge if we have an existing value
+                if (existingValue != null && !targetType.IsPrimitive && !targetType.IsEnum && targetType != typeof(string))
+                {
+                    return DeepMergeJsonElement(jsonElement, existingValue);
+                }
+                
                 return jsonElement.Deserialize(targetType);
             }
             
@@ -293,6 +302,61 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 targetType = underlyingType;
             
             return Convert.ChangeType(value, targetType);
+        }
+        
+        /// <summary>
+        /// Deep merge a JsonElement into an existing object
+        /// Only overwrites properties that are explicitly defined in the JsonElement
+        /// </summary>
+        private object DeepMergeJsonElement(JsonElement source, object target)
+        {
+            if (source.ValueKind != JsonValueKind.Object)
+            {
+                // For non-objects, just deserialize to target type
+                return source.Deserialize(target.GetType())!;
+            }
+            
+            // Use reflection to update only the properties present in the source
+            var targetType = target.GetType();
+            
+            foreach (var property in source.EnumerateObject())
+            {
+                var propertyInfo = targetType.GetProperty(property.Name);
+                if (propertyInfo == null || !propertyInfo.CanWrite)
+                {
+                    _logger.LogTrace("Skipping override property '{Property}' - not found or read-only", property.Name);
+                    continue;
+                }
+                
+                try
+                {
+                    var existingValue = propertyInfo.GetValue(target);
+                    var propertyValue = property.Value;
+                    
+                    // Recursively merge nested objects
+                    if (existingValue != null && 
+                        propertyValue.ValueKind == JsonValueKind.Object &&
+                        !propertyInfo.PropertyType.IsPrimitive && 
+                        !propertyInfo.PropertyType.IsEnum && 
+                        propertyInfo.PropertyType != typeof(string))
+                    {
+                        DeepMergeJsonElement(propertyValue, existingValue);
+                    }
+                    else
+                    {
+                        // Set the value directly
+                        var newValue = propertyValue.Deserialize(propertyInfo.PropertyType);
+                        propertyInfo.SetValue(target, newValue);
+                        _logger.LogTrace("Merged property '{Property}' = {Value}", property.Name, newValue);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to merge property '{Property}'", property.Name);
+                }
+            }
+            
+            return target;
         }
         
         // Template creation methods - now read from embedded resources

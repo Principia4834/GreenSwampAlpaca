@@ -220,9 +220,24 @@ namespace GreenSwamp.Alpaca.Server
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
 
-                // Phase 2: Create instance-based settings (no bridge)
-                var settingsInstance = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
-                Logger.LogInformation("✅ Phase 2: SkySettingsInstance created with direct JSON persistence");
+                // Initialize Monitor settings FIRST (before SkySettingsInstance)
+                GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
+                GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();  // Enable logging filters
+                GreenSwamp.Alpaca.Shared.Settings.Load();
+                Logger.LogInformation("✅ Monitor settings initialized - logging enabled");
+
+                // Phase 4.2: Create instance with profile loading support
+                var profileLoader = app.Services.GetService<IProfileLoaderService>(); // Optional - may be null
+                var settingsInstance = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                
+                if (profileLoader != null)
+                {
+                    Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance created with profile loading support");
+                }
+                else
+                {
+                    Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance created (JSON-only, no profile service)");
+                }
 
                 // Initialize SkyServer with instance settings
                 GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
@@ -237,12 +252,7 @@ namespace GreenSwamp.Alpaca.Server
                 GreenSwamp.Alpaca.MountControl.SkySystem.Initialize(settingsInstance);
                 Logger.LogInformation("✅ SkySystem initialized with instance settings");
 
-                // Initialize Monitor settings (direct JSON access, no bridge needed)
-                GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
-                GreenSwamp.Alpaca.Shared.Settings.Load();
-                Logger.LogInformation("✅ Monitor settings initialized - direct JSON access");
-
-                Logger.LogInformation("Instance-based settings active - no bridge required");
+                Logger.LogInformation("Instance-based settings active");
             }
             catch (Exception ex)
             {

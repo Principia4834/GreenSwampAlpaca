@@ -1523,7 +1523,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     _trackingRate = trackRate;
                 // AWW ToDo check for correct type
                 _gpsComPort = settings.GpsPort.ToString() ?? string.Empty;
-                _gpsBaudRate = (SerialSpeed)int.Parse(settings.GpsBaudRate ?? "9600");
+                if (Enum.TryParse<SerialSpeed>(settings.GpsBaudRate, true, out var gpsBaud))
+                    _gpsBaudRate = gpsBaud;
+                else
+                    _gpsBaudRate = SerialSpeed.ps9600;
                 if (Enum.TryParse<SlewSpeed>(settings.HcSpeed, true, out var hcSpd))
                     _hcSpeed = hcSpd;
                 if (Enum.TryParse<HcMode>(settings.HcMode, true, out var hcMd))

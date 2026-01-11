@@ -47,7 +47,7 @@ namespace GreenSwamp.Alpaca.Shared
             //MonitorDevice
             if (Settings.ServerDevice){DevicesToMonitor(MonitorDevice.Server, Settings.ServerDevice);}
             if (Settings.Telescope){DevicesToMonitor(MonitorDevice.Telescope, Settings.Telescope);}
-            if (Settings.Telescope){DevicesToMonitor(MonitorDevice.Ui, Settings.Ui);}
+            if (Settings.Ui){DevicesToMonitor(MonitorDevice.Ui, Settings.Ui);}
             //MonitorCategory
             if (Settings.Other){CategoriesToMonitor(MonitorCategory.Other, Settings.Other);}
             if (Settings.Driver){CategoriesToMonitor(MonitorCategory.Driver, Settings.Driver);}
@@ -62,8 +62,8 @@ namespace GreenSwamp.Alpaca.Shared
             if (Settings.Error){TypesToMonitor(MonitorType.Error, Settings.Error);}
             if (Settings.Debug){TypesToMonitor(MonitorType.Debug, Settings.Debug);}
 
-            // These settings are loaded from Settings.cs which reads from JSON
-            // No need for Properties.Monitor.Default anymore
+            // Settings are loaded from Settings.cs which reads from JSON configuration
+            // All monitor filters are configured via MonitorSettings section in appsettings.json
         }
 
         private static void Save_MonitorDevice(MonitorDevice monitorDevice, bool value)

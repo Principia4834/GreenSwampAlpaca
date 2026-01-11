@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -107,24 +107,27 @@ namespace GreenSwamp.Alpaca.Settings.Models
         #region Logging Options (4 properties)
 
         /// <summary>
-        /// Enable logging monitor entries to file
+        /// Enable logging monitor entries to file (GSMonitorLog)
+        /// Recommended: true for development, false for production
         /// </summary>
-        public bool LogMonitor { get; set; } = false;
+        public bool LogMonitor { get; set; } = true;
 
         /// <summary>
         /// Enable logging session entries to file (Information, Warning, Error types)
+        /// Always written to GSSessionLog file
         /// </summary>
         public bool LogSession { get; set; } = true;
 
         /// <summary>
         /// Enable logging charting data to file
         /// </summary>
-        public bool LogCharting { get; set; } = true;
+        public bool LogCharting { get; set; } = false;
 
         /// <summary>
-        /// Start the monitor window automatically
+        /// Start the monitor window automatically and enable file logging
+        /// Must be true for LogMonitor to write files
         /// </summary>
-        public bool StartMonitor { get; set; } = false;
+        public bool StartMonitor { get; set; } = true;
 
         #endregion
 
