@@ -82,8 +82,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _kingRate = 15.0369;
         private double _axisTrackingLimit = 180.0;
         private double _axisHzTrackingLimit = 180.0;
-        private int _displayInterval = 1000;
-        private int _altAzTrackingUpdateInterval = 10000;
+        private int _displayInterval = 200;
+        private int _altAzTrackingUpdateInterval = 2500;
 
         // Guiding (8 fields)
         private int _minPulseRa = 20;
@@ -1527,6 +1527,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _gpsBaudRate = gpsBaud;
                 else
                     _gpsBaudRate = SerialSpeed.ps9600;
+
                 if (Enum.TryParse<SlewSpeed>(settings.HcSpeed, true, out var hcSpd))
                     _hcSpeed = hcSpd;
                 if (Enum.TryParse<HcMode>(settings.HcMode, true, out var hcMd))

@@ -1028,7 +1028,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 ActualAxisY = rawPositions[1];
 
                 // convert positions to local app axes
-                var axes = Axes.AxesMountToApp(rawPositions);
+                var axes = Axes.AxesMountToApp(rawPositions, _settings.AlignmentMode, _settings.Mount);
 
                 // store local app axes to track positions
                 _appAxes.X = axes[0];
@@ -1194,7 +1194,7 @@ namespace GreenSwamp.Alpaca.MountControl
             //set to park position
             if (parkPosition != null)
             {
-                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y });
+                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y }, _settings.AlignmentMode, _settings.Mount);
                 name = parkPosition.Name;
             }
 

@@ -1,4 +1,4 @@
-{
+﻿{
     "$schema":  "./settings-template.schema.json",
     "Description":  "Common settings applicable to all alignment modes",
     "Version":  "1.0.0",
@@ -32,7 +32,7 @@
                      "DecBacklash":  0,
                      "DecPulseToGoTo":  false,
                      "DisableKeysOnGoTo":  false,
-                     "DisplayInterval":  300,
+                     "DisplayInterval":  200,
                      "DTREnable":  false,
                      "Elevation":  10.0,
                      "EncodersOn":  false,

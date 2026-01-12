@@ -27,10 +27,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Convert internal mount axis degrees to mount with correct hemisphere
         /// </summary>
         /// <returns></returns>
-        public static double[] MountAxis2Mount()
+        public static double[] MountAxis2Mount(double appAxisX, double appAxisY, AlignmentMode alignmentMode)
         {
             var a = new[] { SkyServer.AppAxisX, SkyServer.AppAxisY };
-            if (SkySettings.AlignmentMode == AlignmentMode.GermanPolar)
+            if (alignmentMode == AlignmentMode.GermanPolar)
             {
                 if (SkyServer.SouthernHemisphere)
                 {
@@ -51,15 +51,15 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="axes"></param>
         /// <returns></returns>
-        internal static double[] AxesAppToMount(double[] axes)
+        internal static double[] AxesAppToMount(double[] axes, AlignmentMode alignmentMode, MountType mountType)
         {
             var a = new[] { axes[0], axes[1] };
-            switch (SkySettings.AlignmentMode)
+            switch (alignmentMode)
             {
                 case AlignmentMode.AltAz:
                     break; 
                 case AlignmentMode.GermanPolar:
-                    switch (SkySettings.Mount)
+                    switch (mountType)
                     {
                         case MountType.Simulator:
                             if (SkyServer.SouthernHemisphere)
@@ -91,7 +91,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     break;
                 case AlignmentMode.Polar:
-                    switch (SkySettings.Mount)
+                    switch (mountType)
                     {
                         case MountType.Simulator:
                             if (SkyServer.SouthernHemisphere)
@@ -156,15 +156,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="axes"></param>
         /// <returns></returns>
-        internal static double[] AxesMountToApp(double[] axes)
+        internal static double[] AxesMountToApp(double[] axes, AlignmentMode alignmentMode, MountType mountType)
+
         {
             var a = new[] { axes[0], axes[1] };
-            switch (SkySettings.AlignmentMode)
+            switch (alignmentMode)
             {
                 case AlignmentMode.AltAz:
                     break;
                 case AlignmentMode.GermanPolar:
-                    switch (SkySettings.Mount)
+                    switch (mountType)
                     {
                         case MountType.Simulator:
                             if (SkyServer.SouthernHemisphere)
@@ -198,7 +199,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     break;
                 case AlignmentMode.Polar:
-                    switch (SkySettings.Mount)
+                    switch (mountType)
                     {
                         case MountType.Simulator:
                             if (SkyServer.SouthernHemisphere)
@@ -261,10 +262,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="alt">position</param>
         /// <returns>other axis position</returns>
-        internal static double[] GetAltAxisPosition(double[] alt)
+        internal static double[] GetAltAxisPosition(double[] alt, AlignmentMode alignmentMode)
         {
             var d = new[] { 0.0, 0.0 };
-            switch (SkySettings.AlignmentMode)
+            switch (alignmentMode)
             {
                 case AlignmentMode.AltAz:
                     if (alt[0] > 0)
@@ -299,27 +300,26 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="azAlt"></param>
         /// <returns></returns>
-        internal static double[] AzAltToAxesXy(double[] azAlt, double lst = double.NaN)
+        internal static double[] AzAltToAxesXy(double[] azAlt, AlignmentMode alignmentMode, MountType mountType, double latitude)
         {
             var axes = new[] { 0.0, 0.0 };
             var b = new[] { 0.0, 0.0 };
             var alt = new[] { 0.0, 0.0 };
-            if (double.IsNaN(lst)) lst = SkyServer.SiderealTime;
-            switch (SkySettings.AlignmentMode)
+            switch (alignmentMode)
             {
                 case AlignmentMode.AltAz:
                     axes[0] = Range.Range180(azAlt[0]); // Azimuth range is -180 to 180
                     axes[1] = azAlt[1];
                     //check for alternative position within hardware limits
-                    b = AxesAppToMount(axes);
+                    b = AxesAppToMount(axes, alignmentMode, mountType);
                     alt = SkyServer.GetAlternatePosition(b);
                     if (alt != null) axes = alt;
                     break;
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
 //                    axes = Coordinate.AltAz2RaDec(azAlt[1], azAlt[0], SkySettings.Latitude, lst);
-                    axes = Coordinate.AltAz2HaDec(azAlt[1], azAlt[0], SkySettings.Latitude);
-                    axes = RaDecToAxesXy(axes, haDec: true);
+                    axes = Coordinate.AltAz2HaDec(azAlt[1], azAlt[0], latitude);
+                    axes = RaDecToAxesXy(axes, true, alignmentMode, mountType, latitude);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -409,32 +409,50 @@ namespace GreenSwamp.Alpaca.MountControl
             return raDec;
         }
 
+        internal static double[] RaDecToAxesXy(
+            IReadOnlyList<double> raDec,
+            AlignmentMode alignmentMode,
+            MountType mountType,
+            double latitude)
+        {
+            return RaDecToAxesXy(raDec, haDec: false, alignmentMode, mountType, latitude);
+        }
+
         /// <summary>
         /// Convert a RaDec position to an axes positions. 
         /// </summary>
         /// <param name="raDec">Ra is in range [0..24] and Dec is in the range [-90..90] as defined by ASCOM</param>
-        /// <param name="lst">Local Sidereal Time</param>
-        /// <returns></returns>
-        internal static double[] RaDecToAxesXy(IReadOnlyList<double> raDec, double lst = double.NaN, bool haDec = false)
+        /// <param name="haDec">If true, raDec[0] is HA instead of RA (no LST offset applied)</param>
+        /// <param name="alignmentMode">Alignment mode for coordinate conversion</param>
+        /// <param name="mountType">Mount type for AxesAppToMount conversion</param>
+        /// <param name="latitude">Observatory latitude for coordinate conversion</param>
+        /// <returns>Axes position in mount coordinates</returns>
+        internal static double[] RaDecToAxesXy(
+            IReadOnlyList<double> raDec,
+            bool haDec,
+            AlignmentMode alignmentMode,
+            MountType mountType,
+            double latitude)
         {
             double[] axes = { raDec[0], raDec[1] };
             double[] b;
             double[] alt;
 
-            // if (double.IsNaN(lst) && !haDec) lst = SkyServer.SiderealTime;
-            lst = double.IsNaN(lst) && !haDec ? SkyServer.SiderealTime : 0.0;
-            switch (SkySettings.AlignmentMode)
+            // Get LST only when needed (RA conversion)
+            double lst = haDec ? 0.0 : SkyServer.SiderealTime;
+
+            switch (alignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    axes = Coordinate.RaDec2AltAz(axes[0], axes[1], lst, SkySettings.Latitude);
+                    axes = Coordinate.RaDec2AltAz(axes[0], axes[1], lst, latitude);
                     Array.Reverse(axes);
                     axes[0] = Range.Range180(axes[0]); // Azimuth range is -180 to 180
-                    //check for alternative position within hardware limits
-                    b = AxesAppToMount(axes);
+                                                       //check for alternative position within hardware limits
+                    b = AxesAppToMount(axes, alignmentMode, mountType);
                     alt = SkyServer.GetAlternatePosition(b);
-                    // alt = SkyServer.GetAlternatePosition(axes);
                     if (alt != null) axes = alt;
-                    return Axes.AxesAppToMount(axes);
+                    return AxesAppToMount(axes, alignmentMode, mountType);
+
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
                     // Convert to axes and set Axis[0] in range [0..360), no lst offset if HA
@@ -448,15 +466,16 @@ namespace GreenSwamp.Alpaca.MountControl
                         axes[1] = 180 - axes[1];
                     }
                     axes = Range.RangeAxesXy(axes);  // Axes[0] is in range [0..180), Axes[1] is in range [-90..90] or [-180..-90] U [90..180]
-                    //check for alternative position within Flip Angle and hardware limits
-                    axes = AxesAppToMount(axes);
+                                                     //check for alternative position within Flip Angle and hardware limits
+                    axes = AxesAppToMount(axes, alignmentMode, mountType);
                     alt = SkyServer.GetAlternatePosition(axes);
                     return (alt is null) ? axes : alt;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
+        } 
+        
         /// <summary>
         /// Determine if a flip is needed to reach the RA/Dec coordinates
         /// </summary>
@@ -488,7 +507,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     axes = Range.RangeAxesXy(axes);
 
                     //check if within Flip Angle
-                    var b = AxesAppToMount(axes);
+                    var b = AxesAppToMount(axes, SkySettings.AlignmentMode, SkySettings.Mount);
                     if (SkyServer.IsWithinFlipLimits(b))
                     {
                         return false;

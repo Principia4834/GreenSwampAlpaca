@@ -550,7 +550,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Event to get mount positions and update UI
                 // Ensure DisplayInterval is valid for MediaTimer (must be > 0)
-                var displayInterval = _settings!.DisplayInterval > 0 ? _settings!.DisplayInterval : 250;
+                var displayInterval = _settings!.DisplayInterval > 0 ? _settings!.DisplayInterval : 200;
                 _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
                 _mediaTimer.Tick += UpdateServerEvent;
                 _mediaTimer.Start();
@@ -655,13 +655,13 @@ namespace GreenSwamp.Alpaca.MountControl
             var home = new[] { xAxis, yAxis };
             if (_settings!.AlignmentMode != AlignmentMode.Polar)
             {
-                home = Axes.AxesAppToMount(new[] { xAxis, yAxis });
+                home = Axes.AxesAppToMount(new[] { xAxis, yAxis }, _settings.AlignmentMode, _settings.Mount);
             }
             else
             {
                 var angleOffset = SouthernHemisphere ? 180.0 : 0.0;
                 home[0] -= angleOffset;
-                home = Axes.AzAltToAxesXy(home);
+                home = Axes.AzAltToAxesXy(home, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
             }
             return new Vector(home[0], home[1]);
         }        /// <summary>
@@ -962,22 +962,22 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case SlewType.SlewRaDec:
                     // convert target to axis for Ra / Dec slew
-                    target = Axes.RaDecToAxesXy(target);
+                    target = Axes.RaDecToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                     // Convert to synced axes
                     target = GetSyncedAxes(target);
                     break;
                 case SlewType.SlewAltAz:
                     // convert target to axis for Az / Alt slew
-                    target = Axes.AzAltToAxesXy(target);
+                    target = Axes.AzAltToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                     break;
                 case SlewType.SlewHome:
                     break;
                 case SlewType.SlewPark:
                     // convert to mount coordinates for park
-                    target = Axes.AxesAppToMount(target);
+                    target = Axes.AxesAppToMount(target, _settings.AlignmentMode, _settings.Mount);
                     break;
                 case SlewType.SlewMoveAxis:
-                    target = Axes.AxesAppToMount(target);
+                    target = Axes.AxesAppToMount(target, _settings.AlignmentMode, _settings.Mount);
                     break;
                 default:
                     break;
@@ -1015,7 +1015,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     AtPark = false;
                     Tracking = _settings!.AutoTrack;
                 }
-                positions = Axes.AxesAppToMount(_settings!.ParkAxes);
+                positions = Axes.AxesAppToMount(_settings!.ParkAxes, _settings.AlignmentMode, _settings.Mount);
                 ParkSelected = GetStoredParkPosition();
 
                 monitorItem = new MonitorEntry
@@ -1467,8 +1467,8 @@ namespace GreenSwamp.Alpaca.MountControl
             //      SkyServer.FactorStep contains the conversion from radians to steps
             // To get the target steps
             var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
-            var xy = Axes.RaDecToAxesXy(new[] { a.X, a.Y });
-            var unSynced = Axes.AxesAppToMount(new[] { xy[0], xy[1] });
+            var xy = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+            var unSynced = Axes.AxesAppToMount(new[] { xy[0], xy[1] }, _settings.AlignmentMode, _settings.Mount);
             var rawSteps = GetRawSteps();
             var synced = new[] { ConvertStepsToDegrees(rawSteps[0], 0), ConvertStepsToDegrees(rawSteps[1], 1) };
             // ToDo: Remove if not needed
@@ -1935,7 +1935,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountTaskName.SetSouthernHemisphere:
                             break;
                         case MountTaskName.SyncAxes:
-                            var sync = Axes.AxesAppToMount(new[] { _appAxes.X, _appAxes.Y });
+                            var sync = Axes.AxesAppToMount(new[] { _appAxes.X, _appAxes.Y }, _settings.AlignmentMode, _settings.Mount);
                             _ = new CmdAxisToDegrees(0, Axis.Axis1, sync[0]);
                             _ = new CmdAxisToDegrees(0, Axis.Axis2, sync[1]);
                             break;
@@ -1943,14 +1943,14 @@ namespace GreenSwamp.Alpaca.MountControl
                             // Convert to internal Ra / Dec
                             var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
                             // convert target to axis for Ra / Dec sync
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y });
+                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                             _ = new CmdAxisToDegrees(0, Axis.Axis1, targetR[0]);
                             _ = new CmdAxisToDegrees(0, Axis.Axis2, targetR[1]);
                             break;
                         case MountTaskName.SyncAltAz:
                             var targetA = new[] { _altAzSync.Y, _altAzSync.X };
                             // convert target to axis for Az / Alt sync
-                            targetA = Axes.AzAltToAxesXy(targetA);
+                            targetA = Axes.AzAltToAxesXy(targetA, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                             _ = new CmdAxisToDegrees(0, Axis.Axis1, targetA[0]);
                             _ = new CmdAxisToDegrees(0, Axis.Axis2, targetA[1]);
                             break;
@@ -2542,7 +2542,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             SnapPort2Result = port2Result;
                             break;
                         case MountTaskName.SyncAxes:
-                            var sync = Axes.AxesAppToMount(new[] { _appAxes.X, _appAxes.Y });
+                            var sync = Axes.AxesAppToMount(new[] { _appAxes.X, _appAxes.Y }, _settings.AlignmentMode, _settings.Mount);
                             _ = new SkySyncAxis(0, Axis.Axis1, sync[0]);
                             _ = new SkySyncAxis(0, Axis.Axis2, sync[1]);
                             monitorItem.Message += $",{_appAxes.X}|{_appAxes.Y}|{sync[0]}|{sync[1]}";
@@ -2552,7 +2552,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             // convert target to internal Ra / Dec
                             var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
                             // convert target to axis for Ra / Dec sync
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y });
+                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                             _ = new SkySyncAxis(0, Axis.Axis1, targetR[0]);
                             _ = new SkySyncAxis(0, Axis.Axis2, targetR[1]);
                             monitorItem.Message += $",{Utilities.HoursToHMS(a.X, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(a.Y, " ", ":", "", 2)}|{targetR[0]}|{targetR[1]}";
@@ -2561,7 +2561,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountTaskName.SyncAltAz:
                             var targetA = new[] { _altAzSync.Y, _altAzSync.X };
                             // convert target to axis for Az / Alt sync
-                            targetA = Axes.AzAltToAxesXy(targetA);
+                            targetA = Axes.AzAltToAxesXy(targetA, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                             _ = new SkySyncAxis(0, Axis.Axis1, targetA[0]);
                             _ = new SkySyncAxis(0, Axis.Axis2, targetA[1]);
                             monitorItem.Message += $",{_altAzSync.Y}|{_altAzSync.X}|{targetA[0]}|{targetA[1]}";

@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "./settings-override.schema.json",
   "Description": "German Equatorial mount-specific settings",
   "AlignmentMode": "GermanPolar",
@@ -19,7 +19,7 @@
     "HzLimitTracking": false,
     "LimitPark": false,
     "LimitTracking": false,
-    "NoSyncPastMeridian": true,
+    "NoSyncPastMeridian": false,
     "ParkAxes": [ 90.0, 90.0 ],
     "ParkHzLimitName": "Default",
     "ParkLimitName": "Default",

@@ -235,7 +235,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Thread.CurrentThread.ManagedThreadId,
                     Message = $"{value}|{_settings!.HourAngleLimit}|{axes[0]}|{axes[1]}"
                 };
-                if (IsWithinFlipLimits(Axes.AxesMountToApp(axes)))
+                if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, _settings.AlignmentMode, _settings.Mount)))
                 {
                     if (Tracking)
                     {
@@ -368,7 +368,7 @@ namespace GreenSwamp.Alpaca.MountControl
             get
             {
                 // Home axis values are mount values internally
-                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y });
+                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, _settings.AlignmentMode, _settings.Mount);
                 var h = new Vector(home[0], home[1]);
                 var m = new Vector(_appAxes.X, _appAxes.Y);
                 double dX = Abs(m.X - h.X);
@@ -1096,7 +1096,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (string.IsNullOrEmpty(name)) { name = "Empty"; }
 
             // convert current position
-            var park = Axes.MountAxis2Mount();
+            var park = Axes.MountAxis2Mount(AppAxisX, AppAxisY, _settings.AlignmentMode);
             if (park == null) { return; }
 
             var p = new ParkPosition { Name = name, X = park[0], Y = park[1] };
@@ -1176,13 +1176,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        var autoHomeSim = new AutoHomeSim();
+                        var autoHomeSim = new AutoHomeSim(_settings);
                         raResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     case MountType.SkyWatcher:
-                        var autoHomeSky = new AutoHomeSky();
+                        var autoHomeSky = new AutoHomeSky(_settings);
                         raResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
@@ -1432,9 +1432,9 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_settings!.NoSyncPastMeridian) { return false; } // add more checks later if needed
 
             //convert ra dec to mount XY positions
-            var xy = Axes.RaDecToAxesXy(new[] { ra, dec });
+            var xy = Axes.RaDecToAxesXy(new[] { ra, dec }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
             //convert to app coordinates
-            var target = Axes.AxesMountToApp(GetSyncedAxes(xy));
+            var target = Axes.AxesMountToApp(GetSyncedAxes(xy), _settings.AlignmentMode, _settings.Mount);
 
             //get current mount position in app coordinates
             var current = new[] { _appAxisX, _appAxisY };
@@ -1472,9 +1472,9 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_settings!.NoSyncPastMeridian) { return false; } // add more checks later if needed
 
             //convert ra dec to mount XY positions
-            var xy = Axes.AzAltToAxesXy(new[] { az, alt });
+            var xy = Axes.AzAltToAxesXy(new[] { az, alt }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
             //convert to app coordinates
-            var target = Axes.AxesMountToApp(GetSyncedAxes(xy));
+            var target = Axes.AxesMountToApp(GetSyncedAxes(xy), _settings.AlignmentMode, _settings.Mount);
 
             //get current mount position in app coordinates
             var current = new[] { _appAxisX, _appAxisY };
@@ -1882,7 +1882,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // See if the target is within flip angle limits
             if (!IsWithinFlipLimits(position)) { return null; }
-            var alt = Axes.GetAltAxisPosition(position);
+            var alt = Axes.GetAltAxisPosition(position, _settings.AlignmentMode);
             if (!IsWithinFlipLimits(alt)) { return null; }
 
             var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
@@ -1919,7 +1919,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // See if the target is within flip angle limits
             if (!IsWithinFlipLimits(position)) { return null; }
-            var alt = Axes.GetAltAxisPosition(position);
+            var alt = Axes.GetAltAxisPosition(position, _settings.AlignmentMode);
             var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
             if (flipGoto) // implement the forced flip for a goto
             {
@@ -1953,7 +1953,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var flipGoto = FlipOnNextGoto;
             FlipOnNextGoto = false;
 
-            var alt = Axes.GetAltAxisPosition(position);
+            var alt = Axes.GetAltAxisPosition(position, _settings.AlignmentMode);
             alt[0] = Range.Range180(alt[0]); // convert to polar position
 
             // Check target and altTarget are within hardware limits

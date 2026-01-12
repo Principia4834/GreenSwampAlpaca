@@ -19,6 +19,7 @@ using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ASCOM.Common.DeviceInterfaces;
 
 namespace GreenSwamp.Alpaca.Mount.AutoHome
@@ -27,11 +28,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
     {
         private int TripPosition { get; set; }
         private static bool HasHomeSensor { get; set; }
+        private readonly SkySettingsInstance SettingsInstance;
 
         /// <summary>
         /// auto home for skywatcher mounts
         /// </summary>
-        public AutoHomeSky()
+        /// <param name="settingsInstance"></param>
+        public AutoHomeSky(SkySettingsInstance settingsInstance)
         {
             var monitorItem = new MonitorEntry
             {
@@ -44,6 +47,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Message = "Start"
             };
             MonitorLog.LogToMonitor(monitorItem);
+            this.SettingsInstance = settingsInstance;
         }
 
         /// <summary>
@@ -308,18 +312,18 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             var b = (double)SkyQueue.GetCommandResult(skyCmd).Result;
             var c = Units.Rad2Deg1(b);
 
-            var positions = Axes.MountAxis2Mount();
+            var positions = Axes.MountAxis2Mount(SkyServer.AppAxisX, SkyServer.AppAxisY, SkySettings.AlignmentMode);
             switch (axis)
             {
                 case Axis.Axis1:
-                    var d = Axes.AxesMountToApp(new[] { c, 0 }); // Convert to local
-                    if ((SkySettings.AlignmentMode == AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) d[0] = d[0] + 180;
+                    var d = Axes.AxesMountToApp(new[] { c, 0 }, SettingsInstance.AlignmentMode, SettingsInstance.Mount); // Convert to local
+                    if ((SettingsInstance.AlignmentMode == AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) d[0] = d[0] + 180;
 
                     SkyServer.SlewAxes(d[0], positions[1], SlewType.SlewMoveAxis, slewAsync: false);
                     break;
                 case Axis.Axis2:
-                    var e = Axes.AxesMountToApp(new[] { 0, c }); // Convert to local
-                    if ((SkySettings.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) e[1] = 180 - e[1];
+                    var e = Axes.AxesMountToApp(new[] { 0, c }, SettingsInstance.AlignmentMode, SettingsInstance.Mount); // Convert to local
+                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) e[1] = 180 - e[1];
 
                     SkyServer.SlewAxes(positions[0], e[1], SlewType.SlewMoveAxis, slewAsync: false);
                     break;
@@ -354,19 +358,19 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 SkyServer.Tracking = false;
             }
 
-            var positions = Axes.MountAxis2Mount();
+            var positions = Axes.MountAxis2Mount(SkyServer.AppAxisX, SkyServer.AppAxisY, SkySettings.AlignmentMode);
 
             switch (axis)
             {
                 case Axis.Axis1:
                     degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
-                    if ((SkySettings.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere))
+                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere))
                         degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
                     SkyServer.SlewAxes(positions[0] + degrees, positions[1], SlewType.SlewMoveAxis, slewAsync: false);
                     break;
                 case Axis.Axis2:
                     degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
-                    if ((SkySettings.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere))
+                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere))
                         degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
                     SkyServer.SlewAxes(positions[0], positions[1] + degrees, SlewType.SlewMoveAxis, slewAsync: false);
                     break;

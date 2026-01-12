@@ -13,11 +13,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         private const int MinSteps = Int32.MinValue;
         private int TripPosition { get; set; }
         private bool HasHomeSensor { get; set; }
+        private readonly SkySettingsInstance SettingsInstance;
 
         /// <summary>
         /// auto home for the simulator
         /// </summary>
-        public AutoHomeSim()
+        /// <param name="settingsInstance"></param>
+        public AutoHomeSim(SkySettingsInstance settingsInstance)
         {
             var monitorItem = new MonitorEntry
             {
@@ -30,6 +32,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Message = "Start"
             };
             MonitorLog.LogToMonitor(monitorItem);
+            this.SettingsInstance = settingsInstance;
         }
 
         /// <summary>
@@ -126,8 +129,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             bool? status;
             bool? loopStatus = null;
             SkyServer.AutoHomeProgressBar += 5;
-            Simulator.Settings.AutoHomeAxisX = (int) SkySettings.AutoHomeAxisX;
-            Simulator.Settings.AutoHomeAxisY = (int) SkySettings.AutoHomeAxisY;
+            Simulator.Settings.AutoHomeAxisX = (int) SettingsInstance.AutoHomeAxisX;
+            Simulator.Settings.AutoHomeAxisY = (int) SettingsInstance.AutoHomeAxisY;
 
             // slew away from those that start at home position
             var slewResult = SlewAxis(3.3, axis);
@@ -259,7 +262,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             if (SkyServer.AutoHomeStop) return AutoHomeResult.StopRequested;
 
             var a = TripPosition / 36000;
-            var positions = Axes.MountAxis2Mount();
+            var positions = Axes.MountAxis2Mount(SkyServer.AppAxisX, SkyServer.AppAxisY, SkySettings.AlignmentMode);
             switch (axis)
             {
                 case Axis.Axis1:
@@ -299,7 +302,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 SkyServer.Tracking = false;
             }
 
-            var positions = Axes.MountAxis2Mount();
+            var positions = Axes.MountAxis2Mount(SkyServer.AppAxisX, SkyServer.AppAxisY, SkySettings.AlignmentMode);
 
             switch (axis)
             {

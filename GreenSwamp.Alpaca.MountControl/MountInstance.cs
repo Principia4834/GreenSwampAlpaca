@@ -162,7 +162,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorEntry monitorItem;
             string msg;
 
-            switch (SkySettings.Mount)
+            switch (_settings.Mount)
             {
                 case MountType.Simulator:
                     // defaults
@@ -285,7 +285,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     };
                     MonitorLog.LogToMonitor(monitorItem);
                     // defaults
-                    if (SkySettings.Mount == MountType.SkyWatcher)
+                    if (_settings.Mount == MountType.SkyWatcher)
                     {
                         SkyServer.SkyTasks(MountTaskName.AllowAdvancedCommandSet);
                     }
@@ -430,17 +430,17 @@ namespace GreenSwamp.Alpaca.MountControl
 
             //Load Pec Files
             var pecmsg = string.Empty;
-            SkyServer.PecOn = SkySettings.PecOn;
-            if (File.Exists(SkySettings.PecWormFile))
+            SkyServer.PecOn = _settings.PecOn;
+            if (File.Exists(_settings.PecWormFile))
             {
-                SkyServer.LoadPecFile(SkySettings.PecWormFile);
-                pecmsg += SkySettings.PecWormFile;
+                SkyServer.LoadPecFile(_settings.PecWormFile);
+                pecmsg += _settings.PecWormFile;
             }
 
-            if (File.Exists(SkySettings.Pec360File))
+            if (File.Exists(_settings.Pec360File))
             {
-                SkyServer.LoadPecFile(SkySettings.Pec360File);
-                pecmsg += ", " + SkySettings.PecWormFile;
+                SkyServer.LoadPecFile(_settings.Pec360File);
+                pecmsg += ", " + _settings.Pec360File;
             }
 
             monitorItem = new MonitorEntry
@@ -592,22 +592,22 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case SlewType.SlewRaDec:
                     // convert target to axis for Ra / Dec slew
-                    target = Axes.RaDecToAxesXy(target);
+                    target = Axes.RaDecToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                     // Convert to synced axes
                     target = SkyServer.GetSyncedAxes(target);
                     break;
                 case SlewType.SlewAltAz:
                     // convert target to axis for Az / Alt slew
-                    target = Axes.AzAltToAxesXy(target);
+                    target = Axes.AzAltToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
                     break;
                 case SlewType.SlewHome:
                     break;
                 case SlewType.SlewPark:
                     // convert to mount coordinates for park
-                    target = Axes.AxesAppToMount(target);
+                    target = Axes.AxesAppToMount(target, _settings.AlignmentMode, _settings.Mount);
                     break;
                 case SlewType.SlewMoveAxis:
-                    target = Axes.AxesAppToMount(target);
+                    target = Axes.AxesAppToMount(target, _settings.AlignmentMode, _settings.Mount);
                     break;
                 default:
                     break;
@@ -783,13 +783,13 @@ namespace GreenSwamp.Alpaca.MountControl
             var home = new[] { xAxis, yAxis };
             if (_settings.AlignmentMode != AlignmentMode.Polar)
             {
-                home = Axes.AxesAppToMount(new[] { xAxis, yAxis });
+                home = Axes.AxesAppToMount(new[] { xAxis, yAxis }, _settings.AlignmentMode, _settings.Mount);
             }
             else
             {
                 var angleOffset = SkyServer.SouthernHemisphere ? 180.0 : 0.0;
                 home[0] -= angleOffset;
-                home = Axes.AzAltToAxesXy(home);
+                home = Axes.AzAltToAxesXy(home, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
             }
             return new Vector(home[0], home[1]);
         }
@@ -910,7 +910,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Event to get mount positions and update UI
                 // Ensure DisplayInterval is valid for MediaTimer (must be > 0)
-                var displayInterval = _settings.DisplayInterval > 0 ? _settings.DisplayInterval : 300;
+                var displayInterval = _settings.DisplayInterval > 0 ? _settings.DisplayInterval : 200;
                 _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
                 _mediaTimer.Tick += SkyServer.UpdateServerEvent;
                 _mediaTimer.Start();
