@@ -84,6 +84,25 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public double? AppAxisY { get; init; }
 
+        /// <summary>
+        /// Axis limit X in degrees (for flip angle calculations)
+        /// Used by AltAz and Polar alignment modes
+        /// </summary>
+        public double? AxisLimitX { get; init; }
+
+        /// <summary>
+        /// Hour angle limit in degrees (for GEM flip calculations)
+        /// Only used for GermanPolar alignment mode
+        /// </summary>
+        public double? HourAngleLimit { get; init; }
+
+        /// <summary>
+        /// Function to check if position is within flip limits
+        /// Optional - allows custom flip limit logic
+        /// If null, uses default inline logic based on alignment mode
+        /// </summary>
+        public Func<double[], bool>? IsWithinFlipLimitsFunc { get; init; }
+
         #endregion
 
         #region Factory Methods
@@ -108,7 +127,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 LocalSiderealTime = null, // Lazy load when needed
                 SideOfPier = null,
                 AppAxisX = null,
-                AppAxisY = null
+                AppAxisY = null,
+                AxisLimitX = settings.AxisLimitX,
+                HourAngleLimit = settings.HourAngleLimit,
+                IsWithinFlipLimitsFunc = null // Use default logic
             };
         }
 
@@ -128,7 +150,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 LocalSiderealTime = SkyServer.SiderealTime,
                 SideOfPier = SkyServer.SideOfPier,
                 AppAxisX = SkyServer.AppAxisX,
-                AppAxisY = SkyServer.AppAxisY
+                AppAxisY = SkyServer.AppAxisY,
+                AxisLimitX = SkySettings.AxisLimitX,
+                HourAngleLimit = SkySettings.HourAngleLimit,
+                IsWithinFlipLimitsFunc = SkyServer.IsWithinFlipLimits // Delegate to static method
             };
         }
 
@@ -156,6 +181,9 @@ namespace GreenSwamp.Alpaca.MountControl
             SideOfPier = null;
             AppAxisX = null;
             AppAxisY = null;
+            AxisLimitX = null;
+            HourAngleLimit = null;
+            IsWithinFlipLimitsFunc = null;
         }
 
         #endregion
@@ -187,6 +215,49 @@ namespace GreenSwamp.Alpaca.MountControl
         public double GetAppAxisY()
         {
             return AppAxisY ?? SkyServer.AppAxisY;
+        }
+
+        /// <summary>
+        /// Check if position is within flip limits
+        /// </summary>
+        /// <param name="position">Axes position to check [X, Y]</param>
+        /// <returns>True if within flip limits, false otherwise</returns>
+        /// <remarks>
+        /// Uses delegate function if provided, otherwise uses default inline logic
+        /// based on alignment mode and configured limits.
+        /// </remarks>
+        public bool IsWithinFlipLimits(double[] position)
+        {
+            // Use delegate if provided (backward compatibility with static method)
+            if (IsWithinFlipLimitsFunc != null)
+                return IsWithinFlipLimitsFunc(position);
+
+            // Default inline logic (standalone use without static dependencies)
+            var absPos0 = Math.Abs(position[0]);
+
+            switch (AlignmentMode)
+            {
+                case AlignmentMode.AltAz:
+                    // AltAz: check if position is within axis limit on both sides
+                    var limit = AxisLimitX ?? 180.0; // Default to 180° if not set
+                    return (limit >= absPos0) && (absPos0 >= 360.0 - limit);
+
+                case AlignmentMode.Polar:
+                    // Polar: check if position is outside the flip zone
+                    limit = AxisLimitX ?? 180.0;
+                    return (180.0 - limit <= absPos0) && (absPos0 <= limit);
+
+                case AlignmentMode.GermanPolar:
+                    // GermanPolar: check hour angle limit on both sides of meridian
+                    var haLimit = HourAngleLimit ?? 15.0; // Default to 15° if not set
+                    return -haLimit < absPos0 && absPos0 < haLimit ||
+                           180 - haLimit < absPos0 && absPos0 < 180 + haLimit;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(AlignmentMode),
+                        AlignmentMode,
+                        "Unsupported alignment mode");
+            }
         }
 
         /// <summary>

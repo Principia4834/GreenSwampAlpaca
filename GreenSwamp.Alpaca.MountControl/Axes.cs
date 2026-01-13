@@ -165,34 +165,27 @@ namespace GreenSwamp.Alpaca.MountControl
             return a;
         }
 
-        // ✅ KEEP OLD OVERLOAD (backward compatibility - delegates to new)
-        internal static double[] AxesAppToMount(
-            double[] axes,
-            AlignmentMode alignmentMode,
-            MountType mountType)
-        {
-            var context = AxesContext.FromStatic();
-            return AxesAppToMount(axes, context);
-        }
-
         /// <summary>
-        /// Converts axes positions from Mount to App ha/dec or alt/az) 
+        /// Convert axes positions from Mount to App (ha/dec or alt/az) using context object
         /// </summary>
-        /// <param name="axes"></param>
-        /// <returns></returns>
-        internal static double[] AxesMountToApp(double[] axes, AlignmentMode alignmentMode, MountType mountType)
-
+        /// <param name="axes">Axes positions to convert</param>
+        /// <param name="context">Mount configuration context</param>
+        /// <returns>Converted axes positions</returns>
+        internal static double[] AxesMountToApp(double[] axes, AxesContext context)
         {
             var a = new[] { axes[0], axes[1] };
-            switch (alignmentMode)
+
+            switch (context.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
+                    // No conversion needed for AltAz
                     break;
+
                 case AlignmentMode.GermanPolar:
-                    switch (mountType)
+                    switch (context.MountType)
                     {
                         case MountType.Simulator:
-                            if (SkyServer.SouthernHemisphere)
+                            if (context.SouthernHemisphere)
                             {
                                 a[0] = a[0] * -1.0;
                                 a[1] = 180 - a[1];
@@ -202,10 +195,10 @@ namespace GreenSwamp.Alpaca.MountControl
                                 a[0] = a[0];
                                 a[1] = a[1];
                             }
-
                             break;
+
                         case MountType.SkyWatcher:
-                            if (SkyServer.SouthernHemisphere)
+                            if (context.SouthernHemisphere)
                             {
                                 a[0] = a[0] * -1.0;
                                 a[1] = 180 - a[1];
@@ -215,18 +208,20 @@ namespace GreenSwamp.Alpaca.MountControl
                                 a[0] = a[0];
                                 a[1] = 180 - a[1];
                             }
-
                             break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
 
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(context.MountType),
+                                context.MountType,
+                                "Unsupported mount type");
+                    }
                     break;
+
                 case AlignmentMode.Polar:
-                    switch (mountType)
+                    switch (context.MountType)
                     {
                         case MountType.Simulator:
-                            if (SkyServer.SouthernHemisphere)
+                            if (context.SouthernHemisphere)
                             {
                                 a[0] = a[0] * -1.0;
                                 a[1] = a[1];
@@ -236,12 +231,12 @@ namespace GreenSwamp.Alpaca.MountControl
                                 a[0] = a[0];
                                 a[1] = a[1];
                             }
-
                             break;
+
                         case MountType.SkyWatcher:
-                            if (SkyServer.PolarMode == PolarMode.Left)
+                            if (context.PolarMode == PolarMode.Left)
                             {
-                                if (SkyServer.SouthernHemisphere)
+                                if (context.SouthernHemisphere)
                                 {
                                     a[0] = a[0] * -1.0;
                                     a[1] = 180 - a[1];
@@ -254,7 +249,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             else
                             {
-                                if (SkyServer.SouthernHemisphere)
+                                if (context.SouthernHemisphere)
                                 {
                                     a[0] = a[0] * -1.0;
                                     a[1] = a[1];
@@ -266,13 +261,18 @@ namespace GreenSwamp.Alpaca.MountControl
                                 }
                             }
                             break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
 
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(context.MountType),
+                                context.MountType,
+                                "Unsupported mount type");
+                    }
                     break;
+
                 default:
-                    break;
+                    throw new ArgumentOutOfRangeException(nameof(context.AlignmentMode),
+                        context.AlignmentMode,
+                        "Unsupported alignment mode");
             }
 
             return a;
@@ -285,6 +285,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Alternate position plus / minus 360 degrees from the current position
         /// </summary>
         /// <param name="alt">position</param>
+        /// <param name="context">Mount configuration context</param>
         /// <returns>other axis position</returns>
         internal static double[] GetAltAxisPosition(double[] alt, AxesContext context)
         {
@@ -525,84 +526,157 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
         /// <summary>
-        /// Determine if a flip is needed to reach the RA/Dec coordinates
+        /// Determine if a flip is needed to reach the RA/Dec coordinates using context
         /// </summary>
-        /// <remarks>Uses a SideOfPier test at the converted coordinates and compares to current SideOfPier</remarks>
-        /// <param name="raDec"></param>
-        /// <param name="lst"></param>
-        /// <returns></returns>
-        internal static bool IsFlipRequired(IReadOnlyList<double> raDec, double lst = double.NaN)
+        /// <param name="raDec">Target RA/Dec coordinates [RA in hours, Dec in degrees]</param>
+        /// <param name="context">Mount configuration context (must include SideOfPier)</param>
+        /// <returns>True if flip is required to reach target, false otherwise</returns>
+        /// <remarks>
+        /// Uses a SideOfPier test at the converted coordinates and compares to current SideOfPier.
+        /// Context must have SideOfPier set to a valid value (not Unknown).
+        /// </remarks>
+        internal static bool IsFlipRequired(
+            IReadOnlyList<double> raDec,
+            AxesContext context)
         {
             var axes = new[] { raDec[0], raDec[1] };
-            if (double.IsNaN(lst)) lst = SkyServer.SiderealTime;
-            switch (SkySettings.AlignmentMode)
+            double lst = context.GetLst();
+
+            switch (context.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
+                    // AltAz mounts don't need meridian flips
                     return false;
+
                 case AlignmentMode.GermanPolar:
                 case AlignmentMode.Polar:
-                    axes[0] = (lst - axes[0]) * 15.0;
-                    if (SkyServer.SouthernHemisphere) axes[1] = -axes[1];
+                    // Convert RA/Dec to mount axes (HA/Dec)
+                    axes[0] = (lst - axes[0]) * 15.0; // RA to HA in degrees
+                    if (context.SouthernHemisphere)
+                        axes[1] = -axes[1];
                     axes[0] = Range.Range360(axes[0]);
 
+                    // Adjust axes to be through the pole if needed
                     if (axes[0] > 180.0 || axes[0] < 0)
                     {
-                        // adjust the targets to be through the pole
                         axes[0] += 180;
                         axes[1] = 180 - axes[1];
                     }
 
                     axes = Range.RangeAxesXy(axes);
 
-                    //check if within Flip Angle
-                    var b = AxesAppToMount(axes, SkySettings.AlignmentMode, SkySettings.Mount);
-                    if (SkyServer.IsWithinFlipLimits(b))
+                    // Convert to mount coordinates
+                    var b = AxesAppToMount(axes, context);
+
+                    // Check if target is within flip limits (no flip needed)
+                    if (context.IsWithinFlipLimits(b))
                     {
                         return false;
                     }
 
-                    //similar to SideOfPier property code but this passes conform for both hemispheres
-                    PointingState e = PointingState.Unknown;
-                    if (SkyServer.SideOfPier == PointingState.Unknown) { return false; }
-
-                    switch (SkySettings.AlignmentMode)
+                    // Check if current SideOfPier is valid
+                    if (!context.SideOfPier.HasValue || context.SideOfPier == PointingState.Unknown)
                     {
-                        case AlignmentMode.AltAz:
-                            e = b[0] >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
-                            break;
-                        case AlignmentMode.Polar:
-                            e = (b[1] < 90.0000000001 && b[1] > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
-                            break;
-                        case AlignmentMode.GermanPolar:
-                            switch (SkySettings.Mount)
-                            {
-                                case MountType.Simulator:
-                                    if (b[1] < 90.0000000001 && b[1] > -90.0000000001) { e = PointingState.Normal; }
-                                    else { e = PointingState.ThroughThePole; }
-                                    break;
-                                case MountType.SkyWatcher:
-                                    if (SkyServer.SouthernHemisphere)
-                                    {
-                                        if (b[1] < 90.0 && b[1] > -90.0) { e = PointingState.Normal; }
-                                        else { e = PointingState.ThroughThePole; }
-                                    }
-                                    else
-                                    {
-                                        if (b[1] < 90.0 && b[1] > -90.0) { e = PointingState.ThroughThePole; }
-                                        else { e = PointingState.Normal; }
-                                    }
-
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-                            break;
+                        return false; // Can't determine flip requirement without current state
                     }
-                    return e != SkyServer.SideOfPier;
+
+                    // Calculate what side of pier the target would be on
+                    var targetSideOfPier = CalculateSideOfPier(b, context);
+
+                    // Flip is required if target side differs from current side
+                    return targetSideOfPier != context.SideOfPier.Value;
+
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(context.AlignmentMode),
+                        context.AlignmentMode,
+                        "Unsupported alignment mode");
             }
         }
+
+        /// <summary>
+        /// Calculate side of pier for given mount axes position
+        /// </summary>
+        /// <param name="axes">Mount axes position [X, Y] in degrees</param>
+        /// <param name="context">Mount configuration context</param>
+        /// <returns>PointingState indicating side of pier</returns>
+        /// <remarks>
+        /// This determines which side of the pier the telescope is pointing based on
+        /// axis positions and mount configuration. Logic varies by alignment mode and mount type.
+        /// </remarks>
+        private static PointingState CalculateSideOfPier(double[] axes, AxesContext context)
+        {
+            switch (context.AlignmentMode)
+            {
+                case AlignmentMode.AltAz:
+                    // AltAz: use azimuth to determine state
+                    return axes[0] >= 0.0
+                        ? PointingState.Normal
+                        : PointingState.ThroughThePole;
+
+                case AlignmentMode.Polar:
+                    // Polar: use declination axis to determine state
+                    return (axes[1] < 90.0000000001 && axes[1] > -90.0000000001)
+                        ? PointingState.Normal
+                        : PointingState.ThroughThePole;
+
+                case AlignmentMode.GermanPolar:
+                    switch (context.MountType)
+                    {
+                        case MountType.Simulator:
+                            // Simulator: normal if dec axis within ±90°
+                            return (axes[1] < 90.0000000001 && axes[1] > -90.0000000001)
+                                ? PointingState.Normal
+                                : PointingState.ThroughThePole;
+
+                        case MountType.SkyWatcher:
+                            // SkyWatcher GEM: logic depends on hemisphere
+                            bool isWithinDecRange = (axes[1] < 90.0 && axes[1] > -90.0);
+
+                            if (context.SouthernHemisphere)
+                            {
+                                // Southern: within range = Normal
+                                return isWithinDecRange
+                                    ? PointingState.Normal
+                                    : PointingState.ThroughThePole;
+                            }
+                            else
+                            {
+                                // Northern: within range = ThroughThePole (inverted)
+                                return isWithinDecRange
+                                    ? PointingState.ThroughThePole
+                                    : PointingState.Normal;
+                            }
+
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(context.MountType),
+                                context.MountType,
+                                "Unsupported mount type");
+                    }
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(context.AlignmentMode),
+                        context.AlignmentMode,
+                        "Unsupported alignment mode");
+            }
+        }
+
+        /// <summary>
+        /// Determine if a flip is needed to reach RA/Dec coordinates (backward compatibility)
+        /// </summary>
+        /// <param name="raDec">Target RA/Dec coordinates</param>
+        /// <param name="lst">Local Sidereal Time (optional, fetched from SkyServer if NaN)</param>
+        /// <returns>True if flip is required</returns>
+        //[Obsolete("Use IsFlipRequired(raDec, context) for better testability")]
+        //internal static bool IsFlipRequired(IReadOnlyList<double> raDec, double lst = double.NaN)
+        //{
+        //    var context = AxesContext.FromStatic();
+
+        //    // Override LST if provided
+        //    if (!double.IsNaN(lst))
+        //        context = context.WithLst(lst);
+
+        //    return IsFlipRequired(raDec, context);
+        //}
 
     }
 }

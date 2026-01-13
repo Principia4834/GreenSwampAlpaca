@@ -318,13 +318,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             switch (axis)
             {
                 case Axis.Axis1:
-                    var d = Axes.AxesMountToApp(new[] { c, 0 }, SettingsInstance.AlignmentMode, SettingsInstance.Mount); // Convert to local
+                    var d = Axes.AxesMountToApp(new[] { c, 0 }, context); // Convert to local
                     if ((SettingsInstance.AlignmentMode == AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) d[0] = d[0] + 180;
 
                     SkyServer.SlewAxes(d[0], positions[1], SlewType.SlewMoveAxis, slewAsync: false);
                     break;
                 case Axis.Axis2:
-                    var e = Axes.AxesMountToApp(new[] { 0, c }, SettingsInstance.AlignmentMode, SettingsInstance.Mount); // Convert to local
+                    var e = Axes.AxesMountToApp(new[] { 0, c }, context); // Convert to local
                     if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) e[1] = 180 - e[1];
 
                     SkyServer.SlewAxes(positions[0], e[1], SlewType.SlewMoveAxis, slewAsync: false);

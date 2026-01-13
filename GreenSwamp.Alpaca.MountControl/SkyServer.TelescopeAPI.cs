@@ -235,7 +235,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Thread.CurrentThread.ManagedThreadId,
                     Message = $"{value}|{_settings!.HourAngleLimit}|{axes[0]}|{axes[1]}"
                 };
-                if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, _settings.AlignmentMode, _settings.Mount)))
+                var context = AxesContext.FromSettings(_settings);
+                if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, context)))
                 {
                     if (Tracking)
                     {
@@ -368,7 +369,8 @@ namespace GreenSwamp.Alpaca.MountControl
             get
             {
                 // Home axis values are mount values internally
-                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, _settings.AlignmentMode, _settings.Mount);
+                var context = AxesContext.FromSettings(_settings);
+                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, context);
                 var h = new Vector(home[0], home[1]);
                 var m = new Vector(_appAxes.X, _appAxes.Y);
                 double dX = Abs(m.X - h.X);
@@ -1436,7 +1438,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var context = AxesContext.FromSettings(_settings);
             var xy = Axes.RaDecToAxesXy(new[] { ra, dec }, context);
             //convert to app coordinates
-            var target = Axes.AxesMountToApp(GetSyncedAxes(xy), _settings.AlignmentMode, _settings.Mount);
+            var target = Axes.AxesMountToApp(GetSyncedAxes(xy), context);
 
             //get current mount position in app coordinates
             var current = new[] { _appAxisX, _appAxisY };
@@ -1477,7 +1479,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var context = AxesContext.FromSettings(_settings);
             var xy = Axes.AzAltToAxesXy(new[] { az, alt }, context);
             //convert to app coordinates
-            var target = Axes.AxesMountToApp(GetSyncedAxes(xy), _settings.AlignmentMode, _settings.Mount);
+            var target = Axes.AxesMountToApp(GetSyncedAxes(xy), context);
 
             //get current mount position in app coordinates
             var current = new[] { _appAxisX, _appAxisY };
@@ -2007,8 +2009,8 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 return PointingState.Unknown;
             }
-
-            var flipReq = Axes.IsFlipRequired(new[] { rightAscension, declination });
+            var context = AxesContext.FromSettings(_settings);
+            var flipReq = Axes.IsFlipRequired(new[] { rightAscension, declination }, context);
 
             var monitorItem = new MonitorEntry
             {
