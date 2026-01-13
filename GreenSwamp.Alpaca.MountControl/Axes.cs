@@ -344,7 +344,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 case AlignmentMode.GermanPolar:
 //                    axes = Coordinate.AltAz2RaDec(azAlt[1], azAlt[0], SkySettings.Latitude, lst);
                     axes = Coordinate.AltAz2HaDec(azAlt[1], azAlt[0], context.Latitude);
-                    axes = RaDecToAxesXy(axes, true, context.AlignmentMode, context.MountType, context.Latitude);
+                    axes = HaDecToAxesXy(axes, context);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -403,16 +403,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Conversion of mount axis positions in degrees to Ra and Dec
         /// </summary>
         /// <param name="axes"></param>
-        /// <param name="lst"></param>
+        /// <param name="context">Mount configuration context</param>
         /// <returns></returns>
-        internal static double[] AxesXyToRaDec(IReadOnlyList<double> axes, double lst = double.NaN)
+        internal static double[] AxesXyToRaDec(IReadOnlyList<double> axes, AxesContext context)
         {
-            var raDec = new[] { axes[0], axes[1] };
-            if (double.IsNaN(lst)) lst = SkyServer.SiderealTime;
-            switch (SkySettings.AlignmentMode)
+            double[] raDec = new[] { axes[0], axes[1] };
+            double lst = context.GetLst(); // ✅ From context
+            switch (context.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    raDec = Coordinate.AltAz2RaDec(axes[1], axes[0], SkySettings.Latitude, lst);
+                    raDec = Coordinate.AltAz2RaDec(axes[1], axes[0], context.Latitude, lst);
                     break;
                 case AlignmentMode.GermanPolar:
                 case AlignmentMode.Polar:
@@ -424,7 +424,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     raDec[0] = lst - raDec[0] / 15.0;
-                    if (SkyServer.SouthernHemisphere)
+                    if (context.SouthernHemisphere)
                         raDec[1] = -raDec[1];
                     break;
                 default:
@@ -435,148 +435,95 @@ namespace GreenSwamp.Alpaca.MountControl
             return raDec;
         }
 
-        // ========================================
-        // FILE: GreenSwamp.Alpaca.MountControl/Axes.cs
-        // ========================================
-
-        // ✅ NEW CONTEXT-BASED OVERLOAD
         /// <summary>
-        /// Convert a RaDec position to axes positions using context object
+        /// Convert RA/Dec position to axes positions using context object
         /// </summary>
-        internal static double[] RaDecToAxesXy(
-            IReadOnlyList<double> raDec,
-            bool haDec,
+        /// <param name="raDec">RA (hours 0-24) and Dec (degrees -90 to 90)</param>
+        /// <param name="context">Mount configuration context</param>
+        /// <returns>Axes position in mount coordinates</returns>
+        internal static double[] RaDecToAxesXy(IReadOnlyList<double> raDec, AxesContext context)
+        {
+            // RA needs LST for conversion to hour angle
+            double lst = context.GetLst();
+            return RaDecToAxesXyCore(raDec, useLst: true, lst, context);
+        }
+
+        /// <summary>
+        /// Convert Hour Angle/Dec position to axes positions using context object
+        /// </summary>
+        /// <param name="haDec">Hour Angle (hours) and Dec (degrees -90 to 90)</param>
+        /// <param name="context">Mount configuration context</param>
+        /// <returns>Axes position in mount coordinates</returns>
+        internal static double[] HaDecToAxesXy(IReadOnlyList<double> haDec, AxesContext context)
+        {
+            // Hour Angle is already in mount reference frame, no LST needed
+            return RaDecToAxesXyCore(haDec, useLst: false, lst: 0.0, context);
+        }
+
+        /// <summary>
+        /// Core conversion logic shared by RaDecToAxesXy and HaDecToAxesXy
+        /// </summary>
+        /// <param name="coordinates">RA/Dec or HA/Dec coordinates</param>
+        /// <param name="useLst">True if converting from RA (apply LST offset), false for HA</param>
+        /// <param name="lst">Local Sidereal Time (only used if useLst is true)</param>
+        /// <param name="context">Mount configuration context</param>
+        /// <returns>Axes position in mount coordinates</returns>
+        private static double[] RaDecToAxesXyCore(
+            IReadOnlyList<double> coordinates,
+            bool useLst,
+            double lst,
             AxesContext context)
         {
-            double[] axes = { raDec[0], raDec[1] };
+            double[] axes = { coordinates[0], coordinates[1] };
             double[] b;
             double[] alt;
-
-            // Get LST from context (lazy load if needed)
-            double lst = haDec ? 0.0 : context.GetLst(); // ✅ From context
 
             switch (context.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
+                    // Convert to Alt/Az coordinates
                     axes = Coordinate.RaDec2AltAz(axes[0], axes[1], lst, context.Latitude);
-                    Array.Reverse(axes);
-                    axes[0] = Range.Range180(axes[0]);
+                    Array.Reverse(axes); // Swap to [Az, Alt]
+                    axes[0] = Range.Range180(axes[0]); // Azimuth range is -180 to 180
 
-                    b = AxesAppToMount(axes, context); // ✅ Pass context
+                    // Check for alternative position within hardware limits
+                    b = AxesAppToMount(axes, context);
                     alt = SkyServer.GetAlternatePosition(b);
                     if (alt != null) axes = alt;
-                    return AxesAppToMount(axes, context); // ✅ Pass context
+                    return AxesAppToMount(axes, context);
 
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
-                    axes[0] = haDec ? 15.0 * axes[0] : 15.0 * (lst - axes[0]);
+                    // Convert to mount axes
+                    // If useLst is true: convert RA to HA via LST, else coordinates[0] is already HA
+                    axes[0] = useLst ? 15.0 * (lst - axes[0]) : 15.0 * axes[0];
                     axes[0] = Range.Range360(axes[0]);
 
-                    if (context.SouthernHemisphere) axes[1] = -axes[1]; // ✅ From context
+                    // Southern hemisphere dec inversion
+                    if (context.SouthernHemisphere)
+                        axes[1] = -axes[1];
 
+                    // Adjust axes to be through the pole if needed
                     if (axes[0] > 180.0)
                     {
                         axes[0] += 180;
                         axes[1] = 180 - axes[1];
                     }
 
-                    axes = Range.RangeAxesXy(axes);
-                    axes = AxesAppToMount(axes, context); // ✅ Pass context
+                    // Normalize axes ranges
+                    axes = Range.RangeAxesXy(axes); // Axes[0] in [0..180), Axes[1] in [-90..90] or [-180..-90] U [90..180]
+
+                    // Check for alternative position within flip angle and hardware limits
+                    axes = AxesAppToMount(axes, context);
                     alt = SkyServer.GetAlternatePosition(axes);
                     return (alt is null) ? axes : alt;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(context.AlignmentMode),
+                        context.AlignmentMode,
+                        "Unsupported alignment mode");
             }
         }
-
-        // ✅ KEEP OLD OVERLOAD (delegates to context version)
-        internal static double[] RaDecToAxesXy(
-            IReadOnlyList<double> raDec,
-            bool haDec,
-            AlignmentMode alignmentMode,
-            MountType mountType,
-            double latitude)
-        {
-            var context = new AxesContext(alignmentMode, mountType, latitude, SkyServer.SouthernHemisphere);
-            return RaDecToAxesXy(raDec, haDec, context);
-        }
-
-        // ✅ SIMPLE OVERLOAD (no haDec parameter)
-        internal static double[] RaDecToAxesXy(
-            IReadOnlyList<double> raDec,
-            AxesContext context)
-        {
-            return RaDecToAxesXy(raDec, haDec: false, context);
-        }
-        
-        //internal static double[] RaDecToAxesXy(
-        //    IReadOnlyList<double> raDec,
-        //    AlignmentMode alignmentMode,
-        //    MountType mountType,
-        //    double latitude)
-        //{
-        //    return RaDecToAxesXy(raDec, haDec: false, alignmentMode, mountType, latitude);
-        //}
-
-        /// <summary>
-        /// Convert a RaDec position to an axes positions. 
-        /// </summary>
-        /// <param name="raDec">Ra is in range [0..24] and Dec is in the range [-90..90] as defined by ASCOM</param>
-        /// <param name="haDec">If true, raDec[0] is HA instead of RA (no LST offset applied)</param>
-        /// <param name="alignmentMode">Alignment mode for coordinate conversion</param>
-        /// <param name="mountType">Mount type for AxesAppToMount conversion</param>
-        /// <param name="latitude">Observatory latitude for coordinate conversion</param>
-        /// <returns>Axes position in mount coordinates</returns>
-        //internal static double[] RaDecToAxesXy(
-        //    IReadOnlyList<double> raDec,
-        //    bool haDec,
-        //    AlignmentMode alignmentMode,
-        //    MountType mountType,
-        //    double latitude)
-        //{
-        //    double[] axes = { raDec[0], raDec[1] };
-        //    double[] b;
-        //    double[] alt;
-
-        //    // Get LST only when needed (RA conversion)
-        //    double lst = haDec ? 0.0 : SkyServer.SiderealTime;
-
-        //    switch (alignmentMode)
-        //    {
-        //        case AlignmentMode.AltAz:
-        //            axes = Coordinate.RaDec2AltAz(axes[0], axes[1], lst, latitude);
-        //            Array.Reverse(axes);
-        //            axes[0] = Range.Range180(axes[0]); // Azimuth range is -180 to 180
-        //                                               //check for alternative position within hardware limits
-        //            b = AxesAppToMount(axes, alignmentMode, mountType);
-        //            alt = SkyServer.GetAlternatePosition(b);
-        //            if (alt != null) axes = alt;
-        //            return AxesAppToMount(axes, alignmentMode, mountType);
-
-        //        case AlignmentMode.Polar:
-        //        case AlignmentMode.GermanPolar:
-        //            // Convert to axes and set Axis[0] in range [0..360), no lst offset if HA
-        //            axes[0] = haDec ? 15.0 * axes[0] : 15.0 * (lst - axes[0]);
-        //            axes[0] = Range.Range360(axes[0]);
-        //            if (SkyServer.SouthernHemisphere) axes[1] = -axes[1];
-
-        //            if (axes[0] > 180.0) // adjust axes to be through the pole
-        //            {
-        //                axes[0] += 180;
-        //                axes[1] = 180 - axes[1];
-        //            }
-        //            axes = Range.RangeAxesXy(axes);  // Axes[0] is in range [0..180), Axes[1] is in range [-90..90] or [-180..-90] U [90..180]
-        //                                             //check for alternative position within Flip Angle and hardware limits
-        //            axes = AxesAppToMount(axes, alignmentMode, mountType);
-        //            alt = SkyServer.GetAlternatePosition(axes);
-        //            return (alt is null) ? axes : alt;
-
-        //        default:
-        //            throw new ArgumentOutOfRangeException();
-        //    }
-        //} 
-
         /// <summary>
         /// Determine if a flip is needed to reach the RA/Dec coordinates
         /// </summary>

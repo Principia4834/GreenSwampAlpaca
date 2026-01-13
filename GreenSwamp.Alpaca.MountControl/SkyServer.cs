@@ -1047,7 +1047,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Altitude = altAz[1];
 
                 // Calculate top-o-centric Ra/Dec
-                var raDec = Axes.AxesXyToRaDec(axes);
+                var raDec = Axes.AxesXyToRaDec(axes, context);
                 RightAscension = raDec[0];
                 Declination = raDec[1];
 
