@@ -1472,7 +1472,8 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_settings!.NoSyncPastMeridian) { return false; } // add more checks later if needed
 
             //convert ra dec to mount XY positions
-            var xy = Axes.AzAltToAxesXy(new[] { az, alt }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+            var context = AxesContext.FromSettings(_settings);
+            var xy = Axes.AzAltToAxesXy(new[] { az, alt }, context);
             //convert to app coordinates
             var target = Axes.AxesMountToApp(GetSyncedAxes(xy), _settings.AlignmentMode, _settings.Mount);
 

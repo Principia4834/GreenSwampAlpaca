@@ -47,22 +47,25 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Converts axes positions from Local to Mount 
+        /// Convert axes positions from Local to Mount using context object
         /// </summary>
-        /// <param name="axes"></param>
-        /// <returns></returns>
-        internal static double[] AxesAppToMount(double[] axes, AlignmentMode alignmentMode, MountType mountType)
+        /// <param name="axes">Axes positions to convert</param>
+        /// <param name="context">Mount configuration context</param>
+        /// <returns>Converted axes positions</returns>
+        internal static double[] AxesAppToMount(double[] axes, AxesContext context)
         {
             var a = new[] { axes[0], axes[1] };
-            switch (alignmentMode)
+
+            switch (context.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    break; 
+                    break;
+
                 case AlignmentMode.GermanPolar:
-                    switch (mountType)
+                    switch (context.MountType)
                     {
                         case MountType.Simulator:
-                            if (SkyServer.SouthernHemisphere)
+                            if (context.SouthernHemisphere)
                             {
                                 a[0] = 180 - a[0];
                                 a[1] = a[1];
@@ -73,8 +76,9 @@ namespace GreenSwamp.Alpaca.MountControl
                                 a[1] = a[1];
                             }
                             break;
+
                         case MountType.SkyWatcher:
-                            if (SkyServer.SouthernHemisphere)
+                            if (context.SouthernHemisphere)
                             {
                                 a[0] = 180 - a[0];
                                 a[1] = a[1];
@@ -85,16 +89,17 @@ namespace GreenSwamp.Alpaca.MountControl
                                 a[1] = 180 - a[1];
                             }
                             break;
+
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-
                     break;
+
                 case AlignmentMode.Polar:
-                    switch (mountType)
+                    switch (context.MountType)
                     {
                         case MountType.Simulator:
-                            if (SkyServer.SouthernHemisphere)
+                            if (context.SouthernHemisphere)
                             {
                                 a[0] = -a[0];
                                 a[1] = a[1];
@@ -105,10 +110,11 @@ namespace GreenSwamp.Alpaca.MountControl
                                 a[1] = a[1];
                             }
                             break;
+
                         case MountType.SkyWatcher:
-                            if (SkyServer.PolarMode == PolarMode.Left)
+                            if (context.PolarMode == PolarMode.Left) // ✅ From context
                             {
-                                if (SkyServer.SouthernHemisphere)
+                                if (context.SouthernHemisphere)
                                 {
                                     a[0] = 180 - a[0];
                                     a[1] = a[1];
@@ -121,10 +127,10 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             else
                             {
-                                if (SkyServer.SouthernHemisphere)
+                                if (context.SouthernHemisphere)
                                 {
                                     a[0] = -a[0];
-                                a[1] = a[1];
+                                    a[1] = a[1];
                                 }
                                 else
                                 {
@@ -133,22 +139,38 @@ namespace GreenSwamp.Alpaca.MountControl
                                 }
                             }
                             break;
+
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
             var monitorItem = new MonitorEntry
             {
-                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
-                Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{axes[0]}|{axes[1]}|{a[0]}|{a[1]}"
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Debug,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{axes[0]}|{axes[1]}|{a[0]}|{a[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
             return a;
+        }
+
+        // ✅ KEEP OLD OVERLOAD (backward compatibility - delegates to new)
+        internal static double[] AxesAppToMount(
+            double[] axes,
+            AlignmentMode alignmentMode,
+            MountType mountType)
+        {
+            var context = AxesContext.FromStatic();
+            return AxesAppToMount(axes, context);
         }
 
         /// <summary>
@@ -299,27 +321,28 @@ namespace GreenSwamp.Alpaca.MountControl
         /// convert a decimal Az/Alt positions to an axes positions.
         /// </summary>
         /// <param name="azAlt"></param>
+        /// <param name="context">Mount configuration context</param>
         /// <returns></returns>
-        internal static double[] AzAltToAxesXy(double[] azAlt, AlignmentMode alignmentMode, MountType mountType, double latitude)
+        internal static double[] AzAltToAxesXy(double[] azAlt, AxesContext context)
         {
             var axes = new[] { 0.0, 0.0 };
             var b = new[] { 0.0, 0.0 };
             var alt = new[] { 0.0, 0.0 };
-            switch (alignmentMode)
+            switch (context.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
                     axes[0] = Range.Range180(azAlt[0]); // Azimuth range is -180 to 180
                     axes[1] = azAlt[1];
                     //check for alternative position within hardware limits
-                    b = AxesAppToMount(axes, alignmentMode, mountType);
+                    b = AxesAppToMount(axes, context);
                     alt = SkyServer.GetAlternatePosition(b);
                     if (alt != null) axes = alt;
                     break;
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
 //                    axes = Coordinate.AltAz2RaDec(azAlt[1], azAlt[0], SkySettings.Latitude, lst);
-                    axes = Coordinate.AltAz2HaDec(azAlt[1], azAlt[0], latitude);
-                    axes = RaDecToAxesXy(axes, true, alignmentMode, mountType, latitude);
+                    axes = Coordinate.AltAz2HaDec(azAlt[1], azAlt[0], context.Latitude);
+                    axes = RaDecToAxesXy(axes, true, context.AlignmentMode, context.MountType, context.Latitude);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -1194,7 +1194,9 @@ namespace GreenSwamp.Alpaca.MountControl
             //set to park position
             if (parkPosition != null)
             {
-                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y }, _settings.AlignmentMode, _settings.Mount);
+                // Set context from current settings
+                var context = AxesContext.FromSettings(_settings);
+                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y }, context);
                 name = parkPosition.Name;
             }
 

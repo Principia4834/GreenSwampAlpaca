@@ -588,6 +588,8 @@ namespace GreenSwamp.Alpaca.MountControl
         public double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
         {
             // Convert target to axes based on slew type
+            // Create context from current settings
+            var context = AxesContext.FromSettings(_settings);
             switch (slewType)
             {
                 case SlewType.SlewRaDec:
@@ -598,16 +600,16 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case SlewType.SlewAltAz:
                     // convert target to axis for Az / Alt slew
-                    target = Axes.AzAltToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+                    target = Axes.AzAltToAxesXy(target, context);
                     break;
                 case SlewType.SlewHome:
                     break;
                 case SlewType.SlewPark:
                     // convert to mount coordinates for park
-                    target = Axes.AxesAppToMount(target, _settings.AlignmentMode, _settings.Mount);
+                    target = Axes.AxesAppToMount(target, context);
                     break;
                 case SlewType.SlewMoveAxis:
-                    target = Axes.AxesAppToMount(target, _settings.AlignmentMode, _settings.Mount);
+                    target = Axes.AxesAppToMount(target, context);
                     break;
                 default:
                     break;
@@ -780,16 +782,18 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>Home axes vector adjusted for alignment mode and hemisphere</returns>
         internal Vector GetHomeAxes(double xAxis, double yAxis)
         {
+            // Create context from current settings
+            var context = AxesContext.FromSettings(_settings);
             var home = new[] { xAxis, yAxis };
             if (_settings.AlignmentMode != AlignmentMode.Polar)
             {
-                home = Axes.AxesAppToMount(new[] { xAxis, yAxis }, _settings.AlignmentMode, _settings.Mount);
+                home = Axes.AxesAppToMount(new[] { xAxis, yAxis }, context);
             }
             else
             {
                 var angleOffset = SkyServer.SouthernHemisphere ? 180.0 : 0.0;
                 home[0] -= angleOffset;
-                home = Axes.AzAltToAxesXy(home, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+                home = Axes.AzAltToAxesXy(home, context);
             }
             return new Vector(home[0], home[1]);
         }
