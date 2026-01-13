@@ -161,6 +161,17 @@ namespace GreenSwamp.Alpaca.Shared
         #region Methods
 
         /// <summary>
+        /// Explicitly initializes MonitorQueue's static constructor
+        /// Call this early in application startup to ensure logging is ready
+        /// </summary>
+        public static void EnsureInitialized()
+        {
+            // Accessing any static member forces the static constructor to run
+            // The constructor creates BlockingCollections and starts background tasks
+            var _ = MonitorBlockingCollection.IsAddingCompleted;
+        }
+
+        /// <summary>
         /// reset the count from the UI
         /// </summary>
         public static void ResetMonitorIndex()

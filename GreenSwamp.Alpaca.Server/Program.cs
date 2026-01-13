@@ -220,46 +220,56 @@ namespace GreenSwamp.Alpaca.Server
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
 
-                // Initialize Monitor settings FIRST (before SkySettingsInstance)
+                // Initialize Monitor settings system in correct order
                 GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
-                GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();  // Enable logging filters
+                Logger.LogInformation("✅ Settings.Initialize() completed");
+
+                // Force MonitorQueue initialization (creates BlockingCollections and background tasks)
+                GreenSwamp.Alpaca.Shared.MonitorQueue.EnsureInitialized();
+                Logger.LogInformation("✅ MonitorQueue initialized");
+
+                // CRITICAL: Load settings BEFORE Load_Settings() to populate filter checklists
                 GreenSwamp.Alpaca.Shared.Settings.Load();
-                Logger.LogInformation("✅ Monitor settings initialized - logging enabled");
+                Logger.LogInformation("✅ Settings.Load() completed");
+
+                // Populate filter checklists (now that Settings properties have values)
+                GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
+                Logger.LogInformation("✅ Monitor filters loaded");
+                Logger.LogInformation($"📁 Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
 
                 // Phase 4.2: Create instance with profile loading support
-                var profileLoader = app.Services.GetService<IProfileLoaderService>(); // Optional - may be null
+                var profileLoader = app.Services.GetService<IProfileLoaderService>();
                 var settingsInstance = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-                
+
                 if (profileLoader != null)
                 {
-                    Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance created with profile loading support");
+                    Logger.LogInformation("✅ SkySettingsInstance created with profile loading support");
                 }
                 else
                 {
-                    Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance created (JSON-only, no profile service)");
+                    Logger.LogInformation("✅ SkySettingsInstance created (JSON-only)");
                 }
 
                 // Initialize SkyServer with instance settings
                 GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
-                Logger.LogInformation("✅ SkyServer initialized with instance settings");
+                Logger.LogInformation("✅ SkyServer initialized");
 
-                // OPTIONAL: Initialize static facade for backward compatibility
-                // (Only if you're keeping static SkySettings temporarily)
+                // Initialize static facade for backward compatibility
                 GreenSwamp.Alpaca.MountControl.SkySettings.Initialize(settingsInstance);
-                Logger.LogInformation("✅ Static SkySettings facade initialized (temporary backward compatibility)");
+                Logger.LogInformation("✅ Static SkySettings facade initialized");
 
-                // Initialize SkySystem with instance settings (not static!)
+                // Initialize SkySystem with instance settings
                 GreenSwamp.Alpaca.MountControl.SkySystem.Initialize(settingsInstance);
-                Logger.LogInformation("✅ SkySystem initialized with instance settings");
+                Logger.LogInformation("✅ SkySystem initialized");
 
-                Logger.LogInformation("Instance-based settings active");
+                Logger.LogInformation("✅ Instance-based settings active");
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to initialize settings: {ex.Message}");
                 throw; // Re-throw to prevent app startup with broken settings
             }
-            
+
             // Migrate user settings if needed
             try
             {

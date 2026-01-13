@@ -141,7 +141,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>
         /// Custom log file path (0 = use default)
         /// </summary>
-        public string LogPath { get; set; } = "0";
+        public string LogPath { get; set; } = "";
 
         /// <summary>
         /// Settings version identifier for upgrades

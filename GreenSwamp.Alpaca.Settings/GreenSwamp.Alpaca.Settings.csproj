@@ -26,4 +26,8 @@
     <EmbeddedResource Include="Templates\settings-override.schema.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tools\" />
+  </ItemGroup>
+
 </Project>
