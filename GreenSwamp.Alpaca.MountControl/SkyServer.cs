@@ -1012,6 +1012,9 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 _steps = value;
 
+                // Set context from current settings
+                var context = AxesContext.FromSettings(_settings);
+
                 //Implement Pec
                 PecCheck();
 
@@ -1039,7 +1042,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 AppAxisY = axes[1];
 
                 // Calculate mount Alt/Az
-                var altAz = Axes.AxesXyToAzAlt(axes);
+                var altAz = Axes.AxesXyToAzAlt(axes, context);
                 Azimuth = altAz[0];
                 Altitude = altAz[1];
 

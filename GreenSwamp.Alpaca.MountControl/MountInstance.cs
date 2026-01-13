@@ -594,7 +594,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case SlewType.SlewRaDec:
                     // convert target to axis for Ra / Dec slew
-                    target = Axes.RaDecToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+                    target = Axes.RaDecToAxesXy(target, context);
                     // Convert to synced axes
                     target = SkyServer.GetSyncedAxes(target);
                     break;

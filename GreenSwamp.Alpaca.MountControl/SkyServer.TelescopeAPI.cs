@@ -1096,7 +1096,8 @@ namespace GreenSwamp.Alpaca.MountControl
             if (string.IsNullOrEmpty(name)) { name = "Empty"; }
 
             // convert current position
-            var park = Axes.MountAxis2Mount(AppAxisX, AppAxisY, _settings.AlignmentMode);
+            var context = AxesContext.FromSettings(_settings);
+            var park = Axes.MountAxis2Mount(context);
             if (park == null) { return; }
 
             var p = new ParkPosition { Name = name, X = park[0], Y = park[1] };
@@ -1432,7 +1433,8 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_settings!.NoSyncPastMeridian) { return false; } // add more checks later if needed
 
             //convert ra dec to mount XY positions
-            var xy = Axes.RaDecToAxesXy(new[] { ra, dec }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+            var context = AxesContext.FromSettings(_settings);
+            var xy = Axes.RaDecToAxesXy(new[] { ra, dec }, context);
             //convert to app coordinates
             var target = Axes.AxesMountToApp(GetSyncedAxes(xy), _settings.AlignmentMode, _settings.Mount);
 
@@ -1883,7 +1885,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // See if the target is within flip angle limits
             if (!IsWithinFlipLimits(position)) { return null; }
-            var alt = Axes.GetAltAxisPosition(position, _settings.AlignmentMode);
+            var context = AxesContext.FromSettings(_settings);
+            var alt = Axes.GetAltAxisPosition(position, context);
             if (!IsWithinFlipLimits(alt)) { return null; }
 
             var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
@@ -1920,7 +1923,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // See if the target is within flip angle limits
             if (!IsWithinFlipLimits(position)) { return null; }
-            var alt = Axes.GetAltAxisPosition(position, _settings.AlignmentMode);
+            var context = AxesContext.FromSettings(_settings);
+            var alt = Axes.GetAltAxisPosition(position, context);
             var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
             if (flipGoto) // implement the forced flip for a goto
             {
@@ -1954,7 +1958,8 @@ namespace GreenSwamp.Alpaca.MountControl
             var flipGoto = FlipOnNextGoto;
             FlipOnNextGoto = false;
 
-            var alt = Axes.GetAltAxisPosition(position, _settings.AlignmentMode);
+            var context = AxesContext.FromSettings(_settings);
+            var alt = Axes.GetAltAxisPosition(position, context);
             alt[0] = Range.Range180(alt[0]); // convert to polar position
 
             // Check target and altTarget are within hardware limits

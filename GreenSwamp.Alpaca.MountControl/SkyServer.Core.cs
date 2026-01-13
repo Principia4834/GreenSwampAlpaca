@@ -968,7 +968,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case SlewType.SlewRaDec:
                     // convert target to axis for Ra / Dec slew
-                    target = Axes.RaDecToAxesXy(target, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+                    target = Axes.RaDecToAxesXy(target, context);
                     // Convert to synced axes
                     target = GetSyncedAxes(target);
                     break;
@@ -1474,10 +1474,10 @@ namespace GreenSwamp.Alpaca.MountControl
             //      SkyServer.Steps contains the current encoder positions.
             //      SkyServer.FactorStep contains the conversion from radians to steps
             // To get the target steps
-            var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
-            var xy = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
             // Set context from current settings
             var context = AxesContext.FromSettings(_settings);
+            var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
+            var xy = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
             var unSynced = Axes.AxesAppToMount(new[] { xy[0], xy[1] }, context);
             var rawSteps = GetRawSteps();
             var synced = new[] { ConvertStepsToDegrees(rawSteps[0], 0), ConvertStepsToDegrees(rawSteps[1], 1) };
@@ -1956,7 +1956,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             // Convert to internal Ra / Dec
                             var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
                             // convert target to axis for Ra / Dec sync
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
                             _ = new CmdAxisToDegrees(0, Axis.Axis1, targetR[0]);
                             _ = new CmdAxisToDegrees(0, Axis.Axis2, targetR[1]);
                             break;
@@ -2568,7 +2568,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             // convert target to internal Ra / Dec
                             var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
                             // convert target to axis for Ra / Dec sync
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, _settings.AlignmentMode, _settings.Mount, _settings.Latitude);
+                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
                             _ = new SkySyncAxis(0, Axis.Axis1, targetR[0]);
                             _ = new SkySyncAxis(0, Axis.Axis2, targetR[1]);
                             monitorItem.Message += $",{Utilities.HoursToHMS(a.X, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(a.Y, " ", ":", "", 2)}|{targetR[0]}|{targetR[1]}";
