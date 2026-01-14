@@ -1681,7 +1681,7 @@ namespace GreenSwamp.Alpaca.MountControl
             #region Final precision slew
             token.ThrowIfCancellationRequested(); // check for a stop
             if (stopwatch.Elapsed.TotalSeconds <= timer)
-                Task.Run(() => SimPrecisionGoto(target, slewType, token)).Wait();
+                SimPrecisionGoto(target, slewType, token);
             #endregion
 
             SimTasks(MountTaskName.StopAxes);//make sure all axes are stopped
@@ -1841,7 +1841,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (axis1AtTarget && axis2AtTarget) { break; }
                     if (!axis1AtTarget)
                     {
-                    token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
                         object _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]); //move to target RA / Az
                     }
                     if (!axis2AtTarget)
@@ -2200,7 +2200,7 @@ namespace GreenSwamp.Alpaca.MountControl
             #region Final precision slew
             token.ThrowIfCancellationRequested(); // check for a stop
             if (stopwatch.Elapsed.TotalSeconds <= timer)
-                Task.Run(() => SkyPrecisionGoto(target, slewType, token)).Wait();
+                SkyPrecisionGoto(target, slewType, token);
             #endregion
 
             SkyTasks(MountTaskName.StopAxes); //make sure all axes are stopped

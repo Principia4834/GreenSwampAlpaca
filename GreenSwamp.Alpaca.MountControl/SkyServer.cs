@@ -1031,7 +1031,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 ActualAxisY = rawPositions[1];
 
                 // convert positions to local app axes
-                var axes = Axes.AxesMountToApp(rawPositions, context);
+                var axes = Axes.AxesMountToApp(rawPositions, context  );
 
                 // store local app axes to track positions
                 _appAxes.X = axes[0];

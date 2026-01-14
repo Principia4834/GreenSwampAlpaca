@@ -922,18 +922,18 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
             {
-                AxesStopValidate();
+//                AxesStopValidate();
                 // wait for the move to stop - physical overrun
                 //var trackingRate = SkyGetRate();
                 AxesRateOfChange.Reset();
-                do
-                {
-                    // Update mount velocity
-                    MountPositionUpdated = false;
-                    UpdateSteps();
-                    while (!MountPositionUpdated) Thread.Sleep(50);
-                    AxesRateOfChange.Update(_actualAxisX, _actualAxisY, HiResDateTime.UtcNow);
-                } while (AxesRateOfChange.AxisVelocity.Length > 0);
+                //do
+                //{
+                //    // Update mount velocity
+                //    MountPositionUpdated = false;
+                //    UpdateSteps();
+                //    while (!MountPositionUpdated) Thread.Sleep(50);
+                //    AxesRateOfChange.Update(_actualAxisX, _actualAxisY, HiResDateTime.UtcNow);
+                //} while (AxesRateOfChange.AxisVelocity.Length > 0);
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
             // ToDo re-enable voice prompt later
