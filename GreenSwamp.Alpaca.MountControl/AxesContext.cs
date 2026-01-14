@@ -125,7 +125,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SouthernHemisphere = SkyServer.SouthernHemisphere, // Still from SkyServer for now
                 PolarMode = settings.PolarMode,
                 LocalSiderealTime = null, // Lazy load when needed
-                SideOfPier = null,
+                SideOfPier = SkyServer.SideOfPier,
                 AppAxisX = null,
                 AppAxisY = null,
                 AxisLimitX = settings.AxisLimitX,
