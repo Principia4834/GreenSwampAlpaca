@@ -665,6 +665,16 @@ namespace GreenSwamp.Alpaca.MountControl
         }
         #endregion
 
+        public static TrackingMode TrackingMode
+        {
+            get => _trackingMode;
+            internal set  // Make setter internal if it's private
+            {
+                _trackingMode = value;
+                OnStaticPropertyChanged();
+            }
+        }
+
         /// <summary>
         /// Actual positions in degrees
         /// </summary>
@@ -837,7 +847,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public static Exception MountError
         {
             get => _mountError;
-            private set
+            internal set
             {
                 _mountError = value;
                 OnStaticPropertyChanged();

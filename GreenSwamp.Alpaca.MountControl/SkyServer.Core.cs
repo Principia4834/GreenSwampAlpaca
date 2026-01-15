@@ -65,6 +65,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private static MountInstance? _defaultInstance;
         // Phase 2: Instance-based settings reference
         private static SkySettingsInstance? _settings;
+        internal static SkySettingsInstance? Settings => _settings;
 
         // Slew and HC speeds
         private static double _slewSpeedOne;
@@ -1612,7 +1613,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Sim GOTO slew
         /// </summary>
         /// <returns></returns>
-        private static int SimGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
+        internal static int SimGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
         {
             const int success = 0;
             var monitorItem = new MonitorEntry
@@ -2129,7 +2130,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// SkyWatcher GOTO slew
         /// </summary>
         /// <returns></returns>
-        private static int SkyGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
+        internal static int SkyGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
         {
             const int success = 0;
             var monitorItem = new MonitorEntry

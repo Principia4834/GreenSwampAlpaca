@@ -348,19 +348,24 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private static bool _isSlewing;
         /// <summary>
-        /// status for goto
+        /// Status for goto - delegates to SlewController if available, otherwise uses legacy backing field
         /// </summary>
         public static bool IsSlewing
         {
-            get => _isSlewing;
+            get => _slewController?.IsSlewing ?? _isSlewing;
             private set
             {
-                if (_isSlewing == value) { return; }
-                _isSlewing = value;
-                OnStaticPropertyChanged();
+                // Only update backing field if SlewController is not being used
+                if (_slewController == null)
+                {
+                    if (_isSlewing == value) { return; }
+                    _isSlewing = value;
+                    OnStaticPropertyChanged();
+                }
+                // If SlewController exists, it manages its own state - setter is a no-op
             }
         }
-
+        
         /// <summary>
         /// within 0.1 degree circular range to trigger home
         /// </summary>
@@ -450,7 +455,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public static SlewType SlewState
         {
             get => _slewState;
-            private set
+            internal set
             {
                 _slewState = value;
             }
@@ -1009,11 +1014,39 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Parking & Homing
 
         /// <summary>
-        /// Goto home slew
+        /// Goto home slew - synchronous version that blocks until complete.
         /// </summary>
-        public static void GoToHome()
+        public static void GoToHomeX()
         {
             if (AtHome || SlewState == SlewType.SlewHome) return;
+            Tracking = false;
+
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "Slew to Home (using SlewController)"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // NEW: Use SlewController
+            var target = new[] { _homeAxes.X, _homeAxes.Y };
+            SlewSync(target, SlewType.SlewHome, tracking: false);
+        }
+
+        /// <summary>
+        /// Goto home slew - async version for ITelescopeV4.
+        /// </summary>
+        public static async Task<SlewResult> GoToHome()
+        {
+            if (AtHome || SlewState == SlewType.SlewHome)
+            {
+                return SlewResult.Failed("Already at home or home slew in progress");
+            }
 
             Tracking = false;
 
@@ -1025,15 +1058,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = "Slew to Home"
+                Message = "Slew to Home (Async using SlewController)"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            SlewMount(new Vector(_homeAxes.X, _homeAxes.Y), SlewType.SlewHome);
-        }
 
-        /// <summary>
-        /// Goto park slew
-        /// </summary>
+            var target = new[] { _homeAxes.X, _homeAxes.Y };
+            return await SlewAsync(target, SlewType.SlewHome, tracking: false);
+        }        /// <summary>
+                 /// Goto park slew
+                 /// </summary>
         public static void GoToPark()
         {
             Tracking = false;
@@ -1284,6 +1317,72 @@ namespace GreenSwamp.Alpaca.MountControl
                 default:
                     return $"{axisName} unknown error";
             }
+        }
+
+        #endregion
+
+        #region SlewController Integration
+
+        private static SlewController? _slewController;
+
+        /// <summary>
+        /// Ensures the SlewController is initialized.
+        /// </summary>
+        private static void EnsureSlewController()
+        {
+            if (_slewController == null)
+            {
+                _slewController = new SlewController();
+
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = nameof(EnsureSlewController),
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "SlewController initialized"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+        }
+
+        /// <summary>
+        /// Modern async slew implementation using SlewController.
+        /// Returns immediately after setup phase completes (< 1 second).
+        /// </summary>
+        public static async Task<SlewResult> SlewAsync(
+            double[] target,
+            SlewType slewType,
+            bool tracking = false)
+        {
+            EnsureSlewController();
+            var operation = new SlewOperation(target, slewType, tracking);
+            return await _slewController!.ExecuteSlewAsync(operation);
+        }
+
+        /// <summary>
+        /// Synchronous wrapper - blocks until slew completes.
+        /// Used for synchronous ASCOM methods (FindHome, SlewToCoordinates).
+        /// </summary>
+        public static void SlewSync(
+            double[] target,
+            SlewType slewType,
+            bool tracking = false)
+        {
+            EnsureSlewController();
+
+            var operation = new SlewOperation(target, slewType, tracking);
+            var setupResult = _slewController!.ExecuteSlewAsync(operation).Result;
+
+            if (!setupResult.CanProceed)
+            {
+                throw new InvalidOperationException($"Slew setup failed: {setupResult.ErrorMessage}");
+            }
+
+            // Wait for slew to complete
+            _slewController.WaitForSlewCompletionAsync().Wait();
         }
 
         #endregion
@@ -2055,7 +2154,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Set tracking on or off
         /// </summary>
-        private static void SetTracking()
+        internal static void SetTracking()
         {
             if (!IsMountRunning) { return; }
 

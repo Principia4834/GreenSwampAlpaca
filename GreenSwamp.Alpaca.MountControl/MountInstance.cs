@@ -960,6 +960,12 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!SkyQueue.IsRunning) return;
             SkyQueue.Stop();
             SkySystem.ConnectSerial = false;
+
+            // ToDo - fix cleanup
+            // Dispose SlewController
+            //_slewController?.Dispose();
+            //_slewController = null;
+
         }
 
         #endregion
