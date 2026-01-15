@@ -2287,7 +2287,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         var status1 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
                         axis1Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status1).Result);
-                      }
+                    }
                     if (axis1Done) { break; }
                 }
 

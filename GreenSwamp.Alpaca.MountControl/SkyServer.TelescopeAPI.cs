@@ -637,6 +637,17 @@ namespace GreenSwamp.Alpaca.MountControl
         private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false)
         {
             MonitorEntry monitorItem;
+            monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MonitorLog.GetCurrentMethod(),
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Starting {slewState}|{target[0]}|{target[1]}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
             if (!IsMountRunning)
             {
                 goToStarted.Set();
