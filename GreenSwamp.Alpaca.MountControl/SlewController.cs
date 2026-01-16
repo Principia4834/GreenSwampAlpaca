@@ -340,7 +340,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 ct.ThrowIfCancellationRequested();
 
                 // ===== PHASE 3: COMPLETION =====
-                await CompletionPhaseAsync(operation, moveResult, ct);
+                await CompletionPhaseAsync(operation.SlewType, operation.TrackingAfterSlew);
             }
             catch (OperationCanceledException)
             {
@@ -388,45 +388,40 @@ namespace GreenSwamp.Alpaca.MountControl
         /// PHASE 3: Completion - Handles slew-type-specific completion logic.
         /// Enables tracking, updates state, performs settling operations.
         /// </summary>
-        private async Task CompletionPhaseAsync(
-            SlewOperation operation,
-            MoveResult moveResult,
-            CancellationToken ct)
+        /// <summary>
+        /// Phase 3: Completion - finalize slew operation
+        /// </summary>
+        private async Task CompletionPhaseAsync(SlewType slewType, bool restoreTracking)
         {
-            if (!moveResult.Success)
-            {
-                MonitorLog.LogToMonitor(new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Server,
-                    Type = MonitorType.Warning,
-                    Method = nameof(CompletionPhaseAsync),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Movement failed with code {moveResult.Code}"
-                });
-
-                operation.MarkComplete(false);
-                return;
-            }
-
-            // REMOVED: The IsStillActive() check - it's incompatible with legacy behavior
-            // If movement succeeded, proceed to completion phase
-            // If cancelled, OperationCanceledException would have been thrown
-
-            // Handle slew-type-specific completion logic via operation
-            await operation.CompleteAsync(ct);
-
-            MonitorLog.LogToMonitor(new MonitorEntry
+            var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
-                Method = nameof(CompletionPhaseAsync),
+                Method = "CompletionPhaseAsync",
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{operation.SlewType} completed successfully"
-            });
+                Message = $"{slewType} completed successfully"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // ✅ FIX: Set AtPark for park operations ONLY when physically parked
+            if (slewType == SlewType.SlewPark)
+            {
+                SkyServer.CompletePark();  // Sets AtPark, Tracking, resets predictor
+            }
+
+            // Clear slewing state
+            _currentSlewType = SlewType.SlewNone;
+            SkyServer.SlewState = SlewType.SlewNone;
+
+            // Restore tracking if needed
+            if (restoreTracking && slewType != SlewType.SlewPark)
+            {
+                SkyServer.Tracking = true;
+            }
+
+            await Task.CompletedTask;
         }
 
         #endregion

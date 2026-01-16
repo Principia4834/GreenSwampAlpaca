@@ -593,21 +593,38 @@ namespace GreenSwamp.Alpaca.MountControl
         private static void MountStop_Internal()
         {
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings!.Mount}" };
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{_settings!.Mount}"
+            };
             MonitorLog.LogToMonitor(monitorItem);
 
             // Stop all asynchronous operations
             Tracking = false;
-            CancelAllAsync();
+
+            // ✅ FIX: Cancel SlewController FIRST
+            if (_slewController != null)
+            {
+                _ = _slewController.CancelCurrentSlewAsync();
+            }
+
+            CancelAllAsync();  // Cancel legacy operations
             AxesStopValidate();
+
             if (_mediaTimer != null) { _mediaTimer.Tick -= UpdateServerEvent; }
             _mediaTimer?.Stop();
             _mediaTimer?.Dispose();
             if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerEvent; }
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
+
             var sw = Stopwatch.StartNew();
-            while (sw.Elapsed.TotalMilliseconds < 1000) { } //change
+            while (sw.Elapsed.TotalMilliseconds < 1000) { }
             sw.Stop();
 
             if (MountQueue.IsRunning) { MountQueue.Stop(); }

@@ -348,11 +348,23 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private static bool _isSlewing;
         /// <summary>
-        /// Status for goto - delegates to SlewController if available, otherwise uses legacy backing field
+        /// Status for goto - delegates to SlewController if available, also checks MoveAxis activity
         /// </summary>
         public static bool IsSlewing
         {
-            get => _slewController?.IsSlewing ?? _isSlewing;
+            get
+            {
+                // Check SlewController first (slew operations)
+                if (_slewController?.IsSlewing == true)
+                    return true;
+
+                // Check MoveAxis activity (direct axis rate commands)
+                if ((Math.Abs(RateMovePrimaryAxis) + Math.Abs(RateMoveSecondaryAxis)) > 0)
+                    return true;
+
+                // Fall back to legacy backing field
+                return _isSlewing;
+            }
             private set
             {
                 // Only update backing field if SlewController is not being used
@@ -362,10 +374,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     _isSlewing = value;
                     OnStaticPropertyChanged();
                 }
-                // If SlewController exists, it manages its own state - setter is a no-op
+                // If SlewController exists, setter is a no-op (SlewController manages its own state)
             }
         }
-        
+
         /// <summary>
         /// within 0.1 degree circular range to trigger home
         /// </summary>
@@ -590,32 +602,113 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Mount Control Methods
 
         /// <summary>
-        /// Starts slew with ra/dec coordinates
+        /// Starts slew with ra/dec coordinates - synchronous version that blocks until complete.
+        /// Used for synchronous ASCOM operations.
         /// </summary>
-        /// <param name="rightAscension"></param>
-        /// <param name="declination"></param>
-        /// <param name="tracking"></param>
+        /// <param name="rightAscension">Right ascension in hours</param>
+        /// <param name="declination">Declination in degrees</param>
+        /// <param name="tracking">Enable tracking after slew completes</param>
         public static void SlewRaDec(double rightAscension, double declination, bool tracking = false)
         {
-            SlewMount(new Vector(rightAscension, declination), SlewType.SlewRaDec, tracking);
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Slew to Ra/Dec (using SlewController): RA={Utilities.HoursToHMS(rightAscension, "h ", ":", "", 2)}, Dec={Utilities.DegreesToDMS(declination, "\u00B0 ", ":", "", 2)}, Tracking={tracking}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // NEW: Use SlewController - coordinates are [rightAscension, declination]
+            var target = new[] { rightAscension, declination };
+            SlewSync(target, SlewType.SlewRaDec, tracking);
         }
 
         /// <summary>
-        /// Starts slew with alt/az coordinates
+        /// Starts slew with ra/dec coordinates - async version for ITelescopeV4.
+        /// Returns immediately after setup phase completes.
         /// </summary>
-        /// <param name="altitude"></param>
-        /// <param name="azimuth"></param>
+        /// <param name="rightAscension">Right ascension in hours</param>
+        /// <param name="declination">Declination in degrees</param>
+        /// <param name="tracking">Enable tracking after slew completes</param>
+        /// <returns>Result of the setup phase</returns>
+        public static async Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false)
+        {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Slew to Ra/Dec Async (using SlewController): RA={Utilities.HoursToHMS(rightAscension, "h ", ":", "", 2)}, Dec={Utilities.DegreesToDMS(declination, "\u00B0 ", ":", "", 2)}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // NEW: Use SlewController - coordinates are [rightAscension, declination]
+            var target = new[] { rightAscension, declination };
+            return await SlewAsync(target, SlewType.SlewRaDec, tracking);
+        }
+
+        /// <summary>
+        /// Starts slew with alt/az coordinates - synchronous version that blocks until complete.
+        /// Used for synchronous ASCOM operations.
+        /// </summary>
+        /// <param name="altitude">Target altitude in degrees</param>
+        /// <param name="azimuth">Target azimuth in degrees</param>
         public static void SlewAltAz(double altitude, double azimuth)
         {
-            SlewMount(new Vector(azimuth, altitude), SlewType.SlewAltAz);
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Slew to Alt/Az (using SlewController): Az={azimuth:F4}, Alt={altitude:F4}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // NEW: Use SlewController - coordinates are [azimuth, altitude]
+            var target = new[] { azimuth, altitude };
+            SlewSync(target, SlewType.SlewAltAz, tracking: false);
         }
 
         /// <summary>
-        /// Starts slew with primary/seconday internal coordinates, not mount positions
+        /// Starts slew with alt/az coordinates - async version for ITelescopeV4.
+        /// Returns immediately after setup phase completes.
         /// </summary>
-        /// <param name="primaryAxis"></param>
-        /// <param name="secondaryAxis"></param>
-        /// <param name="slewState"></param>
+        /// <param name="altitude">Target altitude in degrees</param>
+        /// <param name="azimuth">Target azimuth in degrees</param>
+        /// <returns>Result of the setup phase</returns>
+        public static async Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth)
+        {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Slew to Alt/Az Async (using SlewController): Az={azimuth:F4}, Alt={altitude:F4}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            // NEW: Use SlewController - coordinates are [azimuth, altitude]
+            var target = new[] { azimuth, altitude };
+            return await SlewAsync(target, SlewType.SlewAltAz, tracking: false);
+        }        /// <summary>
+                 /// Starts slew with primary/seconday internal coordinates, not mount positions
+                 /// </summary>
+                 /// <param name="primaryAxis"></param>
+                 /// <param name="secondaryAxis"></param>
+                 /// <param name="slewState"></param>
         public static void SlewAxes(double primaryAxis, double secondaryAxis, SlewType slewState, bool slewAsync = true)
         {
             SlewMount(new Vector(primaryAxis, secondaryAxis), slewState, false, slewAsync);
@@ -918,6 +1011,26 @@ namespace GreenSwamp.Alpaca.MountControl
             //IsSlewing = false;
             var tracking = Tracking || SlewState == SlewType.SlewRaDec || MoveAxisActive;
             Tracking = false; //added back in for spec "Tracking is returned to its pre-slew state"
+            // CRITICAL: Cancel SlewController operations FIRST
+            if (_slewController != null)
+            {
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "Cancelling SlewController operation"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
+                // Cancel synchronously - wait for it to complete
+                _slewController.CancelCurrentSlewAsync().Wait();
+            }
+
+            // Cancel legacy async operations (pulse guiding, etc.)
             CancelAllAsync();
             // Stop all MoveAxis commands
             MoveAxisActive = false;
@@ -958,6 +1071,17 @@ namespace GreenSwamp.Alpaca.MountControl
             // TrackingSpeak = true;
 
             // if (speak) { Synthesizer.Speak(MediaTypeNames.Application.Current.Resources["vceAbortSlew"].ToString()); }
+            monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "AbortSlew completed"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
         }
 
         /// <summary>
@@ -1064,15 +1188,16 @@ namespace GreenSwamp.Alpaca.MountControl
 
             var target = new[] { _homeAxes.X, _homeAxes.Y };
             return await SlewAsync(target, SlewType.SlewHome, tracking: false);
-        }        /// <summary>
-                 /// Goto park slew
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Goto park slew - synchronous version that blocks until complete.
+        /// </summary>
         public static void GoToPark()
         {
             Tracking = false;
 
-
-            // get position selected could be set from UI or AsCom
+            // Get position selected (could be set from UI or ASCOM)
             var ps = ParkSelected;
             if (ps == null) { return; }
             if (double.IsNaN(ps.X)) { return; }
@@ -1093,10 +1218,51 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{ps.Name}|{ps.X}|{ps.Y}"
+                Message = $"Slew to Park (using SlewController): {ps.Name}|{ps.X}|{ps.Y}"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            SlewMount(new Vector(ps.X, ps.Y), SlewType.SlewPark);
+
+            // ✅ NEW: Use SlewController
+            var target = new[] { ps.X, ps.Y };
+            SlewSync(target, SlewType.SlewPark, tracking: false);
+        }
+
+        /// <summary>
+        /// Goto park slew - async version for ITelescopeV4.
+        /// Returns immediately after setup phase completes.
+        /// </summary>
+        public static async Task<SlewResult> GoToParkAsync()
+        {
+            Tracking = false;
+
+            var ps = ParkSelected;
+            if (ps == null)
+            {
+                return SlewResult.Failed("No park position selected");
+            }
+            if (double.IsNaN(ps.X) || double.IsNaN(ps.Y))
+            {
+                return SlewResult.Failed("Invalid park coordinates");
+            }
+
+            SetParkAxis(ps.Name, ps.X, ps.Y);
+            _settings!.ParkAxes = new[] { ps.X, ps.Y };
+            _settings!.ParkName = ps.Name;
+
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Slew to Park Async (using SlewController): {ps.Name}|{ps.X}|{ps.Y}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            var target = new[] { ps.X, ps.Y };
+            return await SlewAsync(target, SlewType.SlewPark, tracking: false);
         }
 
         /// <summary>
@@ -1383,6 +1549,39 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // Wait for slew to complete
             _slewController.WaitForSlewCompletionAsync().Wait();
+        }
+
+        /// <summary>
+        /// Wait for current slew to complete (for async operations that need completion)
+        /// </summary>
+        public static async Task WaitForSlewCompletionAsync()
+        {
+            if (_slewController != null)
+            {
+                await _slewController.WaitForSlewCompletionAsync();
+            }
+        }
+
+        /// <summary>
+        /// Complete park operation - sets AtPark, stops tracking, resets predictor
+        /// </summary>
+        public static void CompletePark()
+        {
+            AtPark = true;
+            Tracking = false;
+            SkyPredictor.Reset();
+
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "Park completed - AtPark set, tracking disabled, predictor reset"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
         }
 
         #endregion
