@@ -482,91 +482,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private static void MountStart()
         {
-            if (_defaultInstance != null)
-            {
-                _defaultInstance.MountStart();
-            }
-            else
-            {
-                // Fallback for backward compatibility
-                MountStart_Internal();
-            }
-        }
-
-        /// <summary>
-        /// INTERNAL: Original implementation (fallback)
-        /// Will be removed in Phase 3.5
-        /// </summary>
-        private static void MountStart_Internal()
-        {
-            var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings!.Mount}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            // setup server defaults, stop auto-discovery, connect serial port, start queues
-            Defaults();
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    Mount.Simulator.Settings.AutoHomeAxisX = (int)_settings!.AutoHomeAxisX;
-                    Mount.Simulator.Settings.AutoHomeAxisY = (int)_settings!.AutoHomeAxisY;
-                    MountQueue.Start();
-                    if (MountQueue.IsRunning) { ConnectAlignmentModel(); }
-                    else
-                    { throw new Exception("Failed to start simulator queue"); }
-
-                    break;
-                case MountType.SkyWatcher:
-                    // open serial port
-                    SkySystem.ConnectSerial = false;
-                    SkySystem.ConnectSerial = true;
-                    if (!SkySystem.ConnectSerial)
-                    {
-                        throw new SkyServerException(ErrorCode.ErrSerialFailed,
-                            $"Connection Failed: {SkySystem.Error}");
-                    }
-                    // Start up, pass custom mount gearing if needed
-                    var custom360Steps = new[] { 0, 0 };
-                    var customWormSteps = new[] { 0.0, 0.0 };
-                    if (_settings!.CustomGearing)
-                    {
-                        custom360Steps = new[] { _settings!.CustomRa360Steps, _settings!.CustomDec360Steps };
-                        customWormSteps = new[] { (double)_settings!.CustomRa360Steps / _settings!.CustomRaWormTeeth, (double)_settings!.CustomDec360Steps / _settings!.CustomDecWormTeeth };
-                    }
-
-                    SkyQueue.Start(SkySystem.Serial, custom360Steps, customWormSteps, LowVoltageEventSet);
-                    if (!SkyQueue.IsRunning)
-                    {
-                        throw new SkyServerException(ErrorCode.ErrMount, "Failed to start sky queue");
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            // Run mount default commands and start the UI updates
-            if (MountConnect())
-            {
-                // start with a stop
-                AxesStopValidate();
-
-                // Event to get mount positions and update UI
-                // Ensure DisplayInterval is valid for MediaTimer (must be > 0)
-                var displayInterval = _settings!.DisplayInterval > 0 ? _settings!.DisplayInterval : 200;
-                _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
-                _mediaTimer.Tick += UpdateServerEvent;
-                _mediaTimer.Start();
-
-                // Event to update AltAz tracking rate
-                // Ensure AltAzTrackingUpdateInterval is valid for MediaTimer (must be > 0)
-                var altAzInterval = _settings!.AltAzTrackingUpdateInterval > 0 ? _settings!.AltAzTrackingUpdateInterval : 2500;
-                _altAzTrackingTimer = new MediaTimer { Period = altAzInterval, Resolution = 5 };
-                _altAzTrackingTimer.Tick += AltAzTrackingTimerEvent;
-            }
-            else
-            {
-                MountStop();
-            }
+            // If _defaultInstance is null, this is a no-op (safe)
+            _defaultInstance?.MountStart();
         }
 
         /// <summary>
@@ -575,119 +492,22 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private static void MountStop()
         {
-            if (_defaultInstance != null)
-            {
-                _defaultInstance.MountStop();
-            }
-            else
-            {
-                // Fallback for backward compatibility
-                MountStop_Internal();
-            }
+            // If _defaultInstance is null, this is a no-op (safe)
+            _defaultInstance?.MountStop();
         }
 
         /// <summary>
-        /// INTERNAL: Original implementation (fallback)
-        /// Will be removed in Phase 3.5
-        /// </summary>
-        private static void MountStop_Internal()
-        {
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{_settings!.Mount}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            // Stop all asynchronous operations
-            Tracking = false;
-
-            // ✅ FIX: Cancel SlewController FIRST
-            if (_slewController != null)
-            {
-                _ = _slewController.CancelCurrentSlewAsync();
-            }
-
-            CancelAllAsync();  // Cancel legacy operations
-            AxesStopValidate();
-
-            if (_mediaTimer != null) { _mediaTimer.Tick -= UpdateServerEvent; }
-            _mediaTimer?.Stop();
-            _mediaTimer?.Dispose();
-            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerEvent; }
-            _altAzTrackingTimer?.Stop();
-            _altAzTrackingTimer?.Dispose();
-
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed.TotalMilliseconds < 1000) { }
-            sw.Stop();
-
-            if (MountQueue.IsRunning) { MountQueue.Stop(); }
-
-            if (!SkyQueue.IsRunning) return;
-            SkyQueue.Stop();
-            SkySystem.ConnectSerial = false;
-        }
-
-        /// <summary>
-        /// Reset mount to home position
+        /// Get home axes adjusted for angle offset
         /// Delegated to instance
         /// </summary>
-        public static void MountReset()
-        {
-            if (_defaultInstance != null)
-            {
-                _defaultInstance.MountReset();
-
-                // Update static fields for backward compatibility
-                _homeAxes = _defaultInstance.HomeAxes;
-                _appAxisX = _defaultInstance.AppAxes.X;
-                _appAxisY = _defaultInstance.AppAxes.Y;
-            }
-            else
-            {
-                // Fallback for backward compatibility
-                _homeAxes = GetHomeAxes(_settings!.HomeAxisX, _settings!.HomeAxisY);
-                _appAxisX = _homeAxes.X;
-                _appAxisY = _homeAxes.Y;
-            }
-        }        /// <summary>
-                 /// Get home axes adjusted for angle offset
-                 /// Delegated to instance
-                 /// </summary>
         public static Vector GetHomeAxes(double xAxis, double yAxis)
         {
-            return _defaultInstance?.GetHomeAxes(xAxis, yAxis) ?? GetHomeAxes_Internal(xAxis, yAxis);
+            return _defaultInstance?.GetHomeAxes(xAxis, yAxis) ?? new Vector(0, 0);
         }
 
         /// <summary>
-        /// INTERNAL: Original implementation (fallback)
-        /// Will be removed in Phase 3.5
+        /// Shuts down everything and exists
         /// </summary>
-        private static Vector GetHomeAxes_Internal(double xAxis, double yAxis)
-        {
-            var home = new[] { xAxis, yAxis };            // Create context from current settings
-            var context = AxesContext.FromSettings(_settings);
-
-            if (_settings!.AlignmentMode != AlignmentMode.Polar)
-            {
-                home = Axes.AxesAppToMount(new[] { xAxis, yAxis }, context);
-            }
-            else
-            {
-                var angleOffset = SouthernHemisphere ? 180.0 : 0.0;
-                home[0] -= angleOffset;
-                home = Axes.AzAltToAxesXy(home, context);
-            }
-            return new Vector(home[0], home[1]);
-        }        /// <summary>
-                 /// Shuts down everything and exists
-                 /// </summary>
         public static void ShutdownServer()
         {
             IsMountRunning = false;
@@ -782,33 +602,9 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static double[]? GetRawDegrees()
         {
             // Delegate to default instance
-            return _defaultInstance?.GetRawDegrees() ?? GetRawDegrees_Internal();
+            return _defaultInstance?.GetRawDegrees() ?? new[] { double.NaN, double.NaN };
         }
         
-        /// <summary>
-        /// Gets current converted positions from the mount in degrees
-        /// </summary>
-        /// <returns></returns>
-        private static double[] GetRawDegrees_Internal()
-        {
-            var actualDegrees = new[] { double.NaN, double.NaN };
-            if (!IsMountRunning) { return actualDegrees; }
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    var simPositions = new CmdAxesDegrees(MountQueue.NewId);
-                    actualDegrees = (double[])MountQueue.GetCommandResult(simPositions).Result;
-                    break;
-                case MountType.SkyWatcher:
-                    var skyPositions = new SkyGetPositionsInDegrees(SkyQueue.NewId);
-                    actualDegrees = (double[])SkyQueue.GetCommandResult(skyPositions).Result;
-                    return CheckSkyErrors(skyPositions) ? null : actualDegrees;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            return actualDegrees;
-        }
-
         /// <summary>
         /// Convert steps to degrees
         /// Renamed to _Internal, delegated to instance
@@ -816,30 +612,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static double ConvertStepsToDegrees(double steps, int axis)
         {
             // Delegate to default instance
-            return _defaultInstance?.ConvertStepsToDegrees(steps, axis) ?? ConvertStepsToDegrees_Internal(steps, axis);
-        }
-
-        /// <summary>
-        /// Convert steps to degrees
-        /// </summary>
-        /// <param name="steps"></param>
-        /// <param name="axis"></param>
-        /// <returns>degrees</returns>
-        private static double ConvertStepsToDegrees_Internal(double steps, int axis)
-        {
-            double degrees;
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    degrees = steps / FactorStep[axis];
-                    break;
-                case MountType.SkyWatcher:
-                    degrees = Principles.Units.Rad2Deg1(steps * FactorStep[axis]);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            return degrees;
+            return _defaultInstance?.ConvertStepsToDegrees(steps, axis) ?? double.NaN;
         }
 
         /// <summary>
@@ -849,34 +622,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static double[]? GetRawSteps()
         {
             // Delegate to default instance
-            return _defaultInstance?.GetRawSteps() ?? GetRawSteps_Internal();
-        }
-
-        /// <summary>
-        /// Get steps from the mount
-        /// </summary>
-        /// <returns>double array</returns>
-        private static double[] GetRawSteps_Internal()
-        {
-            var steps = new[] { double.NaN, double.NaN };
-            if (!IsMountRunning) { return steps; }
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    var simPositions = new CmdAxesDegrees(MountQueue.NewId);
-                    steps = (double[])MountQueue.GetCommandResult(simPositions).Result;
-                    steps[0] *= FactorStep[0];
-                    steps[1] *= FactorStep[1];
-                    break;
-                case MountType.SkyWatcher:
-                    var skySteps = new SkyGetSteps(SkyQueue.NewId);
-                    steps = (double[])SkyQueue.GetCommandResult(skySteps).Result;
-
-                    return CheckSkyErrors(skySteps) ? new[] { double.NaN, double.NaN } : steps;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            return steps;
+            return _defaultInstance?.GetRawSteps() ?? new[] { double.NaN, double.NaN };
         }
 
         private static DateTime lastUpdateStepsTime = DateTime.MinValue;
@@ -892,121 +638,12 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Gets current positions from the mount in steps
-        /// </summary>
-        /// <returns></returns>
-        private static double? GetRawSteps(int axis)
-        {
-            if (!IsMountRunning) { return null; }
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    var simPositions = new CmdAxisSteps(MountQueue.NewId);
-                    var a = (int[])MountQueue.GetCommandResult(simPositions).Result;
-
-                    switch (axis)
-                    {
-                        case 0:
-                            return Convert.ToDouble(a[0]);
-                        case 1:
-                            return Convert.ToDouble(a[1]);
-                        default:
-                            return null;
-                    }
-                case MountType.SkyWatcher:
-                    switch (axis)
-                    {
-                        case 0:
-                            var b = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis1);
-                            return Convert.ToDouble(SkyQueue.GetCommandResult(b).Result);
-                        case 1:
-                            var c = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis2);
-                            return Convert.ToDouble(SkyQueue.GetCommandResult(c).Result);
-                        default:
-                            return null;
-                    }
-                default:
-                    return null;
-            }
-        }
-
-        public static Tuple<double?, DateTime> GetRawStepsDt(int axis)
-        {
-            if (!IsMountRunning) { return null; }
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    switch (axis)
-                    {
-                        case 0:
-                            var a = new AxisStepsDt(MountQueue.NewId, Axis.Axis1);
-                            return MountQueue.GetCommandResult(a).Result;
-                        case 1:
-                            var b = new AxisStepsDt(MountQueue.NewId, Axis.Axis2);
-                            return MountQueue.GetCommandResult(b).Result;
-                        default:
-                            return null;
-                    }
-                case MountType.SkyWatcher:
-                    switch (axis)
-                    {
-                        case 0:
-                            var b = new SkyGetAxisPositionDate(SkyQueue.NewId, Axis.Axis1);
-                            return SkyQueue.GetCommandResult(b).Result;
-                        case 1:
-                            var c = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis2);
-                            return SkyQueue.GetCommandResult(c).Result;
-                        default:
-                            return null;
-                    }
-                default:
-                    return null;
-            }
-        }
-
-        /// <summary>
         /// Maps a slew target to the corresponding axes based on the specified slew type.
         /// Delegated to instance
         /// </summary>
         public static double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
         {
-            return _defaultInstance?.MapSlewTargetToAxes(target, slewType)
-                   ?? MapSlewTargetToAxes_Internal(target, slewType);
-        }
-
-        /// <summary>
-        /// INTERNAL: Original implementation (fallback)
-        /// </summary>
-        private static double[] MapSlewTargetToAxes_Internal(double[] target, SlewType slewType)
-        {
-            // Convert target to axes based on slew type
-            // Create context from current settings
-            var context = AxesContext.FromSettings(_settings);
-            switch (slewType)
-            {
-                case SlewType.SlewRaDec:
-                    // convert target to axis for Ra / Dec slew
-                    target = Axes.RaDecToAxesXy(target, context);
-                    // Convert to synced axes
-                    target = GetSyncedAxes(target);
-                    break;
-                case SlewType.SlewAltAz:
-                    // convert target to axis for Az / Alt slew
-                    target = Axes.AzAltToAxesXy(target, context);
-                    break;
-                case SlewType.SlewHome:
-                    break;
-                case SlewType.SlewPark:
-                    // convert to mount coordinates for park
-                    target = Axes.AxesAppToMount(target, context);
-                    break;
-                case SlewType.SlewMoveAxis:
-                    target = Axes.AxesAppToMount(target, context);
-                    break;
-                default:
-                    break;
-            }
-            return target;
+            return _defaultInstance?.MapSlewTargetToAxes(target, slewType) ?? new[] { double.NaN, double.NaN };
         }
 
         /// <summary>
