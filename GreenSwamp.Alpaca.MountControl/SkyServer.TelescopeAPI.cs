@@ -180,7 +180,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{value}|{_appAxes.Y}|{_appAxes.Y < 90 || _appAxes.Y.IsEqualTo(90, 0.0000000001)}|{_appAxes.Y > -90 || _appAxes.Y.IsEqualTo(-90, 0.0000000001)} "
+                    Message = $"{value}|{AppAxisY}|{AppAxisY < 90 || AppAxisY.IsEqualTo(90, 0.0000000001)}|{AppAxisY > -90 || AppAxisY.IsEqualTo(-90, 0.0000000001)} "
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -201,20 +201,20 @@ namespace GreenSwamp.Alpaca.MountControl
                         sideOfPier = _actualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
                         break;
                     case AlignmentMode.Polar:
-                        sideOfPier = (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
+                        sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
                         break;
                     case AlignmentMode.GermanPolar:
                         if (SouthernHemisphere)
                         {
-                            //return _appAxes.Y <= 90 && _appAxes.Y >= -90 ? PointingState.ThroughThePole : PointingState.Normal;
+                            //return AppAxes.Y <= 90 && AppAxes.Y >= -90 ? PointingState.ThroughThePole : PointingState.Normal;
                             // replaced with ...
-                            sideOfPier = (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001) ? PointingState.ThroughThePole :PointingState.Normal;
+                            sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.ThroughThePole : PointingState.Normal;
                         }
                         else
                         {
-                            // return _appAxes.Y <= 90 && _appAxes.Y >= -90 ? PointingState.Normal : PointingState.ThroughThePole;
+                            // return AppAxes.Y <= 90 && AppAxes.Y >= -90 ? PointingState.Normal : PointingState.ThroughThePole;
                             // replaced with ...
-                            sideOfPier = (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
+                            sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
                         }
                         break;
                     default:
@@ -387,9 +387,9 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 // Home axis values are mount values internally
                 var context = AxesContext.FromSettings(_settings);
-                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, context);
+                var home = Axes.AxesMountToApp(new[] { HomeAxes.X, HomeAxes.Y }, context);
                 var h = new Vector(home[0], home[1]);
-                var m = new Vector(_appAxes.X, _appAxes.Y);
+                var m = new Vector(AppAxisX, AppAxisY);
                 double dX = Abs(m.X - h.X);
                 dX = Min(dX, 360.0 - dX);   // Az Alt can have home (0, 0) so wrap at 360
                 double dY = Abs(m.Y - h.Y);
@@ -1158,7 +1158,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
             // NEW: Use SlewController
-            var target = new[] { _homeAxes.X, _homeAxes.Y };
+            var target = new[] { HomeAxes.X, HomeAxes.Y };
             SlewSync(target, SlewType.SlewHome, tracking: false);
         }
 
@@ -1186,7 +1186,7 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            var target = new[] { _homeAxes.X, _homeAxes.Y };
+            var target = new[] { HomeAxes.X, HomeAxes.Y };
             return await SlewAsync(target, SlewType.SlewHome, tracking: false);
         }
 
@@ -1617,7 +1617,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Tracking = false;
             }
 
-            _altAzSync = new Vector(targetAltitude, targetAzimuth);
+            AltAzSync = new Vector(targetAltitude, targetAzimuth);
             switch (_settings!.Mount)
             {
                 case MountType.Simulator:
@@ -3009,28 +3009,28 @@ namespace GreenSwamp.Alpaca.MountControl
                     // check if we have hit the hour angle limit 
                     if (SouthernHemisphere)
                     {
-                        if (_appAxes.X >= _settings!.HourAngleLimit ||
-                            _appAxes.X <= -_settings!.HourAngleLimit - 180)
+                        if (AppAxes.X >= _settings!.HourAngleLimit ||
+                            AppAxes.X <= -_settings!.HourAngleLimit - 180)
                         {
                             limitHit = true;
                         }
 
                         // Check tracking limit
-                        if (_appAxes.X >= totLimit || _appAxes.X <= -totLimit - 180)
+                        if (AppAxes.X >= totLimit || AppAxes.X <= -totLimit - 180)
                         {
                             meridianLimit = true;
                         }
                     }
                     else
                     {
-                        if (_appAxes.X >= _settings!.HourAngleLimit + 180 ||
-                            _appAxes.X <= -_settings!.HourAngleLimit)
+                        if (AppAxes.X >= _settings!.HourAngleLimit + 180 ||
+                            AppAxes.X <= -_settings!.HourAngleLimit)
                         {
                             limitHit = true;
                         }
 
                         //Check Tracking Limit
-                        if (_appAxes.X >= totLimit + 180 || _appAxes.X <= -totLimit)
+                        if (AppAxes.X >= totLimit + 180 || AppAxes.X <= -totLimit)
                         {
                             meridianLimit = true;
                         }

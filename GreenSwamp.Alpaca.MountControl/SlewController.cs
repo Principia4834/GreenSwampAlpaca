@@ -153,6 +153,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Signal ASCOM that operation has started (IsSlewing = true)
                 IsSlewing = true;
                 CurrentSlewType = operation.SlewType;
+                SkyServer.SlewState = operation.SlewType;
 
                 // Start background movement task (does NOT block ASCOM caller)
                 _movementTask = Task.Run(

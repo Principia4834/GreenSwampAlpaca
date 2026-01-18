@@ -82,11 +82,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private static HcPrevMove _hcPrevMoveDec;
         private static readonly IList<double> HcPrevMovesDec = new List<double>();
 
-        private static Vector _homeAxes;
-        // App axes derived from mount axes by AxesMountToApp
-        private static Vector _appAxes;
-        //private static Vector _targetAxes;
-        private static Vector _altAzSync;
+        // Phase 4.1: Converted to delegating properties (fields removed, see properties below)
 
         // ToDo: Remove if not needed
         // public static readonly List<SpiralPoint> SpiralCollection;
@@ -101,6 +97,39 @@ namespace GreenSwamp.Alpaca.MountControl
         private static volatile CancellationTokenSource _ctsPulseGuideDec;
         private static volatile CancellationTokenSource _ctsHcPulseGuide;
 
+        // Phase 4.1: Delegating properties for instance state
+        /// <summary>
+        /// Home axes position (mount coordinates)
+        /// Delegates to default instance
+        /// </summary>
+        private static Vector HomeAxes
+        {
+            get => _defaultInstance?.HomeAxes ?? new Vector(0, 0);
+        }
+
+        /// <summary>
+        /// Application axes position (derived from mount axes by AxesMountToApp)
+        /// Delegates to default instance
+        /// </summary>
+        private static Vector AppAxes
+        {
+            get => _defaultInstance?.AppAxes ?? new Vector(0, 0);
+        }
+
+        /// <summary>
+        /// Alt/Az sync position for Alt/Az mode syncing
+        /// Delegates to default instance
+        /// </summary>
+        private static Vector AltAzSync
+        {
+            get => _defaultInstance?.AltAzSync ?? new Vector(0, 0);
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance.AltAzSync = value;
+            }
+        }
+        
         #endregion
 
         #region Static Constructor
@@ -121,17 +150,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                // Phase A.6: Settings loaded via SkySettingsBridge from JSON
-                // Bridge handles all 121 properties (93 public + 28 capabilities + 13 read-only)
-                // Load() is no longer needed - kept for backward compatibility but not called
-                // _settings!.Load();
-
                 // load some things
                 Defaults();
                 
-                // set local to NaN for constructor
-                _appAxes = new Vector(double.NaN, double.NaN);
-
                 // ToDo: Remove if not needed
                 // initialise the alignment model
                 //AlignmentSettings.Load();
@@ -182,299 +203,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Core Mount Operations
-        // Contains: MountConnect, MountStart, MountStop, MountReset, GetHomeAxes, ShutdownServer
-        // COMPLETE - All mount lifecycle methods have been moved
-
-        /// <summary>
-        /// Sets up defaults after an established connection
-        /// </summary>
-        private static bool MountConnect()
-        {
-            _targetRaDec = new Vector(double.NaN, double.NaN); // invalid target position
-            var positions = GetDefaultPositions_Internal();
-            double[] rawPositions = null;
-            var counter = 0;
-            int raWormTeeth;
-            int decWormTeeth;
-            bool positionsSet = false;
-            MonitorEntry monitorItem;
-            string msg;
-
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    // defaults
-                    SimTasks(MountTaskName.MountName);
-                    SimTasks(MountTaskName.MountVersion);
-                    SimTasks(MountTaskName.StepsPerRevolution);
-                    SimTasks(MountTaskName.StepsWormPerRevolution);
-                    SimTasks(MountTaskName.CanHomeSensor);
-                    SimTasks(MountTaskName.GetFactorStep);
-                    SimTasks(MountTaskName.Capabilities);
-
-                    raWormTeeth = (int)(StepsPerRevolution[0] / StepsWormPerRevolution[0]);
-                    decWormTeeth = (int)(StepsPerRevolution[1] / StepsWormPerRevolution[1]);
-                    WormTeethCount = new[] { raWormTeeth, decWormTeeth };
-                    PecBinSteps = StepsPerRevolution[0] / (WormTeethCount[0] * 1.0) / PecBinCount;
-
-                    // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
-                    while (rawPositions == null)
-                    {
-                        if (counter > 5)
-                        {
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, positions[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, positions[1]);
-                            positionsSet = true;
-                            monitorItem = new MonitorEntry
-                            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Counter exceeded:{positions[0]}|{positions[1]}" };
-                            MonitorLog.LogToMonitor(monitorItem);
-                            break;
-                        }
-                        counter++;
-
-                        rawPositions = GetRawDegrees();
-                        msg = rawPositions != null ? $"GetRawDegrees:{rawPositions[0]}|{rawPositions[1]}" : $"NULL";
-                        monitorItem = new MonitorEntry
-                        { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = msg };
-                        MonitorLog.LogToMonitor(monitorItem);
-
-                        if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
-                        {
-                            rawPositions = null;
-                            continue;
-                        }
-
-                        //is mount parked, if so set to the default position
-                        if (AtPark)
-                        {
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, positions[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, positions[1]);
-                            positionsSet = true;
-                            break;
-                        }
-
-                        if (!rawPositions[0].IsBetween(-.1, .1) || !rawPositions[1].IsBetween(-.1, .1)) { continue; }
-
-                        _ = new CmdAxisToDegrees(0, Axis.Axis1, positions[0]);
-                        _ = new CmdAxisToDegrees(0, Axis.Axis2, positions[1]);
-                        positionsSet = true;
-
-                    }
-                    // Update AlignmentModel settings.
-                    ConnectAlignmentModel();
-
-                    break;
-                case MountType.SkyWatcher:
-                    _skyHcRate = new Vector(0, 0);
-                    _skyTrackingRate = new Vector(0, 0);
-
-                    // create a command and put in queue to test connection
-                    var init = new SkyGetMotorCardVersion(SkyQueue.NewId, Axis.Axis1);
-                    _ = (string)SkyQueue.GetCommandResult(init).Result;
-                    if (!init.Successful && init.Exception != null)
-                    {
-                        // ToDo: fix string resource
-                        init.Exception = new Exception($"CheckMount{Environment.NewLine}{init.Exception.Message}", init.Exception);
-                        // init.Exception = new Exception($"{MediaTypeNames.Application.Current.Resources["CheckMount"]}{Environment.NewLine}{init.Exception.Message}", init.Exception);
-                        SkyErrorHandler(init.Exception);
-                        return false;
-                    }
-
-                    monitorItem = new MonitorEntry
-                    {
-                        Datetime = HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Server,
-                        Type = MonitorType.Information,
-                        Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"Voltage|{SkyServer.ControllerVoltage.ToString("F2") + " V"}"
-                    };
-                    MonitorLog.LogToMonitor(monitorItem);
-                    // defaults
-                    if (_settings!.Mount == MountType.SkyWatcher)
-                    {
-                        SkyTasks(MountTaskName.AllowAdvancedCommandSet);
-                    }
-                    SkyTasks(MountTaskName.LoadDefaults);
-                    SkyTasks(MountTaskName.StepsPerRevolution);
-                    SkyTasks(MountTaskName.StepsWormPerRevolution);
-                    SkyTasks(MountTaskName.StopAxes);
-                    SkyTasks(MountTaskName.Encoders);
-                    SkyTasks(MountTaskName.FullCurrent);
-                    SkyTasks(MountTaskName.SetSt4Guiderate);
-                    SkyTasks(MountTaskName.SetSouthernHemisphere);
-                    SkyTasks(MountTaskName.MountName);
-                    SkyTasks(MountTaskName.MountVersion);
-                    SkyTasks(MountTaskName.StepTimeFreq);
-                    SkyTasks(MountTaskName.CanPpec);
-                    SkyTasks(MountTaskName.CanPolarLed);
-                    SkyTasks(MountTaskName.PolarLedLevel);
-                    SkyTasks(MountTaskName.CanHomeSensor);
-                    SkyTasks(MountTaskName.DecPulseToGoTo);
-                    SkyTasks(MountTaskName.AlternatingPpec);
-                    SkyTasks(MountTaskName.MinPulseDec);
-                    SkyTasks(MountTaskName.MinPulseRa);
-                    SkyTasks(MountTaskName.GetFactorStep);
-                    SkyTasks(MountTaskName.Capabilities);
-                    SkyTasks(MountTaskName.CanAdvancedCmdSupport);
-                    if (CanPPec) SkyTasks(MountTaskName.Pec);
-
-                    //CanHomeSensor = true; //test auto home
-
-                    raWormTeeth = (int)(StepsPerRevolution[0] / StepsWormPerRevolution[0]);
-                    decWormTeeth = (int)(StepsPerRevolution[1] / StepsWormPerRevolution[1]);
-                    WormTeethCount = new[] { raWormTeeth, decWormTeeth };
-                    PecBinSteps = StepsPerRevolution[0] / (WormTeethCount[0] * 1.0) / PecBinCount;
-
-                    CalcCustomTrackingOffset();  //generates rates for the custom gearing offsets
-
-                    //log current positions
-                    var steps = GetRawSteps();
-                    monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"GetSteps:{steps[0]}|{steps[1]}" };
-                    MonitorLog.LogToMonitor(monitorItem);
-
-                    // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
-                    while (rawPositions == null)
-                    {
-                        if (counter > 5)
-                        {
-                            _ = new SkySetAxisPosition(0, Axis.Axis1, positions[0]);
-                            _ = new SkySetAxisPosition(0, Axis.Axis2, positions[1]);
-                            positionsSet = true;
-                            monitorItem = new MonitorEntry
-                            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Counter exceeded:{positions[0]}|{positions[1]}" };
-                            MonitorLog.LogToMonitor(monitorItem);
-                            break;
-                        }
-                        counter++;
-
-                        //get positions and log them
-                        rawPositions = GetRawDegrees();
-                        msg = rawPositions != null ? $"GetDegrees|{rawPositions[0]}|{rawPositions[1]}" : $"NULL";
-                        monitorItem = new MonitorEntry
-                        { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = msg };
-                        MonitorLog.LogToMonitor(monitorItem);
-
-                        //if an error getting positions then stay in while loop and try again
-                        if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
-                        {
-                            rawPositions = null;
-                            continue;
-                        }
-
-                        //is mount parked, if so set to the default position
-                        if (AtPark)
-                        {
-                            _ = new SkySetAxisPosition(0, Axis.Axis1, positions[0]);
-                            _ = new SkySetAxisPosition(0, Axis.Axis2, positions[1]);
-                            positionsSet = true;
-                            break;
-                        }
-
-                        //was mount powered and at 0,0  are both axes close to home?  if not then don't change current mount positions 
-                        if (!rawPositions[0].IsBetween(-.1, .1) || !rawPositions[1].IsBetween(-.1, .1)) { continue; }
-
-                        //Mount is close to home 0,0 so set the default position
-                        _ = new SkySetAxisPosition(0, Axis.Axis1, positions[0]);
-                        _ = new SkySetAxisPosition(0, Axis.Axis2, positions[1]);
-                        positionsSet = true;
-
-                    }
-
-                    // Update AlignmentModel settings.
-                    ConnectAlignmentModel();
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            msg = positionsSet ? $"SetPositions|{positions[0]}|{positions[1]}" : $"PositionsNotSet";
-            monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = msg };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"MountAxes|{_appAxes.X}|{_appAxes.Y}|Actual|{ActualAxisX}|{ActualAxisY}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"StepsPerRevolution|{StepsPerRevolution[0]}|{StepsPerRevolution[1]}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            //Load Pec Files
-            var pecmsg = string.Empty;
-            PecOn = _settings!.PecOn;
-            if (File.Exists(_settings!.PecWormFile))
-            {
-                LoadPecFile(_settings!.PecWormFile);
-                pecmsg += _settings!.PecWormFile;
-            }
-
-            if (File.Exists(_settings!.Pec360File))
-            {
-                LoadPecFile(_settings!.Pec360File);
-                pecmsg += ", " + _settings!.PecWormFile;
-            }
-
-            monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Pec: {pecmsg}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            try
-            {
-                // Get path to current version's appsettings.user.json file
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-
-                // Get version from assembly (matches VersionedSettingsService logic)
-                var infoVersionAttr = assembly
-                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
-                    .FirstOrDefault() as AssemblyInformationalVersionAttribute;
-
-                var version = infoVersionAttr?.InformationalVersion
-                    ?? assembly.GetName().Version?.ToString()
-                    ?? "1.0.0";
-
-                // Remove build metadata (e.g., +commitHash)
-                var plusIndex = version.IndexOf('+');
-                if (plusIndex > 0)
-                {
-                    version = version.Substring(0, plusIndex);
-                }
-
-                var userSettingsPath = Path.Combine(appData, "GreenSwampAlpaca", version, "appsettings.user.json");
-                var logDirectoryPath = GsFile.GetLogPath();
-
-                if (File.Exists(userSettingsPath))
-                {
-                    // Copy the appsettings.user.json file to the log directory
-                    var destinationPath = Path.Combine(logDirectoryPath, "appsettings.user.json");
-                    File.Copy(userSettingsPath, destinationPath, true);
-
-                    monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Copied appsettings.user.json to {logDirectoryPath}" };
-                    MonitorLog.LogToMonitor(monitorItem);
-                }
-                else
-                {
-                    // Settings file doesn't exist yet - log info (it will be created later by the settings service)
-                    monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"appsettings.user.json not found at {userSettingsPath} - will be created on first settings save" };
-                    MonitorLog.LogToMonitor(monitorItem);
-                }
-            }
-            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
-            {
-                monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Cannot copy appsettings.user.json. {e.Message}" };
-                MonitorLog.LogToMonitor(monitorItem);
-            }
-
-            return true;
-        }
+        // Contains: MountStart, MountStop, MountReset, GetHomeAxes, ShutdownServer
 
         /// <summary>
         /// Start connection, queues, and events
@@ -547,48 +276,6 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
         }
 
-        #region Phase 3.1 Temporary Stub Methods
-        // These methods are temporary stubs for MountInstance delegation.
-        // They will be removed/replaced in Phase 3.2 when implementation moves to instance.
-
-        /// <summary>
-        /// Phase 3.1 TEMPORARY: Stub for Connect - delegates to MountConnect
-        /// Will be removed in Phase 3.2
-        /// </summary>
-        internal static bool Connect_Stub()
-        {
-            return IsMountRunning;  // Temporary - just return current state
-        }
-
-        /// <summary>
-        /// Phase 3.1 TEMPORARY: Stub for Disconnect - stops mount
-        /// Will be removed in Phase 3.2
-        /// </summary>
-        internal static void Disconnect_Stub()
-        {
-            IsMountRunning = false;
-        }
-
-        /// <summary>
-        /// Phase 3.1 TEMPORARY: Stub for Start - sets running state
-        /// Will be removed in Phase 3.2
-        /// </summary>
-        internal static void Start_Stub()
-        {
-            // Temporary - actual implementation in MountStart()
-        }
-
-        /// <summary>
-        /// Phase 3.1 TEMPORARY: Stub for Stop - clears running state
-        /// Will be removed in Phase 3.2
-        /// </summary>
-        internal static void Stop_Stub()
-        {
-            IsMountRunning = false;
-        }
-
-        #endregion
-
         #endregion
 
         #region Position Update Methods
@@ -655,7 +342,7 @@ namespace GreenSwamp.Alpaca.MountControl
             double[] positions = { 0, 0 };
             string name = String.Empty;
             // home axes are mount values
-            _homeAxes = GetHomeAxes(_settings!.HomeAxisX, _settings!.HomeAxisY);
+            var homeAxes = GetHomeAxes(_settings!.HomeAxisX, _settings!.HomeAxisY);
 
             var monitorItem = new MonitorEntry
             {
@@ -665,7 +352,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Home position,{name}|{_homeAxes.X}|{_homeAxes.Y}"
+                Message = $"Home position,{name}|{homeAxes.X}|{homeAxes.Y}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -696,7 +383,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                positions = new[] { _homeAxes.X, _homeAxes.Y };
+                positions = new[] { homeAxes.X, homeAxes.Y };
             }
 
             monitorItem = new MonitorEntry
@@ -725,7 +412,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Error Handling
         // Contains: SkyErrorHandler, CheckSkyErrors
-        // Complete - no Phase 3 additions planned
 
         /// <summary>
         /// Handles MountControlException and SkyServerException
@@ -834,10 +520,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Internal Utility Methods
         // Contains: Defaults, OnStaticPropertyChanged, DegToRad, RadToDeg
-        // Phase 3 will add various helper methods:
-        // - Phase 3.3: SetSlewRates, GetSlewRate
-        // - Phase 3.4: SetGuideRates, GetRaRateDirection, GetDecRateDirection
-        // - Phase 3.7: SpeakSlewStart, SpeakSlewEnd, ValidateLimits, CheckMount, etc.
 
         /// <summary>
         /// Load default settings and slew rates
@@ -883,7 +565,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Event Handlers
         // Contains: PropertyChangedSkySettings, PropertyChangedAlignmentSettings, PropertyChangedSkyQueue,
         //           PropertyChangedMountQueue, UpdateServerEvent, LowVoltageEventSet, GetLocalSiderealTime (2 overloads)
-        // Phase 3.5 will add: AltAzTrackingTimerEvent, CheckPecTraining (from SkyServer.cs)
 
         /// <summary>
         /// Property changes from SkySettings
@@ -1089,7 +770,6 @@ namespace GreenSwamp.Alpaca.MountControl
         //           GetSyncedAxes, GetUnsyncedAxes
         // Note: GetSyncedAxes and GetUnsyncedAxes should ideally be in Coordinate Transformations region
         //       but are kept here due to their tight coupling with AlignmentModel
-        // Complete - no Phase 3 additions planned
 
         /// <summary>
         /// Initialize alignment model connection with current mount parameters
@@ -1257,11 +937,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Mount-Specific Core Operations
         // Contains mount-specific implementations for Simulator and SkyWatcher
-        // Complete - Phase 2 finished moving all mount-specific goto/task methods here
 
         #region Simulator Items
         // Contains: SimGoTo, SimPrecisionGoto, SimPulseGoto, SimTasks
-        // Complete - no Phase 3 additions planned
 
         /// <summary>
         /// Sim GOTO slew
@@ -1603,7 +1281,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountTaskName.SetSouthernHemisphere:
                             break;
                         case MountTaskName.SyncAxes:
-                            var sync = Axes.AxesAppToMount(new[] { _appAxes.X, _appAxes.Y }, context);
+                            var appAxes = AppAxes; // Get from instance
+                            var sync = Axes.AxesAppToMount(new[] { appAxes.X, appAxes.Y }, context);
                             _ = new CmdAxisToDegrees(0, Axis.Axis1, sync[0]);
                             _ = new CmdAxisToDegrees(0, Axis.Axis2, sync[1]);
                             break;
@@ -1616,7 +1295,8 @@ namespace GreenSwamp.Alpaca.MountControl
                             _ = new CmdAxisToDegrees(0, Axis.Axis2, targetR[1]);
                             break;
                         case MountTaskName.SyncAltAz:
-                            var targetA = new[] { _altAzSync.Y, _altAzSync.X };
+                            var altAzSync = AltAzSync; // Get from instance
+                            var targetA = new[] { altAzSync.Y, altAzSync.X };
                             // convert target to axis for Az / Alt sync
                             targetA = Axes.AzAltToAxesXy(targetA, context);
                             _ = new CmdAxisToDegrees(0, Axis.Axis1, targetA[0]);
@@ -1665,8 +1345,9 @@ namespace GreenSwamp.Alpaca.MountControl
                             StepsWormPerRevolution = new[] { spwnum, spwnum };
                             break;
                         case MountTaskName.SetHomePositions:
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, _homeAxes.X);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, _homeAxes.Y);
+                            var homeAxesPos = HomeAxes; // Get from instance
+                            _ = new CmdAxisToDegrees(0, Axis.Axis1, homeAxesPos.X);
+                            _ = new CmdAxisToDegrees(0, Axis.Axis2, homeAxesPos.Y);
                             break;
                         case MountTaskName.GetFactorStep:
                             var factorStep = new CmdFactorSteps(MountQueue.NewId);
@@ -1688,7 +1369,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region SkyWatcher Items
         // Contains: TrackingOffsetRaRate, TrackingOffsetDecRate, CalcCustomTrackingOffset, SkyGetRate,
         //           SkyGoTo, SkyPrecisionGoto, SkyPulseGoto, SkyTasks
-        // Complete - no Phase 3 additions planned
 
         private static Vector _trackingOffsetRate;
 
@@ -2213,10 +1893,11 @@ namespace GreenSwamp.Alpaca.MountControl
                             SnapPort2Result = port2Result;
                             break;
                         case MountTaskName.SyncAxes:
-                            var sync = Axes.AxesAppToMount(new[] { _appAxes.X, _appAxes.Y }, context);
+                            var appAxesSync = AppAxes; // Get from instance
+                            var sync = Axes.AxesAppToMount(new[] { appAxesSync.X, appAxesSync.Y }, context);
                             _ = new SkySyncAxis(0, Axis.Axis1, sync[0]);
                             _ = new SkySyncAxis(0, Axis.Axis2, sync[1]);
-                            monitorItem.Message += $",{_appAxes.X}|{_appAxes.Y}|{sync[0]}|{sync[1]}";
+                            monitorItem.Message += $",{appAxesSync.X}|{appAxesSync.Y}|{sync[0]}|{sync[1]}";
                             MonitorLog.LogToMonitor(monitorItem);
                             break;
                         case MountTaskName.SyncTarget:
@@ -2230,12 +1911,13 @@ namespace GreenSwamp.Alpaca.MountControl
                             MonitorLog.LogToMonitor(monitorItem);
                             break;
                         case MountTaskName.SyncAltAz:
-                            var targetA = new[] { _altAzSync.Y, _altAzSync.X };
+                            var altAzSyncPos = AltAzSync; // Get from instance
+                            var targetA = new[] { altAzSyncPos.Y, altAzSyncPos.X };
                             // convert target to axis for Az / Alt sync
                             targetA = Axes.AzAltToAxesXy(targetA, context);
                             _ = new SkySyncAxis(0, Axis.Axis1, targetA[0]);
                             _ = new SkySyncAxis(0, Axis.Axis2, targetA[1]);
-                            monitorItem.Message += $",{_altAzSync.Y}|{_altAzSync.X}|{targetA[0]}|{targetA[1]}";
+                            monitorItem.Message += $",{altAzSyncPos.Y}|{altAzSyncPos.X}|{targetA[0]}|{targetA[1]}";
                             MonitorLog.LogToMonitor(monitorItem);
                             break;
                         case MountTaskName.GetAxisVersions:
@@ -2271,8 +1953,9 @@ namespace GreenSwamp.Alpaca.MountControl
                             StepsTimeFreq = (long[])SkyQueue.GetCommandResult(skyStepTimeFreq).Result;
                             break;
                         case MountTaskName.SetHomePositions:
-                            _ = new SkySetAxisPosition(0, Axis.Axis1, _homeAxes.X);
-                            _ = new SkySetAxisPosition(0, Axis.Axis2, _homeAxes.Y);
+                            var homeAxesSet = HomeAxes; // Get from instance
+                            _ = new SkySetAxisPosition(0, Axis.Axis1, homeAxesSet.X);
+                            _ = new SkySetAxisPosition(0, Axis.Axis2, homeAxesSet.Y);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();

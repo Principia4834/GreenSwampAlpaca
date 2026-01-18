@@ -39,10 +39,12 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _isMountRunning;
         private MediaTimer? _mediaTimer;
         private MediaTimer? _altAzTrackingTimer;
+        // Phase 4.1: Converted to delegating properties (fields removed, see properties below)
         private Vector _homeAxes;
         private Vector _appAxes;
         private Vector _targetRaDec;
         private Exception? _mountError;
+        private Vector _altAzSync;
 
         // Factor steps (conversion ratios) - instance-owned
         private double[] _factorStep = new double[2];
@@ -91,6 +93,46 @@ namespace GreenSwamp.Alpaca.MountControl
         // Guide rate field
         private Vector _guideRate;
 
+        #region Public State Exposure (Phase 4.1)
+
+        /// <summary>
+        /// Gets whether the mount is currently running
+        /// </summary>
+        public bool IsMountRunning => _isMountRunning;
+
+        /// <summary>
+        /// Gets or sets the target RA/Dec position
+        /// </summary>
+        public Vector TargetRaDec
+        {
+            get => _targetRaDec;
+            set => _targetRaDec = value;
+        }
+
+        /// <summary>
+        /// Gets the current tracking state
+        /// </summary>
+        public bool Tracking => _tracking;
+
+        /// <summary>
+        /// Gets the current tracking rate
+        /// </summary>
+        public DriveRate TrackingRate => _trackingRate;
+
+        #endregion
+
+        #region Internal State Exposure (for other MountControl classes)
+
+        /// <summary>
+        /// Alt/Az sync position for Alt/Az mode syncing
+        /// </summary>
+        internal Vector AltAzSync
+        {
+            get => _altAzSync;
+            set => _altAzSync = value;
+        }
+
+        #endregion
         /// <summary>
         /// Phase 4.2: Constructor with optional settings file path
         /// </summary>
@@ -508,9 +550,12 @@ namespace GreenSwamp.Alpaca.MountControl
         public void Disconnect()
         {
             LogMount($"Disconnect() called on instance {_id}");
-            
-            // Delegate to static
-            SkyServer.Disconnect_Stub();
+
+            // Stop mount operations (timers, tracking, queues, serial)
+            MountStop();
+
+            // Clear running flag
+            _isMountRunning = false;
         }
 
         /// <summary>

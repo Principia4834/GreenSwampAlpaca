@@ -81,6 +81,10 @@ namespace GreenSwamp.Alpaca.MountControl
         private static double[] _steps = { 0.0, 0.0 };
         private static bool _mountPositionUpdated;
         private static readonly object MountPositionUpdatedLock = new object();
+        // Phase 4.1: Local working copy for Steps property calculations
+        // Note: This is separate from the AppAxes property which delegates to instance
+        private static Vector _appAxesInternal = new Vector(double.NaN, double.NaN);
+        
         #endregion
 
         #region PEC
@@ -1043,9 +1047,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 // convert positions to local app axes
                 var axes = Axes.AxesMountToApp(rawPositions, context  );
 
-                // store local app axes to track positions
-                _appAxes.X = axes[0];
-                _appAxes.Y = axes[1];
+                // store local app axes to track positions (internal working copy)
+                _appAxesInternal.X = axes[0];
+                _appAxesInternal.Y = axes[1];
 
                 // UI diagnostics for local app exes
                 AppAxisX = axes[0];
@@ -1201,7 +1205,7 @@ namespace GreenSwamp.Alpaca.MountControl
             StopAxes();
 
             //set to home position
-            double[] position = { _homeAxes.X, _homeAxes.Y };
+            double[] position = { HomeAxes.X, HomeAxes.Y };
             var name = "home";
 
             //set to park position
