@@ -67,15 +67,16 @@ namespace GreenSwamp.Alpaca.MountControl
         private static SkySettingsInstance? _settings;
         internal static SkySettingsInstance? Settings => _settings;
 
-        // Slew and HC speeds
-        private static double _slewSpeedOne;
-        private static double _slewSpeedTwo;
-        private static double _slewSpeedThree;
-        private static double _slewSpeedFour;
-        private static double _slewSpeedFive;
-        private static double _slewSpeedSix;
-        private static double _slewSpeedSeven;
-        public static double SlewSpeedEight;
+        // Phase 4.2: Slew speed properties (delegate to default instance)
+        public static double SlewSpeedOne => _defaultInstance?.SlewSpeedOne ?? 0.0;
+        public static double SlewSpeedTwo => _defaultInstance?.SlewSpeedTwo ?? 0.0;
+        public static double SlewSpeedThree => _defaultInstance?.SlewSpeedThree ?? 0.0;
+        public static double SlewSpeedFour => _defaultInstance?.SlewSpeedFour ?? 0.0;
+        public static double SlewSpeedFive => _defaultInstance?.SlewSpeedFive ?? 0.0;
+        public static double SlewSpeedSix => _defaultInstance?.SlewSpeedSix ?? 0.0;
+        public static double SlewSpeedSeven => _defaultInstance?.SlewSpeedSeven ?? 0.0;
+        public static double SlewSpeedEight => _defaultInstance?.SlewSpeedEight ?? 4.0;
+        
 
         // HC Anti-Backlash
         private static HcPrevMove _hcPrevMoveRa;
@@ -2026,14 +2027,18 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static void SetSlewRates(double maxRate)
         {
             // Sky Speeds
-            _slewSpeedOne = Math.Round(maxRate * 0.0034, 3);
-            _slewSpeedTwo = Math.Round(maxRate * 0.0068, 3);
-            _slewSpeedThree = Math.Round(maxRate * 0.047, 3);
-            _slewSpeedFour = Math.Round(maxRate * 0.068, 3);
-            _slewSpeedFive = Math.Round(maxRate * 0.2, 3);
-            _slewSpeedSix = Math.Round(maxRate * 0.4, 3);
-            _slewSpeedSeven = Math.Round(maxRate * 0.8, 3);
-            SlewSpeedEight = Math.Round(maxRate * 1.0, 3);
+                if (_defaultInstance == null) return;
+
+                _defaultInstance._slewSpeedOne = Math.Round(maxRate * 0.0034, 3);
+                _defaultInstance._slewSpeedTwo = Math.Round(maxRate * 0.0068, 3);
+                _defaultInstance._slewSpeedThree = Math.Round(maxRate * 0.047, 3);
+                _defaultInstance._slewSpeedFour = Math.Round(maxRate * 0.068, 3);
+                _defaultInstance._slewSpeedFive = Math.Round(maxRate * 0.2, 3);
+                _defaultInstance._slewSpeedSix = Math.Round(maxRate * 0.4, 3);
+                _defaultInstance._slewSpeedSeven = Math.Round(maxRate * 0.8, 3);
+                _defaultInstance._slewSpeedEight = Math.Round(maxRate * 1.0, 3);
+
+            // Log (same as before)
 
             var monitorItem = new MonitorEntry
             {
@@ -2044,7 +2049,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message =
-                    $"{_slewSpeedOne}|{_slewSpeedTwo}|{_slewSpeedThree}|{_slewSpeedFour}|{_slewSpeedFive}|{_slewSpeedSix}|{_slewSpeedSeven}|{SlewSpeedEight}"
+                    $"{SlewSpeedOne}|{SlewSpeedTwo}|{SlewSpeedThree}|{SlewSpeedFour}|{SlewSpeedFive}|{SlewSpeedSix}|{SlewSpeedSeven}|{SlewSpeedEight}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 

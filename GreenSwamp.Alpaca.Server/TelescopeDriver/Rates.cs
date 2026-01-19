@@ -105,17 +105,23 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             // to the constructor. Thus we switch() below, and each case should 
             // initialize the array for the rate for the selected axis.
             //
+            // Safety check: Use settings fallback if SlewSpeedEight not yet initialized
+            // (e.g., if AxisRates is queried before mount connects)
+            var maxSlewRate = SkyServer.SlewSpeedEight > 0
+                ? SkyServer.SlewSpeedEight
+                : 4.0;
+
             switch (axis)
             {
                 case TelescopeAxis.Primary:
                     // Example: m_Rates = new Rate[] { new Rate(10.5, 30.2), new Rate(54.0, 43.6) }
-                    _mRates = new[] { new Rate(0.0, SkyServer.SlewSpeedEight)};
+                    _mRates = new[] { new Rate(0.0, maxSlewRate) };
                     break;
                 case TelescopeAxis.Secondary:
-                    _mRates = new[] { new Rate(0.0, SkyServer.SlewSpeedEight)};
+                    _mRates = new[] { new Rate(0.0, maxSlewRate) };
                     break;
                 case TelescopeAxis.Tertiary:
-                    _mRates = new[] { new Rate(0.0, SkyServer.SlewSpeedEight)}; //Conversions.Sec2ArcSec(SkyServer.SlewSpeedEight)) };
+                    _mRates = new[] { new Rate(0.0, maxSlewRate) }; //Conversions.Sec2ArcSec(SkyServer.SlewSpeedEight)) };
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(axis), axis, null);

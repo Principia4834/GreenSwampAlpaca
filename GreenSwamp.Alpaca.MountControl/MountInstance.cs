@@ -80,15 +80,15 @@ namespace GreenSwamp.Alpaca.MountControl
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
         private readonly object _lastUpdateLock = new object();
 
-        // Slew speed fields
-        private double _slewSpeedOne;
-        private double _slewSpeedTwo;
-        private double _slewSpeedThree;
-        private double _slewSpeedFour;
-        private double _slewSpeedFive;
-        private double _slewSpeedSix;
-        private double _slewSpeedSeven;
-        private double _slewSpeedEight;
+        // Slew speed fields (internal so SkyServer.SetSlewRates can access them)
+        internal double _slewSpeedOne;
+        internal double _slewSpeedTwo;
+        internal double _slewSpeedThree;
+        internal double _slewSpeedFour;
+        internal double _slewSpeedFive;
+        internal double _slewSpeedSix;
+        internal double _slewSpeedSeven;
+        internal double _slewSpeedEight;
 
         // Guide rate field
         private Vector _guideRate;
@@ -131,7 +131,16 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _altAzSync;
             set => _altAzSync = value;
         }
-
+        // Phase 4.2: Expose slew speeds (read-only for
+        // now)
+        public double SlewSpeedOne => _slewSpeedOne;
+        public double SlewSpeedTwo => _slewSpeedTwo;
+        public double SlewSpeedThree => _slewSpeedThree;
+        public double SlewSpeedFour => _slewSpeedFour;
+        public double SlewSpeedFive => _slewSpeedFive;
+        public double SlewSpeedSix => _slewSpeedSix;
+        public double SlewSpeedSeven => _slewSpeedSeven;
+        public double SlewSpeedEight => _slewSpeedEight;
         #endregion
         /// <summary>
         /// Phase 4.2: Constructor with optional settings file path
@@ -394,6 +403,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / SkyServer.PecBinCount;
 
                     SkyServer.CalcCustomTrackingOffset();  //generates rates for the custom gearing offsets
+
+                    // Initialize slew speeds
+                    SkyServer.SetSlewRates(_settings.MaxSlewRate);
 
                     //log current positions
                     var steps = GetRawSteps();
