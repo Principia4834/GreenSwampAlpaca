@@ -74,8 +74,6 @@ namespace GreenSwamp.Alpaca.MountControl
         // private static bool _rotate3DModel;
         private static double _slewSettleTime;
         private static double _siderealTime;
-        private static TrackingMode _trackingMode;
-        private static bool _tracking; //off
         private static bool _snapPort1Result;
         private static bool _snapPort2Result;
         private static double[] _steps = { 0.0, 0.0 };
@@ -668,16 +666,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
         #endregion
-
-        public static TrackingMode TrackingMode
-        {
-            get => _trackingMode;
-            internal set  // Make setter internal if it's private
-            {
-                _trackingMode = value;
-                OnStaticPropertyChanged();
-            }
-        }
 
         /// <summary>
         /// Actual positions in degrees

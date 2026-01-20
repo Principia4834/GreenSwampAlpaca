@@ -815,14 +815,12 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             // Enable Alt/Az tracking to complete the slew
+            // NOTE: Replicate GoToAsync pattern - don't use Tracking property setter
+            // because it resets SkyPredictor (line 301 in TelescopeAPI.cs)
             SkyPredictor.Set(SkyServer.TargetRa, SkyServer.TargetDec);
-            SkyServer.Tracking = true;
 
-            // Set tracking mode (direct access, no reflection needed)
-            SkyServer.TrackingMode = TrackingMode.AltAz;
-
-            // Call internal SetTracking method (direct access, no reflection needed)
-            SkyServer.SetTracking();
+            // Manually set tracking without going through Tracking property
+            SkyServer.SetTrackingDirect(true, TrackingMode.AltAz);
 
             // Wait for tracking to settle
             var minSteps = Math.Min(

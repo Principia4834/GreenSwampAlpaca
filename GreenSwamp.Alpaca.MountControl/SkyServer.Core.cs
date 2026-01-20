@@ -76,7 +76,27 @@ namespace GreenSwamp.Alpaca.MountControl
         public static double SlewSpeedSix => _defaultInstance?.SlewSpeedSix ?? 0.0;
         public static double SlewSpeedSeven => _defaultInstance?.SlewSpeedSeven ?? 0.0;
         public static double SlewSpeedEight => _defaultInstance?.SlewSpeedEight ?? 4.0;
-        
+
+        // Phase 4.3: SkyWatcher tracking rates (internal - delegates to instance)
+        internal static Vector SkyTrackingRate
+        {
+            get => _defaultInstance?._skyTrackingRate ?? new Vector(0, 0);
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance._skyTrackingRate = value;
+            }
+        }
+
+        internal static Vector SkyHcRate
+        {
+            get => _defaultInstance?._skyHcRate ?? new Vector(0, 0);
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance._skyHcRate = value;
+            }
+        }
 
         // HC Anti-Backlash
         private static HcPrevMove _hcPrevMoveRa;
@@ -1424,8 +1444,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // used to combine multiple sources for a single slew rate
         // include tracking, hand controller, etc..
-        private static Vector _skyHcRate;
-        private static Vector _skyTrackingRate;
         private static readonly int[] SkyTrackingOffset = { 0, 0 }; // Store for custom mount :I offset
 
         /// <summary>
@@ -1436,8 +1454,8 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var change = new Vector();
 
-            change += _skyTrackingRate; // Tracking
-            change += _skyHcRate; // Hand controller
+            change += SkyTrackingRate; // Tracking
+            change += SkyHcRate; // Hand controller
             // Primary axis
             change.X += RateMovePrimaryAxis;
             change.X += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(RateRa) : 0;

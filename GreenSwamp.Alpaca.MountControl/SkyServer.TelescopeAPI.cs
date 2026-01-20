@@ -271,14 +271,20 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool Tracking
         {
-            get => _trackingMode != TrackingMode.Off;
+            get => (_defaultInstance?.TrackingMode ?? TrackingMode.Off) != TrackingMode.Off;
             set
             {
-                if (value == _tracking)
+                if (_defaultInstance == null)
                 {
                     OnStaticPropertyChanged();
                     return;
-                } //off
+                }
+
+                if (value == _defaultInstance.Tracking)
+                {
+                    OnStaticPropertyChanged();
+                    return;
+                } // No change - avoid redundant operations
 
                 var monitorItem = new MonitorEntry
                 {
@@ -337,9 +343,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     IsPulseGuidingRa = false;
                     // ToDo re-enable voice prompt later
                     // if (TrackingSpeak && _trackingMode != TrackingMode.Off) { Synthesizer.Speak(MediaTypeNames.Application.Current.Resources["vceTrackingOff"].ToString()); }
-                    _trackingMode = TrackingMode.Off;
+                    _defaultInstance.TrackingMode = TrackingMode.Off;
                 }
-                _tracking = value; //off
+                _defaultInstance.SetTracking(value); //off
 
                 SetTracking();
                 OnStaticPropertyChanged();
@@ -851,10 +857,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
                                 // use tracking to complete slew for Alt Az mounts
                                 SkyPredictor.Set(TargetRa, TargetDec);
-                                _tracking = true;
-                                _trackingMode = TrackingMode.AltAz;
-                                SetTracking();
-                                var sw = Stopwatch.StartNew();
+                                _defaultInstance.SetTracking(true);
+                                _defaultInstance.TrackingMode = TrackingMode.AltAz;
+                                SetTracking(); var sw = Stopwatch.StartNew();
                                 // wait before completing async slew, double time for low resolution mounts 
                                 var highResMount = Conversions.StepPerArcSec(Math.Min(StepsPerRevolution[0], StepsPerRevolution[1])) > 5;
                                 var waitTime = highResMount ? 2 * _settings!.AltAzTrackingUpdateInterval : 4 * _settings!.AltAzTrackingUpdateInterval;
@@ -1633,14 +1638,39 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             MountPositionUpdated = false;
+            var timeout = Stopwatch.StartNew();
             while (!MountPositionUpdated)
             {
+                if (timeout.ElapsedMilliseconds > 5000)  // 5 second timeout
+                {
+                    var errorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Error,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = "Timeout waiting for position update after AltAz sync"
+                    };
+                    MonitorLog.LogToMonitor(errorItem);
+                    throw new TimeoutException("Mount position update timeout after sync");
+                }
                 Thread.Sleep(50);
             }
 
             if (trackingstate)
             {
-                Tracking = true;
+                // Calculate RA/Dec from synced Alt/Az coordinates
+                // The mount has just synced to targetAltitude/targetAzimuth, so convert those to RA/Dec
+                var internalAltAz = Transforms.CoordTypeToInternal(targetAzimuth, targetAltitude);
+                var raDec = Coordinate.AltAz2RaDec(internalAltAz.X, internalAltAz.Y, SiderealTime, _settings!.Latitude);
+
+                // Set predictor to the RA/Dec corresponding to synced Alt/Az
+                // NOTE: Use SetTrackingDirect to avoid Tracking property's SkyPredictor.Reset()
+                SkyPredictor.Set(raDec[0], raDec[1]);
+                SetTrackingDirect(true, TrackingMode.AltAz);
+
                 // ToDo re-enable voice prompt later
                 // TrackingSpeak = true;
             }
@@ -1718,19 +1748,23 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                 {
                     // set up tracking for Alt Az
+                    // NOTE: Use SetTrackingDirect to avoid Tracking property's SkyPredictor.Reset()
                     SkyPredictor.Set(TargetRa, TargetDec);
-                    _tracking = true;
-                    _trackingMode = TrackingMode.AltAz;
-                    SetTracking();
+                    SetTrackingDirect(true, TrackingMode.AltAz);
                 }
-                Tracking = true;
+                else
+                {
+                    // Polar/GermanPolar modes - safe to use Tracking property
+                    Tracking = true;
+                }
                 // ToDo re-enable voice prompt later
                 // TrackingSpeak = true;
             }
-
+            
             // ToDo re-enable voice prompt later
             // Synthesizer.Speak(MediaTypeNames.Application.Current.Resources["vceSyncCoords"].ToString());
         }
+
 
         /// <summary>
         /// Check if sync is too far from RaDec position
@@ -2360,7 +2394,8 @@ namespace GreenSwamp.Alpaca.MountControl
             double rateChange = 0;
             Vector rate;
             // Set rate change for tracking mode
-            switch (_trackingMode)
+            var currentTrackingMode = _defaultInstance?.TrackingMode ?? TrackingMode.Off;
+            switch (currentTrackingMode)
             {
                 case TrackingMode.Off:
                     break;
@@ -2376,7 +2411,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
             switch (_settings!.Mount)
             {
                 case MountType.Simulator:
@@ -2391,8 +2425,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             else
                             {
                                 if (AltAzTimerIsRunning) StopAltAzTrackingTimer();
-                                _skyTrackingRate.X = 0.0;
-                                _skyTrackingRate.Y = 0.0;
+                                SkyTrackingRate = new Vector(0, 0);
                             }
                             rate = SkyGetRate();
                             // Tracking applied unless MoveAxis is active
@@ -2429,8 +2462,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             else
                             {
                                 if (AltAzTimerIsRunning) StopAltAzTrackingTimer();
-                                _skyTrackingRate.X = 0.0;
-                                _skyTrackingRate.Y = 0.0;
+                                SkyTrackingRate = new Vector(0, 0);
                             }
 
                             // Get current tracking  including RA and Dec offsets
@@ -2438,8 +2470,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case AlignmentMode.Polar:
                         case AlignmentMode.GermanPolar:
-                            _skyTrackingRate.X = rateChange;
-                            _skyTrackingRate.Y = 0.0;
+                            SkyTrackingRate = new Vector(rateChange, 0);
                             // Get current tracking including RA and Dec offsets
                             break;
                         default:
@@ -2467,7 +2498,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{_trackingMode}|{rateChange * 3600}|{PecBinNow}|{SkyTrackingOffset[0]}|{SkyTrackingOffset[1]}"
+                Message = $"{currentTrackingMode}|{rateChange * 3600}|{PecBinNow}|{SkyTrackingOffset[0]}|{SkyTrackingOffset[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -2477,16 +2508,32 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static void SetTrackingMode()
         {
+            if (_defaultInstance == null) return;
+
             switch (_settings!.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    _trackingMode = TrackingMode.AltAz;
+                    _defaultInstance.TrackingMode = TrackingMode.AltAz;
                     break;
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
-                    _trackingMode = SouthernHemisphere ? TrackingMode.EqS : TrackingMode.EqN;
+                    _defaultInstance.TrackingMode = SouthernHemisphere ? TrackingMode.EqS : TrackingMode.EqN;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Sets tracking state directly without resetting SkyPredictor.
+        /// Used by SlewController for AltAz slew completion.
+        /// </summary>
+        internal static void SetTrackingDirect(bool tracking, TrackingMode mode)
+        {
+            if (_defaultInstance == null) return;
+
+            _defaultInstance.SetTracking(tracking);
+            _defaultInstance.TrackingMode = mode;
+            SetTracking(); // Apply to hardware
+            OnStaticPropertyChanged();
         }
 
         /// <summary>
@@ -2756,8 +2803,10 @@ namespace GreenSwamp.Alpaca.MountControl
                         delta[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
                         delta[1] = Range.Range180((skyTarget[1] - rawPositions[1]));
                         const double milliSecond = 0.001;
-                        _skyTrackingRate.X = delta[0] / (_settings!.AltAzTrackingUpdateInterval * milliSecond);
-                        _skyTrackingRate.Y = delta[1] / (_settings!.AltAzTrackingUpdateInterval * milliSecond);
+                        SkyTrackingRate = new Vector(
+                            delta[0] / (_settings!.AltAzTrackingUpdateInterval * milliSecond),
+                            delta[1] / (_settings!.AltAzTrackingUpdateInterval * milliSecond)
+                        );
                         var monitorItem = new MonitorEntry
                         {
                             Datetime = HiResDateTime.UtcNow,
@@ -2772,7 +2821,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 case AltAzTrackingType.Rate:
-                    _skyTrackingRate = ConvertRateToAltAz(CurrentTrackingRate(), 0.0, DeclinationXForm);
+                    SkyTrackingRate = ConvertRateToAltAz(CurrentTrackingRate(), 0.0, DeclinationXForm);
                     break;
             }
         }

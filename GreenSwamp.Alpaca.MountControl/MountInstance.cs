@@ -51,14 +51,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private long[] _stepsPerRevolution = new long[2];
         private double[] _stepsWormPerRevolution = new double[2];
 
-        // Tracking state
-        private bool _tracking;
-        private DriveRate _trackingRate = DriveRate.Sidereal;
-
-        // SkyWatcher tracking rates
-        private Vector _skyHcRate;
-        private Vector _skyTrackingRate;
-
         // PEC fields
         private int[] _wormTeethCount = new int[2];
         private double _pecBinSteps;
@@ -90,6 +82,14 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double _slewSpeedSeven;
         internal double _slewSpeedEight;
 
+        // Phase 4.3: Tracking state fields
+        private bool _tracking;
+        private TrackingMode _trackingMode = TrackingMode.Off;
+
+        // SkyWatcher tracking rates (internal use only)
+        internal Vector _skyHcRate = new Vector(0, 0);
+        internal Vector _skyTrackingRate = new Vector(0, 0);
+
         // Guide rate field
         private Vector _guideRate;
 
@@ -109,23 +109,46 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _targetRaDec = value;
         }
 
-        /// <summary>
-        /// Gets the current tracking state
-        /// </summary>
+
+        // Phase 4.3: Tracking state properties
         public bool Tracking => _tracking;
 
-        /// <summary>
-        /// Gets the current tracking rate
-        /// </summary>
-        public DriveRate TrackingRate => _trackingRate;
+        public TrackingMode TrackingMode
+        {
+            get => _trackingMode;
+            set => _trackingMode = value;
+        }
+
+        // SkyWatcher-specific tracking rates (internal access only)
+        internal Vector SkyTrackingRate
+        {
+            get => _skyTrackingRate;
+            set => _skyTrackingRate = value;
+        }
+
+        internal Vector SkyHcRate
+        {
+            get => _skyHcRate;
+            set => _skyHcRate = value;
+        }
 
         #endregion
 
         #region Internal State Exposure (for other MountControl classes)
 
         /// <summary>
-        /// Alt/Az sync position for Alt/Az mode syncing
+        /// Sets the tracking state (internal method for SkyServer)
+        /// Phase 4.3: Called by SkyServer.Tracking property setter
         /// </summary>
+        /// <param name="tracking">New tracking state</param>
+        internal void SetTracking(bool tracking)
+        {
+            _tracking = tracking;
+        }
+        
+        /// <summary>
+        /// Alt/Az sync position for Alt/Az mode syncing
+        /// /// </summary>
         internal Vector AltAzSync
         {
             get => _altAzSync;
@@ -309,8 +332,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     break;
                 case MountType.SkyWatcher:
-                    _skyHcRate = new Vector(0, 0);
-                    _skyTrackingRate = new Vector(0, 0);
+                    SkyHcRate = new Vector(0, 0);
+                    SkyTrackingRate = new Vector(0, 0);
 
                     // create a command and put in queue to test connection
                     var init = new SkyGetMotorCardVersion(SkyQueue.NewId, Axis.Axis1);
