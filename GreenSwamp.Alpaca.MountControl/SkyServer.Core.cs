@@ -2180,7 +2180,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // get tracking target at time now
                     var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                     // set predictor parameters ready for tracking
-                    SkyPredictor.Set(raDec[0], raDec[1], _rateRaDec.X, _rateRaDec.Y);
+                    SkyPredictor.Set(raDec[0], raDec[1], _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
                 }
                 SetTracking();
             }
@@ -2189,7 +2189,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                 {
                     // no tracking target so set to current position 
-                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _rateRaDec.X, _rateRaDec.Y);
+                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
                 }
             }
         }

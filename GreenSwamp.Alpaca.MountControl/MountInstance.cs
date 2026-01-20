@@ -93,6 +93,13 @@ namespace GreenSwamp.Alpaca.MountControl
         // Guide rate field
         private Vector _guideRate;
 
+        // Phase 4.4: Rate fields (target and guide rate already exist above)
+        private Vector _rateRaDec = new Vector(0, 0);
+
+        // Original rate storage (for direction tracking)
+        private double _rateRaOrg;
+        private double _rateDecOrg;
+
         #region Public State Exposure (Phase 4.1)
 
         /// <summary>
@@ -130,6 +137,55 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             get => _skyHcRate;
             set => _skyHcRate = value;
+        }
+
+        // Phase 4.4: Target and rate properties
+        public double TargetRa
+        {
+            get => _targetRaDec.X;
+            set => _targetRaDec.X = value;
+        }
+
+        public double TargetDec
+        {
+            get => _targetRaDec.Y;
+            set => _targetRaDec.Y = value;
+        }
+
+        public double RateRa
+        {
+            get => _rateRaDec.X;
+            set => _rateRaDec.X = value;
+        }
+
+        public double RateDec
+        {
+            get => _rateRaDec.Y;
+            set => _rateRaDec.Y = value;
+        }
+
+        public double RateRaOrg
+        {
+            get => _rateRaOrg;
+            set => _rateRaOrg = value;
+        }
+
+        public double RateDecOrg
+        {
+            get => _rateDecOrg;
+            set => _rateDecOrg = value;
+        }
+
+        public double GuideRateRa
+        {
+            get => _guideRate.X;
+            set => _guideRate.X = value;
+        }
+
+        public double GuideRateDec
+        {
+            get => _guideRate.Y;
+            set => _guideRate.Y = value;
         }
 
         #endregion

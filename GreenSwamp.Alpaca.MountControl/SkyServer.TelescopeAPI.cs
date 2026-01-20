@@ -497,17 +497,18 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Target & Rate Properties
 
-        private static Vector _rateRaDec;
         /// <summary>
         /// The declination tracking rate in degrees, DeclinationRate
         /// corrected direction applied
         /// </summary>
         public static double RateDec
         {
-            get => _rateRaDec.Y;
+            get => _defaultInstance?.RateDec ?? 0.0;
             set
             {
-                _rateRaDec.Y = value;
+                if (_defaultInstance != null)
+                    _defaultInstance.RateDec = value;
+
                 ActionRateRaDec(); // Update the mount tracking rate
 
                 var monitorItem = new MonitorEntry
@@ -518,7 +519,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Data,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{_rateRaDec.Y}|{SkyTrackingOffset[1]}"
+                    Message = $"{value}|{SkyTrackingOffset[1]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -535,10 +536,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double RateRa
         {
-            get => _rateRaDec.X;
+            get => _defaultInstance?.RateRa ?? 0.0;
             set
             {
-                _rateRaDec.X = value;
+                if (_defaultInstance != null)
+                    _defaultInstance.RateRa = value;
+
                 ActionRateRaDec(); // Update the mount tracking rate
 
                 var monitorItem = new MonitorEntry
@@ -549,7 +552,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Data,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{_rateRaDec.X}|{SkyTrackingOffset[0]}"
+                    Message = $"{value}|{SkyTrackingOffset[0]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -561,7 +564,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double RateRaOrg { get; set; }
 
-        private static Vector _targetRaDec = new Vector(double.NaN, double.NaN);
         /// <summary>
         /// Dec target for slewing, epoch is same as EquatorialSystem Property
         /// initialised to NaN to catch read before write
@@ -569,8 +571,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double TargetDec
         {
-            get => _targetRaDec.Y;
-            set => _targetRaDec.Y = value;
+            get => _defaultInstance?.TargetDec ?? double.NaN;
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance.TargetDec = value;
+            }
         }
 
         /// <summary>
@@ -580,18 +586,25 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double TargetRa
         {
-            get => _targetRaDec.X;
-            set => _targetRaDec.X = value;
+            get => _defaultInstance?.TargetRa ?? double.NaN;
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance.TargetRa = value;
+            }
         }
 
-        private static Vector _guideRate;
         /// <summary>
         /// The current Declination movement rate offset for telescope guiding (degrees/sec) 
         /// </summary>
         public static double GuideRateDec
         {
-            get => _guideRate.Y;
-            set => _guideRate.Y = value;
+            get => _defaultInstance?.GuideRateDec ?? 0.0;
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance.GuideRateDec = value;
+            }
         }
 
         /// <summary>
@@ -599,8 +612,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double GuideRateRa
         {
-            get => _guideRate.X;
-            set => _guideRate.X = value;
+            get => _defaultInstance?.GuideRateRa ?? 0.0;
+            set
+            {
+                if (_defaultInstance != null)
+                    _defaultInstance.GuideRateRa = value;
+            }
         }
 
         #endregion
@@ -962,7 +979,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Reset rates and axis movement
                 _rateMoveAxes = new Vector(0, 0);
                 MoveAxisActive = false;
-                _rateRaDec = new Vector(0, 0);
+                if (_defaultInstance != null)
+                {
+                    _defaultInstance.RateRa = 0.0;
+                    _defaultInstance.RateDec = 0.0;
+                }
                 // Stop axes
                 switch (_settings!.Mount)
                 {
@@ -1041,7 +1062,11 @@ namespace GreenSwamp.Alpaca.MountControl
             MoveAxisActive = false;
             RateMovePrimaryAxis = 0.0;
             RateMoveSecondaryAxis = 0.0;
-            _rateRaDec = new Vector(0, 0);
+            if (_defaultInstance != null)
+            {
+                _defaultInstance.RateRa = 0.0;
+                _defaultInstance.RateDec = 0.0;
+            }
 
             switch (_settings!.Mount)
             {
@@ -1115,7 +1140,11 @@ namespace GreenSwamp.Alpaca.MountControl
             MoveAxisActive = false;
             RateMovePrimaryAxis = 0.0;
             RateMoveSecondaryAxis = 0.0;
-            _rateRaDec = new Vector(0, 0);
+            if (_defaultInstance != null)
+            {
+                _defaultInstance.RateRa = 0.0;
+                _defaultInstance.RateDec = 0.0;
+            }
 
             if (!AxesStopValidate())
             {
@@ -2440,10 +2469,10 @@ namespace GreenSwamp.Alpaca.MountControl
                             {
                                 _ = new CmdAxisTracking(0, Axis.Axis1, rateChange);
                             }
-                            _ = new CmdRaDecRate(0, Axis.Axis1, GetRaRateDirection(_rateRaDec.X));
+                            _ = new CmdRaDecRate(0, Axis.Axis1, GetRaRateDirection(_defaultInstance?.RateRa ?? 0.0));
                             if (!MoveSecondaryAxisActive) // Set Dec tracking rate offset (0 if not sidereal)
                             {
-                                _ = new CmdRaDecRate(0, Axis.Axis2, GetDecRateDirection(_rateRaDec.Y));
+                                _ = new CmdRaDecRate(0, Axis.Axis2, GetDecRateDirection(_defaultInstance?.RateDec ?? 0.0));
                             }
                             break;
                         default:
@@ -2588,8 +2617,11 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static void SetGuideRates()
         {
             var rate = CurrentTrackingRate();
-            _guideRate.X = rate * _settings!.GuideRateOffsetX;
-            _guideRate.Y = rate * _settings!.GuideRateOffsetY;
+            if (_defaultInstance != null)
+            {
+                _defaultInstance.GuideRateRa = rate * _settings!.GuideRateOffsetX;
+                _defaultInstance.GuideRateDec = rate * _settings!.GuideRateOffsetY;
+            }
 
             var monitorItem = new MonitorEntry
             {
@@ -2599,7 +2631,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{_guideRate.X * 3600}|{_guideRate.Y * 3600}"
+                Message = $"{_defaultInstance?.GuideRateRa ?? 0.0 * 3600}|{_defaultInstance?.GuideRateDec ?? 0.0 * 3600}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
