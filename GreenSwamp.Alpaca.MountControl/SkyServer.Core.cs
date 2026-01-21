@@ -662,7 +662,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case "Steps":
                     Steps = SkyQueue.Steps;
-                    MountPositionUpdated = true;
+                    _mountPositionUpdatedEvent.Set(); // Signal all waiting threads
                     break;
             }
         }
@@ -682,7 +682,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case "Steps":
                     Steps = MountQueue.Steps;
-                    MountPositionUpdated = true;
+                    _mountPositionUpdatedEvent.Set(); // Signal all waiting threads
                     break;
             }
         }
@@ -746,6 +746,18 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (hasLock) { Monitor.Exit(TimerLock); }
             }
+        }
+
+        /// <summary>
+        /// Wait for mount position to be updated using event signalling
+        /// </summary>
+        /// <exception cref="TimeoutException"></exception>
+        public static void WaitMountPositionUpdated()
+        {
+            _mountPositionUpdatedEvent.Reset();
+            UpdateSteps();  // Immediate position for tight control
+            if (!_mountPositionUpdatedEvent.Wait(5000))
+                throw new TimeoutException();
         }
 
         /// <summary>
@@ -1598,9 +1610,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // start loop timer
                 var loopTimer = Stopwatch.StartNew();
                 // Update mount position
-                MountPositionUpdated = false;
-                UpdateSteps();
-                while (!MountPositionUpdated) Thread.Sleep(10);
+                WaitMountPositionUpdated();
                 // Check for maxtries or no change and exit
                 if (maxtries >= 5) { break; }
                 maxtries++;
@@ -1705,9 +1715,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // start loop timer
                     var loopTimer = Stopwatch.StartNew();
                     // Update mount position
-                    MountPositionUpdated = false;
-                    UpdateSteps();
-                    while (!MountPositionUpdated) Thread.Sleep(10);
+                    WaitMountPositionUpdated();
                     // Check for maxtries or no change and exit
                     if (maxTries >= 5) { break; }
                     maxTries++;

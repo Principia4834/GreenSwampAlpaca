@@ -1707,11 +1707,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckAltAzSync(Altitude, Azimuth, "SyncToAltAz");
             SkyServer.AtPark = false;
             SkyServer.SyncToAltAzm(Azimuth, Altitude);
-            SkyServer.MountPositionUpdated = false;
-            while (!SkyServer.MountPositionUpdated)
-            {
-                Thread.Sleep(10);
-            }
+            SkyServer.WaitMountPositionUpdated();
         }
 
         public void SyncToCoordinates(double RightAscension, double Declination)
@@ -1741,11 +1737,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             SkyServer.AtPark = false;
             SkyServer.SyncToTargetRaDec();
-            SkyServer.MountPositionUpdated = false;
-            while (!SkyServer.MountPositionUpdated)
-            {
-                Thread.Sleep(10);
-            }
+            SkyServer.WaitMountPositionUpdated();
         }
 
         public void SyncToTarget()
@@ -1773,11 +1765,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             SkyServer.AtPark = false;
             SkyServer.SyncToTargetRaDec();
-            SkyServer.MountPositionUpdated = false;
-            while (!SkyServer.MountPositionUpdated)
-            {
-                Thread.Sleep(10);
-            }
+            SkyServer.WaitMountPositionUpdated();
         }
 
         #region Private Methods

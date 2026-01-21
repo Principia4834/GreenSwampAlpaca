@@ -70,9 +70,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private static bool _snapPort1Result;
         private static bool _snapPort2Result;
         private static double[] _steps = { 0.0, 0.0 };
-        private static bool _mountPositionUpdated;
-        private static readonly object MountPositionUpdatedLock = new object();
-        // Phase 4.1: Local working copy for Steps property calculations
+        private static readonly ManualResetEventSlim _mountPositionUpdatedEvent =
+            new ManualResetEventSlim(false);        // Phase 4.1: Local working copy for Steps property calculations
         // Note: This is separate from the AppAxes property which delegates to instance
         private static Vector _appAxesInternal = new Vector(double.NaN, double.NaN);
         
@@ -1077,27 +1076,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// should always be 0 or event interval is too fast
         /// </summary>
         private static int TimerOverruns { get; set; }
-
-        /// <summary>
-        /// Has mount position been updated 
-        /// </summary>
-        public static bool MountPositionUpdated
-        {
-            get
-            {
-                lock (MountPositionUpdatedLock)
-                {
-                    return _mountPositionUpdated;
-                }
-            }
-            set
-            {
-                lock (MountPositionUpdatedLock)
-                {
-                    _mountPositionUpdated = value;
-                }
-            }
-        }
 
         /// <summary>
         /// Current Alt/Az tracking mode - RA/Dec predictor or calculated tracking rate

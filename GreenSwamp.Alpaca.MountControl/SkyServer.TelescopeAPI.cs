@@ -1675,27 +1675,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
 
-            MountPositionUpdated = false;
-            var timeout = Stopwatch.StartNew();
-            while (!MountPositionUpdated)
-            {
-                if (timeout.ElapsedMilliseconds > 5000)  // 5 second timeout
-                {
-                    var errorItem = new MonitorEntry
-                    {
-                        Datetime = HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Server,
-                        Type = MonitorType.Error,
-                        Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = "Timeout waiting for position update after AltAz sync"
-                    };
-                    MonitorLog.LogToMonitor(errorItem);
-                    throw new TimeoutException("Mount position update timeout after sync");
-                }
-                Thread.Sleep(50);
-            }
+            WaitMountPositionUpdated();
 
             if (trackingstate)
             {
@@ -1775,11 +1755,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
 
-            MountPositionUpdated = false;
-            while (!MountPositionUpdated)
-            {
-                Thread.Sleep(50);
-            }
+            WaitMountPositionUpdated();
 
             if (trackingstate)
             {
@@ -2829,9 +2805,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (SkyPredictor.RaDecSet)
                     {
                         // Update mount position
-                        MountPositionUpdated = false;
-                        UpdateSteps();
-                        while (!MountPositionUpdated) Thread.Sleep(10);
+                        WaitMountPositionUpdated();
                         var steps = Steps;
                         DateTime nextTime = HiResDateTime.UtcNow.AddMilliseconds(_settings!.AltAzTrackingUpdateInterval);
                         var raDec = SkyPredictor.GetRaDecAtTime(nextTime);
