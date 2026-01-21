@@ -14,14 +14,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.Diagnostics;
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.Simulator;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.MountControl.Interfaces;
 using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Server.MountControl;
 using GreenSwamp.Alpaca.Shared;
+using Range = GreenSwamp.Alpaca.Principles.Range;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace GreenSwamp.Alpaca.MountControl
@@ -32,6 +34,9 @@ namespace GreenSwamp.Alpaca.MountControl
     /// </summary>
     public class MountInstance : IMountController
     {
+        #region Private backing fields
+
+        private readonly string _instanceName;
         private readonly string _id;
         private readonly SkySettingsInstance _settings;
 
@@ -109,6 +114,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _siderealTime;
         private double _lha;
         private PointingState _isSideOfPier = PointingState.Unknown;
+
+        #endregion
 
         #region Public State Exposure (Phase 4.1)
 
@@ -294,6 +301,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public MountInstance(string id, SkySettingsInstance settings)
         {
             _id = id ?? "mount-0";
+            _instanceName = id ?? "default";
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
             var monitorItem = new MonitorEntry
@@ -1171,6 +1179,598 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
+        #region Mount Operations (Instance Methods)
+
+        /// <summary>
+        /// Simulator GOTO slew operation
+        /// </summary>
+        internal int SimGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
+        {
+            const int success = 0;
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Instance:{_instanceName}|from|{SkyServer.ActualAxisX}|{SkyServer.ActualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            token.ThrowIfCancellationRequested();
+            var simTarget = MapSlewTargetToAxes(target, slewType);
+            const int timer = 120;
+            var stopwatch = Stopwatch.StartNew();
+
+            SkyServer.SimTasks(MountTaskName.StopAxes);
+
+            #region First Slew
+            token.ThrowIfCancellationRequested();
+            _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]);
+            _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTarget[1]);
+
+            while (stopwatch.Elapsed.TotalSeconds <= timer)
+            {
+                Thread.Sleep(50);
+                token.ThrowIfCancellationRequested();
+
+                var statusx = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
+                var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusx).Result;
+                var axis1Stopped = axis1Status.Stopped;
+
+                Thread.Sleep(50);
+                token.ThrowIfCancellationRequested();
+
+                var statusy = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
+                var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusy).Result;
+                var axis2Stopped = axis2Status.Stopped;
+
+                if (!axis1Stopped || !axis2Stopped) continue;
+                if (SkyServer.SlewSettleTime > 0)
+                    Tasks.DelayHandler(TimeSpan.FromSeconds(SkyServer.SlewSettleTime).Milliseconds);
+                break;
+            }
+            stopwatch.Stop();
+
+            SkyServer.AxesStopValidate();
+            monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Instance:{_instanceName}|GoToSeconds|{stopwatch.Elapsed.TotalSeconds}|Target|{simTarget[0]}|{simTarget[1]}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+            #endregion
+
+            #region Final precision slew
+            token.ThrowIfCancellationRequested();
+            if (stopwatch.Elapsed.TotalSeconds <= timer)
+                SimPrecisionGoto(target, slewType, token);
+            #endregion
+
+            SkyServer.SimTasks(MountTaskName.StopAxes);
+            return success;
+        }
+
+        /// <summary>
+        /// Simulator precision GOTO operation
+        /// </summary>
+        internal int SimPrecisionGoto(double[] target, SlewType slewType, CancellationToken token)
+        {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Instance:{_instanceName}|from|({SkyServer.ActualAxisX},{SkyServer.ActualAxisY})|to|({target[0]},{target[1]})"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            const int returnCode = 0;
+            var maxTries = 0;
+            double[] deltaDegree = { 0.0, 0.0 };
+            double[] gotoPrecision = { ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1) };
+            const double milliSeconds = 0.001;
+            var deltaTime = 75 * milliSeconds;
+
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                if (maxTries > 5) { break; }
+                maxTries++;
+
+                if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
+                {
+                    var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
+                    var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                    target = new[] { internalRaDec.X, internalRaDec.Y };
+                }
+
+                var simTarget = MapSlewTargetToAxes(target, slewType);
+                var rawPositions = GetRawDegrees();
+
+                if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
+                { break; }
+
+                deltaDegree[0] = Range.Range180(simTarget[0] - rawPositions[0]);
+                deltaDegree[1] = Range.Range180(simTarget[1] - rawPositions[1]);
+
+                var axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0];
+                var axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1];
+                if (axis1AtTarget && axis2AtTarget) { break; }
+
+                token.ThrowIfCancellationRequested();
+                if (!axis1AtTarget)
+                    _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]);
+                token.ThrowIfCancellationRequested();
+                if (!axis2AtTarget)
+                    _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTarget[1]);
+
+                var stopwatch1 = Stopwatch.StartNew();
+                var axis1Stopped = false;
+                var axis2Stopped = false;
+
+                while (stopwatch1.Elapsed.TotalMilliseconds < 3000)
+                {
+                    Thread.Sleep(20);
+                    token.ThrowIfCancellationRequested();
+
+                    if (!axis1Stopped)
+                    {
+                        var status1 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
+                        var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status1).Result;
+                        axis1Stopped = axis1Status.Stopped;
+                    }
+
+                    Thread.Sleep(20);
+                    token.ThrowIfCancellationRequested();
+
+                    if (!axis2Stopped)
+                    {
+                        var status2 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
+                        var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status2).Result;
+                        axis2Stopped = axis2Status.Stopped;
+                    }
+
+                    if (axis1Stopped && axis2Stopped) { break; }
+                }
+                stopwatch1.Stop();
+                deltaTime = stopwatch1.Elapsed.Milliseconds * milliSeconds;
+
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Instance:{_instanceName}|Delta|({deltaDegree[0]},{deltaDegree[1]})|Seconds|{stopwatch1.Elapsed.TotalSeconds}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            return returnCode;
+        }
+
+        /// <summary>
+        /// Simulator pulse GOTO operation for continuous tracking correction
+        /// </summary>
+        internal void SimPulseGoto(CancellationToken token)
+        {
+            var maxTries = 0;
+            double[] deltaDegree = { 0.0, 0.0 };
+            var axis1AtTarget = false;
+            var axis2AtTarget = false;
+            double[] gotoPrecision = { ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1) };
+            long loopTime = 75; // 75mS for simulator slew
+
+            try
+            {
+                while (true)
+                {
+                    if (maxTries > 5) { break; }
+                    maxTries++;
+                    double[] simTarget = { 0.0, 0.0 };
+
+                    if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                    {
+                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(loopTime);
+                        var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                        simTarget = MapSlewTargetToAxes(new[] { internalRaDec.X, internalRaDec.Y }, SlewType.SlewRaDec);
+                    }
+
+                    var rawPositions = GetRawDegrees();
+                    if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
+                    { break; }
+
+                    deltaDegree[0] = Range.Range180(simTarget[0] - rawPositions[0]);
+                    deltaDegree[1] = Range.Range180(simTarget[1] - rawPositions[1]);
+
+                    axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
+                    axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
+                    if (axis1AtTarget && axis2AtTarget) { break; }
+
+                    if (!axis1AtTarget)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]);
+                    }
+                    if (!axis2AtTarget)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTarget[1]);
+                    }
+
+                    var stopwatch1 = Stopwatch.StartNew();
+                    var axis1Stopped = false;
+                    var axis2Stopped = false;
+
+                    while (stopwatch1.Elapsed.TotalMilliseconds < 500)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        Thread.Sleep(100);
+
+                        if (!axis1Stopped)
+                        {
+                            var status1 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
+                            var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status1).Result;
+                            axis1Stopped = axis1Status.Stopped;
+                        }
+
+                        Thread.Sleep(100);
+
+                        if (!axis2Stopped)
+                        {
+                            var status2 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
+                            var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status2).Result;
+                            axis2Stopped = axis2Status.Stopped;
+                        }
+
+                        if (axis1Stopped && axis2Stopped) { break; }
+                    }
+                    stopwatch1.Stop();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when operation is cancelled
+            }
+        }
+
+        /// <summary>
+        /// SkyWatcher GOTO slew operation
+        /// </summary>
+        internal int SkyGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
+        {
+            const int success = 0;
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Instance:{_instanceName}|from|{SkyServer.ActualAxisX}|{SkyServer.ActualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            token.ThrowIfCancellationRequested();
+            var skyTarget = MapSlewTargetToAxes(target, slewType);
+            const int timer = 240;
+            var stopwatch = Stopwatch.StartNew();
+
+            SkyServer.SkyTasks(MountTaskName.StopAxes);
+
+            #region First Slew
+            token.ThrowIfCancellationRequested();
+            _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTarget[0]);
+            _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTarget[1]);
+
+            while (stopwatch.Elapsed.TotalSeconds <= timer)
+            {
+                Thread.Sleep(50);
+                token.ThrowIfCancellationRequested();
+
+                var statusx = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
+                var x = SkyQueue.GetCommandResult(statusx);
+                var axis1Stopped = Convert.ToBoolean(x.Result);
+
+                Thread.Sleep(50);
+                token.ThrowIfCancellationRequested();
+
+                var statusy = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
+                var y = SkyQueue.GetCommandResult(statusy);
+                var axis2Stopped = Convert.ToBoolean(y.Result);
+
+                if (!axis1Stopped || !axis2Stopped) { continue; }
+
+                if (SkyServer.SlewSettleTime > 0)
+                    Tasks.DelayHandler(TimeSpan.FromSeconds(SkyServer.SlewSettleTime).Milliseconds);
+                break;
+            }
+            stopwatch.Stop();
+
+            SkyServer.AxesStopValidate();
+            monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Instance:{_instanceName}|Seconds|{stopwatch.Elapsed.TotalSeconds}|Target|{target[0]}|{target[1]}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+            #endregion
+
+            #region Final precision slew
+            token.ThrowIfCancellationRequested();
+            if (stopwatch.Elapsed.TotalSeconds <= timer)
+                SkyPrecisionGoto(target, slewType, token);
+            #endregion
+
+            SkyServer.SkyTasks(MountTaskName.StopAxes);
+            return success;
+        }
+
+        /// <summary>
+        /// SkyWatcher precision GOTO operation
+        /// </summary>
+        internal int SkyPrecisionGoto(double[] target, SlewType slewType, CancellationToken token)
+        {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Instance:{_instanceName}|from|({SkyServer.ActualAxisX},{SkyServer.ActualAxisY})|to|({target[0]},{target[1]})"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
+            const int returnCode = 0;
+            var maxtries = 0;
+            double[] deltaDegree = { 0.0, 0.0 };
+            var axis1AtTarget = false;
+            var axis2AtTarget = false;
+            double[] gotoPrecision = { _settings.GotoPrecision, _settings.GotoPrecision };
+            long loopTime = 800;
+
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                var loopTimer = Stopwatch.StartNew();
+
+                // Event-based position update waiting
+                SkyServer.MountPositionUpdatedEvent.Reset();
+                UpdateSteps();
+
+                if (!SkyServer.MountPositionUpdatedEvent.Wait(5000))
+                {
+                    var errorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Error,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"Instance:{_instanceName}|Timeout waiting for position update|Try:{maxtries}"
+                    };
+                    MonitorLog.LogToMonitor(errorItem);
+                    throw new TimeoutException($"Mount position update timeout in precision goto (instance: {_instanceName})");
+                }
+
+                if (maxtries >= 5) { break; }
+                maxtries++;
+
+                if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
+                {
+                    var nextTime = HiResDateTime.UtcNow.AddMilliseconds(loopTime);
+                    var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                    target = new[] { internalRaDec.X, internalRaDec.Y };
+                }
+
+                var skyTarget = MapSlewTargetToAxes(target, slewType);
+                var rawPositions = GetRawDegrees();
+
+                deltaDegree[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
+                deltaDegree[1] = Range.Range180(skyTarget[1] - rawPositions[1]);
+
+                axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
+                axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
+                if (axis1AtTarget && axis2AtTarget) { break; }
+
+                token.ThrowIfCancellationRequested();
+                if (!axis1AtTarget)
+                {
+                    skyTarget[0] += 0.25 * deltaDegree[0];
+                    _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTarget[0]);
+                }
+
+                var axis1Done = axis1AtTarget;
+                while (loopTimer.Elapsed.TotalMilliseconds < 3000)
+                {
+                    Thread.Sleep(30);
+                    if (token.IsCancellationRequested) { break; }
+
+                    if (!axis1Done)
+                    {
+                        var status1 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
+                        axis1Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status1).Result);
+                    }
+                    if (axis1Done) { break; }
+                }
+
+                if (!axis2AtTarget)
+                {
+                    skyTarget[1] += 0.1 * deltaDegree[1];
+                    token.ThrowIfCancellationRequested();
+                    _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTarget[1]);
+                }
+
+                var axis2Done = axis2AtTarget;
+                while (loopTimer.Elapsed.TotalMilliseconds < 3000)
+                {
+                    Thread.Sleep(30);
+                    token.ThrowIfCancellationRequested();
+
+                    if (!axis2Done)
+                    {
+                        var status2 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
+                        axis2Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status2).Result);
+                    }
+                    if (axis2Done) { break; }
+                }
+
+                loopTimer.Stop();
+                loopTime = loopTimer.ElapsedMilliseconds;
+
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Instance:{_instanceName}|Delta|{deltaDegree[0]}|{deltaDegree[1]}|Seconds|{loopTimer.Elapsed.TotalSeconds}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            return returnCode;
+        }
+
+        /// <summary>
+        /// SkyWatcher pulse GOTO operation for continuous tracking correction
+        /// </summary>
+        internal void SkyPulseGoto(CancellationToken token)
+        {
+            var maxTries = 0;
+            double[] deltaDegree = { 0.0, 0.0 };
+            var axis1AtTarget = false;
+            var axis2AtTarget = false;
+            double[] gotoPrecision = { _settings.GotoPrecision, _settings.GotoPrecision };
+            long loopTime = 400;
+
+            try
+            {
+                while (true)
+                {
+                    var loopTimer = Stopwatch.StartNew();
+
+                    // Event-based position update waiting
+                    SkyServer.MountPositionUpdatedEvent.Reset();
+                    UpdateSteps();
+
+                    if (!SkyServer.MountPositionUpdatedEvent.Wait(5000))
+                    {
+                        var errorItem = new MonitorEntry
+                        {
+                            Datetime = HiResDateTime.UtcNow,
+                            Device = MonitorDevice.Server,
+                            Category = MonitorCategory.Server,
+                            Type = MonitorType.Error,
+                            Method = MethodBase.GetCurrentMethod()?.Name,
+                            Thread = Thread.CurrentThread.ManagedThreadId,
+                            Message = $"Instance:{_instanceName}|Timeout waiting for position update in pulse goto"
+                        };
+                        MonitorLog.LogToMonitor(errorItem);
+                        throw new TimeoutException($"Mount position update timeout in pulse goto (instance: {_instanceName})");
+                    }
+
+                    if (maxTries >= 5) { break; }
+                    maxTries++;
+                    double[] skyTarget = { 0.0, 0.0 };
+
+                    if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                    {
+                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(loopTime);
+                        var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                        skyTarget = MapSlewTargetToAxes(new[] { internalRaDec.X, internalRaDec.Y }, SlewType.SlewRaDec);
+                    }
+
+                    var rawPositions = GetRawDegrees();
+                    if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
+                    { break; }
+
+                    deltaDegree[0] = skyTarget[0] - rawPositions[0];
+                    deltaDegree[1] = skyTarget[1] - rawPositions[1];
+
+                    axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
+                    axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
+                    if (axis1AtTarget && axis2AtTarget) { break; }
+
+                    if (!axis1AtTarget)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTarget[0]);
+                    }
+
+                    var axis1Done = axis1AtTarget;
+                    while (loopTimer.Elapsed.TotalMilliseconds < 3000)
+                    {
+                        if (SkyServer.SlewState == SlewType.SlewNone) { break; }
+                        Thread.Sleep(30);
+                        token.ThrowIfCancellationRequested();
+
+                        if (!axis1Done)
+                        {
+                            var status1 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
+                            axis1Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status1).Result);
+                        }
+                        if (axis1Done) { break; }
+                    }
+
+                    if (!axis2AtTarget)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTarget[1]);
+                    }
+
+                    var axis2Done = axis2AtTarget;
+                    while (loopTimer.Elapsed.TotalMilliseconds < 3000)
+                    {
+                        if (SkyServer.SlewState == SlewType.SlewNone) { break; }
+                        Thread.Sleep(30);
+                        token.ThrowIfCancellationRequested();
+
+                        if (!axis2Done)
+                        {
+                            var status2 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
+                            axis2Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status2).Result);
+                        }
+                        if (axis2Done) { break; }
+                    }
+
+                    loopTimer.Stop();
+                    loopTime = loopTimer.ElapsedMilliseconds;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when operation is cancelled
+            }
+        }
+
+        #endregion
         #region Logging
 
         private void LogMount(string message)

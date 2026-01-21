@@ -70,9 +70,16 @@ namespace GreenSwamp.Alpaca.MountControl
         private static bool _snapPort1Result;
         private static bool _snapPort2Result;
         private static double[] _steps = { 0.0, 0.0 };
+
+        // Position update signaling - replaces MountPositionUpdated boolean
         private static readonly ManualResetEventSlim _mountPositionUpdatedEvent =
-            new ManualResetEventSlim(false);        // Phase 4.1: Local working copy for Steps property calculations
-        // Note: This is separate from the AppAxes property which delegates to instance
+            new ManualResetEventSlim(false);
+
+        /// <summary>
+        /// Internal access to position update event for instance methods
+        /// </summary>
+        internal static ManualResetEventSlim MountPositionUpdatedEvent => _mountPositionUpdatedEvent;        // Note: This is separate from the AppAxes property which delegates to instance
+        
         private static Vector _appAxesInternal = new Vector(double.NaN, double.NaN);
         
         #endregion
