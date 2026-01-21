@@ -57,11 +57,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double RightAscension
         {
-            get => _raDec.X;
+            get => _defaultInstance?.RightAscension ?? 0.0;
             private set
             {
-                if (Math.Abs(value - _raDec.X) < 0.000000000000001) return;
-                _raDec.X = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance.RightAscension) < 0.000000000000001) return;
+                _defaultInstance.RightAscension = value;
             }
         }
 
@@ -70,23 +71,25 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double Declination
         {
-            get => _raDec.Y;
+            get => _defaultInstance?.Declination ?? 0.0;
             private set
             {
-                if (Math.Abs(value - _raDec.Y) < 0.000000000000001) return;
-                _raDec.Y = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance.Declination) < 0.000000000000001) return;
+                _defaultInstance.Declination = value;
             }
         }
-         
+
         /// <summary>
         /// UI display for converted ra
         /// </summary>
         public static double RightAscensionXForm
         {
-            get => _rightAscensionXForm;
+            get => _defaultInstance?.RightAscensionXForm ?? 0.0;
             private set
             {
-                _rightAscensionXForm = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance.RightAscensionXForm = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -96,10 +99,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double DeclinationXForm
         {
-            get => _declinationXForm;
+            get => _defaultInstance?.DeclinationXForm ?? 0.0;
             private set
             {
-                _declinationXForm = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance.DeclinationXForm = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -109,11 +113,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double Altitude
         {
-            get => _altAzm.Y;
+            get => _defaultInstance?.Altitude ?? 0.0;
             private set
             {
-                // if (Math.Abs(value - _altAzm.Y) < 0.000000000000001) { return; }
-                _altAzm.Y = value;
+                if (_defaultInstance == null) return;
+                // if (Math.Abs(value - _defaultInstance.Altitude) < 0.000000000000001) { return; }
+                _defaultInstance.Altitude = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -123,11 +128,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double Azimuth
         {
-            get => _altAzm.X;
+            get => _defaultInstance?.Azimuth ?? 0.0;
             private set
             {
-                // if (Math.Abs(value - _altAzm.X) < 0.000000000000001) { return; }
-                _altAzm.X = value;
+                if (_defaultInstance == null) return;
+                // if (Math.Abs(value - _defaultInstance.Azimuth) < 0.000000000000001) { return; }
+                _defaultInstance.Azimuth = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -137,10 +143,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double SiderealTime
         {
-            get => _siderealTime;
+            get => _defaultInstance?.SiderealTime ?? 0.0;
             private set
             {
-                _siderealTime = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance.SiderealTime = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -150,11 +157,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double Lha
         {
-            get => _lha;
+            get => _defaultInstance?.Lha ?? 0.0;
             private set
             {
-                if (Math.Abs(value - _lha) < 0.000000000000001) { return; }
-                _lha = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance.Lha) < 0.000000000000001) { return; }
+                _defaultInstance.Lha = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -164,12 +172,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static PointingState IsSideOfPier
         {
-            get => _isSideOfPier;
+            get => _defaultInstance?.IsSideOfPier ?? PointingState.Unknown;
             private set
             {
-                if (value == _isSideOfPier) return;
+                if (_defaultInstance == null) return;
+                if (value == _defaultInstance.IsSideOfPier) return;
 
-                _isSideOfPier = value;
+                _defaultInstance.IsSideOfPier = value;
                 OnStaticPropertyChanged();
 
                 var monitorItem = new MonitorEntry

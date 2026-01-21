@@ -100,6 +100,16 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _rateRaOrg;
         private double _rateDecOrg;
 
+        // Phase 4.5: Position and coordinate fields
+
+        private Vector _raDec = new Vector(0, 0);
+        private double _rightAscensionXForm;
+        private double _declinationXForm;
+        private Vector _altAzm = new Vector(0, 0);
+        private double _siderealTime;
+        private double _lha;
+        private PointingState _isSideOfPier = PointingState.Unknown;
+
         #region Public State Exposure (Phase 4.1)
 
         /// <summary>
@@ -186,6 +196,61 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             get => _guideRate.Y;
             set => _guideRate.Y = value;
+        }
+
+        // Phase 4.5: Position and coordinate properties
+        public double RightAscension
+        {
+            get => _raDec.X;
+            set => _raDec.X = value;
+        }
+
+        public double Declination
+        {
+            get => _raDec.Y;
+            set => _raDec.Y = value;
+        }
+
+        public double RightAscensionXForm
+        {
+            get => _rightAscensionXForm;
+            set => _rightAscensionXForm = value;
+        }
+
+        public double DeclinationXForm
+        {
+            get => _declinationXForm;
+            set => _declinationXForm = value;
+        }
+
+        public double Altitude
+        {
+            get => _altAzm.Y;
+            set => _altAzm.Y = value;
+        }
+
+        public double Azimuth
+        {
+            get => _altAzm.X;
+            set => _altAzm.X = value;
+        }
+
+        public double SiderealTime
+        {
+            get => _siderealTime;
+            set => _siderealTime = value;
+        }
+
+        public double Lha
+        {
+            get => _lha;
+            set => _lha = value;
+        }
+
+        public PointingState IsSideOfPier
+        {
+            get => _isSideOfPier;
+            set => _isSideOfPier = value;
         }
 
         #endregion
