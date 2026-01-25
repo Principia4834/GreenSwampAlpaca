@@ -793,12 +793,21 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </remarks>
         /// <param name="target">Target coordinates to be mapped</param>
         /// <param name="slewType">Type of slew operation</param>
+        /// <param name="atTime">Optional UTC time for LST calculation (used for predicted coordinates)</param>
         /// <returns>Target coordinates mapped to appropriate axes</returns>        
-        public double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
+        public double[] MapSlewTargetToAxes(double[] target, SlewType slewType, DateTime? atTime = null)
         {
             // Convert target to axes based on slew type
             // Create context from current settings
             var context = AxesContext.FromSettings(_settings);
+
+            // If a specific time is provided, calculate LST at that time
+            if (atTime.HasValue)
+            {
+                var lst = SkyServer.GetLocalSiderealTime(atTime.Value);
+                context = context with { LocalSiderealTime = lst };
+            }
+
             switch (slewType)
             {
                 case SlewType.SlewRaDec:
@@ -1200,7 +1209,20 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
             token.ThrowIfCancellationRequested();
+            if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
+            {
+                var predictorRaDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                target = new[] { internalRaDec.X, internalRaDec.Y };
+            }
             var simTarget = MapSlewTargetToAxes(target, slewType);
+            // Work out how long the slew will take by comparing the current position and the target
+            var rawPositions = GetRawDegrees();
+            var deltaTime = new[] { Math.Abs(rawPositions[0] - simTarget[0]) / 8.0, Math.Abs(rawPositions[1] - simTarget[1]) / 8.0 };
+            // Now update simTarget which works in physical mount axis values to the end of slew values
+            DateTime targetTime = DateTime.Now.AddSeconds(Math.Max(deltaTime[0], deltaTime[1]));
+            simTarget = MapSlewTargetToAxes(target, slewType, targetTime);
+
             const int timer = 120;
             var stopwatch = Stopwatch.StartNew();
 
@@ -1277,33 +1299,37 @@ namespace GreenSwamp.Alpaca.MountControl
 
             const int returnCode = 0;
             var maxTries = 0;
-            double[] deltaDegree = { 0.0, 0.0 };
-            double[] gotoPrecision = { ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1) };
-            const double milliSeconds = 0.001;
-            var deltaTime = 75 * milliSeconds;
+            double[] deltaDegree = [0.0, 0.0];
+            // double[] gotoPrecision = { ConvertStepsToDegrees(4, 0), ConvertStepsToDegrees(4, 1) };
+            double[] gotoPrecision = [0.5 / 3600.0, 0.5 / 3600.0];
+            var deltaTime = 800; // initial delta time for predictor
 
             while (true)
             {
                 token.ThrowIfCancellationRequested();
-                if (maxTries > 5) { break; }
+                if (maxTries > 10) { break; }
+                var stopwatch1 = Stopwatch.StartNew();
                 maxTries++;
 
+                DateTime? predictedTime = null;
                 if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
                 {
                     var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                     var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
-                    target = new[] { internalRaDec.X, internalRaDec.Y };
+                    target = [internalRaDec.X, internalRaDec.Y];
+                    predictedTime = nextTime; // Pass the prediction time to MapSlewTargetToAxes
                 }
 
-                var simTarget = MapSlewTargetToAxes(target, slewType);
+                var simTargetAtTime = MapSlewTargetToAxes(target, slewType, predictedTime);
+                var simTargetNow = MapSlewTargetToAxes(target, slewType);
                 var rawPositions = GetRawDegrees();
 
                 if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
                 { break; }
 
-                deltaDegree[0] = Range.Range180(simTarget[0] - rawPositions[0]);
-                deltaDegree[1] = Range.Range180(simTarget[1] - rawPositions[1]);
+                deltaDegree[0] = Range.Range180(simTargetNow[0] - rawPositions[0]);
+                deltaDegree[1] = Range.Range180(simTargetNow[1] - rawPositions[1]);
 
                 var axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0];
                 var axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1];
@@ -1311,12 +1337,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
-                    _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]);
+                    _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTargetAtTime[0] + 0.25 * deltaDegree[0]);
                 token.ThrowIfCancellationRequested();
                 if (!axis2AtTarget)
-                    _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTarget[1]);
+                    _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTargetAtTime[1] + 0.1 * deltaDegree[1]);
 
-                var stopwatch1 = Stopwatch.StartNew();
                 var axis1Stopped = false;
                 var axis2Stopped = false;
 
@@ -1345,7 +1370,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (axis1Stopped && axis2Stopped) { break; }
                 }
                 stopwatch1.Stop();
-                deltaTime = stopwatch1.Elapsed.Milliseconds * milliSeconds;
+                deltaTime = stopwatch1.Elapsed.Milliseconds;
+                deltaTime += deltaTime / 10; // add 10% feed forward
 
                 monitorItem = new MonitorEntry
                 {
@@ -1368,11 +1394,11 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void SimPulseGoto(CancellationToken token)
         {
             var maxTries = 0;
-            double[] deltaDegree = { 0.0, 0.0 };
+            double[] deltaDegree = [0.0, 0.0];
             var axis1AtTarget = false;
             var axis2AtTarget = false;
-            double[] gotoPrecision = { ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1) };
-            long loopTime = 75; // 75mS for simulator slew
+            double[] gotoPrecision = [ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1)];
+            long deltaTime = 250; // 250mS for simulator slew
 
             try
             {
@@ -1380,22 +1406,23 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     if (maxTries > 5) { break; }
                     maxTries++;
-                    double[] simTarget = { 0.0, 0.0 };
+                    double[] simTargetAtTime = [0.0, 0.0];
 
+                    DateTime? predictedTime = null;
                     if (_settings.AlignmentMode == AlignmentMode.AltAz)
                     {
-                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(loopTime);
+                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                         var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                         var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
-                        simTarget = MapSlewTargetToAxes(new[] { internalRaDec.X, internalRaDec.Y }, SlewType.SlewRaDec);
+                        simTargetAtTime = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
                     var rawPositions = GetRawDegrees();
                     if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
                     { break; }
 
-                    deltaDegree[0] = Range.Range180(simTarget[0] - rawPositions[0]);
-                    deltaDegree[1] = Range.Range180(simTarget[1] - rawPositions[1]);
+                    deltaDegree[0] = Range.Range180(simTargetAtTime[0] - rawPositions[0]);
+                    deltaDegree[1] = Range.Range180(simTargetAtTime[1] - rawPositions[1]);
 
                     axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
                     axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
@@ -1404,12 +1431,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (!axis1AtTarget)
                     {
                         token.ThrowIfCancellationRequested();
-                        _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]);
+                        _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTargetAtTime[0]);
                     }
                     if (!axis2AtTarget)
                     {
                         token.ThrowIfCancellationRequested();
-                        _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTarget[1]);
+                        _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTargetAtTime[1]);
                     }
 
                     var stopwatch1 = Stopwatch.StartNew();
@@ -1468,6 +1495,12 @@ namespace GreenSwamp.Alpaca.MountControl
 
             token.ThrowIfCancellationRequested();
             var skyTarget = MapSlewTargetToAxes(target, slewType);
+            // Work out how long the slew will take by comparing the current position and the target
+            var rawPositions = GetRawDegrees();
+            var deltaTime = new[] { Math.Abs(rawPositions[0] - skyTarget[0]) / 4.0, Math.Abs(rawPositions[1] - skyTarget[1]) / 4.0 };
+            // Now update skyTarget which works in physical mount axis values to the end of slew values
+            DateTime targetTime = DateTime.Now.AddSeconds(Math.Max(deltaTime[0], deltaTime[1]));
+            skyTarget = MapSlewTargetToAxes(target, slewType, targetTime);
             const int timer = 240;
             var stopwatch = Stopwatch.StartNew();
 
@@ -1545,11 +1578,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
             const int returnCode = 0;
             var maxtries = 0;
-            double[] deltaDegree = { 0.0, 0.0 };
+            double[] deltaDegree = [0.0, 0.0];
             var axis1AtTarget = false;
             var axis2AtTarget = false;
-            double[] gotoPrecision = { _settings.GotoPrecision, _settings.GotoPrecision };
-            long loopTime = 800;
+            double[] gotoPrecision = [_settings.GotoPrecision, _settings.GotoPrecision];
+            long deltaTime = 800;
 
             while (true)
             {
@@ -1579,19 +1612,22 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (maxtries >= 5) { break; }
                 maxtries++;
 
+                DateTime? predictedTime = null;
                 if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
                 {
-                    var nextTime = HiResDateTime.UtcNow.AddMilliseconds(loopTime);
+                    var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                     var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
-                    target = new[] { internalRaDec.X, internalRaDec.Y };
+                    target = [internalRaDec.X, internalRaDec.Y];
+                    predictedTime = nextTime; // Pass the prediction time to MapSlewTargetToAxes
                 }
 
-                var skyTarget = MapSlewTargetToAxes(target, slewType);
+                var skyTargetAtTime = MapSlewTargetToAxes(target, slewType, predictedTime);
+                var skyTargetNow = MapSlewTargetToAxes(target, slewType);
                 var rawPositions = GetRawDegrees();
 
-                deltaDegree[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
-                deltaDegree[1] = Range.Range180(skyTarget[1] - rawPositions[1]);
+                deltaDegree[0] = Range.Range180((skyTargetNow[0] - rawPositions[0]));
+                deltaDegree[1] = Range.Range180(skyTargetNow[1] - rawPositions[1]);
 
                 axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
                 axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
@@ -1600,8 +1636,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
                 {
-                    skyTarget[0] += 0.25 * deltaDegree[0];
-                    _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTarget[0]);
+                    _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTargetAtTime[0] + 0.25 * deltaDegree[0]);
                 }
 
                 var axis1Done = axis1AtTarget;
@@ -1620,9 +1655,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 if (!axis2AtTarget)
                 {
-                    skyTarget[1] += 0.1 * deltaDegree[1];
                     token.ThrowIfCancellationRequested();
-                    _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTarget[1]);
+                    _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTargetAtTime[1] + 0.1 * deltaDegree[1]);
                 }
 
                 var axis2Done = axis2AtTarget;
@@ -1640,7 +1674,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 loopTimer.Stop();
-                loopTime = loopTimer.ElapsedMilliseconds;
+                deltaTime = loopTimer.ElapsedMilliseconds;
 
                 monitorItem = new MonitorEntry
                 {
@@ -1663,11 +1697,11 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void SkyPulseGoto(CancellationToken token)
         {
             var maxTries = 0;
-            double[] deltaDegree = { 0.0, 0.0 };
+            double[] deltaDegree = [0.0, 0.0];
             var axis1AtTarget = false;
             var axis2AtTarget = false;
-            double[] gotoPrecision = { _settings.GotoPrecision, _settings.GotoPrecision };
-            long loopTime = 400;
+            double[] gotoPrecision = [_settings.GotoPrecision, _settings.GotoPrecision];
+            long deltaTime = 400;
 
             try
             {
@@ -1697,14 +1731,14 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (maxTries >= 5) { break; }
                     maxTries++;
-                    double[] skyTarget = { 0.0, 0.0 };
+                    double[] skyTarget = [0.0, 0.0];
 
                     if (_settings.AlignmentMode == AlignmentMode.AltAz)
                     {
-                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(loopTime);
+                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                         var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                         var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
-                        skyTarget = MapSlewTargetToAxes(new[] { internalRaDec.X, internalRaDec.Y }, SlewType.SlewRaDec);
+                        skyTarget = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
                     var rawPositions = GetRawDegrees();
@@ -1761,7 +1795,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     loopTimer.Stop();
-                    loopTime = loopTimer.ElapsedMilliseconds;
+                    deltaTime = loopTimer.ElapsedMilliseconds;
                 }
             }
             catch (OperationCanceledException)

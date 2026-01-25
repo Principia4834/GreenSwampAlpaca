@@ -334,7 +334,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
-                            return $"{_isSlewingX}|{_isStoppedX}|{_isTrackingX}|{_isRateTrackingY}";
+                            return $"{_isSlewingX}|{_isStoppedX}|{_isTrackingX}|{_isRateTrackingX}";
                         case Axis.Axis2:
                             return $"{_isSlewingY}|{_isStoppedY}|{_isTrackingY}|{_isRateTrackingY}";
                     }

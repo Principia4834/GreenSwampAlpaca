@@ -32,6 +32,7 @@ using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using System.Diagnostics;
+using AlignmentMode = ASCOM.Common.DeviceInterfaces.AlignmentMode;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
@@ -341,7 +342,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 ct.ThrowIfCancellationRequested();
 
                 // ===== PHASE 3: COMPLETION =====
-                await CompletionPhaseAsync(operation.SlewType, operation.TrackingAfterSlew);
+                await operation.CompleteAsync(ct);
             }
             catch (OperationCanceledException)
             {
@@ -383,46 +384,6 @@ namespace GreenSwamp.Alpaca.MountControl
             int returnCode = await operation.ExecuteMovementAsync(ct);
 
             return new MoveResult(returnCode == 0, returnCode);
-        }
-
-        /// <summary>
-        /// PHASE 3: Completion - Handles slew-type-specific completion logic.
-        /// Enables tracking, updates state, performs settling operations.
-        /// </summary>
-        /// <summary>
-        /// Phase 3: Completion - finalize slew operation
-        /// </summary>
-        private async Task CompletionPhaseAsync(SlewType slewType, bool restoreTracking)
-        {
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = "CompletionPhaseAsync",
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{slewType} completed successfully"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            // ✅ FIX: Set AtPark for park operations ONLY when physically parked
-            if (slewType == SlewType.SlewPark)
-            {
-                SkyServer.CompletePark();  // Sets AtPark, Tracking, resets predictor
-            }
-
-            // Clear slewing state
-            _currentSlewType = SlewType.SlewNone;
-            SkyServer.SlewState = SlewType.SlewNone;
-
-            // Restore tracking if needed
-            if (restoreTracking && slewType != SlewType.SlewPark)
-            {
-                SkyServer.Tracking = true;
-            }
-
-            await Task.CompletedTask;
         }
 
         #endregion
@@ -682,22 +643,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Checks if the slew is still active (not cancelled externally).
-        /// </summary>
-        public bool IsStillActive()
-        {
-            return SkyServer.SlewState != SlewType.SlewNone;
-        }
-
-        /// <summary>
-        /// Restores tracking state after slew completion or cancellation.
-        /// </summary>
-        public void RestoreTracking()
-        {
-            SkyServer.Tracking = TrackingAfterSlew;
-        }
-
-        /// <summary>
         /// Handles slew-type-specific completion logic.
         /// </summary>
         public async Task CompleteAsync(CancellationToken ct)
@@ -713,8 +658,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 case SlewType.SlewPark:
-                    SkyServer.AtPark = true;
-                    SkyPredictor.Reset();
+                    SkyServer.CompletePark();
                     break;
 
                 case SlewType.SlewHome:
@@ -746,7 +690,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Direct access to SlewState property (no reflection needed)
             SkyServer.SlewState = SlewType.SlewNone;
 
-            if (success)
+            if (success && SlewType != SlewType.SlewPark)  // ← Add Park check
             {
                 SkyServer.Tracking = TrackingAfterSlew;
             }
@@ -799,7 +743,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Direct access to SkyServer settings (no reflection needed)
             var settings = SkyServer.Settings;
 
-            if (settings == null || (int)settings.AlignmentMode != 2) // 2 = AltAz
+            if (settings == null || settings.AlignmentMode != AlignmentMode.AltAz)
             {
                 // Equatorial mount - no special completion needed
                 return;

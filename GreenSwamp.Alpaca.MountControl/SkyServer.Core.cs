@@ -790,7 +790,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Get local sidereal time for specific UTC time
         /// </summary>
-        private static double GetLocalSiderealTime(DateTime utcNow)
+        internal static double GetLocalSiderealTime(DateTime utcNow)
         {
             var gsjd = JDate.Ole2Jd(utcNow);
             return Time.Lst(JDate.Epoch2000Days(), gsjd, false, _settings!.Longitude);
