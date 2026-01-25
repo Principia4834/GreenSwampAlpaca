@@ -250,12 +250,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (Tracking)
                     {
                         FlipOnNextGoto = true;
-                        SlewRaDec(RightAscension, Declination, true);
+                        _ = SlewRaDecAsync(RightAscension, Declination, true);
                     }
                     else
                     {
                         FlipOnNextGoto = true;
-                        SlewAltAz(Altitude, Azimuth);
+                        _ = SlewAltAzAsync(Altitude, Azimuth);
                     }
                     MonitorLog.LogToMonitor(monitorItem);
                 }
@@ -2238,10 +2238,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>axis position that is closest</returns>
         private static double[] GetAlternatePositionGEM(double[] position)
         {
-            // Check Forced flip for a goto
-            var flipGoto = FlipOnNextGoto;
-            FlipOnNextGoto = false;
-
             // See if the target is within flip angle limits
             if (!IsWithinFlipLimits(position)) { return null; }
             var context = AxesContext.FromSettings(_settings);
@@ -2249,7 +2245,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!IsWithinFlipLimits(alt)) { return null; }
 
             var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
-            if (flipGoto) // implement the forced flip for a goto
+            if (FlipOnNextGoto) // implement the forced flip for a goto
             {
                 cl = cl == "a" ? "b" : "a"; //choose the farthest angle to slew which will flip
                 var monitorItem = new MonitorEntry
@@ -2276,16 +2272,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>null or alternate position</returns>
         private static double[] GetAlternatePositionAltAz(double[] position)
         {
-            // Check Forced flip for a goto
-            var flipGoto = FlipOnNextGoto;
-            FlipOnNextGoto = false;
-
             // See if the target is within flip angle limits
             if (!IsWithinFlipLimits(position)) { return null; }
             var context = AxesContext.FromSettings(_settings);
             var alt = Axes.GetAltAxisPosition(position, context);
             var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
-            if (flipGoto) // implement the forced flip for a goto
+            if (FlipOnNextGoto) // implement the forced flip for a goto
             {
                 cl = cl == "a" ? "b" : "a"; //choose the farthest angle to slew which will flip
                 var monitorItem = new MonitorEntry
@@ -2313,10 +2305,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>null or alternate position</returns>
         private static double[] GetAlternatePositionPolar(double[] position)
         {
-            // Check Forced flip for a goto
-            var flipGoto = FlipOnNextGoto;
-            FlipOnNextGoto = false;
-
             var context = AxesContext.FromSettings(_settings);
             var alt = Axes.GetAltAxisPosition(position, context);
             alt[0] = Range.Range180(alt[0]); // convert to polar position
@@ -2328,8 +2316,8 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!altOk) return null; // alternate target position not within limits, return null
             if (posOk && altOk)
             {
-                var cl = ChooseClosestPositionPolar(new[] { ActualAxisX, ActualAxisY }, position, alt);  //choose the closest angle to slew 
-                if (flipGoto) // implement the forced flip for a goto
+                var cl = ChooseClosestPositionPolar([ActualAxisX, ActualAxisY], position, alt);  //choose the closest angle to slew 
+                if (FlipOnNextGoto) // implement the forced flip for a goto
                 {
                     cl = cl == "a" ? "b" : "a"; //choose the farthest angle to slew which will flip
                     var monitorItem = new MonitorEntry

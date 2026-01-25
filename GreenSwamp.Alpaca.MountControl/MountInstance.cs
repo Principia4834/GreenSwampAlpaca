@@ -1222,7 +1222,8 @@ namespace GreenSwamp.Alpaca.MountControl
             // Now update simTarget which works in physical mount axis values to the end of slew values
             DateTime targetTime = DateTime.Now.AddSeconds(Math.Max(deltaTime[0], deltaTime[1]));
             simTarget = MapSlewTargetToAxes(target, slewType, targetTime);
-
+            // Reset flip after mapping axes
+            SkyServer.FlipOnNextGoto = false;
             const int timer = 120;
             var stopwatch = Stopwatch.StartNew();
 
@@ -1406,23 +1407,26 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     if (maxTries > 5) { break; }
                     maxTries++;
+                    double[] simTargetNow = [0.0, 0.0];
                     double[] simTargetAtTime = [0.0, 0.0];
 
-                    DateTime? predictedTime = null;
                     if (_settings.AlignmentMode == AlignmentMode.AltAz)
                     {
-                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
-                        var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                        var now = HiResDateTime.UtcNow;
+                        var predictorRaDec = SkyPredictor.GetRaDecAtTime(now.AddMilliseconds(deltaTime));
                         var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
                         simTargetAtTime = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
+                        predictorRaDec = SkyPredictor.GetRaDecAtTime(now);
+                        internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                        simTargetNow = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
                     var rawPositions = GetRawDegrees();
                     if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
                     { break; }
 
-                    deltaDegree[0] = Range.Range180(simTargetAtTime[0] - rawPositions[0]);
-                    deltaDegree[1] = Range.Range180(simTargetAtTime[1] - rawPositions[1]);
+                    deltaDegree[0] = Range.Range180(simTargetNow[0] - rawPositions[0]);
+                    deltaDegree[1] = Range.Range180(simTargetNow[1] - rawPositions[1]);
 
                     axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
                     axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
@@ -1467,6 +1471,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (axis1Stopped && axis2Stopped) { break; }
                     }
                     stopwatch1.Stop();
+                    deltaTime = stopwatch1.Elapsed.Milliseconds;
+                    deltaTime += deltaTime / 10; // add 10% feed forward
                 }
             }
             catch (OperationCanceledException)
@@ -1501,6 +1507,8 @@ namespace GreenSwamp.Alpaca.MountControl
             // Now update skyTarget which works in physical mount axis values to the end of slew values
             DateTime targetTime = DateTime.Now.AddSeconds(Math.Max(deltaTime[0], deltaTime[1]));
             skyTarget = MapSlewTargetToAxes(target, slewType, targetTime);
+            // Reset flip after mapping axes
+            SkyServer.FlipOnNextGoto = false;
             const int timer = 240;
             var stopwatch = Stopwatch.StartNew();
 
