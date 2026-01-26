@@ -1308,8 +1308,9 @@ namespace GreenSwamp.Alpaca.MountControl
             while (true)
             {
                 token.ThrowIfCancellationRequested();
+                var loopTimer = Stopwatch.StartNew();
+
                 if (maxTries > 10) { break; }
-                var stopwatch1 = Stopwatch.StartNew();
                 maxTries++;
 
                 DateTime? predictedTime = null;
@@ -1338,15 +1339,15 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
-                    _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTargetAtTime[0] + 0.25 * deltaDegree[0]);
+                    _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTargetAtTime[0] + 0.125 * deltaDegree[0]);
                 token.ThrowIfCancellationRequested();
                 if (!axis2AtTarget)
-                    _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTargetAtTime[1] + 0.1 * deltaDegree[1]);
+                    _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTargetAtTime[1] + 0.05 * deltaDegree[1]);
 
                 var axis1Stopped = false;
                 var axis2Stopped = false;
 
-                while (stopwatch1.Elapsed.TotalMilliseconds < 3000)
+                while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                 {
                     Thread.Sleep(20);
                     token.ThrowIfCancellationRequested();
@@ -1370,9 +1371,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (axis1Stopped && axis2Stopped) { break; }
                 }
-                stopwatch1.Stop();
-                deltaTime = stopwatch1.Elapsed.Milliseconds;
-                deltaTime += deltaTime / 10; // add 10% feed forward
+                loopTimer.Stop();
+                deltaTime = loopTimer.Elapsed.Milliseconds;
 
                 monitorItem = new MonitorEntry
                 {
@@ -1382,7 +1382,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Instance:{_instanceName}|Delta|({deltaDegree[0]},{deltaDegree[1]})|Seconds|{stopwatch1.Elapsed.TotalSeconds}"
+                    Message = $"Instance:{_instanceName}|Delta|({deltaDegree[0]},{deltaDegree[1]})|Seconds|{loopTimer.Elapsed.TotalSeconds}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -1585,7 +1585,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
             const int returnCode = 0;
-            var maxtries = 0;
+            var maxTries = 0;
             double[] deltaDegree = [0.0, 0.0];
             var axis1AtTarget = false;
             var axis2AtTarget = false;
@@ -1611,14 +1611,14 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Error,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"Instance:{_instanceName}|Timeout waiting for position update|Try:{maxtries}"
+                        Message = $"Instance:{_instanceName}|Timeout waiting for position update|Try:{maxTries}"
                     };
                     MonitorLog.LogToMonitor(errorItem);
                     throw new TimeoutException($"Mount position update timeout in precision goto (instance: {_instanceName})");
                 }
 
-                if (maxtries >= 5) { break; }
-                maxtries++;
+                if (maxTries >= 5) { break; }
+                maxTries++;
 
                 DateTime? predictedTime = null;
                 if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
