@@ -809,7 +809,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool MonitorPulse
         {
-            private get => _monitorPulse;
+            internal get => _monitorPulse;
             set
             {
                 if (_monitorPulse == value) return;

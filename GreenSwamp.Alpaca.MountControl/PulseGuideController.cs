@@ -397,6 +397,16 @@ namespace GreenSwamp.Alpaca.MountControl
             PulseGuideOperation operation,
             CancellationToken ct)
         {
+            var settings = SkyServer.Settings;
+
+            // Check if AltAz mode - requires special handling
+            if (settings?.AlignmentMode == AlignmentMode.AltAz)
+            {
+                await ExecuteAltAzPulseAsync(operation, ct, SkyServer.SimPulseGoto);
+                return;
+            }
+
+            // Polar/GermanPolar mode - standard pulse execution
             var pulseStartTime = HiResDateTime.UtcNow;
 
             // Setup monitoring
@@ -420,7 +430,6 @@ namespace GreenSwamp.Alpaca.MountControl
             var guideRate = operation.GuideRate;
             if (operation.Axis == Axis.Axis2) // Dec axis only
             {
-                var settings = SkyServer.Settings;
                 if (settings != null &&
                     !SkyServer.SouthernHemisphere &&  // Northern hemisphere only
                     (settings.AlignmentMode == AlignmentMode.Polar ||
@@ -432,7 +441,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // Execute via simulator command
             // Note: CmdAxisPulse handles the actual pulse execution
-            _ = new CmdAxisPulse(0, operation.Axis, guideRate, operation.Duration, ct); ;
+            _ = new CmdAxisPulse(0, operation.Axis, guideRate, operation.Duration, ct);
 
             // Wait for completion
             var stopwatch = Stopwatch.StartNew();
@@ -453,6 +462,16 @@ namespace GreenSwamp.Alpaca.MountControl
                     PulseGuideOperation operation,
                     CancellationToken ct)
                 {
+                    var settings = SkyServer.Settings;
+
+                    // Check if AltAz mode - requires special handling
+                    if (settings?.AlignmentMode == AlignmentMode.AltAz)
+                    {
+                        await ExecuteAltAzPulseAsync(operation, ct, SkyServer.SkyPulseGoto);
+                        return;
+                    }
+
+                    // Polar/GermanPolar mode - Phase 2 implementation needed
                     // Delegate to SkyServer which will call the mount-specific implementation
                     // SkyServer has access to internal SkyWatcher methods
                     await Task.Run(() =>
@@ -462,6 +481,113 @@ namespace GreenSwamp.Alpaca.MountControl
                         throw new NotImplementedException(
                             "SkyWatcher pulse guide execution requires Phase 2 integration with SkyServer");
                     }, ct);
+                }
+
+                /// <summary>
+                /// Execute AltAz pulse guide (common for both Simulator and SkyWatcher).
+                /// Stops tracking, updates predictor, executes goto, resumes tracking.
+                /// </summary>
+                private async Task ExecuteAltAzPulseAsync(
+                    PulseGuideOperation operation,
+                    CancellationToken ct,
+                    Action<CancellationToken> pulseGotoAction)
+                {
+                    var pulseStartTime = HiResDateTime.UtcNow;
+
+                    // Stop AltAz tracking and update predictor based on axis
+                    switch (operation.Axis)
+                    {
+                        case Axis.Axis1: // RA axis
+                            // If Dec is not pulse guiding, stop tracking timer
+                            if (!IsPulseGuidingDec)
+                            {
+                                SkyServer.StopAltAzTrackingTimer();
+                            }
+                            else
+                            {
+                                // Cancel Dec pulse if running
+                                await CancelPulseAsync(Axis.Axis2);
+                            }
+
+                            // Update predictor: RA changes by rate * duration
+                            SkyPredictor.Set(
+                                SkyPredictor.Ra - operation.Duration * 0.001 * operation.GuideRate / SkySettings.SiderealRate,
+                                SkyPredictor.Dec);
+                            break;
+
+                        case Axis.Axis2: // Dec axis
+                            // If RA is not pulse guiding, stop tracking timer
+                            if (!IsPulseGuidingRa)
+                            {
+                                SkyServer.StopAltAzTrackingTimer();
+                            }
+                            else
+                            {
+                                // Cancel RA pulse if running
+                                await CancelPulseAsync(Axis.Axis1);
+                            }
+
+                            // Update predictor: Dec changes by rate * duration
+                            SkyPredictor.Set(
+                                SkyPredictor.Ra,
+                                SkyPredictor.Dec + operation.Duration * operation.GuideRate * 0.001);
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(operation.Axis), operation.Axis, null);
+                    }
+
+                    // Setup monitoring
+                    var pulseEntry = new PulseEntry();
+                    if (SkyServer.MonitorPulse)
+                    {
+                        pulseEntry.Axis = (int)operation.Axis;
+                        pulseEntry.Duration = operation.Duration;
+                        pulseEntry.Rate = operation.GuideRate;
+                        pulseEntry.StartTime = pulseStartTime;
+                    }
+
+                    // Execute pulse goto action
+                    await Task.Run(() => pulseGotoAction(ct), ct);
+
+                    // Pulse movement finished or cancelled - resume tracking
+                    SkyServer.SetTracking();
+
+                    // Wait for pulse duration so IsPulseGuiding remains true
+                    var waitTime = (int)(pulseStartTime.AddMilliseconds(operation.Duration) - HiResDateTime.UtcNow).TotalMilliseconds;
+                    var updateInterval = Math.Max(operation.Duration / 20, 50);
+
+                    if (waitTime > 0)
+                    {
+                        var stopwatch = Stopwatch.StartNew();
+                        while (stopwatch.Elapsed.TotalMilliseconds < waitTime && !ct.IsCancellationRequested)
+                        {
+                            await Task.Delay(updateInterval, ct);
+                            SkyServer.UpdateSteps(); // Process positions while waiting
+                        }
+                    }
+
+                    // Log pulse if monitoring enabled
+                    if (SkyServer.MonitorPulse)
+                    {
+                        MonitorLog.LogToMonitor(pulseEntry);
+                    }
+
+                    // Log cancellation if requested
+                    if (ct.IsCancellationRequested)
+                    {
+                        var monitorItem = new MonitorEntry
+                        {
+                            Datetime = HiResDateTime.UtcNow,
+                            Device = MonitorDevice.Server,
+                            Category = MonitorCategory.Server,
+                            Type = MonitorType.Warning,
+                            Method = MethodBase.GetCurrentMethod()?.Name,
+                            Thread = Thread.CurrentThread.ManagedThreadId,
+                            Message = $"Axis|{(int)operation.Axis}|Async operation cancelled"
+                        };
+                        MonitorLog.LogToMonitor(monitorItem);
+                    }
                 }
 
                 private void ThrowIfDisposed()

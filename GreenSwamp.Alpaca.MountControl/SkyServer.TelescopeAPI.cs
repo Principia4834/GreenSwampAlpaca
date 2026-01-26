@@ -2653,7 +2653,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Stop Alt Az tracking timer
         /// </summary>
-        private static void StopAltAzTrackingTimer()
+        internal static void StopAltAzTrackingTimer()
         {
             var monitorItem = new MonitorEntry
             {

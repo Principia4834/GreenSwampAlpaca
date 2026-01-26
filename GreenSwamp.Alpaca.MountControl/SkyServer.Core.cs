@@ -340,7 +340,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Main get for the Steps
         /// Delegated to instance
         /// </summary>
-        private static void UpdateSteps()
+        internal static void UpdateSteps()
         {
             _defaultInstance?.UpdateSteps();
         }
@@ -993,7 +993,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Sim pulse GOTO (static wrapper - delegates to default instance)
         /// </summary>
-        private static void SimPulseGoto(CancellationToken token)
+        internal static void SimPulseGoto(CancellationToken token)
         {
             _defaultInstance?.SimPulseGoto(token);
         }
@@ -1259,7 +1259,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// SkyWatcher pulse GOTO (static wrapper - delegates to default instance)
         /// </summary>
-        private static void SkyPulseGoto(CancellationToken token)
+        internal static void SkyPulseGoto(CancellationToken token)
         {
             _defaultInstance?.SkyPulseGoto(token);
         }
