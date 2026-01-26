@@ -1533,6 +1533,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #region SlewController Integration
 
         private static SlewController? _slewController;
+        private static PulseGuideController? _pulseGuideController;
 
         /// <summary>
         /// Ensures the SlewController is initialized.
@@ -1552,6 +1553,29 @@ namespace GreenSwamp.Alpaca.MountControl
                     Method = nameof(EnsureSlewController),
                     Thread = Thread.CurrentThread.ManagedThreadId,
                     Message = "SlewController initialized"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+        }
+
+        /// <summary>
+        /// Ensures the PulseGuideController is initialized.
+        /// </summary>
+        private static void EnsurePulseGuideController()
+        {
+            if (_pulseGuideController == null)
+            {
+                _pulseGuideController = new PulseGuideController();
+
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = nameof(EnsurePulseGuideController),
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "PulseGuideController initialized"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -1966,167 +1990,70 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Pulse commands
+        /// Pulse commands - now delegates to PulseGuideController
         /// </summary>
         /// <param name="direction">GuideDirections</param>
         /// <param name="duration">in milliseconds</param>
-        /// /// <param name="altRate">alternate rate to replace the guide rate</param>
+        /// <param name="altRate">alternate rate to replace the guide rate</param>
         public static void PulseGuide(GuideDirection direction, int duration, double altRate)
         {
             if (!IsMountRunning) { throw new Exception("Mount not running"); }
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{direction}|{duration}" };
+            { 
+                Datetime = HiResDateTime.UtcNow, 
+                Device = MonitorDevice.Server, 
+                Category = MonitorCategory.Mount, 
+                Type = MonitorType.Data, 
+                Method = MethodBase.GetCurrentMethod()?.Name, 
+                Thread = Thread.CurrentThread.ManagedThreadId, 
+                Message = $"{direction}|{duration}" 
+            };
             MonitorLog.LogToMonitor(monitorItem);
 
-            var useAltRate = Math.Abs(altRate) > 0;
+            // Handle duration == 0 (stop pulse guide)
+            if (duration == 0)
+            {
+                switch (direction)
+                {
+                    case GuideDirection.North:
+                    case GuideDirection.South:
+                        IsPulseGuidingDec = false;
+                        break;
+                    case GuideDirection.East:
+                    case GuideDirection.West:
+                        IsPulseGuidingRa = false;
+                        break;
+                }
+                return;
+            }
 
+            // Reset HC previous move tracking
             switch (direction)
             {
                 case GuideDirection.North:
                 case GuideDirection.South:
-                    if (duration == 0)
-                    {
-                        IsPulseGuidingDec = false;
-                        return;
-                    }
-                    IsPulseGuidingDec = true;
                     HcResetPrevMove(MountAxis.Dec);
-                    var decGuideRate = useAltRate ? altRate : Math.Abs(GuideRateDec);
-                    switch (_settings!.AlignmentMode)
-                    {
-                        case AlignmentMode.AltAz:
-                            if (direction == GuideDirection.South) { decGuideRate = -decGuideRate; }
-                            break;
-                        case AlignmentMode.Polar:
-                            if (SideOfPier == PointingState.Normal)
-                            {
-                                if (direction == GuideDirection.North) { decGuideRate = -decGuideRate; }
-                            }
-                            else
-                            {
-                                if (direction == GuideDirection.South) { decGuideRate = -decGuideRate; }
-                            }
-                            if (PolarMode == PolarMode.Left) decGuideRate = -decGuideRate; // Swap direction because primary OTA is flipped
-                            break;
-                        case AlignmentMode.GermanPolar:
-                            if (SideOfPier == PointingState.Normal)
-                            {
-                                if (direction == GuideDirection.North) { decGuideRate = -decGuideRate; }
-                            }
-                            else
-                            {
-                                if (direction == GuideDirection.South) { decGuideRate = -decGuideRate; }
-                            }
-                            break;
-                    }
-
-                    // Direction switched add backlash compensation
-                    var decBacklashAmount = 0;
-                    if (direction != LastDecDirection) decBacklashAmount = _settings!.DecBacklash;
-                    LastDecDirection = direction;
-                    _ctsPulseGuideDec = new CancellationTokenSource();
-
-                    switch (_settings!.Mount)
-                    {
-                        case MountType.Simulator:
-                            switch (_settings!.AlignmentMode)
-                            {
-                                case AlignmentMode.AltAz:
-                                    PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, SimPulseGoto, _ctsPulseGuideDec.Token);
-                                    break;
-                                case AlignmentMode.Polar:
-                                    if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
-                                    _ = new CmdAxisPulse(0, Axis.Axis2, decGuideRate, duration,
-                                        _ctsPulseGuideDec.Token);
-                                    break;
-                                case AlignmentMode.GermanPolar:
-                                    if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
-                                    _ = new CmdAxisPulse(0, Axis.Axis2, decGuideRate, duration,
-                                        _ctsPulseGuideDec.Token);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        case MountType.SkyWatcher:
-                            switch (_settings!.AlignmentMode)
-                            {
-                                case AlignmentMode.AltAz:
-                                    PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, SkyPulseGoto, _ctsPulseGuideDec.Token);
-                                    break;
-                                case AlignmentMode.Polar:
-                                    if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
-                                    _ = new SkyAxisPulse(0, Axis.Axis2, decGuideRate, duration, decBacklashAmount, _ctsPulseGuideDec.Token);
-                                    break;
-                                case AlignmentMode.GermanPolar:
-                                    _ = new SkyAxisPulse(0, Axis.Axis2, decGuideRate, duration, decBacklashAmount, _ctsPulseGuideDec.Token);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
                     break;
                 case GuideDirection.East:
                 case GuideDirection.West:
-                    if (duration == 0)
-                    {
-                        IsPulseGuidingRa = false;
-                        return;
-                    }
-                    IsPulseGuidingRa = true;
                     HcResetPrevMove(MountAxis.Ra);
-                    var raGuideRate = useAltRate ? altRate : Math.Abs(GuideRateRa);
-                    if (_settings!.AlignmentMode != AlignmentMode.AltAz)
-                    {
-                        if (SouthernHemisphere)
-                        {
-                            if (direction == GuideDirection.West) { raGuideRate = -raGuideRate; }
-                        }
-                        else
-                        {
-                            if (direction == GuideDirection.East) { raGuideRate = -raGuideRate; }
-                        }
-                    }
-                    else
-                    {
-                        if (direction == GuideDirection.East) { raGuideRate = -raGuideRate; }
-                    }
-
-                    _ctsPulseGuideRa = new CancellationTokenSource();
-                    switch (_settings!.Mount)
-                    {
-                        case MountType.Simulator:
-                            if (_settings!.AlignmentMode == AlignmentMode.AltAz)
-                            {
-                                PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, SimPulseGoto, _ctsPulseGuideRa.Token);
-                            }
-                            else
-                            {
-                                _ = new CmdAxisPulse(0, Axis.Axis1, raGuideRate, duration, _ctsPulseGuideRa.Token);
-                            }
-
-                            break;
-                        case MountType.SkyWatcher:
-                            if (_settings!.AlignmentMode == AlignmentMode.AltAz)
-                            {
-                                PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, SkyPulseGoto, _ctsPulseGuideRa.Token);
-                            }
-                            else
-                            {
-                                _ = new SkyAxisPulse(0, Axis.Axis1, raGuideRate, duration, 0, _ctsPulseGuideRa.Token);
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
+
+            // Ensure controller is initialized
+            EnsurePulseGuideController();
+
+            // Delegate to controller (synchronous call, returns immediately)
+            _pulseGuideController!.StartPulseGuide(direction, duration, altRate);
+        }
+
+        /// <summary>
+        /// Clear pulse guide flags on error - exposed for Telescope.cs
+        /// </summary>
+        public static void ClearPulseGuideFlags()
+        {
+            _pulseGuideController?.ClearAllFlags();
         }
 
         #endregion
@@ -3296,19 +3223,36 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Async Operations
 
         /// <summary>
-        /// Cancel all currently executing async operations
+        /// Cancel all currently executing async operations - now uses controllers
         /// </summary>
-        public static void CancelAllAsync()
+        public static async Task CancelAllAsync()
         {
-            if (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null)
+            var tasks = new List<Task>();
+
+            // Cancel slew operations via SlewController
+            if (_slewController?.IsSlewing == true)
             {
-                _ctsGoTo?.Cancel();
-                _ctsPulseGuideDec?.Cancel();
-                _ctsPulseGuideRa?.Cancel();
+                tasks.Add(_slewController.CancelCurrentSlewAsync());
+            }
+
+            // Cancel pulse guide operations via PulseGuideController
+            if (_pulseGuideController?.IsPulseGuiding == true)
+            {
+                tasks.Add(_pulseGuideController.CancelAllPulsesAsync());
+            }
+
+            // Cancel HC pulse guide if active
+            if (_ctsHcPulseGuide != null)
+            {
                 _ctsHcPulseGuide?.Cancel();
-                var sw = Stopwatch.StartNew();
-                while (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null && sw.ElapsedMilliseconds < 2000)
-                    Thread.Sleep(200); // wait for any pending pulse guide operations to wake up and cancel
+                // Wait briefly for cancellation
+                await Task.Delay(200);
+            }
+
+            // Wait for all cancellations to complete
+            if (tasks.Any())
+            {
+                await Task.WhenAll(tasks);
             }
         }
 

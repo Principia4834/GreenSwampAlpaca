@@ -1398,26 +1398,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 CheckCapability(SkySettings.CanPulseGuide, "PulseGuide");
                 CheckRange(Duration, 0, 30000, "PulseGuide", "Duration");
 
-                switch (Direction)
-                {
-                    case GuideDirection.North:
-                    case GuideDirection.South:
-                        SkyServer.IsPulseGuidingDec = true;
-                        break;
-                    case GuideDirection.East:
-                    case GuideDirection.West:
-                        SkyServer.IsPulseGuidingRa = true;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(Direction), Direction, null);
-                }
-
+                // Controller handles flag management - just delegate
                 SkyServer.PulseGuide(Direction, Duration, 0);
             }
             catch (Exception e)
             {
-                SkyServer.IsPulseGuidingRa = false;
-                SkyServer.IsPulseGuidingDec = false;
+                // Clear flags on error (controller exposes method for this)
+                SkyServer.ClearPulseGuideFlags();
+
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{e.Message}") };
                 MonitorLog.LogToMonitor(monitorItem);

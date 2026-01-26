@@ -846,13 +846,18 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Is Dec pulse guiding
+        /// Is Dec pulse guiding - now delegates to PulseGuideController
         /// </summary>
         public static bool IsPulseGuidingDec
         {
-            get => _isPulseGuidingDec;
+            get
+            {
+                // Delegate to controller if initialized, otherwise use backing field
+                return _pulseGuideController?.IsPulseGuidingDec ?? _isPulseGuidingDec;
+            }
             set
             {
+                // Legacy setter for backward compatibility
                 if (_isPulseGuidingDec != value)
                 {
                     _isPulseGuidingDec = value;
@@ -867,13 +872,18 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Is Ra pulse guiding
+        /// Is Ra pulse guiding - now delegates to PulseGuideController
         /// </summary>
         public static bool IsPulseGuidingRa
         {
-            get => _isPulseGuidingRa;
+            get
+            {
+                // Delegate to controller if initialized, otherwise use backing field
+                return _pulseGuideController?.IsPulseGuidingRa ?? _isPulseGuidingRa;
+            }
             set
             {
+                // Legacy setter for backward compatibility
                 if (_isPulseGuidingRa != value)
                 {
                     _isPulseGuidingRa = value;

@@ -33,7 +33,6 @@ using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.Simulator;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Principles;
-using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using System.Diagnostics;
 using System.Reflection;
@@ -417,10 +416,23 @@ namespace GreenSwamp.Alpaca.MountControl
                 MonitorLog.LogToMonitor(pulseEntry);
                 return;
             }
+            // Apply simulator-specific hemisphere correction for Dec axis in Polar/GermanPolar modes
+            var guideRate = operation.GuideRate;
+            if (operation.Axis == Axis.Axis2) // Dec axis only
+            {
+                var settings = SkyServer.Settings;
+                if (settings != null &&
+                    !SkyServer.SouthernHemisphere &&  // Northern hemisphere only
+                    (settings.AlignmentMode == AlignmentMode.Polar ||
+                     settings.AlignmentMode == AlignmentMode.GermanPolar))
+                {
+                    guideRate = -guideRate; // Flip sign for Northern hemisphere simulator
+                }
+            }
 
             // Execute via simulator command
             // Note: CmdAxisPulse handles the actual pulse execution
-            _ = new CmdAxisPulse(0, operation.Axis, operation.GuideRate, operation.Duration, ct);
+            _ = new CmdAxisPulse(0, operation.Axis, guideRate, operation.Duration, ct); ;
 
             // Wait for completion
             var stopwatch = Stopwatch.StartNew();
