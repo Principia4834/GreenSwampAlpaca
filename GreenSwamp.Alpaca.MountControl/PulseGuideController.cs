@@ -471,16 +471,75 @@ namespace GreenSwamp.Alpaca.MountControl
                         return;
                     }
 
-                    // Polar/GermanPolar mode - Phase 2 implementation needed
-                    // Delegate to SkyServer which will call the mount-specific implementation
-                    // SkyServer has access to internal SkyWatcher methods
-                    await Task.Run(() =>
+                    // Polar/GermanPolar mode - standard pulse execution with backlash
+                    var pulseStartTime = HiResDateTime.UtcNow;
+
+                    // Setup monitoring
+                    var pulseEntry = new PulseEntry
                     {
-                        // This will be replaced in Phase 2 with direct call to SkyServer.ExecutePulseAsync
-                        // For now, throw to indicate implementation needed
-                        throw new NotImplementedException(
-                            "SkyWatcher pulse guide execution requires Phase 2 integration with SkyServer");
-                    }, ct);
+                        Axis = (int)operation.Axis,
+                        Duration = operation.Duration,
+                        Rate = operation.GuideRate,
+                        StartTime = pulseStartTime
+                    };
+
+                    // Check for minimum duration
+                    var arcSecs = operation.Duration / 1000.0 * Conversions.Deg2ArcSec(Math.Abs(operation.GuideRate));
+                    if (arcSecs < 0.0002)
+                    {
+                        pulseEntry.Rejected = true;
+                        MonitorLog.LogToMonitor(pulseEntry);
+                        return;
+                    }
+
+                    // Apply SkyWatcher-specific hemisphere correction for Dec axis in Polar mode only
+                    var guideRate = operation.GuideRate;
+                    if (operation.Axis == Axis.Axis2) // Dec axis only
+                    {
+                        if (settings != null &&
+                            !SkyServer.SouthernHemisphere &&  // Northern hemisphere only
+                            settings.AlignmentMode == AlignmentMode.Polar) // Polar only, NOT GermanPolar
+                        {
+                            guideRate = -guideRate; // Flip sign for Northern hemisphere SkyWatcher
+                        }
+                    }
+
+                    // Calculate backlash compensation
+                    int backlashSteps = 0;
+                    if (operation.Axis == Axis.Axis2) // Dec axis only
+                    {
+                        GuideDirection? lastRa, lastDec;
+                        lock (_stateLock)
+                        {
+                            lastRa = _lastDirectionRa;
+                            lastDec = _lastDirectionDec;
+                        }
+
+                        backlashSteps = operation.CalculateBacklashSteps(
+                            lastRa, lastDec,
+                            out var newLastRa, out var newLastDec);
+
+                        lock (_stateLock)
+                        {
+                            _lastDirectionRa = newLastRa;
+                            _lastDirectionDec = newLastDec;
+                        }
+                    }
+
+                    // Execute via SkyWatcher command
+                    // Note: SkyAxisPulse handles the actual pulse execution including backlash
+                    _ = new SkyAxisPulse(0, operation.Axis, guideRate, operation.Duration, backlashSteps, ct);
+
+                    // Wait for completion
+                    var stopwatch = Stopwatch.StartNew();
+                    while (stopwatch.Elapsed.TotalMilliseconds < operation.Duration)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        await Task.Delay(10, ct);
+                    }
+
+                    // Log completion
+                    MonitorLog.LogToMonitor(pulseEntry);
                 }
 
                 /// <summary>
