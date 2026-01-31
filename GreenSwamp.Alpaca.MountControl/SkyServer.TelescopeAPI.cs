@@ -3257,18 +3257,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         private static bool IsTargetWithinLimits(double[] target)
         {
-            // ToDo AWW implement correct algorithm
-            return true;
-            //const double oneArcSec = 1.0 / 3600;
-            //var axisUpperLimitY = _settings!.AxisUpperLimitY;
-            //var axisLowerLimitY = _settings!.AxisLowerLimitY;
-            //if (_settings!.AlignmentMode == AlignmentMode.Polar && PolarMode == PolarMode.Left)
-            //{
-            //    axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
-            //    axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;
-            //}
-            //return (-_settings!.AxisLimitX - oneArcSec <= target[0] && target[0] <= _settings!.AxisLimitX + oneArcSec) &&
-            //       (axisLowerLimitY <= target[1] && target[1] <= axisUpperLimitY);
+            const double oneArcSec = 1.0 / 3600;
+            var axisUpperLimitY = _settings!.AxisUpperLimitY;
+            var axisLowerLimitY = _settings!.AxisLowerLimitY;
+            if (_settings!.AlignmentMode == AlignmentMode.Polar && PolarMode == PolarMode.Left)
+            {
+                axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
+                axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;
+            }
+            return (-_settings!.AxisLimitX - oneArcSec <= target[0] && target[0] <= _settings!.AxisLimitX + oneArcSec) &&
+                   (axisLowerLimitY <= target[1] && target[1] <= axisUpperLimitY);
         }
 
         /// <summary>

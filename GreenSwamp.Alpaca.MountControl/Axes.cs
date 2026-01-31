@@ -328,6 +328,15 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         internal static double[] AzAltToAxesXy(double[] azAlt, AxesContext context)
         {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"ENTRY|Input:{azAlt[0]}|{azAlt[1]}|AlignmentMode:{context.AlignmentMode}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
             var axes = new[] { 0.0, 0.0 };
             var b = new[] { 0.0, 0.0 };
             var alt = new[] { 0.0, 0.0 };
@@ -345,13 +354,29 @@ namespace GreenSwamp.Alpaca.MountControl
                 case AlignmentMode.GermanPolar:
 //                    axes = Coordinate.AltAz2RaDec(azAlt[1], azAlt[0], SkySettings.Latitude, lst);
                     axes = Coordinate.AltAz2HaDec(azAlt[1], azAlt[0], context.Latitude);
+                    var monitorItem2 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterAltAz2HaDec|HA:{axes[0]}hrs|Dec:{axes[1]}deg|Calling:HaDecToAxesXy"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem2);
                     axes = HaDecToAxesXy(axes, context);
+                    var monitorItem3 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterHaDecToAxesXy|X:{axes[0]}|Y:{axes[1]}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem3);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            var monitorItem = new MonitorEntry
+            monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
@@ -457,8 +482,28 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>Axes position in mount coordinates</returns>
         internal static double[] HaDecToAxesXy(IReadOnlyList<double> haDec, AxesContext context)
         {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"ENTRY|HA:{haDec[0]}hrs|Dec:{haDec[1]}deg|Calling:RaDecToAxesXyCore"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
             // Hour Angle is already in mount reference frame, no LST needed
-            return RaDecToAxesXyCore(haDec, useLst: false, lst: 0.0, context);
+            var result = RaDecToAxesXyCore(haDec, useLst: false, lst: 0.0, context);
+
+            var monitorItem2 = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"RETURN|X:{result[0]}|Y:{result[1]}"
+            };
+            MonitorLog.LogToMonitor(monitorItem2);
+
+            return result;
         }
 
         /// <summary>
@@ -475,6 +520,15 @@ namespace GreenSwamp.Alpaca.MountControl
             double lst,
             AxesContext context)
         {
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"ENTRY|Coords:{coordinates[0]}|{coordinates[1]}|useLst:{useLst}|Mode:{context.AlignmentMode}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+
             double[] axes = { coordinates[0], coordinates[1] };
             double[] b;
             double[] alt;
@@ -495,14 +549,41 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
+                    var monitorItem2 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"PolarCase|BeforeConversion|X:{axes[0]}|Y:{axes[1]}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem2);
+
                     // Convert to mount axes
                     // If useLst is true: convert RA to HA via LST, else coordinates[0] is already HA
                     axes[0] = useLst ? 15.0 * (lst - axes[0]) : 15.0 * axes[0];
                     axes[0] = Range.Range360(axes[0]);
 
+                    var monitorItem3 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterHAtoDeg|X:{axes[0]}deg|Y:{axes[1]}deg"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem3);
+
                     // Southern hemisphere dec inversion
                     if (context.SouthernHemisphere)
                         axes[1] = -axes[1];
+
+                    var monitorItem4 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterHemisphereInv|SH:{context.SouthernHemisphere}|X:{axes[0]}|Y:{axes[1]}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem4);
 
                     // Adjust axes to be through the pole if needed
                     if (axes[0] > 180.0)
@@ -511,13 +592,52 @@ namespace GreenSwamp.Alpaca.MountControl
                         axes[1] = 180 - axes[1];
                     }
 
+                    var monitorItem5 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterThroughPole|X:{axes[0]}|Y:{axes[1]}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem5);
+
                     // Normalize axes ranges
                     axes = Range.RangeAxesXy(axes); // Axes[0] in [0..180), Axes[1] in [-90..90] or [-180..-90] U [90..180]
 
+                    var monitorItem6 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterRangeNormalize|X:{axes[0]}|Y:{axes[1]}|Calling:AxesAppToMount"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem6);
+
                     // Check for alternative position within flip angle and hardware limits
                     axes = AxesAppToMount(axes, context);
+
+                    var monitorItem7 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"AfterAxesAppToMount|X:{axes[0]}|Y:{axes[1]}|CheckingAlternate"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem7);
+
                     alt = SkyServer.GetAlternatePosition(axes);
-                    return (alt is null) ? axes : alt;
+
+                    var finalAxes = (alt is null) ? axes : alt;
+                    var monitorItem8 = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
+                        Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"RETURN|AltPos:{(alt != null)}|X:{finalAxes[0]}|Y:{finalAxes[1]}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem8);
+
+                    return finalAxes;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(context.AlignmentMode),

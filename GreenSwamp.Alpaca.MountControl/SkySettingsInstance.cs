@@ -1356,7 +1356,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public double AxisUpperLimitY
         {
-            get => _axisUpperLimitY;
+            get => _axisUpperLimitY + (AlignmentMode == AlignmentMode.Polar ? Math.Abs(Latitude) : 0);
             set
             {
                 if (Math.Abs(_axisUpperLimitY - value) > 0.01)
