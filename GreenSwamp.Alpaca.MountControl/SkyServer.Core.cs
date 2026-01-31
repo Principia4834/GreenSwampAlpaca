@@ -600,8 +600,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 case "Latitude":
                     // ToDo: Remove if not needed
                     // AlignmentModel.SiteLatitude = _settings!.Latitude;
-                    // Reset latitude based park positions for Polar mode
-                    if (_settings!.AlignmentMode == AlignmentMode.Polar) _settings!.ResetParkPositions();
                     break;
                 case "Longitude":
                     // ToDo: Remove if not needed

@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "./settings-override.schema.json",
   "Description": "Fork Equatorial mount-specific settings",
   "AlignmentMode": "Polar",
@@ -27,12 +27,12 @@
     "ParkPositions": [
       {
         "Name": "Default",
-        "X": 0.0,
+        "X": 180.0,
         "Y": 0.0
       },
       {
         "Name": "Home",
-        "X": 0.0,
+        "X": 180.0,
         "Y": 5.0
       }
     ],

@@ -25,6 +25,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Handshake = System.IO.Ports.Handshake;
+using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
@@ -214,6 +215,19 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
+        #region Helper Methods for Coordinate Transformations
+
+        /// <summary>
+        /// Create AxesContext from current instance settings for coordinate transformations
+        /// Used by ParkAxes and ParkPositions properties
+        /// </summary>
+        private AxesContext GetAxesContext()
+        {
+            return AxesContext.FromSettings(this);
+        }
+
+        #endregion
+
         #region Events
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -289,6 +303,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_alignmentMode != value)
                 {
                     _alignmentMode = value;
+
+                    // Invalidate cached park coordinates when alignment mode changes
+                    _parkAxes = new[] { double.NaN, double.NaN };
+                    _parkPositions = null;
+
                     OnPropertyChanged();
                 }
             }
@@ -1058,22 +1077,223 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        /// <summary>
+        /// Park axes position in mount axes values
+        /// Polar mode: Stored as Az/Alt (NH convention) in JSON, converted to/from axis coordinates
+        /// AltAz and German Polar modes: Stored directly as axis coordinates
+        /// </summary>
         public double[] ParkAxes
         {
-            get => _parkAxes;
+            get
+            {
+                // AltAz and German Polar: Return cached axis coordinates directly
+                if (_alignmentMode != AlignmentMode.Polar)
+                {
+                    return _parkAxes;
+                }
+
+                // Polar mode: Return cached axis coordinates if available
+                if (!double.IsNaN(_parkAxes[0]) && !double.IsNaN(_parkAxes[1]))
+                {
+                    return _parkAxes;
+                }
+
+                // Load from JSON settings service
+                var settings = _settingsService.GetSettings();
+                var storedAzAlt = settings.ParkAxes;
+
+                if (storedAzAlt == null || storedAzAlt.Length != 2)
+                {
+                    return new[] { double.NaN, double.NaN };
+                }
+
+                double az = storedAzAlt[0];   // Azimuth from storage (NH convention)
+                double alt = storedAzAlt[1];  // Altitude from storage
+
+                // Southern Hemisphere: Adjust Az by +180° to convert from NH storage to local coordinates
+                if (_latitude < 0)
+                {
+                    az = Range.Range360(az + 180.0);
+                }
+
+                // Convert Az/Alt → Mount axis positions
+                var context = AxesContext.FromSettings(this);
+                double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context);
+
+                // Cache axis coordinates for performance
+                _parkAxes = axes;
+                return _parkAxes;
+            }
+
             set
             {
-                _parkAxes = value ?? new[] { 0.0, 0.0 };
+                // AltAz and German Polar: Store axis coordinates directly
+                if (_alignmentMode != AlignmentMode.Polar)
+                {
+                    if (Math.Abs(_parkAxes[0] - value[0]) <= 0.0000000000001 &&
+                        Math.Abs(_parkAxes[1] - value[1]) <= 0.0000000000001)
+                        return;
+
+                    _parkAxes = value;
+                    value[0] = Math.Round(value[0], 6);
+                    value[1] = Math.Round(value[1], 6);
+
+                    // Directly update settings service (will be saved by QueueSave)
+                    var currentSettings = _settingsService.GetSettings();
+                    currentSettings.ParkAxes = value;
+
+                    OnPropertyChanged();
+                    return;
+                }
+
+                // Polar mode: Check if value is different
+                if (Math.Abs(_parkAxes[0] - value[0]) <= 0.0000000000001 &&
+                    Math.Abs(_parkAxes[1] - value[1]) <= 0.0000000000001)
+                    return;
+
+                // Convert axis coordinates to Az/Alt for storage
+                var context = AxesContext.FromSettings(this);
+                double[] azAlt = Axes.AxesXyToAzAlt(new[] { value[0], value[1] }, context);
+
+                double az = azAlt[0];   // Azimuth (local coordinates)
+                double alt = azAlt[1];  // Altitude
+
+                // Southern Hemisphere: Adjust Az by -180° to convert from local to NH storage convention
+                if (_latitude < 0)
+                {
+                    az = Range.Range360(az - 180.0);
+                }
+
+                // Round and update settings
+                az = Math.Round(az, 6);
+                alt = Math.Round(alt, 6);
+                var azAltArray = new[] { az, alt };
+
+                var settings = _settingsService.GetSettings();
+                settings.ParkAxes = azAltArray;
+
+                // Cache axis coordinates in memory
+                _parkAxes = value;
+
                 OnPropertyChanged();
             }
         }
 
+
+        /// <summary>
+        /// Park positions in mount axes values
+        /// Polar mode: Stored as Az/Alt (NH convention) in JSON, converted to/from axis coordinates
+        /// AltAz and German Polar modes: Stored directly as axis coordinates
+        /// </summary>
         public List<ParkPosition> ParkPositions
         {
-            get => _parkPositions;
+            get
+            {
+                // AltAz and German Polar: Return cached axis coordinates directly
+                if (_alignmentMode != AlignmentMode.Polar)
+                {
+                    return _parkPositions;
+                }
+
+                // Polar mode: Return cached axis coordinates if available
+                if (_parkPositions != null && _parkPositions.Count > 0)
+                {
+                    return _parkPositions;
+                }
+
+                // Load from JSON settings service
+                var settings = _settingsService.GetSettings();
+                var storedAzAlt = settings.ParkPositions;
+
+                if (storedAzAlt == null || storedAzAlt.Count == 0)
+                {
+                    return new List<ParkPosition>();
+                }
+
+                // Convert each position from Az/Alt to mount axis coordinates
+                var axisPositions = new List<ParkPosition>();
+                var context = AxesContext.FromSettings(this);
+
+                foreach (var azAltPos in storedAzAlt)
+                {
+                    double az = azAltPos.X;   // Azimuth from storage (NH convention)
+                    double alt = azAltPos.Y;  // Altitude from storage
+
+                    // Southern Hemisphere: Adjust Az by +180° to convert from NH storage to local coordinates
+                    if (_latitude < 0)
+                    {
+                        az = Range.Range360(az + 180.0);
+                    }
+
+                    // Convert Az/Alt → Mount axis positions
+                    double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context);
+
+                    // Create ParkPosition with axis coordinates
+                    axisPositions.Add(new ParkPosition
+                    {
+                        Name = azAltPos.Name,
+                        X = Math.Round(axes[0], 6),  // Axis X
+                        Y = Math.Round(axes[1], 6)   // Axis Y
+                    });
+                }
+
+                // Cache axis coordinates for performance
+                _parkPositions = axisPositions;
+                return _parkPositions;
+            }
+
             set
             {
-                _parkPositions = value ?? new List<ParkPosition>();
+                // AltAz and German Polar: Store axis coordinates directly
+                if (_alignmentMode != AlignmentMode.Polar)
+                {
+                    _parkPositions = value.OrderBy(p => p.Name).ToList();
+
+                    // Update settings service
+                    var currentSettings = _settingsService.GetSettings();
+                    currentSettings.ParkPositions = _parkPositions.Select(p =>
+                        new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
+
+                    OnPropertyChanged();
+                    return;
+                }
+
+                // Polar mode: Convert axis coordinates to Az/Alt for storage
+                var azAltPositions = new List<ParkPosition>();
+                var context = AxesContext.FromSettings(this);
+
+                foreach (var axisPos in value)
+                {
+                    // Convert Mount axis positions → Az/Alt
+                    double[] azAlt = Axes.AxesXyToAzAlt(new[] { axisPos.X, axisPos.Y }, context);
+
+                    double az = azAlt[0];   // Azimuth (local coordinates)
+                    double alt = azAlt[1];  // Altitude
+
+                    // Southern Hemisphere: Adjust Az by -180° to convert from local to NH storage convention
+                    if (_latitude < 0)
+                    {
+                        az = Range.Range360(az - 180.0);
+                    }
+
+                    // Create ParkPosition with Az/Alt coordinates for storage (NH convention)
+                    azAltPositions.Add(new ParkPosition
+                    {
+                        Name = axisPos.Name,
+                        X = Math.Round(az, 6),   // Azimuth (NH convention)
+                        Y = Math.Round(alt, 6)   // Altitude (no adjustment)
+                    });
+                }
+
+                // Update settings service with Az/Alt (ordered by name)
+                var orderedList = azAltPositions.OrderBy(p => p.Name).ToList();
+                var settings = _settingsService.GetSettings();
+                settings.ParkPositions = orderedList.Select(p =>
+                    new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
+
+                // Cache axis coordinates in memory for performance
+                _parkPositions = value.OrderBy(p => p.Name).ToList();
+
                 OnPropertyChanged();
             }
         }
@@ -1593,8 +1813,28 @@ namespace GreenSwamp.Alpaca.MountControl
                 _autoHomeAxisX = settings.AutoHomeAxisX;
                 _autoHomeAxisY = settings.AutoHomeAxisY;
                 _parkName = settings.ParkName ?? "Default";
-                _parkAxes = settings.ParkAxes ?? new[] { 0.0, 0.0 };
-                // ParkPositions list loaded separately if needed
+
+                // Load ParkAxes - raw assignment for AltAz/GermanPolar, NaN for Polar (forces transformation)
+                if (_alignmentMode == AlignmentMode.Polar)
+                {
+                    _parkAxes = new[] { double.NaN, double.NaN }; // Force lazy load + transformation
+                }
+                else
+                {
+                    _parkAxes = settings.ParkAxes ?? new[] { double.NaN, double.NaN };
+                }
+
+                // Load ParkPositions - raw assignment (transformation handled by property getter if needed)
+                if (_alignmentMode == AlignmentMode.Polar)
+                {
+                    _parkPositions = new List<ParkPosition>(); // Force lazy load + transformation
+                }
+                else
+                {
+                    _parkPositions = settings.ParkPositions?.Select(p =>
+                        new ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList() ?? new List<ParkPosition>();
+                }
+
                 _limitPark = settings.LimitPark;
                 _parkLimitName = settings.ParkLimitName ?? string.Empty;
 
@@ -1757,12 +1997,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.AutoHomeAxisX = _autoHomeAxisX;
                 settings.AutoHomeAxisY = _autoHomeAxisY;
                 settings.ParkName = _parkName;
-                settings.ParkAxes = _parkAxes;
+
                 settings.LimitPark = _limitPark;
                 settings.ParkLimitName = _parkLimitName;
 
-                settings.HourAngleLimit = _hourAngleLimit;
-                settings.AxisLimitX = _axisLimitX;
+                settings.HourAngleLimit = _hourAngleLimit; settings.AxisLimitX = _axisLimitX;
                 settings.AxisUpperLimitY = _axisUpperLimitY;
                 settings.AxisLowerLimitY = _axisLowerLimitY;
                 settings.LimitTracking = _limitTracking;
@@ -1798,32 +2037,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Helper Methods
-
-        /// <summary>
-        /// Reset park positions (called from UI/API)
-        /// </summary>
-        public void ResetParkPositions()
-        {
-            var parkPositions = new List<ParkPosition>
-            {
-                new ParkPosition
-                {
-                    Name = "Default",
-                    X = 0.0,
-                    Y = Math.Round(Math.Abs(_latitude) - 90.0, 6)
-                },
-                new ParkPosition
-                {
-                    Name = "Home",
-                    X = 0.0,
-                    Y = Math.Round(Math.Abs(_latitude) - 85.0, 6)
-                }
-            };
-
-            ParkPositions = parkPositions;
-            AtPark = false;
-            ParkName = "Default";
-        }
 
         private void LogSettings(string method, string message)
         {

@@ -3047,13 +3047,14 @@ namespace GreenSwamp.Alpaca.MountControl
                     limitHit = LimitStatus.AtLimit;
                     break;
                 case AlignmentMode.Polar:
+                    // AWW ToDo fix this after debug
                     // Slew limit > 180 the mount can move past the meridian angle, and two equivalent positions, 
                     // eg +205 degrees and -155 degrees, are equivalent for a slew angle limit of 200 degrees
-                    limitHitX = LimitStatus.AtLowerLimitAxisX || LimitStatus.AtUpperLimitAxisX;
+                    // limitHitX = LimitStatus.AtLowerLimitAxisX || LimitStatus.AtUpperLimitAxisX;
                     // The secondary (Alt / Dec) axis must be in the range LowerLimitAxisY to UpperLimitAxisY
-                    limitHitY = LimitStatus.AtLowerLimitAxisY || LimitStatus.AtUpperLimitAxisY;
-                    meridianLimit = limitHitX;
-                    limitHit = LimitStatus.AtLimit;
+                    // limitHitY = LimitStatus.AtLowerLimitAxisY || LimitStatus.AtUpperLimitAxisY;
+                    // meridianLimit = limitHitX;
+                    // limitHit = LimitStatus.AtLimit;
                     break;
                 // Check the ranges of the primary axis and -hourAngleLimit to 180 + hourAngleLimit for german polar
                 case AlignmentMode.GermanPolar:
@@ -3108,11 +3109,12 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         break;
                     case AlignmentMode.Polar:
-                        if (Altitude <= _settings!.AxisHzTrackingLimit && Tracking)
-                        {
-                            limitHit = true;
-                            horizonLimit = true;
-                        }
+                        // AWW ToDo fix this after debug
+                        //if (Altitude <= _settings!.AxisHzTrackingLimit && Tracking)
+                        //{
+                        //    limitHit = true;
+                        //    horizonLimit = true;
+                        //}
                         break;
                     case AlignmentMode.GermanPolar:
                         if (SideOfPier == PointingState.Normal && Altitude <= _settings!.AxisHzTrackingLimit && Tracking)
@@ -3255,16 +3257,18 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         private static bool IsTargetWithinLimits(double[] target)
         {
-            const double oneArcSec = 1.0 / 3600;
-            var axisUpperLimitY = _settings!.AxisUpperLimitY;
-            var axisLowerLimitY = _settings!.AxisLowerLimitY;
-            if (_settings!.AlignmentMode == AlignmentMode.Polar && PolarMode == PolarMode.Left)
-            {
-                axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
-                axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;
-            }
-            return (-_settings!.AxisLimitX - oneArcSec <= target[0] && target[0] <= _settings!.AxisLimitX + oneArcSec) &&
-                   (axisLowerLimitY <= target[1] && target[1] <= axisUpperLimitY);
+            // ToDo AWW implement correct algorithm
+            return true;
+            //const double oneArcSec = 1.0 / 3600;
+            //var axisUpperLimitY = _settings!.AxisUpperLimitY;
+            //var axisLowerLimitY = _settings!.AxisLowerLimitY;
+            //if (_settings!.AlignmentMode == AlignmentMode.Polar && PolarMode == PolarMode.Left)
+            //{
+            //    axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
+            //    axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;
+            //}
+            //return (-_settings!.AxisLimitX - oneArcSec <= target[0] && target[0] <= _settings!.AxisLimitX + oneArcSec) &&
+            //       (axisLowerLimitY <= target[1] && target[1] <= axisUpperLimitY);
         }
 
         /// <summary>

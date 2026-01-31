@@ -1994,10 +1994,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             switch (slewType)
             {
                 case SlewType.SlewAltAz:
-                    method = "SlewToCoordinates";
+                    method = "SlewToAltAz";
                     break;
                 case SlewType.SlewRaDec:
-                    method = "SlewToAltAz";
+                    method = "SlewToCoordinates";
                     break;
                 default:
                     method = "Unknown Slew Type";
