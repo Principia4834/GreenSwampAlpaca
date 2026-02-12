@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -96,10 +96,16 @@ namespace GreenSwamp.Alpaca.Server.Services
                     TargetRightAscension = SkyServer.TargetRa,
                     TargetDeclination = SkyServer.TargetDec,
                     
-                    // Axis positions (use public properties)
-                    ActualAxisX = SkyServer.AppAxisX,  // Use public AppAxisX instead
-                    ActualAxisY = SkyServer.AppAxisY,  // Use public AppAxisY instead
-                    
+                    // Axis positions - mount coordinates (internal) and app coordinates (local)
+                    ActualAxisX = SkyServer.ActualAxisX,
+                    ActualAxisY = SkyServer.ActualAxisY,
+                    AppAxisX = SkyServer.AppAxisX,
+                    AppAxisY = SkyServer.AppAxisY,
+
+                    // Axis step positions
+                    Axis1Steps = SkyServer.Steps?[0] ?? 0,
+                    Axis2Steps = SkyServer.Steps?[1] ?? 0,
+
                     // Rates and guides
                     TrackingRate = DriveRate.Sidereal,  // Use constant for now
                     IsPulseGuidingRa = SkyServer.IsPulseGuidingRa,

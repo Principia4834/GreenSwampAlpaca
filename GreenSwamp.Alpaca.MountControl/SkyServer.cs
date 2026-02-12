@@ -669,7 +669,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Actual positions in degrees
         /// </summary>
-        internal static double ActualAxisX
+        public static double ActualAxisX
         {
             get => _actualAxisX;
             set
@@ -683,7 +683,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Actual positions in degrees
         /// </summary>
-        internal static double ActualAxisY
+        public static double ActualAxisY
         {
             get => _actualAxisY;
             set

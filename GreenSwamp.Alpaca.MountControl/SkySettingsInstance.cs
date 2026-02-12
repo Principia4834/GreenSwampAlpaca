@@ -1102,26 +1102,115 @@ namespace GreenSwamp.Alpaca.MountControl
                 var settings = _settingsService.GetSettings();
                 var storedAzAlt = settings.ParkAxes;
 
+                // LOG 1: What's in the JSON file
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"ParkAxes.Get|Polar mode lazy load: storedAzAlt from JSON = [{storedAzAlt?[0] ?? double.NaN}, {storedAzAlt?[1] ?? double.NaN}]"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
                 if (storedAzAlt == null || storedAzAlt.Length != 2)
                 {
+                    monitorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Mount,
+                        Type = MonitorType.Warning,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = "ParkAxes.Get|Polar mode: storedAzAlt is null or invalid length - returning NaN"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
                     return new[] { double.NaN, double.NaN };
                 }
 
                 double az = storedAzAlt[0];   // Azimuth from storage (NH convention)
                 double alt = storedAzAlt[1];  // Altitude from storage
 
+                // LOG 2: Before Southern Hemisphere adjustment
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"ParkAxes.Get|Polar mode: Before SH adjustment - Az={az}, Alt={alt}, Latitude={_latitude}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
                 // Southern Hemisphere: Adjust Az by +180° to convert from NH storage to local coordinates
                 if (_latitude < 0)
                 {
                     az = Range.Range360(az + 180.0);
+
+                    monitorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Mount,
+                        Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"ParkAxes.Get|Polar mode: After SH adjustment - Az={az} (added 180°)"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
                 }
 
-                // Convert Az/Alt → Mount axis positions
+                // Convert Az/Alt → Mount axis positions (skip alternate position selection for park loading)
                 var context = AxesContext.FromSettings(this);
-                double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context);
+
+                // LOG 3: Before coordinate transformation
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"ParkAxes.Get|Polar mode: Calling Axes.AzAltToAxesXy with Az={az}, Alt={alt}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
+                double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context, skipAlternatePosition: true);
+
+                // LOG 4: After coordinate transformation
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"ParkAxes.Get|Polar mode: After transformation - X={axes[0]}, Y={axes[1]}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
 
                 // Cache axis coordinates for performance
                 _parkAxes = axes;
+
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Mount,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"ParkAxes.Get|Polar mode: Cached and returning [{axes[0]}, {axes[1]}]"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
                 return _parkAxes;
             }
 
@@ -1741,7 +1830,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _atPark = settings.AtPark;
                 if (Enum.TryParse<DriveRate>(settings.TrackingRate, true, out var trackRate))
                     _trackingRate = trackRate;
-                // AWW ToDo check for correct type
                 _gpsComPort = settings.GpsPort.ToString() ?? string.Empty;
                 if (Enum.TryParse<SerialSpeed>(settings.GpsBaudRate, true, out var gpsBaud))
                     _gpsBaudRate = gpsBaud;
@@ -1863,7 +1951,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _hcAntiDec = settings.HcAntiDec;
                 _hcFlipEw = settings.HcFlipEW;
                 _hcFlipNs = settings.HcFlipNS;
-                // HcPulseGuides list loaded separately if needed
                 _disableKeysOnGoTo = settings.DisableKeysOnGoTo;
 
                 // Batch 11: Miscellaneous
@@ -1901,6 +1988,32 @@ namespace GreenSwamp.Alpaca.MountControl
                 _noSyncPastMeridian = settings.NoSyncPastMeridian;
                 _numMoveAxis = settings.NumMoveAxis;
                 _versionOne = settings.VersionOne;
+
+                // For Polar mode: Initialize settings service with profile Az/Alt values
+                // This ensures they're preserved when SaveAsync() runs for the first time
+                if (_alignmentMode == AlignmentMode.Polar && settings.ParkAxes != null && settings.ParkAxes.Length == 2)
+                {
+                    // Update the settings service to have the profile's Az/Alt values
+                    // The backing fields (_parkAxes, _parkPositions) remain NaN/empty for lazy loading
+                    var currentSettings = _settingsService.GetSettings();
+
+                    // Copy ParkAxes from profile to settings service
+                    currentSettings.ParkAxes = new[] { settings.ParkAxes[0], settings.ParkAxes[1] };
+
+                    // Copy ParkPositions from profile to settings service
+                    if (settings.ParkPositions != null && settings.ParkPositions.Count > 0)
+                    {
+                        currentSettings.ParkPositions = settings.ParkPositions.Select(p =>
+                            new Settings.Models.SkySettings.ParkPosition
+                            {
+                                Name = p.Name,
+                                X = p.X,
+                                Y = p.Y
+                            }).ToList();
+                    }
+                    _settingsService.SaveSettingsAsync(currentSettings).GetAwaiter().GetResult();
+                    LogSettings("InitializedPolarParkValues", $"ParkAxes:[{settings.ParkAxes[0]},{settings.ParkAxes[1]}]|ParkPositions:{settings.ParkPositions?.Count ?? 0}");
+                }
 
                 LogSettings("AppliedSettings", $"Mount:{_mount}|Port:{_port}");
             }
@@ -1997,11 +2110,31 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.AutoHomeAxisX = _autoHomeAxisX;
                 settings.AutoHomeAxisY = _autoHomeAxisY;
                 settings.ParkName = _parkName;
+                // Save ParkAxes - preserve Az/Alt values that are already in settings service
+                // Property setters have already updated settings service with correct Az/Alt values
+                // For Polar mode: settings service contains Az/Alt, _parkAxes contains mount coordinates
+                // For other modes: both contain the same axis coordinates
+                if (_alignmentMode != AlignmentMode.Polar)
+                {
+                    // AltAz/GermanPolar: Store axis coordinates directly
+                    settings.ParkAxes = _parkAxes;
+                }
+                // For Polar mode, settings.ParkAxes already has correct Az/Alt from property setter, don't overwrite
+
+                // Save ParkPositions - preserve Az/Alt values that are already in settings service
+                if (_alignmentMode != AlignmentMode.Polar)
+                {
+                    // AltAz/GermanPolar: Store axis coordinates directly
+                    settings.ParkPositions = _parkPositions.Select(p =>
+                        new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
+                }
+                // For Polar mode, settings.ParkPositions already has correct Az/Alt from property setter, don't overwrite
 
                 settings.LimitPark = _limitPark;
                 settings.ParkLimitName = _parkLimitName;
 
-                settings.HourAngleLimit = _hourAngleLimit; settings.AxisLimitX = _axisLimitX;
+                settings.HourAngleLimit = _hourAngleLimit;
+                settings.AxisLimitX = _axisLimitX;
                 settings.AxisUpperLimitY = _axisUpperLimitY;
                 settings.AxisLowerLimitY = _axisLowerLimitY;
                 settings.LimitTracking = _limitTracking;

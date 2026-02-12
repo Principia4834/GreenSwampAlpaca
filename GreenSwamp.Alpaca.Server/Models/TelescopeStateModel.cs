@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -54,6 +54,10 @@ namespace GreenSwamp.Alpaca.Server.Models
         public double ActualAxisY { get; set; }
         public double AppAxisX { get; set; }
         public double AppAxisY { get; set; }
+
+        // Axis step positions
+        public double Axis1Steps { get; set; }
+        public double Axis2Steps { get; set; }
         
         // Rates and guides
         public DriveRate TrackingRate { get; set; }
@@ -92,6 +96,8 @@ namespace GreenSwamp.Alpaca.Server.Models
             TargetDeclination = double.NaN;
             ActualAxisX = double.NaN;
             ActualAxisY = double.NaN;
+            Axis1Steps = 0;
+            Axis2Steps = 0;
             TrackingRate = DriveRate.Sidereal;
             IsPulseGuidingRa = false;
             IsPulseGuidingDec = false;

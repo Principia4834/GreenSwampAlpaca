@@ -41,7 +41,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private readonly SkySettingsInstance _settings;
 
         // Instance state fields (migrated from static)
-        private bool _isMountRunning;
         private MediaTimer? _mediaTimer;
         private MediaTimer? _altAzTrackingTimer;
         // Phase 4.1: Converted to delegating properties (fields removed, see properties below)
@@ -121,8 +120,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Gets whether the mount is currently running
+        /// Delegates to SkyServer.IsMountRunning which checks queue status
         /// </summary>
-        public bool IsMountRunning => _isMountRunning;
+        public bool IsMountRunning => SkyServer.IsMountRunning;
 
         /// <summary>
         /// Gets or sets the target RA/Dec position
@@ -703,7 +703,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 MonitorLog.LogToMonitor(monitorItem);
             }
 
-            _isMountRunning = true;
             return true;
         }
         
@@ -718,8 +717,6 @@ namespace GreenSwamp.Alpaca.MountControl
             // Stop mount operations (timers, tracking, queues, serial)
             MountStop();
 
-            // Clear running flag
-            _isMountRunning = false;
         }
 
         /// <summary>
@@ -842,7 +839,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double[]? GetRawDegrees()
         {
             var actualDegrees = new[] { double.NaN, double.NaN };
-            if (!_isMountRunning) { return actualDegrees; }
+            if (!SkyServer.IsMountRunning) { return actualDegrees; }
 
             switch (_settings.Mount)
             {
@@ -895,7 +892,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double[]? GetRawSteps()
         {
             var steps = new[] { double.NaN, double.NaN };
-            if (!_isMountRunning) { return steps; }
+            if (!SkyServer.IsMountRunning) { return steps; }
 
             switch (_settings.Mount)
             {
@@ -928,7 +925,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>Position in steps, or null if not available</returns>
         internal double? GetRawSteps(int axis)
         {
-            if (!_isMountRunning) { return null; }
+            if (!SkyServer.IsMountRunning) { return null; }
 
             switch (_settings.Mount)
             {
@@ -972,7 +969,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             lock (_lastUpdateLock)
             {
-                if (_isMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
+                if (SkyServer.IsMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
                 {
                     switch (_settings.Mount)
                     {

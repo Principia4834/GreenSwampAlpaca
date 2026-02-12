@@ -1,4 +1,4 @@
-@page "/telescope-state"
+ï»¿@page "/telescope-state"
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Server.Models
 @using ASCOM.Common.DeviceInterfaces
@@ -94,6 +94,22 @@
             <div class="state-item">
                 <span class="state-label">Actual Axis Y:</span>
                 <span class="state-value">@FormatDegrees(_state.ActualAxisY)</span>
+            </div>
+            <div class="state-item">
+                <span class="state-label">App Axis X:</span>
+                <span class="state-value">@FormatDegrees(_state.AppAxisX)</span>
+            </div>
+            <div class="state-item">
+                <span class="state-label">App Axis Y:</span>
+                <span class="state-value">@FormatDegrees(_state.AppAxisY)</span>
+            </div>
+            <div class="state-item">
+                <span class="state-label">Axis 1 Steps:</span>
+                <span class="state-value">@_state.Axis1Steps.ToString("N0")</span>
+            </div>
+            <div class="state-item">
+                <span class="state-label">Axis 2 Steps:</span>
+                <span class="state-value">@_state.Axis2Steps.ToString("N0")</span>
             </div>
         </div>
     </div>
@@ -194,7 +210,7 @@
         var m = (int)((degrees - d) * 60);
         var s = ((degrees - d) * 60 - m) * 60;
         
-        return $"{sign}{d:00}° {m:00}' {s:00.0}\"";
+        return $"{sign}{d:00}Â° {m:00}' {s:00.0}\"";
     }
     
     private string FormatDegrees(double degrees)
@@ -202,7 +218,7 @@
         if (double.IsNaN(degrees) || double.IsInfinity(degrees))
             return "N/A";
         
-        return $"{degrees:F4}°";
+        return $"{degrees:F4}Â°";
     }
     
     private string GetStatusClass(bool status)

@@ -325,8 +325,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="azAlt"></param>
         /// <param name="context">Mount configuration context</param>
+        /// <param name="skipAlternatePosition">Skip alternate position selection (for park/home position loading)</param>
         /// <returns></returns>
-        internal static double[] AzAltToAxesXy(double[] azAlt, AxesContext context)
+        internal static double[] AzAltToAxesXy(double[] azAlt, AxesContext context, bool skipAlternatePosition = false)
         {
             var monitorItem = new MonitorEntry
             {
@@ -359,10 +360,10 @@ namespace GreenSwamp.Alpaca.MountControl
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"AfterAltAz2HaDec|HA:{axes[0]}hrs|Dec:{axes[1]}deg|Calling:HaDecToAxesXy"
+                        Message = $"AfterAltAz2HaDec|HA:{axes[0]}hrs|Dec:{axes[1]}deg|Calling:HaDecToAxesXy|skipAlt:{skipAlternatePosition}"
                     };
                     MonitorLog.LogToMonitor(monitorItem2);
-                    axes = HaDecToAxesXy(axes, context);
+                    axes = HaDecToAxesXy(axes, context, skipAlternatePosition);
                     var monitorItem3 = new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
@@ -479,20 +480,21 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="haDec">Hour Angle (hours) and Dec (degrees -90 to 90)</param>
         /// <param name="context">Mount configuration context</param>
+        /// <param name="skipAlternatePosition">Skip alternate position selection (for park/home position loading)</param>
         /// <returns>Axes position in mount coordinates</returns>
-        internal static double[] HaDecToAxesXy(IReadOnlyList<double> haDec, AxesContext context)
+        internal static double[] HaDecToAxesXy(IReadOnlyList<double> haDec, AxesContext context, bool skipAlternatePosition = false)
         {
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"ENTRY|HA:{haDec[0]}hrs|Dec:{haDec[1]}deg|Calling:RaDecToAxesXyCore"
+                Message = $"ENTRY|HA:{haDec[0]}hrs|Dec:{haDec[1]}deg|Calling:RaDecToAxesXyCore|skipAlt:{skipAlternatePosition}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
             // Hour Angle is already in mount reference frame, no LST needed
-            var result = RaDecToAxesXyCore(haDec, useLst: false, lst: 0.0, context);
+            var result = RaDecToAxesXyCore(haDec, useLst: false, lst: 0.0, context, skipAlternatePosition);
 
             var monitorItem2 = new MonitorEntry
             {
@@ -513,12 +515,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="useLst">True if converting from RA (apply LST offset), false for HA</param>
         /// <param name="lst">Local Sidereal Time (only used if useLst is true)</param>
         /// <param name="context">Mount configuration context</param>
+        /// <param name="skipAlternatePosition">Skip alternate position selection (for park/home position loading)</param>
         /// <returns>Axes position in mount coordinates</returns>
         private static double[] RaDecToAxesXyCore(
             IReadOnlyList<double> coordinates,
             bool useLst,
             double lst,
-            AxesContext context)
+            AxesContext context,
+            bool skipAlternatePosition = false)
         {
             var monitorItem = new MonitorEntry
             {
@@ -621,11 +625,19 @@ namespace GreenSwamp.Alpaca.MountControl
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"AfterAxesAppToMount|X:{axes[0]}|Y:{axes[1]}|CheckingAlternate"
+                        Message = $"AfterAxesAppToMount|X:{axes[0]}|Y:{axes[1]}|CheckingAlternate|skipAlt:{skipAlternatePosition}"
                     };
                     MonitorLog.LogToMonitor(monitorItem7);
 
-                    alt = SkyServer.GetAlternatePosition(axes);
+                    // Skip alternate position selection when loading park/home positions
+                    if (!skipAlternatePosition)
+                    {
+                        alt = SkyServer.GetAlternatePosition(axes);
+                    }
+                    else
+                    {
+                        alt = null; // Use primary position
+                    }
 
                     var finalAxes = (alt is null) ? axes : alt;
                     var monitorItem8 = new MonitorEntry
@@ -633,7 +645,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"RETURN|AltPos:{(alt != null)}|X:{finalAxes[0]}|Y:{finalAxes[1]}"
+                        Message = $"RETURN|AltPos:{(alt != null)}|Skipped:{skipAlternatePosition}|X:{finalAxes[0]}|Y:{finalAxes[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem8);
 

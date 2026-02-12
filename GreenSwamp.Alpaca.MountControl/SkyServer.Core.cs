@@ -373,7 +373,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Home position,{name}|{homeAxes.X}|{homeAxes.Y}"
+                Message = $"Home position,{name}|{homeAxes.X}|{homeAxes.Y}|{_settings!.HomeAxisX}|{_settings!.HomeAxisY}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
