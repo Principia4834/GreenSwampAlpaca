@@ -1372,17 +1372,18 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 monitorItem.Message = "Already Parked";
                 MonitorLog.LogToMonitor(monitorItem);
-                throw new ASCOM.ParkedException("Telescope is already parked");
             }
+            else
+            {
+                MonitorLog.LogToMonitor(monitorItem);
 
-            MonitorLog.LogToMonitor(monitorItem);
+                // Just initiate park - SlewController handles completion
+                // No background task needed - GoToParkAsync is already async
+                _ = SkyServer.GoToParkAsync();
 
-            // ✅ FIX: Just initiate park - SlewController handles completion
-            // No background task needed - GoToParkAsync is already async
-            _ = SkyServer.GoToParkAsync();
-
-            // Returns immediately - client polls Slewing and AtPark
-            // SlewController will set AtPark when movement actually completes
+                // Returns immediately - client polls Slewing and AtPark
+                // SlewController will set AtPark when movement actually completes
+            }
         }
 
         public void PulseGuide(GuideDirection Direction, int Duration)
