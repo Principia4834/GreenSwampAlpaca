@@ -47,6 +47,12 @@ namespace GreenSwamp.Alpaca.Server.Models
         public string MountType { get; set; } = string.Empty;
 
         /// <summary>
+        /// Indicates if this is a reserved slot (0 or 1) that cannot be deleted
+        /// Phase 4.11: Reserved slots are permanent but can have profiles changed
+        /// </summary>
+        public bool IsReserved { get; set; }
+
+        /// <summary>
         /// Serial port for physical mounts (null for simulators)
         /// </summary>
         public string? ComPort { get; set; }

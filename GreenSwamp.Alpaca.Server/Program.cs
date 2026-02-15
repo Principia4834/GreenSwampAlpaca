@@ -167,48 +167,9 @@ namespace GreenSwamp.Alpaca.Server
             //Load the configuration
             DeviceManager.LoadConfiguration(new AlpacaConfiguration());
 
-            // Phase 4.8: Multi-instance device loading from appsettings.json
-            var deviceConfigs = builder.Configuration
-                .GetSection("AlpacaDevices")
-                .Get<List<AlpacaDeviceConfig>>();
-
-            if (deviceConfigs == null || !deviceConfigs.Any())
-            {
-                // No multi-device configuration - use default single device (backward compatibility)
-                Logger.LogInformation("No AlpacaDevices configured - registering default device 0");
-                DeviceManager.LoadTelescope(0, new TelescopeDriver.Telescope(), "Green Swamp Telescope",
-                    ServerSettings.GetDeviceUniqueId("Telescope", 0));
-            }
-            else
-            {
-                // Load configured devices from appsettings.json
-                Logger.LogInformation($"Loading {deviceConfigs.Count} device(s) from configuration");
-
-                foreach (var config in deviceConfigs)
-                {
-                    try
-                    {
-                        // For Phase 4.8: Register devices but use default settings
-                        // Profile loading will be implemented when settings service is available
-                        // TODO Phase 4.8.1: Load actual profile settings from JSON
-
-                        // Register with ASCOM DeviceManager
-                        // Note: MountInstance will be created on first Connect() using default settings
-                        DeviceManager.LoadTelescope(
-                            config.DeviceNumber,
-                            new TelescopeDriver.Telescope(config.DeviceNumber),
-                            config.DeviceName,
-                            config.UniqueId
-                        );
-
-                        Logger.LogInformation($"Registered device {config.DeviceNumber}: {config.DeviceName} (profile: {config.ProfileName})");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogInformation($"Failed to register device {config.DeviceNumber}: {config.DeviceName} - {ex.Message}");
-                    }
-                }
-            }
+            // Phase 4.11: Device registration moved to after app.Build() to use UnifiedDeviceRegistry
+            // This ensures proper synchronization between DeviceManager and MountInstanceRegistry
+            // Reserved slots (0=Simulator, 1=Physical Mount) are initialized first
 
             #region Finish Building and Start server
 
@@ -232,6 +193,17 @@ namespace GreenSwamp.Alpaca.Server
             // Register TelescopeStateService for real-time state updates
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
             Logger.LogInformation("? TelescopeStateService registered for real-time state updates");
+
+            // Register DeviceManagementService with HttpClient for device manager UI (Phase 4.11)
+            // Uses typed client pattern - HttpClient is automatically injected and lifecycle-managed
+            builder.Services.AddHttpClient<GreenSwamp.Alpaca.Server.Services.DeviceManagementService>(client =>
+            {
+                // Configure base address to call the same server (for Blazor Server self-calls)
+                // The service will make HTTP calls to /setup endpoints on the same server
+                client.BaseAddress = new Uri($"http://localhost:{ServerSettings.ServerPort}");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+            Logger.LogInformation("? DeviceManagementService registered with HttpClient for device manager UI");
 
             var app = builder.Build();
 
@@ -302,6 +274,99 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogInformation("✅ SkySystem initialized");
 
                 Logger.LogInformation("✅ Instance-based settings active");
+
+                // Phase 4.11: Initialize device registry with reserved slots
+                // Load device configurations from appsettings.json
+                var deviceConfigs = builder.Configuration
+                    .GetSection("AlpacaDevices")
+                    .Get<List<AlpacaDeviceConfig>>();
+
+                if (deviceConfigs == null || !deviceConfigs.Any())
+                {
+                    Logger.LogInformation("No AlpacaDevices configured in appsettings.json");
+                    Logger.LogInformation("Creating default reserved slots (0=Simulator, 1=SkyWatcher)");
+
+                    // Create default reserved slots
+                    var simulatorSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                    var physicalMountSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+
+                    GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.InitializeReservedSlots(
+                        simulatorSettings,
+                        "Simulator (AltAz)",
+                        "sim-altaz-default-guid",
+                        new TelescopeDriver.Telescope(0),
+                        physicalMountSettings,
+                        "SkyWatcher Mount",
+                        "skywatcher-default-guid",
+                        new TelescopeDriver.Telescope(1)
+                    );
+
+                    Logger.LogInformation("✅ Reserved slots initialized (0=Simulator, 1=SkyWatcher)");
+                }
+                else
+                {
+                    Logger.LogInformation($"Loading {deviceConfigs.Count} device(s) from configuration");
+
+                    // Ensure we have exactly 2 reserved slots (0 and 1) in configuration
+                    var slot0 = deviceConfigs.FirstOrDefault(d => d.DeviceNumber == 0);
+                    var slot1 = deviceConfigs.FirstOrDefault(d => d.DeviceNumber == 1);
+
+                    if (slot0 == null || slot1 == null)
+                    {
+                        throw new InvalidOperationException(
+                            "Configuration must include reserved slots 0 and 1. Please update appsettings.json AlpacaDevices section.");
+                    }
+
+                    // Initialize reserved slots
+                    var simulatorSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                    var physicalMountSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+
+                    GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.InitializeReservedSlots(
+                        simulatorSettings,
+                        slot0.DeviceName,
+                        slot0.UniqueId,
+                        new TelescopeDriver.Telescope(0),
+                        physicalMountSettings,
+                        slot1.DeviceName,
+                        slot1.UniqueId,
+                        new TelescopeDriver.Telescope(1)
+                    );
+
+                    Logger.LogInformation($"✅ Reserved slot 0: {slot0.DeviceName} (profile: {slot0.ProfileName})");
+                    Logger.LogInformation($"✅ Reserved slot 1: {slot1.DeviceName} (profile: {slot1.ProfileName})");
+
+                    // Load dynamic devices (slots 2+)
+                    var dynamicDevices = deviceConfigs.Where(d => d.DeviceNumber >= 2).ToList();
+
+                    if (dynamicDevices.Any())
+                    {
+                        Logger.LogInformation($"Loading {dynamicDevices.Count} dynamic device(s) (slots 2+)");
+
+                        foreach (var config in dynamicDevices)
+                        {
+                            try
+                            {
+                                var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+
+                                GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.RegisterDevice(
+                                    config.DeviceNumber,
+                                    config.DeviceName,
+                                    config.UniqueId,
+                                    deviceSettings,
+                                    new TelescopeDriver.Telescope(config.DeviceNumber)
+                                );
+
+                                Logger.LogInformation($"✅ Device {config.DeviceNumber}: {config.DeviceName} (profile: {config.ProfileName})");
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError($"❌ Failed to register device {config.DeviceNumber}: {config.DeviceName} - {ex.Message}");
+                            }
+                        }
+                    }
+                }
+
+                Logger.LogInformation("✅ Device registry initialization complete");
             }
             catch (Exception ex)
             {

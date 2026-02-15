@@ -1,0 +1,319 @@
+@page "/device-manager"
+@using GreenSwamp.Alpaca.Server.Services
+@using GreenSwamp.Alpaca.Server.Models
+@inject DeviceManagementService DeviceService
+@inject ILogger<DeviceManager> Logger
+
+<PageTitle>Device Manager</PageTitle>
+
+<h3>Telescope Device Manager</h3>
+
+<div class="container-fluid mt-4">
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="@(() => errorMessage = null)"></button>
+        </div>
+    }
+
+    @if (successMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="@(() => successMessage = null)"></button>
+        </div>
+    }
+
+    <!-- Device List Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Configured Devices</h5>
+            <button class="btn btn-primary btn-sm" @onclick="RefreshDevices">
+                <span class="oi oi-reload" aria-hidden="true"></span> Refresh
+            </button>
+        </div>
+        <div class="card-body">
+            @if (loading)
+            {
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (devices == null || !devices.Any())
+            {
+                <p class="text-muted">No devices configured. Add a device using the form below.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Device #</th>
+                                <th>Device Name</th>
+                                <th>Status</th>
+                                <th>Type</th>
+                                <th>Mount Type</th>
+                                <th>Alignment Mode</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var device in devices)
+                            {
+                                <tr>
+                                    <td>@device.DeviceNumber</td>
+                                    <td>@device.DeviceName</td>
+                                    <td>
+                                        @if (device.Connected)
+                                        {
+                                            <span class="badge bg-success">Connected</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Disconnected</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (device.IsReserved)
+                                        {
+                                            <span class="badge bg-info">Reserved</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark">Dynamic</span>
+                                        }
+                                    </td>
+                                    <td>@device.MountType</td>
+                                    <td>@device.AlignmentMode</td>
+                                    <td>
+                                        @if (device.IsReserved)
+                                        {
+                                            <button class="btn btn-secondary btn-sm" disabled title="Reserved slots cannot be deleted">
+                                                <span class="oi oi-trash" aria-hidden="true"></span> Delete
+                                            </button>
+                                        }
+                                        else if (device.Connected)
+                                        {
+                                            <button class="btn btn-danger btn-sm" disabled title="Disconnect device first">
+                                                <span class="oi oi-trash" aria-hidden="true"></span> Delete
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-danger btn-sm" @onclick="@(() => ShowDeleteConfirmation(device))">
+                                                <span class="oi oi-trash" aria-hidden="true"></span> Delete
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Add Device Section -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Add New Device</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info" role="alert">
+                <strong>Note:</strong> Slots 0 and 1 are reserved (Simulator and Physical Mount). 
+                New devices will be assigned to slot 2 or higher. Use device number 0 for auto-assignment.
+            </div>
+
+            <EditForm Model="@newDeviceRequest" OnValidSubmit="AddDevice">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="deviceNumber" class="form-label">Device Number (0 = auto-assign)</label>
+                        <InputNumber id="deviceNumber" class="form-control" @bind-Value="newDeviceRequest.DeviceNumber" />
+                        <small class="text-muted">Reserved: 0, 1 | Auto-assign starts at: 2</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="deviceName" class="form-label">Device Name</label>
+                        <InputText id="deviceName" class="form-control" @bind-Value="newDeviceRequest.DeviceName" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="profileName" class="form-label">Profile</label>
+                        <InputSelect id="profileName" class="form-control" @bind-Value="newDeviceRequest.ProfileName">
+                            <option value="">-- Select Profile --</option>
+                            @if (profiles != null)
+                            {
+                                @foreach (var profile in profiles)
+                                {
+                                    <option value="@profile.ProfileName">@profile.ProfileName</option>
+                                }
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled="@addingDevice">
+                    @if (addingDevice)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span> Adding...</span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-plus" aria-hidden="true"></span>
+                        <span> Add Device</span>
+                    }
+                </button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal && deviceToDelete != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CancelDelete"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete device <strong>@deviceToDelete.DeviceNumber - @deviceToDelete.DeviceName</strong>?</p>
+                    <p class="text-danger">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">
+                        <span class="oi oi-trash" aria-hidden="true"></span> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<DeviceInfoResponse>? devices;
+    private List<ProfileInfo>? profiles;
+    private AddDeviceRequest newDeviceRequest = new();
+    private bool loading = true;
+    private bool addingDevice = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool showDeleteModal = false;
+    private DeviceInfoResponse? deviceToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            loading = true;
+            errorMessage = null;
+
+            // Load devices and profiles
+            var devicesTask = DeviceService.GetDevicesAsync();
+            var profilesTask = DeviceService.GetProfilesAsync();
+
+            await Task.WhenAll(devicesTask, profilesTask);
+
+            devices = await devicesTask;
+            profiles = await profilesTask;
+
+            Logger.LogInformation("Loaded {DeviceCount} devices and {ProfileCount} profiles", 
+                devices?.Count ?? 0, profiles?.Count ?? 0);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load data: {ex.Message}";
+            Logger.LogError(ex, "Failed to load device manager data");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task RefreshDevices()
+    {
+        await LoadData();
+        successMessage = "Device list refreshed";
+    }
+
+    private async Task AddDevice()
+    {
+        try
+        {
+            addingDevice = true;
+            errorMessage = null;
+            successMessage = null;
+
+            var result = await DeviceService.AddDeviceAsync(newDeviceRequest);
+
+            if (result != null)
+            {
+                successMessage = $"Device {result.DeviceNumber} - {result.DeviceName} added successfully";
+                newDeviceRequest = new AddDeviceRequest(); // Reset form
+                await RefreshDevices();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to add device: {ex.Message}";
+            Logger.LogError(ex, "Failed to add device");
+        }
+        finally
+        {
+            addingDevice = false;
+        }
+    }
+
+    private void ShowDeleteConfirmation(DeviceInfoResponse device)
+    {
+        deviceToDelete = device;
+        showDeleteModal = true;
+    }
+
+    private void CancelDelete()
+    {
+        deviceToDelete = null;
+        showDeleteModal = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (deviceToDelete == null) return;
+
+        try
+        {
+            errorMessage = null;
+            successMessage = null;
+
+            await DeviceService.RemoveDeviceAsync(deviceToDelete.DeviceNumber);
+
+            successMessage = $"Device {deviceToDelete.DeviceNumber} - {deviceToDelete.DeviceName} removed successfully";
+            showDeleteModal = false;
+            deviceToDelete = null;
+
+            await RefreshDevices();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to remove device: {ex.Message}";
+            Logger.LogError(ex, "Failed to remove device {DeviceNumber}", deviceToDelete.DeviceNumber);
+            showDeleteModal = false;
+        }
+    }
+}
