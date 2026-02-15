@@ -1457,29 +1457,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckRange(Azimuth, 0, 360, "SlewToAltAzAsync", "Azimuth");
             CheckRange(Altitude, -90, 90, "SlewToAltAzAsync", "Altitude");
             CheckReachable(Azimuth, Altitude, SlewType.SlewAltAz);
-            // Fire-and-forget: Start async slew in background and return immediately
-            // Client will poll Slewing property for completion (ASCOM V3 pattern)
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var result = await SkyServer.SlewAltAzAsync(Altitude, Azimuth);
-                    if (!result.CanProceed)
-                    {
-                        LogMessage(MonitorType.Error, nameof(SlewToAltAzAsync),
-                            $"Slew setup failed: {result.ErrorMessage}");
-                    }
-                    // Note: Movement continues in background via SlewController
-                    // Client polls Slewing property to detect completion
-                }
-                catch (Exception ex)
-                {
-                    LogMessage(MonitorType.Error, nameof(SlewToAltAzAsync),
-                        $"Slew error: {ex.Message}");
-                }
-            });
-
-            // Returns immediately - client polls IsSlewing for completion
+            // Direct fire-and-forget call - SlewController handles async execution
+            // Returns when setup completes (<1s) with IsSlewing=true already set
+            _ = SkyServer.SlewAltAzAsync(Altitude, Azimuth);
+            // Movement continues in background via SlewController._movementTask
+            // Client polls Slewing property to detect completion
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
@@ -1538,29 +1520,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             TargetDeclination = Declination;
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
 
-            // Fire-and-forget: Start async slew in background and return immediately
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    // Enable tracking for Ra/Dec slews (ASCOM spec requirement)
-                    SkyServer.CycleOnTracking(true);
+            // Enable tracking before starting slew
+            SkyServer.CycleOnTracking(true);
 
-                    var result = await SkyServer.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true);
-                    if (!result.CanProceed)
-                    {
-                        LogMessage(MonitorType.Error, nameof(SlewToCoordinatesAsync),
-                            $"Slew setup failed: {result.ErrorMessage}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogMessage(MonitorType.Error, nameof(SlewToCoordinatesAsync),
-                        $"Slew error: {ex.Message}");
-                }
-            });
-
-            // Returns immediately - client polls IsSlewing for completion
+            // Direct fire-and-forget call - SlewController handles async execution
+            // Returns when setup completes (<1s) with IsSlewing=true already set
+            _ = SkyServer.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true);
+            // Movement continues in background via SlewController._movementTask
+            // Client polls Slewing property to detect completion
         }
 
         public void SlewToTarget()
@@ -1622,34 +1589,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             var xy = Transforms.CoordTypeToInternal(ra, dec);
 
-            // Fire-and-forget: Start async slew in background and return immediately
-            // Client will poll Slewing property for completion (ASCOM V3 pattern)
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    // Enable tracking for Ra/Dec slews (ASCOM spec requirement)
-                    SkyServer.CycleOnTracking(true);
+            // Enable tracking before starting slew
+            SkyServer.CycleOnTracking(true);
 
-                    var result = await SkyServer.SlewRaDecAsync(xy.X, xy.Y, tracking: true);
-                    if (!result.CanProceed)
-                    {
-                        LogMessage(MonitorType.Error, nameof(SlewToTargetAsync),
-                            $"Slew setup failed: {result.ErrorMessage}");
-                    }
-                    // Note: Movement continues in background via SlewController
-                    // Client polls Slewing property to detect completion
-                }
-                catch (Exception ex)
-                {
-                    LogMessage(MonitorType.Error, nameof(SlewToTargetAsync),
-                        $"Slew error: {ex.Message}");
-                }
-            });
-
-            // Returns immediately - client polls IsSlewing for completion
+            // Direct fire-and-forget call - SlewController handles async execution
+            // Returns when setup completes (<1s) with IsSlewing=true already set
+            _ = SkyServer.SlewRaDecAsync(xy.X, xy.Y, tracking: true);
+            // Movement continues in background via SlewController._movementTask
+            // Client polls Slewing property to detect completion
         }
-
 
         public void Unpark()
         {
