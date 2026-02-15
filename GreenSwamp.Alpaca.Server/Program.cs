@@ -1,12 +1,15 @@
 ﻿using ASCOM.Alpaca;
 using ASCOM.Common;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Extensions;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 #nullable enable
 namespace GreenSwamp.Alpaca.Server
@@ -164,12 +167,48 @@ namespace GreenSwamp.Alpaca.Server
             //Load the configuration
             DeviceManager.LoadConfiguration(new AlpacaConfiguration());
 
-            //Add telescope device id 0
-            //You may want to inject settings and logging here to the Driver Instance.
-            //For each device you add you should add or edit an existing settings page in the settings folder and an entry in the Shared NavMenu.
-            //There are pages already included for the first device of each device type.
-            DeviceManager.LoadTelescope(0, new TelescopeDriver.Telescope(), "Green Swamp Telescope",
-                ServerSettings.GetDeviceUniqueId("Telescope", 0));
+            // Phase 4.8: Multi-instance device loading from appsettings.json
+            var deviceConfigs = builder.Configuration
+                .GetSection("AlpacaDevices")
+                .Get<List<AlpacaDeviceConfig>>();
+
+            if (deviceConfigs == null || !deviceConfigs.Any())
+            {
+                // No multi-device configuration - use default single device (backward compatibility)
+                Logger.LogInformation("No AlpacaDevices configured - registering default device 0");
+                DeviceManager.LoadTelescope(0, new TelescopeDriver.Telescope(), "Green Swamp Telescope",
+                    ServerSettings.GetDeviceUniqueId("Telescope", 0));
+            }
+            else
+            {
+                // Load configured devices from appsettings.json
+                Logger.LogInformation($"Loading {deviceConfigs.Count} device(s) from configuration");
+
+                foreach (var config in deviceConfigs)
+                {
+                    try
+                    {
+                        // For Phase 4.8: Register devices but use default settings
+                        // Profile loading will be implemented when settings service is available
+                        // TODO Phase 4.8.1: Load actual profile settings from JSON
+
+                        // Register with ASCOM DeviceManager
+                        // Note: MountInstance will be created on first Connect() using default settings
+                        DeviceManager.LoadTelescope(
+                            config.DeviceNumber,
+                            new TelescopeDriver.Telescope(config.DeviceNumber),
+                            config.DeviceName,
+                            config.UniqueId
+                        );
+
+                        Logger.LogInformation($"Registered device {config.DeviceNumber}: {config.DeviceName} (profile: {config.ProfileName})");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogInformation($"Failed to register device {config.DeviceNumber}: {config.DeviceName} - {ex.Message}");
+                    }
+                }
+            }
 
             #region Finish Building and Start server
 

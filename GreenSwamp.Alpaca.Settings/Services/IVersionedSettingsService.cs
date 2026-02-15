@@ -47,12 +47,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// Migrates settings from the most recent previous version
         /// </summary>
         Task<bool> MigrateFromPreviousVersionAsync();
-        
+
         /// <summary>
         /// Resets settings to defaults from appsettings.json
         /// </summary>
         Task ResetToDefaultsAsync();
-        
+
         /// <summary>
         /// Gets the current application version
         /// </summary>

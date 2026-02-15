@@ -24,10 +24,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private CommandStrings _mCommandStrings;
         private readonly long _objectId;
 
+        // Phase 4.8: Device number for multi-instance support
+        private readonly int _deviceNumber;
+
         #endregion
 
         public Telescope()
         {
+            _deviceNumber = 0; // Default to device 0 for backward compatibility
+
             try
             {
                 var monitorItem = new MonitorEntry
@@ -55,6 +60,51 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Phase 4.8: Constructor with device number for multi-instance support
+        /// </summary>
+        /// <param name="deviceNumber">Device number (0-based)</param>
+        public Telescope(int deviceNumber)
+        {
+            _deviceNumber = deviceNumber;
+
+            try
+            {
+                var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" Started|DeviceNumber:{deviceNumber}" };
+                MonitorLog.LogToMonitor(monitorItem);
+
+                _mAxisRates = new AxisRates[3];
+                _mAxisRates[0] = new AxisRates(TelescopeAxis.Primary);
+                _mAxisRates[1] = new AxisRates(TelescopeAxis.Secondary);
+                _mAxisRates[2] = new AxisRates(TelescopeAxis.Tertiary);
+                _mTrackingRates = new TrackingRates();
+                _mTrackingRatesSimple = new TrackingRatesSimple();
+
+            }
+            catch (Exception ex)
+            {
+                var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Error|DeviceNumber:{deviceNumber}|{ex.Message}|{ex.StackTrace}" };
+                MonitorLog.LogToMonitor(monitorItem);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Phase 4.8: Get the MountInstance for this device number
+        /// </summary>
+        private MountInstance GetInstance()
+        {
+            var instance = MountInstanceRegistry.GetInstance(_deviceNumber);
+            if (instance == null)
+            {
+                throw new InvalidOperationException($"Device number {_deviceNumber} not found in registry");
+            }
+            return instance;
         }
 
         #region Public Properties

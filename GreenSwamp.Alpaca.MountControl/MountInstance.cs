@@ -38,6 +38,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private readonly string _instanceName;
         private readonly string _id;
+        private readonly string _deviceName;
         private readonly SkySettingsInstance _settings;
 
         // Instance state fields (migrated from static)
@@ -123,6 +124,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Delegates to SkyServer.IsMountRunning which checks queue status
         /// </summary>
         public bool IsMountRunning => SkyServer.IsMountRunning;
+
+        /// <summary>
+        /// Gets the user-provided device name (Phase 4.8.1)
+        /// </summary>
+        public string DeviceName => _deviceName;
+
+        /// <summary>
+        /// Gets the settings instance for this mount (Phase 4.8.1)
+        /// </summary>
+        public SkySettingsInstance Settings => _settings;
 
         /// <summary>
         /// Gets or sets the target RA/Dec position
@@ -295,13 +306,16 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
         /// <summary>
         /// Phase 4.2: Constructor with optional settings file path
+        /// Phase 4.8.1: Added deviceName parameter for user-visible device identification
         /// </summary>
         /// <param name="id">Unique instance identifier (e.g., "telescope-0")</param>
         /// <param name="settings">Settings instance (can be file-based or static)</param>
-        public MountInstance(string id, SkySettingsInstance settings)
+        /// <param name="deviceName">User-provided device name (defaults to id if null)</param>
+        public MountInstance(string id, SkySettingsInstance settings, string? deviceName = null)
         {
             _id = id ?? "mount-0";
             _instanceName = id ?? "default";
+            _deviceName = deviceName ?? id ?? "Unnamed Device";
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
             var monitorItem = new MonitorEntry
