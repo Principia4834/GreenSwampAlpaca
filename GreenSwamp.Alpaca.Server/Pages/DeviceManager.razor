@@ -90,6 +90,9 @@
                                     <td>@device.MountType</td>
                                     <td>@device.AlignmentMode</td>
                                     <td>
+                                        <a href="/setup/v1/telescope/@device.DeviceNumber/setup" class="btn btn-info btn-sm" target="_blank" title="Open device setup page">
+                                            <span class="oi oi-cog" aria-hidden="true"></span> Setup
+                                        </a>
                                         @if (device.IsReserved)
                                         {
                                             <button class="btn btn-secondary btn-sm" disabled title="Reserved slots cannot be deleted">

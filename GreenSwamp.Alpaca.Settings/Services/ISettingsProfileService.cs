@@ -99,5 +99,29 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <param name="sourcePath">Source file path</param>
         /// <returns>The imported profile</returns>
         Task<SettingsProfile> ImportProfileAsync(string sourcePath);
+
+        /// <summary>
+        /// Load profile settings by name for per-device configuration
+        /// Phase 4.9: Enables each device to use its own profile
+        /// </summary>
+        /// <param name="profileName">Profile name (without .profile.json extension)</param>
+        /// <returns>SkySettings from the profile</returns>
+        /// <exception cref="FileNotFoundException">If profile does not exist</exception>
+        Task<SkySettings> LoadProfileByNameAsync(string profileName);
+
+        /// <summary>
+        /// Get list of all available profile names
+        /// Phase 4.9: Used by UI and API to show available profiles
+        /// </summary>
+        /// <returns>Collection of profile names</returns>
+        Task<IEnumerable<string>> GetProfileNamesAsync();
+
+        /// <summary>
+        /// Check if a profile exists
+        /// Phase 4.9: Validation before loading profiles
+        /// </summary>
+        /// <param name="profileName">Profile name (without .profile.json extension)</param>
+        /// <returns>True if profile exists, false otherwise</returns>
+        bool ProfileExists(string profileName);
     }
 }

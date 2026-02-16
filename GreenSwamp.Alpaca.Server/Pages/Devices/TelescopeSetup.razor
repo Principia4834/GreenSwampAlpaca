@@ -1,19 +1,295 @@
-﻿@page "/setup/v1/Telescope/{InstanceID:int}/setup"
+@page "/setup/v1/Telescope/{InstanceID:int}/setup"
+@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Shared
 
-<h3>Telescope Setup: @InstanceID</h3>
+<PageTitle>Telescope Setup - Device @InstanceID</PageTitle>
 
-@if (ASCOM.Alpaca.DeviceManager.Telescopes.ContainsKey(InstanceID))
-{
-    <p>Add your device setup and control functions here</p>
-}
-else
-{
-    <h3>This device does not exist and cannot be configured</h3>
-}
+<div class="container-fluid mt-4">
+    <h3>Telescope Setup: Device @InstanceID</h3>
 
+    @if (ASCOM.Alpaca.DeviceManager.Telescopes.ContainsKey(InstanceID))
+    {
+        var instance = MountInstanceRegistry.GetInstance(InstanceID);
+        if (instance != null)
+        {
+            var settings = instance.Settings;
+            
+            <!-- Phase 4.9 Verification: Display Loaded Profile Settings -->
+            <div class="row">
+                <!-- Device Information Card -->
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <span class="oi oi-info" aria-hidden="true"></span> Device Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 40%;">Device Number:</th>
+                                        <td><span class="badge bg-secondary">@InstanceID</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Device Name:</th>
+                                        <td><strong>@instance.DeviceName</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Mount Type:</th>
+                                        <td>@settings.Mount</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Alignment Mode:</th>
+                                        <td>
+                                            <span class="badge bg-info">@settings.AlignmentMode</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Connection Status:</th>
+                                        <td>
+                                            @if (instance.IsConnected)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <span class="oi oi-check" aria-hidden="true"></span> Connected
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Disconnected</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Settings Card -->
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <span class="oi oi-map-marker" aria-hidden="true"></span> Location Settings
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 40%;">Latitude:</th>
+                                        <td>@settings.Latitude.ToString("F6")°</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Longitude:</th>
+                                        <td>@settings.Longitude.ToString("F6")°</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Elevation:</th>
+                                        <td>@settings.Elevation m</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Serial Port Settings Card -->
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <span class="oi oi-aperture" aria-hidden="true"></span> Serial Port Settings
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 40%;">Port:</th>
+                                        <td><code>@settings.Port</code></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Baud Rate:</th>
+                                        <td>@settings.BaudRate</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Data Bits:</th>
+                                        <td>@settings.DataBits</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Read Timeout:</th>
+                                        <td>@settings.ReadTimeout ms</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tracking Settings Card -->
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <span class="oi oi-target" aria-hidden="true"></span> Tracking Settings
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 40%;">Auto Track:</th>
+                                        <td>
+                                            @if (settings.AutoTrack)
+                                            {
+                                                <span class="badge bg-success">Enabled</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Disabled</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tracking Rate:</th>
+                                        <td>@settings.TrackingRate</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Sidereal Rate:</th>
+                                        <td>@settings.SiderealRate.ToString("F7")°/sec</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Refraction:</th>
+                                        <td>
+                                            @if (settings.Refraction)
+                                            {
+                                                <span class="badge bg-success">Enabled</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Disabled</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telescope Specifications Card -->
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0">
+                                <span class="oi oi-eye" aria-hidden="true"></span> Telescope Specifications
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>Aperture Diameter:</th>
+                                                <td>@settings.ApertureDiameter m</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Aperture Area:</th>
+                                                <td>@settings.ApertureArea m²</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Focal Length:</th>
+                                                <td>@settings.FocalLength m</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-4">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>RA Backlash:</th>
+                                                <td>@settings.RaBacklash</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Dec Backlash:</th>
+                                                <td>@settings.DecBacklash</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-4">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>Min Pulse RA:</th>
+                                                <td>@settings.MinPulseRa ms</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Min Pulse Dec:</th>
+                                                <td>@settings.MinPulseDec ms</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 4.9 Success Message -->
+            <div class="alert alert-success" role="alert">
+                <h5 class="alert-heading">
+                    <span class="oi oi-check" aria-hidden="true"></span> ✅ Phase 4.9: Profile Loaded Successfully
+                </h5>
+                <p class="mb-0">
+                    This device is configured with a profile-based settings system. 
+                    Each device can have its own unique alignment mode and configuration.
+                    <strong>Alignment Mode for this device: @settings.AlignmentMode</strong>
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mb-3">
+                <a href="/device-manager" class="btn btn-primary">
+                    <span class="oi oi-arrow-left" aria-hidden="true"></span> Back to Device Manager
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Device Instance Not Found</h4>
+                <p>Device @InstanceID is registered but has no MountInstance.</p>
+                <p class="mb-0">This may indicate a configuration error.</p>
+            </div>
+            <a href="/device-manager" class="btn btn-secondary">
+                <span class="oi oi-arrow-left" aria-hidden="true"></span> Back to Device Manager
+            </a>
+        }
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">Device Not Found</h4>
+            <p>Device @InstanceID does not exist in the system.</p>
+            <p class="mb-0">Please return to the Device Manager to see available devices.</p>
+        </div>
+        <a href="/device-manager" class="btn btn-secondary">
+            <span class="oi oi-arrow-left" aria-hidden="true"></span> Back to Device Manager
+        </a>
+    }
+</div>
 
 @code {
     [Parameter]
     public int InstanceID { get; set; }
-
 }

@@ -281,14 +281,46 @@ namespace GreenSwamp.Alpaca.Server
                     .GetSection("AlpacaDevices")
                     .Get<List<AlpacaDeviceConfig>>();
 
+                // Phase 4.9: Get profile service for loading per-device profiles
+                var profileService = app.Services.GetRequiredService<ISettingsProfileService>();
+
                 if (deviceConfigs == null || !deviceConfigs.Any())
                 {
                     Logger.LogInformation("No AlpacaDevices configured in appsettings.json");
                     Logger.LogInformation("Creating default reserved slots (0=Simulator, 1=SkyWatcher)");
 
-                    // Create default reserved slots
+                    // Phase 4.9: Load profiles for reserved slots
+                    GreenSwamp.Alpaca.Settings.Models.SkySettings simulatorProfileSettings;
+                    GreenSwamp.Alpaca.Settings.Models.SkySettings physicalMountProfileSettings;
+
+                    try
+                    {
+                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync("simulator-altaz");
+                        Logger.LogInformation("✅ Phase 4.9: Loaded profile for slot 0: simulator-altaz");
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Logger.LogInformation("Profile 'simulator-altaz' not found, using default settings");
+                        simulatorProfileSettings = settingsService.GetSettings();
+                    }
+
+                    try
+                    {
+                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync("eq6-default");
+                        Logger.LogInformation("✅ Phase 4.9: Loaded profile for slot 1: eq6-default");
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Logger.LogInformation("Profile 'eq6-default' not found, using default settings");
+                        physicalMountProfileSettings = settingsService.GetSettings();
+                    }
+
+                    // Create instances with loaded profile settings
                     var simulatorSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                    simulatorSettings.ApplySettings(simulatorProfileSettings);
+
                     var physicalMountSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                    physicalMountSettings.ApplySettings(physicalMountProfileSettings);
 
                     GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.InitializeReservedSlots(
                         simulatorSettings,
@@ -301,7 +333,7 @@ namespace GreenSwamp.Alpaca.Server
                         new TelescopeDriver.Telescope(1)
                     );
 
-                    Logger.LogInformation("✅ Reserved slots initialized (0=Simulator, 1=SkyWatcher)");
+                    Logger.LogInformation("✅ Reserved slots initialized (0=Simulator, 1=SkyWatcher) with profiles");
                 }
                 else
                 {
@@ -317,9 +349,40 @@ namespace GreenSwamp.Alpaca.Server
                             "Configuration must include reserved slots 0 and 1. Please update appsettings.json AlpacaDevices section.");
                     }
 
-                    // Initialize reserved slots
+                    // Phase 4.9: Load profiles for configured reserved slots
+                    GreenSwamp.Alpaca.Settings.Models.SkySettings simulatorProfileSettings;
+                    GreenSwamp.Alpaca.Settings.Models.SkySettings physicalMountProfileSettings;
+
+                    try
+                    {
+                        var profileName0 = !string.IsNullOrWhiteSpace(slot0.ProfileName) ? slot0.ProfileName : "simulator-altaz";
+                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync(profileName0);
+                        Logger.LogInformation($"✅ Phase 4.9: Loaded profile for slot 0: {profileName0}");
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Logger.LogInformation($"Profile '{slot0.ProfileName}' not found, using default settings");
+                        simulatorProfileSettings = settingsService.GetSettings();
+                    }
+
+                    try
+                    {
+                        var profileName1 = !string.IsNullOrWhiteSpace(slot1.ProfileName) ? slot1.ProfileName : "eq6-default";
+                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync(profileName1);
+                        Logger.LogInformation($"✅ Phase 4.9: Loaded profile for slot 1: {profileName1}");
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Logger.LogInformation($"Profile '{slot1.ProfileName}' not found, using default settings");
+                        physicalMountProfileSettings = settingsService.GetSettings();
+                    }
+
+                    // Initialize reserved slots with loaded profiles
                     var simulatorSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                    simulatorSettings.ApplySettings(simulatorProfileSettings);
+
                     var physicalMountSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                    physicalMountSettings.ApplySettings(physicalMountProfileSettings);
 
                     GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.InitializeReservedSlots(
                         simulatorSettings,
@@ -346,7 +409,29 @@ namespace GreenSwamp.Alpaca.Server
                         {
                             try
                             {
+                                // Phase 4.9: Load profile for dynamic device if specified
+                                GreenSwamp.Alpaca.Settings.Models.SkySettings? deviceProfileSettings = null;
+
+                                if (!string.IsNullOrWhiteSpace(config.ProfileName))
+                                {
+                                    try
+                                    {
+                                        deviceProfileSettings = await profileService.LoadProfileByNameAsync(config.ProfileName);
+                                        Logger.LogInformation($"✅ Phase 4.9: Loaded profile '{config.ProfileName}' for device {config.DeviceNumber}");
+                                    }
+                                    catch (FileNotFoundException)
+                                    {
+                                        Logger.LogInformation($"Profile '{config.ProfileName}' not found for device {config.DeviceNumber}, using default settings");
+                                    }
+                                }
+
                                 var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+
+                                // Apply profile settings if loaded
+                                if (deviceProfileSettings != null)
+                                {
+                                    deviceSettings.ApplySettings(deviceProfileSettings);
+                                }
 
                                 GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.RegisterDevice(
                                     config.DeviceNumber,
@@ -356,7 +441,7 @@ namespace GreenSwamp.Alpaca.Server
                                     new TelescopeDriver.Telescope(config.DeviceNumber)
                                 );
 
-                                Logger.LogInformation($"✅ Device {config.DeviceNumber}: {config.DeviceName} (profile: {config.ProfileName})");
+                                Logger.LogInformation($"✅ Device {config.DeviceNumber}: {config.DeviceName} (profile: {config.ProfileName ?? "default"})");
                             }
                             catch (Exception ex)
                             {

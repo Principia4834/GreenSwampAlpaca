@@ -17,6 +17,7 @@
 using ASCOM.Alpaca;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Models;
+using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,13 +37,16 @@ namespace GreenSwamp.Alpaca.Server.Controllers
     public class SetupDevicesController : ControllerBase
     {
         private readonly IVersionedSettingsService _settingsService;
+        private readonly ISettingsProfileService _profileService;
         private readonly ILogger<SetupDevicesController> _logger;
 
         public SetupDevicesController(
             IVersionedSettingsService settingsService,
+            ISettingsProfileService profileService,
             ILogger<SetupDevicesController> logger)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+            _profileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -98,7 +102,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
         [ProducesResponseType(typeof(AddDeviceResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IActionResult AddDevice([FromBody] AddDeviceRequest request)
+        public async Task<IActionResult> AddDevice([FromBody] AddDeviceRequest request)
         {
             // Validate model state
             if (!ModelState.IsValid)
@@ -140,9 +144,34 @@ namespace GreenSwamp.Alpaca.Server.Controllers
 
             try
             {
-                // Create settings instance using the injected settings service
-                // TODO Phase 4.8.1: Load actual profile settings when profile loader service supports per-device profiles
+                // Phase 4.9: Load profile settings if profile name is specified
                 var settingsInstance = new SkySettingsInstance(_settingsService);
+
+                if (!string.IsNullOrWhiteSpace(request.ProfileName))
+                {
+                    // Validate profile exists first
+                    if (!_profileService.ProfileExists(request.ProfileName))
+                    {
+                        throw new FileNotFoundException($"Profile '{request.ProfileName}' not found");
+                    }
+
+                    // Load profile settings
+                    var profileSettings = await _profileService.LoadProfileByNameAsync(request.ProfileName);
+                    settingsInstance.ApplySettings(profileSettings);
+
+                    _logger.LogInformation(
+                        "Loaded profile '{ProfileName}' for device {DeviceNumber}",
+                        request.ProfileName,
+                        deviceNumber
+                    );
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "No profile specified for device {DeviceNumber}, using default settings",
+                        deviceNumber
+                    );
+                }
 
                 // Register with BOTH registries atomically using UnifiedDeviceRegistry
                 Services.UnifiedDeviceRegistry.RegisterDevice(
@@ -157,7 +186,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                     "Successfully added device {DeviceNumber}: {DeviceName} (profile: {ProfileName})",
                     deviceNumber,
                     request.DeviceName,
-                    request.ProfileName
+                    request.ProfileName ?? "default"
                 );
 
                 return Ok(new AddDeviceResponse
@@ -237,24 +266,33 @@ namespace GreenSwamp.Alpaca.Server.Controllers
         /// <summary>
         /// Lists available settings profiles that can be used for device creation.
         /// </summary>
-        /// <returns>List of available profile names</returns>
+        /// <returns>List of available profile information</returns>
         /// <response code="200">Successfully retrieved profile list</response>
         [HttpGet("profiles")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(List<object>), StatusCodes.Status200OK)]
-        public IActionResult GetProfiles()
+        [ProducesResponseType(typeof(List<ProfileInfo>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProfiles()
         {
-            // TODO Phase 4.8.1: Implement profile discovery when settings service supports it
-            // For now, return hardcoded list of known simulator profiles
-            var profiles = new List<object>
+            try
             {
-                new { profileName = "simulator-altaz", path = "profiles/simulator-altaz.json" },
-                new { profileName = "simulator-gem", path = "profiles/simulator-gem.json" },
-                new { profileName = "simulator-polar", path = "profiles/simulator-polar.json" }
-            };
+                // Phase 4.9: Use profile service for dynamic profile discovery
+                var profileNames = await _profileService.GetProfileNamesAsync();
 
-            _logger.LogInformation("Listed {Count} profiles", profiles.Count);
-            return Ok(profiles);
+                // Convert to ProfileInfo objects for UI consumption
+                var profiles = profileNames.Select(name => new ProfileInfo
+                {
+                    ProfileName = name,
+                    Path = $"profiles/{name}.json"
+                }).ToList();
+
+                _logger.LogInformation("Listed {Count} profiles", profiles.Count);
+                return Ok(profiles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get profiles");
+                return BadRequest(new ErrorResponse { Error = $"Failed to retrieve profiles: {ex.Message}" });
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GreenSwamp.Alpaca.Settings.Services
 {
@@ -189,8 +190,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 try
                 {
                     var json = await File.ReadAllTextAsync(filePath);
-                    var profile = JsonSerializer.Deserialize<SettingsProfile>(json);
-                    
+
+                    var options = new JsonSerializerOptions
+                    {
+                        Converters = { new JsonStringEnumConverter() }
+                    };
+
+                    var profile = JsonSerializer.Deserialize<SettingsProfile>(json, options);
+
                     if (profile == null)
                         throw new InvalidOperationException($"Failed to deserialize profile '{name}'");
                     
@@ -429,16 +436,20 @@ namespace GreenSwamp.Alpaca.Settings.Services
             try
             {
                 var profile = await GetProfileAsync(name);
-                
-                var json = JsonSerializer.Serialize(profile, new JsonSerializerOptions
+
+                // Configure JsonSerializer to use string enum names (not numeric values)
+                var options = new JsonSerializerOptions
                 {
-                    WriteIndented = true
-                });
-                
+                    WriteIndented = true,
+                    Converters = { new JsonStringEnumConverter() }
+                };
+
+                var json = JsonSerializer.Serialize(profile, options);
+
                 await File.WriteAllTextAsync(destinationPath, json);
-                
+
                 _logger.LogInformation("Exported profile '{Name}' to {Path}", name, destinationPath);
-                
+
                 return destinationPath;
             }
             catch (Exception ex)
@@ -517,12 +528,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private async Task SaveProfileAsync(SettingsProfile profile)
         {
             var filePath = GetProfilePath(profile.Name);
-            
-            var json = JsonSerializer.Serialize(profile, new JsonSerializerOptions
+
+            // Configure JsonSerializer to use string enum names (not numeric values)
+            var options = new JsonSerializerOptions
             {
-                WriteIndented = true
-            });
-            
+                WriteIndented = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            var json = JsonSerializer.Serialize(profile, options);
+
             await _fileLock.WaitAsync();
             try
             {
@@ -565,7 +580,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private async Task<string> GetActiveProfileNameAsync()
         {
             var activeFilePath = Path.Combine(_profilesPath, "..", "active-profile.txt");
-            
+
             if (File.Exists(activeFilePath))
             {
                 var name = await File.ReadAllTextAsync(activeFilePath);
@@ -574,9 +589,93 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     return name.Trim();
                 }
             }
-            
+
             // Default to GermanPolar if no active profile set
             return GetDefaultProfileName(AlignmentMode.GermanPolar);
         }
+
+        #region Phase 4.9: Per-Device Profile Loading
+
+        /// <summary>
+        /// Load profile settings by name for per-device configuration
+        /// Phase 4.9: Enables each device to use its own profile
+        /// </summary>
+        public async Task<SkySettings> LoadProfileByNameAsync(string profileName)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+                throw new ArgumentException("Profile name cannot be null or empty", nameof(profileName));
+
+            await EnsureInitializedAsync();
+
+            try
+            {
+                var profile = await GetProfileAsync(profileName);
+                _logger.LogInformation("Loaded profile by name: {ProfileName} | AlignmentMode: {Mode}", 
+                    profileName, profile.AlignmentMode);
+
+                return profile.Settings;
+            }
+            catch (FileNotFoundException ex)
+            {
+                _logger.LogError("Profile not found: {ProfileName}", profileName);
+                throw new FileNotFoundException($"Profile '{profileName}' not found. Use GetProfileNamesAsync() to see available profiles.", ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load profile by name: {ProfileName}", profileName);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Get list of all available profile names
+        /// Phase 4.9: Used by UI and API to show available profiles
+        /// </summary>
+        public async Task<IEnumerable<string>> GetProfileNamesAsync()
+        {
+            await EnsureInitializedAsync();
+
+            try
+            {
+                var profiles = await GetAllProfilesAsync();
+                var names = profiles.Select(p => p.Name).OrderBy(n => n).ToList();
+
+                _logger.LogDebug("Retrieved {Count} profile names", names.Count);
+
+                return names;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get profile names");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Check if a profile exists (synchronous for startup validation)
+        /// Phase 4.9: Validation before loading profiles
+        /// </summary>
+        public bool ProfileExists(string profileName)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+                return false;
+
+            try
+            {
+                var filePath = GetProfilePath(profileName);
+                var exists = File.Exists(filePath);
+
+                _logger.LogDebug("Profile exists check: {ProfileName} = {Exists}", profileName, exists);
+
+                return exists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error checking if profile exists: {ProfileName}", profileName);
+                return false;
+            }
+        }
+
+        #endregion
     }
 }

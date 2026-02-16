@@ -1812,9 +1812,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Apply settings from SkySettings model to instance fields
         /// This is the single source of truth for all settings mapping
+        /// Phase 4.9: Made public to support per-device profile loading
         /// </summary>
         /// <param name="settings">Settings model (from profile or JSON)</param>
-        private void ApplySettings(Settings.Models.SkySettings settings)
+        public void ApplySettings(Settings.Models.SkySettings settings)
         {
             try
             {
