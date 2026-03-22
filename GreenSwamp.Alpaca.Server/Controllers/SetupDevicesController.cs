@@ -18,6 +18,7 @@ using ASCOM.Alpaca;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -292,6 +293,147 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             {
                 _logger.LogError(ex, "Failed to get profiles");
                 return BadRequest(new ErrorResponse { Error = $"Failed to retrieve profiles: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// GET /setup/profiles/{name} - Get profile details
+        /// Phase 4.10: Web UI profile browser
+        /// </summary>
+        [HttpGet("profiles/{name}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(SettingsProfile), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetProfile(string name)
+        {
+            try
+            {
+                if (!_profileService.ProfileExists(name))
+                    return NotFound(new ErrorResponse { Error = $"Profile '{name}' not found" });
+
+                var profile = await _profileService.GetProfileDetailsAsync(name);
+                _logger.LogInformation("Retrieved profile details: {ProfileName}", name);
+                return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get profile {ProfileName}", name);
+                return StatusCode(500, new ErrorResponse { Error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// POST /setup/profiles - Create new profile
+        /// Phase 4.10: Web UI profile creation
+        /// </summary>
+        [HttpPost("profiles")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(SettingsProfile), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationResult), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateProfile([FromBody] SettingsProfile profile)
+        {
+            try
+            {
+                // Validate
+                var validation = await _profileService.ValidateProfileAsync(profile);
+                if (!validation.IsValid)
+                    return BadRequest(validation);
+
+                // Check for duplicates
+                if (_profileService.ProfileExists(profile.Name))
+                    return Conflict(new ErrorResponse { Error = $"Profile '{profile.Name}' already exists" });
+
+                // Use the profile service's create method
+                var created = await _profileService.CreateProfileAsync(
+                    profile.Name, 
+                    profile.AlignmentMode, 
+                    copyFromProfile: null);
+
+                // Update with provided settings
+                created.Settings = profile.Settings;
+                created.DisplayName = profile.DisplayName;
+                created.Description = profile.Description;
+                await _profileService.UpdateProfileAsync(created);
+
+                _logger.LogInformation("Created profile {ProfileName}", profile.Name);
+                return CreatedAtAction(nameof(GetProfile), new { name = profile.Name }, created);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create profile");
+                return StatusCode(500, new ErrorResponse { Error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// PUT /setup/profiles/{name} - Update profile
+        /// Phase 4.10: Web UI profile editor
+        /// </summary>
+        [HttpPut("profiles/{name}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(SettingsProfile), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationResult), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateProfile(string name, [FromBody] SettingsProfile profile)
+        {
+            try
+            {
+                if (!_profileService.ProfileExists(name))
+                    return NotFound(new ErrorResponse { Error = $"Profile '{name}' not found" });
+
+                // Validate
+                var validation = await _profileService.ValidateProfileAsync(profile);
+                if (!validation.IsValid)
+                    return BadRequest(validation);
+
+                // Ensure name matches
+                profile.Name = name;
+                await _profileService.UpdateProfileAsync(profile);
+
+                _logger.LogInformation("Updated profile {ProfileName}", name);
+                return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update profile {ProfileName}", name);
+                return StatusCode(500, new ErrorResponse { Error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// DELETE /setup/profiles/{name} - Delete profile
+        /// Phase 4.10: Web UI profile management
+        /// </summary>
+        [HttpDelete("profiles/{name}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> DeleteProfile(string name, [FromQuery] bool force = false)
+        {
+            try
+            {
+                if (!_profileService.ProfileExists(name))
+                    return NotFound(new ErrorResponse { Error = $"Profile '{name}' not found" });
+
+                // Check if in use (unless force=true)
+                if (!force && await _profileService.IsProfileInUseAsync(name))
+                {
+                    var devices = await _profileService.GetDevicesUsingProfileAsync(name);
+                    return Conflict(new ErrorResponse 
+                    { 
+                        Error = $"Profile '{name}' is in use by devices: {string.Join(", ", devices)}. Use force=true to delete anyway." 
+                    });
+                }
+
+                await _profileService.DeleteProfileAsync(name);
+                _logger.LogInformation("Deleted profile {ProfileName}", name);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete profile {ProfileName}", name);
+                return StatusCode(500, new ErrorResponse { Error = ex.Message });
             }
         }
     }

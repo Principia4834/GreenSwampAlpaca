@@ -1,0 +1,309 @@
+@page "/profiles/new/template"
+@using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Settings.Models
+@inject ISettingsTemplateService TemplateService
+@inject ISettingsProfileService ProfileService
+@inject NavigationManager Navigation
+@inject ILogger<ProfileTemplates> Logger
+
+<PageTitle>Create Profile from Template</PageTitle>
+
+<h3>Create Profile from Template</h3>
+
+<div class="container-fluid mt-4">
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="@(() => errorMessage = null)"></button>
+        </div>
+    }
+
+    @if (loading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading templates...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Template Selection -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Select a Template</h5>
+                        <p class="mb-0 small text-muted">Choose a template based on your mount type and alignment mode</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <!-- AltAz Template -->
+                            <div class="col-md-4">
+                                <div class="card h-100 @(selectedMode == AlignmentMode.AltAz ? "border-primary border-2" : "")">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <span class="oi oi-compass"></span> AltAz Simulator
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small">
+                                            <strong>Alignment:</strong> Altitude-Azimuth<br/>
+                                            <strong>Best for:</strong> Dobsonian mounts, Alt-Az platforms<br/>
+                                            <strong>Tracking:</strong> Two-axis tracking required
+                                        </p>
+                                        <hr/>
+                                        <p class="small mb-0">
+                                            <strong>Features:</strong>
+                                        </p>
+                                        <ul class="small">
+                                            <li>Simple horizon-based coordinates</li>
+                                            <li>No meridian flip</li>
+                                            <li>Ideal for visual observing</li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button class="btn @(selectedMode == AlignmentMode.AltAz ? "btn-primary" : "btn-outline-primary") w-100" 
+                                                @onclick="() => SelectTemplate(AlignmentMode.AltAz)">
+                                            @if (selectedMode == AlignmentMode.AltAz)
+                                            {
+                                                <span class="oi oi-check"></span> <text>Selected</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Select Template</text>
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Polar Template -->
+                            <div class="col-md-4">
+                                <div class="card h-100 @(selectedMode == AlignmentMode.Polar ? "border-primary border-2" : "")">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <span class="oi oi-target"></span> Polar Simulator
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small">
+                                            <strong>Alignment:</strong> Polar<br/>
+                                            <strong>Best for:</strong> Simple equatorial mounts<br/>
+                                            <strong>Tracking:</strong> Single-axis sidereal tracking
+                                        </p>
+                                        <hr/>
+                                        <p class="small mb-0">
+                                            <strong>Features:</strong>
+                                        </p>
+                                        <ul class="small">
+                                            <li>Polar-aligned to celestial pole</li>
+                                            <li>Simple RA/Dec coordinates</li>
+                                            <li>No automatic meridian flip</li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button class="btn @(selectedMode == AlignmentMode.Polar ? "btn-primary" : "btn-outline-primary") w-100" 
+                                                @onclick="() => SelectTemplate(AlignmentMode.Polar)">
+                                            @if (selectedMode == AlignmentMode.Polar)
+                                            {
+                                                <span class="oi oi-check"></span> <text>Selected</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Select Template</text>
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- German Polar Template -->
+                            <div class="col-md-4">
+                                <div class="card h-100 @(selectedMode == AlignmentMode.GermanPolar ? "border-primary border-2" : "")">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <span class="oi oi-dashboard"></span> German Polar
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text small">
+                                            <strong>Alignment:</strong> German Equatorial<br/>
+                                            <strong>Best for:</strong> GEM mounts (EQ6, CEM, etc.)<br/>
+                                            <strong>Tracking:</strong> Sidereal with meridian flip
+                                        </p>
+                                        <hr/>
+                                        <p class="small mb-0">
+                                            <strong>Features:</strong>
+                                        </p>
+                                        <ul class="small">
+                                            <li>German Equatorial Mount support</li>
+                                            <li>Automatic meridian flip</li>
+                                            <li>Pier side tracking (East/West)</li>
+                                            <li>Best for astrophotography</li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button class="btn @(selectedMode == AlignmentMode.GermanPolar ? "btn-primary" : "btn-outline-primary") w-100" 
+                                                @onclick="() => SelectTemplate(AlignmentMode.GermanPolar)">
+                                            @if (selectedMode == AlignmentMode.GermanPolar)
+                                            {
+                                                <span class="oi oi-check"></span> <text>Selected</text>
+                                            }
+                                            else
+                                            {
+                                                <text>Select Template</text>
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Name Entry -->
+        @if (selectedMode.HasValue)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Profile Name</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="profileName" class="form-label">Profile Name <span class="text-danger">*</span></label>
+                                        <input type="text" id="profileName" class="form-control" @bind="profileName" placeholder="my-mount-profile" />
+                                        <div class="form-text">Unique name for this profile (alphanumeric, dash, underscore)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="displayName" class="form-label">Display Name <span class="text-danger">*</span></label>
+                                        <input type="text" id="displayName" class="form-control" @bind="displayName" placeholder="My Mount Profile" />
+                                        <div class="form-text">Human-readable name shown in UI</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea id="description" class="form-control" rows="2" @bind="description" placeholder="Optional description of this profile"></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-secondary" @onclick="Cancel">
+                                    <span class="oi oi-x"></span> Cancel
+                                </button>
+                                <button class="btn btn-success" @onclick="CreateFromTemplate" disabled="@(creating || string.IsNullOrWhiteSpace(profileName))">
+                                    @if (creating)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="oi oi-check me-2"></span>
+                                    }
+                                    Create Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private AlignmentMode? selectedMode;
+    private string profileName = string.Empty;
+    private string displayName = string.Empty;
+    private string description = string.Empty;
+    private bool loading = false;
+    private bool creating = false;
+    private string? errorMessage;
+
+    private void SelectTemplate(AlignmentMode mode)
+    {
+        selectedMode = mode;
+        
+        // Set suggested profile name if empty
+        if (string.IsNullOrWhiteSpace(profileName))
+        {
+            profileName = $"{mode.ToString().ToLower()}-profile";
+            displayName = $"{mode} Profile";
+            description = $"Profile based on {mode} template";
+        }
+    }
+
+    private async Task CreateFromTemplate()
+    {
+        if (!selectedMode.HasValue || string.IsNullOrWhiteSpace(profileName))
+            return;
+
+        try
+        {
+            creating = true;
+            errorMessage = null;
+
+            // Check if profile already exists
+            if (ProfileService.ProfileExists(profileName))
+            {
+                errorMessage = $"Profile '{profileName}' already exists. Please choose a different name.";
+                return;
+            }
+
+            // Load template settings
+            var templateSettings = await TemplateService.LoadTemplateAsync(selectedMode.Value);
+
+            // Create profile from template
+            var profile = new SettingsProfile
+            {
+                Name = profileName,
+                DisplayName = string.IsNullOrWhiteSpace(displayName) ? profileName : displayName,
+                Description = description,
+                AlignmentMode = selectedMode.Value,
+                Settings = templateSettings,
+                IsReadOnly = false,
+                Created = DateTime.UtcNow,
+                LastModified = DateTime.UtcNow
+            };
+
+            // Create the profile
+            await ProfileService.CreateProfileAsync(profile.Name, profile.AlignmentMode);
+            
+            // Load and update with template settings
+            var created = await ProfileService.GetProfileAsync(profile.Name);
+            created.DisplayName = profile.DisplayName;
+            created.Description = profile.Description;
+            created.Settings = profile.Settings;
+            await ProfileService.UpdateProfileAsync(created);
+
+            Logger.LogInformation("Created profile '{ProfileName}' from {AlignmentMode} template", profileName, selectedMode);
+
+            // Navigate to editor for further customization
+            Navigation.NavigateTo($"/profiles/{profileName}/edit");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create profile from template");
+            errorMessage = $"Failed to create profile: {ex.Message}";
+        }
+        finally
+        {
+            creating = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/profiles");
+    }
+}

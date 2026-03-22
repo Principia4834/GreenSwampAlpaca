@@ -676,6 +676,149 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
         }
 
+        /// <summary>
+        /// Get profile details with metadata (used by remote client API)
+        /// Phase 4.10: Returns profile settings with additional metadata
+        /// </summary>
+        public async Task<SettingsProfile> GetProfileDetailsAsync(string profileName)
+        {
+            _logger.LogDebug("Getting profile details for: {ProfileName}", profileName);
+
+            // Reuse existing GetProfileAsync which already loads full profile
+            var profile = await GetProfileAsync(profileName);
+
+            _logger.LogInformation("Profile details retrieved: {ProfileName}", profileName);
+            return profile;
+        }
+
+        /// <summary>
+        /// Save profile settings (used by remote client API)
+        /// Phase 4.10: Allows external clients to create/update profiles
+        /// </summary>
+        public async Task SaveProfileSettingsAsync(string profileName, SkySettings settings, bool overwrite = false)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+                throw new ArgumentException("Profile name cannot be empty", nameof(profileName));
+
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+
+            _logger.LogDebug("Saving profile settings: {ProfileName}, Overwrite: {Overwrite}", profileName, overwrite);
+
+            await EnsureInitializedAsync();
+
+            // Check if profile exists
+            bool exists = ProfileExists(profileName);
+
+            if (exists && !overwrite)
+            {
+                throw new InvalidOperationException($"Profile '{profileName}' already exists. Set overwrite=true to update.");
+            }
+
+            // Create or update profile
+            SettingsProfile profile;
+            if (exists)
+            {
+                // Load existing profile and update its settings
+                profile = await GetProfileAsync(profileName);
+                // Copy settings properties
+                CopySettingsToProfile(settings, profile);
+                await UpdateProfileAsync(profile);
+                _logger.LogInformation("Profile updated: {ProfileName}", profileName);
+            }
+            else
+            {
+                // Create new profile from settings
+                profile = CreateProfileFromSettings(profileName, settings);
+                await SaveProfileAsync(profile);
+                _logger.LogInformation("Profile created: {ProfileName}", profileName);
+            }
+        }
+
+        /// <summary>
+        /// Check if a profile is currently in use by any device
+        /// Phase 4.10: Prevents deletion of active profiles
+        /// </summary>
+        public async Task<bool> IsProfileInUseAsync(string profileName)
+        {
+            _logger.LogDebug("Checking if profile is in use: {ProfileName}", profileName);
+
+            var devices = await GetDevicesUsingProfileAsync(profileName);
+            bool inUse = devices.Any();
+
+            _logger.LogDebug("Profile '{ProfileName}' in use: {InUse} (devices: {Count})", 
+                profileName, inUse, devices.Count());
+
+            return inUse;
+        }
+
+        /// <summary>
+        /// Get list of device numbers using a specific profile
+        /// Phase 4.10: Shows which devices are using a profile
+        /// </summary>
+        public async Task<IEnumerable<int>> GetDevicesUsingProfileAsync(string profileName)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+                return Enumerable.Empty<int>();
+
+            _logger.LogDebug("Getting devices using profile: {ProfileName}", profileName);
+
+            // TODO: Phase 4.10 - Integrate with MountInstanceRegistry when available
+            // For now, return empty list as registry integration requires careful coordination
+            // This will be implemented in Task 5 (Runtime Profile Switching) which has access to registry
+
+            await Task.CompletedTask; // Async signature for future implementation
+
+            _logger.LogDebug("Devices using profile '{ProfileName}': 0 (registry integration pending)", profileName);
+
+            return Enumerable.Empty<int>();
+        }
+
+        /// <summary>
+        /// Copy settings from SkySettings to SettingsProfile
+        /// Helper method for SaveProfileSettingsAsync
+        /// </summary>
+        private void CopySettingsToProfile(SkySettings settings, SettingsProfile profile)
+        {
+            // Replace the entire Settings object
+            profile.Settings = settings;
+            profile.LastModified = DateTime.UtcNow;
+
+            _logger.LogDebug("Copied settings to profile: {ProfileName}", profile.Name);
+        }
+
+        /// <summary>
+        /// Create a new SettingsProfile from SkySettings
+        /// Helper method for SaveProfileSettingsAsync
+        /// </summary>
+        private SettingsProfile CreateProfileFromSettings(string profileName, SkySettings settings)
+        {
+            // Parse alignment mode from settings string
+            AlignmentMode alignmentMode;
+            if (!Enum.TryParse<AlignmentMode>(settings.AlignmentMode, out alignmentMode))
+            {
+                // Default to AltAz if parsing fails
+                alignmentMode = AlignmentMode.AltAz;
+                _logger.LogWarning("Failed to parse alignment mode '{AlignmentMode}' for profile '{ProfileName}', defaulting to AltAz", 
+                    settings.AlignmentMode, profileName);
+            }
+
+            var profile = new SettingsProfile
+            {
+                Name = profileName,
+                DisplayName = profileName,
+                Description = $"Profile created from remote client",
+                AlignmentMode = alignmentMode,
+                Settings = settings,
+                IsReadOnly = false,
+                Created = DateTime.UtcNow,
+                LastModified = DateTime.UtcNow
+            };
+
+            _logger.LogDebug("Created profile from settings: {ProfileName}", profileName);
+            return profile;
+        }
+
         #endregion
     }
 }

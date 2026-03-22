@@ -123,5 +123,38 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <param name="profileName">Profile name (without .profile.json extension)</param>
         /// <returns>True if profile exists, false otherwise</returns>
         bool ProfileExists(string profileName);
+
+        /// <summary>
+        /// Get profile details with metadata (used by remote client API)
+        /// Phase 4.10: Returns profile settings with additional metadata
+        /// </summary>
+        /// <param name="profileName">Profile name</param>
+        /// <returns>Profile details including settings and metadata</returns>
+        Task<SettingsProfile> GetProfileDetailsAsync(string profileName);
+
+        /// <summary>
+        /// Save profile settings (used by remote client API)
+        /// Phase 4.10: Allows external clients to create/update profiles
+        /// </summary>
+        /// <param name="profileName">Profile name</param>
+        /// <param name="settings">SkySettings to save</param>
+        /// <param name="overwrite">If true, overwrite existing profile</param>
+        Task SaveProfileSettingsAsync(string profileName, SkySettings settings, bool overwrite = false);
+
+        /// <summary>
+        /// Check if a profile is currently in use by any device
+        /// Phase 4.10: Prevents deletion of active profiles
+        /// </summary>
+        /// <param name="profileName">Profile name</param>
+        /// <returns>True if profile is in use</returns>
+        Task<bool> IsProfileInUseAsync(string profileName);
+
+        /// <summary>
+        /// Get list of device numbers using a specific profile
+        /// Phase 4.10: Shows which devices are using a profile
+        /// </summary>
+        /// <param name="profileName">Profile name</param>
+        /// <returns>Collection of device numbers</returns>
+        Task<IEnumerable<int>> GetDevicesUsingProfileAsync(string profileName);
     }
 }

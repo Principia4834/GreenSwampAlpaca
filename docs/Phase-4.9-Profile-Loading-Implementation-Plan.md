@@ -29,8 +29,7 @@
 
 Phase 4.9 implements **per-device configuration loading** from profile JSON files. Currently, all devices use identical default settings from `appsettings.json`, making the `ProfileName` field in device configuration meaningless. This phase enables each device to load custom settings from its specified profile, allowing:
 
-- **Reserved Slot 0:** Simulator in AltAz mode
-- **Reserved Slot 1:** Simulator in GEM mode (or physical mount configuration)
+Now plan PaHSE 4.10 = D NO- **Reserved Slot 1:** Simulator in GEM mode (or physical mount configuration)
 - **Dynamic Slots (2+):** Custom configurations per device
 
 ### Why is This Important?

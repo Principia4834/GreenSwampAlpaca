@@ -1,0 +1,316 @@
+@using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.MountControl
+@inject ISettingsProfileService ProfileService
+@inject ILogger<ProfileSwitcher> Logger
+
+<!-- Profile Switcher Modal -->
+@if (ShowModal && Device != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Profile for Device @Device.DeviceNumber</h5>
+                    <button type="button" class="btn-close" @onclick="Cancel"></button>
+                </div>
+                <div class="modal-body">
+                    @if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> @errorMessage
+                        </div>
+                    }
+
+                    @if (Device.IsReserved)
+                    {
+                        <div class="alert alert-warning">
+                            <span class="oi oi-warning"></span>
+                            <strong>Reserved Slot:</strong> Changing profiles for reserved slots (0, 1) requires server restart.
+                            This feature is only available for dynamic devices (2+).
+                        </div>
+                    }
+                    else if (Device.Connected)
+                    {
+                        <div class="alert alert-warning">
+                            <span class="oi oi-warning"></span>
+                            <strong>Device Connected:</strong> Please disconnect the device before changing its profile.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Current Profile:</strong></label>
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <strong>@currentProfile?.DisplayName</strong> (@currentProfile?.Name)
+                                    <br/>
+                                    <small class="text-muted">
+                                        Alignment: @currentProfile?.AlignmentMode | Mount: @currentProfile?.Settings.Mount
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (loading)
+                        {
+                            <div class="text-center py-3">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading profiles...</span>
+                                </div>
+                            </div>
+                        }
+                        else if (availableProfiles != null && availableProfiles.Any())
+                        {
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Select New Profile:</strong></label>
+                                <div class="list-group">
+                                    @foreach (var profile in availableProfiles)
+                                    {
+                                        <button type="button" 
+                                                class="list-group-item list-group-item-action @(selectedProfile?.Name == profile.Name ? "active" : "")"
+                                                @onclick="() => SelectProfile(profile)">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1">@profile.DisplayName</h6>
+                                                    <small>
+                                                        <strong>Alignment:</strong> @profile.AlignmentMode | 
+                                                        <strong>Mount:</strong> @profile.Settings.Mount
+                                                    </small>
+                                                </div>
+                                                @if (selectedProfile?.Name == profile.Name)
+                                                {
+                                                    <span class="badge bg-primary">Selected</span>
+                                                }
+                                            </div>
+                                            @if (!string.IsNullOrWhiteSpace(profile.Description))
+                                            {
+                                                <p class="mb-0 mt-1"><small class="text-muted">@profile.Description</small></p>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (selectedProfile != null && selectedProfile.Name != currentProfile?.Name)
+                            {
+                                <div class="alert alert-info">
+                                    <span class="oi oi-info"></span>
+                                    <strong>Preview:</strong> Switching to <strong>@selectedProfile.DisplayName</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>Mount Type:</strong> @selectedProfile.Settings.Mount</li>
+                                        <li><strong>Alignment:</strong> @selectedProfile.AlignmentMode</li>
+                                        <li><strong>Location:</strong> @selectedProfile.Settings.Latitude.ToString("F5")°, @selectedProfile.Settings.Longitude.ToString("F5")°</li>
+                                        @if (selectedProfile.Settings.Mount != "Simulator")
+                                        {
+                                            <li><strong>Port:</strong> @selectedProfile.Settings.Port at @selectedProfile.Settings.BaudRate baud</li>
+                                        }
+                                    </ul>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <span class="oi oi-warning"></span>
+                                    <strong>Warning:</strong> The device will be reinitialized with the new profile settings.
+                                    Any unsaved telescope state will be lost.
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                No other profiles available. Create a new profile first.
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            @onclick="ApplyProfileChange"
+                            disabled="@(switching || Device.IsReserved || Device.Connected || selectedProfile == null || selectedProfile.Name == currentProfile?.Name)">
+                        @if (switching)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-circle-check me-2"></span>
+                        }
+                        Apply New Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public DeviceInfo? Device { get; set; }
+
+    [Parameter]
+    public bool ShowModal { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnProfileChanged { get; set; }
+
+    private SettingsProfile? currentProfile;
+    private SettingsProfile? selectedProfile;
+    private List<SettingsProfile>? availableProfiles;
+    private bool loading = false;
+    private bool switching = false;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ShowModal && Device != null)
+        {
+            await LoadProfiles();
+        }
+    }
+
+    private async Task LoadProfiles()
+    {
+        try
+        {
+            loading = true;
+            errorMessage = null;
+
+            // Load current profile
+            if (!string.IsNullOrWhiteSpace(Device?.ProfileName))
+            {
+                currentProfile = await ProfileService.GetProfileAsync(Device.ProfileName);
+            }
+
+            // Load all available profiles
+            var allProfiles = (await ProfileService.GetAllProfilesAsync()).ToList();
+            
+            // Filter out current profile from selection
+            availableProfiles = allProfiles
+                .Where(p => p.Name != currentProfile?.Name)
+                .OrderBy(p => p.DisplayName)
+                .ToList();
+
+            selectedProfile = null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load profiles for device {DeviceNumber}", Device?.DeviceNumber);
+            errorMessage = $"Failed to load profiles: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void SelectProfile(SettingsProfile profile)
+    {
+        selectedProfile = profile;
+        errorMessage = null;
+    }
+
+    private async Task ApplyProfileChange()
+    {
+        if (Device == null || selectedProfile == null) return;
+
+        try
+        {
+            switching = true;
+            errorMessage = null;
+
+            // Validate the selected profile
+            var validation = await ProfileService.ValidateProfileAsync(selectedProfile);
+            if (!validation.IsValid)
+            {
+                errorMessage = $"Profile validation failed: {validation.ErrorMessage}";
+                return;
+            }
+
+            // Get the mount instance for this device
+            var instance = MountInstanceRegistry.GetInstance(Device.DeviceNumber);
+            if (instance == null)
+            {
+                errorMessage = $"Mount instance for device {Device.DeviceNumber} not found.";
+                return;
+            }
+
+            // TODO Phase 4.10: Runtime profile switching implementation
+            // This requires reloading the mount instance with the new profile
+            // For now, we'll just update the profile name reference
+            // Full implementation requires mount reinitialization (Phase 5.x architectural work)
+
+            // Update the device's profile name
+            Device.ProfileName = selectedProfile.Name;
+
+            Logger.LogInformation(
+                "Profile reference changed for device {DeviceNumber}: {OldProfile} -> {NewProfile}. Note: Mount reinitialize required for settings to take effect.",
+                Device.DeviceNumber,
+                currentProfile?.Name,
+                selectedProfile.Name);
+
+            errorMessage = "Profile reference updated. Note: Full runtime profile switching requires server restart for now (Phase 5.x enhancement).";
+
+            // TODO: In Phase 5.x, implement proper instance reload:
+            // 1. Disconnect device if connected
+            // 2. Dispose current mount instance
+            // 3. Create new instance with new profile
+            // 4. Reinitialize mount
+            // 5. Optionally reconnect
+
+            Logger.LogInformation(
+                "Profile changed for device {DeviceNumber}: {OldProfile} -> {NewProfile}",
+                Device.DeviceNumber,
+                currentProfile?.Name,
+                selectedProfile.Name);
+
+            // Notify parent component
+            if (OnProfileChanged.HasDelegate)
+            {
+                await OnProfileChanged.InvokeAsync(selectedProfile.Name);
+            }
+
+            // Close modal
+            await Close();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to change profile for device {DeviceNumber}", Device.DeviceNumber);
+            errorMessage = $"Failed to change profile: {ex.Message}";
+        }
+        finally
+        {
+            switching = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await Close();
+    }
+
+    private async Task Close()
+    {
+        selectedProfile = null;
+        errorMessage = null;
+        
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    // Device info model for display
+    public class DeviceInfo
+    {
+        public int DeviceNumber { get; set; }
+        public string DeviceName { get; set; } = string.Empty;
+        public string ProfileName { get; set; } = string.Empty;
+        public bool Connected { get; set; }
+        public bool IsReserved => DeviceNumber < 2;
+    }
+}
