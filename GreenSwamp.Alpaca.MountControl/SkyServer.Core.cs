@@ -57,8 +57,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private const double SiderealRate = 15.0410671786691;
 
-        private static readonly object TimerLock = new object();
-        private static MediaTimer _mediaTimer;
         private static MediaTimer _altAzTrackingTimer;
         private static Int32 _altAzTrackingLock;
         // Default mount instance for backward compatibility
@@ -112,11 +110,27 @@ namespace GreenSwamp.Alpaca.MountControl
         // ToDo: Remove if not needed
         // public static readonly AlignmentModel AlignmentModel;
 
-        // Cancellation token sources for go to and pulse guide async operations
-        private static volatile CancellationTokenSource _ctsGoTo;
-        private static volatile CancellationTokenSource _ctsPulseGuideRa;
-        private static volatile CancellationTokenSource _ctsPulseGuideDec;
-        private static volatile CancellationTokenSource _ctsHcPulseGuide;
+        // Phase 5.3: CancellationTokenSources — delegate to default instance to prevent cross-device cancellation
+        private static CancellationTokenSource? _ctsGoTo
+        {
+            get => _defaultInstance?._ctsGoTo;
+            set { if (_defaultInstance != null) _defaultInstance._ctsGoTo = value; }
+        }
+        private static CancellationTokenSource? _ctsPulseGuideRa
+        {
+            get => _defaultInstance?._ctsPulseGuideRa;
+            set { if (_defaultInstance != null) _defaultInstance._ctsPulseGuideRa = value; }
+        }
+        private static CancellationTokenSource? _ctsPulseGuideDec
+        {
+            get => _defaultInstance?._ctsPulseGuideDec;
+            set { if (_defaultInstance != null) _defaultInstance._ctsPulseGuideDec = value; }
+        }
+        private static CancellationTokenSource? _ctsHcPulseGuide
+        {
+            get => _defaultInstance?._ctsHcPulseGuide;
+            set { if (_defaultInstance != null) _defaultInstance._ctsHcPulseGuide = value; }
+        }
 
         // Phase 4.1: Delegating properties for instance state
         /// <summary>
@@ -340,7 +354,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Main get for the Steps
         /// Delegated to instance
         /// </summary>
-        private static void UpdateSteps()
+        internal static void UpdateSteps()
         {
             _defaultInstance?.UpdateSteps();
         }
@@ -687,63 +701,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Update the Server and UI from the axis positions
-        /// Main position update loop - runs every display interval
+        /// Phase 5.4: Delegates to instance-owned OnUpdateServerEvent for per-device lock isolation.
         /// </summary>
         internal static void UpdateServerEvent(object sender, EventArgs e)
         {
-            var hasLock = false;
-            try
-            {
-                // Stops the overrun of previous event not ended before next one starts
-                Monitor.TryEnter(TimerLock, ref hasLock);
-                if (!hasLock)
-                {
-                    TimerOverruns++;
-                    return;
-                }
-
-                LoopCounter++; // increment counter
-
-                SiderealTime = GetLocalSiderealTime(); // the time is?
-
-                UpdateSteps(); // get step from the mount
-
-                Lha = Coordinate.Ra2Ha12(RightAscensionXForm, SiderealTime);
-
-                CheckSlewState(); // Track slewing state
-
-                CheckAxisLimits(); //used for warning light
-
-                // ToDo: Remove if not needed
-                // CheckSpiralLimit(); // reset spiral if moved too far
-
-                // Update UI 
-                CheckPecTraining();
-                IsHome = AtHome;
-
-                switch (_settings!.AlignmentMode)
-                {
-                    case AlignmentMode.AltAz:
-                        IsSideOfPier = SideOfPier;
-                        break;
-                    case AlignmentMode.Polar:
-                        IsSideOfPier = SideOfPier;
-                        break;
-                    case AlignmentMode.GermanPolar:
-                        IsSideOfPier = SideOfPier;
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                SkyErrorHandler(ex);
-            }
-            finally
-            {
-                if (hasLock) { Monitor.Exit(TimerLock); }
-            }
+            _defaultInstance?.OnUpdateServerEvent(sender, e);
         }
 
         /// <summary>
@@ -780,7 +742,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Get current local sidereal time
         /// </summary>
-        private static double GetLocalSiderealTime()
+        internal static double GetLocalSiderealTime()
         {
             return GetLocalSiderealTime(HiResDateTime.UtcNow);
         }
@@ -1695,131 +1657,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             LimitStatus.AtLowerLimitAxisY = RawPositions[1] <= axisLowerLimitY - oneArcSec;
             LimitStatus.AtUpperLimitAxisY = RawPositions[1] >= axisUpperLimitY + oneArcSec;
-        }
-
-        /// <summary>
-        /// pPEC Monitors the mount doing pPEC training
-        /// </summary>
-        private static void CheckPecTraining()
-        {
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    break;
-                case MountType.SkyWatcher:
-                    if (!PecTraining)
-                    {
-                        PecTrainInProgress = false;
-                        return;
-                    }
-
-                    var ppectrain = new SkyIsPPecInTrainingOn(SkyQueue.NewId);
-                    if (bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(ppectrain).Result), out bool bTrain))
-                    {
-                        PecTraining = bTrain;
-                        PecTrainInProgress = bTrain;
-                        if (!bTrain && PPecOn) //restart pec
-                        {
-                            PPecOn = false;
-                            PPecOn = true;
-                        }
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        /// <summary>
-        /// Pec Implement
-        /// </summary>
-        private static void PecCheck()
-        {
-            try
-            {
-                if (!PecOn || !Tracking || PecBinCount < 0 || IsSlewing || !PecShow) return;
-
-                // Get axis position and range it
-                var position = (int)Range.RangeDouble(Steps[0], Convert.ToDouble(StepsPerRevolution[0]));
-
-                // calc current bin number
-                var newBinNo = (int)((position + _settings!.PecOffSet) / PecBinSteps);
-
-                // Holder for new bin
-                Tuple<double, int> pecBin = null;
-
-                switch (_settings!.PecMode)
-                {
-                    case PecMode.PecWorm:
-                        newBinNo %= 100;
-                        // No bin change return
-                        if (PecBinNow?.Item1 == newBinNo) return;
-                        if (PecWormMaster == null || PecWormMaster?.Count == 0) { return; }
-                        PecWormMaster?.TryGetValue(newBinNo, out pecBin);
-                        break;
-                    case PecMode.Pec360:
-                        // No bin change return
-                        if (PecBinNow?.Item1 == newBinNo) return;
-                        if (Pec360Master == null || Pec360Master?.Count == 0) { return; }
-                        if (PecBinsSubs == null) { PecBinsSubs = new SortedList<int, Tuple<double, int>>(); }
-                        var count = 0;
-                        // search subs for new bin
-                        while (PecBinsSubs.TryGetValue(newBinNo, out pecBin) == false && count < 2)
-                        {
-                            // stay within limits
-                            var binStart = newBinNo - 100 < 0 ? 0 : newBinNo - 100;
-                            var binEnd = newBinNo + 100 > StepsPerRevolution[0] - 1  //adjust for going over max?
-                                ? (int)StepsPerRevolution[0] - 1
-                                : newBinNo + 100;
-
-                            // create sub list
-                            PecBinsSubs.Clear();
-                            for (var i = binStart; i <= binEnd; i++)
-                            {
-                                var mi = Tuple.Create(0.0, 0);
-                                var masterResult = Pec360Master != null && Pec360Master.TryGetValue(i, out mi);
-                                if (masterResult) PecBinsSubs.Add(i, mi);
-                            }
-
-                            count++;
-                        }
-                        if (PecBinsSubs.Count == 0)
-                        {
-                            throw new Exception($"Pec sub not found");
-                        }
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                // bin must exist or throw error
-                if (pecBin == null) { throw new Exception($"Pec not found"); }
-
-                var binNew = new Tuple<int, double, int>(newBinNo, pecBin.Item1, pecBin.Item2);
-
-                // assign new bin info
-                PecBinNow = binNew;
-
-                // Send to mount
-                SetTracking();
-            }
-            catch (Exception ex)
-            {
-                PecOn = false;
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Error,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{ex.Message}|{ex.StackTrace}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-                MountError = ex;
-            }
-
         }
 
 

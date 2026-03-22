@@ -144,7 +144,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public static double SiderealTime
         {
             get => _defaultInstance?.SiderealTime ?? 0.0;
-            private set
+            internal set
             {
                 if (_defaultInstance == null) return;
                 _defaultInstance.SiderealTime = value;
@@ -158,7 +158,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public static double Lha
         {
             get => _defaultInstance?.Lha ?? 0.0;
-            private set
+            internal set
             {
                 if (_defaultInstance == null) return;
                 if (Math.Abs(value - _defaultInstance.Lha) < 0.000000000000001) { return; }
@@ -173,7 +173,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public static PointingState IsSideOfPier
         {
             get => _defaultInstance?.IsSideOfPier ?? PointingState.Unknown;
-            private set
+            internal set
             {
                 if (_defaultInstance == null) return;
                 if (value == _defaultInstance.IsSideOfPier) return;
@@ -1532,29 +1532,18 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region SlewController Integration
 
-        private static SlewController? _slewController;
+        // Phase 5.3: SlewController — delegate to default instance
+        private static SlewController? _slewController
+        {
+            get => _defaultInstance?._slewController;
+        }
 
         /// <summary>
         /// Ensures the SlewController is initialized.
         /// </summary>
         private static void EnsureSlewController()
         {
-            if (_slewController == null)
-            {
-                _slewController = new SlewController();
-
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Server,
-                    Type = MonitorType.Information,
-                    Method = nameof(EnsureSlewController),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = "SlewController initialized"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-            }
+            _defaultInstance?.EnsureSlewController();
         }
 
         /// <summary>
@@ -1566,9 +1555,9 @@ namespace GreenSwamp.Alpaca.MountControl
             SlewType slewType,
             bool tracking = false)
         {
-            EnsureSlewController();
-            var operation = new SlewOperation(target, slewType, tracking);
-            return await _slewController!.ExecuteSlewAsync(operation);
+            if (_defaultInstance == null)
+                return SlewResult.Failed("No mount instance available");
+            return await _defaultInstance.SlewAsync(target, slewType, tracking);
         }
 
         /// <summary>
@@ -1580,18 +1569,9 @@ namespace GreenSwamp.Alpaca.MountControl
             SlewType slewType,
             bool tracking = false)
         {
-            EnsureSlewController();
-
-            var operation = new SlewOperation(target, slewType, tracking);
-            var setupResult = _slewController!.ExecuteSlewAsync(operation).Result;
-
-            if (!setupResult.CanProceed)
-            {
-                throw new InvalidOperationException($"Slew setup failed: {setupResult.ErrorMessage}");
-            }
-
-            // Wait for slew to complete
-            _slewController.WaitForSlewCompletionAsync().Wait();
+            if (_defaultInstance == null)
+                throw new InvalidOperationException("No mount instance available");
+            _defaultInstance.SlewSync(target, slewType, tracking);
         }
 
         /// <summary>
@@ -1599,10 +1579,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static async Task WaitForSlewCompletionAsync()
         {
-            if (_slewController != null)
-            {
-                await _slewController.WaitForSlewCompletionAsync();
-            }
+            if (_defaultInstance != null)
+                await _defaultInstance.WaitForSlewCompletionAsync();
         }
 
         /// <summary>
@@ -3011,7 +2989,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// The flip angle is 180 degrees away from the home angle and the slew limit can positive or negative.
         /// GEM mounts check the hour angle limit.
         /// </summary>
-        private static void CheckAxisLimits()
+        internal static void CheckAxisLimits()
         {
             var limitHitX = false;
             var limitHitY = false;
@@ -3188,7 +3166,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Slew state based on axis status
         /// </summary>
-        private static void CheckSlewState()
+        internal static void CheckSlewState()
         {
             var slewing = false;
             switch (SlewState)

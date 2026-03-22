@@ -32,7 +32,7 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Instance-based mount controller that initially delegates to static SkyServer.
     /// This class will gradually take over implementation from static methods in Phase 3.2+.
     /// </summary>
-    public class MountInstance : IMountController
+    public partial class MountInstance : IMountController
     {
         #region Private backing fields
 
@@ -100,6 +100,18 @@ namespace GreenSwamp.Alpaca.MountControl
         // Phase 4.3: Tracking state fields
         private bool _tracking;
         private TrackingMode _trackingMode = TrackingMode.Off;
+
+        // Phase 5.3: CancellationTokenSources (per-instance — prevents cross-device cancellation)
+        internal volatile CancellationTokenSource? _ctsGoTo;
+        internal volatile CancellationTokenSource? _ctsPulseGuideRa;
+        internal volatile CancellationTokenSource? _ctsPulseGuideDec;
+        internal volatile CancellationTokenSource? _ctsHcPulseGuide;
+
+        // Phase 5.3: SlewController — per-instance to isolate slew state across devices
+        internal SlewController? _slewController;
+
+        // Phase 5.4: Per-instance timer lock (isolates update loop re-entrancy per device)
+        private readonly object _timerLock = new object();
 
         // SkyWatcher tracking rates (internal use only)
         internal Vector _skyHcRate = new Vector(0, 0);
@@ -430,7 +442,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
                     decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
                     _wormTeethCount = new[] { raWormTeeth, decWormTeeth };
-                    _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / SkyServer.PecBinCount;
+                    _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
                     // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
                     while (rawPositions == null)
@@ -566,9 +578,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
                     decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
                     _wormTeethCount = new[] { raWormTeeth, decWormTeeth };
-                    _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / SkyServer.PecBinCount;
+                    _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
-                    SkyServer.CalcCustomTrackingOffset();  //generates rates for the custom gearing offsets
+                    SkyServer.CalcCustomTrackingOffset();
 
                     // Initialize slew speeds
                     SkyServer.SetSlewRates(_settings.MaxSlewRate);
@@ -650,16 +662,15 @@ namespace GreenSwamp.Alpaca.MountControl
 
             //Load Pec Files
             var pecmsg = string.Empty;
-            SkyServer.PecOn = _settings.PecOn;
             if (File.Exists(_settings.PecWormFile))
             {
-                SkyServer.LoadPecFile(_settings.PecWormFile);
+                LoadPecFile(_settings.PecWormFile);
                 pecmsg += _settings.PecWormFile;
             }
 
             if (File.Exists(_settings.Pec360File))
             {
-                SkyServer.LoadPecFile(_settings.Pec360File);
+                LoadPecFile(_settings.Pec360File);
                 pecmsg += ", " + _settings.Pec360File;
             }
 
@@ -1147,7 +1158,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Ensure DisplayInterval is valid for MediaTimer (must be > 0)
                 var displayInterval = _settings.DisplayInterval > 0 ? _settings.DisplayInterval : 200;
                 _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
-                _mediaTimer.Tick += SkyServer.UpdateServerEvent;
+                _mediaTimer.Tick += OnUpdateServerEvent;
                 _mediaTimer.Start();
 
                 // Event to update AltAz tracking rate
@@ -1176,7 +1187,7 @@ namespace GreenSwamp.Alpaca.MountControl
             SkyServer.Tracking = false;
             SkyServer.CancelAllAsync();
             SkyServer.AxesStopValidate();
-            if (_mediaTimer != null) { _mediaTimer.Tick -= SkyServer.UpdateServerEvent; }
+            if (_mediaTimer != null) { _mediaTimer.Tick -= OnUpdateServerEvent; }
             _mediaTimer?.Stop();
             _mediaTimer?.Dispose();
             if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= SkyServer.AltAzTrackingTimerEvent; }
@@ -1199,9 +1210,56 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // ToDo - fix cleanup
             // Dispose SlewController
-            //_slewController?.Dispose();
-            //_slewController = null;
+            _slewController?.Dispose();
+            _slewController = null;
 
+        }
+
+        /// <summary>
+        /// Phase 5.4: Instance-owned per-tick update loop.
+        /// Replaces static UpdateServerEvent body — per-instance lock prevents cross-device re-entrancy.
+        /// </summary>
+        internal void OnUpdateServerEvent(object sender, EventArgs e)
+        {
+            var hasLock = false;
+            try
+            {
+                Monitor.TryEnter(_timerLock, ref hasLock);
+                if (!hasLock)
+                {
+                    SkyServer.TimerOverruns++;
+                    return;
+                }
+
+                SkyServer.LoopCounter++;
+                SkyServer.SiderealTime = SkyServer.GetLocalSiderealTime();
+                SkyServer.UpdateSteps();
+                SkyServer.Lha = Coordinate.Ra2Ha12(SkyServer.RightAscensionXForm, SkyServer.SiderealTime);
+                SkyServer.CheckSlewState();
+                SkyServer.CheckAxisLimits();
+                // ToDo: Remove if not needed
+                // SkyServer.CheckSpiralLimit();
+                CheckPecTraining();
+                SkyServer.IsHome = SkyServer.AtHome;
+                switch (_settings.AlignmentMode)
+                {
+                    case AlignmentMode.AltAz:
+                    case AlignmentMode.Polar:
+                    case AlignmentMode.GermanPolar:
+                        SkyServer.IsSideOfPier = SkyServer.SideOfPier;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                SkyServer.SkyErrorHandler(ex);
+            }
+            finally
+            {
+                if (hasLock) { Monitor.Exit(_timerLock); }
+            }
         }
 
         #endregion
@@ -1828,6 +1886,66 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 // Expected when operation is cancelled
             }
+        }
+
+        #endregion
+        #region SlewController (Phase 5.3)
+
+        /// <summary>
+        /// Ensures the SlewController is initialized for this instance.
+        /// </summary>
+        internal void EnsureSlewController()
+        {
+            if (_slewController == null)
+            {
+                _slewController = new SlewController();
+
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = nameof(EnsureSlewController),
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"SlewController initialized|Instance:{_id}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+        }
+
+        /// <summary>
+        /// Modern async slew implementation using SlewController.
+        /// Returns immediately after setup phase completes (&lt; 1 second).
+        /// </summary>
+        internal async Task<SlewResult> SlewAsync(double[] target, SlewType slewType, bool tracking = false)
+        {
+            EnsureSlewController();
+            var operation = new SlewOperation(target, slewType, tracking);
+            return await _slewController!.ExecuteSlewAsync(operation);
+        }
+
+        /// <summary>
+        /// Synchronous wrapper — blocks until slew completes.
+        /// Used for synchronous ASCOM methods (FindHome, SlewToCoordinates).
+        /// </summary>
+        internal void SlewSync(double[] target, SlewType slewType, bool tracking = false)
+        {
+            EnsureSlewController();
+            var operation = new SlewOperation(target, slewType, tracking);
+            var setupResult = _slewController!.ExecuteSlewAsync(operation).Result;
+            if (!setupResult.CanProceed)
+                throw new InvalidOperationException($"Slew setup failed: {setupResult.ErrorMessage}");
+            _slewController.WaitForSlewCompletionAsync().Wait();
+        }
+
+        /// <summary>
+        /// Wait for current slew to complete (for async operations that need completion).
+        /// </summary>
+        internal async Task WaitForSlewCompletionAsync()
+        {
+            if (_slewController != null)
+                await _slewController.WaitForSlewCompletionAsync();
         }
 
         #endregion

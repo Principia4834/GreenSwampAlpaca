@@ -89,18 +89,13 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static bool _pecShow;
         /// <summary>
         /// sets up bool to load a test tab
         /// </summary>
         public static bool PecShow
         {
-            get => _pecShow;
-            set
-            {
-                _pecShow = value;
-                OnStaticPropertyChanged();
-            }
+            get => _defaultInstance?._pecShow ?? false;
+            set { if (_defaultInstance == null) return; _defaultInstance._pecShow = value; OnStaticPropertyChanged(); }
         }
 
         /// <summary>
@@ -108,28 +103,28 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal static bool PecOn
         {
-            get => _settings!.PecOn;
+            get => _defaultInstance?.Settings.PecOn ?? false;
             set
             {
-                _settings!.PecOn = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance.Settings.PecOn = value;
                 // set back to normal tracking
                 if (!value && Tracking) { SetTracking(); }
                 OnStaticPropertyChanged();
             }
         }
 
-        private static Tuple<int, double, int> _pecBinNow;
-
         /// <summary>
         /// Pec Currently used bin for Pec
         /// </summary>
         public static Tuple<int, double, int> PecBinNow
         {
-            get => _pecBinNow;
-            private set
+            get => _defaultInstance?._pecBinNow;
+            internal set
             {
-                if (Equals(_pecBinNow, value)) { return; }
-                _pecBinNow = value;
+                if (_defaultInstance == null) return;
+                if (Equals(_defaultInstance._pecBinNow, value)) { return; }
+                _defaultInstance._pecBinNow = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -137,22 +132,22 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Pec Worm count bins
         /// </summary>
-        internal static int PecBinCount { get; set; }
-
-        /// <summary>
-        /// Pec size by steps
-        /// </summary>
-        private static double PecBinSteps { get; set; }
+        internal static int PecBinCount
+        {
+            get => _defaultInstance?.PecBinCount ?? 0;
+            set { if (_defaultInstance != null) _defaultInstance.PecBinCount = value; }
+        }
 
         /// <summary>
         /// Turn on/off mount PPec
         /// </summary>
-        private static bool PPecOn
+        internal static bool PPecOn
         {
-            get => _settings!.PPecOn;
+            get => _defaultInstance?.Settings.PPecOn ?? false;
             set
             {
-                _settings!.PPecOn = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance.Settings.PPecOn = value;
                 SkyTasks(MountTaskName.Pec);
                 OnStaticPropertyChanged();
             }
@@ -161,17 +156,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// turn on/off mount training
         /// </summary>
-        private static bool _pPecTraining;
-        private static bool PecTraining
+        internal static bool PecTraining
         {
-            get => _pPecTraining;
+            get => _defaultInstance?._pPecTraining ?? false;
             set
             {
-                if (PecTraining == value) return;
-                _pPecTraining = value;
-                // ToDo reimplement voice synthesis later
-                // Synthesizer.Speak(value ? Application.Current.Resources["vcePeckTrainOn"].ToString() : Application.Current.Resources["vcePeckTrainOff"].ToString());
-
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._pPecTraining == value) return;
+                _defaultInstance._pPecTraining = value;
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
@@ -183,7 +175,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = $"{value}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
-
                 SkyTasks(MountTaskName.PecTraining);
                 OnStaticPropertyChanged();
             }
@@ -192,15 +183,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Tracks training within mount
         /// </summary>
-        private static bool _pPecTrainInProgress;
         public static bool PecTrainInProgress
         {
-            get => _pPecTrainInProgress;
-            private set
+            get => _defaultInstance?._pPecTrainInProgress ?? false;
+            internal set
             {
-                if (_pPecTrainInProgress == value) return;
-                _pPecTrainInProgress = value;
-
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._pPecTrainInProgress == value) return;
+                _defaultInstance._pPecTrainInProgress = value;
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
@@ -212,7 +202,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = $"{value}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
-
                 OnStaticPropertyChanged();
             }
         }
@@ -220,439 +209,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Pec 360 mode, list that holds all pec rate factors
         /// </summary>
-        public static SortedList<int, Tuple<double, int>> Pec360Master { get; private set; }
-
-        /// <summary>
-        /// Pec bin list that holds subset of the mater list, used as a cache
-        /// </summary>
-        private static SortedList<int, Tuple<double, int>> PecBinsSubs { get; set; }
-
-
-        private class PecBinData
-        {
-            public int BinNumber { get; set; }
-            public double BinFactor { get; set; }
-            public int BinUpdates { get; set; }
-        }
-
-        private enum PecStatus
-        {
-            Good = 0,
-            Ok = 1,
-            Warning = 2,
-            NotSoGood = 3,
-            Bad = 4
-        }
-
-        private enum PecMergeType
-        {
-            Replace = 0,
-            Merge = 1,
-        }
-
-        private class PecTrainingDefinition
-        {
-            public PecFileType FileType { get; set; }
-            public int Index { get; set; }
-            public int Cycles { get; set; }
-            public DateTime StartTime { get; set; }
-            public DateTime EndTime { get; set; }
-            public double StartPosition { get; set; }
-            public double EndPosition { get; set; }
-            public double PositionOffset { get; set; }
-            public double Ra { get; set; }
-            public double Dec { get; set; }
-            public double TrackingRate { get; set; }
-            public int BinCount { get; set; }
-            public double BinSteps { get; set; }
-            public double BinTime { get; set; }
-            public double WormPeriod { get; set; }
-            public int WormTeeth { get; set; }
-            public double WormSteps { get; set; }
-            public double StepsPerSec { get; set; }
-            public double StepsPerRev { get; set; }
-            public string FileName { get; set; }
-            public bool InvertCapture { get; set; }
-            public List<PecLogData> Log { get; set; }
-            public List<PecBinData> Bins { get; set; }
-        }
-
-        private class PecLogData
-        {
-            int Index { get; set; }
-            DateTime TimeStamp { get; set; }
-            double Position { get; set; }
-            double DeltaSteps { get; set; }
-            TimeSpan DeltaTime { get; set; }
-            double Normalized { get; set; }
-            double RateEstimate { get; set; }
-            double BinNumber { get; set; }
-            double BinEstimate { get; set; }
-            double BinFactor { get; set; }
-            private PecStatus Status { get; set; }
-        }
-
-        /// <summary>
-        /// Pec worm mode, list that holds all pec rate factors
-        /// </summary>
-        private static SortedList<int, Tuple<double, int>> PecWormMaster { get; set; }
+        public static SortedList<int, Tuple<double, int>> Pec360Master => _defaultInstance?.Pec360Master;
 
         /// <summary>
         /// Loads both types of pec files
         /// </summary>
         /// <param name="fileName"></param>
-        public static void LoadPecFile(string fileName)
-        {
-            var def = new PecTrainingDefinition();
-            var bins = new List<PecBinData>();
-
-            // load file
-            var lines = File.ReadAllLines(fileName);
-            for (var i = 0; i < lines.Length; i += 1)
-            {
-                var line = lines[i];
-                if (line.Length == 0) { continue; }
-
-                switch (line[0])
-                {
-                    case '#':
-                        var keys = line.Split('=');
-                        if (keys.Length != 2) { break; }
-
-                        switch (keys[0].Trim())
-                        {
-                            case "#StartTime":
-                                if (DateTime.TryParseExact(keys[1].Trim(), "yyyy:MM:dd:HH:mm:ss.fff",
-                                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var startTime))
-                                {
-                                    def.StartTime = startTime;
-                                }
-                                break;
-                            case "#StartPosition":
-                                if (double.TryParse(keys[1].Trim(), out var startPosition))
-                                {
-                                    def.StartPosition = startPosition;
-                                }
-                                break;
-                            case "#EndTime":
-                                if (DateTime.TryParseExact(keys[1].Trim(), "yyyy:MM:dd:HH:mm:ss.fff",
-                                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var endTime))
-                                {
-                                    def.EndTime = endTime;
-                                }
-                                break;
-                            case "#EndPosition":
-                                if (double.TryParse(keys[1].Trim(), out var endPosition))
-                                {
-                                    def.StartPosition = endPosition;
-                                }
-                                break;
-                            case "#Index":
-                                if (int.TryParse(keys[1].Trim(), out var index))
-                                {
-                                    def.Index = index;
-                                }
-                                break;
-                            case "#Cycles":
-                                if (int.TryParse(keys[1].Trim(), out var cycles))
-                                {
-                                    def.Cycles = cycles;
-                                }
-                                break;
-                            case "#WormPeriod":
-                                if (double.TryParse(keys[1].Trim(), out var wormPeriod))
-                                {
-                                    def.WormPeriod = wormPeriod;
-                                }
-                                break;
-                            case "#WormTeeth":
-                                if (int.TryParse(keys[1].Trim(), out var wormTeeth))
-                                {
-                                    def.WormTeeth = wormTeeth;
-                                }
-                                break;
-                            case "#WormSteps":
-                                if (double.TryParse(keys[1].Trim(), out var wormSteps))
-                                {
-                                    def.WormSteps = wormSteps;
-                                }
-                                break;
-                            case "#TrackingRate":
-                                if (double.TryParse(keys[1].Trim(), out var trackingRate1))
-                                {
-                                    def.TrackingRate = trackingRate1;
-                                }
-                                break;
-                            case "#PositionOffset":
-                                if (double.TryParse(keys[1].Trim(), out var positionOffset))
-                                {
-                                    def.PositionOffset = positionOffset;
-                                }
-                                break;
-                            case "#Ra":
-                                if (double.TryParse(keys[1].Trim(), out var ra))
-                                {
-                                    def.Ra = ra;
-                                }
-                                break;
-                            case "#Dec":
-                                if (double.TryParse(keys[1].Trim(), out var dec))
-                                {
-                                    def.Dec = dec;
-                                }
-                                break;
-                            case "#BinCount":
-                                if (int.TryParse(keys[1].Trim(), out var binCount))
-                                {
-                                    def.BinCount = binCount;
-                                }
-                                break;
-                            case "#BinSteps":
-                                if (double.TryParse(keys[1].Trim(), out var binSteps))
-                                {
-                                    def.BinSteps = binSteps;
-                                }
-                                break;
-                            case "#BinTime":
-                                if (double.TryParse(keys[1].Trim(), out var binTime))
-                                {
-                                    def.BinTime = binTime;
-                                }
-                                break;
-                            case "#StepsPerSec":
-                                if (double.TryParse(keys[1].Trim(), out var stepsPerSec))
-                                {
-                                    def.StepsPerSec = stepsPerSec;
-                                }
-                                break;
-                            case "#StepsPerRev":
-                                if (double.TryParse(keys[1].Trim(), out var stepsPerRev))
-                                {
-                                    def.StepsPerRev = stepsPerRev;
-                                }
-                                break;
-                            case "#InvertCapture":
-                                if (bool.TryParse(keys[1].Trim(), out var invertCapture))
-                                {
-                                    def.InvertCapture = invertCapture;
-                                }
-                                break;
-                            case "#FileName":
-                                if (File.Exists(keys[1].Trim()))
-                                {
-                                    def.FileName = keys[1].Trim();
-                                }
-                                break;
-                            case "#FileType":
-                                if (Enum.TryParse<PecFileType>(keys[1].Trim(), true, out var fileType))
-                                {
-                                    def.FileType = fileType;
-                                }
-                                break;
-                        }
-                        break;
-                    default:
-                        var data = line.Split('|');
-                        if (data.Length != 3) { break; }
-                        var bin = new PecBinData();
-                        if (int.TryParse(data[0].Trim(), out var binNumber))
-                        {
-                            bin.BinNumber = binNumber;
-                        }
-                        if (double.TryParse(data[1].Trim(), out var binFactor))
-                        {
-                            bin.BinFactor = binFactor;
-                        }
-                        if (int.TryParse(data[2].Trim(), out var binUpdates))
-                        {
-                            bin.BinUpdates = binUpdates;
-                        }
-                        if (binFactor > 0 && binFactor < 2) { bins.Add(bin); }
-                        break;
-                }
-            }
-
-            // validate
-            var msg = string.Empty;
-            var paramError = false;
-
-            if (def.FileType != PecFileType.GsPecWorm && def.FileType != PecFileType.GsPec360)
-            {
-                paramError = true;
-                msg = $"FileType {def.FileType}";
-            }
-            if (def.BinCount != PecBinCount)
-            {
-                paramError = true;
-                msg = $"BinCount {def.BinCount}|{PecBinCount}";
-            }
-            if (Math.Abs(def.BinSteps - PecBinSteps) > 0.000000001)
-            {
-                paramError = true;
-                msg = $"BinSteps {def.BinSteps}|{PecBinSteps}";
-            }
-            if (Math.Abs((long)def.StepsPerRev - StepsPerRevolution[0]) > 0.000000001)
-            {
-                paramError = true;
-                msg = $"StepsPerRev{def.StepsPerRev}|{StepsPerRevolution[0]}";
-            }
-            if (def.WormTeeth != WormTeethCount[0])
-            {
-                paramError = true;
-                msg = $"WormTeeth {def.WormTeeth}|{WormTeethCount[0]}";
-            }
-            switch (def.FileType)
-            {
-                case PecFileType.GsPecWorm:
-                    if (def.BinCount == bins.Count) { break; }
-                    paramError = true;
-                    msg = $"BinCount {PecFileType.GsPecWorm}";
-                    break;
-                case PecFileType.GsPec360:
-                    if (bins.Count == (int)(def.StepsPerRev / def.BinSteps)) { break; }
-                    paramError = true;
-                    msg = $"BinCount {PecFileType.GsPec360}";
-                    break;
-                case PecFileType.GsPecDebug:
-                    paramError = true;
-                    msg = $"BinCount {PecFileType.GsPecDebug}";
-                    break;
-                default:
-                    paramError = true;
-                    msg = $"FileType Error";
-                    break;
-            }
-
-            if (paramError) { throw new Exception($"Error Loading Pec File ({msg})"); }
-
-            bins = CleanUpBins(bins);
-
-            // load to master
-            switch (def.FileType)
-            {
-                case PecFileType.GsPecWorm:
-                    var master = MakeWormMaster(bins);
-                    UpdateWormMaster(master, PecMergeType.Replace);
-                    _settings!.PecWormFile = fileName;
-                    break;
-                case PecFileType.GsPec360:
-                    _settings!.Pec360File = fileName;
-                    break;
-                case PecFileType.GsPecDebug:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-        }
-
-        /// <summary>
-        /// Corrects missing bins
-        /// </summary>
-        /// <returns>new list of bins</returns>
-        private static List<PecBinData> CleanUpBins(IReadOnlyCollection<PecBinData> bins)
-        {
-            if (bins == null) { return null; }
-
-            // Correct for missing bins
-            var sortedList = bins.OrderBy(o => o.BinNumber).ToList();
-            var validBins = new List<PecBinData>();
-            for (var i = sortedList[0].BinNumber; i <= sortedList[sortedList.Count - 1].BinNumber; i++)
-            {
-                var result = sortedList.Find(o => o.BinNumber == i);
-                validBins.Add(result ?? new PecBinData { BinFactor = 1.0, BinNumber = i });
-            }
-
-            validBins = validBins.OrderBy(o => o.BinNumber).ToList();
-            return validBins;
-        }
-
-        /// <summary>
-        /// Creates a new master list using 100 bins
-        /// </summary>
-        /// <param name="bins"></param>
-        /// <returns></returns>
-        private static SortedList<int, Tuple<double, int>> MakeWormMaster(IReadOnlyList<PecBinData> bins)
-        {
-            // find the start of a worm period
-            var index = 0;
-            for (var i = 0; i < bins.Count; i++)
-            {
-                var binNo = bins[i].BinNumber * 1.0 / PecBinCount;
-                var remainder = binNo % 1;
-                if (remainder != 0) { continue; }
-                index = i;
-                break;
-            }
-            if (double.IsNaN(index)) { return null; }
-
-            // create new bin set, zero based on worm start position
-            var orderBins = new List<PecBinData>();
-            for (var i = index; i < PecBinCount; i++)
-            {
-                orderBins.Add(bins[i]);
-            }
-            for (var i = 0; i < index; i++)
-            {
-                orderBins.Add(bins[i]);
-            }
-
-            // create master set of bins using train data
-            var binsMaster = new SortedList<int, Tuple<double, int>>();
-            for (var j = 0; j < PecBinCount; j++)
-            {
-                binsMaster.Add(j, new Tuple<double, int>(orderBins[j].BinFactor, 1));
-            }
-            return binsMaster;
-        }
-
-        /// <summary>
-        /// Updates the server pec master list with applied bins
-        /// </summary>
-        /// <param name="mBins"></param>
-        /// <param name="mergeType"></param>
-        private static void UpdateWormMaster(SortedList<int, Tuple<double, int>> mBins, PecMergeType mergeType)
-        {
-            if (mBins == null) { return; }
-            if (PecWormMaster == null) { mergeType = PecMergeType.Replace; }
-            if (PecWormMaster?.Count != mBins.Count) { mergeType = PecMergeType.Replace; }
-
-            switch (mergeType)
-            {
-                case PecMergeType.Replace:
-                    PecWormMaster = mBins;
-                    _settings!.PecOffSet = 0; // reset offset
-                    return;
-                case PecMergeType.Merge:
-                    var pecBins = PecWormMaster;
-                    if (pecBins == null)
-                    {
-                        PecWormMaster = mBins;
-                        _settings!.PecOffSet = 0;
-                        return;
-                    }
-                    for (var i = 0; i < mBins.Count; i++)
-                    {
-                        if (double.IsNaN(pecBins[i].Item1))
-                        {
-                            pecBins[i] = new Tuple<double, int>(mBins[i].Item1, 1);
-                            continue;
-                        }
-
-                        var updateCount = pecBins[i].Item2;
-                        if (updateCount < 1) { updateCount = 1; }
-                        updateCount++;
-                        var newFactor = (pecBins[i].Item1 * updateCount + mBins[i].Item1) / (updateCount + 1);
-                        var newBin = new Tuple<double, int>(newFactor, updateCount);
-                        pecBins[i] = newBin;
-
-                    }
-                    PecWormMaster = pecBins;
-                    return;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mergeType), mergeType, null);
-            }
-        }
+        public static void LoadPecFile(string fileName) => _defaultInstance?.LoadPecFile(fileName);
         #endregion
 
         /// <summary>
@@ -773,7 +336,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public static bool IsHome
         {
             get => _defaultInstance?._isHome ?? false;
-            private set
+            internal set
             {
                 if (_defaultInstance == null) return;
                 if (value == _defaultInstance._isHome) return;
@@ -801,7 +364,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Count number of times server loop is executed
         /// </summary>
-        public static ulong LoopCounter { get; private set; }
+        public static ulong LoopCounter { get; internal set; }
 
         /// <summary>
         /// use monitoring for charts
@@ -1023,7 +586,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var context = AxesContext.FromSettings(_settings);
 
                 //Implement Pec
-                PecCheck();
+                _defaultInstance?.PecCheck();
 
                 //Convert Positions to degrees
                 var rawPositions = new[] { ConvertStepsToDegrees(_steps[0], 0), ConvertStepsToDegrees(_steps[1], 1) };
@@ -1092,7 +655,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Counts any overlapping events with updating UI that might occur
         /// should always be 0 or event interval is too fast
         /// </summary>
-        private static int TimerOverruns { get; set; }
+        internal static int TimerOverruns { get; set; }
 
         /// <summary>
         /// Current Alt/Az tracking mode - RA/Dec predictor or calculated tracking rate
