@@ -40,8 +40,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Property Settings 
 
         #region Backers
-        private static double _actualAxisX;
-        private static double _actualAxisY;
         // private static bool _alertState;
         private static int _autoHomeProgressBar;
         private static bool _autoHomeStop;
@@ -49,16 +47,10 @@ namespace GreenSwamp.Alpaca.MountControl
         private static bool _canHomeSensor;
         private static string _capabilities;
         private static bool _isAutoHomeRunning;
-        private static bool _isHome;
         private static bool _isPulseGuidingDec;
         private static bool _isPulseGuidingRa;
         // private static bool _limitAlarm;
-        private static bool _lowVoltageEventState;
         private static bool _mountRunning;
-        private static bool _monitorPulse;
-        private static double _appAxisX;
-        private static double _appAxisY;
-        private static Exception _mountError;
         private static ParkPosition _parkSelected;
         private static bool _canPPec;
         private static bool _canPolarLed;
@@ -66,7 +58,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private static Vector _rateMoveAxes;
         private static bool _moveAxisActive;
         // private static bool _rotate3DModel;
-        private static double _slewSettleTime;
         private static bool _snapPort1Result;
         private static bool _snapPort2Result;
         private static double[] _steps = { 0.0, 0.0 };
@@ -78,10 +69,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Internal access to position update event for instance methods
         /// </summary>
-        internal static ManualResetEventSlim MountPositionUpdatedEvent => _mountPositionUpdatedEvent;        // Note: This is separate from the AppAxes property which delegates to instance
-        
-        private static Vector _appAxesInternal = new Vector(double.NaN, double.NaN);
-        
+        internal static ManualResetEventSlim MountPositionUpdatedEvent => _mountPositionUpdatedEvent;
+
         #endregion
 
         #region PEC
@@ -671,11 +660,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double ActualAxisX
         {
-            get => _actualAxisX;
+            get => _defaultInstance?._actualAxisX ?? 0.0;
             set
             {
-                if (Math.Abs(value - _actualAxisX) < 0.0001) { return; }
-                _actualAxisX = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance._actualAxisX) < 0.0001) return;
+                _defaultInstance._actualAxisX = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -685,11 +675,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double ActualAxisY
         {
-            get => _actualAxisY;
+            get => _defaultInstance?._actualAxisY ?? 0.0;
             set
             {
-                if (Math.Abs(value - _actualAxisY) < 0.0001) { return; }
-                _actualAxisY = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance._actualAxisY) < 0.0001) return;
+                _defaultInstance._actualAxisY = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -699,11 +690,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double AppAxisX
         {
-            get => _appAxisX;
+            get => _defaultInstance?._appAxes.X ?? 0.0;
             private set
             {
-                if (Math.Abs(value - _appAxisX) < 0.000000000000001) return;
-                _appAxisX = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance._appAxes.X) < 0.000000000000001) return;
+                _defaultInstance._appAxes.X = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -713,11 +705,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double AppAxisY
         {
-            get => _appAxisY;
+            get => _defaultInstance?._appAxes.Y ?? 0.0;
             private set
             {
-                if (Math.Abs(value - _appAxisY) < 0.000000000000001) return;
-                _appAxisY = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(value - _defaultInstance._appAxes.Y) < 0.000000000000001) return;
+                _defaultInstance._appAxes.Y = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -727,10 +720,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool LowVoltageEventState
         {
-            get => _lowVoltageEventState;
+            get => _defaultInstance?._lowVoltageEventState ?? false;
             private set
             {
-                _lowVoltageEventState = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._lowVoltageEventState = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -778,11 +772,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsHome
         {
-            get => _isHome;
+            get => _defaultInstance?._isHome ?? false;
             private set
             {
-                if (value == _isHome) { return; }
-                _isHome = value;
+                if (_defaultInstance == null) return;
+                if (value == _defaultInstance._isHome) return;
+                _defaultInstance._isHome = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -792,7 +787,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Static for backward compatibility only
         /// Multi-telescope: Use MountInstance._factorStep instead
         /// </summary>
-        internal static double[] FactorStep { get; set; } = { 0.0, 0.0 };
+        internal static double[] FactorStep
+        {
+            get => _defaultInstance?._factorStep ?? new double[] { 0.0, 0.0 };
+            set { if (_defaultInstance != null) _defaultInstance._factorStep = value; }
+        }
 
         /// <summary>
         /// applies backlash to pulse
@@ -809,11 +808,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool MonitorPulse
         {
-            private get => _monitorPulse;
+            private get => _defaultInstance?._monitorPulse ?? false;
             set
             {
-                if (_monitorPulse == value) return;
-                _monitorPulse = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._monitorPulse == value) return;
+                _defaultInstance._monitorPulse = value;
 
                 var monitorItem = new MonitorEntry
                 {
@@ -837,10 +837,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static Exception MountError
         {
-            get => _mountError;
+            get => _defaultInstance?._mountError;
             internal set
             {
-                _mountError = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._mountError = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -983,11 +984,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double SlewSettleTime
         {
-            get => _slewSettleTime;
+            get => _defaultInstance?._slewSettleTime ?? 0.0;
             set
             {
-                if (Math.Abs(_slewSettleTime - value) <= 0) return;
-                _slewSettleTime = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(_defaultInstance._slewSettleTime - value) <= 0) return;
+                _defaultInstance._slewSettleTime = value;
             }
         }
 
@@ -996,7 +998,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Static for backward compatibility only
         /// Multi-telescope: Use MountInstance._stepsPerRevolution instead
         /// </summary>
-        public static long[] StepsPerRevolution { get; private set; } = { 0, 0 };
+        public static long[] StepsPerRevolution
+        {
+            get => _defaultInstance?._stepsPerRevolution ?? new long[] { 0, 0 };
+            set { if (_defaultInstance != null) _defaultInstance._stepsPerRevolution = value; }
+        }
 
         /// <summary>
         /// :b Timer Freq
@@ -1034,10 +1040,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 // convert positions to local app axes
                 var axes = Axes.AxesMountToApp(rawPositions, context  );
 
-                // store local app axes to track positions (internal working copy)
-                _appAxesInternal.X = axes[0];
-                _appAxesInternal.Y = axes[1];
-
                 // UI diagnostics for local app exes
                 AppAxisX = axes[0];
                 AppAxisY = axes[1];
@@ -1064,14 +1066,22 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Total worm teeth
         /// </summary>
-        public static int[] WormTeethCount { get; private set; } = { 0, 0 };
+        public static int[] WormTeethCount
+        {
+            get => _defaultInstance?._wormTeethCount ?? new int[] { 0, 0 };
+            set { if (_defaultInstance != null) _defaultInstance._wormTeethCount = value; }
+        }
 
         /// <summary>
         /// Total worm step per 360
         /// Static for backward compatibility only
         /// Multi-telescope: Use MountInstance._stepsWormPerRevolution instead
         /// </summary>
-        public static double[] StepsWormPerRevolution { get; private set; } = { 0.0, 0.0 };
+        public static double[] StepsWormPerRevolution
+        {
+            get => _defaultInstance?._stepsWormPerRevolution ?? new double[] { 0.0, 0.0 };
+            set { if (_defaultInstance != null) _defaultInstance._stepsWormPerRevolution = value; }
+        }
 
         /// <summary>
         /// Southern alignment status

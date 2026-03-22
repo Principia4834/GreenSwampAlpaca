@@ -207,7 +207,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.AlignmentMode)
                 {
                     case AlignmentMode.AltAz:
-                        sideOfPier = _actualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
+                        sideOfPier = ActualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
                         break;
                     case AlignmentMode.Polar:
                         sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
@@ -1798,7 +1798,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var target = Axes.AxesMountToApp(GetSyncedAxes(xy), context);
 
             //get current mount position in app coordinates
-            var current = new[] { _appAxisX, _appAxisY };
+            var current = new[] { AppAxisX, AppAxisY };
             //compare ra dec / az alt to current mount position
             var a = Math.Abs(target[0]) - Math.Abs(current[0]);
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
@@ -1839,14 +1839,14 @@ namespace GreenSwamp.Alpaca.MountControl
             var target = Axes.AxesMountToApp(GetSyncedAxes(xy), context);
 
             //get current mount position in app coordinates
-            var current = new[] { _appAxisX, _appAxisY };
+            var current = new[] { AppAxisX, AppAxisY };
 
             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
             {
                 target[0] = az;
                 target[1] = alt;
-                current[0] = Range.Range360(_appAxisX);
-                current[1] = _appAxisY;
+                current[0] = Range.Range360(AppAxisX);
+                current[1] = AppAxisY;
             }
 
             //compare ra dec to current position
@@ -2836,7 +2836,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         private static PointingState GetAzDirection()
         {
-            var azDirection = _actualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
+            var azDirection = ActualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
             if (AtHome) azDirection = PointingState.Normal;
             return azDirection;
         }

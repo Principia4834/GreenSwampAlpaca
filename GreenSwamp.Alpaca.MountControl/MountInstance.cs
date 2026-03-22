@@ -46,18 +46,18 @@ namespace GreenSwamp.Alpaca.MountControl
         private MediaTimer? _altAzTrackingTimer;
         // Phase 4.1: Converted to delegating properties (fields removed, see properties below)
         private Vector _homeAxes;
-        private Vector _appAxes;
+        internal Vector _appAxes;
         private Vector _targetRaDec;
-        private Exception? _mountError;
+        internal Exception? _mountError;
         private Vector _altAzSync;
 
         // Factor steps (conversion ratios) - instance-owned
-        private double[] _factorStep = new double[2];
-        private long[] _stepsPerRevolution = new long[2];
-        private double[] _stepsWormPerRevolution = new double[2];
+        internal double[] _factorStep = new double[2];
+        internal long[] _stepsPerRevolution = new long[2];
+        internal double[] _stepsWormPerRevolution = new double[2];
 
         // PEC fields
-        private int[] _wormTeethCount = new int[2];
+        internal int[] _wormTeethCount = new int[2];
         private double _pecBinSteps;
 
 
@@ -72,6 +72,12 @@ namespace GreenSwamp.Alpaca.MountControl
         
         // Mount state
         private bool _atPark;
+        internal double _actualAxisX;
+        internal double _actualAxisY;
+        internal bool _isHome;
+        internal bool _lowVoltageEventState;
+        internal bool _monitorPulse;
+        internal double _slewSettleTime;
 
         // UpdateSteps fields
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
@@ -396,11 +402,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyServer.SimTasks(MountTaskName.Capabilities);
 
 
-                    // Copy static values to instance fields
-                    Array.Copy(SkyServer.StepsPerRevolution, _stepsPerRevolution, 2);
-                    Array.Copy(SkyServer.StepsWormPerRevolution, _stepsWormPerRevolution, 2);
-                    Array.Copy(SkyServer.FactorStep, _factorStep, 2);
-
                     // Copy capabilities from static
                     _canPPec = SkyServer.CanPPec;
                     _canHomeSensor = SkyServer.CanHomeSensor;
@@ -534,11 +535,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyServer.SkyTasks(MountTaskName.CanAdvancedCmdSupport);
                     if (SkyServer.CanPPec) SkyServer.SkyTasks(MountTaskName.Pec);
 
-
-                    // Copy static values to instance fields
-                    Array.Copy(SkyServer.StepsPerRevolution, _stepsPerRevolution, 2);
-                    Array.Copy(SkyServer.StepsWormPerRevolution, _stepsWormPerRevolution, 2);
-                    Array.Copy(SkyServer.FactorStep, _factorStep, 2);
 
                     // Copy capabilities from static
                     _canPPec = SkyServer.CanPPec;
