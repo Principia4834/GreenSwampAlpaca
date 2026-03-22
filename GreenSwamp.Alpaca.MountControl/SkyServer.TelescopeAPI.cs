@@ -361,7 +361,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static bool _isSlewing;
         /// <summary>
         /// Status for goto - delegates to SlewController if available, also checks MoveAxis activity
         /// </summary>
@@ -377,16 +376,16 @@ namespace GreenSwamp.Alpaca.MountControl
                 if ((Math.Abs(RateMovePrimaryAxis) + Math.Abs(RateMoveSecondaryAxis)) > 0)
                     return true;
 
-                // Fall back to legacy backing field
-                return _isSlewing;
+                // Fall back to instance backing field
+                return _defaultInstance?._isSlewing ?? false;
             }
             private set
             {
                 // Only update backing field if SlewController is not being used
-                if (_slewController == null)
+                if (_slewController == null && _defaultInstance != null)
                 {
-                    if (_isSlewing == value) { return; }
-                    _isSlewing = value;
+                    if (_defaultInstance._isSlewing == value) { return; }
+                    _defaultInstance._isSlewing = value;
                     OnStaticPropertyChanged();
                 }
                 // If SlewController exists, setter is a no-op (SlewController manages its own state)
@@ -448,16 +447,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsPulseGuiding => (IsPulseGuidingDec || IsPulseGuidingRa);
 
-        private static bool _flipOnNextGoto;
         /// <summary>
         /// UI Checkbox option to flip on the next goto
         /// </summary>
         public static bool FlipOnNextGoto
         {
-            get => _flipOnNextGoto;
+            get => _defaultInstance?._flipOnNextGoto ?? false;
             set
             {
-                _flipOnNextGoto = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._flipOnNextGoto = value;
 
                 var monitorItem = new MonitorEntry
                 {
@@ -475,29 +474,28 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static SlewType _slewState;
         /// <summary>
         /// Set for all types of go tos
         /// </summary>
         public static SlewType SlewState
         {
-            get => _slewState;
+            get => _defaultInstance?._slewState ?? SlewType.SlewNone;
             internal set
             {
-                _slewState = value;
+                if (_defaultInstance != null) _defaultInstance._slewState = value;
             }
         }
 
-        private static Exception _lastAutoHomeError;
         /// <summary>
         /// Checks if the auto home async process is running
         /// </summary>
-        public static Exception LastAutoHomeError
+        public static Exception? LastAutoHomeError
         {
-            get => _lastAutoHomeError;
+            get => _defaultInstance?._lastAutoHomeError;
             private set
             {
-                _lastAutoHomeError = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._lastAutoHomeError = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -986,7 +984,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
                 // Reset rates and axis movement
-                _rateMoveAxes = new Vector(0, 0);
+                if (_defaultInstance != null) _defaultInstance._rateMoveAxes = new Vector(0, 0);
                 MoveAxisActive = false;
                 if (_defaultInstance != null)
                 {
@@ -2138,19 +2136,20 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Status of primary axis move
         /// </summary>
-        public static bool MovePrimaryAxisActive => _rateMoveAxes.X != 0.0;
+        public static bool MovePrimaryAxisActive => (_defaultInstance?._rateMoveAxes.X ?? 0.0) != 0.0;
 
         /// <summary>
         /// Status of secondary axis move
         /// </summary>
-        public static bool MoveSecondaryAxisActive => _rateMoveAxes.Y != 0.0;
+        public static bool MoveSecondaryAxisActive => (_defaultInstance?._rateMoveAxes.Y ?? 0.0) != 0.0;
 
         public static bool MoveAxisActive
         {
-            get => _moveAxisActive;
+            get => _defaultInstance?._moveAxisActive ?? false;
             set
             {
-                _moveAxisActive = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._moveAxisActive = value;
                 OnStaticPropertyChanged();
             }
         }

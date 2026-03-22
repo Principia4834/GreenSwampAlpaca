@@ -62,14 +62,15 @@ namespace GreenSwamp.Alpaca.MountControl
 
 
         // Mount capabilities (instance-owned)
-        private bool _canPPec;
-        private bool _canHomeSensor;
-        private bool _canPolarLed;
-        private bool _canAdvancedCmdSupport;
-        private string _mountName = string.Empty;
-        private string _mountVersion = string.Empty;
-        private string _capabilities = string.Empty;
-        
+        // Phase 6: widened from private to internal — delegated by static SkyServer properties
+        internal bool _canPPec;
+        internal bool _canHomeSensor;
+        internal bool _canPolarLed;
+        internal bool _canAdvancedCmdSupport;
+        internal string _mountName = string.Empty;
+        internal string _mountVersion = string.Empty;
+        internal string _capabilities = string.Empty;
+
         // Mount state
         private bool _atPark;
         internal double _actualAxisX;
@@ -78,6 +79,21 @@ namespace GreenSwamp.Alpaca.MountControl
         internal bool _lowVoltageEventState;
         internal bool _monitorPulse;
         internal double _slewSettleTime;
+
+        // Phase 6: new per-instance backing fields (migrated from static SkyServer)
+        internal bool _isPulseGuidingRa;
+        internal bool _isPulseGuidingDec;
+        internal Vector _rateMoveAxes;
+        internal bool _moveAxisActive;
+        internal bool _isSlewing;
+        internal bool _flipOnNextGoto;
+        internal SlewType _slewState;
+        internal Exception? _lastAutoHomeError;
+        internal int _autoHomeProgressBar;
+        internal bool _autoHomeStop;
+        internal bool _isAutoHomeRunning;
+        internal bool _snapPort1Result;
+        internal bool _snapPort2Result;
 
         // UpdateSteps fields
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;

@@ -347,9 +347,6 @@ namespace GreenSwamp.Alpaca.MountControl
             return _defaultInstance?.GetRawSteps() ?? new[] { double.NaN, double.NaN };
         }
 
-        private static DateTime lastUpdateStepsTime = DateTime.MinValue;
-        private static object lastUpdateLock = new object();
-
         /// <summary>
         /// Main get for the Steps
         /// Delegated to instance

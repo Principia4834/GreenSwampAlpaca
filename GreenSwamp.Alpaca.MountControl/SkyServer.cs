@@ -41,25 +41,15 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Backers
         // private static bool _alertState;
-        private static int _autoHomeProgressBar;
-        private static bool _autoHomeStop;
         // private static bool _asComOn;
-        private static bool _canHomeSensor;
-        private static string _capabilities;
-        private static bool _isAutoHomeRunning;
-        private static bool _isPulseGuidingDec;
-        private static bool _isPulseGuidingRa;
         // private static bool _limitAlarm;
+        // private static bool _rotate3DModel;
+        // Phase 6: _autoHomeProgressBar, _autoHomeStop, _canHomeSensor, _capabilities,
+        //          _isAutoHomeRunning, _isPulseGuidingDec, _isPulseGuidingRa, _canPPec,
+        //          _canPolarLed, _canAdvancedCmdSupport, _rateMoveAxes, _moveAxisActive,
+        //          _snapPort1Result, _snapPort2Result moved to MountInstance backing fields.
         private static bool _mountRunning;
         private static ParkPosition _parkSelected;
-        private static bool _canPPec;
-        private static bool _canPolarLed;
-        private static bool _canAdvancedCmdSupport;
-        private static Vector _rateMoveAxes;
-        private static bool _moveAxisActive;
-        // private static bool _rotate3DModel;
-        private static bool _snapPort1Result;
-        private static bool _snapPort2Result;
         private static double[] _steps = { 0.0, 0.0 };
 
         // Position update signaling - replaces MountPositionUpdated boolean
@@ -80,11 +70,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal static bool CanPPec
         {
-            get => _canPPec;
+            get => _defaultInstance?._canPPec ?? false;
             set
             {
-                if (_canPPec == value) return;
-                _canPPec = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._canPPec == value) return;
+                _defaultInstance._canPPec = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -414,14 +405,15 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsPulseGuidingDec
         {
-            get => _isPulseGuidingDec;
+            get => _defaultInstance?._isPulseGuidingDec ?? false;
             set
             {
-                if (_isPulseGuidingDec != value)
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._isPulseGuidingDec != value)
                 {
-                    _isPulseGuidingDec = value;
+                    _defaultInstance._isPulseGuidingDec = value;
                     // reset Dec pulse guiding cancellation token source
-                    if (!_isPulseGuidingDec && _ctsPulseGuideDec != null)
+                    if (!_defaultInstance._isPulseGuidingDec && _ctsPulseGuideDec != null)
                     {
                         _ctsPulseGuideDec?.Dispose();
                         _ctsPulseGuideDec = null;
@@ -435,14 +427,15 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsPulseGuidingRa
         {
-            get => _isPulseGuidingRa;
+            get => _defaultInstance?._isPulseGuidingRa ?? false;
             set
             {
-                if (_isPulseGuidingRa != value)
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._isPulseGuidingRa != value)
                 {
-                    _isPulseGuidingRa = value;
+                    _defaultInstance._isPulseGuidingRa = value;
                     // reset Ra pulse guiding cancellation token source
-                    if (!_isPulseGuidingRa && _ctsPulseGuideRa != null)
+                    if (!_defaultInstance._isPulseGuidingRa && _ctsPulseGuideRa != null)
                     {
                         _ctsPulseGuideRa?.Dispose();
                         _ctsPulseGuideRa = null;
@@ -459,11 +452,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double RateMoveSecondaryAxis
         {
-            private get => _rateMoveAxes.Y;
+            private get => _defaultInstance?._rateMoveAxes.Y ?? 0.0;
             set
             {
-                if (Math.Abs(_rateMoveAxes.Y - value) < .0000000001) return;
-                _rateMoveAxes.Y = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(_defaultInstance._rateMoveAxes.Y - value) < .0000000001) return;
+                _defaultInstance._rateMoveAxes.Y = value;
                 CancelAllAsync();
                 // Set slewing state
                 SetRateMoveSlewState();
@@ -471,10 +465,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        _ = new CmdMoveAxisRate(0, Axis.Axis2, -_rateMoveAxes.Y);
+                        _ = new CmdMoveAxisRate(0, Axis.Axis2, -_defaultInstance._rateMoveAxes.Y);
                         break;
                     case MountType.SkyWatcher:
-                        _ = new SkyAxisSlew(0, Axis.Axis2, _rateMoveAxes.Y);
+                        _ = new SkyAxisSlew(0, Axis.Axis2, _defaultInstance._rateMoveAxes.Y);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -490,7 +484,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{_rateMoveAxes.Y}|{SkyTrackingOffset[1]}"
+                    Message = $"{_defaultInstance._rateMoveAxes.Y}|{SkyTrackingOffset[1]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -504,11 +498,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double RateMovePrimaryAxis
         {
-            private get => _rateMoveAxes.X;
+            private get => _defaultInstance?._rateMoveAxes.X ?? 0.0;
             set
             {
-                if (Math.Abs(_rateMoveAxes.X - value) < 0.0000000001) return;
-                _rateMoveAxes.X = value;
+                if (_defaultInstance == null) return;
+                if (Math.Abs(_defaultInstance._rateMoveAxes.X - value) < 0.0000000001) return;
+                _defaultInstance._rateMoveAxes.X = value;
                 CancelAllAsync();
                 // Set slewing state
                 SetRateMoveSlewState();
@@ -516,10 +511,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        _ = new CmdMoveAxisRate(0, Axis.Axis1, _rateMoveAxes.X);
+                        _ = new CmdMoveAxisRate(0, Axis.Axis1, _defaultInstance._rateMoveAxes.X);
                         break;
                     case MountType.SkyWatcher:
-                        _ = new SkyAxisSlew(0, Axis.Axis1, _rateMoveAxes.X);
+                        _ = new SkyAxisSlew(0, Axis.Axis1, _defaultInstance._rateMoveAxes.X);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -534,7 +529,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{_rateMoveAxes.X}|{SkyTrackingOffset[0]}"
+                    Message = $"{_defaultInstance._rateMoveAxes.X}|{SkyTrackingOffset[0]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -817,22 +812,24 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static bool SnapPort1Result
         {
-            get => _snapPort1Result;
+            get => _defaultInstance?._snapPort1Result ?? false;
             set
             {
-                if (_snapPort1Result == value) { return; }
-                _snapPort1Result = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._snapPort1Result == value) { return; }
+                _defaultInstance._snapPort1Result = value;
                 OnStaticPropertyChanged();
             }
         }
 
         public static bool SnapPort2Result
         {
-            get => _snapPort2Result;
+            get => _defaultInstance?._snapPort2Result ?? false;
             set
             {
-                if (_snapPort2Result == value) { return; }
-                _snapPort2Result = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._snapPort2Result == value) { return; }
+                _defaultInstance._snapPort2Result = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -860,10 +857,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static int AutoHomeProgressBar
         {
-            get => _autoHomeProgressBar;
+            get => _defaultInstance?._autoHomeProgressBar ?? 0;
             set
             {
-                _autoHomeProgressBar = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._autoHomeProgressBar = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -873,10 +871,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool AutoHomeStop
         {
-            get => _autoHomeStop;
+            get => _defaultInstance?._autoHomeStop ?? false;
             set
             {
-                _autoHomeStop = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._autoHomeStop = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -886,10 +885,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsAutoHomeRunning
         {
-            get => _isAutoHomeRunning;
+            get => _defaultInstance?._isAutoHomeRunning ?? false;
             private set
             {
-                _isAutoHomeRunning = value;
+                if (_defaultInstance == null) return;
+                _defaultInstance._isAutoHomeRunning = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -903,12 +903,20 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Mount name
         /// </summary>
-        public static string MountName { get; private set; }
+        public static string MountName
+        {
+            get => _defaultInstance?._mountName ?? string.Empty;
+            private set { if (_defaultInstance != null) _defaultInstance._mountName = value; }
+        }
 
         /// <summary>
         /// Controller board version
         /// </summary>
-        public static string MountVersion { get; private set; }
+        public static string MountVersion
+        {
+            get => _defaultInstance?._mountVersion ?? string.Empty;
+            private set { if (_defaultInstance != null) _defaultInstance._mountVersion = value; }
+        }
 
         /// <summary>
         /// Starts/Stops current selected mount
@@ -965,22 +973,24 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static bool CanPolarLed
         {
-            get => _canPolarLed;
+            get => _defaultInstance?._canPolarLed ?? false;
             private set
             {
-                if (_canPolarLed == value) { return; }
-                _canPolarLed = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._canPolarLed == value) { return; }
+                _defaultInstance._canPolarLed = value;
                 OnStaticPropertyChanged();
             }
         }
 
         public static bool CanAdvancedCmdSupport
         {
-            get => _canAdvancedCmdSupport;
+            get => _defaultInstance?._canAdvancedCmdSupport ?? false;
             private set
             {
-                if (_canAdvancedCmdSupport == value) { return; }
-                _canAdvancedCmdSupport = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._canAdvancedCmdSupport == value) { return; }
+                _defaultInstance._canAdvancedCmdSupport = value;
                 OnStaticPropertyChanged();
             }
         }
@@ -990,22 +1000,24 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool CanHomeSensor
         {
-            get => _canHomeSensor;
+            get => _defaultInstance?._canHomeSensor ?? false;
             private set
             {
-                if (_canHomeSensor == value) { return; }
-                _canHomeSensor = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._canHomeSensor == value) { return; }
+                _defaultInstance._canHomeSensor = value;
                 OnStaticPropertyChanged();
             }
         }
 
         public static string Capabilities
         {
-            get => _capabilities;
+            get => _defaultInstance?._capabilities ?? string.Empty;
             set
             {
-                if (_capabilities == value) { return; }
-                _capabilities = value;
+                if (_defaultInstance == null) return;
+                if (_defaultInstance._capabilities == value) { return; }
+                _defaultInstance._capabilities = value;
                 OnStaticPropertyChanged();
             }
         }
