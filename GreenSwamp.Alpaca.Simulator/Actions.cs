@@ -33,6 +33,9 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly IoSerial _ioSerial;
         //private readonly double[] _stepsPerSec = { 0.0, 0.0 };
         //private readonly int[] _revSteps = { 0, 0 };
+        private Action<double[]>? _stepsCallback;
+        private Action<bool>? _pulseGuideRaCallback;
+        private Action<bool>? _pulseGuideDecCallback;
 
         #endregion
 
@@ -45,6 +48,13 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         internal Actions()
         {
             _ioSerial = new IoSerial();
+        }
+
+        internal void SetCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
+        {
+            _stepsCallback = stepsCallback;
+            _pulseGuideRaCallback = pulseGuideRaCallback;
+            _pulseGuideDecCallback = pulseGuideDecCallback;
         }
 
         #region Action Commands
@@ -119,7 +129,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             MonitorLog.LogToMonitor(monitorItem);
 
             var d = new[] { x , y };
-            MountQueue.Steps = d;
+            _stepsCallback?.Invoke(d);
         }
 
         /// <summary>
@@ -158,12 +168,12 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                 bool deltaOk = arcSecs > 0.0002;
                 if (axis == Axis.Axis1)
                 {
-                    MountQueue.IsPulseGuidingRa = true && deltaOk;
+                    _pulseGuideRaCallback?.Invoke(deltaOk);
 //                    MountQueue.IsPulseGuidingDec = false;
                 }
                 else
                 {
-                    MountQueue.IsPulseGuidingDec = true && deltaOk;
+                    _pulseGuideDecCallback?.Invoke(deltaOk);
 //                    MountQueue.IsPulseGuidingRa = false;
                 }
 
@@ -222,11 +232,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
                     if (axis == Axis.Axis1)
                     {
-                        MountQueue.IsPulseGuidingRa = false;
+                        _pulseGuideRaCallback?.Invoke(false);
                     }
                     else
                     {
-                        MountQueue.IsPulseGuidingDec = false;
+                        _pulseGuideDecCallback?.Invoke(false);
                     }
 
                     if (MonitorPulse)

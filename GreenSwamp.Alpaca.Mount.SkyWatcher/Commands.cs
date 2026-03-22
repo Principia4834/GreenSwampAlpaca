@@ -16,6 +16,7 @@
 using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
+using GreenSwamp.Alpaca.Shared.Transport;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -55,6 +56,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private const int ConErrMax = 50;                               // Max number of allowed continuous errors
         private readonly int[] _stepsPerRev = { 0, 0 };                 // From mount :a or :X0002
         private readonly int[] _resolutionFactor = { 1, 1 };            // Step division factor from :a and :X0002
+        private ISerialPort _serial;
 
         #endregion
 
@@ -69,7 +71,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <summary>
         /// Quick check to see if serial is connected and mount is receiving and sending data
         /// </summary> 
-        internal bool IsConnected => SkyQueue.Serial.IsOpen && MountConnected;
+        internal bool IsConnected => (_serial?.IsOpen == true) && MountConnected;
 
         /// <summary>
         /// Indicate whether the motor controller supports advanced command set (Firmware version 3.22.xx or above)
@@ -85,9 +87,15 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
         #region Methods
 
-        public Commands()
+        public Commands() { }
+
+        /// <summary>
+        /// Provide the serial port instance; called by SkyWatcher.Initialize after queue creation.
+        /// </summary>
+        internal void Initialize(ISerialPort serial)
         {
-            if (SkyQueue.Serial.IsOpen)
+            _serial = serial;
+            if (_serial?.IsOpen == true)
             {
                 //Serial.DataReceived += DataReceived;
                 //Serial.ErrorReceived += ErrorReceived;
@@ -1462,8 +1470,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                             string responseString = null;
                             for (var c = 0; c <= 10; c++)
                             {
-                                SkyQueue.Serial.DiscardInBuffer();
-                                SkyQueue.Serial.DiscardOutBuffer();
+                                _serial.DiscardInBuffer();
+                                _serial.DiscardOutBuffer();
                                 // send the request
                                 var cmdData = SendRequest(axis, command, cmdDataStr);
                                 // receive the response
@@ -1629,7 +1637,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
 
             //Serial.Transmit(commandStr.ToString());
-            SkyQueue.Serial.Write(commandStr.ToString());
+            _serial.Write(commandStr.ToString());
 
             return commandStr.ToString().Trim();
         }
@@ -1695,17 +1703,17 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// Read serial port buffer - skyWatcher original source
         /// </summary>
         /// <returns></returns>
-        private static string ReceiveResponse()
+        private string ReceiveResponse()
         {
             // format "::e1\r=020883\r"
             var mBuffer = new StringBuilder(15);
             var startReading = false;
 
             var sw = Stopwatch.StartNew();
-            var readTimeout = SkyQueue.Serial.ReadTimeout;
+            var readTimeout = _serial.ReadTimeout;
             while (sw.ElapsedMilliseconds < readTimeout)
             {
-                var data = SkyQueue.Serial.ReadExisting();
+                var data = _serial.ReadExisting();
                 foreach (var byt in data)
                 {
                     // this code order is important

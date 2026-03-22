@@ -16,6 +16,7 @@
 using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
+using GreenSwamp.Alpaca.Shared.Transport;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -56,6 +57,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private long[] _breakSteps = new long[2];
         private readonly double[] _stepsPerSecond = new double[2];
         private bool _lowVoltageEventState; // Low voltage event state
+        private Action<double[]>? _stepsCallback;
+        private Action<bool>? _pulseGuideRaCallback;
+        private Action<bool>? _pulseGuideDecCallback;
 
         #endregion
 
@@ -124,6 +128,26 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             // _commands.TestSerial();
             MinPulseDurationRa = 20;
             MinPulseDurationDec = 20;
+        }
+
+        /// <summary>
+        /// Set callbacks used to report steps and pulse-guide state to the owning queue instance.
+        /// Called by SkyQueueImplementation.InitializeExecutor() during queue start.
+        /// </summary>
+        internal void SetCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
+        {
+            _stepsCallback = stepsCallback;
+            _pulseGuideRaCallback = pulseGuideRaCallback;
+            _pulseGuideDecCallback = pulseGuideDecCallback;
+        }
+
+        /// <summary>
+        /// Provide the serial port to the hardware command layer.
+        /// Called by SkyQueueImplementation.InitializeExecutor during queue start.
+        /// </summary>
+        internal void Initialize(ISerialPort serial)
+        {
+            _commands.Initialize(serial);
         }
 
         /// <summary>
@@ -282,7 +306,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 switch (axis)
                 {
                     case Axis.Axis1:
-                        SkyQueue.IsPulseGuidingRa = true;
+                        _pulseGuideRaCallback?.Invoke(true);
                         var trackingRateRa = _trackingRates[0];    // current speed set from AxisSlew
                         var trackingSpeedRa = _trackingSpeeds[0];   // current speed set from AxisSlew
                         bool changeDirection = false; // change direction of motion
@@ -298,7 +322,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
                             if (duration < MinPulseDurationRa)
                             {
-                                SkyQueue.IsPulseGuidingRa = false;
+                                _pulseGuideRaCallback?.Invoke(false);
 
                                 if (!MonitorPulse) { return; }
                                 pulseEntry.Rejected = true;
@@ -399,11 +423,11 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
                             if (_pPecOn && AlternatingPPec) { SetPPec(Axis.Axis1, true); } // implements the alternating pPEC
 
-                            SkyQueue.IsPulseGuidingRa = false;
+                            _pulseGuideRaCallback?.Invoke(false);
                         }
                         break;
                     case Axis.Axis2:
-                        SkyQueue.IsPulseGuidingDec = true;
+                        _pulseGuideDecCallback?.Invoke(true);
                         //SkyQueue.IsPulseGuidingRa = false;
 
                         if (DecPulseGoTo)
@@ -422,7 +446,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
                                 if (stepsNeeded < 1 || duration < MinPulseDurationDec)
                                 {
-                                    SkyQueue.IsPulseGuidingDec = false;
+                                    _pulseGuideDecCallback?.Invoke(false);
                                     if (!MonitorPulse) return;
                                     pulseEntry.Rejected = true;
                                     MonitorLog.LogToMonitor(pulseEntry);
@@ -472,7 +496,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                             }
                             finally
                             {
-                                SkyQueue.IsPulseGuidingDec = false;
+                                _pulseGuideDecCallback?.Invoke(false);
                             }
                         }
                         else
@@ -489,7 +513,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
                                 if (duration < MinPulseDurationDec)
                                 {
-                                    SkyQueue.IsPulseGuidingDec = false;
+                                    _pulseGuideDecCallback?.Invoke(false);
                                     if (!MonitorPulse) { return; }
                                     pulseEntry.Rejected = true;
                                     MonitorLog.LogToMonitor(pulseEntry);
@@ -532,13 +556,13 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                             finally
                             {
                                 AxisStop(Axis.Axis2);
-                                SkyQueue.IsPulseGuidingDec = false;
+                                _pulseGuideDecCallback?.Invoke(false);
                             }
                         }
                         break;
                     default:
-                    SkyQueue.IsPulseGuidingRa = false;
-                    SkyQueue.IsPulseGuidingDec = false;
+                    _pulseGuideRaCallback?.Invoke(false);
+                    _pulseGuideDecCallback?.Invoke(false);
                         throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
                 }
 
@@ -853,7 +877,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 if (double.IsNaN(positions[0]) || double.IsNaN(positions[1])){return;}
 
                 var a = new[] { positions[0], positions[1] };
-                SkyQueue.Steps = a;
+                _stepsCallback?.Invoke(a);
             }
             catch (Exception e)
             {

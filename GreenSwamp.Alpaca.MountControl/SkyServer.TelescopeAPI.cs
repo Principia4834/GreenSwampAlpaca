@@ -1432,13 +1432,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        var autoHomeSim = new AutoHomeSim(_settings);
+                        var autoHomeSim = new AutoHomeSim(_settings, MountQueue.Instance);
                         raResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     case MountType.SkyWatcher:
-                        var autoHomeSky = new AutoHomeSky(_settings);
+                        var autoHomeSky = new AutoHomeSky(_settings, SkyQueue.Instance);
                         raResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));

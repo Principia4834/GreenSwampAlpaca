@@ -32,6 +32,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private int[] _customMount360Steps;
         private double[] _customRaWormSteps;
         private EventHandler _lowVoltageEventHandler;
+        private Action<double[]>? _stepsCallback;
+        private Action<bool>? _pulseGuideRaCallback;
+        private Action<bool>? _pulseGuideDecCallback;
 
         public ISerialPort Serial => _serial;
         public int[] CustomMount360Steps => _customMount360Steps;
@@ -61,6 +64,17 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
         }
 
+        /// <summary>
+        /// Set the callbacks used by the executor to report steps and pulse-guide state.
+        /// Must be called before Start() so the callbacks are available in InitializeExecutor.
+        /// </summary>
+        internal void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
+        {
+            _stepsCallback = stepsCallback;
+            _pulseGuideRaCallback = pulseGuideRaCallback;
+            _pulseGuideDecCallback = pulseGuideDecCallback;
+        }
+
         protected override bool IsConnected()
         {
             return _executor?.IsConnected == true;
@@ -77,6 +91,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             {
                 executor.LowVoltageEvent += _lowVoltageEventHandler;
             }
+            executor?.Initialize(_serial);
+            executor?.SetCallbacks(_stepsCallback, _pulseGuideRaCallback, _pulseGuideDecCallback);
         }
 
         protected override void CleanupExecutor(SkyWatcher executor)
@@ -98,9 +114,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
         /// <summary>
-        /// Instance for use by command constructors
+        /// Instance for use by command constructors and MountInstance queue ownership.
         /// </summary>
-        internal static SkyQueueImplementation Instance => _instance;
+        public static CommandQueueBase<SkyWatcher> Instance => _instance;
 
         /// <summary>
         /// Serial object
@@ -194,6 +210,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <param name="lowVoltageEventHandler"></param>
         public static void Start(ISerialPort serial, int[] customMount360Steps, double[] customRaWormSteps, EventHandler lowVoltageEventHandler = null)
         {
+            _instance.SetupCallbacks(steps => Steps = steps, v => IsPulseGuidingRa = v, v => IsPulseGuidingDec = v);
             _instance.Start(serial, customMount360Steps, customRaWormSteps, lowVoltageEventHandler);
         }
 

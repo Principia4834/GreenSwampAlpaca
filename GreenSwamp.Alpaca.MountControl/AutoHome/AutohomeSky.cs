@@ -15,6 +15,7 @@
  */
 using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
+using SkyWatcherHardware = GreenSwamp.Alpaca.Mount.SkyWatcher.SkyWatcher;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
@@ -27,14 +28,16 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
     public class AutoHomeSky
     {
         private int TripPosition { get; set; }
-        private static bool HasHomeSensor { get; set; }
+        private bool HasHomeSensor { get; set; }
         private readonly SkySettingsInstance SettingsInstance;
+        private readonly ICommandQueue<SkyWatcherHardware> _skyQueue;
 
         /// <summary>
         /// auto home for skywatcher mounts
         /// </summary>
         /// <param name="settingsInstance"></param>
-        public AutoHomeSky(SkySettingsInstance settingsInstance)
+        /// <param name="skyQueue"></param>
+        public AutoHomeSky(SkySettingsInstance settingsInstance, ICommandQueue<SkyWatcherHardware> skyQueue)
         {
             var monitorItem = new MonitorEntry
             {
@@ -48,16 +51,17 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             };
             MonitorLog.LogToMonitor(monitorItem);
             this.SettingsInstance = settingsInstance;
+            _skyQueue = skyQueue;
         }
 
         /// <summary>
         /// Check for home sensor capability
         /// </summary>
-        private static void HomeSensorCapabilityCheck()
+        private void HomeSensorCapabilityCheck()
         {
             HasHomeSensor = false;
-            var canHomeSky = new SkyCanHomeSensors(SkyQueue.NewId);
-            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(canHomeSky).Result), out bool hasHome);
+            var canHomeSky = new SkyCanHomeSensors(_skyQueue.NewId, _skyQueue);
+            bool.TryParse(Convert.ToString(_skyQueue.GetCommandResult(canHomeSky).Result), out bool hasHome);
             HasHomeSensor = hasHome;
         }
 
@@ -68,8 +72,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <returns></returns>
         private bool? GetHomeSensorStatus(Axis axis)
         {
-            var sensorStatusSky = new SkyGetHomePosition(SkyQueue.NewId, axis);
-            var sensorStatus = (long)SkyQueue.GetCommandResult(sensorStatusSky).Result;
+            var sensorStatusSky = new SkyGetHomePosition(_skyQueue.NewId, _skyQueue, axis);
+            var sensorStatus = (long)_skyQueue.GetCommandResult(sensorStatusSky).Result;
 
             var monitorItem = new MonitorEntry
             {
@@ -132,8 +136,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <param name="axis"></param>
         private void ResetHomeSensor(Axis axis)
         {
-            var reset = new SkySetHomePositionIndex(SkyQueue.NewId, axis);
-            //var _ = (long)SkyQueue.GetCommandResult(reset).Result;
+            var reset = new SkySetHomePositionIndex(_skyQueue.NewId, _skyQueue, axis);
+            //var _ = (long)_skyQueue.GetCommandResult(reset).Result;
 
             var monitorItem = new MonitorEntry
             {
@@ -308,8 +312,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
 
             //convert position to mount degrees 
             var a = TripPosition; // -= 0x00800000;
-            var skyCmd = new SkyGetStepToAngle(SkyQueue.NewId, axis, a);
-            var b = (double)SkyQueue.GetCommandResult(skyCmd).Result;
+            var skyCmd = new SkyGetStepToAngle(_skyQueue.NewId, _skyQueue, axis, a);
+            var b = (double)_skyQueue.GetCommandResult(skyCmd).Result;
             var c = Units.Rad2Deg1(b);
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation

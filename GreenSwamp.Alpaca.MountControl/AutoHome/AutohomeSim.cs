@@ -14,12 +14,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         private int TripPosition { get; set; }
         private bool HasHomeSensor { get; set; }
         private readonly SkySettingsInstance SettingsInstance;
+        private readonly ICommandQueue<Actions> _mountQueue;
 
         /// <summary>
         /// auto home for the simulator
         /// </summary>
         /// <param name="settingsInstance"></param>
-        public AutoHomeSim(SkySettingsInstance settingsInstance)
+        /// <param name="mountQueue"></param>
+        public AutoHomeSim(SkySettingsInstance settingsInstance, ICommandQueue<Actions> mountQueue)
         {
             var monitorItem = new MonitorEntry
             {
@@ -33,6 +35,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             };
             MonitorLog.LogToMonitor(monitorItem);
             this.SettingsInstance = settingsInstance;
+            _mountQueue = mountQueue;
         }
 
         /// <summary>
@@ -41,8 +44,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         private void HomeSensorCapabilityCheck()
         {
             HasHomeSensor = false;
-            var canHomeCmdA = new GetHomeSensorCapability(MountQueue.NewId);
-            bool.TryParse(Convert.ToString(MountQueue.GetCommandResult(canHomeCmdA).Result), out bool hasHome);
+            var canHomeCmdA = new GetHomeSensorCapability(_mountQueue.NewId, _mountQueue);
+            bool.TryParse(Convert.ToString(_mountQueue.GetCommandResult(canHomeCmdA).Result), out bool hasHome);
             HasHomeSensor = hasHome;
         }
 
@@ -53,8 +56,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <returns></returns>
         private bool? GetHomeSensorStatus(Axis axis)
         {
-            var sensorStatusCmd = new CmdHomeSensor(MountQueue.NewId, axis);
-            var sensorStatus = (int)MountQueue.GetCommandResult(sensorStatusCmd).Result;
+            var sensorStatusCmd = new CmdHomeSensor(_mountQueue.NewId, _mountQueue, axis);
+            var sensorStatus = (int)_mountQueue.GetCommandResult(sensorStatusCmd).Result;
             switch (sensorStatus)
             {
                 case MaxSteps:
@@ -93,7 +96,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <param name="axis"></param>
         private void ResetHomeSensor(Axis axis)
         {
-            var reset = new CmdHomeSensorReset(MountQueue.NewId, axis);
+            var reset = new CmdHomeSensorReset(_mountQueue.NewId, _mountQueue, axis);
 
             var monitorItem = new MonitorEntry
             {

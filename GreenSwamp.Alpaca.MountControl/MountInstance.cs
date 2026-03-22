@@ -77,6 +77,10 @@ namespace GreenSwamp.Alpaca.MountControl
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
         private readonly object _lastUpdateLock = new object();
 
+        // Phase 0 Q2: Queue instances owned by this MountInstance
+        internal CommandQueueBase<SkyWatcher> SkyQueueInstance { get; private set; }
+        internal CommandQueueBase<Actions> MountQueueInstance { get; private set; }
+
         // Slew speed fields (internal so SkyServer.SetSlewRates can access them)
         internal double _slewSpeedOne;
         internal double _slewSpeedTwo;
@@ -1102,6 +1106,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Mount.Simulator.Settings.AutoHomeAxisX = (int)_settings.AutoHomeAxisX;
                     Mount.Simulator.Settings.AutoHomeAxisY = (int)_settings.AutoHomeAxisY;
                     MountQueue.Start();
+                    MountQueueInstance = GreenSwamp.Alpaca.Mount.Simulator.MountQueue.Instance;
                     if (MountQueue.IsRunning) { SkyServer.ConnectAlignmentModel(); }
                     else
                     { throw new Exception("Failed to start simulator queue"); }
@@ -1126,6 +1131,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     SkyQueue.Start(SkySystem.Serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
+                    SkyQueueInstance = GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.Instance;
                     if (!SkyQueue.IsRunning)
                     {
                         throw new SkyServerException(ErrorCode.ErrMount, "Failed to start sky queue");
@@ -1186,9 +1192,14 @@ namespace GreenSwamp.Alpaca.MountControl
 
             if (MountQueue.IsRunning) { MountQueue.Stop(); }
 
-            if (!SkyQueue.IsRunning) return;
-            SkyQueue.Stop();
-            SkySystem.ConnectSerial = false;
+            if (SkyQueue.IsRunning)
+            {
+                SkyQueue.Stop();
+                SkySystem.ConnectSerial = false;
+            }
+
+            MountQueueInstance = null;
+            SkyQueueInstance = null;
 
             // ToDo - fix cleanup
             // Dispose SlewController
@@ -1250,15 +1261,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread.Sleep(50);
                 token.ThrowIfCancellationRequested();
 
-                var statusx = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
-                var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusx).Result;
+                var statusx = new CmdAxisStatus(MountQueueInstance.NewId, MountQueueInstance, Axis.Axis1);
+                var axis1Status = (Mount.Simulator.AxisStatus)MountQueueInstance.GetCommandResult(statusx).Result;
                 var axis1Stopped = axis1Status.Stopped;
 
                 Thread.Sleep(50);
                 token.ThrowIfCancellationRequested();
 
-                var statusy = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
-                var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusy).Result;
+                var statusy = new CmdAxisStatus(MountQueueInstance.NewId, MountQueueInstance, Axis.Axis2);
+                var axis2Status = (Mount.Simulator.AxisStatus)MountQueueInstance.GetCommandResult(statusy).Result;
                 var axis2Stopped = axis2Status.Stopped;
 
                 if (!axis1Stopped || !axis2Stopped) continue;
@@ -1365,8 +1376,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (!axis1Stopped)
                     {
-                        var status1 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
-                        var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status1).Result;
+                        var status1 = new CmdAxisStatus(MountQueueInstance.NewId, MountQueueInstance, Axis.Axis1);
+                        var axis1Status = (Mount.Simulator.AxisStatus)MountQueueInstance.GetCommandResult(status1).Result;
                         axis1Stopped = axis1Status.Stopped;
                     }
 
@@ -1375,8 +1386,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (!axis2Stopped)
                     {
-                        var status2 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
-                        var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status2).Result;
+                        var status2 = new CmdAxisStatus(MountQueueInstance.NewId, MountQueueInstance, Axis.Axis2);
+                        var axis2Status = (Mount.Simulator.AxisStatus)MountQueueInstance.GetCommandResult(status2).Result;
                         axis2Stopped = axis2Status.Stopped;
                     }
 
@@ -1465,19 +1476,19 @@ namespace GreenSwamp.Alpaca.MountControl
 
                         if (!axis1Stopped)
                         {
-                            var status1 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
-                            var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status1).Result;
-                            axis1Stopped = axis1Status.Stopped;
-                        }
+                                var status1 = new CmdAxisStatus(MountQueueInstance.NewId, MountQueueInstance, Axis.Axis1);
+                                var axis1Status = (Mount.Simulator.AxisStatus)MountQueueInstance.GetCommandResult(status1).Result;
+                                axis1Stopped = axis1Status.Stopped;
+                            }
 
-                        Thread.Sleep(100);
+                            Thread.Sleep(100);
 
-                        if (!axis2Stopped)
-                        {
-                            var status2 = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
-                            var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(status2).Result;
-                            axis2Stopped = axis2Status.Stopped;
-                        }
+                            if (!axis2Stopped)
+                            {
+                                var status2 = new CmdAxisStatus(MountQueueInstance.NewId, MountQueueInstance, Axis.Axis2);
+                                var axis2Status = (Mount.Simulator.AxisStatus)MountQueueInstance.GetCommandResult(status2).Result;
+                                axis2Stopped = axis2Status.Stopped;
+                            }
 
                         if (axis1Stopped && axis2Stopped) { break; }
                     }
@@ -1535,15 +1546,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread.Sleep(50);
                 token.ThrowIfCancellationRequested();
 
-                var statusx = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
-                var x = SkyQueue.GetCommandResult(statusx);
+                var statusx = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis1);
+                var x = SkyQueueInstance.GetCommandResult(statusx);
                 var axis1Stopped = Convert.ToBoolean(x.Result);
 
                 Thread.Sleep(50);
                 token.ThrowIfCancellationRequested();
 
-                var statusy = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
-                var y = SkyQueue.GetCommandResult(statusy);
+                var statusy = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis2);
+                var y = SkyQueueInstance.GetCommandResult(statusy);
                 var axis2Stopped = Convert.ToBoolean(y.Result);
 
                 if (!axis1Stopped || !axis2Stopped) { continue; }
@@ -1666,8 +1677,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (!axis1Done)
                     {
-                        var status1 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
-                        axis1Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status1).Result);
+                        var status1 = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis1);
+                        axis1Done = Convert.ToBoolean(SkyQueueInstance.GetCommandResult(status1).Result);
                     }
                     if (axis1Done) { break; }
                 }
@@ -1686,8 +1697,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     if (!axis2Done)
                     {
-                        var status2 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
-                        axis2Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status2).Result);
+                        var status2 = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis2);
+                        axis2Done = Convert.ToBoolean(SkyQueueInstance.GetCommandResult(status2).Result);
                     }
                     if (axis2Done) { break; }
                 }
@@ -1786,8 +1797,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                         if (!axis1Done)
                         {
-                            var status1 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
-                            axis1Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status1).Result);
+                            var status1 = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis1);
+                            axis1Done = Convert.ToBoolean(SkyQueueInstance.GetCommandResult(status1).Result);
                         }
                         if (axis1Done) { break; }
                     }
@@ -1807,8 +1818,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                         if (!axis2Done)
                         {
-                            var status2 = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
-                            axis2Done = Convert.ToBoolean(SkyQueue.GetCommandResult(status2).Result);
+                            var status2 = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis2);
+                            axis2Done = Convert.ToBoolean(SkyQueueInstance.GetCommandResult(status2).Result);
                         }
                         if (axis2Done) { break; }
                     }

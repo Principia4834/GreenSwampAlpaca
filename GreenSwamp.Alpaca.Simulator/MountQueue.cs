@@ -24,6 +24,17 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     /// </summary>
     internal class MountQueueImplementation : CommandQueueBase<Actions>
     {
+        private Action<double[]>? _stepsCallback;
+        private Action<bool>? _pulseGuideRaCallback;
+        private Action<bool>? _pulseGuideDecCallback;
+
+        internal void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
+        {
+            _stepsCallback = stepsCallback;
+            _pulseGuideRaCallback = pulseGuideRaCallback;
+            _pulseGuideDecCallback = pulseGuideDecCallback;
+        }
+
         protected override bool IsConnected()
         {
             return Actions.IsConnected;
@@ -37,6 +48,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         protected override void InitializeExecutor(Actions executor)
         {
             executor?.InitializeAxes();
+            executor?.SetCallbacks(_stepsCallback, _pulseGuideRaCallback, _pulseGuideDecCallback);
         }
 
         protected override void CleanupExecutor(Actions executor)
@@ -55,9 +67,9 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
         /// <summary>
-        /// Instance for use by command constructors
+        /// Instance for use by command constructors and MountInstance queue ownership.
         /// </summary>
-        internal static MountQueueImplementation Instance => _instance;
+        public static CommandQueueBase<Actions> Instance => _instance;
 
         /// <summary>
         /// IsRunning
@@ -132,6 +144,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// </summary>
         public static void Start()
         {
+            _instance.SetupCallbacks(steps => Steps = steps, v => IsPulseGuidingRa = v, v => IsPulseGuidingDec = v);
             _instance.Start();
         }
 
