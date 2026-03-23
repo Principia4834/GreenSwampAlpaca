@@ -309,6 +309,89 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _isSideOfPier = value;
         }
 
+        // Phase 8: Computed pier-side (same logic as static SkyServer.SideOfPier)
+        public PointingState SideOfPier
+        {
+            get
+            {
+                switch (_settings.AlignmentMode)
+                {
+                    case AlignmentMode.AltAz:
+                        return _actualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
+                    case AlignmentMode.Polar:
+                        return (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001)
+                            ? PointingState.Normal : PointingState.ThroughThePole;
+                    case AlignmentMode.GermanPolar:
+                        bool southernHemisphere = SkyServer.SouthernHemisphere;
+                        if (southernHemisphere)
+                            return (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001)
+                                ? PointingState.ThroughThePole : PointingState.Normal;
+                        else
+                            return (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001)
+                                ? PointingState.Normal : PointingState.ThroughThePole;
+                    default:
+                        return PointingState.Unknown;
+                }
+            }
+        }
+
+        // Phase 8: AtHome — computed from current appAxes vs homeAxes
+        public bool AtHome
+        {
+            get
+            {
+                var context = AxesContext.FromSettings(_settings);
+                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, context);
+                double dX = Math.Abs(_appAxes.X - home[0]);
+                dX = Math.Min(dX, 360.0 - dX);
+                double dY = Math.Abs(_appAxes.Y - home[1]);
+                return (dX * dX + dY * dY) < 0.01414;
+            }
+        }
+
+        // Phase 8: AtPark — delegates to settings (same source as SkyServer.AtPark)
+        public bool AtPark
+        {
+            get => _settings.AtPark;
+            set => _settings.AtPark = value;
+        }
+
+        // Phase 8: IsSlewing — mirrors SkyServer.IsSlewing logic using per-instance fields
+        public bool IsSlewing =>
+            (_slewController?.IsSlewing == true) ||
+            _moveAxisActive ||
+            _isSlewing;
+
+        // Phase 8: IsPulseGuiding — combined pulse guide state
+        public bool IsPulseGuiding => _isPulseGuidingRa || _isPulseGuidingDec;
+
+        // Phase 8: IsPulseGuidingRa / IsPulseGuidingDec — public access for Telescope.cs
+        public bool IsPulseGuidingRa
+        {
+            get => _isPulseGuidingRa;
+            set => _isPulseGuidingRa = value;
+        }
+
+        public bool IsPulseGuidingDec
+        {
+            get => _isPulseGuidingDec;
+            set => _isPulseGuidingDec = value;
+        }
+
+        // Phase 8: SlewState — public access to per-instance slew state
+        public SlewType SlewState
+        {
+            get => _slewState;
+            set => _slewState = value;
+        }
+
+        // Phase 8: SlewSettleTime — public access to per-instance settle time
+        public double SlewSettleTime
+        {
+            get => _slewSettleTime;
+            set => _slewSettleTime = value;
+        }
+
         #endregion
 
         #region Internal State Exposure (for other MountControl classes)
@@ -1027,6 +1110,54 @@ namespace GreenSwamp.Alpaca.MountControl
                     _lastUpdateStepsTime = HiResDateTime.UtcNow;
                 }
             }
+        }
+
+        /// <summary>
+        /// Runs the coordinate conversion pipeline for a new set of hardware axis step counts.
+        /// Migrated from SkyServer.Steps setter.
+        /// </summary>
+        /// <param name="steps">Raw step counts from the mount hardware [axis0, axis1]</param>
+        internal void SetSteps(double[] steps)
+        {
+            // Build axes context from instance settings
+            var context = AxesContext.FromSettings(_settings);
+
+            // Implement PEC
+            PecCheck();
+
+            // Convert raw steps to degrees
+            var rawPositions = new[]
+            {
+                ConvertStepsToDegrees(steps[0], 0),
+                ConvertStepsToDegrees(steps[1], 1)
+            };
+            SkyServer.UpdateMountLimitStatus(rawPositions);
+
+            // UI diagnostics in degrees
+            _actualAxisX = rawPositions[0];
+            _actualAxisY = rawPositions[1];
+
+            // Convert physical positions to local app axes
+            var axes = Axes.AxesMountToApp(rawPositions, context);
+
+            // UI diagnostics for local app axes
+            _appAxes.X = axes[0];
+            _appAxes.Y = axes[1];
+
+            // Calculate mount Alt/Az
+            var altAz = Axes.AxesXyToAzAlt(axes, context);
+            _altAzm.X = altAz[0];
+            _altAzm.Y = altAz[1];
+
+            // Calculate topocentric RA/Dec
+            var raDec = Axes.AxesXyToRaDec(axes, context);
+            _raDec.X = raDec[0];
+            _raDec.Y = raDec[1];
+
+            // Calculate EquatorialSystem RA/Dec for UI
+            var xy = Transforms.InternalToCoordType(raDec[0], raDec[1]);
+            _rightAscensionXForm = xy.X;
+            _declinationXForm = xy.Y;
         }
 
         /// <summary>

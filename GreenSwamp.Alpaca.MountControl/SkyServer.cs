@@ -576,47 +576,7 @@ namespace GreenSwamp.Alpaca.MountControl
             set
             {
                 _steps = value;
-
-                // Set context from current settings
-                var context = AxesContext.FromSettings(_settings);
-
-                //Implement Pec
-                _defaultInstance?.PecCheck();
-
-                //Convert Positions to degrees
-                var rawPositions = new[] { ConvertStepsToDegrees(_steps[0], 0), ConvertStepsToDegrees(_steps[1], 1) };
-                UpdateMountLimitStatus(rawPositions);
-
-                // Convert to axis position from physical position 
-                rawPositions = GetUnsyncedAxes(rawPositions);
-
-
-                // UI diagnostics in degrees
-                ActualAxisX = rawPositions[0];
-                ActualAxisY = rawPositions[1];
-
-                // convert positions to local app axes
-                var axes = Axes.AxesMountToApp(rawPositions, context  );
-
-                // UI diagnostics for local app exes
-                AppAxisX = axes[0];
-                AppAxisY = axes[1];
-
-                // Calculate mount Alt/Az
-                var altAz = Axes.AxesXyToAzAlt(axes, context);
-                Azimuth = altAz[0];
-                Altitude = altAz[1];
-
-                // Calculate top-o-centric Ra/Dec
-                var raDec = Axes.AxesXyToRaDec(axes, context);
-                RightAscension = raDec[0];
-                Declination = raDec[1];
-
-                // Calculate EquatorialSystem Property Ra/Dec for UI
-                var xy = Transforms.InternalToCoordType(raDec[0], raDec[1]);
-                RightAscensionXForm = xy.X;
-                DeclinationXForm = xy.Y;
-
+                _defaultInstance?.SetSteps(value);
                 OnStaticPropertyChanged();
             }
         }
