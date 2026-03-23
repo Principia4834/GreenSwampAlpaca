@@ -2,7 +2,7 @@
 ## GreenSwamp Alpaca — SkyServer / MountControl
 
 **Prepared for:** Offline review  
-**Codebase state analysed:** June 2025 (`master` branch)  
+**Codebase state analysed:** March 2026 (`master` branch)  
 **Scope:** `GreenSwamp.Alpaca.MountControl` + `GreenSwamp.Alpaca.Server.TelescopeDriver`
 
 ---
@@ -126,6 +126,7 @@ All of this must move into `MountInstance` and be driven from instance-owned tim
 | `static _mediaTimer` | MediaTimer — already in instance; static copy also exists |
 | `static _altAzTrackingTimer` | AltAz timer — same dual-existence problem |
 | `static _altAzTrackingLock` | Int32 lock — must become instance |
+| `_mountPositionUpdatedEvent` | `ManualResetEventSlim` — single shared event; `SkyPrecisionGoto()` and `SkyPulseGoto()` both wait on it; two concurrent slews race — either telescope's `Steps` callback fires it, releasing the wrong waiter (Issue 7) |
 | `UpdateServerEvent()` (static) | **Core per-tick callback** — calls Steps setter, PEC, limit checks |
 | `PropertyChangedSkySettings()` (static) | Reacts to shared settings changes — needs per-instance version |
 | `PropertyChangedSkyQueue()` (static) | Receives step updates from SkyQueue |
@@ -140,6 +141,11 @@ All of this must move into `MountInstance` and be driven from instance-owned tim
 | `GetDefaultPositions_Internal()` | Directly accesses `_settings!.XxxAxes` — no instance routing |
 | `GetLocalSiderealTime()` | Directly accesses `_settings!.Longitude` — no instance routing |
 | `SkyErrorHandler()` | Sets static `IsMountRunning`, `MountError` |
+| `SkyTasks()` | Reads `SkyServer._settings` (→ `_defaultInstance._settings`) and dispatches 30+ init commands to `SkyQueue.Instance`; called from `MountInstance.MountConnect()` for every telescope — wrong settings AND wrong hardware for Telescope 2 (Issue 4) |
+| `SimTasks()` | Same as `SkyTasks()` — simulator path; same cross-instance settings and queue problem (Issue 4) |
+| `_trackingOffsetRate` | `Vector` — no instance backing; `CalcCustomTrackingOffset()` (called from `MountConnect()`) computes rates from whichever instance last populated `StepsTimeFreq`/`StepsPerRevolution` and overwrites this single static field; second telescope destroys first telescope's custom tracking rates (Issue 8) |
+| `_hcPrevMoveRa`, `_hcPrevMoveDec` | `HcPrevMove` — hand-controller anti-backlash direction state; no instance backing; any HC use on Telescope 2 silently corrupts the backlash compensation state for Telescope 1 (Issue 10) |
+| `HcPrevMovesDec` | `IList<double>` — HC move history list; same shared-collection problem; no instance backing (Issue 10) |
 
 ### 3.5 SkyServer.TelescopeAPI.cs — static fields with no instance equivalent yet
 
@@ -153,7 +159,7 @@ All of this must move into `MountInstance` and be driven from instance-owned tim
 | `_goToAsyncLock` | Static object lock |
 | `_slewController` | SlewController — static, not per-instance |
 | `_isPulseGuidingRa`, `_isPulseGuidingDec` | Static backing fields (also in `SkyServer.cs`) |
-| `SkyTrackingOffset[]` | Static array |
+| `SkyTrackingOffset[]` | Static `int[2]` array used inside `SkyGetRate()` to accumulate custom mount `:I` tracking-rate offset across calls; not per-instance — any telescope's rate calculation overwrites the other's accumulated offset (Issue 9) |
 | `IsMountRunning` | Static property wrapping `_mountRunning` |
 
 ### 3.6 Telescope.cs — still uses static API
@@ -221,6 +227,20 @@ This requires passing `ISerialPort` into the `Commands` constructor directly rat
 | `Commands.cs` | Simulator | 3 | Abstract base constructors hardcode `MountQueue.Instance` |
 | `SkyServer.cs` | MountControl | 4 | Reads `IsRunning`; creates 1 diagnostic command |
 | `IOSerial.cs` | Simulator | 8 | **Commented-out code only** — no active references |
+
+---
+
+### 3.8 MountInstance.cs — instance methods still using static dispatch
+
+These are **instance methods** on `MountInstance` that incorrectly dispatch through the static
+`SkyQueue` / `SkyServer` facades. They were not updated during the Phase 4.x partial migration.
+
+| Method / Code Site | Issue | Notes |
+|-------------------|-------|-------|
+| `GetRawDegrees()` (lines 978–1001) | Creates `SkyGetPositionsInDegrees(SkyQueue.NewId)` and calls `SkyQueue.GetCommandResult()` — the static queue | The **single-axis** overload `GetRawSteps(int axis)` was correctly migrated to use `SkyQueueInstance`; the two-axis `GetRawDegrees()` and `GetRawSteps()` were not — inconsistency within the same file. These are called from `MountConnect()` and `UpdateSteps()`, the main position-tracking path (Issue 3) |
+| `GetRawSteps()` (lines 1031–1056) | Same as `GetRawDegrees()` — creates commands against static `SkyQueue` | Same fix needed: route through `this.SkyQueueInstance` (Issue 3) |
+| `MountConnect()` capabilities readback (lines 532–538 / 666–672) | After `SkyServer.SkyTasks(MountTaskName.CanPpec)` writes results into `SkyServer._defaultInstance._canPPec`, `MountConnect()` reads them back via `SkyServer.CanPPec` into `this._canPPec` | For Telescope 2 this reads Telescope 1's data AND simultaneously corrupts Telescope 1's capability flags; silently produces wrong `_canPPec`, `_canHomeSensor`, `_canPolarLed`, `_canAdvancedCmdSupport`, `_mountName`, `_mountVersion`, `_capabilities` for all non-default instances (Issue 14) |
+| `SideOfPier` getter (lines 335–341) | Reads `SkyServer.SouthernHemisphere` instead of `_settings.SouthernHemisphere` | `SkyServer.SouthernHemisphere` delegates to `_defaultInstance._settings`; if Telescope 1 is north and Telescope 2 is south, both always report the northern hemisphere result — one-line fix (Issue 12) |
 
 ---
 
@@ -362,7 +382,7 @@ With queue instances owned by `MountInstance` (Q2) and command base classes acce
 
 **Plan:**
 
-1. **`MountInstance.cs` call sites** — already partially migrated; change `SkyQueue.NewId` → `this.SkyQueue!.NewId`, `SkyQueue.GetCommandResult(cmd)` → `this.SkyQueue!.GetCommandResult(cmd)`, etc.
+1. **`MountInstance.cs` call sites** — already partially migrated; change `SkyQueue.NewId` → `this.SkyQueue!.NewId`, `SkyQueue.GetCommandResult(cmd)` → `this.SkyQueue!.GetCommandResult(cmd)`, etc. **Explicitly include `GetRawDegrees()` and the two-axis `GetRawSteps()`** (§3.8, Issue 3) — these were skipped in the Phase 4.x migration while the single-axis overload was correctly updated; they are on the hot position-read path called from `UpdateSteps()` and `MountConnect()`. Note: the `MountConnect()` **capabilities readback** problem (Issue 14, §3.8) is also rooted here but cannot be fully fixed until Step Q6 makes `SkyTasks()` instance-aware.
 
 2. **`SkyServer.Core.cs` and `SkyServer.cs`** (static methods) — add temporary static delegation helpers to maintain backward compat while this file is being worked through:
    ```csharp
@@ -412,6 +432,56 @@ internal bool IsConnected => _serial?.IsOpen == true && MountConnected;
 
 ---
 
+#### Step Q6 — Make `SkyTasks()`, `SimTasks()`, and `AxesStopValidate()` instance-aware
+
+**Files:** `SkyServer.Core.cs`, `MountInstance.cs`
+
+`SkyTasks()` and `SimTasks()` are static dispatch methods called from `MountInstance.MountConnect()`.
+They read settings from `SkyServer._settings` (→ `_defaultInstance._settings`) and dispatch commands
+to `SkyQueue.Instance`. For any non-default telescope this means: wrong settings, wrong hardware,
+and capabilities written back into the wrong instance (Issues 4, 14).
+
+**Plan:**
+
+1. Add a `MountInstance`-accepting overload to `SkyTasks()` and `SimTasks()` in `SkyServer.Core.cs`:
+   ```csharp
+   // Transition overload — static method, instance-routed:
+   internal static void SkyTasks(MountTaskName taskName, MountInstance instance)
+   {
+       // Use instance.SkyQueue and instance.Settings instead of SkyQueue.Instance / _settings
+   }
+   ```
+2. Update every `SkyServer.SkyTasks(...)` call in `MountInstance.MountConnect()` to pass `this`:
+   ```csharp
+   SkyServer.SkyTasks(MountTaskName.AllowAdvancedCommandSet, this);
+   ```
+3. Inside the new overload, replace every `SkyQueue.NewId` / `SkyQueue.GetCommandResult()` with
+   `instance.SkyQueue!.NewId` / `instance.SkyQueue!.GetCommandResult()`.
+4. Replace every `_settings!.XxxProperty` read with `instance.Settings.XxxProperty`.
+5. Replace every write-back to `SkyServer.CanPPec` / `SkyServer.CanHomeSensor` etc. with a
+   direct write to `instance._canPPec` / `instance._canHomeSensor` etc. — this simultaneously
+   fixes the `MountConnect()` capabilities readback problem (Issue 14, §3.8).
+6. Once all `MountConnect()` call sites use the new overload, mark the original (no-instance)
+   version `[Obsolete]`; remove it in Step 2.
+7. Apply the same pattern to `SimTasks()` and `AxesStopValidate()`.
+
+**Additionally — `SideOfPier` one-line fix (Issue 12, §3.8):**  
+As part of this step, fix `MountInstance.SideOfPier` to use `_settings.SouthernHemisphere`
+instead of `SkyServer.SouthernHemisphere`:
+```csharp
+// Before:
+bool southernHemisphere = SkyServer.SouthernHemisphere;
+// After:
+bool southernHemisphere = _settings.SouthernHemisphere;
+```
+
+**Risk:** Medium — `SkyTasks()` dispatches 30+ initialisation commands; settings cross-contamination
+is silent. Extend the `WhenCommandSentToDevice0ThenDevice1QueueUnaffected` test to also assert
+that capability flags (`CanPPec`, `MountName`, etc.) on Telescope 1 are unchanged after
+Telescope 2 calls `MountConnect()`.
+
+---
+
 #### Phase 0 Risk Summary
 
 | Step | Surface Area | Risk Level | Key Concern |
@@ -421,6 +491,7 @@ internal bool IsConnected => _serial?.IsOpen == true && MountConnected;
 | Q3 — Decouple command base classes | 97 concrete + 6 abstract command classes | High surface / low per-class risk | Mechanical; compiler guides completion; obsolete overloads keep build green |
 | Q4 — Route call sites through instance | ~127 call sites across 5 files | Medium | `AutoHome` classes need constructor injection; static event subscription removal |
 | Q5 — Fix serial port in `Commands.cs` | 1 class, 1 file | Low | Contained change |
+| Q6 — Make `SkyTasks()`/`SimTasks()` instance-aware | `SkyServer.Core.cs`, `MountInstance.cs` | Medium | Settings and capability cross-contamination is silent; requires assertion tests |
 
 #### Phase 0 Test Requirements
 
@@ -433,6 +504,8 @@ Create a `GreenSwamp.Alpaca.MountControl.Tests` xUnit project **before** executi
 | `WhenStepsUpdatedThenMountInstanceReceivesCallback` | Executor write-back reaches `MountInstance`; static `SkyServer.Steps` is NOT updated | Q1 |
 | `WhenCommandSentToDevice0ThenDevice1QueueUnaffected` | End-to-end device isolation after Q3+Q4 | Q4 |
 | `WhenQueueStoppedThenGetCommandResultReturnsFailure` | `CommandQueueBase.GetCommandResult()` when `IsRunning == false` | Q2 |
+| `WhenDevice1ConnectsThenDevice0CapabilityFlagsUnchanged` | `MountConnect()` capability readback (`CanPPec`, `MountName` etc.) writes only to the calling instance; `_defaultInstance` flags are unchanged (Issues 14, Q6) | Q6 |
+| `WhenDevice1ConnectsThenDevice0SettingsUnaffected` | `SkyTasks()` reads `AlignmentMode`, `SouthernHemisphere` etc. from the calling instance's `Settings`, not from `_defaultInstance._settings` (Issue 4, Q6) | Q6 |
 
 ---
 
@@ -480,9 +553,12 @@ Move the following to `MountInstance` backing fields with delegating wrappers in
 - `_isSlewing`, `_flipOnNextGoto`, `_slewState`, `_lastAutoHomeError` → `MountInstance`
 - `LoopCounter`, `TimerOverruns`, `AltAzTrackingMode` → `MountInstance`
 - `IsMountRunning` → `MountInstance.IsMountRunning` (already a read-only property there; expose setter)
+- `_trackingOffsetRate` (Vector) → `MountInstance` backing field; expose as `TrackingOffsetRaRate` / `TrackingOffsetDecRate`; `CalcCustomTrackingOffset()` becomes an instance method (Issue 8)
+- `SkyTrackingOffset` (static `int[2]`, currently in `SkyServer.TelescopeAPI.cs` §3.5) → instance field on `MountInstance`; `SkyGetRate()` must read from `this._skyTrackingOffset` (Issue 9)
+- `_hcPrevMoveRa`, `_hcPrevMoveDec` (HcPrevMove) → `MountInstance` backing fields (Issue 10)
+- `HcPrevMovesDec` (IList\<double\>) → `MountInstance` backing field; initialise a fresh list per instance (Issue 10)
 
-**Risk:** Medium — many call sites within SkyServer methods. Cross-reference each field before
-removing to avoid accidental loss of `OnStaticPropertyChanged()` raises.
+**Risk:** Medium — many call sites within `SkyServer.cs`; cross-reference each field before removing to avoid accidental loss of `OnStaticPropertyChanged()` raises.
 
 ---
 
@@ -570,9 +646,9 @@ This is the most complex step.  `UpdateServerEvent` is the core per-tick loop th
    `MountInstance`'s constructor so each instance subscribes its own handler.
 4. Move `LowVoltageEventSet` handler to instance.
 5. Move `TimerLock`, `_altAzTrackingLock` to `MountInstance`.
+6. Move `_mountPositionUpdatedEvent` (`ManualResetEventSlim`) to `MountInstance` — one event per telescope. Update `SkyPrecisionGoto()` and `SkyPulseGoto()` (both in `MountInstance.cs`) to `Reset()` and `Wait()` on `this._mountPositionUpdatedEvent`. The instance-level steps callback registered in Q1 (`OnSkyStepsUpdated`) must call `this._mountPositionUpdatedEvent.Set()` instead of the static `SkyServer._mountPositionUpdatedEvent` (Issue 7).
 
-**Blocker prerequisite:** Steps 2, 3, 4, 5 must be complete (all state fields must be on instance
-before the tick loop can operate on instance state).
+**Blocker prerequisite:** Steps 2, 3, 4, 5 must be complete (all state fields must be on instance before the tick loop can operate on instance state).
 
 **Risk:** High — this is the hot path. Regression risk is significant.  
 Add integration tests for the tick loop before making this change.
@@ -703,6 +779,8 @@ Blazor UI pages.  Consider:
 | B6 | `AutoHomeAsync` — `async void` method | Step 6 | This is fire-and-forget and swallows results. Should be converted to `async Task` before being moved to instance. |
 | B7 | Blazor pages access `SkyServer.*` directly | Step 9 | Need an inventory of all Blazor `.razor` / `.razor.cs` files that reference `SkyServer.*` before removing the static surface. |
 | B8 | Duplicate state arrays (§3.1 static + §2.2 instance) | Steps 1, 2 | Both copies exist right now. The static copies are not kept in sync with the instance copies. This is a latent data-coherency bug. Highest priority to fix. |
+| B9 | `SkyTasks()` / `SimTasks()` use `_defaultInstance._settings` and `SkyQueue.Instance` | Phase 0 Step Q6 | Called from every `MountInstance.MountConnect()` — wrong settings and wrong hardware for every telescope beyond the first. Also silently corrupts capabilities readback for all non-default instances (Issues 4, 14). Cannot be fixed until Q2 (instance queue ownership) is complete. |
+| B10 | `GetRawDegrees()` and two-axis `GetRawSteps()` use static `SkyQueue` | Phase 0 Step Q4 | Skipped in Phase 4.x migration; the single-axis overload was updated but not the multi-axis versions. These are on the hot position-read path called from `UpdateSteps()` and `MountConnect()` (Issue 3). |
 
 ---
 
@@ -738,7 +816,7 @@ Create a `GreenSwamp.Alpaca.MountControl.Tests` xUnit project. The project curre
 
 | Phase | Steps | Estimated Risk | Prerequisite |
 |-------|-------|---------------|-------------|
-| **0 — Queue migration** | Q1–Q5 | Medium–High | None — implement and test first |
+| **0 — Queue migration** | Q1–Q6 | Medium–High | None — implement and test first |
 | 5.1 — State consolidation | 1, 2 | Low–Medium | Phase 0 done |
 | 5.2 — PEC migration | 3 | Medium | 5.1 done |
 | 5.3 — Cancellation / SlewController | 4, 5 | Medium | 5.1 done |
@@ -768,12 +846,13 @@ Create a `GreenSwamp.Alpaca.MountControl.Tests` xUnit project. The project curre
 | **Q3** | `SkyCommands.cs` (change 3 abstract bases + 76 concrete constructors), `Simulator/Commands.cs` (change 3 abstract bases + 21 concrete constructors) |
 | **Q4** | `SkyServer.Core.cs` (remove static event subscription, update 65 call sites), `MountInstance.cs` (update 49 call sites), `AutohomeSky.cs` (inject queue), `AutohomeSim.cs` (inject queue), `SkyServer.cs` (update 4 call sites) |
 | **Q5** | `SkyQueue.cs` (`SkyQueueImplementation.CreateExecutor`), `Commands.cs` SkyWatcher (add `ISerialPort` constructor param, remove `SkyQueue.Serial`) |
+| **Q6** | `SkyServer.Core.cs` (`SkyTasks`, `SimTasks`, `AxesStopValidate` — add `MountInstance` overloads, use `instance.SkyQueue` and `instance.Settings`), `MountInstance.cs` (update `MountConnect()` call sites; fix `SideOfPier` to use `_settings.SouthernHemisphere`) |
 | 1 | `SkyServer.cs` (remove 4 static arrays, add delegating props) |
-| 2 | `SkyServer.cs` (remove ~15 static fields), `MountInstance.cs` (add fields + wrappers) |
+| 2 | `SkyServer.cs` (remove ~20 static fields including `_trackingOffsetRate`, `SkyTrackingOffset`, `_hcPrevMoveRa/Dec`, `HcPrevMovesDec`), `MountInstance.cs` (add instance fields + delegating wrappers) |
 | 3 | `SkyServer.cs` (remove PEC), `MountInstance.cs` (add PEC methods), new `MountInstance.Pec.cs` optional |
 | 4 | `SkyServer.TelescopeAPI.cs` (remove CTS fields), `MountInstance.cs` (add CTS fields) |
 | 5 | `SkyServer.TelescopeAPI.cs` (remove SlewController), `MountInstance.cs` |
-| 6 | `SkyServer.Core.cs` (remove timer/event), `MountInstance.cs` (add timer/event) |
+| 6 | `SkyServer.Core.cs` (remove timer/event, remove static `_mountPositionUpdatedEvent`), `MountInstance.cs` (add timer/event, add per-instance `_mountPositionUpdatedEvent`; update `SkyPrecisionGoto`/`SkyPulseGoto` to use instance event) |
 | 7 | `SkyServer.cs` (`Steps` setter → instance call) |
 | 8 | `Telescope.cs` (all property getters/setters route through instance) |
 | 9 | `SkyServer.cs`, `SkyServer.Core.cs`, `SkyServer.TelescopeAPI.cs` (remove `_defaultInstance`, static surface) |

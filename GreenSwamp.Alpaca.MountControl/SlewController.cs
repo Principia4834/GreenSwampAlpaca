@@ -567,6 +567,12 @@ namespace GreenSwamp.Alpaca.MountControl
         public double InitialDec { get; private set; }
         public bool WasTracking { get; private set; }
 
+        // Per-instance offset rates captured at slew creation time.
+        // Must NOT read SkyServer.RateRa/Dec — those always delegate to _defaultInstance
+        // and would return the wrong value for any non-default MountInstance.
+        public double RateRa { get; }
+        public double RateDec { get; }
+
         #endregion
 
         #region Constructor
@@ -574,7 +580,9 @@ namespace GreenSwamp.Alpaca.MountControl
         public SlewOperation(
             double[] target,
             SlewType slewType,
-            bool trackingAfterSlew)
+            bool trackingAfterSlew,
+            double rateRa = 0.0,
+            double rateDec = 0.0)
         {
             Target = target ?? throw new ArgumentNullException(nameof(target));
             if (target.Length != 2)
@@ -582,6 +590,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             SlewType = slewType;
             TrackingAfterSlew = trackingAfterSlew;
+            RateRa = rateRa;
+            RateDec = rateDec;
         }
 
         #endregion
@@ -602,15 +612,13 @@ namespace GreenSwamp.Alpaca.MountControl
             // Disable tracking during slew (will be restored in completion phase)
             SkyServer.Tracking = false;
 
-            // Prepare predictor for Ra/Dec slews
+            // Prepare predictor for Ra/Dec slews.
+            // Use Target[] and the per-instance rates captured at construction —
+            // SkyServer.TargetRa/Dec and SkyServer.RateRa/Dec always delegate to
+            // _defaultInstance and are wrong for any non-default MountInstance.
             if (SlewType == SlewType.SlewRaDec)
             {
-                SkyPredictor.Set(
-                    SkyServer.TargetRa,
-                    SkyServer.TargetDec,
-                    SkyServer.RateRa,
-                    SkyServer.RateDec
-                );
+                SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
             }
         }
 

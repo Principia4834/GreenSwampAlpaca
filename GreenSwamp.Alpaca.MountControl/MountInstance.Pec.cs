@@ -111,15 +111,17 @@ namespace GreenSwamp.Alpaca.MountControl
                         SkyServer.PecTrainInProgress = false;
                         return;
                     }
-                    var ppectrain = new SkyIsPPecInTrainingOn(SkyQueue.NewId);
-                    if (bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(ppectrain).Result), out bool bTrain))
+                    var ppectrain = new SkyIsPPecInTrainingOn(SkyQueueInstance.NewId, SkyQueueInstance);
+                    if (bool.TryParse(Convert.ToString(SkyQueueInstance.GetCommandResult(ppectrain).Result), out bool bTrain))
                     {
                         SkyServer.PecTraining = bTrain;
                         SkyServer.PecTrainInProgress = bTrain;
                         if (!bTrain && _settings.PPecOn) //restart pec
                         {
-                            SkyServer.PPecOn = false;
-                            SkyServer.PPecOn = true;
+                            _settings.PPecOn = false;
+                            SkyServer.SkyTasks(MountTaskName.Pec, this);
+                            _settings.PPecOn = true;
+                            SkyServer.SkyTasks(MountTaskName.Pec, this);
                         }
                     }
                     break;
@@ -133,9 +135,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             try
             {
-                if (!SkyServer.PecOn || !Tracking || PecBinCount < 0 || SkyServer.IsSlewing || !_pecShow) return;
+                if (!_settings.PecOn || !Tracking || PecBinCount < 0 || IsSlewing || !_pecShow) return;
 
-                var position = (int)Range.RangeDouble(SkyServer.Steps[0], Convert.ToDouble(SkyServer.StepsPerRevolution[0]));
+                var position = (int)Range.RangeDouble(_steps[0], Convert.ToDouble(_stepsPerRevolution[0]));
                 var newBinNo = (int)((position + _settings.PecOffSet) / PecBinSteps);
                 Tuple<double, int> pecBin = null;
 
@@ -143,20 +145,20 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     case PecMode.PecWorm:
                         newBinNo %= 100;
-                        if (SkyServer.PecBinNow?.Item1 == newBinNo) return;
+                        if (_pecBinNow?.Item1 == newBinNo) return;
                         if (PecWormMaster == null || PecWormMaster?.Count == 0) { return; }
                         PecWormMaster?.TryGetValue(newBinNo, out pecBin);
                         break;
                     case PecMode.Pec360:
-                        if (SkyServer.PecBinNow?.Item1 == newBinNo) return;
+                        if (_pecBinNow?.Item1 == newBinNo) return;
                         if (Pec360Master == null || Pec360Master?.Count == 0) { return; }
                         if (_pecBinsSubs == null) { _pecBinsSubs = new SortedList<int, Tuple<double, int>>(); }
                         var count = 0;
                         while (_pecBinsSubs.TryGetValue(newBinNo, out pecBin) == false && count < 2)
                         {
                             var binStart = newBinNo - 100 < 0 ? 0 : newBinNo - 100;
-                            var binEnd = newBinNo + 100 > SkyServer.StepsPerRevolution[0] - 1
-                                ? (int)SkyServer.StepsPerRevolution[0] - 1
+                            var binEnd = newBinNo + 100 > _stepsPerRevolution[0] - 1
+                                ? (int)_stepsPerRevolution[0] - 1
                                 : newBinNo + 100;
                             _pecBinsSubs.Clear();
                             for (var i = binStart; i <= binEnd; i++)
@@ -193,7 +195,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = $"{ex.Message}|{ex.StackTrace}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
-                SkyServer.MountError = ex;
+                _mountError = ex;
             }
         }
 
@@ -322,10 +324,10 @@ namespace GreenSwamp.Alpaca.MountControl
             { paramError = true; msg = $"BinCount {def.BinCount}|{PecBinCount}"; }
             if (Math.Abs(def.BinSteps - PecBinSteps) > 0.000000001)
             { paramError = true; msg = $"BinSteps {def.BinSteps}|{PecBinSteps}"; }
-            if (Math.Abs((long)def.StepsPerRev - SkyServer.StepsPerRevolution[0]) > 0.000000001)
-            { paramError = true; msg = $"StepsPerRev{def.StepsPerRev}|{SkyServer.StepsPerRevolution[0]}"; }
-            if (def.WormTeeth != SkyServer.WormTeethCount[0])
-            { paramError = true; msg = $"WormTeeth {def.WormTeeth}|{SkyServer.WormTeethCount[0]}"; }
+            if (Math.Abs((long)def.StepsPerRev - _stepsPerRevolution[0]) > 0.000000001)
+            { paramError = true; msg = $"StepsPerRev{def.StepsPerRev}|{_stepsPerRevolution[0]}"; }
+            if (def.WormTeeth != _wormTeethCount[0])
+            { paramError = true; msg = $"WormTeeth {def.WormTeeth}|{_wormTeethCount[0]}"; }
             switch (def.FileType)
             {
                 case PecFileType.GsPecWorm:

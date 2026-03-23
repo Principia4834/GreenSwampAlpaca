@@ -35,6 +35,15 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
+        /// <summary>
+        /// Fires StaticPropertyChanged("Steps") for Blazor UI observers.
+        /// Called by MountInstance.ReceiveSteps instead of routing through the static Steps setter.
+        /// </summary>
+        internal static void NotifyStepsChanged()
+        {
+            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(nameof(Steps)));
+        }
+
         #endregion
 
         #region Property Settings 
@@ -589,8 +598,9 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _defaultInstance?._steps ?? new double[] { 0.0, 0.0 };
             set
             {
-                if (_defaultInstance != null) _defaultInstance._steps = value;
-                _defaultInstance?.SetSteps(value);
+                // Delegate to the per-instance pipeline (sets _steps, runs coordinate conversion,
+                // signals _mountPositionUpdatedEvent, and fires NotifyStepsChanged for Blazor UI)
+                _defaultInstance?.ReceiveSteps(value);
                 OnStaticPropertyChanged();
             }
         }
@@ -905,20 +915,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsMountRunning
         {
-            get
-            {
-                switch (_settings!.Mount)
-                {
-                    case MountType.Simulator:
-                        _mountRunning = MountQueue.IsRunning;
-                        break;
-                    case MountType.SkyWatcher:
-                        _mountRunning = SkyQueue.IsRunning;
-                        break;
-                }
-
-                return _mountRunning;
-            }
+            get => _defaultInstance?.IsMountRunning ?? _mountRunning;
             set
             {
                 _mountRunning = value;

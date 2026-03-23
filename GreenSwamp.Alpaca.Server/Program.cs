@@ -300,8 +300,8 @@ namespace GreenSwamp.Alpaca.Server
                     }
                     catch (FileNotFoundException)
                     {
-                        Logger.LogInformation("Profile 'simulator-altaz' not found, using default settings");
-                        simulatorProfileSettings = settingsService.GetSettings();
+                        Logger.LogInformation("Profile 'simulator-altaz' not found, falling back to default-altaz");
+                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync("default-altaz");
                     }
 
                     try
@@ -311,8 +311,8 @@ namespace GreenSwamp.Alpaca.Server
                     }
                     catch (FileNotFoundException)
                     {
-                        Logger.LogInformation("Profile 'eq6-default' not found, using default settings");
-                        physicalMountProfileSettings = settingsService.GetSettings();
+                        Logger.LogInformation("Profile 'eq6-default' not found, falling back to default-germanpolar");
+                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync("default-germanpolar");
                     }
 
                     // Create instances with loaded profile settings
@@ -361,8 +361,8 @@ namespace GreenSwamp.Alpaca.Server
                     }
                     catch (FileNotFoundException)
                     {
-                        Logger.LogInformation($"Profile '{slot0.ProfileName}' not found, using default settings");
-                        simulatorProfileSettings = settingsService.GetSettings();
+                        Logger.LogInformation($"Profile '{slot0.ProfileName}' not found, falling back to default-altaz");
+                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync("default-altaz");
                     }
 
                     try
@@ -373,8 +373,8 @@ namespace GreenSwamp.Alpaca.Server
                     }
                     catch (FileNotFoundException)
                     {
-                        Logger.LogInformation($"Profile '{slot1.ProfileName}' not found, using default settings");
-                        physicalMountProfileSettings = settingsService.GetSettings();
+                        Logger.LogInformation($"Profile '{slot1.ProfileName}' not found, falling back to default-germanpolar");
+                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync("default-germanpolar");
                     }
 
                     // Initialize reserved slots with loaded profiles

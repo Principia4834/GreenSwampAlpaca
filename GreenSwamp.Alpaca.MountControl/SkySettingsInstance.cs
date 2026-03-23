@@ -2159,6 +2159,35 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 settings.Temperature = _temperature;
 
+                // Batch 12: Capabilities
+                settings.CanAlignMode = _canAlignMode;
+                settings.CanAltAz = _canAltAz;
+                settings.CanEquatorial = _canEquatorial;
+                settings.CanFindHome = _canFindHome;
+                settings.CanLatLongElev = _canLatLongElev;
+                settings.CanOptics = _canOptics;
+                settings.CanPark = _canPark;
+                settings.CanPulseGuide = _canPulseGuide;
+                settings.CanSetEquRates = _canSetEquRates;
+                settings.CanSetDeclinationRate = _canSetDeclinationRate;
+                settings.CanSetGuideRates = _canSetGuideRates;
+                settings.CanSetPark = _canSetPark;
+                settings.CanSetPierSide = _canSetPierSide;
+                settings.CanSetRightAscensionRate = _canSetRightAscensionRate;
+                settings.CanSetTracking = _canSetTracking;
+                settings.CanSiderealTime = _canSiderealTime;
+                settings.CanSlew = _canSlew;
+                settings.CanSlewAltAz = _canSlewAltAz;
+                settings.CanSlewAltAzAsync = _canSlewAltAzAsync;
+                settings.CanSlewAsync = _canSlewAsync;
+                settings.CanSync = _canSync;
+                settings.CanSyncAltAz = _canSyncAltAz;
+                settings.CanTrackingRates = _canTrackingRates;
+                settings.CanUnpark = _canUnPark;
+                settings.NoSyncPastMeridian = _noSyncPastMeridian;
+                settings.NumMoveAxis = _numMoveAxis;
+                settings.VersionOne = _versionOne;
+
                 await _settingsService.SaveSettingsAsync(settings);
                 LogSettings("SavedToJson", "Success");
             }
