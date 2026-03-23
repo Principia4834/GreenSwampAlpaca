@@ -1069,8 +1069,8 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (_settings.Mount)
             {
                 case MountType.Simulator:
-                    var simPositions = new CmdAxisSteps(MountQueue.NewId);
-                    var a = (int[])MountQueue.GetCommandResult(simPositions).Result;
+                    var simPositions = new CmdAxisSteps(MountQueueInstance!.NewId, MountQueueInstance);
+                    var a = (int[])MountQueueInstance.GetCommandResult(simPositions).Result;
 
                     switch (axis)
                     {
@@ -1086,11 +1086,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     switch (axis)
                     {
                         case 0:
-                            var b = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis1);
-                            return Convert.ToDouble(SkyQueue.GetCommandResult(b).Result);
+                            var b = new SkyGetAxisPositionCounter(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1);
+                            return Convert.ToDouble(SkyQueueInstance.GetCommandResult(b).Result);
                         case 1:
-                            var c = new SkyGetAxisPositionCounter(SkyQueue.NewId, Axis.Axis2);
-                            return Convert.ToDouble(SkyQueue.GetCommandResult(c).Result);
+                            var c = new SkyGetAxisPositionCounter(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2);
+                            return Convert.ToDouble(SkyQueueInstance.GetCommandResult(c).Result);
                         default:
                             return null;
                     }
@@ -1113,10 +1113,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     switch (_settings.Mount)
                     {
                         case MountType.Simulator:
-                            _ = new CmdAxesSteps(MountQueue.NewId);
+                            _ = new CmdAxesSteps(MountQueueInstance!.NewId, MountQueueInstance);
                             break;
                         case MountType.SkyWatcher:
-                            _ = new SkyUpdateSteps(SkyQueue.NewId);
+                            _ = new SkyUpdateSteps(SkyQueueInstance!.NewId, SkyQueueInstance);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
