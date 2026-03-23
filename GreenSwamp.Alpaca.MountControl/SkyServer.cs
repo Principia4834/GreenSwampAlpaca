@@ -49,8 +49,13 @@ namespace GreenSwamp.Alpaca.MountControl
         //          _canPolarLed, _canAdvancedCmdSupport, _rateMoveAxes, _moveAxisActive,
         //          _snapPort1Result, _snapPort2Result moved to MountInstance backing fields.
         private static bool _mountRunning;
-        private static ParkPosition _parkSelected;
-        private static double[] _steps = { 0.0, 0.0 };
+        // Phase 6: _parkSelected moved to MountInstance backing field
+        private static ParkPosition? _parkSelected
+        {
+            get => _defaultInstance?._parkSelected;
+            set { if (_defaultInstance != null) _defaultInstance._parkSelected = value; }
+        }
+        // Step 7: _steps moved to MountInstance backing field
 
         // Position update signaling - replaces MountPositionUpdated boolean
         private static readonly ManualResetEventSlim _mountPositionUpdatedEvent =
@@ -355,7 +360,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Count number of times server loop is executed
         /// </summary>
-        public static ulong LoopCounter { get; internal set; }
+        public static ulong LoopCounter
+        {
+            get => _defaultInstance?._loopCounter ?? 0;
+            internal set
+            {
+                if (_defaultInstance == null) return;
+                _defaultInstance._loopCounter = value;
+                OnStaticPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// use monitoring for charts
@@ -572,10 +586,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double[] Steps 
         {
-            get => _steps;
+            get => _defaultInstance?._steps ?? new double[] { 0.0, 0.0 };
             set
             {
-                _steps = value;
+                if (_defaultInstance != null) _defaultInstance._steps = value;
                 _defaultInstance?.SetSteps(value);
                 OnStaticPropertyChanged();
             }
@@ -610,12 +624,20 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Counts any overlapping events with updating UI that might occur
         /// should always be 0 or event interval is too fast
         /// </summary>
-        internal static int TimerOverruns { get; set; }
+        internal static int TimerOverruns
+        {
+            get => _defaultInstance?._timerOverruns ?? 0;
+            set { if (_defaultInstance != null) _defaultInstance._timerOverruns = value; }
+        }
 
         /// <summary>
         /// Current Alt/Az tracking mode - RA/Dec predictor or calculated tracking rate
         /// </summary>
-        public static AltAzTrackingType AltAzTrackingMode { get; set; }
+        public static AltAzTrackingType AltAzTrackingMode
+        {
+            get => _defaultInstance?._altAzTrackingMode ?? default;
+            set { if (_defaultInstance != null) _defaultInstance._altAzTrackingMode = value; }
+        }
 
         #endregion
 

@@ -22,13 +22,13 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     /// <summary>
     /// Implementation of command queue for Simulator
     /// </summary>
-    internal class MountQueueImplementation : CommandQueueBase<Actions>
+    public class MountQueueImplementation : CommandQueueBase<Actions>
     {
         private Action<double[]>? _stepsCallback;
         private Action<bool>? _pulseGuideRaCallback;
         private Action<bool>? _pulseGuideDecCallback;
 
-        internal void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
+        public void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
         {
             _stepsCallback = stepsCallback;
             _pulseGuideRaCallback = pulseGuideRaCallback;
@@ -59,12 +59,22 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
     public static class MountQueue
     {
-        private static readonly MountQueueImplementation _instance = new MountQueueImplementation();
+        // Q2: Non-readonly; MountInstance registers its owned implementation via RegisterInstance()
+        private static MountQueueImplementation _instance;
         private static bool _isPulseGuidingDec;
         private static bool _isPulseGuidingRa;
         private static double[] _steps;
 
         public static event PropertyChangedEventHandler StaticPropertyChanged;
+
+        /// <summary>
+        /// Register the instance-owned queue so the static facade delegates to it.
+        /// Called by MountInstance.MountStart() before the queue is started.
+        /// </summary>
+        public static void RegisterInstance(MountQueueImplementation impl)
+        {
+            _instance = impl ?? throw new ArgumentNullException(nameof(impl));
+        }
 
         /// <summary>
         /// Instance for use by command constructors and MountInstance queue ownership.
@@ -74,12 +84,12 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <summary>
         /// IsRunning
         /// </summary>
-        public static bool IsRunning => _instance.IsRunning;
+        public static bool IsRunning => _instance?.IsRunning ?? false;
 
         /// <summary>
         /// Locking id
         /// </summary>
-        public static long NewId => _instance.NewId;
+        public static long NewId => _instance?.NewId ?? 0;
 
         /// <summary>
         /// status for Dec Pulse
@@ -126,7 +136,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <param name="command"></param>
         public static void AddCommand(IMountCommand command)
         {
-            _instance.AddCommand(command);
+            _instance?.AddCommand(command);
         }
 
         /// <summary>
@@ -136,15 +146,15 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         public static IMountCommand GetCommandResult(IMountCommand command)
         {
-            return (IMountCommand)_instance.GetCommandResult(command);
+            return _instance == null ? command : (IMountCommand)_instance.GetCommandResult(command);
         }
 
         /// <summary>
-        /// Start the queue
+        /// Start the queue — delegates to the instance registered via RegisterInstance().
         /// </summary>
         public static void Start()
         {
-            _instance.SetupCallbacks(steps => Steps = steps, v => IsPulseGuidingRa = v, v => IsPulseGuidingDec = v);
+            if (_instance == null) throw new InvalidOperationException("No MountQueueImplementation registered. Call RegisterInstance() before Start().");
             _instance.Start();
         }
 
@@ -153,7 +163,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// </summary>
         public static void Stop()
         {
-            _instance.Stop();
+            _instance?.Stop();
         }
 
         /// <summary>

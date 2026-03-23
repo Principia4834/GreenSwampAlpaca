@@ -26,7 +26,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     /// <summary>
     /// Implementation of command queue for SkyWatcher
     /// </summary>
-    internal class SkyQueueImplementation : CommandQueueBase<SkyWatcher>
+    public class SkyQueueImplementation : CommandQueueBase<SkyWatcher>
     {
         private ISerialPort _serial;
         private int[] _customMount360Steps;
@@ -68,7 +68,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// Set the callbacks used by the executor to report steps and pulse-guide state.
         /// Must be called before Start() so the callbacks are available in InitializeExecutor.
         /// </summary>
-        internal void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
+        public void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
         {
             _stepsCallback = stepsCallback;
             _pulseGuideRaCallback = pulseGuideRaCallback;
@@ -106,12 +106,22 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
     public static class SkyQueue
     {
-        private static readonly SkyQueueImplementation _instance = new SkyQueueImplementation();
+        // Q2: Non-readonly; MountInstance registers its owned implementation via RegisterInstance()
+        private static SkyQueueImplementation _instance;
         private static bool _isPulseGuidingDec;
         private static bool _isPulseGuidingRa;
         private static double[] _steps;
 
         public static event PropertyChangedEventHandler StaticPropertyChanged;
+
+        /// <summary>
+        /// Register the instance-owned queue so the static facade delegates to it.
+        /// Called by MountInstance.MountStart() before the queue is started.
+        /// </summary>
+        public static void RegisterInstance(SkyQueueImplementation impl)
+        {
+            _instance = impl ?? throw new ArgumentNullException(nameof(impl));
+        }
 
         /// <summary>
         /// Instance for use by command constructors and MountInstance queue ownership.
@@ -121,27 +131,27 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <summary>
         /// Serial object
         /// </summary>
-        internal static ISerialPort Serial => _instance.Serial;
+        internal static ISerialPort Serial => _instance?.Serial;
 
         /// <summary>
         /// Custom Mount :s replacement
         /// </summary>
-        internal static int[] CustomMount360Steps => _instance.CustomMount360Steps;
+        internal static int[] CustomMount360Steps => _instance?.CustomMount360Steps;
 
         /// <summary>
         /// Custom Mount :a replacement
         /// </summary>
-        internal static double[] CustomRaWormSteps => _instance.CustomRaWormSteps;
+        internal static double[] CustomRaWormSteps => _instance?.CustomRaWormSteps;
 
         /// <summary>
         /// IsRunning
         /// </summary>
-        public static bool IsRunning => _instance.IsRunning;
+        public static bool IsRunning => _instance?.IsRunning ?? false;
 
         /// <summary>
         /// Locking id
         /// </summary>
-        public static long NewId => _instance.NewId;
+        public static long NewId => _instance?.NewId ?? 0;
 
         /// <summary>
         /// status for Dec Pulse
@@ -188,7 +198,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <param name="command"></param>
         public static void AddCommand(ISkyCommand command)
         {
-            _instance.AddCommand(command);
+            _instance?.AddCommand(command);
         }
 
         /// <summary>
@@ -198,19 +208,15 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <returns></returns>
         public static ISkyCommand GetCommandResult(ISkyCommand command)
         {
-            return (ISkyCommand)_instance.GetCommandResult(command);
+            return _instance == null ? command : (ISkyCommand)_instance.GetCommandResult(command);
         }
 
         /// <summary>
-        /// Startup Queues
+        /// Startup Queues — delegates to the instance registered via RegisterInstance().
         /// </summary>
-        /// <param name="serial"></param>
-        /// <param name="customMount360Steps"></param>
-        /// <param name="customRaWormSteps"></param>
-        /// <param name="lowVoltageEventHandler"></param>
         public static void Start(ISerialPort serial, int[] customMount360Steps, double[] customRaWormSteps, EventHandler lowVoltageEventHandler = null)
         {
-            _instance.SetupCallbacks(steps => Steps = steps, v => IsPulseGuidingRa = v, v => IsPulseGuidingDec = v);
+            if (_instance == null) throw new InvalidOperationException("No SkyQueueImplementation registered. Call RegisterInstance() before Start().");
             _instance.Start(serial, customMount360Steps, customRaWormSteps, lowVoltageEventHandler);
         }
 
@@ -219,7 +225,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// </summary>
         public static void Stop()
         {
-            _instance.Stop();
+            _instance?.Stop();
         }
 
         /// <summary>

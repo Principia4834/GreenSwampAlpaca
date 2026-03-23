@@ -2691,12 +2691,13 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_altAzTrackingTimer?.IsRunning == true)
             {
                 // handle timer race condition triggering handler
-                if (Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) == 0)
-                {
-                    SetTracking();
-                    // Release the lock
-                    _altAzTrackingLock = 0;
-                }
+                    if (_defaultInstance != null &&
+                        Interlocked.CompareExchange(ref _defaultInstance._altAzTrackingLock, -1, 0) == 0)
+                    {
+                        SetTracking();
+                        // Release the lock
+                        _defaultInstance._altAzTrackingLock = 0;
+                    }
             }
         }
 

@@ -43,7 +43,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // Instance state fields (migrated from static)
         private MediaTimer? _mediaTimer;
-        private MediaTimer? _altAzTrackingTimer;
+        internal MediaTimer? _altAzTrackingTimer;
         // Phase 4.1: Converted to delegating properties (fields removed, see properties below)
         private Vector _homeAxes;
         internal Vector _appAxes;
@@ -94,6 +94,16 @@ namespace GreenSwamp.Alpaca.MountControl
         internal bool _isAutoHomeRunning;
         internal bool _snapPort1Result;
         internal bool _snapPort2Result;
+
+        // Step 2: Per-instance diagnostics and tracking mode (migrated from static SkyServer)
+        internal ulong _loopCounter;
+        internal int _timerOverruns;
+        internal AltAzTrackingType _altAzTrackingMode;
+        internal ParkPosition? _parkSelected;
+        // Phase 6: AltAz tracking lock (Int32 for Interlocked; direct field access required for ref semantics)
+        internal Int32 _altAzTrackingLock;
+        // Step 7: Raw step counts from hardware — backing field for SkyServer.Steps
+        internal double[] _steps = { 0.0, 0.0 };
 
         // UpdateSteps fields
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
@@ -391,6 +401,11 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _slewSettleTime;
             set => _slewSettleTime = value;
         }
+
+        // Step 2: Per-instance diagnostics and tracking mode
+        public ulong LoopCounter { get => _loopCounter; internal set => _loopCounter = value; }
+        public int TimerOverruns { get => _timerOverruns; internal set => _timerOverruns = value; }
+        public AltAzTrackingType AltAzTrackingMode { get => _altAzTrackingMode; set => _altAzTrackingMode = value; }
 
         #endregion
 
@@ -1259,8 +1274,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 case MountType.Simulator:
                     Mount.Simulator.Settings.AutoHomeAxisX = (int)_settings.AutoHomeAxisX;
                     Mount.Simulator.Settings.AutoHomeAxisY = (int)_settings.AutoHomeAxisY;
+                    var mqImpl = new GreenSwamp.Alpaca.Mount.Simulator.MountQueueImplementation();
+                    mqImpl.SetupCallbacks(
+                        steps => GreenSwamp.Alpaca.Mount.Simulator.MountQueue.Steps = steps,
+                        v => GreenSwamp.Alpaca.Mount.Simulator.MountQueue.IsPulseGuidingRa = v,
+                        v => GreenSwamp.Alpaca.Mount.Simulator.MountQueue.IsPulseGuidingDec = v);
+                    GreenSwamp.Alpaca.Mount.Simulator.MountQueue.RegisterInstance(mqImpl);
                     MountQueue.Start();
-                    MountQueueInstance = GreenSwamp.Alpaca.Mount.Simulator.MountQueue.Instance;
+                    MountQueueInstance = mqImpl;
                     if (MountQueue.IsRunning) { SkyServer.ConnectAlignmentModel(); }
                     else
                     { throw new Exception("Failed to start simulator queue"); }
@@ -1284,8 +1305,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         customWormSteps = new[] { (double)_settings.CustomRa360Steps / _settings.CustomRaWormTeeth, (double)_settings.CustomDec360Steps / _settings.CustomDecWormTeeth };
                     }
 
-                    SkyQueue.Start(SkySystem.Serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
-                    SkyQueueInstance = GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.Instance;
+                    // Q2: Create instance-owned queue; register on static facade before starting
+                    var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
+                    sqImpl.SetupCallbacks(
+                        steps => GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.Steps = steps,
+                        v => GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.IsPulseGuidingRa = v,
+                        v => GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.IsPulseGuidingDec = v);
+                    GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.RegisterInstance(sqImpl);
+                    sqImpl.Start(SkySystem.Serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
+                    SkyQueueInstance = sqImpl;
                     if (!SkyQueue.IsRunning)
                     {
                         throw new SkyServerException(ErrorCode.ErrMount, "Failed to start sky queue");
@@ -1307,12 +1335,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
                 _mediaTimer.Tick += OnUpdateServerEvent;
                 _mediaTimer.Start();
-
-                // Event to update AltAz tracking rate
-                // Ensure AltAzTrackingUpdateInterval is valid for MediaTimer (must be > 0)
-                var altAzInterval = _settings.AltAzTrackingUpdateInterval > 0 ? _settings.AltAzTrackingUpdateInterval : 2500;
-                _altAzTrackingTimer = new MediaTimer { Period = altAzInterval, Resolution = 5 };
-                _altAzTrackingTimer.Tick += SkyServer.AltAzTrackingTimerEvent;
             }
             else
             {
@@ -1374,11 +1396,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 Monitor.TryEnter(_timerLock, ref hasLock);
                 if (!hasLock)
                 {
-                    SkyServer.TimerOverruns++;
+                    _timerOverruns++;
                     return;
                 }
 
-                SkyServer.LoopCounter++;
+                _loopCounter++;
                 SkyServer.SiderealTime = SkyServer.GetLocalSiderealTime();
                 SkyServer.UpdateSteps();
                 SkyServer.Lha = Coordinate.Ra2Ha12(SkyServer.RightAscensionXForm, SkyServer.SiderealTime);

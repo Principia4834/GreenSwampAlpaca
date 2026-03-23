@@ -57,8 +57,13 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private const double SiderealRate = 15.0410671786691;
 
-        private static MediaTimer _altAzTrackingTimer;
-        private static Int32 _altAzTrackingLock;
+        // Phase 6: AltAz timer delegates to default instance (per-device isolation)
+        private static MediaTimer? _altAzTrackingTimer
+        {
+            get => _defaultInstance?._altAzTrackingTimer;
+            set { if (_defaultInstance != null) _defaultInstance._altAzTrackingTimer = value; }
+        }
+        // _altAzTrackingLock removed from static — use _defaultInstance._altAzTrackingLock directly (ref semantics required by Interlocked)
         // Default mount instance for backward compatibility
         private static MountInstance? _defaultInstance;
         // Phase 2: Instance-based settings reference
