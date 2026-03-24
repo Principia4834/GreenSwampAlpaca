@@ -67,27 +67,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Registers an existing MountInstance in the registry at the specified slot.
-        /// Used by SkyServer.Initialize() to pre-register _defaultInstance as slot 0,
-        /// ensuring GetInstance(0) and _defaultInstance are the same object until
-        /// Step 9 migrates the write pipeline to per-device registry instances.
-        /// Overwrites any existing entry (supports re-initialization).
-        /// </summary>
-        /// <param name="deviceNumber">Device number (must be >= 0)</param>
-        /// <param name="instance">MountInstance to register</param>
-        // TODO Step 9: remove once the write pipeline targets per-device registry instances directly.
-        public static void RegisterInstance(int deviceNumber, MountInstance instance)
-        {
-            if (deviceNumber < 0)
-                throw new ArgumentOutOfRangeException(nameof(deviceNumber), "Device number must be >= 0");
-            ArgumentNullException.ThrowIfNull(instance);
-            lock (_lock)
-            {
-                _instances[deviceNumber] = instance;
-            }
-        }
-
-        /// <summary>
         /// Retrieves a mount instance by device number.
         /// </summary>
         /// <param name="deviceNumber">Device number to look up</param>

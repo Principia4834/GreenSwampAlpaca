@@ -261,17 +261,9 @@ namespace GreenSwamp.Alpaca.Server
                     Logger.LogInformation("✅ SkySettingsInstance created (JSON-only)");
                 }
 
-                // Initialize SkyServer with instance settings
-                GreenSwamp.Alpaca.MountControl.SkyServer.Initialize(settingsInstance);
-                Logger.LogInformation("✅ SkyServer initialized");
-
                 // Initialize static facade for backward compatibility
                 GreenSwamp.Alpaca.MountControl.SkySettings.Initialize(settingsInstance);
                 Logger.LogInformation("✅ Static SkySettings facade initialized");
-
-                // Initialize SkySystem with instance settings
-                GreenSwamp.Alpaca.MountControl.SkySystem.Initialize(settingsInstance);
-                Logger.LogInformation("✅ SkySystem initialized");
 
                 Logger.LogInformation("✅ Instance-based settings active");
 
@@ -452,6 +444,10 @@ namespace GreenSwamp.Alpaca.Server
                 }
 
                 Logger.LogInformation("✅ Device registry initialization complete");
+
+                // Initialize SkyServer after slot 0 is registered — _settings now resolves to slot 0 instance
+                GreenSwamp.Alpaca.MountControl.SkyServer.Initialize();
+                Logger.LogInformation("✅ SkyServer initialized (using registered slot 0 settings)");
             }
             catch (Exception ex)
             {

@@ -23,8 +23,13 @@ using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.MountControl;
 using GreenSwamp.Alpaca.Shared;
 using Range = GreenSwamp.Alpaca.Principles.Range;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO.Ports;
+using System.Net;
 using System.Reflection;
+using GreenSwamp.Alpaca.Shared.Transport;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
@@ -176,6 +181,13 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _siderealTime;
         private double _lha;
         private PointingState _isSideOfPier = PointingState.Unknown;
+
+        // Serial connection fields (migrated from SkySystem)
+        private ISerialPort? _serial;
+        private ConnectType _connectType = ConnectType.None;
+        private Exception? _serialError;
+        private readonly ConcurrentDictionary<long, bool> _connectStates = new();
+        public bool Connecting { get; private set; }
 
         #endregion
 
@@ -388,6 +400,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // Phase 8: IsSlewing — mirrors SkyServer.IsSlewing logic using per-instance fields
         public bool IsSlewing =>
             (_slewController?.IsSlewing == true) ||
+            (Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0 ||
             _moveAxisActive ||
             _isSlewing;
 
@@ -1366,6 +1379,125 @@ namespace GreenSwamp.Alpaca.MountControl
         internal Vector HomeAxes => _homeAxes;
         internal Vector AppAxes => _appAxes;
 
+        #region Serial connection (migrated from SkySystem)
+
+        /// <summary>
+        /// Adds or removes the given client ID from the connected-client set.
+        /// On first connect, starts the mount hardware. On last disconnect, the hardware
+        /// continues running until explicitly stopped.
+        /// </summary>
+        public void SetConnected(long id, bool value)
+        {
+            if (value)
+            {
+                if (_connectStates.Count == 0) { Connecting = true; }
+                var notAlreadyPresent = _connectStates.TryAdd(id, true);
+                if (_connectStates.Count > 0 && !IsMountRunning)
+                {
+                    SkyServer.IsMountRunning = true;
+                    var connectionTimer = Stopwatch.StartNew();
+                    while (SkyServer.LoopCounter < 2 && connectionTimer.ElapsedMilliseconds < 5000)
+                        Thread.Sleep(100);
+                }
+                var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Add|{id}|{notAlreadyPresent}" };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            else
+            {
+                if (_connectStates.Count == 1) { Connecting = true; }
+                var successfullyRemoved = _connectStates.TryRemove(id, out _);
+                var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Remove|{id}|{successfullyRemoved}" };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            Connecting = false;
+        }
+
+        /// <summary>
+        /// Opens the serial or UDP port defined in settings. Equivalent to SkySystem.ConnectSerial = true.
+        /// </summary>
+        internal void OpenSerial()
+        {
+            _serialError = null;
+            try
+            {
+                _serial?.Dispose();
+                _serial = null;
+                _connectType = ConnectType.None;
+
+                var readTimeout = TimeSpan.FromMilliseconds(_settings.ReadTimeout);
+                if (_settings.Port.Contains("COM"))
+                {
+                    var options = SerialOptions.DiscardNull
+                        | (_settings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)
+                        | (_settings.RtsEnable ? SerialOptions.RtsEnable : SerialOptions.None);
+
+                    _serial = new GsSerialPort(
+                        _settings.Port,
+                        (int)_settings.BaudRate,
+                        readTimeout,
+                        _settings.HandShake,
+                        Parity.None,
+                        StopBits.One,
+                        _settings.DataBits,
+                        options);
+                    _connectType = ConnectType.Com;
+                }
+                else
+                {
+                    var endpoint = CreateIpEndPoint(_settings.Port);
+                    _serial = new SerialOverUdpPort(endpoint, readTimeout);
+                    _connectType = ConnectType.Wifi;
+                }
+                _serial?.Open();
+            }
+            catch (Exception ex)
+            {
+                _serialError = ex;
+                var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ex.Message}|{ex.InnerException?.Message}" };
+                MonitorLog.LogToMonitor(monitorItem);
+                _serial = null;
+                _connectType = ConnectType.None;
+            }
+        }
+
+        /// <summary>
+        /// Closes and disposes the serial port. Equivalent to SkySystem.ConnectSerial = false.
+        /// </summary>
+        internal void CloseSerial()
+        {
+            _serial?.Dispose();
+            _serial = null;
+            _connectType = ConnectType.None;
+        }
+
+        /// <summary>
+        /// Parses a "host:port" string into an IPEndPoint. Handles IPv4 and IPv6.
+        /// </summary>
+        private static IPEndPoint CreateIpEndPoint(string endPoint)
+        {
+            var ep = endPoint.Split(':');
+            if (ep.Length < 2) { throw new FormatException("Invalid endpoint format"); }
+            IPAddress ip;
+            if (ep.Length > 2)
+            {
+                if (!IPAddress.TryParse(string.Join(":", ep, 0, ep.Length - 1), out ip))
+                { throw new FormatException("Invalid ip-address"); }
+            }
+            else
+            {
+                if (!IPAddress.TryParse(ep[0], out ip))
+                { throw new FormatException("Invalid ip-address"); }
+            }
+            return !int.TryParse(ep[ep.Length - 1], NumberStyles.None, NumberFormatInfo.CurrentInfo, out var port)
+                ? throw new FormatException("Invalid port")
+                : new IPEndPoint(ip, port);
+        }
+
+        #endregion
+
         /// <summary>
         /// Start connection, queues, and events
         /// Migrated from SkyServer.MountStart()
@@ -1398,12 +1530,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case MountType.SkyWatcher:
                     // open serial port
-                    SkySystem.ConnectSerial = false;
-                    SkySystem.ConnectSerial = true;
-                    if (!SkySystem.ConnectSerial)
+                    CloseSerial();
+                    OpenSerial();
+                    if (_serial?.IsOpen != true)
                     {
                         throw new SkyServerException(ErrorCode.ErrSerialFailed,
-                            $"Connection Failed: {SkySystem.Error}");
+                            $"Connection Failed: {_serialError}");
                     }
                     // Start up, pass custom mount gearing if needed
                     var custom360Steps = new[] { 0, 0 };
@@ -1421,7 +1553,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         v => SkyServer.IsPulseGuidingRa = v,
                         v => SkyServer.IsPulseGuidingDec = v);
                     GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.RegisterInstance(sqImpl);
-                    sqImpl.Start(SkySystem.Serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
+                    sqImpl.Start(_serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
                     SkyQueueInstance = sqImpl;
                     if (!SkyQueue.IsRunning)
                     {
@@ -1480,7 +1612,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (SkyQueue.IsRunning)
             {
                 SkyQueue.Stop();
-                SkySystem.ConnectSerial = false;
+                CloseSerial();
             }
 
             MountQueueInstance = null;
@@ -1510,21 +1642,21 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 _loopCounter++;
-                SkyServer.SiderealTime = SkyServer.GetLocalSiderealTime();
-                SkyServer.UpdateSteps();
-                SkyServer.Lha = Coordinate.Ra2Ha12(SkyServer.RightAscensionXForm, SkyServer.SiderealTime);
+                _siderealTime = SkyServer.GetLocalSiderealTime();
+                this.UpdateSteps();
+                _lha = Coordinate.Ra2Ha12(_rightAscensionXForm, _siderealTime);
                 SkyServer.CheckSlewState();
                 SkyServer.CheckAxisLimits();
                 // ToDo: Remove if not needed
                 // SkyServer.CheckSpiralLimit();
                 CheckPecTraining();
-                SkyServer.IsHome = SkyServer.AtHome;
+                _isHome = this.AtHome;
                 switch (_settings.AlignmentMode)
                 {
                     case AlignmentMode.AltAz:
                     case AlignmentMode.Polar:
                     case AlignmentMode.GermanPolar:
-                        SkyServer.IsSideOfPier = SkyServer.SideOfPier;
+                        _isSideOfPier = this.SideOfPier;
                         break;
                     default:
                         break;

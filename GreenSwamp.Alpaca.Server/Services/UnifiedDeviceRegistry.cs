@@ -59,10 +59,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             ASCOM.Common.DeviceInterfaces.ITelescopeV4 telescopeDriver)
         {
             // 1. Register with MountInstanceRegistry (internal control).
-            // Skip CreateInstance if the slot was pre-registered (e.g., slot 0 by SkyServer.Initialize()).
-            // TODO Step 9: remove guard once the write pipeline no longer pre-registers _defaultInstance.
-            if (MountInstanceRegistry.GetInstance(deviceNumber) == null)
-                MountInstanceRegistry.CreateInstance(deviceNumber, settingsInstance, deviceName);
+            MountInstanceRegistry.CreateInstance(deviceNumber, settingsInstance, deviceName);
 
             // 2. Register with DeviceManager (ASCOM routing)
             DeviceManager.LoadTelescope(

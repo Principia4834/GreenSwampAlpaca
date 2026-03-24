@@ -42,8 +42,8 @@ Steps 6, 7 and 8 are now **complete**.
 | **Step 6** | Timer event pipeline | ✅ Done | `_mountPositionUpdatedEvent` per-instance; `SkyPrecisionGoto`/`SkyPulseGoto` use instance event |
 | **Step 7** | `Steps` setter / position pipeline | ✅ Done | `ReceiveSteps()` on instance; queue callbacks bypass static setter; `WaitMountPositionUpdated` delegates to instance |
 | **Step 8** | `Telescope.cs` instance routing | ✅ Done | All `SkyServer.*`/`SkySettings.*` → `inst.*`; `SkySystem.*` (3 lines) deferred — Blocker B2 |
-| **Bridge B0** | Pre-register `_defaultInstance` as registry slot 0 | ✅ Applied (temporary) | Closes read/write split introduced by Step 8; 3 files; must be removed as part of Step 9 |
-| **Step 9** | Migrate write pipeline to registry instances; remove Bridge B0 | 🔶 In progress | See §6 for sub-tasks; depends on Steps 6–8 + Bridge B0 |
+| **Bridge B0** | Pre-register `_defaultInstance` as registry slot 0 | ✅ Removed (Step 9) | All 3 artefacts deleted; `_defaultInstance` is now a computed property |
+| **Step 9** | Migrate write pipeline to registry instances; remove Bridge B0 | ✅ Done | 9a: 5 static write-backs removed from `OnUpdateServerEvent`; 9b: Bridge B0 fully removed; 9c: `IsSlewing` axis-rate check added; 9d: static shim removed |
 | **Step 10** | Final clean-up / tests | ❌ Not started | Last phase |
 
 ---
@@ -134,23 +134,24 @@ per-device registry instances directly. See §6.2 for the removal plan.
 
 ---
 
-## 6. Step 9 — In Progress
+## 6. Step 9 — Complete ✅
 
-| Step | Description | Dependency |
+| Step | Description | Status |
 |---|---|---|
-| **Step 9** | Migrate write pipeline to per-device registry instances; remove Bridge B0 | Steps 6, 7, 8 complete ✅ |
-| **Step 10** | Final clean-up, remove static facades, integration tests | Step 9 complete |
+| **9a** | Migrate `OnUpdateServerEvent` static write-backs to `this.*` | ✅ Done — 5 writes replaced (`_siderealTime`, `UpdateSteps`, `_lha`, `_isHome`, `_isSideOfPier`) |
+| **9b** | Remove Bridge B0 — `_defaultInstance` computed property; `RegisterInstance()` removed; `CreateInstance()` unconditional | ✅ Done |
+| **9c** | Fix `MountInstance.IsSlewing` axis-rate check | ✅ Done — `(Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0` added |
+| **9d** | Remove static `_mountPositionUpdatedEvent` shim; remove `?? _mountPositionUpdatedEvent` fallback | ✅ Done |
+| **Step 10** | Final clean-up, remove static facades, integration tests | ❌ Not started |
 
-### 6.1 Bridge B0 — Artefacts to Remove
+### 6.1 Bridge B0 — Removed ✅
 
-The three bridge artefacts below must be removed once the write pipeline (§6.2) is migrated.
-Each is tagged `// TODO Step 9` in the source.
-
-| Artefact | File | Removal condition |
+| Artefact | File | Status |
 |---|---|---|
-| `MountInstanceRegistry.RegisterInstance(0, _defaultInstance)` call + comment block | `SkyServer.Core.cs` `Initialize()` | Write pipeline targets registry instances; `_defaultInstance` no longer the sole write target |
-| `if (MountInstanceRegistry.GetInstance(deviceNumber) == null)` guard | `UnifiedDeviceRegistry.cs` `RegisterDevice()` | `CreateInstance()` must be called unconditionally for every slot; write pipeline must initialise the newly-created instance |
-| `RegisterInstance()` method | `MountInstanceRegistry.cs` | Remove once no callers remain; or make `internal` and retain for test fixtures |
+| `_defaultInstance` stored field | `SkyServer.Core.cs` line 68 | ✅ Converted to computed property `=> MountInstanceRegistry.GetInstance(0)` |
+| `MountInstance("default", settings)` construction + `RegisterInstance(0, _defaultInstance)` call | `SkyServer.Core.cs` `Initialize()` | ✅ Removed |
+| `if (MountInstanceRegistry.GetInstance(deviceNumber) == null)` guard | `UnifiedDeviceRegistry.cs` `RegisterDevice()` | ✅ Removed — `CreateInstance()` now unconditional |
+| `RegisterInstance()` method | `MountInstanceRegistry.cs` | ✅ Removed — zero callers confirmed before deletion |
 
 ### 6.2 Write Pipeline Migration — Required Before Bridge Removal
 
@@ -178,7 +179,7 @@ self-contained and matches the `SkyServer.IsSlewing` logic exactly.
 
 | ID | Description | Affects | Status |
 |---|---|---|:---:|
-| **B0** | Bridge: `_defaultInstance` pre-registered as registry slot 0 — temporary measure closing the Step-8 read/write split | Step 9 (must be removed) | ✅ Applied — removal tracked in §6.1 |
+| **B0** | Bridge: `_defaultInstance` pre-registered as registry slot 0 — temporary measure closing the Step-8 read/write split | Step 9 (must be removed) | ✅ Removed — `_defaultInstance` is now a computed property; all 3 artefacts deleted |
 | **B1** | `_mountPositionUpdatedEvent` is static (shared) | Steps 6, 7 | ✅ Resolved |
 | **B2** | `SkySystem` serial connection is reference-counted for one port | Step 8e (Telescope.cs `Connected`) | ❌ Deferred |
 | **B5** | `StaticPropertyChanged` fires for Blazor UI subscriptions — per-device notifications not yet wired | Blazor component refresh on second device | ❌ Not started |
@@ -221,29 +222,18 @@ self-contained and matches the `SkyServer.IsSlewing` logic exactly.
 
 ## 10. Recommended Next Actions (in order)
 
-1. **Step 9a — Migrate write pipeline to per-device registry instances** (§6.2):
-   - `SkyServer.Core.cs` `UpdateServerEvent`: iterate over registered instances and call
-     `OnUpdateServerEvent()` on each, not just `_defaultInstance`
-   - `SkyServer.Core.cs` `SetRateMoveSlewState()`: pass or resolve the target `MountInstance`
-   - `MountInstance.cs` `OnUpdateServerEvent()` line ~1513: replace `SkyServer.SiderealTime = ...`
-     with `this._siderealTime = ...` (remove the static write-back)
-   - `SkyServer.cs` `RateMovePrimaryAxis` / `RateMoveSecondaryAxis` setters: write `this._rateMoveAxes`
-     directly; remove the static indirection through `SkyServer`
-   - Ensure `SetSlewRates()` / `Defaults()` is called per registry instance at initialisation
+1. **Step 10 — Remove `SkySettings` static facade** (deferred from Step 8):
+   - Inject `SkySettingsInstance` into Blazor pages via DI
+   - Remove `SkySettings.Initialize()` call and the static class
 
-2. **Step 9b — Remove Bridge B0** (§6.1) once Step 9a is complete:
-   - Delete `MountInstanceRegistry.RegisterInstance(0, _defaultInstance)` call from `SkyServer.Core.cs`
-   - Remove the `GetInstance(deviceNumber) == null` guard from `UnifiedDeviceRegistry.RegisterDevice()`
-   - Remove (or make `internal`) the `RegisterInstance()` method from `MountInstanceRegistry`
+2. **Integration tests** (Phase 0 test table from migration plan):
+   - `WhenSimulatorConnectedThenMountInstanceOwnsQueue`
+   - `WhenTwoDevicesRegisteredThenQueuesAreIndependent`
+   - `WhenStepsUpdatedThenMountInstanceReceivesCallback`
+   - `WhenCommandSentToDevice0ThenDevice1QueueUnaffected`
 
-3. **Step 9c — Fix `MountInstance.IsSlewing` axis-rate check**:
-   - Add `(Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0` to `IsSlewing`
-     so it mirrors `SkyServer.IsSlewing` exactly (see §6.2)
+3. **Blocker B2** (`SkySystem` serial connection reference counting) — required for Step 8e
+   (`Telescope.cs` `Connected` / `Connecting` routing through `MountInstance`).
 
-4. **Step 9d — Audit and remove dead static `SkyServer` surface**:
-   - Remove the `_mountPositionUpdatedEvent` / `MountPositionUpdatedEvent` no-op shims from `SkyServer.cs`
-   - Audit `SkyServer.cs`, `SkyServer.Core.cs`, `SkyServer.TelescopeAPI.cs` for delegating wrappers
-     that are no longer needed once `Telescope.cs` reads exclusively through `MountInstance`
-
-5. **Step 10**: Integration tests covering two concurrent `MountInstance` objects with separate
-   precision goto operations (validates per-instance event and write-pipeline isolation).
+4. **Blocker B5** (per-device `StaticPropertyChanged` notifications for Blazor UI) — required
+   for multi-device UI refresh without the static facade.

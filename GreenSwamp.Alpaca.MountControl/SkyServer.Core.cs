@@ -64,10 +64,10 @@ namespace GreenSwamp.Alpaca.MountControl
             set { if (_defaultInstance != null) _defaultInstance._altAzTrackingTimer = value; }
         }
         // _altAzTrackingLock removed from static — use _defaultInstance._altAzTrackingLock directly (ref semantics required by Interlocked)
-        // Default mount instance for backward compatibility
-        private static MountInstance? _defaultInstance;
-        // Phase 2: Instance-based settings reference
-        private static SkySettingsInstance? _settings;
+        // Default mount instance — computed from registry slot 0 (Step 9: Bridge B0 removed)
+        private static MountInstance? _defaultInstance => MountInstanceRegistry.GetInstance(0);
+        // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
+        private static SkySettingsInstance? _settings => _defaultInstance?.Settings;
         internal static SkySettingsInstance? Settings => _settings;
 
         // Phase 4.2: Slew speed properties (delegate to default instance)
@@ -294,23 +294,11 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Initialize SkyServer with instance-based settings
-        /// Also creates default MountInstance
+        /// Initialize SkyServer. Must be called after MountInstanceRegistry slot 0 has been registered.
+        /// Settings are read directly from the registered slot 0 instance via the computed _settings property.
         /// </summary>
-        public static void Initialize(SkySettingsInstance settings)
+        public static void Initialize()
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-
-            // Create default mount instance
-            _defaultInstance = new MountInstance("default", settings);
-
-            // Bridge (Step 8→9): pre-register _defaultInstance as slot 0 so GetInstance(0) == _defaultInstance.
-            // Closes the read/write split introduced when Telescope.cs was migrated to GetInstance() in Step 8.
-            // The write pipeline (OnUpdateServerEvent, SetRateMoveSlewState, SetSlewRates, etc.) still targets
-            // _defaultInstance; this makes GetInstance(0) return the same object, eliminating stale reads.
-            // TODO Step 9: remove once the write pipeline is migrated to per-device registry instances.
-            MountInstanceRegistry.RegisterInstance(0, _defaultInstance);
-
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -319,7 +307,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"SkyServer initialized | Mount:{_settings.Mount} | Port:{_settings.Port}"
+                Message = $"SkyServer initialized | Mount:{_settings?.Mount} | Port:{_settings?.Port}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -727,7 +715,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <exception cref="TimeoutException"></exception>
         public static void WaitMountPositionUpdated()
         {
-            var evt = _defaultInstance?._mountPositionUpdatedEvent ?? _mountPositionUpdatedEvent;
+            var evt = _defaultInstance?._mountPositionUpdatedEvent;
+            if (evt is null) return;
             evt.Reset();
             UpdateSteps();  // Immediate position for tight control
             if (!evt.Wait(5000))

@@ -482,7 +482,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var r = SkySystem.Connected;
+                var r = GetInstance().IsConnected;
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -493,7 +493,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {value}|{_objectId}" };
                 MonitorLog.LogToMonitor(monitorItem);
-                SkySystem.SetConnected(_objectId, value);
+                GetInstance().SetConnected(_objectId, value);
             }
         }
 
@@ -504,7 +504,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var r = SkySystem.Connecting;
+                var r = GetInstance().Connecting;
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);

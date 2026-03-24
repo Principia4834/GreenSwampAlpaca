@@ -66,15 +66,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
         // Step 7: _steps moved to MountInstance backing field
 
-        // Position update signaling - replaces MountPositionUpdated boolean
-        private static readonly ManualResetEventSlim _mountPositionUpdatedEvent =
-            new ManualResetEventSlim(false);
-
-        /// <summary>
-        /// Internal access to position update event for instance methods
-        /// </summary>
-        internal static ManualResetEventSlim MountPositionUpdatedEvent => _mountPositionUpdatedEvent;
-
         #endregion
 
         #region PEC
