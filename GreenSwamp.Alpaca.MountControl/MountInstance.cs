@@ -510,7 +510,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Gets whether the mount is currently connected
         /// </summary>
-        public bool IsConnected => IsMountRunning;
+        public bool IsConnected => _connectStates.Count > 0;
 
         /// <summary>
         /// Gets whether the mount is currently running

@@ -10,17 +10,17 @@
 ## 1. Executive Summary
 
 The migration from monolithic static `SkyServer` to instance-based `MountInstance` is
-approximately **97 % complete**.
+approximately **98 % complete**.
 
 Build is **green**. All 3 unit tests pass (3 integration tests skipped — require running simulator). No regressions.
 
 ```
 static SkyServer  ──delegates──>  MountInstance._defaultInstance
-SkySettings (static facade) ──delegates──> SkySettingsInstance        ✅ complete
+SkySettings (static facade) ──DELETED──                                ✅ Step 10a complete
 Telescope.cs (ASCOM driver)  ──calls──> GetInstance()._xxx             ✅ done (SkySystem deferred B2)
 ```
 
-Steps 6, 7, 8, 9 and the shortcut-constructor sprint are now **complete**.
+Steps 6, 7, 8, 9, shortcut-constructor sprint, and **Step 10a** are now **complete**.
 
 ---
 
@@ -47,7 +47,8 @@ Steps 6, 7, 8, 9 and the shortcut-constructor sprint are now **complete**.
 | **Shortcut Ctor — AutohomeSim.cs** | `CmdAxisStop` ×3 → injection ctors | ✅ Done | Pre-session fix |
 | **Shortcut Ctor — MountInstance.cs** | 15 shortcut ctor calls → injection ctors (park/init ×6, SimGoTo ×4, SkyGoTo ×5) | ✅ Done | 0 CS0618 warnings |
 | **Shortcut Ctor — SkyServer.Core.cs** | `#pragma disable CS0618` on `SimTasks()`, `SkyTasks()`, `AxesStopValidate()` legacy static overloads | ✅ Done | Cleared 134 warnings; intent documented |
-| **Step 10** | Final clean-up / remove static facades / integration tests | ❌ Not started | See §10 for breakdown |
+| **Step 10a** | Remove `SkySettings` static facade | ✅ Done | `SkySettings.cs` deleted; all 35 references migrated: `Transforms.cs` → `SkyServer.Settings?.X`, `AxesContext.FromStatic()` deleted, AutoHome callers → `FromSettings(SettingsInstance)`, `SkyPredictor`/`ParkPosition` updated, `CommandStrings.cs` → `SkyServer.Mount`, `Program.cs` duplicate `Initialize()` removed, `SkyServer.Core.cs` static subscription removed / wired in `Initialize()`. `SkySettingsBridge.cs` excluded from compilation. |
+| **Step 10** | Final clean-up / remove static facades / integration tests | 🔄 In progress | Step 10a ✅; remaining: B2 (SkySystem.Connected), SkySystem deletion, Phase 1–3 Option C |
 
 ---
 
