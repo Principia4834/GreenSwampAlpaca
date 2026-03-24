@@ -144,7 +144,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_defaultInstance == null) return;
                 _defaultInstance.Settings.PPecOn = value;
-                SkyTasks(MountTaskName.Pec);
+                SkyTasks(MountTaskName.Pec, _defaultInstance);
                 OnStaticPropertyChanged();
             }
         }
@@ -171,7 +171,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = $"{value}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
-                SkyTasks(MountTaskName.PecTraining);
+                SkyTasks(MountTaskName.PecTraining, _defaultInstance);
                 OnStaticPropertyChanged();
             }
         }
@@ -297,8 +297,10 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 try
                 {
-                    var status = new SkyGetControllerVoltage(SkyQueue.NewId, Axis.Axis1);
-                    return SkyQueue.GetCommandResult(status).Result;
+                    var sq = _defaultInstance?.SkyQueueInstance;
+                    if (sq == null) return double.NaN;
+                    var status = new SkyGetControllerVoltage(sq.NewId, sq, Axis.Axis1);
+                    return sq.GetCommandResult(status).Result;
                 }
                 catch (Exception)
                 {
@@ -395,8 +397,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                SimTasks(MountTaskName.MonitorPulse);
-                SkyTasks(MountTaskName.MonitorPulse);
+                SimTasks(MountTaskName.MonitorPulse, _defaultInstance);
+                SkyTasks(MountTaskName.MonitorPulse, _defaultInstance);
             }
         }
 
@@ -479,10 +481,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        _ = new CmdMoveAxisRate(0, Axis.Axis2, -_defaultInstance._rateMoveAxes.Y);
+                        var mq2 = _defaultInstance!.MountQueueInstance!;
+                        _ = new CmdMoveAxisRate(mq2.NewId, mq2, Axis.Axis2, -_defaultInstance._rateMoveAxes.Y);
                         break;
                     case MountType.SkyWatcher:
-                        _ = new SkyAxisSlew(0, Axis.Axis2, _defaultInstance._rateMoveAxes.Y);
+                        var sq2 = _defaultInstance!.SkyQueueInstance!;
+                        _ = new SkyAxisSlew(sq2.NewId, sq2, Axis.Axis2, _defaultInstance._rateMoveAxes.Y);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -525,10 +529,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        _ = new CmdMoveAxisRate(0, Axis.Axis1, _defaultInstance._rateMoveAxes.X);
+                        var mq1 = _defaultInstance!.MountQueueInstance!;
+                        _ = new CmdMoveAxisRate(mq1.NewId, mq1, Axis.Axis1, _defaultInstance._rateMoveAxes.X);
                         break;
                     case MountType.SkyWatcher:
-                        _ = new SkyAxisSlew(0, Axis.Axis1, _defaultInstance._rateMoveAxes.X);
+                        var sq1 = _defaultInstance!.SkyQueueInstance!;
+                        _ = new SkyAxisSlew(sq1.NewId, sq1, Axis.Axis1, _defaultInstance._rateMoveAxes.X);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -750,14 +756,16 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (_settings!.Mount) // mount type check
             {
                 case MountType.Simulator:
-                    SimTasks(MountTaskName.StopAxes);
-                    _ = new CmdAxisToDegrees(0, Axis.Axis1, position[0]);
-                    _ = new CmdAxisToDegrees(0, Axis.Axis2, position[1]);
+                    SimTasks(MountTaskName.StopAxes, _defaultInstance!);
+                    var mq = _defaultInstance!.MountQueueInstance!;
+                    _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis1, position[0]);
+                    _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis2, position[1]);
                     break;
                 case MountType.SkyWatcher:
-                    SkyTasks(MountTaskName.StopAxes);
-                    _ = new SkySetAxisPosition(0, Axis.Axis1, position[0]);
-                    _ = new SkySetAxisPosition(0, Axis.Axis2, position[1]);
+                    SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
+                    var sq = _defaultInstance!.SkyQueueInstance!;
+                    _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis1, position[0]);
+                    _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis2, position[1]);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

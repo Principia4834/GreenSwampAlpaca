@@ -24,9 +24,9 @@ Phase 1 — Serial & Connection Isolation  (prerequisite for Phase 2)
 
 ## 2. Prerequisites
 
-- [ ] Build is green before starting each phase (`run_build`)
-- [ ] Existing 3 automated tests pass
-- [ ] ConformU passes against slot 0 (single telescope) — baseline recorded
+- [x] Build is green before starting each phase (`run_build`) — ✅ Confirmed March 2026
+- [x] Existing 3 automated tests pass — ✅ Confirmed March 2026 (3 pass, 3 integration tests skipped)
+- [ ] ConformU passes against slot 0 (single telescope) — baseline not yet recorded
 
 ---
 
@@ -233,6 +233,14 @@ run_build
 | `GreenSwamp.Alpaca.Mount.Simulator/Commands.cs` | `[Obsolete]` on shortcut constructors |
 | `GreenSwamp.Alpaca.MountControl/MountInstance.cs` | Remove `SkyQueue.RegisterInstance()` from `MountStart()` |
 | `GreenSwamp.Alpaca.Mount.SkyWatcher/SkyWatcher.cs` | Audit `SkySystem.*` remaining callsites (§11 Risk) |
+
+> **Current state (March 2026):** Instance-aware overloads `SkyTasks(MountTaskName, MountInstance)`,
+> `SimTasks(MountTaskName, MountInstance)`, and `AxesStopValidate(MountInstance)` already exist in
+> `SkyServer.Core.cs` with correct injection constructors. The legacy single-argument static overloads
+> are `#pragma warning disable CS0618`-suppressed bridges. Tasks 2.2–2.4 cover migrating the remaining
+> callers (`CommandStrings.cs`, `SkySettingsInstance.cs`) to the instance-aware overloads, then
+> deleting the legacy static overloads and their `#pragma` blocks.
+> Task 2.5 (`[Obsolete]` marking on shortcut constructors) is **already complete**.
 
 ---
 

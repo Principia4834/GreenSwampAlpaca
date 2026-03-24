@@ -967,6 +967,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="taskName"></param>
         public static void SimTasks(MountTaskName taskName)
         {
+#pragma warning disable CS0618 // legacy static method — shortcut ctors intentional; will be removed with MountQueue facade
             if (!IsMountRunning) return;
 
             var monitorItem = new MonitorEntry
@@ -1099,18 +1100,19 @@ namespace GreenSwamp.Alpaca.MountControl
                             FactorStep[0] = (double)MountQueue.GetCommandResult(factorStep).Result;
                             FactorStep[1] = FactorStep[0];
                             break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(taskName), taskName, null);
-                    }
+                                        default:
+                                                     throw new ArgumentOutOfRangeException(nameof(taskName), taskName, null);
+                                             }
 
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
+                                             break;
+                                         default:
+                                             throw new ArgumentOutOfRangeException();
+                                     }
+                        #pragma warning restore CS0618
+                                }
 
-        /// <summary>
-        /// Instance-aware SimTasks: routes commands and capability writes to the given MountInstance.
+                                /// <summary>
+                                /// Instance-aware SimTasks: routes commands and capability writes to the given MountInstance.
         /// </summary>
         internal static void SimTasks(MountTaskName taskName, MountInstance instance)
         {
@@ -1376,6 +1378,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="taskName"></param>
         public static void SkyTasks(MountTaskName taskName)
         {
+#pragma warning disable CS0618 // legacy static method — shortcut ctors intentional; will be removed with SkyQueue facade
             if (!IsMountRunning) { return; }
 
             var monitorItem = new MonitorEntry
@@ -1563,13 +1566,14 @@ namespace GreenSwamp.Alpaca.MountControl
                             _ = new SkySetAxisPosition(0, Axis.Axis2, homeAxesSet.Y);
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                             throw new ArgumentOutOfRangeException();
+                     }
 
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                     break;
+                 default:
+                     throw new ArgumentOutOfRangeException();
+             }
+#pragma warning restore CS0618
         }
 
         /// <summary>
@@ -1861,6 +1865,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         internal static bool AxesStopValidate()
         {
+#pragma warning disable CS0618 // legacy static method — shortcut ctors intentional
             if (!IsMountRunning) { return true; }
             Stopwatch stopwatch;
             bool axis2Stopped;
@@ -1872,7 +1877,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     stopwatch = Stopwatch.StartNew();
                     while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
                     {
-                        SimTasks(MountTaskName.StopAxes);
+                        SimTasks(MountTaskName.StopAxes, _defaultInstance!);
                         Thread.Sleep(100);
                         var statusX = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
                         var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusX).Result;
@@ -1890,7 +1895,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     stopwatch = Stopwatch.StartNew();
                     while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
                     {
-                        SkyTasks(MountTaskName.StopAxes);
+                        SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
                         Thread.Sleep(100);
                         var statusx = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
                         axis1Stopped = Convert.ToBoolean(SkyQueue.GetCommandResult(statusx).Result);
@@ -1905,6 +1910,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+#pragma warning restore CS0618
         }
 
         /// <summary>

@@ -163,7 +163,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         {
             HomeSensorCapabilityCheck();
             if (!HasHomeSensor) { return AutoHomeResult.HomeCapabilityCheckFailed; }
-            _ = new SkyAxisStop(0, axis);
+            _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
             if (SkyServer.Tracking) SkyServer.Tracking = false;
             var totalMove = 0.0;
             // ReSharper disable once RedundantAssignment
@@ -342,7 +342,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Thread.Sleep(300);
             }
 
-            _ = new SkyAxisStop(0, axis);
+            _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
 
             return AutoHomeResult.Success;
         }
@@ -403,7 +403,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Thread.Sleep(300);
             }
 
-            _ = new SkyAxisStop(0, axis);
+            _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
 
             return AutoHomeResult.Success;
         }

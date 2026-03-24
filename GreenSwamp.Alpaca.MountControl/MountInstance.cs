@@ -584,8 +584,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         if (counter > 5)
                         {
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, positions[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, positions[1]);
+                            _ = new CmdAxisToDegrees(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, positions[0]);
+                            _ = new CmdAxisToDegrees(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, positions[1]);
                             positionsSet = true;
                             monitorItem = new MonitorEntry
                             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Counter exceeded:{positions[0]}|{positions[1]}" };
@@ -609,16 +609,16 @@ namespace GreenSwamp.Alpaca.MountControl
                         //is mount parked, if so set to the default position
                         if (_atPark)
                         {
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, positions[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, positions[1]);
+                            _ = new CmdAxisToDegrees(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, positions[0]);
+                            _ = new CmdAxisToDegrees(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, positions[1]);
                             positionsSet = true;
                             break;
                         }
 
                         if (!rawPositions[0].IsBetween(-.1, .1) || !rawPositions[1].IsBetween(-.1, .1)) { continue; }
 
-                        _ = new CmdAxisToDegrees(0, Axis.Axis1, positions[0]);
-                        _ = new CmdAxisToDegrees(0, Axis.Axis2, positions[1]);
+                        _ = new CmdAxisToDegrees(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, positions[0]);
+                        _ = new CmdAxisToDegrees(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, positions[1]);
                         positionsSet = true;
 
                     }
@@ -722,8 +722,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         if (counter > 5)
                         {
-                            _ = new SkySetAxisPosition(0, Axis.Axis1, positions[0]);
-                            _ = new SkySetAxisPosition(0, Axis.Axis2, positions[1]);
+                            _ = new SkySetAxisPosition(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, positions[0]);
+                            _ = new SkySetAxisPosition(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, positions[1]);
                             positionsSet = true;
                             monitorItem = new MonitorEntry
                             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Counter exceeded:{positions[0]}|{positions[1]}" };
@@ -749,8 +749,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         //is mount parked, if so set to the default position
                         if (_atPark)
                         {
-                            _ = new SkySetAxisPosition(0, Axis.Axis1, positions[0]);
-                            _ = new SkySetAxisPosition(0, Axis.Axis2, positions[1]);
+                            _ = new SkySetAxisPosition(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, positions[0]);
+                            _ = new SkySetAxisPosition(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, positions[1]);
                             positionsSet = true;
                             break;
                         }
@@ -759,8 +759,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (!rawPositions[0].IsBetween(-.1, .1) || !rawPositions[1].IsBetween(-.1, .1)) { continue; }
 
                         //Mount is close to home 0,0 so set the default position
-                        _ = new SkySetAxisPosition(0, Axis.Axis1, positions[0]);
-                        _ = new SkySetAxisPosition(0, Axis.Axis2, positions[1]);
+                        _ = new SkySetAxisPosition(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, positions[0]);
+                        _ = new SkySetAxisPosition(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, positions[1]);
                         positionsSet = true;
 
                     }
@@ -1546,16 +1546,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         customWormSteps = new[] { (double)_settings.CustomRa360Steps / _settings.CustomRaWormTeeth, (double)_settings.CustomDec360Steps / _settings.CustomDecWormTeeth };
                     }
 
-                    // Q2: Create instance-owned queue; register on static facade before starting
+                    // Q2: Create instance-owned queue; start it directly (no static facade registration needed)
                     var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
                         v => SkyServer.IsPulseGuidingRa = v,
                         v => SkyServer.IsPulseGuidingDec = v);
-                    GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueue.RegisterInstance(sqImpl);
                     sqImpl.Start(_serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
                     SkyQueueInstance = sqImpl;
-                    if (!SkyQueue.IsRunning)
+                    if (!sqImpl.IsRunning)
                     {
                         throw new SkyServerException(ErrorCode.ErrMount, "Failed to start sky queue");
                     }
@@ -1609,9 +1608,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
             if (MountQueue.IsRunning) { MountQueue.Stop(); }
 
-            if (SkyQueue.IsRunning)
+            if (SkyQueueInstance?.IsRunning == true)
             {
-                SkyQueue.Stop();
+                SkyQueueInstance.Stop();
                 CloseSerial();
             }
 
@@ -1717,8 +1716,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             #region First Slew
             token.ThrowIfCancellationRequested();
-            _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTarget[0]);
-            _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTarget[1]);
+            _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, simTarget[0]);
+            _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, simTarget[1]);
 
             while (stopwatch.Elapsed.TotalSeconds <= timer)
             {
@@ -1825,10 +1824,10 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
-                    _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTargetAtTime[0] + 0.125 * deltaDegree[0]);
+                    _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, simTargetAtTime[0] + 0.125 * deltaDegree[0]);
                 token.ThrowIfCancellationRequested();
                 if (!axis2AtTarget)
-                    _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTargetAtTime[1] + 0.05 * deltaDegree[1]);
+                    _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, simTargetAtTime[1] + 0.05 * deltaDegree[1]);
 
                 var axis1Stopped = false;
                 var axis2Stopped = false;
@@ -1921,12 +1920,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (!axis1AtTarget)
                     {
                         token.ThrowIfCancellationRequested();
-                        _ = new CmdAxisGoToTarget(0, Axis.Axis1, simTargetAtTime[0]);
+                        _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, simTargetAtTime[0]);
                     }
                     if (!axis2AtTarget)
                     {
                         token.ThrowIfCancellationRequested();
-                        _ = new CmdAxisGoToTarget(0, Axis.Axis2, simTargetAtTime[1]);
+                        _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, simTargetAtTime[1]);
                     }
 
                     var stopwatch1 = Stopwatch.StartNew();
@@ -2002,8 +2001,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             #region First Slew
             token.ThrowIfCancellationRequested();
-            _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTarget[0]);
-            _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTarget[1]);
+            _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, skyTarget[0]);
+            _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, skyTarget[1]);
 
             while (stopwatch.Elapsed.TotalSeconds <= timer)
             {
@@ -2130,7 +2129,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
                 {
-                    _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTargetAtTime[0] + 0.25 * deltaDegree[0]);
+                    _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, skyTargetAtTime[0] + 0.25 * deltaDegree[0]);
                 }
 
                 var axis1Done = axis1AtTarget;
@@ -2150,7 +2149,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (!axis2AtTarget)
                 {
                     token.ThrowIfCancellationRequested();
-                    _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTargetAtTime[1] + 0.1 * deltaDegree[1]);
+                    _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, skyTargetAtTime[1] + 0.1 * deltaDegree[1]);
                 }
 
                 var axis2Done = axis2AtTarget;
@@ -2249,7 +2248,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (!axis1AtTarget)
                     {
                         token.ThrowIfCancellationRequested();
-                        _ = new SkyAxisGoToTarget(0, Axis.Axis1, skyTarget[0]);
+                        _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, skyTarget[0]);
                     }
 
                     var axis1Done = axis1AtTarget;
@@ -2270,7 +2269,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (!axis2AtTarget)
                     {
                         token.ThrowIfCancellationRequested();
-                        _ = new SkyAxisGoToTarget(0, Axis.Axis2, skyTarget[1]);
+                        _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, skyTarget[1]);
                     }
 
                     var axis2Done = axis2AtTarget;

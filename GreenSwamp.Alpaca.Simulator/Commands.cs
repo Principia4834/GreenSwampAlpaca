@@ -64,6 +64,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _axis = axis;
             _rate = rate;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdRaDecRate(long id, Axis axis, double rate) : this(id, MountQueue.Instance, axis, rate) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -82,6 +83,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _axis = axis;
             _rate = rate;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdMoveAxisRate(long id, Axis axis, double rate) : this(id, MountQueue.Instance, axis, rate) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -98,6 +100,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _rate = rate;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdGotoSpeed(long id, int rate) : this(id, MountQueue.Instance, rate) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -110,6 +113,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdAxesSteps : MountActionCommand
     {
         public CmdAxesSteps(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxesSteps(long id) : this(id, MountQueue.Instance) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -126,6 +130,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _axis = axis;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisStop(long id, Axis axis) : this(id, MountQueue.Instance, axis) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -144,6 +149,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _axis = axis;
             _rate = rate;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdHcSlew(long id, Axis axis, double rate) : this(id, MountQueue.Instance, axis, rate) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -162,6 +168,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _axis = axis;
             _rate = rate;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisTracking(long id, Axis axis, double rate) : this(id, MountQueue.Instance, axis, rate) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -180,6 +187,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _axis = axis;
             _targetPosition = targetPosition;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisGoToTarget(long id, Axis axis, double targetPosition) : this(id, MountQueue.Instance, axis, targetPosition) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -198,6 +206,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _axis = axis;
             _degrees = degrees;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisToDegrees(long id, Axis axis, double degrees) : this(id, MountQueue.Instance, axis, degrees) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -220,6 +229,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _duration = duration;
             _token = token;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisPulse(long id, Axis axis, double guideRate, int duration, CancellationToken token) : this(id, MountQueue.Instance, axis, guideRate, duration, token) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -236,6 +246,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _axis = axis;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdHomeSensorReset(long id, Axis axis) : this(id, MountQueue.Instance, axis) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -254,6 +265,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             _port = port;
             _on = on;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdSnapPort(long id, int port, bool on) : this(id, MountQueue.Instance, port, on) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -270,6 +282,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _on = on;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdSetMonitorPulse(long id, bool on) : this(id, MountQueue.Instance, on) { }
 
         protected override void ExecuteAction(Actions actions)
@@ -282,6 +295,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdAxesDegrees : MountQueryCommand
     {
         public CmdAxesDegrees(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxesDegrees(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -293,6 +307,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdAxisSteps : MountQueryCommand
     {
         public CmdAxisSteps(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisSteps(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -309,6 +324,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _axis = axis;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public AxisStepsDt(long id, Axis axis) : this(id, MountQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -325,6 +341,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _axis = axis;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdAxisStatus(long id, Axis axis) : this(id, MountQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -336,6 +353,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class GetHomeSensorCapability : MountQueryCommand
     {
         public GetHomeSensorCapability(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public GetHomeSensorCapability(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -352,6 +370,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             _axis = axis;
         }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdHomeSensor(long id, Axis axis) : this(id, MountQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -363,6 +382,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdFactorSteps : MountQueryCommand
     {
         public CmdFactorSteps(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdFactorSteps(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -374,6 +394,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdMountName : MountQueryCommand
     {
         public CmdMountName(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdMountName(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -385,6 +406,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdMountVersion : MountQueryCommand
     {
         public CmdMountVersion(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdMountVersion(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -396,6 +418,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdSpr : MountQueryCommand
     {
         public CmdSpr(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdSpr(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -407,6 +430,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public class CmdSpw : MountQueryCommand
     {
         public CmdSpw(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        [Obsolete("Use the ICommandQueue<Actions> injection constructor. Static shortcut will be removed when MountQueue facade is retired.")]
         public CmdSpw(long id) : this(id, MountQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(Actions actions)

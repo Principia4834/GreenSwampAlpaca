@@ -995,10 +995,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        SimTasks(MountTaskName.StopAxes);
+                        SimTasks(MountTaskName.StopAxes, _defaultInstance!);
                         break;
                     case MountType.SkyWatcher:
-                        SkyTasks(MountTaskName.StopAxes);
+                        SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -1078,10 +1078,10 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (_settings!.Mount)
             {
                 case MountType.Simulator:
-                    SimTasks(MountTaskName.StopAxes);
+                    SimTasks(MountTaskName.StopAxes, _defaultInstance!);
                     break;
                 case MountType.SkyWatcher:
-                    SkyTasks(MountTaskName.StopAxes);
+                    SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1158,10 +1158,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        SimTasks(MountTaskName.StopAxes);
+                        SimTasks(MountTaskName.StopAxes, _defaultInstance!);
                         break;
                     case MountType.SkyWatcher:
-                        SkyTasks(MountTaskName.StopAxes);
+                        SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -1640,12 +1640,12 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (_settings!.Mount)
             {
                 case MountType.Simulator:
-                    SimTasks(MountTaskName.StopAxes);
-                    SimTasks(MountTaskName.SyncAltAz);
+                    SimTasks(MountTaskName.StopAxes, _defaultInstance!);
+                    SimTasks(MountTaskName.SyncAltAz, _defaultInstance!);
                     break;
                 case MountType.SkyWatcher:
-                    SkyTasks(MountTaskName.StopAxes);
-                    SkyTasks(MountTaskName.SyncAltAz);
+                    SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
+                    SkyTasks(MountTaskName.SyncAltAz, _defaultInstance!);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1703,7 +1703,7 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (_settings!.Mount)
             {
                 case MountType.Simulator:
-                    SimTasks(MountTaskName.StopAxes);
+                    SimTasks(MountTaskName.StopAxes, _defaultInstance!);
                     // ToDo: Remove if not needed
                     //if (AlignmentModel.IsAlignmentOn)
                     //{
@@ -1711,11 +1711,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     //}
                     //else
                     //{
-                        SimTasks(MountTaskName.SyncTarget);
+                        SimTasks(MountTaskName.SyncTarget, _defaultInstance!);
                     //}
                     break;
                 case MountType.SkyWatcher:
-                    SkyTasks(MountTaskName.StopAxes);
+                    SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
                     // ToDo: Remove if not needed
                     //if (AlignmentModel.IsAlignmentOn)
                     //{
@@ -1723,7 +1723,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     //}
                     //else
                     //{
-                        SkyTasks(MountTaskName.SyncTarget);
+                        SkyTasks(MountTaskName.SyncTarget, _defaultInstance!);
                     //}
 
                     break;
@@ -2006,6 +2006,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     switch (_settings!.Mount)
                     {
                         case MountType.Simulator:
+                        {
+                            var mq = _defaultInstance!.MountQueueInstance!;
                             switch (_settings!.AlignmentMode)
                             {
                                 case AlignmentMode.AltAz:
@@ -2013,19 +2015,22 @@ namespace GreenSwamp.Alpaca.MountControl
                                     break;
                                 case AlignmentMode.Polar:
                                     if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
-                                    _ = new CmdAxisPulse(0, Axis.Axis2, decGuideRate, duration,
+                                    _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis2, decGuideRate, duration,
                                         _ctsPulseGuideDec.Token);
                                     break;
                                 case AlignmentMode.GermanPolar:
                                     if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
-                                    _ = new CmdAxisPulse(0, Axis.Axis2, decGuideRate, duration,
+                                    _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis2, decGuideRate, duration,
                                         _ctsPulseGuideDec.Token);
                                     break;
                                 default:
                                     break;
                             }
                             break;
+                        }
                         case MountType.SkyWatcher:
+                        {
+                            var sq = _defaultInstance!.SkyQueueInstance!;
                             switch (_settings!.AlignmentMode)
                             {
                                 case AlignmentMode.AltAz:
@@ -2033,15 +2038,16 @@ namespace GreenSwamp.Alpaca.MountControl
                                     break;
                                 case AlignmentMode.Polar:
                                     if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
-                                    _ = new SkyAxisPulse(0, Axis.Axis2, decGuideRate, duration, decBacklashAmount, _ctsPulseGuideDec.Token);
+                                    _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis2, decGuideRate, duration, decBacklashAmount, _ctsPulseGuideDec.Token);
                                     break;
                                 case AlignmentMode.GermanPolar:
-                                    _ = new SkyAxisPulse(0, Axis.Axis2, decGuideRate, duration, decBacklashAmount, _ctsPulseGuideDec.Token);
+                                    _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis2, decGuideRate, duration, decBacklashAmount, _ctsPulseGuideDec.Token);
                                     break;
                                 default:
                                     break;
                             }
                             break;
+                        }
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -2082,7 +2088,8 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             else
                             {
-                                _ = new CmdAxisPulse(0, Axis.Axis1, raGuideRate, duration, _ctsPulseGuideRa.Token);
+                                var mq = _defaultInstance!.MountQueueInstance!;
+                                _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis1, raGuideRate, duration, _ctsPulseGuideRa.Token);
                             }
 
                             break;
@@ -2093,7 +2100,8 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             else
                             {
-                                _ = new SkyAxisPulse(0, Axis.Axis1, raGuideRate, duration, 0, _ctsPulseGuideRa.Token);
+                                var sq = _defaultInstance!.SkyQueueInstance!;
+                                _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis1, raGuideRate, duration, 0, _ctsPulseGuideRa.Token);
                             }
                             break;
                         default:
@@ -2408,21 +2416,27 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             rate = SkyGetRate();
                             // Tracking applied unless MoveAxis is active
-                            if (!MovePrimaryAxisActive)
-                                _ = new CmdAxisTracking(0, Axis.Axis1, rate.X);
-                            if (!MoveSecondaryAxisActive)
-                                _ = new CmdAxisTracking(0, Axis.Axis2, rate.Y);
+                            {
+                                var mq = _defaultInstance!.MountQueueInstance!;
+                                if (!MovePrimaryAxisActive)
+                                    _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rate.X);
+                                if (!MoveSecondaryAxisActive)
+                                    _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis2, rate.Y);
+                            }
                             break;
                         case AlignmentMode.Polar:
                         case AlignmentMode.GermanPolar:
-                            if (!MovePrimaryAxisActive) // Set current tracking rate and RA tracking rate offset (0 if not sidereal)
                             {
-                                _ = new CmdAxisTracking(0, Axis.Axis1, rateChange);
-                            }
-                            _ = new CmdRaDecRate(0, Axis.Axis1, GetRaRateDirection(_defaultInstance?.RateRa ?? 0.0));
-                            if (!MoveSecondaryAxisActive) // Set Dec tracking rate offset (0 if not sidereal)
-                            {
-                                _ = new CmdRaDecRate(0, Axis.Axis2, GetDecRateDirection(_defaultInstance?.RateDec ?? 0.0));
+                                var mq = _defaultInstance!.MountQueueInstance!;
+                                if (!MovePrimaryAxisActive) // Set current tracking rate and RA tracking rate offset (0 if not sidereal)
+                                {
+                                    _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
+                                }
+                                _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, GetRaRateDirection(_defaultInstance?.RateRa ?? 0.0));
+                                if (!MoveSecondaryAxisActive) // Set Dec tracking rate offset (0 if not sidereal)
+                                {
+                                    _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, GetDecRateDirection(_defaultInstance?.RateDec ?? 0.0));
+                                }
                             }
                             break;
                         default:
@@ -2457,10 +2471,13 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     rate = SkyGetRate(); // Get current tracking  including RA and Dec offsets
-                    if (!MovePrimaryAxisActive)
-                        _ = new SkyAxisSlew(0, Axis.Axis1, rate.X);
-                    if (!MoveSecondaryAxisActive)
-                        _ = new SkyAxisSlew(0, Axis.Axis2, rate.Y);
+                    {
+                        var sq = _defaultInstance!.SkyQueueInstance!;
+                        if (!MovePrimaryAxisActive)
+                            _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis1, rate.X);
+                        if (!MoveSecondaryAxisActive)
+                            _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis2, rate.Y);
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
