@@ -573,11 +573,14 @@ namespace GreenSwamp.Alpaca.MountControl
         public double RateRa { get; }
         public double RateDec { get; }
 
+        private MountInstance MountInstance;
+
         #endregion
 
         #region Constructor
 
         public SlewOperation(
+            MountInstance mountInstance,
             double[] target,
             SlewType slewType,
             bool trackingAfterSlew,
@@ -592,6 +595,7 @@ namespace GreenSwamp.Alpaca.MountControl
             TrackingAfterSlew = trackingAfterSlew;
             RateRa = rateRa;
             RateDec = rateDec;
+            MountInstance = mountInstance ?? throw new ArgumentNullException(nameof(mountInstance));
         }
 
         #endregion
@@ -618,7 +622,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // _defaultInstance and are wrong for any non-default MountInstance.
             if (SlewType == SlewType.SlewRaDec)
             {
-                SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
+                MountInstance.SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
             }
         }
 
@@ -670,11 +674,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 case SlewType.SlewHome:
-                    SkyPredictor.Reset();
+                    MountInstance.SkyPredictor.Reset();
                     break;
 
                 case SlewType.SlewHandpad:
-                    SkyPredictor.Set(
+                    MountInstance.SkyPredictor.Set(
                         SkyServer.RightAscensionXForm,
                         SkyServer.DeclinationXForm
                     );
@@ -759,9 +763,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // Alt/Az mount - need tracking settle period
             // Update target if offset rates were used
-            if (SkyPredictor.RatesSet)
+            if (MountInstance.SkyPredictor.RatesSet)
             {
-                var targetRaDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                var targetRaDec = MountInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                 SkyServer.TargetRa = targetRaDec[0];
                 SkyServer.TargetDec = targetRaDec[1];
             }
@@ -769,7 +773,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Enable Alt/Az tracking to complete the slew
             // NOTE: Replicate GoToAsync pattern - don't use Tracking property setter
             // because it resets SkyPredictor (line 301 in TelescopeAPI.cs)
-            SkyPredictor.Set(SkyServer.TargetRa, SkyServer.TargetDec);
+            MountInstance.SkyPredictor.Set(SkyServer.TargetRa, SkyServer.TargetDec);
 
             // Manually set tracking without going through Tracking property
             SkyServer.SetTrackingDirect(true, TrackingMode.AltAz);

@@ -45,6 +45,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private readonly string _id;
         private readonly string _deviceName;
         private readonly SkySettingsInstance _settings;
+        public readonly SkyPredictor SkyPredictor = new SkyPredictor();
 
         // Instance state fields (migrated from static)
         private MediaTimer? _mediaTimer;
@@ -2332,7 +2333,7 @@ namespace GreenSwamp.Alpaca.MountControl
             EnsureSlewController();
             // Capture this instance's offset rates now — SkyServer.RateRa/Dec always
             // delegate to _defaultInstance and would be wrong for non-default instances.
-            var operation = new SlewOperation(target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
+            var operation = new SlewOperation(this, target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
             return await _slewController!.ExecuteSlewAsync(operation);
         }
 
@@ -2343,7 +2344,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void SlewSync(double[] target, SlewType slewType, bool tracking = false)
         {
             EnsureSlewController();
-            var operation = new SlewOperation(target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
+            var operation = new SlewOperation(this, target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
             var setupResult = _slewController!.ExecuteSlewAsync(operation).Result;
             if (!setupResult.CanProceed)
                 throw new InvalidOperationException($"Slew setup failed: {setupResult.ErrorMessage}");

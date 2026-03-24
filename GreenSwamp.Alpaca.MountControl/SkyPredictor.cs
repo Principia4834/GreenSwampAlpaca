@@ -29,41 +29,43 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Manage all Right Ascension and Declination offset tracking calculations for use by AltAz slewing and goto actions
     /// Ra and Dec are in external coords, convert to topo for Alt Az conversions and mount control
     /// </summary>
-    internal static class SkyPredictor
+    public class SkyPredictor
     {
         /// <summary>
         /// Initialise Right Ascension, Declination, Rates and ReferenceTime to default values
         /// </summary>
-        static SkyPredictor()
+        public SkyPredictor()
         {
             Reset();
         }
 
-        private static double _ra;
+        private const double SiderealRate = 15.0410671786691;
+
+        private double _ra;
         /// <summary>
         /// Right Ascension value at ReferenceTime
         /// </summary>
-        public static double Ra
+        public double Ra
         {
             get => _ra;
             private set => _ra = value;
         }
 
-        private static double _dec;
+        private double _dec;
         /// <summary>
         /// Declination value at ReferenceTime
         /// </summary>
-        public static double Dec
+        public double Dec
         {
             get => _dec;
             private set => _dec = value;
         }
 
-        private static double _rateRa;
+        private double _rateRa;
         /// <summary>
         /// Right Ascension rate used by predictor
         /// </summary>
-        public static double RateRa
+        public double RateRa
         {
             get => _rateRa;
             set
@@ -73,11 +75,11 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        private static double _rateDec;
+        private double _rateDec;
         /// <summary>
         /// Declination rate used by predictor
         /// </summary>
-        public static double RateDec
+        public double RateDec
         {
             get => _rateDec;
             set
@@ -90,22 +92,22 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// ReferenceTime for Right Ascension and Declination, used for delta time calculation
         /// </summary>
-        public static DateTime ReferenceTime { get; set; }
+        public DateTime ReferenceTime { get; set; }
 
         /// <summary>
         /// Check for Right Ascension or Declination not set
         /// </summary>
-        public static bool RaDecSet => !(Double.IsNaN(_ra) || Double.IsNaN(_dec));
+        public bool RaDecSet => !(Double.IsNaN(_ra) || Double.IsNaN(_dec));
 
         /// <summary>
         /// Check for Right Ascension or Declination Rates set
         /// </summary>
-        public static bool RatesSet => (RateRa != 0 || RateDec != 0);
+        public bool RatesSet => (RateRa != 0 || RateDec != 0);
 
         /// <summary>
         /// Set Right Ascension, Declination, Rates and ReferenceTime to default values 
         /// </summary>
-        public static void Reset()
+        public void Reset()
         {
             Ra = Double.NaN;
             Dec = Double.NaN;
@@ -134,7 +136,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="dec">Declination</param>
         /// <param name="raRate">Right Ascension rate</param>
         /// <param name="decRate">Declination rate</param>
-        public static void Set(double ra, double dec, double raRate, double decRate)
+        public void Set(double ra, double dec, double raRate, double decRate)
         {
             RateRa = raRate;
             RateDec = decRate;
@@ -161,7 +163,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="ra">Right Ascension</param>
         /// <param name="dec">Declination</param>
-        public static void Set(double ra, double dec)
+        public void Set(double ra, double dec)
         {
             Set(ra, dec, RateRa, RateDec);
         }
@@ -172,7 +174,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="time">Future time</param>
         /// <returns></returns>
-        public static double[] GetRaDecAtTime(DateTime time)
+        public double[] GetRaDecAtTime(DateTime time)
         {
             double[] result = { Ra, Dec, };
             if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && (ReferenceTime != DateTime.MaxValue))
@@ -209,7 +211,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="time">Future time</param>
         /// <param name="raOut">Right Ascension at future time</param>
         /// <param name="decOut">Declination at future time</param>
-        public static void GetRaDecAtTime(DateTime time, out double raOut, out double decOut)
+        public void GetRaDecAtTime(DateTime time, out double raOut, out double decOut)
         {
             raOut = Double.NaN;
             decOut = Double.NaN;
@@ -222,7 +224,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 else
                 {
                     var deltaTime = (time - ReferenceTime).TotalSeconds;
-                    var deltaRaRate = (SkyServer.CurrentTrackingRate() - SkySettings.SiderealRate) * 3600;
+                    var deltaRaRate = (SkyServer.CurrentTrackingRate() - SiderealRate) * 3600;
                     raOut = Range.Range24(_ra + deltaTime * (_rateRa + deltaRaRate) / 15.0);
                     decOut = _dec + deltaTime * _rateDec;
                 }
@@ -245,7 +247,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Calculate and set Right Ascension and Declination at current time
         /// ReferenceTime is set to time now ready for tracking
         /// </summary>
-        public static void SetRaDecNow()
+        public void SetRaDecNow()
         {
             if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && !(ReferenceTime == DateTime.MaxValue))
             {

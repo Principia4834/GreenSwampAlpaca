@@ -1318,7 +1318,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context);
 
                     // Create ParkPosition with axis coordinates
-                    axisPositions.Add(new ParkPosition
+                    axisPositions.Add(new ParkPosition(AlignmentMode)
                     {
                         Name = azAltPos.Name,
                         X = Math.Round(axes[0], 6),  // Axis X
@@ -1367,11 +1367,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     // Create ParkPosition with Az/Alt coordinates for storage (NH convention)
                     azAltPositions.Add(new ParkPosition
-                    {
-                        Name = axisPos.Name,
-                        X = Math.Round(az, 6),   // Azimuth (NH convention)
-                        Y = Math.Round(alt, 6)   // Altitude (no adjustment)
-                    });
+                    (
+                        axisPos.Name,
+                        Math.Round(az, 6),   // Azimuth (NH convention)
+                        Math.Round(alt, 6)   // Altitude (no adjustment)
+                    ));
                 }
 
                 // Update settings service with Az/Alt (ordered by name)
@@ -1921,7 +1921,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 else
                 {
                     _parkPositions = settings.ParkPositions?.Select(p =>
-                        new ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList() ?? new List<ParkPosition>();
+                        new ParkPosition ( p.Name, p.X, p.Y )).ToList() ?? new List<ParkPosition>();
                 }
 
                 _limitPark = settings.LimitPark;

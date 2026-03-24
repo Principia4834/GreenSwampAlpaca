@@ -20,10 +20,10 @@ namespace GreenSwamp.Alpaca.MountControl
 {
     public class ParkPosition
     {
-        public ParkPosition()
+        public ParkPosition(AlignmentMode AlignmentMode)
         {
             Name = "Blank";
-            switch (SkySettings.AlignmentMode)
+            switch (AlignmentMode)
             {
                 case AlignmentMode.AltAz:
                     X = 0; Y = 0;

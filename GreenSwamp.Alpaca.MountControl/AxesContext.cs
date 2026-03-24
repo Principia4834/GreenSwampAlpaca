@@ -135,29 +135,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Create context from static SkySettings/SkyServer (backward compatibility)
-        /// </summary>
-        /// <returns>Populated AxesContext using static values</returns>
-        public static AxesContext FromStatic()
-        {
-            return new AxesContext
-            {
-                AlignmentMode = SkySettings.AlignmentMode,
-                MountType = SkySettings.Mount,
-                Latitude = SkySettings.Latitude,
-                SouthernHemisphere = SkyServer.SouthernHemisphere,
-                PolarMode = SkyServer.PolarMode,
-                LocalSiderealTime = SkyServer.SiderealTime,
-                SideOfPier = SkyServer.SideOfPier,
-                AppAxisX = SkyServer.AppAxisX,
-                AppAxisY = SkyServer.AppAxisY,
-                AxisLimitX = SkySettings.AxisLimitX,
-                HourAngleLimit = SkySettings.HourAngleLimit,
-                IsWithinFlipLimitsFunc = SkyServer.IsWithinFlipLimits // Delegate to static method
-            };
-        }
-
-        /// <summary>
         /// Create context with explicit values (for testing or special cases)
         /// </summary>
         /// <param name="alignmentMode">Mount alignment mode</param>

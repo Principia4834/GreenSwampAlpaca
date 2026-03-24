@@ -317,7 +317,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             var c = Units.Rad2Deg1(b);
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromStatic();
+            var context = AxesContext.FromSettings(SettingsInstance);
             var positions = Axes.MountAxis2Mount(context);
             switch (axis)
             {
@@ -365,7 +365,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromStatic();
+            var context = AxesContext.FromSettings(SettingsInstance);
             var positions = Axes.MountAxis2Mount(context);
 
             switch (axis)

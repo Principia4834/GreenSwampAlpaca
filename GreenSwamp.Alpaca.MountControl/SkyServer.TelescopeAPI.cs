@@ -307,7 +307,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                SkyPredictor.Reset();
+                _defaultInstance?.SkyPredictor.Reset();
                 if (value)
                 {
                     // Tracking on
@@ -326,13 +326,13 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.AltAz:
                             AltAzTrackingMode = AltAzTrackingType.Predictor;
                             // Must have a tracking target for Alt Az otherwise just set the reference time to now
-                            if (!SkyPredictor.RaDecSet)
+                            if (!_defaultInstance.SkyPredictor.RaDecSet)
                             {
-                                SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0);
+                                _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0);
                             }
                             else
                             {
-                                SkyPredictor.ReferenceTime = DateTime.Now;
+                                _defaultInstance.SkyPredictor.ReferenceTime = DateTime.Now;
                             }
                             // ToDo re-enable voice prompt later
                             // if (TrackingSpeak) Synthesizer.Speak(MediaTypeNames.Application.Current.Resources["vceTrackingOn"].ToString());
@@ -822,7 +822,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Tracking = false;
                 if (slewState == SlewType.SlewRaDec)
                 {
-                    SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
+                    _defaultInstance.SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
                 }
                 IsSlewing = true;
                 goToStarted.Set(); // Signal that GoTo has started so async ASCOM operations can return with Slewing = true
@@ -872,15 +872,15 @@ namespace GreenSwamp.Alpaca.MountControl
                             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                             {
                                 // update TargetRa and TargetDec after slewing with offset rates as per ASCOM spec
-                                if (SkyPredictor.RatesSet)
+                                if (_defaultInstance.SkyPredictor.RatesSet)
                                 {
-                                    var targetRaDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                                    var targetRaDec = _defaultInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                                     TargetRa = targetRaDec[0];
                                     TargetDec = targetRaDec[1];
                                 }
 
                                 // use tracking to complete slew for Alt Az mounts
-                                SkyPredictor.Set(TargetRa, TargetDec);
+                                _defaultInstance.SkyPredictor.Set(TargetRa, TargetDec);
                                 _defaultInstance.SetTracking(true);
                                 _defaultInstance.TrackingMode = TrackingMode.AltAz;
                                 SetTracking(); var sw = Stopwatch.StartNew();
@@ -910,15 +910,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         case SlewType.SlewPark:
                             trackingState = false;
                             AtPark = true;
-                            SkyPredictor.Reset();
+                            _defaultInstance.SkyPredictor.Reset();
                             break;
                         case SlewType.SlewHome:
                             trackingState = false;
-                            SkyPredictor.Reset();
+                            _defaultInstance.SkyPredictor.Reset();
                             break;
                         case SlewType.SlewHandpad:
                             // ensure tracking if enabled has the correct target
-                            SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                            _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
                             break;
                         case SlewType.SlewComplete:
                             break;
@@ -1100,7 +1100,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 //    while (!MountPositionUpdated) Thread.Sleep(50);
                 //    AxesRateOfChange.Update(_actualAxisX, _actualAxisY, HiResDateTime.UtcNow);
                 //} while (AxesRateOfChange.AxisVelocity.Length > 0);
-                SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
             // ToDo re-enable voice prompt later
             // TrackingSpeak = false;
@@ -1353,7 +1353,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var park = Axes.MountAxis2Mount(context);
             if (park == null) { return; }
 
-            var p = new ParkPosition { Name = name, X = park[0], Y = park[1] };
+            var p = new ParkPosition (name, park[0], park[1]);
             ParkSelected = p;
 
             var monitorItem = new MonitorEntry
@@ -1379,7 +1379,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (string.IsNullOrEmpty(name)) name = "Empty";
 
-            var p = new ParkPosition { Name = name, X = x, Y = y };
+            var p = new ParkPosition(name, x, y );
             ParkSelected = p;
 
             var monitorItem = new MonitorEntry
@@ -1588,7 +1588,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             AtPark = true;
             Tracking = false;
-            SkyPredictor.Reset();
+            _defaultInstance.SkyPredictor.Reset();
 
             var monitorItem = new MonitorEntry
             {
@@ -1661,8 +1661,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 var raDec = Coordinate.AltAz2RaDec(internalAltAz.X, internalAltAz.Y, SiderealTime, _settings!.Latitude);
 
                 // Set predictor to the RA/Dec corresponding to synced Alt/Az
-                // NOTE: Use SetTrackingDirect to avoid Tracking property's SkyPredictor.Reset()
-                SkyPredictor.Set(raDec[0], raDec[1]);
+                // NOTE: Use SetTrackingDirect to avoid Tracking property's _defaultInstance.SkyPredictor.Reset()
+                _defaultInstance.SkyPredictor.Set(raDec[0], raDec[1]);
                 SetTrackingDirect(true, TrackingMode.AltAz);
 
                 // ToDo re-enable voice prompt later
@@ -1738,8 +1738,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                 {
                     // set up tracking for Alt Az
-                    // NOTE: Use SetTrackingDirect to avoid Tracking property's SkyPredictor.Reset()
-                    SkyPredictor.Set(TargetRa, TargetDec);
+                    // NOTE: Use SetTrackingDirect to avoid Tracking property's _defaultInstance.SkyPredictor.Reset()
+                    _defaultInstance.SkyPredictor.Set(TargetRa, TargetDec);
                     SetTrackingDirect(true, TrackingMode.AltAz);
                 }
                 else
@@ -1872,14 +1872,14 @@ namespace GreenSwamp.Alpaca.MountControl
                             StopAltAzTrackingTimer();
                         else
                             _ctsPulseGuideDec.Cancel();
-                        SkyPredictor.Set(SkyPredictor.Ra - duration * 0.001 * guideRate / SiderealRate, SkyPredictor.Dec);
+                        _defaultInstance.SkyPredictor.Set(_defaultInstance.SkyPredictor.Ra - duration * 0.001 * guideRate / SiderealRate, _defaultInstance.SkyPredictor.Dec);
                         break;
                     case 1:
                         if (!IsPulseGuidingRa)
                             StopAltAzTrackingTimer();
                         else
                             _ctsPulseGuideRa.Cancel();
-                        SkyPredictor.Set(SkyPredictor.Ra, SkyPredictor.Dec + duration * guideRate * 0.001);
+                        _defaultInstance.SkyPredictor.Set(_defaultInstance.SkyPredictor.Ra, _defaultInstance.SkyPredictor.Dec + duration * guideRate * 0.001);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
@@ -2785,13 +2785,13 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case AltAzTrackingType.Predictor:
                     double[] delta = { 0.0, 0.0 };
-                    if (SkyPredictor.RaDecSet)
+                    if (_defaultInstance.SkyPredictor.RaDecSet)
                     {
                         // Update mount position
                         WaitMountPositionUpdated();
                         var steps = Steps;
                         DateTime nextTime = HiResDateTime.UtcNow.AddMilliseconds(_settings!.AltAzTrackingUpdateInterval);
-                        var raDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                        var raDec = _defaultInstance.SkyPredictor.GetRaDecAtTime(nextTime);
                         // get required target position in topo coordinates
                         var internalRaDec = Transforms.CoordTypeToInternal(raDec[0], raDec[1]);
                         var skyTarget = Coordinate.RaDec2AltAz(internalRaDec.X, internalRaDec.Y, GetLocalSiderealTime(nextTime), _settings!.Latitude);

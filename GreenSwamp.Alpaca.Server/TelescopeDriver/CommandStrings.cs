@@ -32,7 +32,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                                 default:
                                     throw new DriverException("Param error");
                             }
-                            switch (SkySettings.Mount)
+                            switch (SkyServer.Mount)
                             {
                                 case MountType.Simulator:
                                     SkyServer.SimTasks(MountTaskName.SetSnapPort1);
@@ -56,7 +56,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                                 default:
                                     throw new DriverException("Param 2 error");
                             }
-                            switch (SkySettings.Mount)
+                            switch (SkyServer.Mount)
                             {
                                 case MountType.Simulator:
                                     SkyServer.SimTasks(MountTaskName.SetSnapPort2);

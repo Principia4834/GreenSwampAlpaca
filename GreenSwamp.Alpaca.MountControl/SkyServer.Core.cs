@@ -45,6 +45,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Range = GreenSwamp.Alpaca.Principles.Range;
+using SkyWatcherErrorCode = GreenSwamp.Alpaca.Mount.SkyWatcher.ErrorCode;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
@@ -217,10 +218,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 //};
                 //AlignmentModel.Notification += AlignmentModel_Notification;
 
-                // attach handler to watch for SkySettings changing.
-                SkySettings.StaticPropertyChanged += PropertyChangedSkySettings;
-
-            }
+                }
             catch (Exception ex)
             {
                 var monitorItem = new MonitorEntry
@@ -299,6 +297,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static void Initialize()
         {
+            // Wire settings change notifications now that slot 0 is registered
+            if (_settings != null)
+                _settings.PropertyChanged += PropertyChangedSkySettings;
+
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -473,23 +475,23 @@ namespace GreenSwamp.Alpaca.MountControl
                     var mounterr = (MountControlException)ex;
                     switch (mounterr.ErrorCode)
                     {
-                        case Mount.SkyWatcher.ErrorCode.ErrInvalidId:
-                        case Mount.SkyWatcher.ErrorCode.ErrAlreadyConnected:
-                        case Mount.SkyWatcher.ErrorCode.ErrNotConnected:
-                        case Mount.SkyWatcher.ErrorCode.ErrInvalidData:
-                        case Mount.SkyWatcher.ErrorCode.ErrSerialPortBusy:
-                        case Mount.SkyWatcher.ErrorCode.ErrMountNotFound:
-                        case Mount.SkyWatcher.ErrorCode.ErrNoResponseAxis1:
-                        case Mount.SkyWatcher.ErrorCode.ErrNoResponseAxis2:
-                        case Mount.SkyWatcher.ErrorCode.ErrAxisBusy:
-                        case Mount.SkyWatcher.ErrorCode.ErrMaxPitch:
-                        case Mount.SkyWatcher.ErrorCode.ErrMinPitch:
-                        case Mount.SkyWatcher.ErrorCode.ErrUserInterrupt:
-                        case Mount.SkyWatcher.ErrorCode.ErrAlignFailed:
-                        case Mount.SkyWatcher.ErrorCode.ErrUnimplemented:
-                        case Mount.SkyWatcher.ErrorCode.ErrWrongAlignmentData:
-                        case Mount.SkyWatcher.ErrorCode.ErrQueueFailed:
-                        case Mount.SkyWatcher.ErrorCode.ErrTooManyRetries:
+                        case SkyWatcherErrorCode.ErrInvalidId:
+                        case SkyWatcherErrorCode.ErrAlreadyConnected:
+                        case SkyWatcherErrorCode.ErrNotConnected:
+                        case SkyWatcherErrorCode.ErrInvalidData:
+                        case SkyWatcherErrorCode.ErrSerialPortBusy:
+                        case SkyWatcherErrorCode.ErrMountNotFound:
+                        case SkyWatcherErrorCode.ErrNoResponseAxis1:
+                        case SkyWatcherErrorCode.ErrNoResponseAxis2:
+                        case SkyWatcherErrorCode.ErrAxisBusy:
+                        case SkyWatcherErrorCode.ErrMaxPitch:
+                        case SkyWatcherErrorCode.ErrMinPitch:
+                        case SkyWatcherErrorCode.ErrUserInterrupt:
+                        case SkyWatcherErrorCode.ErrAlignFailed:
+                        case SkyWatcherErrorCode.ErrUnimplemented:
+                        case SkyWatcherErrorCode.ErrWrongAlignmentData:
+                        case SkyWatcherErrorCode.ErrQueueFailed:
+                        case SkyWatcherErrorCode.ErrTooManyRetries:
                             IsMountRunning = false;
                             MountError = mounterr;
                             break;
@@ -623,7 +625,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case "AlignmentMode":
                     Tracking = false;
-                    SkyPredictor.Reset();
+                    _defaultInstance.SkyPredictor.Reset();
                     break;
             }
         }
@@ -2003,7 +2005,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 MoveAxisActive = false;
                 IsSlewing = false;
                 SlewState = SlewType.SlewNone;
-                if (Tracking) SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                if (Tracking) _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
         }
 
@@ -2018,9 +2020,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                 {
                     // get tracking target at time now
-                    var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                    var raDec = _defaultInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                     // set predictor parameters ready for tracking
-                    SkyPredictor.Set(raDec[0], raDec[1], _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
+                    _defaultInstance.SkyPredictor.Set(raDec[0], raDec[1], _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
                 }
                 SetTracking();
             }
@@ -2029,7 +2031,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                 {
                     // no tracking target so set to current position 
-                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
+                    _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
                 }
             }
         }

@@ -248,24 +248,8 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogInformation("✅ Monitor filters loaded");
                 Logger.LogInformation($"📁 Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
 
-                // Phase 4.2: Create instance with profile loading support
+                // Phase 4.2: Create profile loader for per-device SkySettingsInstance construction
                 var profileLoader = app.Services.GetService<IProfileLoaderService>();
-                var settingsInstance = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-
-                if (profileLoader != null)
-                {
-                    Logger.LogInformation("✅ SkySettingsInstance created with profile loading support");
-                }
-                else
-                {
-                    Logger.LogInformation("✅ SkySettingsInstance created (JSON-only)");
-                }
-
-                // Initialize static facade for backward compatibility
-                GreenSwamp.Alpaca.MountControl.SkySettings.Initialize(settingsInstance);
-                Logger.LogInformation("✅ Static SkySettings facade initialized");
-
-                Logger.LogInformation("✅ Instance-based settings active");
 
                 // Phase 4.11: Initialize device registry with reserved slots
                 // Load device configurations from appsettings.json

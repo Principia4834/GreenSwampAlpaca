@@ -48,6 +48,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Property Settings 
 
+        /// <summary>Mount hardware type for the default instance (Simulator or SkyWatcher)</summary>
+        public static MountType Mount => _settings?.Mount ?? default;
+
         #region Backers
         // private static bool _alertState;
         // private static bool _asComOn;
@@ -833,7 +836,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static ParkPosition GetStoredParkPosition()
         {
-            var p = new ParkPosition { Name = _settings!.ParkName, X = _settings!.ParkAxes[0], Y = _settings!.ParkAxes[1] };
+            var p = new ParkPosition (_settings!.ParkName, _settings!.ParkAxes[0], _settings!.ParkAxes[1]);
             return p;
         }
 
