@@ -304,6 +304,13 @@ namespace GreenSwamp.Alpaca.MountControl
             // Create default mount instance
             _defaultInstance = new MountInstance("default", settings);
 
+            // Bridge (Step 8→9): pre-register _defaultInstance as slot 0 so GetInstance(0) == _defaultInstance.
+            // Closes the read/write split introduced when Telescope.cs was migrated to GetInstance() in Step 8.
+            // The write pipeline (OnUpdateServerEvent, SetRateMoveSlewState, SetSlewRates, etc.) still targets
+            // _defaultInstance; this makes GetInstance(0) return the same object, eliminating stale reads.
+            // TODO Step 9: remove once the write pipeline is migrated to per-device registry instances.
+            MountInstanceRegistry.RegisterInstance(0, _defaultInstance);
+
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,

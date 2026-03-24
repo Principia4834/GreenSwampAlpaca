@@ -915,6 +915,103 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
+        #region Telescope API Bridge Methods (Step 8 — delegates to SkyServer until logic migrates in Step 9)
+
+        /// <summary>Rate move on primary axis — delegates to SkyServer until Step 9.</summary>
+        public double RateMovePrimaryAxis
+        {
+            get => _rateMoveAxes.X;
+            set => SkyServer.RateMovePrimaryAxis = value;
+        }
+
+        /// <summary>Rate move on secondary axis — delegates to SkyServer until Step 9.</summary>
+        public double RateMoveSecondaryAxis
+        {
+            get => _rateMoveAxes.Y;
+            set => SkyServer.RateMoveSecondaryAxis = value;
+        }
+
+        /// <summary>Selected park position — delegates to SkyServer until Step 9.</summary>
+        public ParkPosition ParkSelected
+        {
+            get => SkyServer.ParkSelected;
+            set => SkyServer.ParkSelected = value;
+        }
+
+        /// <summary>Apply full tracking state change including side effects — delegates to SkyServer.Tracking setter.</summary>
+        public void ApplyTracking(bool value) => SkyServer.Tracking = value;
+
+        /// <summary>Set SideOfPier (triggers pier flip) — delegates to SkyServer.SideOfPier setter.</summary>
+        public void SetSideOfPier(PointingState value) => SkyServer.SideOfPier = value;
+
+        /// <summary>Set RateDec with ActionRateRaDec side effect — delegates to SkyServer.RateDec setter.</summary>
+        public void SetRateDec(double degrees) => SkyServer.RateDec = degrees;
+
+        /// <summary>Set RateRa with ActionRateRaDec side effect — delegates to SkyServer.RateRa setter.</summary>
+        public void SetRateRa(double degrees) => SkyServer.RateRa = degrees;
+
+        /// <summary>Abort any active slew — delegates to SkyServer.AbortSlewAsync.</summary>
+        public void AbortSlewAsync(bool speak) => SkyServer.AbortSlewAsync(speak);
+
+        /// <summary>Returns whether the specified axis can be moved — delegates to SkyServer.CanMoveAxis.</summary>
+        public bool CanMoveAxis(TelescopeAxis axis) => SkyServer.CanMoveAxis(axis);
+
+        /// <summary>Determine side of pier for given RA/Dec — delegates to SkyServer.DetermineSideOfPier.</summary>
+        public PointingState DetermineSideOfPier(double rightAscension, double declination) =>
+            SkyServer.DetermineSideOfPier(rightAscension, declination);
+
+        /// <summary>Start GoTo Home (fire-and-forget) — delegates to SkyServer.GoToHome.</summary>
+        public void GoToHome() => _ = SkyServer.GoToHome();
+
+        /// <summary>Start park async — delegates to SkyServer.GoToParkAsync.</summary>
+        public Task<SlewResult> GoToParkAsync() => SkyServer.GoToParkAsync();
+
+        /// <summary>Issue a pulse guide command — delegates to SkyServer.PulseGuide.</summary>
+        public void PulseGuide(GuideDirection direction, int duration, double altRate) =>
+            SkyServer.PulseGuide(direction, duration, altRate);
+
+        /// <summary>Synchronous Alt/Az slew — delegates to SkyServer.SlewAltAz.</summary>
+        public void SlewAltAz(double altitude, double azimuth) => SkyServer.SlewAltAz(altitude, azimuth);
+
+        /// <summary>Async Alt/Az slew — delegates to SkyServer.SlewAltAzAsync.</summary>
+        public Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth) =>
+            SkyServer.SlewAltAzAsync(altitude, azimuth);
+
+        /// <summary>Synchronous RA/Dec slew — delegates to SkyServer.SlewRaDec.</summary>
+        public void SlewRaDec(double rightAscension, double declination, bool tracking = false) =>
+            SkyServer.SlewRaDec(rightAscension, declination, tracking);
+
+        /// <summary>Async RA/Dec slew — delegates to SkyServer.SlewRaDecAsync.</summary>
+        public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false) =>
+            SkyServer.SlewRaDecAsync(rightAscension, declination, tracking);
+
+        /// <summary>Enable tracking on a slew cycle — delegates to SkyServer.CycleOnTracking.</summary>
+        public void CycleOnTracking(bool silence) => SkyServer.CycleOnTracking(silence);
+
+        /// <summary>Save current position as a named park position — delegates to SkyServer.SetParkAxis.</summary>
+        public void SetParkAxis(string name) => SkyServer.SetParkAxis(name);
+
+        /// <summary>Sync to given Alt/Az position — delegates to SkyServer.SyncToAltAzm.</summary>
+        public void SyncToAltAzm(double azimuth, double altitude) => SkyServer.SyncToAltAzm(azimuth, altitude);
+
+        /// <summary>Sync to current target RA/Dec — delegates to SkyServer.SyncToTargetRaDec.</summary>
+        public void SyncToTargetRaDec() => SkyServer.SyncToTargetRaDec();
+
+        /// <summary>Block until mount position is updated or timeout — delegates to SkyServer.WaitMountPositionUpdated.</summary>
+        public void WaitMountPositionUpdated() => SkyServer.WaitMountPositionUpdated();
+
+        /// <summary>Check if RA/Dec is within sync limits — delegates to SkyServer.CheckRaDecSyncLimit.</summary>
+        public bool CheckRaDecSyncLimit(double ra, double dec) => SkyServer.CheckRaDecSyncLimit(ra, dec);
+
+        /// <summary>Check if Alt/Az is within sync limits — delegates to SkyServer.CheckAltAzSyncLimit.</summary>
+        public bool CheckAltAzSyncLimit(double alt, double az) => SkyServer.CheckAltAzSyncLimit(alt, az);
+
+        /// <summary>Check if target is within reachable hardware limits — delegates to SkyServer.IsTargetReachable.</summary>
+        public bool IsTargetReachable(double[] target, SlewType slewType) =>
+            SkyServer.IsTargetReachable(target, slewType);
+
+        #endregion
+
         #region Position Methods (Migrated from static)
 
         /// <summary>

@@ -736,22 +736,81 @@ Split into sub-tasks:
 
 ---
 
-### Step 9 — Remove `_defaultInstance` bridge from `SkyServer`
+### Step 9 — Migrate write pipeline to registry instances; remove `_defaultInstance` bridge
 
-After Step 8 is complete, the static `SkyServer` surface is no longer called by `Telescope.cs`.  
-The remaining callers of static `SkyServer` are:
+After Step 8 is complete, `Telescope.cs` reads all state through `GetInstance(_deviceNumber)`.
+However, a **temporary bridge (B0)** was applied when Step 8 completed: `SkyServer.Initialize()`
+pre-registers `_defaultInstance` as registry slot 0 via `MountInstanceRegistry.RegisterInstance(0,
+_defaultInstance)`, and `UnifiedDeviceRegistry.RegisterDevice()` skips `CreateInstance()` for
+pre-registered slots. This ensures `GetInstance(0) == _defaultInstance` and closes the read/write
+split, but it is not the correct long-term design.
 
-- Blazor UI components (pages/services in `GreenSwamp.Alpaca.Server`)
-- `SkySystem` (connection management)
-- `SlewController` (which is now on the instance)
+Step 9 has four ordered sub-tasks:
 
-For the UI, either:
-- Keep static `SkyServer` as an application-level singleton wrapper around device 0 for UI
-  purposes (pragmatic approach); **or**
-- Inject `MountInstance` into Blazor pages via `MountInstanceRegistry` (full DI approach).
+#### Step 9a — Migrate the write pipeline to target per-device registry instances
 
-**Recommendation:** Keep the static facade for UI use for now; focus complete removal for the
-multi-instance ASCOM path first.
+The write pipeline currently targets `_defaultInstance` exclusively. Each site must be redirected
+to the correct per-device registry instance before the bridge can be removed.
+
+| Write site | File | Required change |
+|---|---|---|
+| `UpdateServerEvent` static wrapper → `_defaultInstance?.OnUpdateServerEvent()` | `SkyServer.Core.cs` | Iterate over `MountInstanceRegistry` and call `OnUpdateServerEvent()` on each active instance |
+| `SetRateMoveSlewState(bool)` — sets `_defaultInstance._isSlewing` | `SkyServer.Core.cs` | Accept `MountInstance` parameter or convert to an instance method |
+| `SetSlewRates()` / `Defaults()` — writes `_slewSpeedEight` etc. | `SkyServer.Core.cs` | Call per registry instance at initialisation |
+| `OnUpdateServerEvent()` line ~1513 — `SkyServer.SiderealTime = SkyServer.GetLocalSiderealTime()` | `MountInstance.cs` | Replace with `this._siderealTime = GetLocalSiderealTime()` — remove the static write-back entirely |
+| `SkyServer.RateMovePrimaryAxis` / `RateMoveSecondaryAxis` setter | `SkyServer.cs` | Already called from `MountInstance`; write `this._rateMoveAxes` directly; remove static indirection |
+
+#### Step 9b — Remove Bridge B0
+
+Once 9a is complete, remove the three bridge artefacts (all tagged `// TODO Step 9`):
+
+1. `SkyServer.Core.cs` `Initialize()` — delete `MountInstanceRegistry.RegisterInstance(0, _defaultInstance)`
+   call and its comment block.
+2. `UnifiedDeviceRegistry.cs` `RegisterDevice()` — restore the unconditional `CreateInstance()` call;
+   remove the `GetInstance(deviceNumber) == null` guard. The newly-created registry instance will now
+   receive its state from the migrated write pipeline.
+3. `MountInstanceRegistry.cs` — remove the `RegisterInstance()` method, or make it `internal` and
+   retain it for test fixtures if useful.
+
+At this point `_defaultInstance` is still created by `SkyServer.Initialize()` for the static
+`SkyServer` Blazor UI facade. It is no longer used as the ASCOM device-0 write target.
+
+#### Step 9c — Fix `MountInstance.IsSlewing` axis-rate check
+
+`MountInstance.IsSlewing` is currently:
+```csharp
+public bool IsSlewing =>
+    (_slewController?.IsSlewing == true) ||
+    _isSlewing;
+```
+`SkyServer.IsSlewing` (the correct reference) also checks
+`(Math.Abs(RateMovePrimaryAxis) + Math.Abs(RateMoveSecondaryAxis)) > 0`.
+Add that check so `MountInstance.IsSlewing` is self-contained and correct once the write pipeline
+no longer fills `_isSlewing` via `_defaultInstance`:
+```csharp
+public bool IsSlewing =>
+    (_slewController?.IsSlewing == true) ||
+    (Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0 ||
+    _isSlewing;
+```
+
+#### Step 9d — Audit and remove dead static `SkyServer` surface
+
+Once `Telescope.cs` reads exclusively through `MountInstance` and the write pipeline targets
+registry instances:
+
+- Remove the `_mountPositionUpdatedEvent` / `MountPositionUpdatedEvent` no-op shims from `SkyServer.cs`
+  (scheduled since Step 7).
+- Audit `SkyServer.cs`, `SkyServer.Core.cs`, and `SkyServer.TelescopeAPI.cs` for delegating wrappers
+  that only exist to support `Telescope.cs` (now gone) — remove them.
+- The remaining callers of the static `SkyServer` surface are Blazor UI components and `SkySystem`.
+  For the UI, keep the static facade as a device-0 singleton wrapper (pragmatic) or inject
+  `MountInstance` via DI (full approach). **Recommendation:** keep for UI; focus removal on the
+  ASCOM path first.
+
+**Risk:** Step 9a is the highest-risk sub-task — `UpdateServerEvent` is the core per-tick loop.
+Add integration tests asserting per-instance `SiderealTime` and `IsSlewing` values before making
+these changes, and verify both device-0 and device-1 instances independently after.
 
 ---
 

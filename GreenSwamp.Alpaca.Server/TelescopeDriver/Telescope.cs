@@ -562,7 +562,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     throw new ASCOM.InvalidOperationException(" DeclinationRate - cannot set rate because TrackingRate is not Sidereal");
                 }
                 inst.RateDecOrg = value;
-                SkyServer.RateDec = Conversions.ArcSec2Deg(value);
+                inst.SetRateDec(Conversions.ArcSec2Deg(value));
             }
         }
 
@@ -884,7 +884,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     throw new InvalidOperationException(" RightAscensionRate - cannot set rate because TrackingRate is not Sidereal");
                 }
                 inst.RateRaOrg = value;
-                SkyServer.RateRa = Conversions.ArcSec2Deg(Conversions.SideSec2ArcSec(value));
+                inst.SetRateRa(Conversions.ArcSec2Deg(Conversions.SideSec2ArcSec(value)));
             }
         }
 
@@ -914,7 +914,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
                     return;
                 }
-                SkyServer.SideOfPier = value;
+                inst.SetSideOfPier(value);
 
                 monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
@@ -1141,7 +1141,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                SkyServer.Tracking = value;
+                inst.ApplyTracking(value);
             }
         }
 
@@ -1320,7 +1320,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             MonitorLog.LogToMonitor(monitorItem);
 
             CheckParked("AbortSlew");
-            SkyServer.AbortSlewAsync(true);
+            GetInstance().AbortSlewAsync(true);
         }
 
         public IAxisRates AxisRates(TelescopeAxis Axis)
@@ -1345,7 +1345,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         public bool CanMoveAxis(TelescopeAxis Axis)
         {
             CheckVersionOne("CanMoveAxis");
-            var r = SkyServer.CanMoveAxis(Axis);
+            var r = GetInstance().CanMoveAxis(Axis);
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
@@ -1366,7 +1366,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckRange(raDec.X, 0, 24, "SlewToCoordinatesAsync", "RightAscension");
             CheckRange(raDec.Y, -90, 90, "SlewToCoordinatesAsync", "Declination");
             CheckReachable(raDec.X, raDec.Y, SlewType.SlewRaDec);
-            var r = SkyServer.DetermineSideOfPier(raDec.X, raDec.Y);
+            var r = GetInstance().DetermineSideOfPier(raDec.X, raDec.Y);
             return r;
         }
 
@@ -1391,8 +1391,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 // ReSharper disable once StringLiteralTypo
                 case string str when str.Equals("telescope:setparkposition", StringComparison.InvariantCultureIgnoreCase):
-                    if (SkyServer.IsMountRunning == false) { throw new NotConnectedException("Mount Not Connected"); }
                     var inst = GetInstance();
+                    if (inst.IsMountRunning == false) { throw new NotConnectedException("Mount Not Connected"); }
                     var found = inst.Settings.ParkPositions.Find(x => string.Equals(x.Name, actionParameters, StringComparison.InvariantCultureIgnoreCase));
                     if (found == null)
                     {
@@ -1400,7 +1400,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                         var output = JsonConvert.SerializeObject(parkPositions);
                         throw new Exception($"Param Not Found:'{actionParameters}', {output}");
                     }
-                    SkyServer.ParkSelected = found;
+                    inst.ParkSelected = found;
                     return found.Name;
                 default:
                     throw new ActionNotImplementedException($"Not Found:'{actionName}'");
@@ -1417,7 +1417,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "Started" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            SkyServer.GoToHome();
+            inst.GoToHome();
 
             // ToDo check for timing window
             //if (InterfaceVersion >= 4) return;
@@ -1447,13 +1447,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (!CanMoveAxis(Axis)){throw new MethodNotImplementedException("CanMoveAxis " + Enum.GetName(typeof(TelescopeAxis), Axis));}
             CheckParked("MoveAxis");
 
+            var inst = GetInstance();
             switch (Axis)
             {
                 case TelescopeAxis.Primary:
-                    SkyServer.RateMovePrimaryAxis = Rate;
+                    inst.RateMovePrimaryAxis = Rate;
                     break;
                 case TelescopeAxis.Secondary:
-                    SkyServer.RateMoveSecondaryAxis = Rate;
+                    inst.RateMoveSecondaryAxis = Rate;
                     break;
                 case TelescopeAxis.Tertiary:
                 default:
@@ -1494,7 +1495,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
                 // Just initiate park - SlewController handles completion
                 // No background task needed - GoToParkAsync is already async
-                _ = SkyServer.GoToParkAsync();
+                _ = inst.GoToParkAsync();
 
                 // Returns immediately - client polls Slewing and AtPark
                 // SlewController will set AtPark when movement actually completes
@@ -1529,7 +1530,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                         throw new ArgumentOutOfRangeException(nameof(Direction), Direction, null);
                 }
 
-                SkyServer.PulseGuide(Direction, Duration, 0);
+                inst.PulseGuide(Direction, Duration, 0);
             }
             catch (Exception e)
             {
@@ -1555,9 +1556,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckTracking(false, "SlewToAltAz");
             CheckRange(Azimuth, 0, 360, "SlewToAltAz", "azimuth");
             CheckRange(Altitude, -90, 90, "SlewToAltAz", "Altitude");
-            SkyServer.SlewAltAz(Altitude, Azimuth);
+            inst.SlewAltAz(Altitude, Azimuth);
             Thread.Sleep(250);
-            while (SkyServer.SlewState == SlewType.SlewAltAz || SkyServer.SlewState == SlewType.SlewSettle)
+            while (inst.SlewState == SlewType.SlewAltAz || inst.SlewState == SlewType.SlewSettle)
             {
                 Thread.Sleep(10);
             }
@@ -1579,7 +1580,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckReachable(Azimuth, Altitude, SlewType.SlewAltAz);
             // Direct fire-and-forget call - SlewController handles async execution
             // Returns when setup completes (<1s) with IsSlewing=true already set
-            _ = SkyServer.SlewAltAzAsync(Altitude, Azimuth);
+            _ = inst.SlewAltAzAsync(Altitude, Azimuth);
             // Movement continues in background via SlewController._movementTask
             // Client polls Slewing property to detect completion
         }
@@ -1611,7 +1612,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
 
             // Use SlewController via SlewRaDec (blocks until complete)
-            SkyServer.SlewRaDec(raDec.X, raDec.Y, true);
+            inst.SlewRaDec(raDec.X, raDec.Y, true);
 
             // Brief delay for position updates
             DelayInterval();
@@ -1643,11 +1644,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
 
             // Enable tracking before starting slew
-            SkyServer.CycleOnTracking(true);
+            inst.CycleOnTracking(true);
 
             // Direct fire-and-forget call - SlewController handles async execution
             // Returns when setup completes (<1s) with IsSlewing=true already set
-            _ = SkyServer.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true);
+            _ = inst.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true);
             // Movement continues in background via SlewController._movementTask
             // Client polls Slewing property to detect completion
         }
@@ -1680,7 +1681,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var xy = Transforms.CoordTypeToInternal(ra, dec);
 
             // Use SlewController via SlewRaDec (blocks until complete)
-            SkyServer.SlewRaDec(xy.X, xy.Y, true);
+            inst.SlewRaDec(xy.X, xy.Y, true);
 
             // Brief delay for position updates
             DelayInterval();
@@ -1714,11 +1715,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var xy = Transforms.CoordTypeToInternal(ra, dec);
 
             // Enable tracking before starting slew
-            SkyServer.CycleOnTracking(true);
+            inst.CycleOnTracking(true);
 
             // Direct fire-and-forget call - SlewController handles async execution
             // Returns when setup completes (<1s) with IsSlewing=true already set
-            _ = SkyServer.SlewRaDecAsync(xy.X, xy.Y, tracking: true);
+            _ = inst.SlewRaDecAsync(xy.X, xy.Y, tracking: true);
             // Movement continues in background via SlewController._movementTask
             // Client polls Slewing property to detect completion
         }
@@ -1740,8 +1741,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            SkyServer.AtPark = false;
-            SkyServer.Tracking = (AlignmentMode != AlignmentMode.AltAz);
+            inst.AtPark = false;
+            inst.ApplyTracking(AlignmentMode != AlignmentMode.AltAz);
 
             monitorItem = new MonitorEntry
             {
@@ -1764,7 +1765,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             var inst = GetInstance();
             CheckCapability(inst.Settings.CanSetPark, "SetPark");
-            SkyServer.SetParkAxis("External");
+            inst.SetParkAxis("External");
         }
 
         public void SyncToAltAz(double Azimuth, double Altitude)
@@ -1780,9 +1781,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckParked("SyncToAltAz");
             CheckTracking(false, "SyncToAltAz");
             CheckAltAzSync(Altitude, Azimuth, "SyncToAltAz");
-            SkyServer.AtPark = false;
-            SkyServer.SyncToAltAzm(Azimuth, Altitude);
-            SkyServer.WaitMountPositionUpdated();
+            inst.AtPark = false;
+            inst.SyncToAltAzm(Azimuth, Altitude);
+            inst.WaitMountPositionUpdated();
         }
 
         public void SyncToCoordinates(double RightAscension, double Declination)
@@ -1811,9 +1812,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var a = Transforms.CoordTypeToInternal(RightAscension, Declination);
             CheckRaDecSync(a.X, a.Y, "SyncToCoordinates");
 
-            SkyServer.AtPark = false;
-            SkyServer.SyncToTargetRaDec();
-            SkyServer.WaitMountPositionUpdated();
+            inst.AtPark = false;
+            inst.SyncToTargetRaDec();
+            inst.WaitMountPositionUpdated();
         }
 
         public void SyncToTarget()
@@ -1840,9 +1841,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var a = Transforms.CoordTypeToInternal(RightAscension, Declination);
             CheckRaDecSync(a.X, a.Y, "SyncToTarget");
 
-            SkyServer.AtPark = false;
-            SkyServer.SyncToTargetRaDec();
-            SkyServer.WaitMountPositionUpdated();
+            inst.AtPark = false;
+            inst.SyncToTargetRaDec();
+            inst.WaitMountPositionUpdated();
         }
 
         #region Private Methods
@@ -1901,14 +1902,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
-        private static void CheckVersionOne(string property, bool accessorSet)
+        private void CheckVersionOne(string property, bool accessorSet)
         {
             CheckVersionOne(property);
             if (accessorSet)
             {
                 //nothing
             }
-            if (!SkySettings.VersionOne) return;
+            if (!GetInstance().Settings.VersionOne) return;
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}|{accessorSet}" };
@@ -1917,9 +1918,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             throw new PropertyNotImplementedException(property, accessorSet);
         }
 
-        private static void CheckVersionOne(string property)
+        private void CheckVersionOne(string property)
         {
-            if (!SkySettings.VersionOne) return;
+            if (!GetInstance().Settings.VersionOne) return;
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}" };
@@ -1950,9 +1951,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             throw new PropertyNotImplementedException(property, setNotGet);
         }
 
-        private static void CheckParked(string property)
+        private void CheckParked(string property)
         {
-            if (!SkyServer.AtPark) return;
+            if (!GetInstance().AtPark) return;
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}" };
@@ -1965,13 +1966,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// Check slew rate for amount limit
         /// </summary>
         /// <param name="rate"></param>
-        private static void CheckRate(double rate)
+        private void CheckRate(double rate)
         {
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{rate}" };
             MonitorLog.LogToMonitor(monitorItem);
             var deg = Conversions.ArcSec2Deg(rate);
-            if (deg > SkyServer.SlewSpeedEight || deg < -SkyServer.SlewSpeedEight)
+            var slewSpeedEight = GetInstance().SlewSpeedEight;
+            if (deg > slewSpeedEight || deg < -slewSpeedEight)
             {
                 throw new InvalidValueException($"{rate} is out of limits");
             }
@@ -2006,15 +2008,16 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// </summary>
         /// <param name="raDecSlew">if set to <c>true</c> this is a Ra Dec slew is <c>false</c> an Alt Az slew.</param>
         /// <param name="method">The method name.</param>
-        private static void CheckTracking(bool raDecSlew, string method)
+        private void CheckTracking(bool raDecSlew, string method)
         {
-            if (raDecSlew == SkyServer.Tracking) return;
+            var tracking = GetInstance().Tracking;
+            if (raDecSlew == tracking) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{SkyServer.Tracking}|{raDecSlew}|{method}") };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{tracking}|{raDecSlew}|{method}") };
             MonitorLog.LogToMonitor(monitorItem);
 
-            throw new InvalidOperationException($"{method} is not allowed when tracking is {SkyServer.Tracking}");
+            throw new InvalidOperationException($"{method} is not allowed when tracking is {tracking}");
         }
 
         /// <summary>
@@ -2023,9 +2026,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <param name="ra">Syncing Ra to check</param>
         /// <param name="dec">Syncing Dec to check</param>
         /// <param name="method">The method name</param>
-        private static void CheckRaDecSync(double ra, double dec, string method)
+        private void CheckRaDecSync(double ra, double dec, string method)
         {
-            var pass = SkyServer.CheckRaDecSyncLimit(ra, dec);
+            var pass = GetInstance().CheckRaDecSyncLimit(ra, dec);
             if (pass) return;
 
             var monitorItem = new MonitorEntry
@@ -2041,9 +2044,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <param name="alt">Syncing Ra to check</param>
         /// <param name="az">Syncing az to check</param>
         /// <param name="method">The method name</param>
-        private static void CheckAltAzSync(double alt, double az, string method)
+        private void CheckAltAzSync(double alt, double az, string method)
         {
-            var pass = SkyServer.CheckAltAzSyncLimit(alt, az);
+            var pass = GetInstance().CheckAltAzSyncLimit(alt, az);
             if (pass) return;
 
             var monitorItem = new MonitorEntry
@@ -2065,7 +2068,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <param name="axisY">The Y-axis coordinate of the target position.</param>
         /// <param name="slewType">The type of slew operation to perform, indicating the coordinate system used.</param>
         /// <exception cref="InvalidOperationException">Thrown if the target coordinates are outside the hardware limits for the specified slew type.</exception>
-        private static void CheckReachable(double axisX, double axisY, SlewType slewType)
+        private void CheckReachable(double axisX, double axisY, SlewType slewType)
         {
             string method;
             switch (slewType)
@@ -2081,8 +2084,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     break;
             }
             // Only check for polar alignment mode
-            if (SkySettings.AlignmentMode != AlignmentMode.Polar ||
-                SkyServer.IsTargetReachable(new[] { axisX, axisY }, slewType)) return;
+            var inst = GetInstance();
+            if (inst.Settings.AlignmentMode != AlignmentMode.Polar ||
+                inst.IsTargetReachable(new[] { axisX, axisY }, slewType)) return;
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{axisX}|{axisY}|{slewType}") };
@@ -2096,17 +2100,18 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// </summary>
         /// <para>additional milliseconds</para>
         /// <returns></returns>
-        private static void DelayInterval(int additional = 0)
+        private void DelayInterval(int additional = 0)
         {
+            var inst = GetInstance();
             var delay = additional;
-            switch (SkySettings.Mount)
+            switch (inst.Settings.Mount)
             {
                 case MountType.Simulator:
-                    delay += SkySettings.DisplayInterval;
+                    delay += inst.Settings.DisplayInterval;
                     break;
                 case MountType.SkyWatcher:
                     delay += 20;  // some go tos have been off .10 to .70 seconds, not sure exactly why
-                    delay += SkySettings.DisplayInterval;
+                    delay += inst.Settings.DisplayInterval;
                     break;
             }
             //Thread.Sleep(delay);
