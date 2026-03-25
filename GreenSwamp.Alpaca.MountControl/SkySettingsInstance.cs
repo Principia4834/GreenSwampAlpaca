@@ -188,6 +188,9 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _numMoveAxis = 2;
         private bool _versionOne = true;
 
+        // Set by MountInstance constructor so setters can dispatch instance-aware tasks
+        internal MountInstance? _owner;
+
         #endregion
 
         #region Constructor
@@ -451,9 +454,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Update southern hemisphere flag
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.SetSouthernHemisphere);
+                        SkyServer.SkyTasks(MountTaskName.SetSouthernHemisphere, _owner);
                     }
                 }
             }
@@ -712,9 +715,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.MinPulseRa);
+                        SkyServer.SkyTasks(MountTaskName.MinPulseRa, _owner);
                     }
                 }
             }
@@ -731,9 +734,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.MinPulseDec);
+                        SkyServer.SkyTasks(MountTaskName.MinPulseDec, _owner);
                     }
                 }
             }
@@ -750,9 +753,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.DecPulseToGoTo);
+                        SkyServer.SkyTasks(MountTaskName.DecPulseToGoTo, _owner);
                     }
                 }
             }
@@ -769,9 +772,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.SetSt4Guiderate);
+                        SkyServer.SkyTasks(MountTaskName.SetSt4Guiderate, _owner);
                     }
                 }
             }
@@ -934,9 +937,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.FullCurrent);
+                        SkyServer.SkyTasks(MountTaskName.FullCurrent, _owner);
                     }
                 }
             }
@@ -953,9 +956,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.Encoders);
+                        SkyServer.SkyTasks(MountTaskName.Encoders, _owner);
                     }
                 }
             }
@@ -972,9 +975,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Send to mount
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SkyTasks(MountTaskName.AlternatingPpec);
+                        SkyServer.SkyTasks(MountTaskName.AlternatingPpec, _owner);
                     }
                 }
             }

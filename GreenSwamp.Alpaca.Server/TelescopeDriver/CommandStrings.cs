@@ -5,10 +5,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 {
     internal class CommandStrings
     {
-        public static string ProcessCommand(string command, bool raw)
+        public static string ProcessCommand(MountInstance instance, string command, bool raw)
         {
             command = command.Trim();
-            CheckIsMountRunning("NotConnectedException in CommandStrings/ProcessCommand");
+            CheckIsMountRunning(instance, "NotConnectedException in CommandStrings/ProcessCommand");
             //if (raw) { throw new DriverException("Raw param error"); }
             if (command.Length < 2) { throw new DriverException("Command length error"); }
             if (!command.Contains(":")) { throw new DriverException("Command colon error"); }
@@ -32,13 +32,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                                 default:
                                     throw new DriverException("Param error");
                             }
-                            switch (SkyServer.Mount)
+                            switch (instance.Settings.Mount)
                             {
                                 case MountType.Simulator:
-                                    SkyServer.SimTasks(MountTaskName.SetSnapPort1);
+                                    SkyServer.SimTasks(MountTaskName.SetSnapPort1, instance);
                                     break;
                                 case MountType.SkyWatcher:
-                                    SkyServer.SkyTasks(MountTaskName.SetSnapPort1);
+                                    SkyServer.SkyTasks(MountTaskName.SetSnapPort1, instance);
                                     break;
                                 default:
                                     throw new DriverException("Mount type error");
@@ -56,13 +56,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                                 default:
                                     throw new DriverException("Param 2 error");
                             }
-                            switch (SkyServer.Mount)
+                            switch (instance.Settings.Mount)
                             {
                                 case MountType.Simulator:
-                                    SkyServer.SimTasks(MountTaskName.SetSnapPort2);
+                                    SkyServer.SimTasks(MountTaskName.SetSnapPort2, instance);
                                     break;
                                 case MountType.SkyWatcher:
-                                    SkyServer.SkyTasks(MountTaskName.SetSnapPort2);
+                                    SkyServer.SkyTasks(MountTaskName.SetSnapPort2, instance);
                                     break;
                                 default:
                                     throw new DriverException("Mount type error");
@@ -76,9 +76,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
-        private static void CheckIsMountRunning(string msg)
+        private static void CheckIsMountRunning(MountInstance instance, string msg)
         {
-            if (!SkyServer.IsMountRunning)
+            if (instance == null || !instance.IsMountRunning)
             {
                 throw new NotConnectedException(msg);
             }

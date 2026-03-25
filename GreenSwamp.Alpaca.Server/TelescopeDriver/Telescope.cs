@@ -1259,7 +1259,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 if (string.IsNullOrWhiteSpace(command)) { throw new MethodNotImplementedException("CommandString"); }
 
                 if (_mCommandStrings == null) { _mCommandStrings = new CommandStrings(); }
-                return CommandStrings.ProcessCommand(command, raw);
+                var inst = GetInstance();
+                return CommandStrings.ProcessCommand(inst, command, raw);
             }
             catch (Exception ex)
             {

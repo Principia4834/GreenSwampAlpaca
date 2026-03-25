@@ -963,160 +963,12 @@ namespace GreenSwamp.Alpaca.MountControl
             _defaultInstance?.SimPulseGoto(token);
         }
 
-        /// <summary>
-        /// Creates tasks that are put in the MountQueue
-        /// </summary>
-        /// <param name="taskName"></param>
-        public static void SimTasks(MountTaskName taskName)
-        {
-#pragma warning disable CS0618 // legacy static method — shortcut ctors intentional; will be removed with MountQueue facade
-            if (!IsMountRunning) return;
 
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Data,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{taskName}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            // Set context from current settings
-            var context = AxesContext.FromSettings(_settings);
-
-            switch (_settings!.Mount)
-            {
-                case MountType.SkyWatcher:
-                    break;
-                case MountType.Simulator:
-                    switch (taskName)
-                    {
-                        case MountTaskName.AllowAdvancedCommandSet:
-                            break;
-                        case MountTaskName.AlternatingPpec:
-                            break;
-                        case MountTaskName.CanAdvancedCmdSupport:
-                            CanAdvancedCmdSupport = false;
-                            break;
-                        case MountTaskName.CanPpec:
-                            CanPPec = false;
-                            break;
-                        case MountTaskName.CanPolarLed:
-                            CanPolarLed = false;
-                            break;
-                        case MountTaskName.CanHomeSensor:
-                            var canHomeCmdA = new GetHomeSensorCapability(MountQueue.NewId);
-                            bool.TryParse(Convert.ToString(MountQueue.GetCommandResult(canHomeCmdA).Result), out bool hasHome);
-                            CanHomeSensor = hasHome;
-                            break;
-                        case MountTaskName.DecPulseToGoTo:
-                            break;
-                        case MountTaskName.Encoders:
-                            break;
-                        case MountTaskName.FullCurrent:
-                            break;
-                        case MountTaskName.LoadDefaults:
-                            break;
-                        case MountTaskName.StopAxes:
-                            _ = new CmdAxisStop(0, Axis.Axis1);
-                            _ = new CmdAxisStop(0, Axis.Axis2);
-                            break;
-                        case MountTaskName.InstantStopAxes:
-                            break;
-                        case MountTaskName.SetSouthernHemisphere:
-                            break;
-                        case MountTaskName.SyncAxes:
-                            var appAxes = AppAxes; // Get from instance
-                            var sync = Axes.AxesAppToMount(new[] { appAxes.X, appAxes.Y }, context);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, sync[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, sync[1]);
-                            break;
-                        case MountTaskName.SyncTarget:
-                            // Convert to internal Ra / Dec
-                            var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
-                            // convert target to axis for Ra / Dec sync
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, targetR[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, targetR[1]);
-                            break;
-                        case MountTaskName.SyncAltAz:
-                            var altAzSync = AltAzSync; // Get from instance
-                            var targetA = new[] { altAzSync.Y, altAzSync.X };
-                            // convert target to axis for Az / Alt sync
-                            targetA = Axes.AzAltToAxesXy(targetA, context);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, targetA[0]);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, targetA[1]);
-                            break;
-                        case MountTaskName.MonitorPulse:
-                            _ = new CmdSetMonitorPulse(0, MonitorPulse);
-                            break;
-                        case MountTaskName.Pec:
-                            break;
-                        case MountTaskName.PecTraining:
-                            break;
-                        case MountTaskName.Capabilities:
-                            Capabilities = @"N/A";
-                            break;
-                        case MountTaskName.SetSt4Guiderate:
-                            break;
-                        case MountTaskName.SetSnapPort1:
-                            _ = new CmdSnapPort(0, 1, SnapPort1);
-                            SnapPort1Result = false;
-                            break;
-                        case MountTaskName.SetSnapPort2:
-                            _ = new CmdSnapPort(0, 2, SnapPort2);
-                            SnapPort2Result = true;
-                            break;
-                        case MountTaskName.MountName:
-                            var mountName = new CmdMountName(MountQueue.NewId);
-                            MountName = (string)MountQueue.GetCommandResult(mountName).Result;
-                            break;
-                        case MountTaskName.GetAxisVersions:
-                            break;
-                        case MountTaskName.GetAxisStrVersions:
-                            break;
-                        case MountTaskName.MountVersion:
-                            var mountVersion = new CmdMountVersion(MountQueue.NewId);
-                            MountVersion = (string)MountQueue.GetCommandResult(mountVersion).Result;
-                            break;
-                        case MountTaskName.StepsPerRevolution:
-                            var spr = new CmdSpr(MountQueue.NewId);
-                            var sprnum = (long)MountQueue.GetCommandResult(spr).Result;
-                            StepsPerRevolution = new[] { sprnum, sprnum };
-                            break;
-                        case MountTaskName.StepsWormPerRevolution:
-                            var spw = new CmdSpw(MountQueue.NewId);
-                            var spwnum = (double)MountQueue.GetCommandResult(spw).Result;
-                            StepsWormPerRevolution = new[] { spwnum, spwnum };
-                            break;
-                        case MountTaskName.SetHomePositions:
-                            var homeAxesPos = HomeAxes; // Get from instance
-                            _ = new CmdAxisToDegrees(0, Axis.Axis1, homeAxesPos.X);
-                            _ = new CmdAxisToDegrees(0, Axis.Axis2, homeAxesPos.Y);
-                            break;
-                        case MountTaskName.GetFactorStep:
-                            var factorStep = new CmdFactorSteps(MountQueue.NewId);
-                            FactorStep[0] = (double)MountQueue.GetCommandResult(factorStep).Result;
-                            FactorStep[1] = FactorStep[0];
-                            break;
-                                        default:
-                                                     throw new ArgumentOutOfRangeException(nameof(taskName), taskName, null);
-                                             }
-
-                                             break;
-                                         default:
-                                             throw new ArgumentOutOfRangeException();
-                                     }
-                        #pragma warning restore CS0618
-                                }
 
                                 /// <summary>
                                 /// Instance-aware SimTasks: routes commands and capability writes to the given MountInstance.
         /// </summary>
-        internal static void SimTasks(MountTaskName taskName, MountInstance instance)
+        public static void SimTasks(MountTaskName taskName, MountInstance instance)
         {
             if (!instance.IsMountRunning) return;
 
@@ -1373,6 +1225,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             _defaultInstance?.SkyPulseGoto(token);
         }
+        // Legacy SkyTasks(MountTaskName) removed. Use the instance-aware SkyTasks(MountTaskName, MountInstance) overload instead.
 
         /// <summary>
         /// Creates tasks that are put in the SkyQueue
@@ -1581,7 +1434,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Instance-aware SkyTasks: routes commands and capability writes to the given MountInstance.
         /// </summary>
-        internal static void SkyTasks(MountTaskName taskName, MountInstance instance)
+        public static void SkyTasks(MountTaskName taskName, MountInstance instance)
         {
             if (!instance.IsMountRunning) { return; }
 

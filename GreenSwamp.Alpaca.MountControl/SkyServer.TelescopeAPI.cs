@@ -1153,7 +1153,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _defaultInstance.RateDec = 0.0;
             }
 
-            if (!AxesStopValidate())
+            if (!SkyServer.AxesStopValidate(_defaultInstance!))
             {
                 switch (_settings!.Mount)
                 {

@@ -486,6 +486,8 @@ namespace GreenSwamp.Alpaca.MountControl
             _instanceName = id ?? "default";
             _deviceName = deviceName ?? id ?? "Unnamed Device";
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            // Wire settings back-reference so settings can call instance-aware tasks
+            _settings._owner = this;
 
             var monitorItem = new MonitorEntry
             {
@@ -1088,7 +1090,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double[]? GetRawDegrees()
         {
             var actualDegrees = new[] { double.NaN, double.NaN };
-            if (!SkyServer.IsMountRunning) { return actualDegrees; }
+            if (!IsMountRunning) { return actualDegrees; }
 
             switch (_settings.Mount)
             {
@@ -1141,7 +1143,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double[]? GetRawSteps()
         {
             var steps = new[] { double.NaN, double.NaN };
-            if (!SkyServer.IsMountRunning) { return steps; }
+            if (!IsMountRunning) { return steps; }
 
             switch (_settings.Mount)
             {
@@ -1174,7 +1176,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>Position in steps, or null if not available</returns>
         internal double? GetRawSteps(int axis)
         {
-            if (!SkyServer.IsMountRunning) { return null; }
+            if (!IsMountRunning) { return null; }
 
             switch (_settings.Mount)
             {
@@ -1218,7 +1220,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             lock (_lastUpdateLock)
             {
-                if (SkyServer.IsMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
+                if (IsMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
                 {
                     switch (_settings.Mount)
                     {
@@ -1394,12 +1396,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_connectStates.Count == 0) { Connecting = true; }
                 var notAlreadyPresent = _connectStates.TryAdd(id, true);
                 if (_connectStates.Count > 0 && !IsMountRunning)
-                {
-                    SkyServer.IsMountRunning = true;
-                    var connectionTimer = Stopwatch.StartNew();
-                    while (SkyServer.LoopCounter < 2 && connectionTimer.ElapsedMilliseconds < 5000)
-                        Thread.Sleep(100);
-                }
+                        {
+                            _loopCounter = 0;
+                            MountStart();
+                            var connectionTimer = Stopwatch.StartNew();
+                            while (_loopCounter < 2 && connectionTimer.ElapsedMilliseconds < 5000)
+                                Thread.Sleep(100);
+                        }
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Add|{id}|{notAlreadyPresent}" };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1408,6 +1411,10 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_connectStates.Count == 1) { Connecting = true; }
                 var successfullyRemoved = _connectStates.TryRemove(id, out _);
+                if (_connectStates.IsEmpty)
+                {
+                    MountStop();
+                }
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Remove|{id}|{successfullyRemoved}" };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1521,12 +1528,17 @@ namespace GreenSwamp.Alpaca.MountControl
                         steps => ReceiveSteps(steps),
                         v => SkyServer.IsPulseGuidingRa = v,
                         v => SkyServer.IsPulseGuidingDec = v);
-                    GreenSwamp.Alpaca.Mount.Simulator.MountQueue.RegisterInstance(mqImpl);
-                    MountQueue.Start();
+                    // Start the instance-owned simulator queue directly (no static facade)
+                    mqImpl.Start();
                     MountQueueInstance = mqImpl;
-                    if (MountQueue.IsRunning) { SkyServer.ConnectAlignmentModel(); }
+                    if (mqImpl.IsRunning)
+                    {
+                        SkyServer.ConnectAlignmentModel();
+                    }
                     else
-                    { throw new Exception("Failed to start simulator queue"); }
+                    {
+                        throw new Exception("Failed to start simulator queue");
+                    }
 
                     break;
                 case MountType.SkyWatcher:
@@ -1596,7 +1608,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Stop all asynchronous operations
             SkyServer.Tracking = false;
             SkyServer.CancelAllAsync();
-            SkyServer.AxesStopValidate();
+            SkyServer.AxesStopValidate(this);
             if (_mediaTimer != null) { _mediaTimer.Tick -= OnUpdateServerEvent; }
             _mediaTimer?.Stop();
             _mediaTimer?.Dispose();
@@ -1607,7 +1619,7 @@ namespace GreenSwamp.Alpaca.MountControl
             while (sw.Elapsed.TotalMilliseconds < 1000) { } //change
             sw.Stop();
 
-            if (MountQueue.IsRunning) { MountQueue.Stop(); }
+            if (MountQueueInstance?.IsRunning == true) { MountQueueInstance.Stop(); }
 
             if (SkyQueueInstance?.IsRunning == true)
             {
@@ -1713,7 +1725,7 @@ namespace GreenSwamp.Alpaca.MountControl
             const int timer = 120;
             var stopwatch = Stopwatch.StartNew();
 
-            SkyServer.SimTasks(MountTaskName.StopAxes);
+            SkyServer.SimTasks(MountTaskName.StopAxes, this);
 
             #region First Slew
             token.ThrowIfCancellationRequested();
@@ -1743,7 +1755,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             stopwatch.Stop();
 
-            SkyServer.AxesStopValidate();
+            SkyServer.AxesStopValidate(this);
             monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1763,7 +1775,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SimPrecisionGoto(target, slewType, token);
             #endregion
 
-            SkyServer.SimTasks(MountTaskName.StopAxes);
+            SkyServer.SimTasks(MountTaskName.StopAxes, this);
             return success;
         }
 

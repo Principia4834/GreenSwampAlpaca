@@ -299,8 +299,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             ct.ThrowIfCancellationRequested();
 
-            // Validate mount is running
-            if (!SkyServer.IsMountRunning)
+            // Validate mount is running (use operation's MountInstance for instance-aware check)
+            if (!operation.MountInstance.IsMountRunning)
             {
                 return SlewResult.Failed("Mount not running");
             }
@@ -308,7 +308,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Stop any residual motion from previous operation
             if (SkyServer.SlewState != SlewType.SlewNone)
             {
-                var stopped = SkyServer.AxesStopValidate();
+                var stopped = SkyServer.AxesStopValidate(operation.MountInstance);
                 if (!stopped)
                 {
                     await ForceStopAxesAsync();
@@ -573,7 +573,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public double RateRa { get; }
         public double RateDec { get; }
 
-        private MountInstance MountInstance;
+        internal MountInstance MountInstance;
 
         #endregion
 

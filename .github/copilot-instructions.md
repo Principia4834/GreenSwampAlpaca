@@ -1,7 +1,36 @@
 # GitHub Copilot Workspace Instructions
 # GreenSwamp Alpaca Solution
 
-## ?? CRITICAL: ALWAYS FOLLOW THIS WORKFLOW
+## Shell & CLI guidance for Copilot suggestions
+
+- Default shell: `powershell.exe`. Always generate PowerShell-compatible commands unless the user explicitly requests a different shell.
+- When emitting shell examples or one-liners assume Windows PowerShell / PowerShell 7 compatibility. Prefer pipeline-style PowerShell idioms (e.g., `Get-ChildItem | Select-String`) over Unix-style flags.
+
+Rules (must follow)
+1. Prefer PowerShell syntax
+   - Assume `powershell.exe` as the target shell for all generated terminal commands.
+   - Use PowerShell cmdlets and parameter names (e.g., `-Path`, `-Pattern`, `-Recurse`, `-Include`, `-Exclude`, `-Filter`, `-CaseSensitive`).
+2. Do NOT use Unix-style flags with PowerShell cmdlets
+   - Never generate `-r` (or other short Unix flags) with PowerShell cmdlets (e.g., `Select-String -r` is invalid).
+   - Replace recursive `-r` usage with PowerShell equivalents such as `-Recurse` or `Get-ChildItem -Recurse` where appropriate.
+3. Provide a correct PowerShell alternative whenever Copilot would suggest a Unix-style command
+   - Example (incorrect):
+     - `Select-String -r -Path .\src\*.cs -Pattern "TODO"`
+   - Correct PowerShell alternatives:
+     - `Get-ChildItem -Path .\src -Recurse -Filter '*.cs' | Select-String -Pattern 'TODO'`
+     - `Select-String -Path (Get-ChildItem -Path .\src -Recurse -Filter '*.cs') -Pattern 'TODO'`
+     - (PowerShell 7+) `Select-String -Path '.\src\**\*.cs' -Pattern 'TODO'`
+4. Prefer explicit, readable PowerShell forms over compact Unix-like one-liners
+   - Use `Get-ChildItem -Recurse` + `Select-String -Pattern` rather than emulating `grep -r` semantics.
+5. When the user has a different preferred shell configured in the workspace, confirm before switching
+   - If the user explicitly requests `bash`, `sh`, or `zsh`, generate POSIX-style commands instead.
+
+Suggested verification text for Copilot assistant prompts
+- "Target shell: PowerShell (powershell.exe). Use `-Recurse` for recursion; do not emit Unix `-r` flags."
+
+Add mapping hints (for Copilot model / prompts)
+- Map `grep -r PATTERN PATH` -> `Get-ChildItem -Path PATH -Recurse | Select-String -Pattern 'PATTERN'`
+- Map `rg PATTERN PATH` -> `rg 'PATTERN' PATH` (only when author requests `rg` explicitly)## ?? CRITICAL: ALWAYS FOLLOW THIS WORKFLOW
 
 ### Before Making ANY Changes:
 
