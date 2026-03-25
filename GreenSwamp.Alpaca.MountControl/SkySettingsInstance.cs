@@ -196,7 +196,27 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Constructor
 
         /// <summary>
-        /// Creates instance with direct JSON persistence and optional profile loading
+        /// Creates instance with explicit device configuration (Phase 3: Multi-device support)
+        /// </summary>
+        /// <param name="deviceSettings">Complete device configuration (all 137 properties)</param>
+        /// <param name="settingsService">Settings service for persistence (DI)</param>
+        /// <param name="profileLoaderService">Optional profile loader (DI)</param>
+        public SkySettingsInstance(
+            Settings.Models.SkySettings deviceSettings,
+            IVersionedSettingsService settingsService,
+            IProfileLoaderService? profileLoaderService = null)
+        {
+            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+            _profileLoaderService = profileLoaderService;
+
+            // Phase 3: Apply device-specific settings directly (no auto-load from Device 0)
+            ApplySettings(deviceSettings ?? throw new ArgumentNullException(nameof(deviceSettings)));
+
+            LogSettings("Initialized", $"Device {deviceSettings.DeviceNumber}: {deviceSettings.DeviceName}|Mount:{_mount}|Port:{_port}");
+        }
+
+        /// <summary>
+        /// Creates instance with auto-load from settings service (backward compatibility)
         /// </summary>
         /// <param name="settingsService">Required: Settings service for JSON persistence</param>
         /// <param name="profileLoaderService">Optional: Profile loader service (null for backward compatibility)</param>
@@ -207,7 +227,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _profileLoaderService = profileLoaderService;
 
-            // Load settings from profile or JSON
+            // Load settings from profile or JSON (uses first device for backward compatibility)
             var settings = LoadSettingsFromSource();
 
             // Apply settings to instance fields

@@ -115,22 +115,72 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public SkySettings GetSettings()
         {
-            var settings = new SkySettings();
-            _configuration.GetSection("SkySettings").Bind(settings);
-            return settings;
+            // Phase 3: Backward compatibility - return first device
+            var devices = GetAllDevices();
+            return devices.FirstOrDefault() ?? CreateDefaultDevice();
         }
 
-        public async Task SaveSettingsAsync(SkySettings settings)
+        /// <summary>
+        /// Phase 3: Gets all configured devices from Devices array
+        /// </summary>
+        public List<SkySettings> GetAllDevices()
+        {
+            var userSettingsPath = GetUserSettingsPath(CurrentVersion);
+
+            // If no user settings file exists, create default with single device
+            if (!File.Exists(userSettingsPath))
+            {
+                CreateDefaultUserSettings(CurrentVersion);
+                return new List<SkySettings> { CreateDefaultDevice() };
+            }
+
+            try
+            {
+                var json = File.ReadAllText(userSettingsPath);
+                var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+
+                if (doc == null || !doc.ContainsKey("Devices"))
+                {
+                    _logger?.LogWarning("Settings file missing Devices array, creating defaults");
+                    CreateDefaultUserSettings(CurrentVersion);
+                    return new List<SkySettings> { CreateDefaultDevice() };
+                }
+
+                var devices = doc["Devices"].Deserialize<List<SkySettings>>();
+                if (devices == null || !devices.Any())
+                {
+                    _logger?.LogWarning("No devices found in settings, creating defaults");
+                    CreateDefaultUserSettings(CurrentVersion);
+                    return new List<SkySettings> { CreateDefaultDevice() };
+                }
+
+                _logger?.LogInformation("Loaded {Count} device(s)", devices.Count);
+                return devices;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error loading devices, creating defaults");
+                CreateDefaultUserSettings(CurrentVersion);
+                return new List<SkySettings> { CreateDefaultDevice() };
+            }
+        }
+
+        /// <summary>
+        /// Phase 3: Saves all device settings to Devices array
+        /// </summary>
+        private async Task SaveAllDevicesAsync(List<SkySettings> devices)
         {
             await _fileLock.WaitAsync();
             try
             {
                 var userSettingsPath = GetUserSettingsPath(CurrentVersion);
-                
-                var userSettings = await ReadUserSettingsFileAsync(userSettingsPath);
-                userSettings["SkySettings"] = JsonSerializer.SerializeToElement(settings);
-                userSettings["Version"] = JsonSerializer.SerializeToElement(CurrentVersion);
-                userSettings["LastModified"] = JsonSerializer.SerializeToElement(DateTime.UtcNow);
+
+                var userSettings = new Dictionary<string, JsonElement>
+                {
+                    ["Devices"] = JsonSerializer.SerializeToElement(devices),
+                    ["Version"] = JsonSerializer.SerializeToElement(CurrentVersion),
+                    ["LastModified"] = JsonSerializer.SerializeToElement(DateTime.UtcNow)
+                };
 
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var json = JsonSerializer.Serialize(userSettings, options);
@@ -139,8 +189,60 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 // Update version file
                 await File.WriteAllTextAsync(_versionFile, CurrentVersion);
 
-                _logger?.LogInformation("Settings saved to version {Version}", CurrentVersion);
-                
+                _logger?.LogInformation("Saved {Count} device(s) to version {Version}", devices.Count, CurrentVersion);
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Phase 3: Creates a default device configuration
+        /// </summary>
+        private SkySettings CreateDefaultDevice()
+        {
+            var settings = new SkySettings();
+            _configuration.GetSection("SkySettings").Bind(settings);
+
+            // Ensure device identification properties are set
+            settings.DeviceNumber = 0;
+            if (string.IsNullOrEmpty(settings.DeviceName))
+            {
+                settings.DeviceName = "Telescope";
+            }
+            settings.Enabled = true;
+
+            return settings;
+        }
+
+        public async Task SaveSettingsAsync(SkySettings settings)
+        {
+            // Phase 3: Update the specific device in the Devices array
+            await _fileLock.WaitAsync();
+            try
+            {
+                var devices = GetAllDevices();
+
+                // Find and update the matching device by DeviceNumber
+                var existingIndex = devices.FindIndex(d => d.DeviceNumber == settings.DeviceNumber);
+
+                if (existingIndex >= 0)
+                {
+                    devices[existingIndex] = settings;
+                    _logger?.LogInformation("Updated device {DeviceNumber} ({DeviceName})", 
+                        settings.DeviceNumber, settings.DeviceName);
+                }
+                else
+                {
+                    // Add new device
+                    devices.Add(settings);
+                    _logger?.LogInformation("Added new device {DeviceNumber} ({DeviceName})", 
+                        settings.DeviceNumber, settings.DeviceName);
+                }
+
+                await SaveAllDevicesAsync(devices);
+
                 // Raise settings changed event
                 SettingsChanged?.Invoke(this, settings);
             }
@@ -222,27 +324,29 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var previousJson = await File.ReadAllTextAsync(previousSettingsPath);
                 var previousSettings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(previousJson);
 
-                if (previousSettings == null || !previousSettings.ContainsKey("SkySettings"))
+                if (previousSettings == null)
                 {
                     return false;
                 }
 
-                // Deserialize to typed object for validation
-                var oldSettings = previousSettings["SkySettings"].Deserialize<SkySettings>();
-                
-                if (oldSettings == null)
+                // All previous versions MUST have Devices array (user deletes old format manually)
+                var devicesToMigrate = previousSettings["Devices"].Deserialize<List<SkySettings>>();
+                if (devicesToMigrate == null || !devicesToMigrate.Any())
                 {
+                    _logger?.LogWarning("No devices found in previous version");
                     return false;
                 }
-                
-                // Apply any version-specific migrations
-                var migratedSettings = ApplyMigrations(oldSettings, previousVersion, CurrentVersion);
 
-                // Save to current version
-                await SaveSettingsAsync(migratedSettings);
+                // Apply version-specific migrations to each device
+                var migratedDevices = devicesToMigrate
+                    .Select(d => ApplyMigrations(d, previousVersion, CurrentVersion))
+                    .ToList();
 
-                _logger?.LogInformation("Successfully migrated settings from version {Previous}", 
-                    previousVersion);
+                // Save all migrated devices
+                await SaveAllDevicesAsync(migratedDevices);
+
+                _logger?.LogInformation("Successfully migrated {Count} device(s) from version {Previous}", 
+                    migratedDevices.Count, previousVersion);
 
                 return true;
             }
@@ -305,11 +409,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private void CreateDefaultUserSettings(string version)
         {
             var userSettingsPath = GetUserSettingsPath(version);
-            
-            // Get defaults from appsettings.json
+
+            // Phase 3: Create default settings with Devices array format
+            var defaultDevice = CreateDefaultDevice();
+            var devices = new List<SkySettings> { defaultDevice };
+
             var defaultSettings = new
             {
-                SkySettings = _configuration.GetSection("SkySettings").Get<SkySettings>(),
+                Devices = devices,
                 Version = version,
                 CreatedDate = DateTime.UtcNow
             };
@@ -318,7 +425,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             var json = JsonSerializer.Serialize(defaultSettings, options);
             File.WriteAllText(userSettingsPath, json);
 
-            _logger?.LogInformation("Created default settings for version {Version}", version);
+            _logger?.LogInformation("Created default settings with Devices array for version {Version}", version);
         }
 
         private SkySettings ApplyMigrations(SkySettings settings, string fromVersion, string toVersion)

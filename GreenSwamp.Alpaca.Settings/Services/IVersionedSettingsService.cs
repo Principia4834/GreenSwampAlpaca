@@ -24,10 +24,15 @@ namespace GreenSwamp.Alpaca.Settings.Services
     public interface IVersionedSettingsService
     {
         /// <summary>
-        /// Gets the current settings
+        /// Gets the current settings (returns first device for backward compatibility)
         /// </summary>
         SkySettings GetSettings();
-        
+
+        /// <summary>
+        /// Phase 3: Gets all configured device settings
+        /// </summary>
+        List<SkySettings> GetAllDevices();
+
         /// <summary>
         /// Saves settings to the current version folder
         /// </summary>

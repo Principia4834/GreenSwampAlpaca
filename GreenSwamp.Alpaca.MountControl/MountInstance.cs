@@ -1615,9 +1615,6 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= SkyServer.AltAzTrackingTimerEvent; }
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
-            var sw = Stopwatch.StartNew();
-            while (sw.Elapsed.TotalMilliseconds < 1000) { } //change
-            sw.Stop();
 
             if (MountQueueInstance?.IsRunning == true) { MountQueueInstance.Stop(); }
 

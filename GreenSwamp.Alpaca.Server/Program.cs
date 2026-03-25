@@ -251,179 +251,47 @@ namespace GreenSwamp.Alpaca.Server
                 // Phase 4.2: Create profile loader for per-device SkySettingsInstance construction
                 var profileLoader = app.Services.GetService<IProfileLoaderService>();
 
-                // Phase 4.11: Initialize device registry with reserved slots
-                // Load device configurations from appsettings.json
-                var deviceConfigs = builder.Configuration
-                    .GetSection("AlpacaDevices")
-                    .Get<List<AlpacaDeviceConfig>>();
+                // Phase 3: Load all devices from settings service (Devices array in appsettings.user.json)
+                var allDevices = settingsService.GetAllDevices();
+                var enabledDevices = allDevices.Where(d => d.Enabled).ToList();
 
-                // Phase 4.9: Get profile service for loading per-device profiles
-                var profileService = app.Services.GetRequiredService<ISettingsProfileService>();
-
-                if (deviceConfigs == null || !deviceConfigs.Any())
+                if (!enabledDevices.Any())
                 {
-                    Logger.LogInformation("No AlpacaDevices configured in appsettings.json");
-                    Logger.LogInformation("Creating default reserved slots (0=Simulator, 1=SkyWatcher)");
-
-                    // Phase 4.9: Load profiles for reserved slots
-                    GreenSwamp.Alpaca.Settings.Models.SkySettings simulatorProfileSettings;
-                    GreenSwamp.Alpaca.Settings.Models.SkySettings physicalMountProfileSettings;
-
-                    try
-                    {
-                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync("simulator-altaz");
-                        Logger.LogInformation("✅ Phase 4.9: Loaded profile for slot 0: simulator-altaz");
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        Logger.LogInformation("Profile 'simulator-altaz' not found, falling back to default-altaz");
-                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync("default-altaz");
-                    }
-
-                    try
-                    {
-                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync("eq6-default");
-                        Logger.LogInformation("✅ Phase 4.9: Loaded profile for slot 1: eq6-default");
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        Logger.LogInformation("Profile 'eq6-default' not found, falling back to default-germanpolar");
-                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync("default-germanpolar");
-                    }
-
-                    // Create instances with loaded profile settings
-                    var simulatorSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-                    simulatorSettings.ApplySettings(simulatorProfileSettings);
-
-                    var physicalMountSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-                    physicalMountSettings.ApplySettings(physicalMountProfileSettings);
-
-                    GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.InitializeReservedSlots(
-                        simulatorSettings,
-                        "Simulator (AltAz)",
-                        "sim-altaz-default-guid",
-                        new TelescopeDriver.Telescope(0),
-                        physicalMountSettings,
-                        "SkyWatcher Mount",
-                        "skywatcher-default-guid",
-                        new TelescopeDriver.Telescope(1)
-                    );
-
-                    Logger.LogInformation("✅ Reserved slots initialized (0=Simulator, 1=SkyWatcher) with profiles");
+                    Logger.LogWarning("No enabled devices found in settings");
+                    throw new InvalidOperationException("At least one device must be enabled in appsettings.user.json");
                 }
-                else
+
+                Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
+
+                // Register each enabled device
+                foreach (var device in enabledDevices)
                 {
-                    Logger.LogInformation($"Loading {deviceConfigs.Count} device(s) from configuration");
-
-                    // Ensure we have exactly 2 reserved slots (0 and 1) in configuration
-                    var slot0 = deviceConfigs.FirstOrDefault(d => d.DeviceNumber == 0);
-                    var slot1 = deviceConfigs.FirstOrDefault(d => d.DeviceNumber == 1);
-
-                    if (slot0 == null || slot1 == null)
-                    {
-                        throw new InvalidOperationException(
-                            "Configuration must include reserved slots 0 and 1. Please update appsettings.json AlpacaDevices section.");
-                    }
-
-                    // Phase 4.9: Load profiles for configured reserved slots
-                    GreenSwamp.Alpaca.Settings.Models.SkySettings simulatorProfileSettings;
-                    GreenSwamp.Alpaca.Settings.Models.SkySettings physicalMountProfileSettings;
-
                     try
                     {
-                        var profileName0 = !string.IsNullOrWhiteSpace(slot0.ProfileName) ? slot0.ProfileName : "simulator-altaz";
-                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync(profileName0);
-                        Logger.LogInformation($"✅ Phase 4.9: Loaded profile for slot 0: {profileName0}");
+                        // Phase 3: Pass device settings directly to constructor (prevents Device 0 contamination)
+                        var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(
+                            device,              // Device-specific configuration (all 137 properties)
+                            settingsService,     // Settings service for persistence
+                            profileLoader        // Optional profile loader
+                        );
+
+                        // Register device with its unique ID
+                        var uniqueId = $"device-{device.DeviceNumber}-{Guid.NewGuid():N}";
+
+                        GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.RegisterDevice(
+                            device.DeviceNumber,
+                            device.DeviceName,
+                            uniqueId,
+                            deviceSettings,
+                            new TelescopeDriver.Telescope(device.DeviceNumber)
+                        );
+
+                        Logger.LogInformation($"✅ Device {device.DeviceNumber}: {device.DeviceName} (Mount: {device.Mount})");
                     }
-                    catch (FileNotFoundException)
+                    catch (Exception ex)
                     {
-                        Logger.LogInformation($"Profile '{slot0.ProfileName}' not found, falling back to default-altaz");
-                        simulatorProfileSettings = await profileService.LoadProfileByNameAsync("default-altaz");
-                    }
-
-                    try
-                    {
-                        var profileName1 = !string.IsNullOrWhiteSpace(slot1.ProfileName) ? slot1.ProfileName : "eq6-default";
-                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync(profileName1);
-                        Logger.LogInformation($"✅ Phase 4.9: Loaded profile for slot 1: {profileName1}");
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        Logger.LogInformation($"Profile '{slot1.ProfileName}' not found, falling back to default-germanpolar");
-                        physicalMountProfileSettings = await profileService.LoadProfileByNameAsync("default-germanpolar");
-                    }
-
-                    // Initialize reserved slots with loaded profiles
-                    var simulatorSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-                    simulatorSettings.ApplySettings(simulatorProfileSettings);
-
-                    var physicalMountSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-                    physicalMountSettings.ApplySettings(physicalMountProfileSettings);
-
-                    GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.InitializeReservedSlots(
-                        simulatorSettings,
-                        slot0.DeviceName,
-                        slot0.UniqueId,
-                        new TelescopeDriver.Telescope(0),
-                        physicalMountSettings,
-                        slot1.DeviceName,
-                        slot1.UniqueId,
-                        new TelescopeDriver.Telescope(1)
-                    );
-
-                    Logger.LogInformation($"✅ Reserved slot 0: {slot0.DeviceName} (profile: {slot0.ProfileName})");
-                    Logger.LogInformation($"✅ Reserved slot 1: {slot1.DeviceName} (profile: {slot1.ProfileName})");
-
-                    // Load dynamic devices (slots 2+)
-                    var dynamicDevices = deviceConfigs.Where(d => d.DeviceNumber >= 2).ToList();
-
-                    if (dynamicDevices.Any())
-                    {
-                        Logger.LogInformation($"Loading {dynamicDevices.Count} dynamic device(s) (slots 2+)");
-
-                        foreach (var config in dynamicDevices)
-                        {
-                            try
-                            {
-                                // Phase 4.9: Load profile for dynamic device if specified
-                                GreenSwamp.Alpaca.Settings.Models.SkySettings? deviceProfileSettings = null;
-
-                                if (!string.IsNullOrWhiteSpace(config.ProfileName))
-                                {
-                                    try
-                                    {
-                                        deviceProfileSettings = await profileService.LoadProfileByNameAsync(config.ProfileName);
-                                        Logger.LogInformation($"✅ Phase 4.9: Loaded profile '{config.ProfileName}' for device {config.DeviceNumber}");
-                                    }
-                                    catch (FileNotFoundException)
-                                    {
-                                        Logger.LogInformation($"Profile '{config.ProfileName}' not found for device {config.DeviceNumber}, using default settings");
-                                    }
-                                }
-
-                                var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
-
-                                // Apply profile settings if loaded
-                                if (deviceProfileSettings != null)
-                                {
-                                    deviceSettings.ApplySettings(deviceProfileSettings);
-                                }
-
-                                GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.RegisterDevice(
-                                    config.DeviceNumber,
-                                    config.DeviceName,
-                                    config.UniqueId,
-                                    deviceSettings,
-                                    new TelescopeDriver.Telescope(config.DeviceNumber)
-                                );
-
-                                Logger.LogInformation($"✅ Device {config.DeviceNumber}: {config.DeviceName} (profile: {config.ProfileName ?? "default"})");
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.LogError($"❌ Failed to register device {config.DeviceNumber}: {config.DeviceName} - {ex.Message}");
-                            }
-                        }
+                        Logger.LogError($"❌ Failed to register device {device.DeviceNumber}: {device.DeviceName} - {ex.Message}");
+                        throw; // Phase 3: fail fast if device registration fails
                     }
                 }
 
