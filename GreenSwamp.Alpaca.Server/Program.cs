@@ -251,14 +251,17 @@ namespace GreenSwamp.Alpaca.Server
                 // Phase 4.2: Create profile loader for per-device SkySettingsInstance construction
                 var profileLoader = app.Services.GetService<IProfileLoaderService>();
 
-                // Phase 3: Load all devices from settings service (Devices array in appsettings.user.json)
+                // Phase 3 baseline (v1.0.0+): Load all devices from settings service (Devices array in appsettings.user.json)
                 var allDevices = settingsService.GetAllDevices();
                 var enabledDevices = allDevices.Where(d => d.Enabled).ToList();
 
                 if (!enabledDevices.Any())
                 {
                     Logger.LogWarning("No enabled devices found in settings");
-                    throw new InvalidOperationException("At least one device must be enabled in appsettings.user.json");
+                    throw new InvalidOperationException(
+                        "At least one device must be enabled in appsettings.user.json. " +
+                        "If the file is corrupted or has invalid format, delete it from %AppData%/GreenSwampAlpaca/{version}/ " +
+                        "and restart to regenerate defaults.");
                 }
 
                 Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
@@ -268,7 +271,7 @@ namespace GreenSwamp.Alpaca.Server
                 {
                     try
                     {
-                        // Phase 3: Pass device settings directly to constructor (prevents Device 0 contamination)
+                        // Phase 3 baseline (v1.0.0+): Pass device settings directly to constructor
                         var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(
                             device,              // Device-specific configuration (all 137 properties)
                             settingsService,     // Settings service for persistence
@@ -291,7 +294,7 @@ namespace GreenSwamp.Alpaca.Server
                     catch (Exception ex)
                     {
                         Logger.LogError($"❌ Failed to register device {device.DeviceNumber}: {device.DeviceName} - {ex.Message}");
-                        throw; // Phase 3: fail fast if device registration fails
+                        throw; // Phase 3 baseline (v1.0.0+): fail fast if device registration fails
                     }
                 }
 

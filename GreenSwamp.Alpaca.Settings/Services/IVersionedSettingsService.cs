@@ -24,12 +24,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
     public interface IVersionedSettingsService
     {
         /// <summary>
-        /// Gets the current settings (returns first device for backward compatibility)
+        /// Gets the current settings (returns first device for single-device code compatibility)
+        /// Phase 3 baseline (v1.0.0+): Reads from Devices array
         /// </summary>
         SkySettings GetSettings();
 
         /// <summary>
-        /// Phase 3: Gets all configured device settings
+        /// Phase 3 baseline (v1.0.0+): Gets all configured device settings from Devices array
         /// </summary>
         List<SkySettings> GetAllDevices();
 
@@ -50,6 +51,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         
         /// <summary>
         /// Migrates settings from the most recent previous version
+        /// Phase 3 baseline (v1.0.0+): Only supports migration from v1.0.0 and above
         /// </summary>
         Task<bool> MigrateFromPreviousVersionAsync();
 

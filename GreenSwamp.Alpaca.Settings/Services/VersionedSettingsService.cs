@@ -115,13 +115,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public SkySettings GetSettings()
         {
-            // Phase 3: Backward compatibility - return first device
+            // Phase 3 baseline (v1.0.0+): Return first device for backward compatibility with single-device code
             var devices = GetAllDevices();
             return devices.FirstOrDefault() ?? CreateDefaultDevice();
         }
 
         /// <summary>
-        /// Phase 3: Gets all configured devices from Devices array
+        /// Phase 3 baseline (v1.0.0+): Gets all configured devices from Devices array
         /// </summary>
         public List<SkySettings> GetAllDevices()
         {
@@ -139,29 +139,38 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var json = File.ReadAllText(userSettingsPath);
                 var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
 
+                // Phase 3 baseline: Strict validation - DO NOT overwrite existing files
                 if (doc == null || !doc.ContainsKey("Devices"))
                 {
-                    _logger?.LogWarning("Settings file missing Devices array, creating defaults");
-                    CreateDefaultUserSettings(CurrentVersion);
-                    return new List<SkySettings> { CreateDefaultDevice() };
+                    throw new InvalidOperationException(
+                        $"Settings file at '{userSettingsPath}' is missing the required 'Devices' array " +
+                        $"(invalid format for v1.0.0+). Please delete this file and restart the application " +
+                        $"to create a new configuration with the correct format.");
                 }
 
                 var devices = doc["Devices"].Deserialize<List<SkySettings>>();
                 if (devices == null || !devices.Any())
                 {
-                    _logger?.LogWarning("No devices found in settings, creating defaults");
-                    CreateDefaultUserSettings(CurrentVersion);
-                    return new List<SkySettings> { CreateDefaultDevice() };
+                    throw new InvalidOperationException(
+                        $"Settings file at '{userSettingsPath}' has an empty 'Devices' array. " +
+                        $"Please delete this file and restart the application to create a new " +
+                        $"configuration with a default device.");
                 }
 
                 _logger?.LogInformation("Loaded {Count} device(s)", devices.Count);
                 return devices;
             }
+            catch (InvalidOperationException)
+            {
+                // Re-throw validation errors unchanged
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error loading devices, creating defaults");
-                CreateDefaultUserSettings(CurrentVersion);
-                return new List<SkySettings> { CreateDefaultDevice() };
+                throw new InvalidOperationException(
+                    $"Error reading settings file at '{userSettingsPath}': {ex.Message}. " +
+                    $"The file may be corrupted. Please delete this file and restart the application " +
+                    $"to create a new configuration.", ex);
             }
         }
 
@@ -203,9 +212,19 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private SkySettings CreateDefaultDevice()
         {
             var settings = new SkySettings();
-            _configuration.GetSection("SkySettings").Bind(settings);
 
-            // Ensure device identification properties are set
+            // Phase 3 baseline (v1.0.0+): Read from Devices array, device 0
+            var devicesSection = _configuration.GetSection("Devices:0");
+            if (devicesSection.Exists())
+            {
+                devicesSection.Bind(settings);
+            }
+            else
+            {
+                _logger?.LogWarning("Devices:0 section not found in appsettings.json - using hardcoded defaults");
+            }
+
+            // Ensure device identification properties are set (Phase 3 required properties)
             settings.DeviceNumber = 0;
             if (string.IsNullOrEmpty(settings.DeviceName))
             {
@@ -308,6 +327,19 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
 
             var previousVersion = versions.First();
+
+            // Phase 3 baseline (v1.0.0): Reject pre-1.0.0 versions
+            var previousVersionParsed = new Version(previousVersion);
+            var baselineVersion = new Version(1, 0, 0);
+            if (previousVersionParsed < baselineVersion)
+            {
+                _logger?.LogError(
+                    "Cannot migrate from pre-1.0.0 version {Previous}. Version 1.0.0 is the baseline. " +
+                    "Please delete the old settings file at {Path} and restart the application to create a new configuration.",
+                    previousVersion, GetUserSettingsPath(previousVersion));
+                return false;
+            }
+
             var previousSettingsPath = GetUserSettingsPath(previousVersion);
 
             if (!File.Exists(previousSettingsPath))
@@ -329,7 +361,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     return false;
                 }
 
-                // All previous versions MUST have Devices array (user deletes old format manually)
+                // Phase 3 baseline: All v1.0.0+ versions MUST have Devices array
+                if (!previousSettings.ContainsKey("Devices"))
+                {
+                    _logger?.LogError(
+                        "Previous version {Previous} settings file is missing 'Devices' array (invalid format). " +
+                        "Please delete {Path} and restart to create a new configuration.",
+                        previousVersion, previousSettingsPath);
+                    return false;
+                }
+
                 var devicesToMigrate = previousSettings["Devices"].Deserialize<List<SkySettings>>();
                 if (devicesToMigrate == null || !devicesToMigrate.Any())
                 {
@@ -410,7 +451,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             var userSettingsPath = GetUserSettingsPath(version);
 
-            // Phase 3: Create default settings with Devices array format
+            // Phase 3 baseline (v1.0.0+): Create default settings with Devices array format
             var defaultDevice = CreateDefaultDevice();
             var devices = new List<SkySettings> { defaultDevice };
 
