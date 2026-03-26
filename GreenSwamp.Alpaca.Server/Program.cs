@@ -154,14 +154,14 @@ namespace GreenSwamp.Alpaca.Server
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
                 return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
             });
-            Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance registered in DI container");
-            Logger.LogInformation("✅ Settings services registered: VersionedSettings, Template");
+            Logger.LogInformation("Phase 4.2: SkySettingsInstance registered in DI container");
+            Logger.LogInformation("Settings services registered: VersionedSettings, Template");
             #endregion Startup and Logging
 
             //ToDo you can add devices here
 
             //Attach the logger
-            Logging.AttachLogger(Logger);
+            ASCOM.Alpaca.Logging.AttachLogger(Logger);
 
             //Load the configuration
             DeviceManager.LoadConfiguration(new AlpacaConfiguration());
@@ -191,7 +191,7 @@ namespace GreenSwamp.Alpaca.Server
             
             // Register TelescopeStateService for real-time state updates
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
-            Logger.LogInformation("? TelescopeStateService registered for real-time state updates");
+            Logger.LogInformation("TelescopeStateService registered for real-time state updates");
 
             // Register DeviceManagementService with HttpClient for device manager UI (Phase 4.11)
             // Uses typed client pattern - HttpClient is automatically injected and lifecycle-managed
@@ -202,7 +202,7 @@ namespace GreenSwamp.Alpaca.Server
                 client.BaseAddress = new Uri($"http://localhost:{ServerSettings.ServerPort}");
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
-            Logger.LogInformation("? DeviceManagementService registered with HttpClient for device manager UI");
+            Logger.LogInformation("DeviceManagementService registered with HttpClient for device manager UI");
 
             var app = builder.Build();
 
@@ -212,7 +212,7 @@ namespace GreenSwamp.Alpaca.Server
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
                 var testSettings = settingsService.GetSettings();
-                Logger.LogInformation("? Phase 1: New settings system initialized successfully");
+                Logger.LogInformation("Phase 1: New settings system initialized successfully");
                 Logger.LogInformation($"  Settings Version: {settingsService.CurrentVersion}");
                 Logger.LogInformation($"  Mount Type: {testSettings.Mount}");
                 Logger.LogInformation($"  Serial Port: {testSettings.Port}");
@@ -232,20 +232,20 @@ namespace GreenSwamp.Alpaca.Server
 
                 // Initialize Monitor settings system in correct order
                 GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
-                Logger.LogInformation("✅ Settings.Initialize() completed");
+                Logger.LogInformation("Settings.Initialize() completed");
 
                 // Force MonitorQueue initialization (creates BlockingCollections and background tasks)
                 GreenSwamp.Alpaca.Shared.MonitorQueue.EnsureInitialized();
-                Logger.LogInformation("✅ MonitorQueue initialized");
+                Logger.LogInformation("MonitorQueue initialized");
 
                 // CRITICAL: Load settings BEFORE Load_Settings() to populate filter checklists
                 GreenSwamp.Alpaca.Shared.Settings.Load();
-                Logger.LogInformation("✅ Settings.Load() completed");
+                Logger.LogInformation("Settings.Load() completed");
 
                 // Populate filter checklists (now that Settings properties have values)
                 GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
-                Logger.LogInformation("✅ Monitor filters loaded");
-                Logger.LogInformation($"📁 Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
+                Logger.LogInformation("Monitor filters loaded");
+                Logger.LogInformation($"Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
 
                 // Phase 3 baseline (v1.0.0+): Load all devices from settings service (Devices array in appsettings.user.json)
                 var allDevices = settingsService.GetAllDevices();
@@ -299,20 +299,20 @@ namespace GreenSwamp.Alpaca.Server
                             new TelescopeDriver.Telescope(device.DeviceNumber)
                         );
 
-                        Logger.LogInformation($"✅ Device {device.DeviceNumber}: {device.DeviceName} (Mount: {device.Mount})");
+                        Logger.LogInformation($"Device {device.DeviceNumber}: {device.DeviceName} (Mount: {device.Mount})");
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError($"❌ Failed to register device {device.DeviceNumber}: {device.DeviceName} - {ex.Message}");
+                        Logger.LogError($"Failed to register device {device.DeviceNumber}: {device.DeviceName} - {ex.Message}");
                         throw; // Phase 3 baseline (v1.0.0+): fail fast if device registration fails
                     }
                 }
 
-                Logger.LogInformation("✅ Device registry initialization complete");
+                Logger.LogInformation("Device registry initialization complete");
 
                 // Initialize SkyServer after slot 0 is registered — _settings now resolves to slot 0 instance
                 GreenSwamp.Alpaca.MountControl.SkyServer.Initialize();
-                Logger.LogInformation("✅ SkyServer initialized (using registered slot 0 settings)");
+                Logger.LogInformation("SkyServer initialized (using registered slot 0 settings)");
             }
             catch (Exception ex)
             {

@@ -35,6 +35,20 @@ namespace GreenSwamp.Alpaca.Settings.Services
         List<SkySettings> GetAllDevices();
 
         /// <summary>
+        /// Gets all configured device settings with validation results
+        /// Invalid devices are quarantined (not included in returned list)
+        /// </summary>
+        /// <param name="validationResult">Detailed validation results including errors and warnings</param>
+        /// <returns>List of valid devices only</returns>
+        List<SkySettings> GetAllDevices(out ValidationResult validationResult);
+
+        /// <summary>
+        /// Validates current settings file without loading devices
+        /// </summary>
+        /// <returns>Validation results with all errors and warnings</returns>
+        ValidationResult ValidateSettings();
+
+        /// <summary>
         /// Gets Alpaca device discovery metadata for all configured devices
         /// Returns list of AlpacaDevices with DeviceNumber, DeviceName, DeviceType, and UniqueId
         /// </summary>
@@ -67,20 +81,32 @@ namespace GreenSwamp.Alpaca.Settings.Services
         Task ResetToDefaultsAsync();
 
         /// <summary>
+        /// Performs automatic repair of common settings errors
+        /// Creates backup before repair, restores on failure
+        /// </summary>
+        /// <returns>Repair results including actions performed and remaining errors</returns>
+        Task<RepairResult> RepairSettingsAsync();
+
+        /// <summary>
         /// Gets the current application version
         /// </summary>
         string CurrentVersion { get; }
-        
+
         /// <summary>
         /// Gets all available version folders
         /// </summary>
         string[] AvailableVersions { get; }
-        
+
         /// <summary>
         /// Gets the path to the user settings file for the current version
         /// </summary>
         string UserSettingsPath { get; }
-        
+
+        /// <summary>
+        /// Gets the full path to the user settings file
+        /// </summary>
+        string GetUserSettingsPath();
+
         /// <summary>
         /// Event raised when settings are changed
         /// </summary>

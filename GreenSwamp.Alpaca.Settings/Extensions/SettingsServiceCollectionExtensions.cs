@@ -42,10 +42,8 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
             // Register the versioned settings service as singleton
             services.AddSingleton<IVersionedSettingsService>(sp =>
             {
-                var loggerFactory = sp.GetService<ILoggerFactory>();
-                var logger = loggerFactory?.CreateLogger(typeof(VersionedSettingsService).FullName ?? "VersionedSettingsService");
                 var syncService = sp.GetRequiredService<IDeviceSynchronizationService>();
-                return new VersionedSettingsService(configuration, syncService, logger);
+                return new VersionedSettingsService(configuration, syncService);
             });
 
             // Register template service as singleton

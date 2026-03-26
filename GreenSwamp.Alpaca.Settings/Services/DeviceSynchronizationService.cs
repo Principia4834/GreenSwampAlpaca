@@ -29,7 +29,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
     /// <summary>
     /// Service for maintaining 1-to-1 synchronization between AlpacaDevices and Devices arrays.
     /// Ensures atomic operations for device CRUD to prevent data inconsistency.
-    /// Uses Console logging (Settings project has no dependency on Shared/MonitorLog).
+    /// Uses ASCOM.Alpaca.Logging for consistent logging across the application.
     /// </summary>
     public class DeviceSynchronizationService : IDeviceSynchronizationService
     {
@@ -41,8 +41,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _userSettingsPath = GetUserSettingsPath();
 
-            LogInfo("DeviceSynchronizationService initialized");
-            LogInfo($"User settings path: {_userSettingsPath}");
+            ASCOM.Alpaca.Logging.LogVerbose("DeviceSynchronizationService initialized");
+            ASCOM.Alpaca.Logging.LogVerbose($"User settings path: {_userSettingsPath}");
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             if (!File.Exists(_userSettingsPath))
             {
-                LogWarning($"User settings file not found: {_userSettingsPath}");
+                ASCOM.Alpaca.Logging.LogWarning($"User settings file not found: {_userSettingsPath}");
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             if (doc == null)
             {
-                LogError("Failed to parse user settings JSON");
+                ASCOM.Alpaca.Logging.LogError("Failed to parse user settings JSON");
                 return;
             }
 
@@ -86,14 +86,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 };
                 alpacaDevices.Add(newEntry);
 
-                LogInfo($"Created AlpacaDevice entry for device {deviceNumber}: {deviceName}");
+                ASCOM.Alpaca.Logging.LogVerbose($"Created AlpacaDevice entry for device {deviceNumber}: {deviceName}");
             }
             else if (existing.DeviceName != deviceName)
             {
                 // Update device name if changed
                 existing.DeviceName = deviceName;
 
-                LogInfo($"Updated AlpacaDevice name for device {deviceNumber}: {deviceName}");
+                ASCOM.Alpaca.Logging.LogVerbose($"Updated AlpacaDevice name for device {deviceNumber}: {deviceName}");
             }
             else
             {
@@ -108,7 +108,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             var updatedJson = JsonSerializer.Serialize(doc, options);
             await File.WriteAllTextAsync(_userSettingsPath, updatedJson);
 
-            LogInfo("AlpacaDevices array updated successfully");
+            ASCOM.Alpaca.Logging.LogVerbose("AlpacaDevices array updated successfully");
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             if (!File.Exists(_userSettingsPath))
             {
-                LogWarning($"User settings file not found: {_userSettingsPath}");
+                ASCOM.Alpaca.Logging.LogWarning($"User settings file not found: {_userSettingsPath}");
                 return;
             }
 
@@ -127,14 +127,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             if (doc == null || !doc.ContainsKey("AlpacaDevices"))
             {
-                LogWarning("AlpacaDevices array not found in settings file");
+                ASCOM.Alpaca.Logging.LogWarning("AlpacaDevices array not found in settings file");
                 return;
             }
 
             var alpacaDevices = doc["AlpacaDevices"].Deserialize<List<AlpacaDevice>>();
             if (alpacaDevices == null)
             {
-                LogWarning("Failed to deserialize AlpacaDevices array");
+                ASCOM.Alpaca.Logging.LogWarning("Failed to deserialize AlpacaDevices array");
                 return;
             }
 
@@ -148,7 +148,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var updatedJson = JsonSerializer.Serialize(doc, options);
                 await File.WriteAllTextAsync(_userSettingsPath, updatedJson);
 
-                LogInfo($"Removed AlpacaDevice entry for device {deviceNumber}");
+                ASCOM.Alpaca.Logging.LogVerbose($"Removed AlpacaDevice entry for device {deviceNumber}");
             }
         }
 
@@ -160,7 +160,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             if (!doc.ContainsKey("Devices") || !doc.ContainsKey("AlpacaDevices"))
             {
-                LogWarning("Missing Devices or AlpacaDevices array");
+                ASCOM.Alpaca.Logging.LogWarning("Missing Devices or AlpacaDevices array");
                 return false;
             }
 
@@ -169,7 +169,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             if (devices == null || alpacaDevices == null)
             {
-                LogError("Failed to deserialize Devices or AlpacaDevices arrays");
+                ASCOM.Alpaca.Logging.LogError("Failed to deserialize Devices or AlpacaDevices arrays");
                 return false;
             }
 
@@ -182,7 +182,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             if (onlyInDevices.Any() || onlyInAlpaca.Any())
             {
-                LogError(
+                ASCOM.Alpaca.Logging.LogError(
                     $"AlpacaDevices/Devices arrays out of sync. " +
                     $"Only in Devices: [{string.Join(",", onlyInDevices)}], " +
                     $"Only in Alpaca: [{string.Join(",", onlyInAlpaca)}]");
@@ -196,14 +196,153 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
                 if (alpacaEntry != null && alpacaEntry.DeviceName != device.DeviceName)
                 {
-                    LogWarning(
+                    ASCOM.Alpaca.Logging.LogWarning(
                         $"DeviceName mismatch for device {device.DeviceNumber}: " +
                         $"Devices='{device.DeviceName}', AlpacaDevices='{alpacaEntry.DeviceName}'");
                 }
             }
 
-            LogInfo("AlpacaDevices/Devices synchronization validated successfully");
+            ASCOM.Alpaca.Logging.LogVerbose("AlpacaDevices/Devices synchronization validated successfully");
             return true;
+        }
+
+        /// <summary>
+        /// Validates 1-to-1 synchronization with detailed error reporting
+        /// </summary>
+        public ValidationResult ValidateSynchronizationDetailed(Dictionary<string, JsonElement> doc)
+        {
+            var result = new ValidationResult { IsValid = true };
+
+            // Check both arrays exist
+            if (!doc.ContainsKey("Devices"))
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "MISSING_DEVICES_ARRAY",
+                    Severity = "error",
+                    Message = "Settings file missing 'Devices' array.",
+                    Resolution = "Use 'Repair Settings' to regenerate.",
+                    IsAutoRepairable = true
+                });
+                return result;
+            }
+
+            if (!doc.ContainsKey("AlpacaDevices"))
+            {
+                result.Warnings.Add(new ValidationError
+                {
+                    ErrorCode = "MISSING_ALPACA_ARRAY",
+                    Severity = "warning",
+                    Message = "Settings file missing 'AlpacaDevices' array.",
+                    Resolution = "Use 'Repair Settings' to regenerate from Devices array.",
+                    IsAutoRepairable = true
+                });
+                return result; // Can continue with just Devices array
+            }
+
+            var devices = doc["Devices"].Deserialize<List<SkySettings>>();
+            var alpacaDevices = doc["AlpacaDevices"].Deserialize<List<AlpacaDevice>>();
+
+            if (devices == null || alpacaDevices == null)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "INVALID_ARRAY_TYPE",
+                    Severity = "error",
+                    Message = "Failed to deserialize Devices or AlpacaDevices arrays.",
+                    Resolution = "Use 'Repair Settings' to regenerate arrays.",
+                    IsAutoRepairable = true
+                });
+                return result;
+            }
+
+            var deviceNumbers = devices.Select(d => d.DeviceNumber).ToList();
+            var alpacaNumbers = alpacaDevices.Select(d => d.DeviceNumber).ToList();
+
+            // Check count mismatch
+            if (deviceNumbers.Count != alpacaNumbers.Count)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "ARRAY_COUNT_MISMATCH",
+                    Severity = "error",
+                    Message = $"Devices array has {deviceNumbers.Count} entries, AlpacaDevices has {alpacaNumbers.Count}.",
+                    Resolution = "Use 'Repair Settings' to regenerate AlpacaDevices array.",
+                    IsAutoRepairable = true
+                });
+            }
+
+            // Check missing in AlpacaDevices
+            var missingInAlpaca = deviceNumbers.Except(alpacaNumbers).ToList();
+            foreach (var deviceNum in missingInAlpaca)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "DEVICE_NOT_IN_ALPACA",
+                    Severity = "error",
+                    DeviceNumber = deviceNum,
+                    Message = $"Device {deviceNum} exists in Devices but not in AlpacaDevices.",
+                    Resolution = "Use 'Repair Settings' to add missing AlpacaDevices entry.",
+                    IsAutoRepairable = true
+                });
+            }
+
+            // Check orphaned in AlpacaDevices
+            var orphanedInAlpaca = alpacaNumbers.Except(deviceNumbers).ToList();
+            foreach (var deviceNum in orphanedInAlpaca)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "ALPACA_NOT_IN_DEVICES",
+                    Severity = "error",
+                    DeviceNumber = deviceNum,
+                    Message = $"AlpacaDevices entry {deviceNum} has no matching Device entry.",
+                    Resolution = "Use 'Repair Settings' to remove orphaned AlpacaDevices entry.",
+                    IsAutoRepairable = true
+                });
+            }
+
+            // Check DeviceName synchronization
+            foreach (var device in devices)
+            {
+                var alpacaEntry = alpacaDevices.FirstOrDefault(a => a.DeviceNumber == device.DeviceNumber);
+                if (alpacaEntry != null && alpacaEntry.DeviceName != device.DeviceName)
+                {
+                    result.Warnings.Add(new ValidationError
+                    {
+                        ErrorCode = "DEVICE_NAME_MISMATCH",
+                        Severity = "warning",
+                        DeviceNumber = device.DeviceNumber,
+                        Message = $"DeviceName mismatch: Devices='{device.DeviceName}', AlpacaDevices='{alpacaEntry.DeviceName}'.",
+                        Resolution = "Use 'Repair Settings' to synchronize names.",
+                        IsAutoRepairable = true
+                    });
+                }
+            }
+
+            // Check UniqueId presence
+            foreach (var alpacaEntry in alpacaDevices)
+            {
+                if (string.IsNullOrWhiteSpace(alpacaEntry.UniqueId))
+                {
+                    result.Warnings.Add(new ValidationError
+                    {
+                        ErrorCode = "MISSING_UNIQUE_ID",
+                        Severity = "warning",
+                        DeviceNumber = alpacaEntry.DeviceNumber,
+                        Message = $"AlpacaDevice entry {alpacaEntry.DeviceNumber} missing UniqueId.",
+                        Resolution = "Use 'Repair Settings' to generate UniqueId.",
+                        IsAutoRepairable = true
+                    });
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -247,16 +386,6 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             return version;
         }
-
-        // Simple Console logging (Settings project has no dependency on MonitorLog)
-        private void LogInfo(string message) 
-            => Console.WriteLine($"ℹ️ [DeviceSynchronizationService] {message}");
-
-        private void LogWarning(string message) 
-            => Console.WriteLine($"⚠️ [DeviceSynchronizationService] {message}");
-
-        private void LogError(string message) 
-            => Console.WriteLine($"❌ [DeviceSynchronizationService] {message}");
     }
 
     /// <summary>

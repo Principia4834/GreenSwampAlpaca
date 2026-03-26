@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using GreenSwamp.Alpaca.Settings.Models;
 using System.Text.Json;
 
 namespace GreenSwamp.Alpaca.Settings.Services
@@ -47,6 +48,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <param name="doc">Parsed JSON document containing both arrays</param>
         /// <returns>True if synchronized, false if out of sync</returns>
         bool ValidateSynchronization(Dictionary<string, JsonElement> doc);
+
+        /// <summary>
+        /// Validates 1-to-1 synchronization with detailed error reporting
+        /// </summary>
+        /// <param name="doc">Parsed JSON document containing both arrays</param>
+        /// <returns>Validation result with detailed errors and warnings</returns>
+        ValidationResult ValidateSynchronizationDetailed(Dictionary<string, JsonElement> doc);
 
         /// <summary>
         /// Generates unique GUID for new device.

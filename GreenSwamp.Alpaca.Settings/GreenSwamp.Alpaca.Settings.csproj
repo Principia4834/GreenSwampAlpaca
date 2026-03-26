@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ASCOM.Alpaca.Razor\ASCOM.Alpaca.Razor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Templates\common.json" />
     <EmbeddedResource Include="Templates\germanpolar-overrides.json" />
     <EmbeddedResource Include="Templates\polar-overrides.json" />

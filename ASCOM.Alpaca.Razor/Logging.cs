@@ -23,7 +23,7 @@ namespace ASCOM.Alpaca
         }
 
 
-        internal static void LogError(string message)
+        public static void LogError(string message)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace ASCOM.Alpaca
             }
         }
 
-        internal static void LogVerbose(string message)
+        public static void LogVerbose(string message)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace ASCOM.Alpaca
             }
         }
 
-        internal static void LogWarning(string message)
+        public static void LogWarning(string message)
         {
             try
             {

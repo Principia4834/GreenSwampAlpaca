@@ -262,6 +262,193 @@ The following Blazor pages interact with the settings system:
 
 ---
 
+### FR-17: Graceful Error Handling
+**Priority:** CRITICAL  
+**Requirement:** Application SHALL continue running and remain accessible via Blazor UI and REST API even when settings files have errors.
+
+**Acceptance Criteria:**
+- Application startup does NOT fail due to corrupt/missing settings files
+- Blazor UI remains accessible when settings have errors
+- REST API remains functional for error reporting and configuration management
+- Error states are clearly reported through UI and API
+- User can access settings management UI to fix problems
+- Application logs all settings errors with actionable guidance
+
+---
+
+### FR-18: Device Validation and Quarantine
+**Priority:** CRITICAL  
+**Requirement:** Devices with configuration problems SHALL NOT be advertised or activated.
+
+**Acceptance Criteria:**
+- Invalid devices are NOT included in `/management/v1/configureddevices` endpoint
+- Invalid devices are NOT advertised via Alpaca Discovery protocol
+- Invalid devices are NOT instantiated in `MountInstanceRegistry`
+- Device validation performed before activation:
+  - DeviceNumber uniqueness check
+  - Required properties present and valid
+  - AlpacaDevices/Devices array synchronization
+  - Enum values within valid ranges
+- Validation errors logged with device identifier and specific problem
+- UI displays list of problematic devices with error details
+- REST API provides endpoint to query device validation status
+
+**Validation Rules:**
+- `DeviceNumber` must be unique across all devices
+- `DeviceNumber` must be >= 0
+- `DeviceName` must not be null or empty
+- `AlignmentMode` must be valid enum value (AltAz, GermanPolar, Polar)
+- `Mount` must be valid enum value (Simulator, SkyWatcher)
+- Corresponding AlpacaDevices entry must exist with matching DeviceNumber
+- AlpacaDevices.DeviceName must match Devices.DeviceName
+- UniqueId must be valid GUID format
+
+---
+
+### FR-19: Settings File Validation
+**Priority:** HIGH  
+**Requirement:** Settings files SHALL be validated for structural integrity on load.
+
+**Acceptance Criteria:**
+- JSON syntax validation (parseable JSON)
+- Required sections present: `Devices` array, `AlpacaDevices` array
+- Arrays are 1-to-1 synchronized by DeviceNumber
+- Validation errors return specific problem description
+- Invalid settings file does NOT crash application
+- UI displays file-level errors with file path and resolution steps
+- User can delete/reset invalid settings file via UI
+
+**File-Level Validation:**
+- File is valid JSON format
+- Root object contains `Devices` key
+- `Devices` value is an array (not null)
+- Root object contains `AlpacaDevices` key (if any devices configured)
+- `AlpacaDevices` value is an array (not null)
+- Arrays have matching device counts
+- All DeviceNumbers in Devices array have matching entry in AlpacaDevices
+- All DeviceNumbers in AlpacaDevices array have matching entry in Devices
+
+---
+
+### FR-20: Error Reporting via UI
+**Priority:** CRITICAL  
+**Requirement:** Blazor UI SHALL display comprehensive settings error information.
+
+**Acceptance Criteria:**
+- Dedicated "Settings Health" page or section displays:
+  - Settings file status (valid/invalid/missing)
+  - File path location
+  - List of all devices with validation status (valid/invalid/disabled)
+  - Specific error messages for each problem
+  - Resolution steps for each error type
+- Device management pages show error indicators for invalid devices
+- Server settings page shows validation errors
+- Monitor settings page shows validation errors
+- Error messages include:
+  - Problem description (what is wrong)
+  - Affected device/file/section
+  - Resolution steps (how to fix)
+  - Option to delete and regenerate settings
+
+**Error Display Format:**
+```
+❌ Device 2 Configuration Invalid
+   Problem: DeviceNumber 2 appears twice in Devices array
+   File: C:\Users\...\appsettings.user.json
+   Resolution: Edit file manually to fix duplicate, or delete device via UI
+
+⚠️ Settings File Synchronization Error  
+   Problem: AlpacaDevices array missing entry for DeviceNumber 3
+   Resolution: Use "Repair Settings" button to regenerate AlpacaDevices array
+```
+
+---
+
+### FR-21: Error Reporting via REST API (Future)
+**Priority:** HIGH  
+**Requirement:** REST API SHALL provide endpoints for settings health and error reporting.
+
+**Acceptance Criteria:**
+- Design SHALL accommodate future REST API endpoints:
+  - `GET /api/settings/health` - Overall settings health status
+  - `GET /api/settings/validation` - Detailed validation results
+  - `GET /api/settings/devices/{deviceNumber}/status` - Device-specific status
+  - `POST /api/settings/repair` - Trigger automatic repair actions
+  - `DELETE /api/settings/reset` - Delete and regenerate settings file
+- Error responses follow standard REST patterns:
+  - HTTP status codes indicate error types
+  - Response bodies contain structured error details
+  - Error codes identify specific problems
+- API design documented for future implementation
+- Service layer methods support API requirements (validation, repair, etc.)
+
+**Example API Response Structure (Future):**
+```json
+{
+  "settingsFileStatus": "valid|invalid|missing",
+  "settingsFilePath": "C:\\Users\\...\\appsettings.user.json",
+  "deviceCount": 3,
+  "validDeviceCount": 2,
+  "invalidDeviceCount": 1,
+  "errors": [
+    {
+      "errorCode": "DUPLICATE_DEVICE_NUMBER",
+      "severity": "error",
+      "deviceNumber": 2,
+      "message": "DeviceNumber 2 appears twice in Devices array",
+      "resolution": "Remove duplicate device entry"
+    }
+  ],
+  "devices": [
+    {
+      "deviceNumber": 0,
+      "deviceName": "Main Mount",
+      "enabled": true,
+      "validationStatus": "valid",
+      "advertisedViaAlpaca": true
+    },
+    {
+      "deviceNumber": 2,
+      "deviceName": "Backup Mount",
+      "enabled": true,
+      "validationStatus": "invalid",
+      "advertisedViaAlpaca": false,
+      "errors": ["DUPLICATE_DEVICE_NUMBER"]
+    }
+  ]
+}
+```
+
+---
+
+### FR-22: Automatic Repair Actions
+**Priority:** MEDIUM  
+**Requirement:** System SHALL provide automatic repair capabilities for common settings errors.
+
+**Acceptance Criteria:**
+- "Repair Settings" action available via UI and future REST API
+- Repair actions:
+  - **Regenerate AlpacaDevices array:** Rebuild from Devices array entries
+  - **Assign missing DeviceNumbers:** Auto-assign next available number
+  - **Remove orphaned AlpacaDevices entries:** Delete entries without matching Device
+  - **Fix name synchronization:** Copy DeviceName from Devices to AlpacaDevices
+  - **Generate missing UniqueIds:** Create GUID for entries without UniqueId
+- Repair actions are non-destructive when possible
+- Backup of settings file created before repair
+- Repair results logged and displayed to user
+- User can preview repair actions before applying (future)
+
+**Repair Operation Flow:**
+1. Validate settings file (identify all errors)
+2. Determine which errors are auto-repairable
+3. Create backup: `appsettings.user.json.backup-{timestamp}`
+4. Apply repair actions in order
+5. Validate repaired settings
+6. If validation fails, restore backup and report failure
+7. If validation succeeds, log repair actions and notify user
+
+---
+
 ## 3. Non-Functional Requirements
 
 ### NFR-1: Performance
@@ -270,14 +457,24 @@ The following Blazor pages interact with the settings system:
 - Migration time: <1 second per device
 
 ### NFR-2: Reliability
-- Settings corruption: Fail fast with clear error message guiding user to delete file
-- Migration failure: Log error, fall back to defaults
+- Settings file missing: Create default settings automatically
+- Settings file corrupt: Application continues running, errors reported via UI/API
+- Invalid device configuration: Device not advertised, errors reported via UI/API
+- Settings validation: Performed on load, detailed error reporting
+- Migration failure: Log error, fall back to defaults, report via UI
 - Concurrent access: File locking prevents corruption
+- Graceful degradation: Application remains functional with partial settings
+- Error recovery: Automatic repair actions available for common issues
 
 ### NFR-3: Usability
-- Error messages guide user to resolution (e.g., "Delete file at {path} to regenerate")
-- Logging at Info level for normal operations
+- Error messages guide user to resolution with specific steps
+- UI displays settings health status prominently
+- Error indicators visible on device management pages
+- One-click repair actions for common problems
+- Settings file path always displayed for manual intervention
+- Logging at Info level for normal operations, Error for validation failures
 - Schema enables IntelliSense in VS Code / Visual Studio
+- REST API (future) provides programmatic access to error details
 
 ### NFR-4: Maintainability
 - Version migration logic isolated in single service

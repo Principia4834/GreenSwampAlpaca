@@ -985,7 +985,244 @@ public class AlpacaDevice
 
 ---
 
-## 5. Data Flow
+## 5. Error Handling Architecture
+
+### 5.1 Error Handling Philosophy
+
+**Core Principles:**
+1. **Graceful Degradation:** Application continues running even with settings errors
+2. **Never Advertise Broken:** Invalid devices are quarantined, not exposed via ASCOM APIs
+3. **Clear Communication:** Errors reported with actionable guidance via UI and future REST API
+4. **Fail-Fast Validation:** Invalid configurations detected early with specific error messages
+5. **Self-Healing:** Automatic repair actions for common problems
+
+### 5.2 Error Classification
+
+```mermaid
+graph TB
+    subgraph "Error Severity Levels"
+        FATAL[FATAL<br/>Application cannot start]
+        ERROR[ERROR<br/>Device cannot be activated]
+        WARNING[WARNING<br/>Device functional but misconfigured]
+        INFO[INFO<br/>Non-critical issue]
+    end
+
+    subgraph "Error Categories"
+        FILE[File-Level Errors<br/>JSON syntax, missing files]
+        STRUCT[Structural Errors<br/>Missing arrays, wrong types]
+        SYNC[Synchronization Errors<br/>AlpacaDevices/Devices mismatch]
+        DEVICE[Device-Level Errors<br/>Invalid properties, duplicates]
+    end
+
+    subgraph "Error Handling Strategy"
+        CONT[Continue with Defaults]
+        QUARANTINE[Quarantine Device]
+        REPAIR[Auto-Repair]
+        MANUAL[Manual Intervention]
+    end
+
+    FILE --> STRUCT
+    STRUCT --> SYNC
+    SYNC --> DEVICE
+
+    FATAL --> MANUAL
+    ERROR --> QUARANTINE
+    WARNING --> REPAIR
+    INFO --> CONT
+
+    style FATAL fill:#ff0000,color:#fff
+    style ERROR fill:#ff6b6b
+    style WARNING fill:#ffa500
+    style INFO fill:#4a90e2,color:#fff
+```
+
+### 5.3 Validation Pipeline
+
+**Validation Flow:**
+
+```mermaid
+flowchart TD
+    START[Load Settings File] --> V1{File Exists?}
+
+    V1 -->|No| CREATE[Create Default Settings]
+    V1 -->|Yes| V2{Valid JSON?}
+
+    V2 -->|No| ERR1[❌ FILE_PARSE_ERROR<br/>Corrupt JSON]
+    V2 -->|Yes| V3{Has Devices Array?}
+
+    V3 -->|No| ERR2[❌ MISSING_DEVICES_ARRAY<br/>Invalid structure]
+    V3 -->|Yes| V4{Devices Array Empty?}
+
+    V4 -->|Yes| WARN1[⚠️ EMPTY_DEVICES_ARRAY<br/>Create default device]
+    V4 -->|No| V5{Has AlpacaDevices Array?}
+
+    V5 -->|No| WARN2[⚠️ MISSING_ALPACA_ARRAY<br/>Regenerate from Devices]
+    V5 -->|Yes| V6{Arrays Synchronized?}
+
+    V6 -->|No| ERR3[❌ ARRAY_SYNC_ERROR<br/>Mismatched entries]
+    V6 -->|Yes| V7[Validate Each Device]
+
+    V7 --> V8{All Devices Valid?}
+
+    V8 -->|No| QUARANTINE[Quarantine Invalid Devices]
+    V8 -->|Yes| SUCCESS[✅ All Valid]
+
+    ERR1 --> REPORT[Report to UI/API]
+    ERR2 --> REPORT
+    ERR3 --> REPORT
+    WARN1 --> REPAIR[Auto-Repair]
+    WARN2 --> REPAIR
+    QUARANTINE --> REPORT
+
+    REPAIR --> SUCCESS
+    CREATE --> SUCCESS
+
+    SUCCESS --> ACTIVATE[Activate Valid Devices]
+    REPORT --> UI[Display in Settings Health UI]
+
+    style ERR1 fill:#ff6b6b
+    style ERR2 fill:#ff6b6b
+    style ERR3 fill:#ff6b6b
+    style WARN1 fill:#ffa500
+    style WARN2 fill:#ffa500
+    style SUCCESS fill:#4caf50,color:#fff
+    style QUARANTINE fill:#ff9800
+```
+
+### 5.4 Error Codes and Handling
+
+**Standard Error Code Format:** `{CATEGORY}_{SPECIFIC_PROBLEM}`
+
+**File-Level Errors:**
+
+| Code | Severity | Description | Resolution | Auto-Repair |
+|------|----------|-------------|------------|-------------|
+| `FILE_NOT_FOUND` | INFO | User settings file doesn't exist | Create from defaults | ✅ Yes |
+| `FILE_PARSE_ERROR` | ERROR | JSON syntax error | Fix JSON or delete file | ❌ No |
+| `FILE_ACCESS_DENIED` | ERROR | Cannot read/write file | Check permissions | ❌ No |
+| `FILE_LOCKED` | WARNING | File locked by another process | Retry or close other app | ⏱️ Retry |
+
+**Structural Errors:**
+
+| Code | Severity | Description | Resolution | Auto-Repair |
+|------|----------|-------------|------------|-------------|
+| `MISSING_DEVICES_ARRAY` | ERROR | `Devices` key missing | Regenerate settings | ✅ Yes |
+| `EMPTY_DEVICES_ARRAY` | WARNING | `Devices` array is empty | Create default device | ✅ Yes |
+| `MISSING_ALPACA_ARRAY` | WARNING | `AlpacaDevices` key missing | Regenerate from Devices | ✅ Yes |
+| `INVALID_ARRAY_TYPE` | ERROR | Devices/AlpacaDevices not arrays | Regenerate settings | ✅ Yes |
+
+**Synchronization Errors:**
+
+| Code | Severity | Description | Resolution | Auto-Repair |
+|------|----------|-------------|------------|-------------|
+| `ARRAY_COUNT_MISMATCH` | ERROR | Array lengths don't match | Regenerate AlpacaDevices | ✅ Yes |
+| `DEVICE_NOT_IN_ALPACA` | ERROR | Device in Devices but not AlpacaDevices | Add AlpacaDevices entry | ✅ Yes |
+| `ALPACA_NOT_IN_DEVICES` | ERROR | Entry in AlpacaDevices but not Devices | Remove AlpacaDevices entry | ✅ Yes |
+| `DEVICE_NAME_MISMATCH` | WARNING | DeviceName differs between arrays | Sync from Devices to AlpacaDevices | ✅ Yes |
+| `MISSING_UNIQUE_ID` | WARNING | AlpacaDevices entry missing UniqueId | Generate new GUID | ✅ Yes |
+
+**Device-Level Errors:**
+
+| Code | Severity | Description | Resolution | Auto-Repair |
+|------|----------|-------------|------------|-------------|
+| `DUPLICATE_DEVICE_NUMBER` | ERROR | DeviceNumber appears twice | Remove duplicate | ❌ No |
+| `NEGATIVE_DEVICE_NUMBER` | ERROR | DeviceNumber < 0 | Fix to valid number | ❌ No |
+| `MISSING_DEVICE_NAME` | ERROR | DeviceName null or empty | Set default name | ✅ Yes |
+| `INVALID_ALIGNMENT_MODE` | ERROR | AlignmentMode not in enum | Reset to default | ✅ Yes |
+| `INVALID_MOUNT_TYPE` | ERROR | Mount not in enum | Reset to Simulator | ✅ Yes |
+| `MISSING_REQUIRED_PROPERTY` | ERROR | Required property null | Set default value | ✅ Yes |
+
+### 5.5 Service Layer Integration
+
+**Enhanced Interface:**
+
+```csharp
+public interface IVersionedSettingsService
+{
+    // Existing methods
+    SkySettings GetSettings();
+    List<SkySettings> GetAllDevices();
+    Task SaveSettingsAsync(SkySettings settings);
+    Task<bool> MigrateFromPreviousVersionAsync();
+
+    // NEW: Error handling methods
+    List<SkySettings> GetAllDevices(out ValidationResult validationResult);
+    ValidationResult ValidateSettings();
+    Task<RepairResult> RepairSettingsAsync();
+    Task ResetToDefaultsAsync();
+    string GetUserSettingsPath();
+}
+```
+
+**Key Design Points:**
+- **GetAllDevices** overload returns validation results alongside device list
+- Invalid devices are automatically quarantined (not returned in list)
+- Validation errors are structured for UI/API consumption
+- Repair actions create backups before making changes
+- All error states logged via MonitorLog pattern
+
+### 5.6 UI Integration Points
+
+**Settings Health Component** (to be implemented):
+- Location: Device Management page or dedicated Settings Health page
+- Displays file-level and device-level errors
+- Shows validation status for each device
+- Provides one-click repair button for auto-repairable errors
+- Displays settings file path for manual intervention
+
+**Device Management Grid** (to be enhanced):
+- Add validation status column (✅ Valid / ❌ Invalid)
+- Show error indicators on invalid devices
+- Disable "Activate" button for invalid devices
+- Display error details on hover/click
+
+**Server/Monitor Settings Pages** (to be enhanced):
+- Display validation warnings at top of page
+- Highlight invalid properties in forms
+- Show resolution steps for errors
+
+### 5.7 REST API Design (Future Implementation Ready)
+
+**Endpoint Structure:**
+
+```
+GET  /api/settings/health                    - Overall settings health status
+GET  /api/settings/validation                - Detailed validation results
+GET  /api/settings/devices/{deviceNumber}/status - Device-specific status
+POST /api/settings/repair                    - Trigger automatic repair
+DELETE /api/settings/reset                   - Delete and regenerate settings
+```
+
+**Design Accommodations:**
+- ValidationResult/RepairResult classes are API-ready (serializable)
+- Error codes are standardized strings (suitable for API responses)
+- HTTP status codes map directly to error severity levels
+- Structured error responses include resolution guidance
+
+**Example API Response (Future):**
+```json
+{
+  "settingsFileStatus": "invalid",
+  "settingsFilePath": "C:\\Users\\...\\appsettings.user.json",
+  "deviceCount": 3,
+  "validDeviceCount": 2,
+  "invalidDeviceCount": 1,
+  "errors": [
+    {
+      "errorCode": "DUPLICATE_DEVICE_NUMBER",
+      "severity": "error",
+      "deviceNumber": 2,
+      "message": "DeviceNumber 2 appears twice in Devices array",
+      "resolution": "Remove duplicate device entry via Device Management UI",
+      "isAutoRepairable": false
+    }
+  ]
+}
+```
+
+---
+
+## 6. Data Flow
 
 ### 5.1 Application Startup Flow (Mermaid Diagram)
 

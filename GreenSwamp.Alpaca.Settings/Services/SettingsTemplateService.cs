@@ -15,7 +15,6 @@
  */
 
 using GreenSwamp.Alpaca.Settings.Models;
-using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Text.Json;
 
@@ -28,26 +27,23 @@ namespace GreenSwamp.Alpaca.Settings.Services
     public class SettingsTemplateService : ISettingsTemplateService
     {
         private readonly string _templatesPath;
-        private readonly ILogger<SettingsTemplateService> _logger;
         private static readonly SemaphoreSlim _fileLock = new(1, 1);
         
         // Cache templates to avoid repeated file I/O
         private SkySettings? _commonSettingsCache;
         private readonly Dictionary<AlignmentMode, Dictionary<string, object>> _overridesCache = new();
         
-        public SettingsTemplateService(ILogger<SettingsTemplateService> logger)
+        public SettingsTemplateService()
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            
             // Setup templates directory
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var version = GetCurrentVersion();
             _templatesPath = Path.Combine(appData, "GreenSwampAlpaca", version, "templates");
-            
+
             Directory.CreateDirectory(_templatesPath);
-            
-            _logger.LogInformation("SettingsTemplateService initialized | Templates path: {Path}", _templatesPath);
-            
+
+            ASCOM.Alpaca.Logging.LogVerbose($"SettingsTemplateService initialized | Templates path: {_templatesPath}");
+
             // Initialize template files if they don't exist
             InitializeTemplates();
         }
@@ -90,12 +86,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 CreateTemplateIfNotExists("germanpolar-overrides.json", CreateGermanPolarOverridesJson());
                 CreateTemplateIfNotExists("polar-overrides.json", CreatePolarOverridesJson());
                 CreateTemplateIfNotExists("altaz-overrides.json", CreateAltAzOverridesJson());
-                
-                _logger.LogInformation("Template initialization complete");
+
+                ASCOM.Alpaca.Logging.LogVerbose("Template initialization complete");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize templates");
+                ASCOM.Alpaca.Logging.LogError($"Failed to initialize templates: {ex.Message}");
                 throw;
             }
         }
@@ -110,7 +106,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             if (!File.Exists(filePath))
             {
                 File.WriteAllText(filePath, content);
-                _logger.LogInformation("Created template: {FileName}", fileName);
+                ASCOM.Alpaca.Logging.LogVerbose($"Created template: {fileName}");
             }
         }
         
@@ -118,24 +114,24 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             try
             {
-                _logger.LogInformation("Loading template for {Mode}", mode);
-                
+                ASCOM.Alpaca.Logging.LogVerbose($"Loading template for {mode}");
+
                 // Load common settings
                 var common = await GetCommonSettingsAsync();
-                
+
                 // Load mode-specific overrides
                 var overrides = await GetModeOverridesAsync(mode);
-                
+
                 // Merge
                 var merged = await MergeSettingsAsync(common, overrides);
-                
-                _logger.LogInformation("Successfully loaded template for {Mode}", mode);
-                
+
+                ASCOM.Alpaca.Logging.LogVerbose($"Successfully loaded template for {mode}");
+
                 return merged;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load template for {Mode}", mode);
+                ASCOM.Alpaca.Logging.LogError($"Failed to load template for {mode}: {ex.Message}");
                 throw;
             }
         }
@@ -162,9 +158,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 
                 // Cache for future use
                 _commonSettingsCache = template.Settings;
-                
-                _logger.LogDebug("Loaded common settings template");
-                
+
+                ASCOM.Alpaca.Logging.LogVerbose("Loaded common settings template");
+
                 return DeepClone(template.Settings);
             }
             finally
@@ -205,9 +201,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 
                 // Cache for future use
                 _overridesCache[mode] = overrides;
-                
-                _logger.LogDebug("Loaded {Mode} override template", mode);
-                
+
+                ASCOM.Alpaca.Logging.LogVerbose($"Loaded {mode} override template");
+
                 return new Dictionary<string, object>(overrides);
             }
             finally
@@ -243,13 +239,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var property = settingsType.GetProperty(kvp.Key);
                 if (property == null)
                 {
-                    _logger.LogWarning("Override property '{Property}' not found in SkySettings", kvp.Key);
+                    ASCOM.Alpaca.Logging.LogWarning($"Override property '{kvp.Key}' not found in SkySettings");
                     continue;
                 }
                 
                 if (!property.CanWrite)
                 {
-                    _logger.LogWarning("Override property '{Property}' is read-only", kvp.Key);
+                    ASCOM.Alpaca.Logging.LogWarning($"Override property '{kvp.Key}' is read-only");
                     continue;
                 }
                 
@@ -261,12 +257,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     // Handle different property types - deep merge complex objects
                     var value = ConvertValue(kvp.Value, property.PropertyType, existingValue);
                     property.SetValue(merged, value);
-                    
-                    _logger.LogTrace("Applied override: {Property} = {Value}", kvp.Key, value);
+
+                    ASCOM.Alpaca.Logging.LogVerbose($"Applied override: {kvp.Key} = {value}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to apply override for '{Property}'", kvp.Key);
+                    ASCOM.Alpaca.Logging.LogError($"Failed to apply override for '{kvp.Key}': {ex.Message}");
                 }
             }
             
@@ -324,7 +320,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var propertyInfo = targetType.GetProperty(property.Name);
                 if (propertyInfo == null || !propertyInfo.CanWrite)
                 {
-                    _logger.LogTrace("Skipping override property '{Property}' - not found or read-only", property.Name);
+                    ASCOM.Alpaca.Logging.LogVerbose($"Skipping override property '{property.Name}' - not found or read-only");
                     continue;
                 }
                 
@@ -347,12 +343,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
                         // Set the value directly
                         var newValue = propertyValue.Deserialize(propertyInfo.PropertyType);
                         propertyInfo.SetValue(target, newValue);
-                        _logger.LogTrace("Merged property '{Property}' = {Value}", property.Name, newValue);
+                        ASCOM.Alpaca.Logging.LogVerbose($"Merged property '{property.Name}' = {newValue}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to merge property '{Property}'", property.Name);
+                    ASCOM.Alpaca.Logging.LogWarning($"Failed to merge property '{property.Name}': {ex.Message}");
                 }
             }
             
@@ -391,7 +387,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             using var stream = assembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                _logger.LogWarning("Embedded resource not found: {Resource}. Using fallback.", resourceName);
+                ASCOM.Alpaca.Logging.LogWarning($"Embedded resource not found: {resourceName}. Using fallback.");
                 return GetFallbackTemplate(fileName);
             }
             

@@ -30,4 +30,8 @@
     <ProjectReference Include="..\GreenSwamp.Alpaca.Shared\GreenSwamp.Alpaca.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Logging\" />
+  </ItemGroup>
+
 </Project>

@@ -16,7 +16,6 @@
 
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Text.Json;
 
@@ -31,7 +30,6 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private readonly string _currentVersionPath;
         private readonly string _versionFile;
         private readonly IConfiguration _configuration;
-        private readonly ILogger? _logger;
         private readonly IDeviceSynchronizationService _syncService;
         private static readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string? _customSettingsPath;
@@ -46,12 +44,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public VersionedSettingsService(
             IConfiguration configuration,
-            IDeviceSynchronizationService syncService,
-            ILogger? logger = null)
+            IDeviceSynchronizationService syncService)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _syncService = syncService ?? throw new ArgumentNullException(nameof(syncService));
-            _logger = logger;
 
             // Get current app version from assembly
             CurrentVersion = GetAssemblyVersion();
@@ -73,18 +69,15 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// Phase 4.2: Constructor with custom settings file path
         /// </summary>
         /// <param name="configuration">Configuration root</param>
-        /// <param name="logger">Logger instance</param>
         /// <param name="customSettingsPath">Custom path to settings file (overrides default)</param>
         /// <param name="syncService">Device synchronization service</param>
         public VersionedSettingsService(
             IConfiguration configuration,
-            ILogger? logger,
             string customSettingsPath,
             IDeviceSynchronizationService syncService)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _syncService = syncService ?? throw new ArgumentNullException(nameof(syncService));
-            _logger = logger;
             _customSettingsPath = customSettingsPath;
 
             if (!string.IsNullOrEmpty(_customSettingsPath))
@@ -101,7 +94,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
                 Directory.CreateDirectory(_currentVersionPath);
 
-                _logger?.LogInformation("Phase 4.2: Using custom settings path: {Path}", _customSettingsPath);
+                ASCOM.Alpaca.Logging.LogVerbose($"Phase 4.2: Using custom settings path: {_customSettingsPath}");
             }
             else
             {
@@ -131,60 +124,327 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// </summary>
         public List<SkySettings> GetAllDevices()
         {
+            // Call the validation overload and discard validation results
+            return GetAllDevices(out _);
+        }
+
+        /// <summary>
+        /// Gets all configured devices with detailed validation results
+        /// Invalid devices are quarantined (not included in returned list)
+        /// </summary>
+        public List<SkySettings> GetAllDevices(out ValidationResult validationResult)
+        {
+            validationResult = new ValidationResult { IsValid = true };
             var userSettingsPath = GetUserSettingsPath(CurrentVersion);
 
-            // If no user settings file exists, create default with single device
+            // Phase 1: File existence check
             if (!File.Exists(userSettingsPath))
             {
+                validationResult.Warnings.Add(new ValidationError
+                {
+                    ErrorCode = "FILE_NOT_FOUND",
+                    Severity = "info",
+                    Message = "User settings file not found. Creating default settings.",
+                    Resolution = "Automatic - default settings will be created.",
+                    IsAutoRepairable = true
+                });
+
+                LogSafe("INFO", "FILE_NOT_FOUND: Creating default settings");
                 CreateDefaultUserSettings(CurrentVersion);
                 return new List<SkySettings> { CreateDefaultDevice() };
             }
 
+            // Phase 2: File reading
+            string jsonContent;
             try
             {
-                var json = File.ReadAllText(userSettingsPath);
-                var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
-
-                // Phase 3 baseline: Strict validation - DO NOT overwrite existing files
-                if (doc == null || !doc.ContainsKey("Devices"))
-                {
-                    throw new InvalidOperationException(
-                        $"Settings file at '{userSettingsPath}' is missing the required 'Devices' array " +
-                        $"(invalid format for v1.0.0+). Please delete this file and restart the application " +
-                        $"to create a new configuration with the correct format.");
-                }
-
-                var devices = doc["Devices"].Deserialize<List<SkySettings>>();
-                if (devices == null || !devices.Any())
-                {
-                    throw new InvalidOperationException(
-                        $"Settings file at '{userSettingsPath}' has an empty 'Devices' array. " +
-                        $"Please delete this file and restart the application to create a new " +
-                        $"configuration with a default device.");
-                }
-
-                // Validate 1-to-1 synchronization with AlpacaDevices
-                if (!_syncService.ValidateSynchronization(doc)) 
-                {
-                     throw new InvalidOperationException(
-                        $"AlpacaDevices/Devices arrays out of sync in '{userSettingsPath}'. " +
-                        $"Please check the console log for details or delete this file to regenerate.");
-                }
-
-                _logger?.LogInformation("Loaded {Count} device(s)", devices.Count);
-                return devices;
+                jsonContent = File.ReadAllText(userSettingsPath);
             }
-            catch (InvalidOperationException)
+            catch (UnauthorizedAccessException ex)
             {
-                // Re-throw validation errors unchanged
-                throw;
+                validationResult.IsValid = false;
+                validationResult.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "FILE_ACCESS_DENIED",
+                    Severity = "error",
+                    Message = $"Cannot read settings file: {ex.Message}",
+                    Resolution = $"Check file permissions on {userSettingsPath}",
+                    IsAutoRepairable = false
+                });
+
+                LogSafe("ERROR", $"FILE_ACCESS_DENIED: {userSettingsPath} - {ex.Message}");
+                return new List<SkySettings> { CreateDefaultDevice() };
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
-                throw new InvalidOperationException(
-                    $"Error reading settings file at '{userSettingsPath}': {ex.Message}. " +
-                    $"The file may be corrupted. Please delete this file and restart the application " +
-                    $"to create a new configuration.", ex);
+                validationResult.IsValid = false;
+                validationResult.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "FILE_LOCKED",
+                    Severity = "warning",
+                    Message = $"Settings file is locked: {ex.Message}",
+                    Resolution = "Close other applications that may be using this file and retry.",
+                    IsAutoRepairable = false
+                });
+
+                LogSafe("WARNING", $"FILE_LOCKED: {userSettingsPath} - {ex.Message}");
+                return new List<SkySettings> { CreateDefaultDevice() };
+            }
+
+            // Phase 3: JSON parsing
+            Dictionary<string, JsonElement> doc;
+            try
+            {
+                doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent) ?? new Dictionary<string, JsonElement>();
+            }
+            catch (JsonException ex)
+            {
+                validationResult.IsValid = false;
+                validationResult.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "FILE_PARSE_ERROR",
+                    Severity = "error",
+                    Message = $"Settings file contains invalid JSON: {ex.Message}",
+                    Resolution = $"Delete {userSettingsPath} and restart to regenerate default settings.",
+                    IsAutoRepairable = false
+                });
+
+                LogSafe("ERROR", $"FILE_PARSE_ERROR: Invalid JSON in {userSettingsPath} - {ex.Message}");
+                return new List<SkySettings> { CreateDefaultDevice() };
+            }
+
+            // Phase 4: Structural validation
+            if (!doc.ContainsKey("Devices"))
+            {
+                validationResult.IsValid = false;
+                validationResult.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "MISSING_DEVICES_ARRAY",
+                    Severity = "error",
+                    Message = "Settings file missing 'Devices' array.",
+                    Resolution = "Use 'Repair Settings' button to regenerate structure.",
+                    IsAutoRepairable = true
+                });
+
+                LogSafe("ERROR", "MISSING_DEVICES_ARRAY: Settings file missing Devices array");
+                return new List<SkySettings> { CreateDefaultDevice() };
+            }
+
+            List<SkySettings>? devices;
+            try
+            {
+                devices = doc["Devices"].Deserialize<List<SkySettings>>();
+            }
+            catch (JsonException ex)
+            {
+                validationResult.IsValid = false;
+                validationResult.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "INVALID_ARRAY_TYPE",
+                    Severity = "error",
+                    Message = $"Devices array has invalid format: {ex.Message}",
+                    Resolution = "Use 'Repair Settings' button to regenerate Devices array.",
+                    IsAutoRepairable = true
+                });
+
+                LogSafe("ERROR", $"INVALID_ARRAY_TYPE: Cannot deserialize Devices array - {ex.Message}");
+                return new List<SkySettings> { CreateDefaultDevice() };
+            }
+
+            if (devices == null || !devices.Any())
+            {
+                validationResult.Warnings.Add(new ValidationError
+                {
+                    ErrorCode = "EMPTY_DEVICES_ARRAY",
+                    Severity = "warning",
+                    Message = "Devices array is empty. Creating default device.",
+                    Resolution = "Automatic - default device will be added.",
+                    IsAutoRepairable = true
+                });
+
+                LogSafe("WARNING", "EMPTY_DEVICES_ARRAY: No devices configured, creating default");
+                devices = new List<SkySettings> { CreateDefaultDevice() };
+                Task.Run(() => SaveAllDevicesAsync(devices)).Wait();
+            }
+
+            // Phase 5: Synchronization validation
+            var syncValidation = _syncService.ValidateSynchronizationDetailed(doc);
+            validationResult.Errors.AddRange(syncValidation.Errors);
+            validationResult.Warnings.AddRange(syncValidation.Warnings);
+
+            if (syncValidation.Errors.Any())
+            {
+                validationResult.IsValid = false;
+                LogSafe("ERROR", $"Array synchronization errors: {syncValidation.Errors.Count} found");
+            }
+
+            // Phase 6: Device-level validation
+            var validDevices = new List<SkySettings>();
+            var deviceNumbers = new HashSet<int>();
+
+            foreach (var device in devices)
+            {
+                var deviceValidation = ValidateDevice(device, deviceNumbers);
+
+                if (deviceValidation.HasErrors)
+                {
+                    validationResult.IsValid = false;
+                    validationResult.Errors.AddRange(deviceValidation.Errors);
+
+                    LogSafe("ERROR", $"Device {device.DeviceNumber} validation failed: {deviceValidation.Errors.Count} errors");
+
+                    // Quarantine invalid device (don't add to validDevices list)
+                    continue;
+                }
+
+                if (deviceValidation.HasWarnings)
+                {
+                    validationResult.Warnings.AddRange(deviceValidation.Warnings);
+                }
+
+                validDevices.Add(device);
+                deviceNumbers.Add(device.DeviceNumber);
+            }
+
+            LogSafe("INFO", $"Loaded {validDevices.Count} valid device(s), quarantined {devices.Count - validDevices.Count} invalid device(s)");
+
+            // Return only valid devices (invalid devices are quarantined)
+            return validDevices;
+        }
+
+        /// <summary>
+        /// Validates current settings without loading devices
+        /// </summary>
+        public ValidationResult ValidateSettings()
+        {
+            GetAllDevices(out var validationResult);
+            return validationResult;
+        }
+
+        /// <summary>
+        /// Gets the full path to the user settings file
+        /// </summary>
+        public string GetUserSettingsPath()
+        {
+            return GetUserSettingsPath(CurrentVersion);
+        }
+
+        /// <summary>
+        /// Validates individual device configuration
+        /// </summary>
+        private ValidationResult ValidateDevice(SkySettings device, HashSet<int> existingDeviceNumbers)
+        {
+            var result = new ValidationResult { IsValid = true };
+
+            // Rule 1: DeviceNumber uniqueness
+            if (existingDeviceNumbers.Contains(device.DeviceNumber))
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "DUPLICATE_DEVICE_NUMBER",
+                    Severity = "error",
+                    DeviceNumber = device.DeviceNumber,
+                    Message = $"DeviceNumber {device.DeviceNumber} appears multiple times in Devices array.",
+                    Resolution = "Remove duplicate device entries via Device Management UI.",
+                    IsAutoRepairable = false
+                });
+            }
+
+            // Rule 2: DeviceNumber >= 0
+            if (device.DeviceNumber < 0)
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "NEGATIVE_DEVICE_NUMBER",
+                    Severity = "error",
+                    DeviceNumber = device.DeviceNumber,
+                    Message = $"DeviceNumber must be >= 0, found: {device.DeviceNumber}",
+                    Resolution = "Edit device configuration to set valid DeviceNumber.",
+                    IsAutoRepairable = false
+                });
+            }
+
+            // Rule 3: DeviceName required
+            if (string.IsNullOrWhiteSpace(device.DeviceName))
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "MISSING_DEVICE_NAME",
+                    Severity = "error",
+                    DeviceNumber = device.DeviceNumber,
+                    Message = "DeviceName is required but was null or empty.",
+                    Resolution = "Use 'Repair Settings' to auto-generate device name.",
+                    IsAutoRepairable = true
+                });
+            }
+
+            // Rule 4: AlignmentMode validation (property is string containing enum name)
+            if (string.IsNullOrEmpty(device.AlignmentMode) || !Enum.TryParse<AlignmentMode>(device.AlignmentMode, out _))
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "INVALID_ALIGNMENT_MODE",
+                    Severity = "error",
+                    DeviceNumber = device.DeviceNumber,
+                    Message = $"AlignmentMode '{device.AlignmentMode}' is not valid. Expected: AltAz, GermanPolar, or Polar.",
+                    Resolution = "Use 'Repair Settings' to reset to default (GermanPolar).",
+                    IsAutoRepairable = true
+                });
+            }
+
+            // Rule 5: Mount validation (property is string, just check if null/empty)
+            if (string.IsNullOrEmpty(device.Mount))
+            {
+                result.IsValid = false;
+                result.Errors.Add(new ValidationError
+                {
+                    ErrorCode = "MISSING_MOUNT_TYPE",
+                    Severity = "error",
+                    DeviceNumber = device.DeviceNumber,
+                    Message = "Mount type is required but was null or empty.",
+                    Resolution = "Use 'Repair Settings' to reset to default (Simulator).",
+                    IsAutoRepairable = true
+                });
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Safe logging that works during early initialization (before MonitorQueue starts)
+        /// </summary>
+        private void LogSafe(string level, string message)
+        {
+            try
+            {
+                // Try ASCOM logging (standard pattern for this project)
+                switch (level.ToUpperInvariant())
+                {
+                    case "ERROR":
+                        ASCOM.Alpaca.Logging.LogError(message);
+                        break;
+                    case "WARNING":
+                        ASCOM.Alpaca.Logging.LogWarning(message);
+                        break;
+                    default:
+                        ASCOM.Alpaca.Logging.LogVerbose(message);
+                        break;
+                }
+            }
+            catch
+            {
+                // Fallback to Console for very early startup
+                var prefix = level switch
+                {
+                    "ERROR" => "❌ ERROR",
+                    "WARNING" => "⚠️ WARNING",
+                    _ => "ℹ️ INFO"
+                };
+                Console.WriteLine($"{prefix} [VersionedSettingsService]: {message}");
             }
         }
 
@@ -220,23 +480,23 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
                 if (doc == null || !doc.ContainsKey("AlpacaDevices"))
                 {
-                    _logger?.LogWarning("AlpacaDevices array not found in settings file");
+                    ASCOM.Alpaca.Logging.LogWarning("AlpacaDevices array not found in settings file");
                     return new List<AlpacaDevice>();
                 }
 
                 var alpacaDevices = doc["AlpacaDevices"].Deserialize<List<AlpacaDevice>>();
                 if (alpacaDevices == null)
                 {
-                    _logger?.LogWarning("Failed to deserialize AlpacaDevices array");
+                    ASCOM.Alpaca.Logging.LogWarning("Failed to deserialize AlpacaDevices array");
                     return new List<AlpacaDevice>();
                 }
 
-                _logger?.LogInformation("Loaded {Count} AlpacaDevice(s)", alpacaDevices.Count);
+                ASCOM.Alpaca.Logging.LogVerbose($"Loaded {alpacaDevices.Count} AlpacaDevice(s)");
                 return alpacaDevices;
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error reading AlpacaDevices from settings file");
+                ASCOM.Alpaca.Logging.LogError($"Error reading AlpacaDevices from settings file: {ex.Message}");
                 return new List<AlpacaDevice>();
             }
         }
@@ -265,7 +525,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 // Update version file
                 await File.WriteAllTextAsync(_versionFile, CurrentVersion);
 
-                _logger?.LogInformation("Saved {Count} device(s) to version {Version}", devices.Count, CurrentVersion);
+                ASCOM.Alpaca.Logging.LogVerbose($"Saved {devices.Count} device(s) to version {CurrentVersion}");
             }
             finally
             {
@@ -288,7 +548,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
             else
             {
-                _logger?.LogWarning("Devices:0 section not found in appsettings.json - using hardcoded defaults");
+                ASCOM.Alpaca.Logging.LogWarning("Devices:0 section not found in appsettings.json - using hardcoded defaults");
             }
 
             // Ensure device identification properties are set (Phase 3 required properties)
@@ -316,15 +576,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 if (existingIndex >= 0)
                 {
                     devices[existingIndex] = settings;
-                    _logger?.LogInformation("Updated device {DeviceNumber} ({DeviceName})", 
-                        settings.DeviceNumber, settings.DeviceName);
+                    ASCOM.Alpaca.Logging.LogVerbose($"Updated device {settings.DeviceNumber} ({settings.DeviceName})");
                 }
                 else
                 {
                     // Add new device
                     devices.Add(settings);
-                    _logger?.LogInformation("Added new device {DeviceNumber} ({DeviceName})", 
-                        settings.DeviceNumber, settings.DeviceName);
+                    ASCOM.Alpaca.Logging.LogVerbose($"Added new device {settings.DeviceNumber} ({settings.DeviceName})");
                 }
 
                 await SaveAllDevicesAsync(devices);
@@ -374,8 +632,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 // Update version file
                 await File.WriteAllTextAsync(_versionFile, CurrentVersion);
 
-                _logger?.LogInformation("Monitor settings saved to version {Version}", CurrentVersion);
-                
+                ASCOM.Alpaca.Logging.LogVerbose($"Monitor settings saved to version {CurrentVersion}");
+
                 // Raise settings changed event
                 MonitorSettingsChanged?.Invoke(this, settings);
             }
@@ -394,7 +652,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             if (!versions.Any())
             {
-                _logger?.LogInformation("No previous versions found for migration");
+                ASCOM.Alpaca.Logging.LogVerbose("No previous versions found for migration");
                 return false;
             }
 
@@ -405,10 +663,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
             var baselineVersion = new Version(1, 0, 0);
             if (previousVersionParsed < baselineVersion)
             {
-                _logger?.LogError(
-                    "Cannot migrate from pre-1.0.0 version {Previous}. Version 1.0.0 is the baseline. " +
-                    "Please delete the old settings file at {Path} and restart the application to create a new configuration.",
-                    previousVersion, GetUserSettingsPath(previousVersion));
+                ASCOM.Alpaca.Logging.LogError(
+                    $"Cannot migrate from pre-1.0.0 version {previousVersion}. Version 1.0.0 is the baseline. " +
+                    $"Please delete the old settings file at {GetUserSettingsPath(previousVersion)} and restart the application to create a new configuration.");
                 return false;
             }
 
@@ -421,8 +678,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             try
             {
-                _logger?.LogInformation("Migrating settings from {Previous} to {Current}", 
-                    previousVersion, CurrentVersion);
+                ASCOM.Alpaca.Logging.LogVerbose($"Migrating settings from {previousVersion} to {CurrentVersion}");
 
                 // Read previous version settings
                 var previousJson = await File.ReadAllTextAsync(previousSettingsPath);
@@ -436,17 +692,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 // Phase 3 baseline: All v1.0.0+ versions MUST have Devices array
                 if (!previousSettings.ContainsKey("Devices"))
                 {
-                    _logger?.LogError(
-                        "Previous version {Previous} settings file is missing 'Devices' array (invalid format). " +
-                        "Please delete {Path} and restart to create a new configuration.",
-                        previousVersion, previousSettingsPath);
+                    ASCOM.Alpaca.Logging.LogError(
+                        $"Previous version {previousVersion} settings file is missing 'Devices' array (invalid format). " +
+                        $"Please delete {previousSettingsPath} and restart to create a new configuration.");
                     return false;
                 }
 
                 var devicesToMigrate = previousSettings["Devices"].Deserialize<List<SkySettings>>();
                 if (devicesToMigrate == null || !devicesToMigrate.Any())
                 {
-                    _logger?.LogWarning("No devices found in previous version");
+                    ASCOM.Alpaca.Logging.LogWarning("No devices found in previous version");
                     return false;
                 }
 
@@ -458,15 +713,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 // Save all migrated devices
                 await SaveAllDevicesAsync(migratedDevices);
 
-                _logger?.LogInformation("Successfully migrated {Count} device(s) from version {Previous}", 
-                    migratedDevices.Count, previousVersion);
+                ASCOM.Alpaca.Logging.LogVerbose($"Successfully migrated {migratedDevices.Count} device(s) from version {previousVersion}");
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to migrate settings from version {Previous}", 
-                    previousVersion);
+                ASCOM.Alpaca.Logging.LogError($"Failed to migrate settings from version {previousVersion}: {ex.Message}");
                 return false;
             }
         }
@@ -474,7 +727,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         public async Task ResetToDefaultsAsync()
         {
             var userSettingsPath = GetUserSettingsPath(CurrentVersion);
-            
+
             if (File.Exists(userSettingsPath))
             {
                 // Backup before deleting
@@ -482,16 +735,215 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 File.Copy(userSettingsPath, backupPath, true);
                 File.Delete(userSettingsPath);
             }
-            
+
             CreateDefaultUserSettings(CurrentVersion);
-            
-            _logger?.LogInformation("Settings reset to defaults for version {Version}", CurrentVersion);
-            
+
+            ASCOM.Alpaca.Logging.LogVerbose($"Settings reset to defaults for version {CurrentVersion}");
+
             // Reload settings and notify
             var settings = GetSettings();
             SettingsChanged?.Invoke(this, settings);
-            
+
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Performs automatic repair of common settings errors
+        /// Creates backup before repair, restores on failure
+        /// </summary>
+        public async Task<RepairResult> RepairSettingsAsync()
+        {
+            var result = new RepairResult();
+
+            await _fileLock.WaitAsync();
+            try
+            {
+                var userSettingsPath = GetUserSettingsPath(CurrentVersion);
+
+                // Step 1: Create backup
+                var backupPath = CreateBackup(userSettingsPath);
+                result.BackupPath = backupPath;
+
+                LogSafe("INFO", $"Created backup: {backupPath}");
+
+                // Step 2: Load current settings (without validation to see raw data)
+                if (!File.Exists(userSettingsPath))
+                {
+                    result.Success = false;
+                    result.Message = "Settings file not found. Cannot repair.";
+                    return result;
+                }
+
+                string jsonContent;
+                try
+                {
+                    jsonContent = File.ReadAllText(userSettingsPath);
+                }
+                catch (Exception ex)
+                {
+                    result.Success = false;
+                    result.Message = $"Cannot read settings file: {ex.Message}";
+                    return result;
+                }
+
+                Dictionary<string, JsonElement> doc;
+                try
+                {
+                    doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent) 
+                        ?? new Dictionary<string, JsonElement>();
+                }
+                catch (JsonException ex)
+                {
+                    result.Success = false;
+                    result.Message = $"Settings file contains invalid JSON: {ex.Message}. Cannot auto-repair.";
+                    return result;
+                }
+
+                // Step 3: Repair Devices array
+                List<SkySettings> devices;
+                if (!doc.ContainsKey("Devices"))
+                {
+                    devices = new List<SkySettings> { CreateDefaultDevice() };
+                    result.ActionsPerformed.Add("Created Devices array (was missing)");
+                }
+                else
+                {
+                    try
+                    {
+                        devices = doc["Devices"].Deserialize<List<SkySettings>>() ?? new List<SkySettings>();
+                    }
+                    catch
+                    {
+                        devices = new List<SkySettings> { CreateDefaultDevice() };
+                        result.ActionsPerformed.Add("Regenerated Devices array (was corrupted)");
+                    }
+                }
+
+                if (!devices.Any())
+                {
+                    devices.Add(CreateDefaultDevice());
+                    result.ActionsPerformed.Add("Added default device (Devices array was empty)");
+                }
+
+                // Step 4: Fix device-level issues
+                foreach (var device in devices)
+                {
+                    var changed = false;
+
+                    // Fix missing DeviceName
+                    if (string.IsNullOrWhiteSpace(device.DeviceName))
+                    {
+                        device.DeviceName = $"Telescope {device.DeviceNumber}";
+                        result.ActionsPerformed.Add($"Set DeviceName for device {device.DeviceNumber}");
+                        changed = true;
+                    }
+
+                    // Fix invalid AlignmentMode (property is string, not enum)
+                    if (string.IsNullOrEmpty(device.AlignmentMode) || !Enum.TryParse<AlignmentMode>(device.AlignmentMode, out _))
+                    {
+                        device.AlignmentMode = AlignmentMode.GermanPolar.ToString();
+                        result.ActionsPerformed.Add($"Reset AlignmentMode for device {device.DeviceNumber} to GermanPolar");
+                        changed = true;
+                    }
+
+                    // Fix invalid Mount (property is string, validation logic needs Mount enum type)
+                    if (string.IsNullOrEmpty(device.Mount))
+                    {
+                        device.Mount = "Simulator";
+                        result.ActionsPerformed.Add($"Set Mount for device {device.DeviceNumber} to Simulator (was null/empty)");
+                        changed = true;
+                    }
+                    // Note: Mount enum validation happens in ValidateDevice(), which checks enum validity
+                    // If we need to validate Mount enum values, we'd need to know the Mount enum type
+                    // For now, we just ensure it's not null/empty
+
+                    if (changed)
+                    {
+                        result.DevicesRepaired++;
+                    }
+                }
+
+                // Step 5: Regenerate AlpacaDevices array from Devices
+                var alpacaDevices = new List<AlpacaDevice>();
+                foreach (var device in devices)
+                {
+                    alpacaDevices.Add(new AlpacaDevice
+                    {
+                        DeviceNumber = device.DeviceNumber,
+                        DeviceName = device.DeviceName ?? $"Telescope {device.DeviceNumber}",
+                        DeviceType = "Telescope",
+                        UniqueId = _syncService.GenerateUniqueId()
+                    });
+                }
+
+                result.ActionsPerformed.Add($"Regenerated AlpacaDevices array ({alpacaDevices.Count} entries)");
+
+                // Step 6: Write repaired settings
+                doc["Devices"] = JsonSerializer.SerializeToElement(devices);
+                doc["AlpacaDevices"] = JsonSerializer.SerializeToElement(alpacaDevices);
+                doc["Version"] = JsonSerializer.SerializeToElement(CurrentVersion);
+                doc["LastModified"] = JsonSerializer.SerializeToElement(DateTime.UtcNow);
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var repairedJson = JsonSerializer.Serialize(doc, options);
+                await File.WriteAllTextAsync(userSettingsPath, repairedJson);
+
+                // Step 7: Validate repaired settings
+                var validation = GetAllDevices(out var validationResult);
+
+                if (validationResult.IsValid)
+                {
+                    result.Success = true;
+                    result.Message = $"Settings repaired successfully. {result.ActionsPerformed.Count} actions performed.";
+                    LogSafe("INFO", result.Message);
+                }
+                else
+                {
+                    result.Success = false;
+                    result.Message = "Repair partially successful but validation still has errors.";
+                    result.RemainingErrors = validationResult.Errors;
+
+                    LogSafe("WARNING", $"Repair completed but {validationResult.Errors.Count} errors remain");
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.Message = $"Repair failed: {ex.Message}";
+
+                LogSafe("ERROR", $"Repair operation failed: {ex.Message}");
+
+                // Restore backup
+                if (!string.IsNullOrEmpty(result.BackupPath) && File.Exists(result.BackupPath))
+                {
+                    var userSettingsPath = GetUserSettingsPath(CurrentVersion);
+                    File.Copy(result.BackupPath, userSettingsPath, true);
+                    result.Message += " Backup restored.";
+                    LogSafe("INFO", "Backup restored after repair failure");
+                }
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a timestamped backup of the settings file
+        /// </summary>
+        private string CreateBackup(string settingsPath)
+        {
+            if (!File.Exists(settingsPath))
+            {
+                return string.Empty;
+            }
+
+            var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            var backupPath = settingsPath + $".backup-{timestamp}";
+            File.Copy(settingsPath, backupPath, true);
+            return backupPath;
         }
 
         private void InitializeVersionedSettings()
@@ -500,7 +952,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             if (File.Exists(userSettingsPath))
             {
-                _logger?.LogInformation("Using existing settings for version {Version}", CurrentVersion);
+                ASCOM.Alpaca.Logging.LogVerbose($"Using existing settings for version {CurrentVersion}");
                 return;
             }
 
@@ -510,8 +962,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var lastVersion = File.ReadAllText(_versionFile).Trim();
                 if (lastVersion != CurrentVersion)
                 {
-                    _logger?.LogInformation("Version change detected: {Old} ? {New}", 
-                        lastVersion, CurrentVersion);
+                    ASCOM.Alpaca.Logging.LogVerbose($"Version change detected: {lastVersion} ? {CurrentVersion}");
                 }
             }
 
@@ -548,7 +999,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             var json = JsonSerializer.Serialize(defaultSettings, options);
             File.WriteAllText(userSettingsPath, json);
 
-            _logger?.LogInformation("Created default settings with AlpacaDevices and Devices arrays for version {Version}", version);
+            ASCOM.Alpaca.Logging.LogVerbose($"Created default settings with AlpacaDevices and Devices arrays for version {version}");
         }
 
         private SkySettings ApplyMigrations(SkySettings settings, string fromVersion, string toVersion)
@@ -560,7 +1011,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             // Example: Migrate from 1.0 to 1.1
             if (from < new Version("1.1.0") && to >= new Version("1.1.0"))
             {
-                _logger?.LogInformation("Applying 1.0 ? 1.1 migration");
+                ASCOM.Alpaca.Logging.LogVerbose("Applying 1.0 ? 1.1 migration");
                 // Example: New setting added in 1.1
                 // if (settings.NewProperty == default) settings.NewProperty = defaultValue;
             }
@@ -568,7 +1019,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             // Example: Migrate from 1.1 to 2.0
             if (from < new Version("2.0.0") && to >= new Version("2.0.0"))
             {
-                _logger?.LogInformation("Applying 1.1 ? 2.0 migration");
+                ASCOM.Alpaca.Logging.LogVerbose("Applying 1.1 ? 2.0 migration");
                 // Example: Breaking changes in 2.0
             }
 
@@ -652,7 +1103,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Could not parse version from path: {Path}", path);
+                ASCOM.Alpaca.Logging.LogWarning($"Could not parse version from path: {path} - {ex.Message}");
             }
 
             // Fall back to current assembly version

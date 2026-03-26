@@ -73,7 +73,7 @@ namespace ASCOM.Alpaca
         {
             if (DeviceManager.Configuration.AllowDiscovery)
             {
-                Console.WriteLine("Starting discovery responder from defaults");
+                Logging.LogVerbose("Starting discovery responder from defaults");
 
                 DiscoveryResponder = new Responder(DeviceManager.Configuration.ServerPort, true, false, Logging.Log)
                 {
@@ -87,7 +87,7 @@ namespace ASCOM.Alpaca
         {
             if (DeviceManager.Configuration.AllowDiscovery)
             {
-                Console.WriteLine($"Starting Discovery on port: 32227");
+                Logging.LogVerbose($"Starting Discovery on port: 32227");
 
                 if (!Dns.GetHostAddresses(Dns.GetHostName()).Any(o => o.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6))
                 {
