@@ -32,6 +32,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private readonly string _versionFile;
         private readonly IConfiguration _configuration;
         private readonly ILogger? _logger;
+        private readonly IDeviceSynchronizationService _syncService;
         private static readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string? _customSettingsPath;
 
@@ -45,9 +46,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public VersionedSettingsService(
             IConfiguration configuration,
+            IDeviceSynchronizationService syncService,
             ILogger? logger = null)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _syncService = syncService ?? throw new ArgumentNullException(nameof(syncService));
             _logger = logger;
 
             // Get current app version from assembly
@@ -72,12 +75,15 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <param name="configuration">Configuration root</param>
         /// <param name="logger">Logger instance</param>
         /// <param name="customSettingsPath">Custom path to settings file (overrides default)</param>
+        /// <param name="syncService">Device synchronization service</param>
         public VersionedSettingsService(
             IConfiguration configuration,
             ILogger? logger,
-            string customSettingsPath)
+            string customSettingsPath,
+            IDeviceSynchronizationService syncService)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _syncService = syncService ?? throw new ArgumentNullException(nameof(syncService));
             _logger = logger;
             _customSettingsPath = customSettingsPath;
 
@@ -157,6 +163,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                         $"configuration with a default device.");
                 }
 
+                // Validate 1-to-1 synchronization with AlpacaDevices
+                if (!_syncService.ValidateSynchronization(doc)) 
+                {
+                     throw new InvalidOperationException(
+                        $"AlpacaDevices/Devices arrays out of sync in '{userSettingsPath}'. " +
+                        $"Please check the console log for details or delete this file to regenerate.");
+                }
+
                 _logger?.LogInformation("Loaded {Count} device(s)", devices.Count);
                 return devices;
             }
@@ -171,6 +185,59 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     $"Error reading settings file at '{userSettingsPath}': {ex.Message}. " +
                     $"The file may be corrupted. Please delete this file and restart the application " +
                     $"to create a new configuration.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets Alpaca device discovery metadata for all configured devices.
+        /// Returns list from AlpacaDevices array with DeviceNumber, DeviceName, DeviceType, and UniqueId.
+        /// </summary>
+        public List<AlpacaDevice> GetAlpacaDevices()
+        {
+            var userSettingsPath = GetUserSettingsPath(CurrentVersion);
+
+            // If no user settings file exists, create default
+            if (!File.Exists(userSettingsPath))
+            {
+                CreateDefaultUserSettings(CurrentVersion);
+                // Return default AlpacaDevice for device 0
+                return new List<AlpacaDevice>
+                {
+                    new AlpacaDevice
+                    {
+                        DeviceNumber = 0,
+                        DeviceName = "Telescope",
+                        DeviceType = "Telescope",
+                        UniqueId = Guid.NewGuid().ToString()
+                    }
+                };
+            }
+
+            try
+            {
+                var json = File.ReadAllText(userSettingsPath);
+                var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+
+                if (doc == null || !doc.ContainsKey("AlpacaDevices"))
+                {
+                    _logger?.LogWarning("AlpacaDevices array not found in settings file");
+                    return new List<AlpacaDevice>();
+                }
+
+                var alpacaDevices = doc["AlpacaDevices"].Deserialize<List<AlpacaDevice>>();
+                if (alpacaDevices == null)
+                {
+                    _logger?.LogWarning("Failed to deserialize AlpacaDevices array");
+                    return new List<AlpacaDevice>();
+                }
+
+                _logger?.LogInformation("Loaded {Count} AlpacaDevice(s)", alpacaDevices.Count);
+                return alpacaDevices;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error reading AlpacaDevices from settings file");
+                return new List<AlpacaDevice>();
             }
         }
 
@@ -261,6 +328,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 }
 
                 await SaveAllDevicesAsync(devices);
+
+                // Ensure AlpacaDevices entry synchronized
+                await _syncService.EnsureAlpacaDeviceEntryAsync(
+                    settings.DeviceNumber,
+                    settings.DeviceName);
 
                 // Raise settings changed event
                 SettingsChanged?.Invoke(this, settings);
@@ -457,6 +529,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             var defaultSettings = new
             {
+                AlpacaDevices = new[]
+                {
+                    new
+                    {
+                        DeviceNumber = 0,
+                        DeviceName = defaultDevice.DeviceName,
+                        DeviceType = "Telescope",
+                        UniqueId = Guid.NewGuid().ToString()
+                    }
+                },
                 Devices = devices,
                 Version = version,
                 CreatedDate = DateTime.UtcNow
@@ -466,7 +548,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             var json = JsonSerializer.Serialize(defaultSettings, options);
             File.WriteAllText(userSettingsPath, json);
 
-            _logger?.LogInformation("Created default settings with Devices array for version {Version}", version);
+            _logger?.LogInformation("Created default settings with AlpacaDevices and Devices arrays for version {Version}", version);
         }
 
         private SkySettings ApplyMigrations(SkySettings settings, string fromVersion, string toVersion)

@@ -39,13 +39,6 @@ namespace GreenSwamp.Alpaca.Server.Models
         public string DeviceName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Name of the settings profile to load (without .json extension)
-        /// </summary>
-        /// <example>simulator-polar</example>
-        [Required(ErrorMessage = "Profile name is required")]
-        public string ProfileName { get; set; } = string.Empty;
-
-        /// <summary>
         /// Optional unique identifier. Generated automatically if not provided.
         /// </summary>
         /// <example>sim-polar-12345678-1234-1234-1234-123456789abc</example>

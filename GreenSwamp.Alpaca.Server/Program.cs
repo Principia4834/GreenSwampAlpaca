@@ -147,16 +147,15 @@ namespace GreenSwamp.Alpaca.Server
             // Register all settings services (VersionedSettings, Template, Profile)
             builder.Services.AddVersionedSettings(builder.Configuration);
 
-            // Configure Server Settings from configuration with profile support
+            // Configure Server Settings from configuration
             builder.Services.AddSingleton(sp =>
             {
-                // Phase 4.2: Create instance with profile loading support
+                // Phase 4.2: Create instance with settings service
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
-                var profileLoader = sp.GetService<IProfileLoaderService>(); // Optional - may be null
-                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService, profileLoader);
+                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
             });
             Logger.LogInformation("✅ Phase 4.2: SkySettingsInstance registered in DI container");
-            Logger.LogInformation("✅ Settings services registered: VersionedSettings, Template, Profile");
+            Logger.LogInformation("✅ Settings services registered: VersionedSettings, Template");
             #endregion Startup and Logging
 
             //ToDo you can add devices here
@@ -248,9 +247,6 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogInformation("✅ Monitor filters loaded");
                 Logger.LogInformation($"📁 Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
 
-                // Phase 4.2: Create profile loader for per-device SkySettingsInstance construction
-                var profileLoader = app.Services.GetService<IProfileLoaderService>();
-
                 // Phase 3 baseline (v1.0.0+): Load all devices from settings service (Devices array in appsettings.user.json)
                 var allDevices = settingsService.GetAllDevices();
                 var enabledDevices = allDevices.Where(d => d.Enabled).ToList();
@@ -266,6 +262,10 @@ namespace GreenSwamp.Alpaca.Server
 
                 Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
 
+                // Get AlpacaDevices array to obtain correct UniqueIds
+                var alpacaDevices = settingsService.GetAlpacaDevices();
+                var alpacaDeviceMap = alpacaDevices.ToDictionary(d => d.DeviceNumber);
+
                 // Register each enabled device
                 foreach (var device in enabledDevices)
                 {
@@ -274,12 +274,22 @@ namespace GreenSwamp.Alpaca.Server
                         // Phase 3 baseline (v1.0.0+): Pass device settings directly to constructor
                         var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(
                             device,              // Device-specific configuration (all 137 properties)
-                            settingsService,     // Settings service for persistence
-                            profileLoader        // Optional profile loader
+                            settingsService      // Settings service for persistence
                         );
 
-                        // Register device with its unique ID
-                        var uniqueId = $"device-{device.DeviceNumber}-{Guid.NewGuid():N}";
+                        // Get UniqueId from AlpacaDevices array (or generate if missing)
+                        string uniqueId;
+                        if (alpacaDeviceMap.TryGetValue(device.DeviceNumber, out var alpacaDevice))
+                        {
+                            uniqueId = alpacaDevice.UniqueId;
+                            Logger.LogInformation($"Using UniqueId from AlpacaDevices: {uniqueId}");
+                        }
+                        else
+                        {
+                            // Fallback: generate new GUID if AlpacaDevice entry missing
+                            uniqueId = Guid.NewGuid().ToString();
+                            Logger.LogWarning($"AlpacaDevice entry not found for device {device.DeviceNumber}, generated new UniqueId: {uniqueId}");
+                        }
 
                         GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.RegisterDevice(
                             device.DeviceNumber,

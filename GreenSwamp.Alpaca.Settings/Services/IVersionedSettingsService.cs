@@ -35,6 +35,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
         List<SkySettings> GetAllDevices();
 
         /// <summary>
+        /// Gets Alpaca device discovery metadata for all configured devices
+        /// Returns list of AlpacaDevices with DeviceNumber, DeviceName, DeviceType, and UniqueId
+        /// </summary>
+        List<GreenSwamp.Alpaca.Settings.Services.AlpacaDevice> GetAlpacaDevices();
+
+        /// <summary>
         /// Saves settings to the current version folder
         /// </summary>
         Task SaveSettingsAsync(SkySettings settings);

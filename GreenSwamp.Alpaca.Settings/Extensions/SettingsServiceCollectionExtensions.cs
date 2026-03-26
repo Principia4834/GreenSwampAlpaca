@@ -36,22 +36,20 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
+            // Register device synchronization service as singleton (must be before VersionedSettingsService)
+            services.AddSingleton<IDeviceSynchronizationService, DeviceSynchronizationService>();
+
             // Register the versioned settings service as singleton
             services.AddSingleton<IVersionedSettingsService>(sp =>
             {
                 var loggerFactory = sp.GetService<ILoggerFactory>();
                 var logger = loggerFactory?.CreateLogger(typeof(VersionedSettingsService).FullName ?? "VersionedSettingsService");
-                return new VersionedSettingsService(configuration, logger);
+                var syncService = sp.GetRequiredService<IDeviceSynchronizationService>();
+                return new VersionedSettingsService(configuration, syncService, logger);
             });
-            
+
             // Register template service as singleton
             services.AddSingleton<ISettingsTemplateService, SettingsTemplateService>();
-            
-            // Register profile service as singleton
-            services.AddSingleton<ISettingsProfileService, SettingsProfileService>();
-            
-            // Register profile loader service as singleton
-            services.AddSingleton<IProfileLoaderService, ProfileLoaderService>();
 
             return services;
         }

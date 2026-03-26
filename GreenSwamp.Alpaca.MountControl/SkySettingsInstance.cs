@@ -40,7 +40,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // Services
         private readonly IVersionedSettingsService _settingsService;
-        private readonly IProfileLoaderService? _profileLoaderService;
         private CancellationTokenSource? _saveCts;
 
         // Connection & Mount Settings (20 fields)
@@ -200,14 +199,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="deviceSettings">Complete device configuration (all 137 properties)</param>
         /// <param name="settingsService">Settings service for persistence (DI)</param>
-        /// <param name="profileLoaderService">Optional profile loader (DI)</param>
         public SkySettingsInstance(
             Settings.Models.SkySettings deviceSettings,
-            IVersionedSettingsService settingsService,
-            IProfileLoaderService? profileLoaderService = null)
+            IVersionedSettingsService settingsService)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-            _profileLoaderService = profileLoaderService;
 
             // Phase 3: Apply device-specific settings directly (no auto-load from Device 0)
             ApplySettings(deviceSettings ?? throw new ArgumentNullException(nameof(deviceSettings)));
@@ -219,16 +215,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Creates instance with auto-load from settings service (backward compatibility)
         /// </summary>
         /// <param name="settingsService">Required: Settings service for JSON persistence</param>
-        /// <param name="profileLoaderService">Optional: Profile loader service (null for backward compatibility)</param>
         public SkySettingsInstance(
-            IVersionedSettingsService settingsService,
-            IProfileLoaderService? profileLoaderService = null)
+            IVersionedSettingsService settingsService)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-            _profileLoaderService = profileLoaderService;
 
-            // Load settings from profile or JSON (uses first device for backward compatibility)
-            var settings = LoadSettingsFromSource();
+            // Load settings from JSON (uses first device for backward compatibility)
+            var settings = _settingsService.GetSettings();
 
             // Apply settings to instance fields
             ApplySettings(settings);
@@ -1807,31 +1800,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Load settings from active profile or fall back to JSON
         /// </summary>
         /// <returns>Settings model from profile or JSON</returns>
-        private Settings.Models.SkySettings LoadSettingsFromSource()
-        {
-            // Try to load from active profile first
-            if (_profileLoaderService != null)
-            {
-                try
-                {
-                    var profileSettings = _profileLoaderService.LoadActiveProfileAsync()
-                        .GetAwaiter()
-                        .GetResult();
-
-                    LogSettings("LoadedFromProfile", $"Active profile loaded successfully");
-                    return profileSettings;
-                }
-                catch (Exception ex)
-                {
-                    // Log failure and fall back to JSON
-                    LogSettings("ProfileLoadFailed", $"Falling back to JSON: {ex.Message}");
-                }
-            }
-
-            // Fall back to JSON (backward compatibility or no profile service)
-            return _settingsService.GetSettings();
-        }
-
         /// <summary>
         /// Apply settings from SkySettings model to instance fields
         /// This is the single source of truth for all settings mapping
