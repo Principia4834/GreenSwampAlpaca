@@ -188,7 +188,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 });
 
                 LogSafe("WARNING", $"FILE_LOCKED: {userSettingsPath} - {ex.Message}");
-                return new List<SkySettings> { CreateDefaultDevice() };
+                // Issue 1.3 Fix: Return empty list for file access errors (no devices advertised per FR-18)
+                return new List<SkySettings>();
             }
 
             // Phase 3: JSON parsing
@@ -210,7 +211,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 });
 
                 LogSafe("ERROR", $"FILE_PARSE_ERROR: Invalid JSON in {userSettingsPath} - {ex.Message}");
-                return new List<SkySettings> { CreateDefaultDevice() };
+                // Issue 1.3 Fix: Return empty list for structural errors (no devices advertised per FR-18)
+                return new List<SkySettings>();
             }
 
             // Phase 4: Structural validation
@@ -227,7 +229,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 });
 
                 LogSafe("ERROR", "MISSING_DEVICES_ARRAY: Settings file missing Devices array");
-                return new List<SkySettings> { CreateDefaultDevice() };
+                // Issue 1.3 Fix: Return empty list for structural errors (no devices advertised per FR-18)
+                return new List<SkySettings>();
             }
 
             List<SkySettings>? devices;
@@ -248,7 +251,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 });
 
                 LogSafe("ERROR", $"INVALID_ARRAY_TYPE: Cannot deserialize Devices array - {ex.Message}");
-                return new List<SkySettings> { CreateDefaultDevice() };
+                // Issue 1.3 Fix: Return empty list for structural errors (no devices advertised per FR-18)
+                return new List<SkySettings>();
             }
 
             if (devices == null || !devices.Any())

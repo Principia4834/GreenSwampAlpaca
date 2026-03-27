@@ -6,7 +6,6 @@
 @using GreenSwamp.Alpaca.Settings.Services
 @using System.Text.Json
 @inject IVersionedSettingsService SettingsService
-@inject ILogger<MountSettings> Logger
 
 <PageTitle>Mount Settings</PageTitle>
 
@@ -781,13 +780,11 @@
             await SettingsService.SaveSettingsAsync(_settings);
             _message = "Settings saved successfully!";
             _isError = false;
-            Logger.LogInformation("Settings saved by user");
         }
         catch (Exception ex)
         {
             _message = $"Error saving settings: {ex.Message}";
             _isError = true;
-            Logger.LogError(ex, "Failed to save settings");
         }
         finally
         {

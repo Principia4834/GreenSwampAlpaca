@@ -4,7 +4,6 @@
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.MountControl
 @inject IVersionedSettingsService SettingsService
-@inject ILogger<DeviceManager> Logger
 @implements IDisposable
 
 <PageTitle>Device Manager</PageTitle>
@@ -164,13 +163,10 @@
             errorMessage = null;
 
             _devices = SettingsService.GetAllDevices();
-
-            Logger.LogInformation("Phase 3: Loaded {Count} device(s) from settings", _devices.Count);
         }
         catch (Exception ex)
         {
             errorMessage = $"Failed to load devices: {ex.Message}";
-            Logger.LogError(ex, "Failed to load devices from settings service");
         }
         finally
         {
@@ -196,13 +192,11 @@
             }
 
             instance.SetConnected(_clientId, true);
-            Logger.LogInformation("Device {DeviceNumber} connected by client {ClientId}", deviceNumber, _clientId);
             StateHasChanged();
         }
         catch (Exception ex)
         {
             errorMessage = $"Failed to connect device {deviceNumber}: {ex.Message}";
-            Logger.LogError(ex, "Failed to connect device {DeviceNumber}", deviceNumber);
         }
     }
 
@@ -218,13 +212,11 @@
             }
 
             instance.SetConnected(_clientId, false);
-            Logger.LogInformation("Device {DeviceNumber} disconnected by client {ClientId}", deviceNumber, _clientId);
             StateHasChanged();
         }
         catch (Exception ex)
         {
             errorMessage = $"Failed to disconnect device {deviceNumber}: {ex.Message}";
-            Logger.LogError(ex, "Failed to disconnect device {DeviceNumber}", deviceNumber);
         }
     }
 

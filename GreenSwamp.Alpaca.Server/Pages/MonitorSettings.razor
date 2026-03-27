@@ -5,7 +5,6 @@
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.Settings.Services
 @inject IVersionedSettingsService SettingsService
-@inject ILogger<MonitorSettings> Logger
 
 <PageTitle>Monitor Settings</PageTitle>
 
@@ -448,19 +447,17 @@
         try
         {
             await SettingsService.SaveMonitorSettingsAsync(_settings);
-            
+
             // Also update the MonitorLog settings immediately
             GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
-            
+
             _message = "Monitor settings saved successfully! Changes applied immediately.";
             _isError = false;
-            Logger.LogInformation("Monitor settings saved and applied by user");
         }
         catch (Exception ex)
         {
             _message = $"Error saving settings: {ex.Message}";
             _isError = true;
-            Logger.LogError(ex, "Failed to save monitor settings");
         }
         finally
         {

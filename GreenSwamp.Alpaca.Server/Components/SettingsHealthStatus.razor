@@ -1,0 +1,353 @@
+@using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Settings.Models
+@inject IVersionedSettingsService SettingsService
+
+@* Settings Health Status Component - displays validation errors and repair options *@
+
+<div class="card @(_validationResult?.HasErrors == true ? "border-danger" : _validationResult?.HasWarnings == true ? "border-warning" : "border-success")">
+    <div class="card-header @(_validationResult?.HasErrors == true ? "bg-danger text-white" : _validationResult?.HasWarnings == true ? "bg-warning" : "bg-success text-white")">
+        <h5 class="mb-0">
+            <span class="oi oi-@(_validationResult?.HasErrors == true ? "warning" : _validationResult?.HasWarnings == true ? "info" : "check") me-2" aria-hidden="true"></span>
+            Settings Health Status
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (_loading)
+        {
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">Validating...</span>
+                </div>
+                <span>Validating settings...</span>
+            </div>
+        }
+        else if (_validationResult != null)
+        {
+            <!-- Status Summary -->
+            <div class="mb-3">
+                @if (_validationResult.IsValid)
+                {
+                    <div class="alert alert-success mb-0" role="alert">
+                        <span class="oi oi-check me-2" aria-hidden="true"></span>
+                        <strong>All settings are valid.</strong>
+                        @if (_validationResult.HasWarnings)
+                        {
+                            <span>(@_validationResult.Warnings.Count warning(s))</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger mb-0" role="alert">
+                        <span class="oi oi-warning me-2" aria-hidden="true"></span>
+                        <strong>Settings validation failed.</strong>
+                        <span>@_validationResult.Errors.Count error(s) found.</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Settings File Path -->
+            <div class="mb-3">
+                <small class="text-muted">
+                    <strong>Settings file:</strong> <code>@SettingsService.GetUserSettingsPath()</code>
+                </small>
+            </div>
+
+            <!-- Errors Section -->
+            @if (_validationResult.HasErrors)
+            {
+                <div class="mb-3">
+                    <h6 class="text-danger">
+                        <span class="oi oi-x me-1" aria-hidden="true"></span>
+                        Errors (@_validationResult.Errors.Count)
+                    </h6>
+                    <div class="list-group">
+                        @foreach (var error in _validationResult.Errors)
+                        {
+                            <div class="list-group-item list-group-item-danger">
+                                <div class="d-flex w-100 justify-content-between align-items-start">
+                                    <h6 class="mb-1">
+                                        <span class="badge bg-danger">@error.ErrorCode</span>
+                                        @if (error.DeviceNumber.HasValue)
+                                        {
+                                            <span class="badge bg-secondary">Device @error.DeviceNumber</span>
+                                        }
+                                    </h6>
+                                    @if (error.IsAutoRepairable)
+                                    {
+                                        <span class="badge bg-info">Auto-repairable</span>
+                                    }
+                                </div>
+                                <p class="mb-1">@error.Message</p>
+                                <small class="text-muted">
+                                    <strong>Resolution:</strong> @error.Resolution
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Warnings Section -->
+            @if (_validationResult.HasWarnings)
+            {
+                <div class="mb-3">
+                    <h6 class="text-warning">
+                        <span class="oi oi-info me-1" aria-hidden="true"></span>
+                        Warnings (@_validationResult.Warnings.Count)
+                    </h6>
+                    <div class="list-group">
+                        @foreach (var warning in _validationResult.Warnings)
+                        {
+                            <div class="list-group-item list-group-item-warning">
+                                <div class="d-flex w-100 justify-content-between align-items-start">
+                                    <h6 class="mb-1">
+                                        <span class="badge bg-warning text-dark">@warning.ErrorCode</span>
+                                        @if (warning.DeviceNumber.HasValue)
+                                        {
+                                            <span class="badge bg-secondary">Device @warning.DeviceNumber</span>
+                                        }
+                                    </h6>
+                                    @if (warning.IsAutoRepairable)
+                                    {
+                                        <span class="badge bg-info">Auto-repairable</span>
+                                    }
+                                </div>
+                                <p class="mb-1">@warning.Message</p>
+                                <small class="text-muted">
+                                    <strong>Resolution:</strong> @warning.Resolution
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Repair Button Section -->
+            @if (_validationResult.Errors.Any(e => e.IsAutoRepairable) || _validationResult.Warnings.Any(w => w.IsAutoRepairable))
+            {
+                <div class="d-grid gap-2">
+                    <button class="btn btn-warning btn-lg" @onclick="RepairSettings" disabled="@_repairing">
+                        @if (_repairing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Repairing...</span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-wrench me-2" aria-hidden="true"></span>
+                            <span>Repair Settings Automatically</span>
+                        }
+                    </button>
+                    <small class="text-muted text-center">
+                        <span class="oi oi-info me-1" aria-hidden="true"></span>
+                        A backup will be created before making any changes.
+                    </small>
+                </div>
+            }
+
+            <!-- Repair Result Section -->
+            @if (_repairResult != null)
+            {
+                <div class="mt-3">
+                    @if (_repairResult.Success)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <h6 class="alert-heading">
+                                <span class="oi oi-check me-2" aria-hidden="true"></span>
+                                Repair Successful
+                            </h6>
+                            <p class="mb-2">@_repairResult.Message</p>
+                            
+                            @if (_repairResult.ActionsPerformed.Any())
+                            {
+                                <hr />
+                                <h6>Actions Performed:</h6>
+                                <ul class="mb-2">
+                                    @foreach (var action in _repairResult.ActionsPerformed)
+                                    {
+                                        <li>@action</li>
+                                    }
+                                </ul>
+                            }
+
+                            @if (_repairResult.DevicesRepaired > 0)
+                            {
+                                <p class="mb-2">
+                                    <strong>Devices repaired:</strong> @_repairResult.DevicesRepaired
+                                </p>
+                            }
+
+                            @if (!string.IsNullOrEmpty(_repairResult.BackupPath))
+                            {
+                                <small class="text-muted">
+                                    <strong>Backup saved to:</strong> <code>@_repairResult.BackupPath</code>
+                                </small>
+                            }
+
+                            @if (_repairResult.RemainingErrors.Any())
+                            {
+                                <hr />
+                                <div class="alert alert-warning mb-0">
+                                    <h6 class="alert-heading">Remaining Issues (@_repairResult.RemainingErrors.Count)</h6>
+                                    <ul class="mb-0">
+                                        @foreach (var error in _repairResult.RemainingErrors)
+                                        {
+                                            <li><strong>[@error.ErrorCode]</strong> @error.Message</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h6 class="alert-heading">
+                                <span class="oi oi-warning me-2" aria-hidden="true"></span>
+                                Repair Failed
+                            </h6>
+                            <p class="mb-0">@_repairResult.Message</p>
+                            @if (!string.IsNullOrEmpty(_repairResult.BackupPath))
+                            {
+                                <hr />
+                                <small class="text-muted">
+                                    Settings were restored from backup: <code>@_repairResult.BackupPath</code>
+                                </small>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-outline-primary" @onclick="RefreshValidation" disabled="@_loading">
+                    <span class="oi oi-reload me-1" aria-hidden="true"></span>
+                    Re-validate
+                </button>
+                <button class="btn btn-outline-info" @onclick="OpenSettingsFile">
+                    <span class="oi oi-folder-open me-1" aria-hidden="true"></span>
+                    Open Settings Folder
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning" role="alert">
+                <span class="oi oi-warning me-2" aria-hidden="true"></span>
+                Unable to validate settings. Click <strong>Re-validate</strong> to try again.
+            </div>
+            <button class="btn btn-primary" @onclick="RefreshValidation">
+                <span class="oi oi-reload me-1" aria-hidden="true"></span>
+                Re-validate
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    private ValidationResult? _validationResult;
+    private RepairResult? _repairResult;
+    private bool _loading = true;
+    private bool _repairing = false;
+
+    protected override void OnInitialized()
+    {
+        ValidateSettings();
+    }
+
+    private void ValidateSettings()
+    {
+        _loading = true;
+        _repairResult = null; // Clear previous repair result
+        StateHasChanged();
+
+        try
+        {
+            _validationResult = SettingsService.ValidateSettings();
+        }
+        catch (Exception ex)
+        {
+            _validationResult = new ValidationResult
+            {
+                IsValid = false,
+                ErrorMessage = $"Validation error: {ex.Message}"
+            };
+            _validationResult.Errors.Add(new ValidationError
+            {
+                ErrorCode = "VALIDATION_EXCEPTION",
+                Severity = "error",
+                Message = $"An unexpected error occurred during validation: {ex.Message}",
+                Resolution = "Check application logs for details.",
+                IsAutoRepairable = false
+            });
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RepairSettings()
+    {
+        _repairing = true;
+        _repairResult = null;
+        StateHasChanged();
+
+        try
+        {
+            _repairResult = await SettingsService.RepairSettingsAsync();
+
+            // Re-validate after repair
+            ValidateSettings();
+        }
+        catch (Exception ex)
+        {
+            _repairResult = new RepairResult
+            {
+                Success = false,
+                Message = $"Repair failed with exception: {ex.Message}"
+            };
+        }
+        finally
+        {
+            _repairing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void RefreshValidation()
+    {
+        ValidateSettings();
+    }
+
+    private void OpenSettingsFile()
+    {
+        try
+        {
+            var settingsPath = SettingsService.GetUserSettingsPath();
+            var directory = System.IO.Path.GetDirectoryName(settingsPath);
+            
+            if (!string.IsNullOrEmpty(directory) && System.IO.Directory.Exists(directory))
+            {
+                // Open the folder containing the settings file
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = directory,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+            else
+            {
+                // Settings directory doesn't exist yet
+            }
+        }
+        catch (Exception ex)
+        {
+            // Silently fail - non-critical UI operation
+        }
+    }
+}

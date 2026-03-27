@@ -16,6 +16,7 @@
 
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+using System.Text.Json;
 
 namespace GreenSwamp.Alpaca.Settings.Extensions
 {
@@ -64,8 +65,79 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
                 appVersion, 
                 "appsettings.user.json");
 
+            // Issue 5.1 Fix: Validate JSON file before loading
+            // Empty files (0 bytes) or corrupt JSON will cause AddJsonFile to throw unhandled exceptions
+            // This pre-validation ensures graceful handling of invalid files
+            if (File.Exists(userSettingsPath))
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(userSettingsPath);
+
+                    // Check for empty file (0 bytes)
+                    if (fileInfo.Length == 0)
+                    {
+                        // Write minimal valid JSON to allow configuration system to load
+                        File.WriteAllText(userSettingsPath, "{}");
+                        ASCOM.Alpaca.Logging.LogWarning($"Empty settings file detected at {userSettingsPath}, wrote minimal JSON");
+                    }
+                    else
+                    {
+                        // Verify file contains valid JSON
+                        var content = File.ReadAllText(userSettingsPath);
+
+                        if (string.IsNullOrWhiteSpace(content))
+                        {
+                            // File contains only whitespace
+                            File.WriteAllText(userSettingsPath, "{}");
+                            ASCOM.Alpaca.Logging.LogWarning($"Whitespace-only settings file at {userSettingsPath}, wrote minimal JSON");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                // Test JSON parsing (JsonDocument is faster than full deserialization)
+                                using var doc = JsonDocument.Parse(content);
+                                // Valid JSON - proceed normally
+                            }
+                            catch (JsonException ex)
+                            {
+                                // Corrupt JSON - backup and create new file
+                                var backupPath = $"{userSettingsPath}.corrupted.{DateTime.Now:yyyyMMdd-HHmmss}";
+                                File.Move(userSettingsPath, backupPath);
+                                File.WriteAllText(userSettingsPath, "{}");
+
+                                ASCOM.Alpaca.Logging.LogError($"Corrupt JSON detected at {userSettingsPath}: {ex.Message}");
+                                ASCOM.Alpaca.Logging.LogWarning($"Backed up corrupt file to {backupPath}");
+                                ASCOM.Alpaca.Logging.LogWarning("Created new minimal settings file");
+                            }
+                        }
+                    }
+                }
+                catch (IOException ioEx)
+                {
+                    // File access error - log but allow AddJsonFile to handle with optional: true
+                    ASCOM.Alpaca.Logging.LogError($"Cannot access settings file at {userSettingsPath}: {ioEx.Message}");
+                }
+                catch (UnauthorizedAccessException uaEx)
+                {
+                    // Permission error - log but allow AddJsonFile to handle with optional: true
+                    ASCOM.Alpaca.Logging.LogError($"Permission denied accessing settings file at {userSettingsPath}: {uaEx.Message}");
+                }
+            }
+
             // Add the versioned user settings file
-            builder.AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
+            // Wrap in try-catch as safety net (pre-validation above should prevent most errors)
+            try
+            {
+                builder.AddJsonFile(userSettingsPath, optional: true, reloadOnChange: true);
+            }
+            catch (Exception ex)
+            {
+                // Last-resort error handling - log and continue with defaults
+                ASCOM.Alpaca.Logging.LogError($"Failed to load settings file {userSettingsPath}: {ex.Message}");
+                ASCOM.Alpaca.Logging.LogWarning("Application will continue with default settings");
+            }
 
             return builder;
         }

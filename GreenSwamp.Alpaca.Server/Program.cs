@@ -247,24 +247,63 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogInformation("Monitor filters loaded");
                 Logger.LogInformation($"Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
 
+                // Step 9: Validate settings at startup and log results
+                Logger.LogInformation("Validating settings at startup...");
+                var validationResult = settingsService.ValidateSettings();
+
+                if (validationResult.IsValid)
+                {
+                    if (validationResult.HasWarnings)
+                    {
+                        Logger.LogWarning($"Settings validation completed with {validationResult.Warnings.Count} warning(s):");
+                        foreach (var warning in validationResult.Warnings)
+                        {
+                            var deviceInfo = warning.DeviceNumber.HasValue ? $" [Device {warning.DeviceNumber}]" : "";
+                            Logger.LogWarning($"  {warning.ErrorCode}{deviceInfo}: {warning.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("Settings validation: All settings are valid");
+                    }
+                }
+                else
+                {
+                    Logger.LogError($"Settings validation failed with {validationResult.Errors.Count} error(s):");
+                    foreach (var error in validationResult.Errors)
+                    {
+                        var deviceInfo = error.DeviceNumber.HasValue ? $" [Device {error.DeviceNumber}]" : "";
+                        Logger.LogError($"  {error.ErrorCode}{deviceInfo}: {error.Message}");
+                        Logger.LogError($"    Resolution: {error.Resolution}");
+                    }
+
+                    Logger.LogWarning("Invalid devices will be quarantined and not advertised to ASCOM clients");
+                    Logger.LogWarning("Visit /settings-health in the web UI to view details and repair settings");
+                }
+
                 // Phase 3 baseline (v1.0.0+): Load all devices from settings service (Devices array in appsettings.user.json)
+                // Note: GetAllDevices() automatically quarantines invalid devices based on validation results
                 var allDevices = settingsService.GetAllDevices();
                 var enabledDevices = allDevices.Where(d => d.Enabled).ToList();
 
                 if (!enabledDevices.Any())
                 {
-                    Logger.LogWarning("No enabled devices found in settings");
-                    throw new InvalidOperationException(
-                        "At least one device must be enabled in appsettings.user.json. " +
-                        "If the file is corrupted or has invalid format, delete it from %AppData%/GreenSwampAlpaca/{version}/ " +
-                        "and restart to regenerate defaults.");
+                    Logger.LogWarning("No valid enabled devices found in settings");
+                    Logger.LogWarning("Application will continue running with no active devices");
+                    Logger.LogWarning("Visit /settings-health in the web UI to view and repair configuration errors");
+                    // Continue execution without throwing - graceful degradation
                 }
-
-                Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
+                else
+                {
+                    Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
+                }
 
                 // Get AlpacaDevices array to obtain correct UniqueIds
                 var alpacaDevices = settingsService.GetAlpacaDevices();
                 var alpacaDeviceMap = alpacaDevices.ToDictionary(d => d.DeviceNumber);
+
+                // Track successful registrations for SkyServer initialization
+                int registeredDeviceCount = 0;
 
                 // Register each enabled device
                 foreach (var device in enabledDevices)
@@ -300,24 +339,53 @@ namespace GreenSwamp.Alpaca.Server
                         );
 
                         Logger.LogInformation($"Device {device.DeviceNumber}: {device.DeviceName} (Mount: {device.Mount})");
+                        registeredDeviceCount++;
                     }
                     catch (Exception ex)
                     {
                         Logger.LogError($"Failed to register device {device.DeviceNumber}: {device.DeviceName} - {ex.Message}");
-                        throw; // Phase 3 baseline (v1.0.0+): fail fast if device registration fails
+                        Logger.LogError($"Skipping device {device.DeviceNumber}, continuing with remaining devices");
+                        // Continue with next device instead of throwing - graceful degradation
                     }
                 }
 
-                Logger.LogInformation("Device registry initialization complete");
+                Logger.LogInformation($"Device registry initialization complete - {registeredDeviceCount} device(s) registered successfully");
 
-                // Initialize SkyServer after slot 0 is registered — _settings now resolves to slot 0 instance
-                GreenSwamp.Alpaca.MountControl.SkyServer.Initialize();
-                Logger.LogInformation("SkyServer initialized (using registered slot 0 settings)");
+                // Initialize SkyServer only if at least one device was registered
+                if (registeredDeviceCount > 0)
+                {
+                    GreenSwamp.Alpaca.MountControl.SkyServer.Initialize();
+                    Logger.LogInformation("SkyServer initialized (using registered slot 0 settings)");
+                }
+                else
+                {
+                    Logger.LogWarning("SkyServer initialization skipped - no devices registered");
+                    Logger.LogWarning("Mount control functionality unavailable until devices are configured");
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to initialize settings: {ex.Message}");
-                throw; // Re-throw to prevent app startup with broken settings
+                // Distinguish between settings validation errors (allow continuation) and critical failures (must crash)
+                Logger.LogError($"Error during initialization: {ex.Message}");
+                Logger.LogError($"Exception type: {ex.GetType().Name}");
+
+                // Check if this is a settings-related error that should allow graceful degradation
+                bool isSettingsError = ex.Message.Contains("settings") || 
+                                       ex.Message.Contains("validation") || 
+                                       ex.Message.Contains("device") ||
+                                       ex.Message.Contains("configuration");
+
+                if (isSettingsError)
+                {
+                    Logger.LogWarning("Settings-related error detected - application will continue with degraded functionality");
+                    Logger.LogWarning("Visit /settings-health in the web UI to diagnose and repair settings");
+                    // Allow app to continue - graceful degradation
+                }
+                else
+                {
+                    Logger.LogError("Critical initialization failure - cannot continue");
+                    throw; // Re-throw only for non-settings critical failures (DI, filesystem, etc.)
+                }
             }
 
             // Migrate user settings if needed
