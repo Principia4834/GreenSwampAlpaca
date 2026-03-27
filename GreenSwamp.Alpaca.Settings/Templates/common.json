@@ -196,7 +196,6 @@
                      "SpiralPause":  10,
                      "SpiralSpeed":  4,
                      "SpiralWidth":  4800,
-                     "TraceLogger":  false,
-                     "VersionOne":  false
+                     "TraceLogger":  false
                  }
 }

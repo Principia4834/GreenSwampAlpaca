@@ -187,7 +187,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public double GotoPrecision { get; set; }
         public bool FullCurrent { get; set; }
         public int NumMoveAxis { get; set; }
-        public bool VersionOne { get; set; }
         public bool GlobalStopOn { get; set; }
         
         // Display Settings

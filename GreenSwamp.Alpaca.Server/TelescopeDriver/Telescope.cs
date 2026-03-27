@@ -187,7 +187,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("AtHome", false);
                 var r = inst.AtHome;
 
                 var monitorItem = new MonitorEntry
@@ -203,7 +202,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("AtPark", false);
                 var r = inst.Settings.AtPark;
 
                 var monitorItem = new MonitorEntry
@@ -280,7 +278,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("CanSetDeclinationRate", false);
                 var r = inst.Settings.CanSetDeclinationRate;
 
                 var monitorItem = new MonitorEntry
@@ -326,7 +323,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("CanSetPierSide", false);
                 var r = inst.Settings.CanSetPierSide;
 
                 var monitorItem = new MonitorEntry
@@ -342,7 +338,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("CanSetRightAscensionRate", false);
                 var r = inst.Settings.CanSetRightAscensionRate;
 
                 var monitorItem = new MonitorEntry
@@ -388,7 +383,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("CanSlewAltAz", false);
                 var r = inst.Settings.CanSlewAltAz;
 
                 var monitorItem = new MonitorEntry
@@ -404,7 +398,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("CanSlewAltAzAsync", false);
                 var r = inst.Settings.CanSlewAltAzAsync;
 
                 var monitorItem = new MonitorEntry
@@ -640,7 +633,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 var inst = GetInstance();
                 var r = inst.Settings.Refraction;
-                CheckVersionOne("DoesRefraction", false);
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
@@ -655,7 +647,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                CheckVersionOne("DoesRefraction", true);
                 inst.Settings.Refraction = value;
             }
         }
@@ -679,7 +670,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                CheckVersionOne("DriverVersion", false);
                 var asm = Assembly.GetExecutingAssembly();
                 var r = asm.GetName().Version.ToString();
 
@@ -696,7 +686,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("EquatorialSystem", false);
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{inst.Settings.EquatorialCoordinateType}" };
@@ -711,7 +700,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("FocalLength", false);
                 CheckCapability(inst.Settings.CanOptics, "FocalLength", false);
                 var r = inst.Settings.FocalLength;
 
@@ -728,7 +716,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("GuideRateDeclination", false);
                 var r = inst.GuideRateDec;
 
                 var monitorItem = new MonitorEntry
@@ -744,7 +731,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 MonitorLog.LogToMonitor(monitorItem);
 
                 var inst = GetInstance();
-                CheckVersionOne("GuideRateDeclination", true);
                 CheckRange(value, 0.0, 0.5, "GuideRateDeclination");
                 inst.GuideRateDec = value;
             }
@@ -755,7 +741,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                CheckVersionOne("GuideRateRightAscension", false);
                 var r = inst.GuideRateRa;
 
                 var monitorItem = new MonitorEntry
@@ -771,7 +756,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 MonitorLog.LogToMonitor(monitorItem);
 
                 var inst = GetInstance();
-                CheckVersionOne("GuideRateRightAscension", true);
                 CheckRange(value, 0.0, 0.5, "GuideRateRightAscension");
                 inst.GuideRateRa = value;
             }
@@ -781,8 +765,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                CheckVersionOne("InterfaceVersion", false);
-
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "4" };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1151,7 +1133,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 var inst = GetInstance();
                 var r = inst.Settings.TrackingRate;
-                CheckVersionOne("TrackingRate", false);
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
@@ -1166,7 +1147,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 MonitorLog.LogToMonitor(monitorItem);
 
                 var inst = GetInstance();
-                CheckVersionOne("TrackingRate", true);
                 CheckTrackingRate("TrackingRate", value);
                 inst.Settings.TrackingRate = value;
             }
@@ -1345,7 +1325,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public bool CanMoveAxis(TelescopeAxis Axis)
         {
-            CheckVersionOne("CanMoveAxis");
             var r = GetInstance().CanMoveAxis(Axis);
 
             var monitorItem = new MonitorEntry
@@ -1357,8 +1336,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public PointingState DestinationSideOfPier(double RightAscension, double Declination)
         {
-            CheckVersionOne("DestinationSideOfPier");
-
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"RA|{RightAscension}|Dec|{Declination}" };
             MonitorLog.LogToMonitor(monitorItem);
@@ -1443,7 +1420,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckVersionOne("MoveAxis");
             CheckRate(Axis, Rate);
             if (!CanMoveAxis(Axis)){throw new MethodNotImplementedException("CanMoveAxis " + Enum.GetName(typeof(TelescopeAxis), Axis));}
             CheckParked("MoveAxis");
@@ -1901,33 +1877,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.CurrentCulture),
                     string.Format(CultureInfo.CurrentCulture, "{0} to {1}", min, max));
             }
-        }
-
-        private void CheckVersionOne(string property, bool accessorSet)
-        {
-            CheckVersionOne(property);
-            if (accessorSet)
-            {
-                //nothing
-            }
-            if (!GetInstance().Settings.VersionOne) return;
-
-            var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}|{accessorSet}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            throw new PropertyNotImplementedException(property, accessorSet);
-        }
-
-        private void CheckVersionOne(string property)
-        {
-            if (!GetInstance().Settings.VersionOne) return;
-
-            var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            throw new PropertyNotImplementedException(property);
         }
 
         private static void CheckCapability(bool capability, string method)

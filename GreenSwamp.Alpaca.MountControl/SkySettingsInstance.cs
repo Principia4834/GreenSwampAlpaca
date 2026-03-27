@@ -185,7 +185,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _canUnPark = true;
         private bool _noSyncPastMeridian = false;
         private int _numMoveAxis = 2;
-        private bool _versionOne = true;
 
         // Set by MountInstance constructor so setters can dispatch instance-aware tasks
         internal MountInstance? _owner;
@@ -1790,7 +1789,6 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool CanUnPark => _canUnPark;
         public bool NoSyncPastMeridian => _noSyncPastMeridian;
         public int NumMoveAxis => _numMoveAxis;
-        public bool VersionOne => _versionOne;
 
         #endregion
 
@@ -1979,7 +1977,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _canUnPark = settings.CanUnpark;
                 _noSyncPastMeridian = settings.NoSyncPastMeridian;
                 _numMoveAxis = settings.NumMoveAxis;
-                _versionOne = settings.VersionOne;
 
                 // For Polar mode: Initialize settings service with profile Az/Alt values
                 // This ensures they're preserved when SaveAsync() runs for the first time
@@ -2177,7 +2174,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.CanUnpark = _canUnPark;
                 settings.NoSyncPastMeridian = _noSyncPastMeridian;
                 settings.NumMoveAxis = _numMoveAxis;
-                settings.VersionOne = _versionOne;
 
                 await _settingsService.SaveSettingsAsync(settings);
                 LogSettings("SavedToJson", "Success");
