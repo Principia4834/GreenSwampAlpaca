@@ -1395,15 +1395,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "Started" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            inst.GoToHome();
-
-            // ToDo check for timing window
-            //if (InterfaceVersion >= 4) return;
-            //while (SkyServer.SlewState == SlewType.SlewHome || SkyServer.SlewState == SlewType.SlewSettle)
-            //{
-            //    Thread.Sleep(1);
-            //    DoEvents();
-            //}
+            // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
+            // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
+            inst.GoToHome().GetAwaiter().GetResult();
         }
 
         public void MoveAxis(TelescopeAxis Axis, double Rate)
@@ -1470,12 +1464,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 MonitorLog.LogToMonitor(monitorItem);
 
-                // Just initiate park - SlewController handles completion
-                // No background task needed - GoToParkAsync is already async
-                _ = inst.GoToParkAsync();
-
-                // Returns immediately - client polls Slewing and AtPark
-                // SlewController will set AtPark when movement actually completes
+                // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
+                // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
+                inst.GoToParkAsync().GetAwaiter().GetResult();
             }
         }
 
@@ -1555,11 +1546,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckRange(Azimuth, 0, 360, "SlewToAltAzAsync", "Azimuth");
             CheckRange(Altitude, -90, 90, "SlewToAltAzAsync", "Altitude");
             CheckReachable(Azimuth, Altitude, SlewType.SlewAltAz);
-            // Direct fire-and-forget call - SlewController handles async execution
-            // Returns when setup completes (<1s) with IsSlewing=true already set
-            _ = inst.SlewAltAzAsync(Altitude, Azimuth);
-            // Movement continues in background via SlewController._movementTask
-            // Client polls Slewing property to detect completion
+            // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
+            // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
+            inst.SlewAltAzAsync(Altitude, Azimuth).GetAwaiter().GetResult();
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
@@ -1623,11 +1612,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             // Enable tracking before starting slew
             inst.CycleOnTracking(true);
 
-            // Direct fire-and-forget call - SlewController handles async execution
-            // Returns when setup completes (<1s) with IsSlewing=true already set
-            _ = inst.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true);
-            // Movement continues in background via SlewController._movementTask
-            // Client polls Slewing property to detect completion
+            // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
+            // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
+            inst.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true).GetAwaiter().GetResult();
         }
 
         public void SlewToTarget()
@@ -1694,11 +1681,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             // Enable tracking before starting slew
             inst.CycleOnTracking(true);
 
-            // Direct fire-and-forget call - SlewController handles async execution
-            // Returns when setup completes (<1s) with IsSlewing=true already set
-            _ = inst.SlewRaDecAsync(xy.X, xy.Y, tracking: true);
-            // Movement continues in background via SlewController._movementTask
-            // Client polls Slewing property to detect completion
+            // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
+            // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
+            inst.SlewRaDecAsync(xy.X, xy.Y, tracking: true).GetAwaiter().GetResult();
         }
 
         public void Unpark()

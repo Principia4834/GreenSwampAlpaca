@@ -123,14 +123,16 @@ namespace GreenSwamp.Alpaca.MountControl
         internal CommandQueueBase<Actions> MountQueueInstance { get; private set; }
 
         // Slew speed fields (internal so SkyServer.SetSlewRates can access them)
-        internal double _slewSpeedOne;
-        internal double _slewSpeedTwo;
-        internal double _slewSpeedThree;
-        internal double _slewSpeedFour;
-        internal double _slewSpeedFive;
-        internal double _slewSpeedSix;
-        internal double _slewSpeedSeven;
-        internal double _slewSpeedEight;
+        // All speeds stored in degrees/second for ASCOM AxisRates compliance
+        // Hardware layer (SkyWatcher.AxisSlew, Simulator.MoveAxisRate) converts to radians as needed
+        internal double _slewSpeedOne;      // Speed level 1: maxRate × 0.0034
+        internal double _slewSpeedTwo;      // Speed level 2: maxRate × 0.0068
+        internal double _slewSpeedThree;    // Speed level 3: maxRate × 0.047
+        internal double _slewSpeedFour;     // Speed level 4: maxRate × 0.068
+        internal double _slewSpeedFive;     // Speed level 5: maxRate × 0.2
+        internal double _slewSpeedSix;      // Speed level 6: maxRate × 0.4
+        internal double _slewSpeedSeven;    // Speed level 7: maxRate × 0.8
+        internal double _slewSpeedEight;    // Speed level 8: maxRate × 1.0 (max slew rate)
 
         // Phase 4.3: Tracking state fields
         private bool _tracking;
@@ -462,8 +464,11 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _altAzSync;
             set => _altAzSync = value;
         }
-        // Phase 4.2: Expose slew speeds (read-only for
-        // now)
+
+        /// <summary>
+        /// Slew speeds for hand controller and ASCOM AxisRates (read-only)
+        /// All values in degrees/second per ASCOM specification
+        /// </summary>
         public double SlewSpeedOne => _slewSpeedOne;
         public double SlewSpeedTwo => _slewSpeedTwo;
         public double SlewSpeedThree => _slewSpeedThree;
@@ -976,8 +981,8 @@ namespace GreenSwamp.Alpaca.MountControl
         public PointingState DetermineSideOfPier(double rightAscension, double declination) =>
             SkyServer.DetermineSideOfPier(rightAscension, declination);
 
-        /// <summary>Start GoTo Home (fire-and-forget) — delegates to SkyServer.GoToHome.</summary>
-        public void GoToHome() => _ = SkyServer.GoToHome();
+        /// <summary>Start GoTo Home — delegates to SkyServer.GoToHome.</summary>
+        public Task<SlewResult> GoToHome() => SkyServer.GoToHome();
 
         /// <summary>Start park async — delegates to SkyServer.GoToParkAsync.</summary>
         public Task<SlewResult> GoToParkAsync() => SkyServer.GoToParkAsync();
@@ -1343,18 +1348,10 @@ namespace GreenSwamp.Alpaca.MountControl
             // home axes
             _homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
 
-            // set the slew speeds, the longest distance is using the higher speed for longer
-            _slewSpeedOne = Principles.Units.Deg2Rad1((int)_settings.HcSpeed * (15.0 / 3600)); //1x 15"/s
-            _slewSpeedTwo = _slewSpeedOne * 2; //2x
-            _slewSpeedThree = _slewSpeedOne * 8; //8x
-            _slewSpeedFour = _slewSpeedOne * 16; //16x
-            _slewSpeedFive = _slewSpeedOne * 32; //32x
-            _slewSpeedSix = _slewSpeedOne * 64; //64x
-            _slewSpeedSeven = _slewSpeedOne * 600; //600x
-            _slewSpeedEight = _slewSpeedOne * 800; //800x
-
-            var maxSlew = Principles.Units.Deg2Rad1(_settings.MaxSlewRate);
-            SkyServer.SetSlewRates(maxSlew);
+            // Set slew rates for all speed levels
+            // SetSlewRates expects degrees/second and stores values in degrees
+            // (hardware layer converts to radians when needed)
+            SkyServer.SetSlewRates(_settings.MaxSlewRate);
 
             // set the guiderates
             _guideRate = new Vector(_settings.GuideRateOffsetY, _settings.GuideRateOffsetX);
@@ -1704,21 +1701,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
             token.ThrowIfCancellationRequested();
-            if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
-            {
-                var predictorRaDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
-                var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
-                target = new[] { internalRaDec.X, internalRaDec.Y };
-            }
             var simTarget = MapSlewTargetToAxes(target, slewType);
-            // Work out how long the slew will take by comparing the current position and the target
-            var rawPositions = GetRawDegrees();
-            var deltaTime = new[] { Math.Abs(rawPositions[0] - simTarget[0]) / 8.0, Math.Abs(rawPositions[1] - simTarget[1]) / 8.0 };
-            // Now update simTarget which works in physical mount axis values to the end of slew values
-            DateTime targetTime = DateTime.Now.AddSeconds(Math.Max(deltaTime[0], deltaTime[1]));
-            simTarget = MapSlewTargetToAxes(target, slewType, targetTime);
-            // Reset flip after mapping axes
-            SkyServer.FlipOnNextGoto = false;
             const int timer = 120;
             var stopwatch = Stopwatch.StartNew();
 
@@ -1794,18 +1777,19 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
             const int returnCode = 0;
+            // var gotoPrecision = SkySettings.GotoPrecision;
             var maxTries = 0;
-            double[] deltaDegree = [0.0, 0.0];
-            // double[] gotoPrecision = { ConvertStepsToDegrees(4, 0), ConvertStepsToDegrees(4, 1) };
-            double[] gotoPrecision = [0.5 / 3600.0, 0.5 / 3600.0];
-            var deltaTime = 800; // initial delta time for predictor
+            double[] deltaDegree = [ 0.0, 0.0 ];
+            double[] gotoPrecision = [ ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1) ];
+            const double milliSeconds = 0.001;
+            var deltaTime = 75 * milliSeconds; // 75mS for simulator slew
 
             while (true)
             {
                 token.ThrowIfCancellationRequested();
                 var loopTimer = Stopwatch.StartNew();
 
-                if (maxTries > 10) { break; }
+                if (maxTries > 5) { break; }
                 maxTries++;
 
                 DateTime? predictedTime = null;
@@ -1993,17 +1977,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 Message = $"Instance:{_instanceName}|from|{SkyServer.ActualAxisX}|{SkyServer.ActualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
             };
             MonitorLog.LogToMonitor(monitorItem);
-
             token.ThrowIfCancellationRequested();
+
             var skyTarget = MapSlewTargetToAxes(target, slewType);
-            // Work out how long the slew will take by comparing the current position and the target
-            var rawPositions = GetRawDegrees();
-            var deltaTime = new[] { Math.Abs(rawPositions[0] - skyTarget[0]) / 4.0, Math.Abs(rawPositions[1] - skyTarget[1]) / 4.0 };
-            // Now update skyTarget which works in physical mount axis values to the end of slew values
-            DateTime targetTime = DateTime.Now.AddSeconds(Math.Max(deltaTime[0], deltaTime[1]));
-            skyTarget = MapSlewTargetToAxes(target, slewType, targetTime);
-            // Reset flip after mapping axes
-            SkyServer.FlipOnNextGoto = false;
             const int timer = 240;
             var stopwatch = Stopwatch.StartNew();
 
@@ -2141,7 +2117,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, skyTargetAtTime[0] + 0.25 * deltaDegree[0]);
                 }
-
                 var axis1Done = axis1AtTarget;
                 while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                 {

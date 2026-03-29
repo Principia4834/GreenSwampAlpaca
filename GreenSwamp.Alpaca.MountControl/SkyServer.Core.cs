@@ -1681,8 +1681,15 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Sets speeds for hand controller and slews in simulator
+        /// Sets slew rates for all speed levels (1-8) based on maximum slew rate.
+        /// All speeds are stored in degrees/second for ASCOM AxisRates compliance.
         /// </summary>
+        /// <param name="maxRate">Maximum slew rate in degrees/second</param>
+        /// <remarks>
+        /// Values stored in degrees/second. Hardware layer (SkyWatcher/Simulator)
+        /// converts to radians when sending commands to mount.
+        /// Called during initialization and when MaxSlewRate setting changes.
+        /// </remarks>
         internal static void SetSlewRates(double maxRate)
         {
             // Sky Speeds
