@@ -1,5 +1,8 @@
+using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Mount.Simulator;
+using GreenSwamp.Alpaca.Shared;
+using System.Threading;
 
 namespace GreenSwamp.Alpaca.MountControl.Tests;
 
@@ -102,5 +105,178 @@ public class QueueMigrationTests
     public void WhenMountQueueNotStartedThenIsRunningIsFalse()
     {
         Assert.False(MountQueue.IsRunning);
+    }
+
+    // -------------------------------------------------------------------------
+    // Q-eventbased — Event-based queue completion (ManualResetEventSlim)
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// ProcessCommandQueue must call CompletionEvent.Set() in its finally block.
+    /// </summary>
+    [Fact]
+    public void WhenCommandCompletedThenCompletionEventIsSet()
+    {
+        var queue = new FakeCommandQueue();
+        queue.Start();
+        var command = new FakeCommand(queue);
+
+        queue.GetCommandResult(command);
+
+        Assert.True(command.CompletionEvent.IsSet);
+        queue.Stop();
+    }
+
+    /// <summary>
+    /// GetCommandResult must return failure immediately when the queue is not running.
+    /// </summary>
+    [Fact]
+    public void WhenQueueStoppedBeforeCommandExecutedThenGetCommandResultReturnsFailure()
+    {
+        var queue = new FakeCommandQueue();
+        queue.Start();
+        var command = new FakeCommand(queue);
+        queue.Stop();
+
+        var result = queue.GetCommandResult(command);
+
+        Assert.False(result.Successful);
+        Assert.NotNull(result.Exception);
+    }
+
+    /// <summary>
+    /// Statistics.CommandsTimedOut must increment when CompletionEvent is not set within the timeout.
+    /// Uses a short-timeout queue (100 ms) and a command that sleeps 400 ms.
+    /// </summary>
+    [Fact]
+    public void WhenGetCommandResultTimesOutThenTimedOutIsIncrementedInStatistics()
+    {
+        var queue = new ShortTimeoutFakeCommandQueue(); // CompletionTimeoutMs = 100 ms
+        queue.Start();
+        var command = new FakeCommand(queue, () => Thread.Sleep(400));
+
+        var result = queue.GetCommandResult(command);
+
+        Assert.Equal(1, queue.Statistics.CommandsTimedOut);
+        Assert.False(result.Successful);
+        queue.Stop(); // waits up to 5 s for the background task to drain
+    }
+
+    /// <summary>
+    /// Statistics.CommandsSuccessful must increment after a command executes without errors.
+    /// </summary>
+    [Fact]
+    public void WhenCommandSucceedsThenSuccessfulIsIncrementedInStatistics()
+    {
+        var queue = new FakeCommandQueue();
+        queue.Start();
+        var command = new FakeCommand(queue);
+
+        queue.GetCommandResult(command);
+
+        Assert.Equal(1, queue.Statistics.CommandsSuccessful);
+        Assert.True(command.Successful);
+        queue.Stop();
+    }
+
+    /// <summary>
+    /// Statistics.CommandsFailed must increment when a command's Execute() throws.
+    /// CommandBase.Execute() catches the exception internally so only Failed (not ExceptionsHandled) increments.
+    /// </summary>
+    [Fact]
+    public void WhenCommandThrowsThenFailedIsIncrementedInStatistics()
+    {
+        var queue = new FakeCommandQueue();
+        queue.Start();
+        var command = new FakeCommand(queue, () => throw new InvalidOperationException("Simulated failure"));
+
+        queue.GetCommandResult(command);
+
+        Assert.Equal(1, queue.Statistics.CommandsFailed);
+        Assert.False(command.Successful);
+        Assert.NotNull(command.Exception);
+        queue.Stop();
+    }
+
+    /// <summary>
+    /// Start() must reset Statistics so counters from a prior session do not carry over.
+    /// </summary>
+    [Fact]
+    public void WhenStartCalledThenStatisticsAreReset()
+    {
+        var queue = new FakeCommandQueue();
+        queue.Start();
+        var command = new FakeCommand(queue);
+        queue.GetCommandResult(command);
+        Assert.Equal(1, queue.Statistics.CommandsSuccessful);
+
+        // Start() calls Stop() internally then resets statistics
+        queue.Start();
+
+        Assert.Equal(0, queue.Statistics.CommandsSuccessful);
+        Assert.Equal(0, queue.Statistics.TotalCommandsProcessed);
+        queue.Stop();
+    }
+
+    /// <summary>
+    /// MountQueueImplementation must use a 22-second completion timeout.
+    /// </summary>
+    [Fact]
+    public void WhenMountQueueImplementationCreatedThenCompletionTimeoutIs22Seconds()
+    {
+        var queue = new ExposedMountQueueImplementation();
+        Assert.Equal(22000, queue.PublicCompletionTimeoutMs);
+    }
+
+    /// <summary>
+    /// SkyQueueImplementation must use the default 40-second completion timeout.
+    /// </summary>
+    [Fact]
+    public void WhenSkyQueueImplementationCreatedThenCompletionTimeoutIs40Seconds()
+    {
+        var queue = new ExposedSkyQueueImplementation();
+        Assert.Equal(40000, queue.PublicCompletionTimeoutMs);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test infrastructure
+    // -------------------------------------------------------------------------
+
+    private sealed class FakeExecutor { }
+
+    private class FakeCommandQueue : CommandQueueBase<FakeExecutor>
+    {
+        protected override bool IsConnected() => true;
+        protected override FakeExecutor CreateExecutor() => new FakeExecutor();
+        protected override void InitializeExecutor(FakeExecutor executor) { }
+        protected override void CleanupExecutor(FakeExecutor executor) { }
+    }
+
+    private sealed class ShortTimeoutFakeCommandQueue : FakeCommandQueue
+    {
+        protected override int CompletionTimeoutMs => 100;
+    }
+
+    private sealed class FakeCommand : ActionCommand<FakeExecutor>
+    {
+        private readonly Action? _executeAction;
+
+        public FakeCommand(ICommandQueue<FakeExecutor> queue, Action? executeAction = null)
+            : base(queue.NewId, queue)
+        {
+            _executeAction = executeAction;
+        }
+
+        protected override void ExecuteAction(FakeExecutor executor) => _executeAction?.Invoke();
+    }
+
+    private sealed class ExposedMountQueueImplementation : MountQueueImplementation
+    {
+        public int PublicCompletionTimeoutMs => CompletionTimeoutMs;
+    }
+
+    private sealed class ExposedSkyQueueImplementation : SkyQueueImplementation
+    {
+        public int PublicCompletionTimeoutMs => CompletionTimeoutMs;
     }
 }

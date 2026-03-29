@@ -14,6 +14,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Threading;
+
 namespace GreenSwamp.Alpaca.Mount.Commands
 {
     /// <summary>
@@ -26,6 +28,11 @@ namespace GreenSwamp.Alpaca.Mount.Commands
         /// Unique identifier for this command
         /// </summary>
         long Id { get; }
+
+        /// <summary>
+        /// Signals command completion to waiting callers. Set by the queue after Execute().
+        /// </summary>
+        ManualResetEventSlim CompletionEvent { get; }
 
         /// <summary>
         /// UTC timestamp when the command was created

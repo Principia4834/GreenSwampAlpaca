@@ -16,6 +16,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using GreenSwamp.Alpaca.Mount.Commands;
+using GreenSwamp.Alpaca.Shared;
 
 namespace GreenSwamp.Alpaca.Mount.Simulator
 {
@@ -24,6 +25,9 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     /// </summary>
     public class MountQueueImplementation : CommandQueueBase<Actions>
     {
+        protected override int CompletionTimeoutMs => 22000;
+        protected override string[] DiagnosticCommandFilter => ["CmdAxisPulse"];
+
         private Action<double[]>? _stepsCallback;
         private Action<bool>? _pulseGuideRaCallback;
         private Action<bool>? _pulseGuideDecCallback;
@@ -90,6 +94,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// Locking id
         /// </summary>
         public static long NewId => _instance?.NewId ?? 0;
+
+        /// <summary>
+        /// Thread-safe queue processing statistics for the current session.
+        /// </summary>
+        public static CommandQueueStatistics Statistics => _instance?.Statistics;
 
         /// <summary>
         /// status for Dec Pulse

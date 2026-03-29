@@ -14,6 +14,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using GreenSwamp.Alpaca.Shared;
+
 namespace GreenSwamp.Alpaca.Mount.Commands
 {
     /// <summary>
@@ -31,6 +33,11 @@ namespace GreenSwamp.Alpaca.Mount.Commands
         /// Gets a new unique command ID
         /// </summary>
         long NewId { get; }
+
+        /// <summary>
+        /// Thread-safe statistics for this queue session. Null until the queue has been started at least once.
+        /// </summary>
+        CommandQueueStatistics? Statistics { get; }
 
         /// <summary>
         /// Add a command to the queue for execution

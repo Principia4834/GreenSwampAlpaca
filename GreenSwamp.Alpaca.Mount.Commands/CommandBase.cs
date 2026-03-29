@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 using System;
+using System.Threading;
 
 namespace GreenSwamp.Alpaca.Mount.Commands
 {
@@ -23,11 +24,14 @@ namespace GreenSwamp.Alpaca.Mount.Commands
     /// <typeparam name="TExecutor">The type of executor that will process this command</typeparam>
     public abstract class CommandBase<TExecutor> : ICommand<TExecutor>
     {
+        private readonly ManualResetEventSlim _completionEvent = new ManualResetEventSlim(false);
+
         public long Id { get; }
         public DateTime CreatedUtc { get; }
         public bool Successful { get; set; }
         public Exception Exception { get; set; }
         public virtual dynamic Result { get; protected set; }
+        public ManualResetEventSlim CompletionEvent => _completionEvent;
 
         protected CommandBase(long id, ICommandQueue<TExecutor> queue)
         {

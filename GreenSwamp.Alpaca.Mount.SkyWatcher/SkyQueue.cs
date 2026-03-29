@@ -28,6 +28,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     /// </summary>
     public class SkyQueueImplementation : CommandQueueBase<SkyWatcher>
     {
+        protected override string[] DiagnosticCommandFilter => ["SkyAxisPulse"];
+
         private ISerialPort _serial;
         private int[] _customMount360Steps;
         private double[] _customRaWormSteps;
@@ -152,6 +154,11 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// Locking id
         /// </summary>
         public static long NewId => _instance?.NewId ?? 0;
+
+        /// <summary>
+        /// Thread-safe queue processing statistics for the current session.
+        /// </summary>
+        public static CommandQueueStatistics Statistics => _instance?.Statistics;
 
         /// <summary>
         /// status for Dec Pulse
