@@ -991,20 +991,21 @@ namespace GreenSwamp.Alpaca.MountControl
         public void PulseGuide(GuideDirection direction, int duration, double altRate) =>
             SkyServer.PulseGuide(direction, duration, altRate);
 
-        /// <summary>Synchronous Alt/Az slew — delegates to SkyServer.SlewAltAz.</summary>
-        public void SlewAltAz(double altitude, double azimuth) => SkyServer.SlewAltAz(altitude, azimuth);
+        /// <summary>Synchronous Alt/Az slew — dispatches on this instance directly.</summary>
+        public void SlewAltAz(double altitude, double azimuth) =>
+            SlewSync(new[] { azimuth, altitude }, SlewType.SlewAltAz);
 
-        /// <summary>Async Alt/Az slew — delegates to SkyServer.SlewAltAzAsync.</summary>
+        /// <summary>Async Alt/Az slew — dispatches on this instance directly.</summary>
         public Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth) =>
-            SkyServer.SlewAltAzAsync(altitude, azimuth);
+            SlewAsync(new[] { azimuth, altitude }, SlewType.SlewAltAz);
 
-        /// <summary>Synchronous RA/Dec slew — delegates to SkyServer.SlewRaDec.</summary>
+        /// <summary>Synchronous RA/Dec slew — dispatches on this instance directly.</summary>
         public void SlewRaDec(double rightAscension, double declination, bool tracking = false) =>
-            SkyServer.SlewRaDec(rightAscension, declination, tracking);
+            SlewSync(new[] { rightAscension, declination }, SlewType.SlewRaDec, tracking);
 
-        /// <summary>Async RA/Dec slew — delegates to SkyServer.SlewRaDecAsync.</summary>
+        /// <summary>Async RA/Dec slew — dispatches on this instance directly.</summary>
         public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false) =>
-            SkyServer.SlewRaDecAsync(rightAscension, declination, tracking);
+            SlewAsync(new[] { rightAscension, declination }, SlewType.SlewRaDec, tracking);
 
         /// <summary>Enable tracking on a slew cycle — delegates to SkyServer.CycleOnTracking.</summary>
         public void CycleOnTracking(bool silence) => SkyServer.CycleOnTracking(silence);
@@ -1523,8 +1524,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     var mqImpl = new GreenSwamp.Alpaca.Mount.Simulator.MountQueueImplementation();
                     mqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
-                        v => SkyServer.IsPulseGuidingRa = v,
-                        v => SkyServer.IsPulseGuidingDec = v);
+                        v => { _isPulseGuidingRa = v; },
+                        v => { _isPulseGuidingDec = v; });
                     // Start the instance-owned simulator queue directly (no static facade)
                     mqImpl.Start();
                     MountQueueInstance = mqImpl;
@@ -1556,12 +1557,14 @@ namespace GreenSwamp.Alpaca.MountControl
                         customWormSteps = new[] { (double)_settings.CustomRa360Steps / _settings.CustomRaWormTeeth, (double)_settings.CustomDec360Steps / _settings.CustomDecWormTeeth };
                     }
 
-                    // Q2: Create instance-owned queue; start it directly (no static facade registration needed)
+                    // Q2: Create instance-owned queue; register with the static facade so Commands
+                    // that still reference SkyQueue.CustomMount360Steps / Serial can resolve it.
                     var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
-                        v => SkyServer.IsPulseGuidingRa = v,
-                        v => SkyServer.IsPulseGuidingDec = v);
+                        v => { _isPulseGuidingRa = v; },
+                        v => { _isPulseGuidingDec = v; });
+                    SkyQueue.RegisterInstance(sqImpl);  // must be called before Start() so the facade is live when commands execute
                     sqImpl.Start(_serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
                     SkyQueueInstance = sqImpl;
                     if (!sqImpl.IsRunning)
@@ -1983,7 +1986,7 @@ namespace GreenSwamp.Alpaca.MountControl
             const int timer = 240;
             var stopwatch = Stopwatch.StartNew();
 
-            SkyServer.SkyTasks(MountTaskName.StopAxes);
+            SkyServer.SkyTasks(MountTaskName.StopAxes, this);
 
             #region First Slew
             token.ThrowIfCancellationRequested();
@@ -2014,7 +2017,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             stopwatch.Stop();
 
-            SkyServer.AxesStopValidate();
+            SkyServer.AxesStopValidate(this);
             monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -2034,7 +2037,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyPrecisionGoto(target, slewType, token);
             #endregion
 
-            SkyServer.SkyTasks(MountTaskName.StopAxes);
+            SkyServer.SkyTasks(MountTaskName.StopAxes, this);
             return success;
         }
 

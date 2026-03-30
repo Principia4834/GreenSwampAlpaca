@@ -578,35 +578,43 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         }
 
         /// <summary>
-        /// Mount Thread
+        /// Mount Thread — dedicated background thread at AboveNormal priority.
+        /// Frees the ThreadPool and allows OS scheduling priority to be set.
         /// </summary>
-        private async void MountLoopAsync()
+        private void MountLoopAsync()
         {
-            try
+            if (_ctsMount == null) _ctsMount = new CancellationTokenSource();
+            var ct = _ctsMount.Token;
+            _running = true;
+            _lastUpdateTime = HiResDateTime.UtcNow;
+            var thread = new Thread(() =>
             {
-                if (_ctsMount == null) _ctsMount = new CancellationTokenSource();
-                var ct = _ctsMount.Token;
-                _running = true;
-                _lastUpdateTime = HiResDateTime.UtcNow;
-                var task = System.Threading.Tasks.Task.Run(() =>
+                try
                 {
                     while (!ct.IsCancellationRequested)
                     {
                         MoveAxes();
                     }
-                }, ct);
-                await task;
-                task.Wait(ct);
-                _running = false;
-            }
-            catch (OperationCanceledException)
+                }
+                catch (OperationCanceledException)
+                {
+                    // normal cancellation — loop exits cleanly
+                }
+                catch (Exception)
+                {
+                    // unexpected error — _running cleared in finally
+                }
+                finally
+                {
+                    _running = false;
+                }
+            })
             {
-                _running = false;
-            }
-            catch (Exception)
-            {
-                _running = false;
-            }
+                IsBackground = true,
+                Priority = ThreadPriority.AboveNormal,
+                Name = "MountSimLoop"
+            };
+            thread.Start();
         }
 
         /// <summary>

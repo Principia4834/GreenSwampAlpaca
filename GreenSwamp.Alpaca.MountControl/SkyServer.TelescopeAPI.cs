@@ -794,7 +794,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (IsSlewing)
                 {
                     SlewState = SlewType.SlewNone;
-                    var stopped = AxesStopValidate();
+                    var stopped = AxesStopValidate(_defaultInstance!);
                     if (!stopped)
                     {
                         AbortSlew(true);
@@ -2001,6 +2001,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     var decBacklashAmount = 0;
                     if (direction != LastDecDirection) decBacklashAmount = _settings!.DecBacklash;
                     LastDecDirection = direction;
+                    _ctsPulseGuideDec?.Cancel();
+                    _ctsPulseGuideDec?.Dispose();
                     _ctsPulseGuideDec = new CancellationTokenSource();
 
                     switch (_settings!.Mount)
@@ -2078,6 +2080,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (direction == GuideDirection.East) { raGuideRate = -raGuideRate; }
                     }
 
+                    _ctsPulseGuideRa?.Cancel();
+                    _ctsPulseGuideRa?.Dispose();
                     _ctsPulseGuideRa = new CancellationTokenSource();
                     switch (_settings!.Mount)
                     {
@@ -2432,10 +2436,17 @@ namespace GreenSwamp.Alpaca.MountControl
                                 {
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
                                 }
-                                _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, GetRaRateDirection(_defaultInstance?.RateRa ?? 0.0));
+                                // Clear rate offsets when tracking is off so simulator physics do not continue drifting
+                                var raRate = currentTrackingMode != TrackingMode.Off
+                                    ? GetRaRateDirection(_defaultInstance?.RateRa ?? 0.0)
+                                    : 0.0;
+                                _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, raRate);
                                 if (!MoveSecondaryAxisActive) // Set Dec tracking rate offset (0 if not sidereal)
                                 {
-                                    _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, GetDecRateDirection(_defaultInstance?.RateDec ?? 0.0));
+                                    var decRate = currentTrackingMode != TrackingMode.Off
+                                        ? GetDecRateDirection(_defaultInstance?.RateDec ?? 0.0)
+                                        : 0.0;
+                                    _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, decRate);
                                 }
                             }
                             break;

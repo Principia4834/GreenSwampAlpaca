@@ -1,4 +1,4 @@
-ï»¿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -64,10 +64,10 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _defaultInstance?._altAzTrackingTimer;
             set { if (_defaultInstance != null) _defaultInstance._altAzTrackingTimer = value; }
         }
-        // _altAzTrackingLock removed from static â€” use _defaultInstance._altAzTrackingLock directly (ref semantics required by Interlocked)
-        // Default mount instance â€” computed from registry slot 0 (Step 9: Bridge B0 removed)
+        // _altAzTrackingLock removed from static — use _defaultInstance._altAzTrackingLock directly (ref semantics required by Interlocked)
+        // Default mount instance — computed from registry slot 0 (Step 9: Bridge B0 removed)
         private static MountInstance? _defaultInstance => MountInstanceRegistry.GetInstance(0);
-        // Option C: _settings is now a computed property â€” always reads from the registered slot 0 instance
+        // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
         private static SkySettingsInstance? _settings => _defaultInstance?.Settings;
         internal static SkySettingsInstance? Settings => _settings;
 
@@ -127,7 +127,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // ToDo: Remove if not needed
         // public static readonly AlignmentModel AlignmentModel;
 
-        // Phase 5.3: CancellationTokenSources â€” delegate to default instance to prevent cross-device cancellation
+        // Phase 5.3: CancellationTokenSources — delegate to default instance to prevent cross-device cancellation
         private static CancellationTokenSource? _ctsGoTo
         {
             get => _defaultInstance?._ctsGoTo;
@@ -674,7 +674,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case "Steps":
                     // Steps setter delegates to _defaultInstance?.ReceiveSteps() which signals
-                    // _mountPositionUpdatedEvent on the owning instance â€” no direct signal needed.
+                    // _mountPositionUpdatedEvent on the owning instance — no direct signal needed.
                     Steps = SkyQueue.Steps;
                     break;
             }
@@ -695,7 +695,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case "Steps":
                     // Steps setter delegates to _defaultInstance?.ReceiveSteps() which signals
-                    // _mountPositionUpdatedEvent on the owning instance â€” no direct signal needed.
+                    // _mountPositionUpdatedEvent on the owning instance — no direct signal needed.
                     Steps = MountQueue.Steps;
                     break;
             }
@@ -1225,211 +1225,6 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             _defaultInstance?.SkyPulseGoto(token);
         }
-        // Legacy SkyTasks(MountTaskName) removed. Use the instance-aware SkyTasks(MountTaskName, MountInstance) overload instead.
-
-        /// <summary>
-        /// Creates tasks that are put in the SkyQueue
-        /// </summary>
-        /// <param name="taskName"></param>
-        public static void SkyTasks(MountTaskName taskName)
-        {
-#pragma warning disable CS0618 // legacy static method â€” shortcut ctors intentional; will be removed with SkyQueue facade
-            if (!IsMountRunning) { return; }
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{taskName}"
-            };
-
-            // Set context from current settings
-            var context = AxesContext.FromSettings(_settings);
-
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-                    break;
-                case MountType.SkyWatcher:
-                    switch (taskName)
-                    {
-                        case MountTaskName.AllowAdvancedCommandSet:
-                            _ = new SkyAllowAdvancedCommandSet(0, _settings!.AllowAdvancedCommandSet);
-                            break;
-                        case MountTaskName.AlternatingPpec:
-                            _ = new SkySetAlternatingPPec(0, _settings!.AlternatingPPec);
-                            break;
-                        case MountTaskName.DecPulseToGoTo:
-                            _ = new SkySetDecPulseToGoTo(0, _settings!.DecPulseToGoTo);
-                            break;
-                        case MountTaskName.CanAdvancedCmdSupport:
-                            var skyCanAdvanced = new SkyGetAdvancedCmdSupport(SkyQueue.NewId);
-                            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(skyCanAdvanced).Result), out bool pAdvancedResult);
-                            CanAdvancedCmdSupport = pAdvancedResult;
-                            break;
-                        case MountTaskName.CanPpec:
-                            var skyMountCanPpec = new SkyCanPPec(SkyQueue.NewId);
-                            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(skyMountCanPpec).Result), out bool pPecResult);
-                            CanPPec = pPecResult;
-                            break;
-                        case MountTaskName.CanPolarLed:
-                            var skyCanPolarLed = new SkyCanPolarLed(SkyQueue.NewId);
-                            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(skyCanPolarLed).Result), out bool polarLedResult);
-                            CanPolarLed = polarLedResult;
-                            break;
-                        case MountTaskName.CanHomeSensor:
-                            var canHomeSky = new SkyCanHomeSensors(SkyQueue.NewId);
-                            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(canHomeSky).Result), out bool homeSensorResult);
-                            CanHomeSensor = homeSensorResult;
-                            break;
-                        case MountTaskName.Capabilities:
-                            var skyCap = new SkyGetCapabilities(SkyQueue.NewId);
-                            Capabilities = (string)SkyQueue.GetCommandResult(skyCap).Result;
-                            break;
-                        case MountTaskName.Encoders:
-                            _ = new SkySetEncoder(0, Axis.Axis1, _settings!.Encoders);
-                            _ = new SkySetEncoder(0, Axis.Axis2, _settings!.Encoders);
-                            break;
-                        case MountTaskName.FullCurrent:
-                            _ = new SkySetFullCurrent(0, Axis.Axis1, _settings!.FullCurrent);
-                            _ = new SkySetFullCurrent(0, Axis.Axis2, _settings!.FullCurrent);
-                            break;
-                        case MountTaskName.GetFactorStep:
-                            var skyFactor = new SkyGetFactorStepToRad(SkyQueue.NewId);
-                            FactorStep = (double[])SkyQueue.GetCommandResult(skyFactor).Result;
-                            break;
-                        case MountTaskName.LoadDefaults:
-                            _ = new SkyLoadDefaultMountSettings(0);
-                            break;
-                        case MountTaskName.InstantStopAxes:
-                            _ = new SkyAxisStopInstant(0, Axis.Axis1);
-                            _ = new SkyAxisStopInstant(0, Axis.Axis2);
-                            break;
-                        case MountTaskName.MinPulseRa:
-                            _ = new SkySetMinPulseDuration(0, Axis.Axis1, _settings!.MinPulseRa);
-                            break;
-                        case MountTaskName.MinPulseDec:
-                            _ = new SkySetMinPulseDuration(0, Axis.Axis2, _settings!.MinPulseDec);
-                            break;
-                        case MountTaskName.MonitorPulse:
-                            _ = new SkySetMonitorPulse(0, MonitorPulse);
-                            break;
-                        case MountTaskName.PecTraining:
-                            _ = new SkySetPPecTrain(0, Axis.Axis1, PecTraining);
-                            break;
-                        case MountTaskName.Pec:
-                            var ppeOcn = new SkySetPPec(SkyQueue.NewId, Axis.Axis1, _settings!.PPecOn);
-                            var pPecOnStr = (string)SkyQueue.GetCommandResult(ppeOcn).Result;
-                            if (string.IsNullOrEmpty(pPecOnStr))
-                            {
-                                _settings!.PPecOn = false;
-                                break;
-                            }
-                            if (pPecOnStr.Contains("!")) { _settings!.PPecOn = false; }
-                            break;
-                        case MountTaskName.PolarLedLevel:
-                            if (_settings!.PolarLedLevel < 0 || _settings!.PolarLedLevel > 255) { return; }
-                            _ = new SkySetPolarLedLevel(0, Axis.Axis1, _settings!.PolarLedLevel);
-                            break;
-                        case MountTaskName.StopAxes:
-                            _ = new SkyAxisStop(0, Axis.Axis1);
-                            _ = new SkyAxisStop(0, Axis.Axis2);
-                            break;
-                        case MountTaskName.SetSt4Guiderate:
-                            _ = new SkySetSt4GuideRate(0, _settings!.St4GuideRate);
-                            break;
-                        case MountTaskName.SetSouthernHemisphere:
-                            _ = new SkySetSouthernHemisphere(SkyQueue.NewId, SouthernHemisphere);
-                            break;
-                        case MountTaskName.SetSnapPort1:
-                            var sp1 = new SkySetSnapPort(SkyQueue.NewId, 1, SnapPort1);
-                            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(sp1).Result), out bool port1Result);
-                            SnapPort1Result = port1Result;
-                            break;
-                        case MountTaskName.SetSnapPort2:
-                            var sp2 = new SkySetSnapPort(SkyQueue.NewId, 2, SnapPort2);
-                            bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(sp2).Result), out bool port2Result);
-                            SnapPort2Result = port2Result;
-                            break;
-                        case MountTaskName.SyncAxes:
-                            var appAxesSync = AppAxes; // Get from instance
-                            var sync = Axes.AxesAppToMount(new[] { appAxesSync.X, appAxesSync.Y }, context);
-                            _ = new SkySyncAxis(0, Axis.Axis1, sync[0]);
-                            _ = new SkySyncAxis(0, Axis.Axis2, sync[1]);
-                            monitorItem.Message += $",{appAxesSync.X}|{appAxesSync.Y}|{sync[0]}|{sync[1]}";
-                            MonitorLog.LogToMonitor(monitorItem);
-                            break;
-                        case MountTaskName.SyncTarget:
-                            // convert target to internal Ra / Dec
-                            var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
-                            // convert target to axis for Ra / Dec sync
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
-                            _ = new SkySyncAxis(0, Axis.Axis1, targetR[0]);
-                            _ = new SkySyncAxis(0, Axis.Axis2, targetR[1]);
-                            monitorItem.Message += $",{Utilities.HoursToHMS(a.X, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(a.Y, " ", ":", "", 2)}|{targetR[0]}|{targetR[1]}";
-                            MonitorLog.LogToMonitor(monitorItem);
-                            break;
-                        case MountTaskName.SyncAltAz:
-                            var altAzSyncPos = AltAzSync; // Get from instance
-                            var targetA = new[] { altAzSyncPos.Y, altAzSyncPos.X };
-                            // convert target to axis for Az / Alt sync
-                            targetA = Axes.AzAltToAxesXy(targetA, context);
-                            _ = new SkySyncAxis(0, Axis.Axis1, targetA[0]);
-                            _ = new SkySyncAxis(0, Axis.Axis2, targetA[1]);
-                            monitorItem.Message += $",{altAzSyncPos.Y}|{altAzSyncPos.X}|{targetA[0]}|{targetA[1]}";
-                            MonitorLog.LogToMonitor(monitorItem);
-                            break;
-                        case MountTaskName.GetAxisVersions:
-                            var skyAxisVersions = new SkyGetAxisStringVersions(SkyQueue.NewId);
-                            // Not used atm
-                            _ = (long[])SkyQueue.GetCommandResult(skyAxisVersions).Result;
-                            break;
-                        case MountTaskName.GetAxisStrVersions:
-                            var skyAxisStrVersions = new SkyGetAxisStringVersions(SkyQueue.NewId);
-                            // Not used atm
-                            _ = (string)SkyQueue.GetCommandResult(skyAxisStrVersions).Result;
-                            break;
-                        case MountTaskName.MountName:
-                            var skyMountType = new SkyMountType(SkyQueue.NewId);
-                            MountName = (string)SkyQueue.GetCommandResult(skyMountType).Result;
-                            break;
-                        case MountTaskName.MountVersion:
-                            var skyMountVersion = new SkyMountVersion(SkyQueue.NewId);
-                            MountVersion = (string)SkyQueue.GetCommandResult(skyMountVersion).Result;
-                            break;
-                        case MountTaskName.StepsPerRevolution:
-                            var skyMountRevolutions = new SkyGetStepsPerRevolution(SkyQueue.NewId);
-                            StepsPerRevolution = (long[])SkyQueue.GetCommandResult(skyMountRevolutions).Result;
-                            break;
-                        case MountTaskName.StepsWormPerRevolution:
-                            var skyWormRevolutions1 = new SkyGetPecPeriod(SkyQueue.NewId, Axis.Axis1);
-                            StepsWormPerRevolution[0] = (double)SkyQueue.GetCommandResult(skyWormRevolutions1).Result;
-                            var skyWormRevolutions2 = new SkyGetPecPeriod(SkyQueue.NewId, Axis.Axis2);
-                            StepsWormPerRevolution[1] = (double)SkyQueue.GetCommandResult(skyWormRevolutions2).Result;
-                            break;
-                        case MountTaskName.StepTimeFreq:
-                            var skyStepTimeFreq = new SkyGetStepTimeFreq(SkyQueue.NewId);
-                            StepsTimeFreq = (long[])SkyQueue.GetCommandResult(skyStepTimeFreq).Result;
-                            break;
-                        case MountTaskName.SetHomePositions:
-                            var homeAxesSet = HomeAxes; // Get from instance
-                            _ = new SkySetAxisPosition(0, Axis.Axis1, homeAxesSet.X);
-                            _ = new SkySetAxisPosition(0, Axis.Axis2, homeAxesSet.Y);
-                            break;
-                        default:
-                             throw new ArgumentOutOfRangeException();
-                     }
-
-                     break;
-                 default:
-                     throw new ArgumentOutOfRangeException();
-             }
-#pragma warning restore CS0618
-        }
 
         /// <summary>
         /// Instance-aware SkyTasks: routes commands and capability writes to the given MountInstance.
@@ -1719,60 +1514,6 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-        }
-
-        /// <summary>
-        /// Makes sure the axes are at full stop
-        /// </summary>
-        /// <returns></returns>
-        internal static bool AxesStopValidate()
-        {
-#pragma warning disable CS0618 // legacy static method â€” shortcut ctors intentional
-            if (!IsMountRunning) { return true; }
-            Stopwatch stopwatch;
-            bool axis2Stopped;
-            bool axis1Stopped;
-            switch (_settings!.Mount)
-            {
-                case MountType.Simulator:
-
-                    stopwatch = Stopwatch.StartNew();
-                    while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
-                    {
-                        SimTasks(MountTaskName.StopAxes, _defaultInstance!);
-                        Thread.Sleep(100);
-                        var statusX = new CmdAxisStatus(MountQueue.NewId, Axis.Axis1);
-                        var axis1Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusX).Result;
-                        axis1Stopped = axis1Status.Stopped;
-
-                        var statusY = new CmdAxisStatus(MountQueue.NewId, Axis.Axis2);
-                        var axis2Status = (Mount.Simulator.AxisStatus)MountQueue.GetCommandResult(statusY).Result;
-                        axis2Stopped = axis2Status.Stopped;
-
-                        if (!axis1Stopped || !axis2Stopped) { continue; }
-                        return true;
-                    }
-                    return false;
-                case MountType.SkyWatcher:
-                    stopwatch = Stopwatch.StartNew();
-                    while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
-                    {
-                        SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
-                        Thread.Sleep(100);
-                        var statusx = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis1);
-                        axis1Stopped = Convert.ToBoolean(SkyQueue.GetCommandResult(statusx).Result);
-
-                        var statusy = new SkyIsAxisFullStop(SkyQueue.NewId, Axis.Axis2);
-                        axis2Stopped = Convert.ToBoolean(SkyQueue.GetCommandResult(statusy).Result);
-
-                        if (!axis1Stopped || !axis2Stopped) { continue; }
-                        return true;
-                    }
-                    return false;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-#pragma warning restore CS0618
         }
 
         /// <summary>
