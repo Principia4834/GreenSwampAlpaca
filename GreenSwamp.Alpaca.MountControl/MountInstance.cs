@@ -60,6 +60,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // Factor steps (conversion ratios) - instance-owned
         internal double[] _factorStep = new double[2];
         internal long[] _stepsPerRevolution = new long[2];
+        internal long[] _stepsTimeFreq = { 0, 0 };
         internal double[] _stepsWormPerRevolution = new double[2];
 
         // PEC fields
@@ -100,8 +101,11 @@ namespace GreenSwamp.Alpaca.MountControl
         internal bool _isAutoHomeRunning;
         internal bool _snapPort1Result;
         internal bool _snapPort2Result;
+        internal bool _snapPort1;
+        internal bool _snapPort2;
+        internal GuideDirection _lastDecDirection;
 
-        // Step 2: Per-instance diagnostics and tracking mode (migrated from static SkyServer)
+        // Step 2: Per-instance diagnostics
         internal ulong _loopCounter;
         internal int _timerOverruns;
         internal AltAzTrackingType _altAzTrackingMode;
@@ -1557,14 +1561,12 @@ namespace GreenSwamp.Alpaca.MountControl
                         customWormSteps = new[] { (double)_settings.CustomRa360Steps / _settings.CustomRaWormTeeth, (double)_settings.CustomDec360Steps / _settings.CustomDecWormTeeth };
                     }
 
-                    // Q2: Create instance-owned queue; register with the static facade so Commands
-                    // that still reference SkyQueue.CustomMount360Steps / Serial can resolve it.
+                    // Q2: Create instance-owned queue for SkyWatcher.
                     var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
                         v => { _isPulseGuidingRa = v; },
                         v => { _isPulseGuidingDec = v; });
-                    SkyQueue.RegisterInstance(sqImpl);  // must be called before Start() so the facade is live when commands execute
                     sqImpl.Start(_serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
                     SkyQueueInstance = sqImpl;
                     if (!sqImpl.IsRunning)

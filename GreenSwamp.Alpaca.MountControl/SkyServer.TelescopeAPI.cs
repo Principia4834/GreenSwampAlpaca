@@ -760,8 +760,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="tracking">Optional. A boolean value indicating whether tracking should be enabled after the GoTo operation completes.
         /// Defaults to <see langword="false"/>.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if an unsupported mount type or slew type is specified.</exception>
-        // Lock for synchronizing GoToAsync operations
-        private static readonly object _goToAsyncLock = new object();
         private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false)
         {
             MonitorEntry monitorItem;

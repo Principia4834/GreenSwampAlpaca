@@ -57,6 +57,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private readonly int[] _stepsPerRev = { 0, 0 };                 // From mount :a or :X0002
         private readonly int[] _resolutionFactor = { 1, 1 };            // Step division factor from :a and :X0002
         private ISerialPort _serial;
+        private int[] _customMount360Steps = { 0, 0 };                  // Custom gear ratio overrides per axis
+        private double[] _customRaWormSteps = { 0, 0 };                 // Custom worm step overrides per axis
 
         #endregion
 
@@ -102,6 +104,15 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 //Serial.PinChanged += PinReceived;
                 MountConnected = true;
             }
+        }
+
+        /// <summary>
+        /// Set custom gear ratio overrides; called by SkyWatcher.SetCustomGearing during executor initialisation.
+        /// </summary>
+        internal void SetCustomGearing(int[] customMount360Steps, double[] customRaWormSteps)
+        {
+            if (customMount360Steps != null) _customMount360Steps = customMount360Steps;
+            if (customRaWormSteps != null) _customRaWormSteps = customRaWormSteps;
         }
 
         /// <summary>
@@ -344,12 +355,12 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 {
                     case Axis.Axis1:
                         _stepsPerRev[0] = gearRatio;
-                        if (SkyQueue.CustomMount360Steps[0] > 0) { gearRatio = SkyQueue.CustomMount360Steps[0]; } //Setup for custom :a
+                        if (_customMount360Steps[0] > 0) { gearRatio = _customMount360Steps[0]; } //Setup for custom :a
                         _axisGearRatios[0] = gearRatio;
                         break;
                     case Axis.Axis2:
                         _stepsPerRev[1] = gearRatio;
-                        if (SkyQueue.CustomMount360Steps[1] > 0) { gearRatio = SkyQueue.CustomMount360Steps[1]; } //Setup for custom :a
+                        if (_customMount360Steps[1] > 0) { gearRatio = _customMount360Steps[1]; } //Setup for custom :a
                         _axisGearRatios[1] = gearRatio;
                         break;
                     default:
@@ -377,7 +388,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                         gearRatio = 0x205318; // for 114GT mount
                     }
                     _stepsPerRev[0] = (int)gearRatio;
-                    if (SkyQueue.CustomMount360Steps[0] > 0) { gearRatio = SkyQueue.CustomMount360Steps[0]; } //Setup for custom :a
+                    if (_customMount360Steps[0] > 0) { gearRatio = _customMount360Steps[0]; } //Setup for custom :a
                     _axisGearRatios[0] = gearRatio;
                 }
                 else
@@ -391,14 +402,14 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                         gearRatio = 0x205318; // for 114GT mount
                     }
                     _stepsPerRev[1] = (int)gearRatio;
-                    if (SkyQueue.CustomMount360Steps[1] > 0) { gearRatio = SkyQueue.CustomMount360Steps[1]; } //Setup for custom :a
+                    if (_customMount360Steps[1] > 0) { gearRatio = _customMount360Steps[1]; } //Setup for custom :a
                     _axisGearRatios[1] = gearRatio;
                 }
                 _factorRadToStep[(int)axis] = gearRatio / (2 * Math.PI);
                 _factorStepToRad[(int)axis] = 2 * Math.PI / gearRatio;
             }
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":{msg}|{axis}|{response}|{_stepsPerRev[(int)axis]}|Custom:{SkyQueue.CustomMount360Steps[(int)axis]}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":{msg}|{axis}|{response}|{_stepsPerRev[(int)axis]}|Custom:{_customMount360Steps[(int)axis]}" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 
@@ -933,24 +944,24 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             var response = CmdToMount(axis, 's', null);
             var pecPeriod = (double)StringToLong(response);
             var ax = (int)axis;
-            if (SkyQueue.CustomRaWormSteps[ax] > 0) { pecPeriod = SkyQueue.CustomRaWormSteps[ax]; } // Setup custom mount worm steps
+            if (_customRaWormSteps[ax] > 0) { pecPeriod = _customRaWormSteps[ax]; } // Setup custom mount worm steps
             //_peSteps[ax] = pecPeriod;
             var ret = pecPeriod;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":s|{axis}|{response}|{pecPeriod}|Custom:{SkyQueue.CustomRaWormSteps[ax]}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":s|{axis}|{response}|{pecPeriod}|Custom:{_customRaWormSteps[ax]}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             if (!SupportAdvancedCommandSet || !AllowAdvancedCommandSet) return ret;
             response = CmdToMount(axis, 'X', "000E");    // Read 32-bit Resolution of the worm(Counts per revolution)
             pecPeriod = String32ToInt(response, true, _resolutionFactor[(int)axis]);
             ax = (int)axis;
-            if (SkyQueue.CustomRaWormSteps[ax] > 0) { pecPeriod = SkyQueue.CustomRaWormSteps[ax]; } // Setup custom mount worm steps
+            if (_customRaWormSteps[ax] > 0) { pecPeriod = _customRaWormSteps[ax]; } // Setup custom mount worm steps
             //_peSteps[ax] = pecPeriod;
             ret = pecPeriod;
 
             monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":X000E|{axis}|{response}|{pecPeriod}|Custom:{SkyQueue.CustomRaWormSteps[ax]}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":X000E|{axis}|{response}|{pecPeriod}|Custom:{_customRaWormSteps[ax]}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             return ret;

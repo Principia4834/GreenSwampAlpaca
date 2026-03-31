@@ -1,4 +1,4 @@
-﻿/* Copyright(C) 2019-2025 Rob  Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2025 Rob  Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -32,7 +32,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public abstract class SkyCommandBase : CommandBase<SkyWatcher>, ISkyCommand
     {
         protected SkyCommandBase(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        protected SkyCommandBase(long id) : base(id, SkyQueue.Instance) { }
     }
 
     /// <summary>
@@ -41,7 +40,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public abstract class SkyQueryCommand : QueryCommand<SkyWatcher>, ISkyCommand
     {
         protected SkyQueryCommand(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        protected SkyQueryCommand(long id) : base(id, SkyQueue.Instance) { }
     }
 
     /// <summary>
@@ -50,7 +48,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public abstract class SkyActionCommand : ActionCommand<SkyWatcher>, ISkyCommand
     {
         protected SkyActionCommand(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        protected SkyActionCommand(long id) : base(id, SkyQueue.Instance) { }
     }
 
     // Action Commands (no result returned)
@@ -62,8 +59,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAllowAdvancedCommandSet(long id, bool on) : this(id, SkyQueue.Instance, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -81,8 +76,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _steps = steps;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAxisMoveSteps(long id, Axis axis, long steps) : this(id, SkyQueue.Instance, axis, steps) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -106,8 +99,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _backlashSteps = backlashSteps;
             _token = token;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAxisPulse(long id, Axis axis, double guideRate, int duration, int backlashSteps, CancellationToken token) : this(id, SkyQueue.Instance, axis, guideRate, duration, backlashSteps, token) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -123,8 +114,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAxisStop(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -140,8 +129,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAxisStopInstant(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -159,8 +146,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _rate = rate;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAxisSlew(long id, Axis axis, double rate) : this(id, SkyQueue.Instance, axis, rate) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -171,8 +156,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyInitializeAxes : SkyActionCommand
     {
         public SkyInitializeAxes(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyInitializeAxes(long id) : this(id, SkyQueue.Instance) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -190,8 +173,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _position = position;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetAxisPosition(long id, Axis axis, double position) : this(id, SkyQueue.Instance, axis, position) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -209,8 +190,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _position = position;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetAxisPositionCounter(long id, Axis axis, int position) : this(id, SkyQueue.Instance, axis, position) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -230,8 +209,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _func = func;
             _direction = direction;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetMotionMode(long id, Axis axis, int func, int direction) : this(id, SkyQueue.Instance, axis, func, direction) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -247,8 +224,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyStartMotion(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -266,8 +241,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _targetPosition = targetPosition;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyAxisGoToTarget(long id, Axis axis, double targetPosition) : this(id, SkyQueue.Instance, axis, targetPosition) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -283,8 +256,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetAlternatingPPec(long id, bool on) : this(id, SkyQueue.Instance, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -300,8 +271,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetDecPulseToGoTo(long id, bool on) : this(id, SkyQueue.Instance, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -317,8 +286,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _southernHemisphere = southernHemisphere;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetSouthernHemisphere(long id, bool southernHemisphere) : this(id, SkyQueue.Instance, southernHemisphere) { }
 
         public override dynamic Result => null;
 
@@ -338,8 +305,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetEncoder(long id, Axis axis, bool on) : this(id, SkyQueue.Instance, axis, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -355,8 +320,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetMonitorPulse(long id, bool on) : this(id, SkyQueue.Instance, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -374,8 +337,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _duration = duration;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetMinPulseDuration(long id, Axis axis, int duration) : this(id, SkyQueue.Instance, axis, duration) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -400,8 +361,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetPPecTrain(long id, Axis axis, bool on) : this(id, SkyQueue.Instance, axis, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -419,8 +378,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _level = level;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetPolarLedLevel(long id, Axis axis, int level) : this(id, SkyQueue.Instance, axis, level) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -438,8 +395,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetFullCurrent(long id, Axis axis, bool on) : this(id, SkyQueue.Instance, axis, on) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -457,8 +412,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _stepsCount = stepsCount;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetGotoTargetIncrement(long id, Axis axis, long stepsCount) : this(id, SkyQueue.Instance, axis, stepsCount) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -476,8 +429,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _stepSpeed = stepSpeed;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetStepSpeed(long id, Axis axis, long stepSpeed) : this(id, SkyQueue.Instance, axis, stepSpeed) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -495,8 +446,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _stepsCount = stepsCount;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetBreakPointIncrement(long id, Axis axis, long stepsCount) : this(id, SkyQueue.Instance, axis, stepsCount) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -512,8 +461,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _rate = rate;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetSt4GuideRate(long id, int rate) : this(id, SkyQueue.Instance, rate) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -531,8 +478,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _position = position;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetTargetPosition(long id, Axis axis, double position) : this(id, SkyQueue.Instance, axis, position) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -548,8 +493,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetHomePositionIndex(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -560,8 +503,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyLoadDefaultMountSettings : SkyActionCommand
     {
         public SkyLoadDefaultMountSettings(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyLoadDefaultMountSettings(long id) : this(id, SkyQueue.Instance) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -579,8 +520,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _position = position;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySyncAxis(long id, Axis axis, double position) : this(id, SkyQueue.Instance, axis, position) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -591,8 +530,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyUpdateSteps : SkyActionCommand
     {
         public SkyUpdateSteps(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyUpdateSteps(long id) : this(id, SkyQueue.Instance) { }
 
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
@@ -604,8 +541,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanAxisSlewsIndependent : SkyQueryCommand
     {
         public SkyCanAxisSlewsIndependent(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanAxisSlewsIndependent(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -616,8 +551,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanAzEq : SkyQueryCommand
     {
         public SkyCanAzEq(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanAzEq(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -628,8 +561,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanDualEncoders : SkyQueryCommand
     {
         public SkyCanDualEncoders(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanDualEncoders(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -640,8 +571,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanHalfTrack : SkyQueryCommand
     {
         public SkyCanHalfTrack(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanHalfTrack(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -652,8 +581,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanHomeSensors : SkyQueryCommand
     {
         public SkyCanHomeSensors(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanHomeSensors(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -664,8 +591,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanPolarLed : SkyQueryCommand
     {
         public SkyCanPolarLed(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanPolarLed(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -676,8 +601,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanPPec : SkyQueryCommand
     {
         public SkyCanPPec(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanPPec(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -688,8 +611,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyCanWifi : SkyQueryCommand
     {
         public SkyCanWifi(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCanWifi(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -711,8 +632,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _cmdData = cmdData;
             _ignoreWarnings = ignoreWarnings;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyCmdToMount(long id, int axis, string cmd, string cmdData, string ignoreWarnings) : this(id, SkyQueue.Instance, axis, cmd, cmdData, ignoreWarnings) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -723,8 +642,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetAdvancedCmdSupport : SkyQueryCommand
     {
         public SkyGetAdvancedCmdSupport(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAdvancedCmdSupport(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -742,8 +659,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _angleInRad = angleInRad;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAngleToStep(long id, Axis axis, double angleInRad) : this(id, SkyQueue.Instance, axis, angleInRad) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -759,8 +674,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAxisPosition(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -778,8 +691,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _raw = raw;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAxisPositionCounter(long id, Axis axis, bool raw = false) : this(id, SkyQueue.Instance, axis, false) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -795,8 +706,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAxisPositionDate(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -812,8 +721,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetControllerVoltage(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -829,8 +736,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetRampDownRange(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -841,8 +746,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetCapabilities : SkyQueryCommand
     {
         public SkyGetCapabilities(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetCapabilities(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -858,8 +761,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetEncoderCount(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -877,8 +778,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _raw = raw;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetJ(long id, Axis axis, bool raw) : this(id, SkyQueue.Instance, axis, raw) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -894,8 +793,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetLastGoToTarget(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -911,8 +808,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetLastSlewSpeed(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -928,8 +823,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetHomePosition(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -945,8 +838,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetMotorCardVersion(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -962,8 +853,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetPecPeriod(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -979,8 +868,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _raw = raw;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetPositionsAndTime(long id, bool raw) : this(id, SkyQueue.Instance, raw) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -991,8 +878,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetPositionsInDegrees : SkyQueryCommand
     {
         public SkyGetPositionsInDegrees(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetPositionsInDegrees(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1003,8 +888,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetSteps : SkyQueryCommand
     {
         public SkyGetSteps(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetSteps(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1020,8 +903,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetSiderealRate(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1039,8 +920,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _steps = steps;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetStepToAngle(long id, Axis axis, long steps) : this(id, SkyQueue.Instance, axis, steps) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1051,8 +930,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyMountType : SkyQueryCommand
     {
         public SkyMountType(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyMountType(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1063,8 +940,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyMountVersion : SkyQueryCommand
     {
         public SkyMountVersion(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyMountVersion(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1080,8 +955,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsAxisFullStop(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1092,8 +965,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyIsConnected : SkyQueryCommand
     {
         public SkyIsConnected(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsConnected(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1109,8 +980,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsHighSpeed(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1121,8 +990,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyIsPPecOn : SkyQueryCommand
     {
         public SkyIsPPecOn(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsPPecOn(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1133,8 +1000,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyIsPPecInTrainingOn : SkyQueryCommand
     {
         public SkyIsPPecInTrainingOn(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsPPecInTrainingOn(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1150,8 +1015,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsSlewing(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1167,8 +1030,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsSlewingForward(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1184,8 +1045,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             _axis = axis;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyIsSlewingTo(long id, Axis axis) : this(id, SkyQueue.Instance, axis) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1196,8 +1055,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetAxisVersions : SkyQueryCommand
     {
         public SkyGetAxisVersions(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAxisVersions(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1208,8 +1065,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetAxisStringVersions : SkyQueryCommand
     {
         public SkyGetAxisStringVersions(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetAxisStringVersions(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1227,8 +1082,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _axis = axis;
             _on = on;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetPPec(long id, Axis axis, bool on) : this(id, SkyQueue.Instance, axis, on) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1246,8 +1099,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             _on = on;
             _port = port;
         }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkySetSnapPort(long id, int port, bool on) : this(id, SkyQueue.Instance, port, on) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1258,8 +1109,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetStepsPerRevolution : SkyQueryCommand
     {
         public SkyGetStepsPerRevolution(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetStepsPerRevolution(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1270,8 +1119,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetStepTimeFreq : SkyQueryCommand
     {
         public SkyGetStepTimeFreq(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetStepTimeFreq(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1282,8 +1129,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetHighSpeedRatio : SkyQueryCommand
     {
         public SkyGetHighSpeedRatio(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetHighSpeedRatio(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1294,8 +1139,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetLowSpeedGotoMargin : SkyQueryCommand
     {
         public SkyGetLowSpeedGotoMargin(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetLowSpeedGotoMargin(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1306,8 +1149,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetFactorRadRateToInt : SkyQueryCommand
     {
         public SkyGetFactorRadRateToInt(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetFactorRadRateToInt(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1318,8 +1159,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyGetFactorStepToRad : SkyQueryCommand
     {
         public SkyGetFactorStepToRad(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-        [Obsolete("Use the ICommandQueue<SkyWatcher> injection constructor. Static shortcut will be removed when SkyQueue facade is retired.")]
-        public SkyGetFactorStepToRad(long id) : this(id, SkyQueue.Instance) { }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {

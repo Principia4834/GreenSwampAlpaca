@@ -151,6 +151,15 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
 
         /// <summary>
+        /// Set custom gear ratio overrides on the hardware command layer.
+        /// Called by SkyQueueImplementation.InitializeExecutor during queue start.
+        /// </summary>
+        internal void SetCustomGearing(int[] customMount360Steps, double[] customRaWormSteps)
+        {
+            _commands.SetCustomGearing(customMount360Steps, customRaWormSteps);
+        }
+
+        /// <summary>
         /// Allows the new advanced command set to be used instead of old commands.
         /// </summary>
         /// <param name="on"></param>

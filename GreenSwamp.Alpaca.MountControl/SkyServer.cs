@@ -60,7 +60,6 @@ namespace GreenSwamp.Alpaca.MountControl
         //          _isAutoHomeRunning, _isPulseGuidingDec, _isPulseGuidingRa, _canPPec,
         //          _canPolarLed, _canAdvancedCmdSupport, _rateMoveAxes, _moveAxisActive,
         //          _snapPort1Result, _snapPort2Result moved to MountInstance backing fields.
-        private static bool _mountRunning;
         // Phase 6: _parkSelected moved to MountInstance backing field
         private static ParkPosition? _parkSelected
         {
@@ -360,7 +359,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// applies backlash to pulse
         /// </summary>
-        private static GuideDirection LastDecDirection { get; set; }
+        private static GuideDirection LastDecDirection
+        {
+            get => _defaultInstance?._lastDecDirection ?? default;
+            set { if (_defaultInstance != null) _defaultInstance._lastDecDirection = value; }
+        }
 
         /// <summary>
         /// Count number of times server loop is executed
@@ -588,7 +591,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// :b Timer Freq
         /// </summary>
-        public static long[] StepsTimeFreq { get; private set; } = { 0, 0 };
+        public static long[] StepsTimeFreq
+        {
+            get => _defaultInstance?._stepsTimeFreq ?? new long[] { 0, 0 };
+            private set { if (_defaultInstance != null) _defaultInstance._stepsTimeFreq = value; }
+        }
 
         /// <summary>
         /// current micro steps, used to update SkyServer and UI
@@ -800,9 +807,17 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Camera Port
         /// </summary>
-        public static bool SnapPort1 { get; set; }
+        public static bool SnapPort1
+        {
+            get => _defaultInstance?._snapPort1 ?? false;
+            set { if (_defaultInstance != null) _defaultInstance._snapPort1 = value; }
+        }
 
-        public static bool SnapPort2 { get; set; }
+        public static bool SnapPort2
+        {
+            get => _defaultInstance?._snapPort2 ?? false;
+            set { if (_defaultInstance != null) _defaultInstance._snapPort2 = value; }
+        }
 
         public static bool SnapPort1Result
         {
@@ -917,10 +932,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static bool IsMountRunning
         {
-            get => _defaultInstance?.IsMountRunning ?? _mountRunning;
+            get => _defaultInstance?.IsMountRunning ?? false;
             set
             {
-                _mountRunning = value;
                 LoopCounter = 0;
                 if (value)
                 {

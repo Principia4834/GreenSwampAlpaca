@@ -1,4 +1,4 @@
-﻿/* Copyright(C) 2019-2025 Rob  Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2025 Rob  Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -94,6 +94,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 executor.LowVoltageEvent += _lowVoltageEventHandler;
             }
             executor?.Initialize(_serial);
+            executor?.SetCustomGearing(_customMount360Steps, _customRaWormSteps);
             executor?.SetCallbacks(_stepsCallback, _pulseGuideRaCallback, _pulseGuideDecCallback);
         }
 
@@ -103,145 +104,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             {
                 executor.LowVoltageEvent -= _lowVoltageEventHandler;
             }
-        }
-    }
-
-    public static class SkyQueue
-    {
-        // Q2: Non-readonly; MountInstance registers its owned implementation via RegisterInstance()
-        private static SkyQueueImplementation _instance;
-        private static bool _isPulseGuidingDec;
-        private static bool _isPulseGuidingRa;
-        private static double[] _steps;
-
-        public static event PropertyChangedEventHandler StaticPropertyChanged;
-
-        /// <summary>
-        /// Register the instance-owned queue so the static facade delegates to it.
-        /// Called by MountInstance.MountStart() before the queue is started.
-        /// </summary>
-        public static void RegisterInstance(SkyQueueImplementation impl)
-        {
-            _instance = impl ?? throw new ArgumentNullException(nameof(impl));
-        }
-
-        /// <summary>
-        /// Instance for use by command constructors and MountInstance queue ownership.
-        /// </summary>
-        public static CommandQueueBase<SkyWatcher> Instance => _instance;
-
-        /// <summary>
-        /// Serial object
-        /// </summary>
-        internal static ISerialPort Serial => _instance?.Serial;
-
-        /// <summary>
-        /// Custom Mount :s replacement
-        /// </summary>
-        internal static int[] CustomMount360Steps => _instance?.CustomMount360Steps;
-
-        /// <summary>
-        /// Custom Mount :a replacement
-        /// </summary>
-        internal static double[] CustomRaWormSteps => _instance?.CustomRaWormSteps;
-
-        /// <summary>
-        /// IsRunning
-        /// </summary>
-        public static bool IsRunning => _instance?.IsRunning ?? false;
-
-        /// <summary>
-        /// Locking id
-        /// </summary>
-        public static long NewId => _instance?.NewId ?? 0;
-
-        /// <summary>
-        /// Thread-safe queue processing statistics for the current session.
-        /// </summary>
-        public static CommandQueueStatistics Statistics => _instance?.Statistics;
-
-        /// <summary>
-        /// status for Dec Pulse
-        /// </summary>
-        public static bool IsPulseGuidingDec
-        {
-            get => _isPulseGuidingDec;
-            set
-            {
-                _isPulseGuidingDec = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// status for Ra Pulse
-        /// </summary>
-        public static bool IsPulseGuidingRa
-        {
-            get => _isPulseGuidingRa;
-            set
-            {
-                _isPulseGuidingRa = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// current steps, main property used to update Server and UI
-        /// </summary>
-        public static double[] Steps
-        {
-            get => _steps;
-            set
-            {
-                _steps = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Add a command to the blocking queue
-        /// </summary>
-        /// <param name="command"></param>
-        public static void AddCommand(ISkyCommand command)
-        {
-            _instance?.AddCommand(command);
-        }
-
-        /// <summary>
-        /// Mount data results
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        public static ISkyCommand GetCommandResult(ISkyCommand command)
-        {
-            return _instance == null ? command : (ISkyCommand)_instance.GetCommandResult(command);
-        }
-
-        /// <summary>
-        /// Startup Queues — delegates to the instance registered via RegisterInstance().
-        /// </summary>
-        public static void Start(ISerialPort serial, int[] customMount360Steps, double[] customRaWormSteps, EventHandler lowVoltageEventHandler = null)
-        {
-            if (_instance == null) throw new InvalidOperationException("No SkyQueueImplementation registered. Call RegisterInstance() before Start().");
-            _instance.Start(serial, customMount360Steps, customRaWormSteps, lowVoltageEventHandler);
-        }
-
-        /// <summary>
-        /// Stop
-        /// </summary>
-        public static void Stop()
-        {
-            _instance?.Stop();
-        }
-
-        /// <summary>
-        /// called from the setter property.  property name is not required
-        /// </summary>
-        /// <param name="propertyName"></param>
-        private static void OnStaticPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

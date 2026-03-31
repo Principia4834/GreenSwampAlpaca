@@ -86,25 +86,25 @@ public class QueueMigrationTests
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// The static SkyQueue.IsRunning must stay false when the implementation
-    /// has not been started. This guards the static bridge during transition.
+    /// A freshly created SkyQueueImplementation must not report IsRunning
+    /// before Start() is called.
     /// </summary>
     [Fact]
     public void WhenSkyQueueNotStartedThenIsRunningIsFalse()
     {
-        // The static singleton is shared — we can only assert it reflects the
-        // underlying implementation state.  If another test started the queue
-        // this could fail; run in isolation.
-        Assert.False(SkyQueue.IsRunning);
+        var queue = new SkyQueueImplementation();
+        Assert.False(queue.IsRunning);
     }
 
     /// <summary>
-    /// The static MountQueue.IsRunning must stay false when not started.
+    /// A freshly created MountQueueImplementation must not report IsRunning
+    /// before Start() is called.
     /// </summary>
     [Fact]
     public void WhenMountQueueNotStartedThenIsRunningIsFalse()
     {
-        Assert.False(MountQueue.IsRunning);
+        var queue = new MountQueueImplementation();
+        Assert.False(queue.IsRunning);
     }
 
     // -------------------------------------------------------------------------

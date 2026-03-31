@@ -598,8 +598,8 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Event Handlers
-        // Contains: PropertyChangedSkySettings, PropertyChangedAlignmentSettings, PropertyChangedSkyQueue,
-        //           PropertyChangedMountQueue, UpdateServerEvent, LowVoltageEventSet, GetLocalSiderealTime (2 overloads)
+        // Contains: PropertyChangedSkySettings, PropertyChangedAlignmentSettings,
+        //           UpdateServerEvent, LowVoltageEventSet, GetLocalSiderealTime (2 overloads)
 
         /// <summary>
         /// Property changes from SkySettings
@@ -657,48 +657,6 @@ namespace GreenSwamp.Alpaca.MountControl
             //        AlignmentModel.AlignmentWarningThreshold = AlignmentSettings.AlignmentWarningThreshold;
             //        break;
             //}
-        }
-
-        /// <summary>
-        /// Property changes from SkyQueue
-        /// </summary>
-        private static void PropertyChangedSkyQueue(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case "IsPulseGuidingRa":
-                    IsPulseGuidingRa = SkyQueue.IsPulseGuidingRa;
-                    break;
-                case "IsPulseGuidingDec":
-                    IsPulseGuidingDec = SkyQueue.IsPulseGuidingDec;
-                    break;
-                case "Steps":
-                    // Steps setter delegates to _defaultInstance?.ReceiveSteps() which signals
-                    // _mountPositionUpdatedEvent on the owning instance — no direct signal needed.
-                    Steps = SkyQueue.Steps;
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Property changes from MountQueue
-        /// </summary>
-        private static void PropertyChangedMountQueue(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case "IsPulseGuidingRa":
-                    IsPulseGuidingRa = MountQueue.IsPulseGuidingRa;
-                    break;
-                case "IsPulseGuidingDec":
-                    IsPulseGuidingDec = MountQueue.IsPulseGuidingDec;
-                    break;
-                case "Steps":
-                    // Steps setter delegates to _defaultInstance?.ReceiveSteps() which signals
-                    // _mountPositionUpdatedEvent on the owning instance — no direct signal needed.
-                    Steps = MountQueue.Steps;
-                    break;
-            }
         }
 
         /// <summary>
@@ -1405,7 +1363,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case MountTaskName.StepTimeFreq:
                             var skyStepTimeFreq = new SkyGetStepTimeFreq(q.NewId, q);
-                            StepsTimeFreq = (long[])q.GetCommandResult(skyStepTimeFreq).Result;
+                            instance._stepsTimeFreq = (long[])q.GetCommandResult(skyStepTimeFreq).Result;
                             break;
                         case MountTaskName.SetHomePositions:
                             var homeAxesSky = instance.HomeAxes;
