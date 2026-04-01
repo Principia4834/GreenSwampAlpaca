@@ -1051,20 +1051,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </remarks>
         /// <param name="target">Target coordinates to be mapped</param>
         /// <param name="slewType">Type of slew operation</param>
-        /// <param name="atTime">Optional UTC time for LST calculation (used for predicted coordinates)</param>
         /// <returns>Target coordinates mapped to appropriate axes</returns>        
-        public double[] MapSlewTargetToAxes(double[] target, SlewType slewType, DateTime? atTime = null)
+        public double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
         {
             // Convert target to axes based on slew type
             // Create context from current settings
             var context = AxesContext.FromSettings(_settings);
-
-            // If a specific time is provided, calculate LST at that time
-            if (atTime.HasValue)
-            {
-                var lst = SkyServer.GetLocalSiderealTime(atTime.Value);
-                context = context with { LocalSiderealTime = lst };
-            }
 
             switch (slewType)
             {
@@ -1072,7 +1064,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // convert target to axis for Ra / Dec slew
                     target = Axes.RaDecToAxesXy(target, context);
                     // Convert to synced axes
-                    target = SkyServer.GetSyncedAxes(target);
+                    // target = SkyServer.GetSyncedAxes(target);
                     break;
                 case SlewType.SlewAltAz:
                     // convert target to axis for Az / Alt slew
@@ -1801,21 +1793,21 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
                 {
                     var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
+                    // get predicted RA and Dec at update time
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                    // convert to internal Ra and Dec
                     var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
                     target = [internalRaDec.X, internalRaDec.Y];
-                    predictedTime = nextTime; // Pass the prediction time to MapSlewTargetToAxes
                 }
 
-                var simTargetAtTime = MapSlewTargetToAxes(target, slewType, predictedTime);
-                var simTargetNow = MapSlewTargetToAxes(target, slewType);
+                var simTarget = MapSlewTargetToAxes(target, slewType);
                 var rawPositions = GetRawDegrees();
 
                 if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
                 { break; }
 
-                deltaDegree[0] = Range.Range180(simTargetNow[0] - rawPositions[0]);
-                deltaDegree[1] = Range.Range180(simTargetNow[1] - rawPositions[1]);
+                deltaDegree[0] = Range.Range180(simTarget[0] - rawPositions[0]);
+                deltaDegree[1] = Range.Range180(simTarget[1] - rawPositions[1]);
 
                 var axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0];
                 var axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1];
@@ -1823,10 +1815,10 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
-                    _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, simTargetAtTime[0] + 0.125 * deltaDegree[0]);
+                    _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, simTarget[0] + 0.125 * deltaDegree[0]);
                 token.ThrowIfCancellationRequested();
                 if (!axis2AtTarget)
-                    _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, simTargetAtTime[1] + 0.05 * deltaDegree[1]);
+                    _ = new CmdAxisGoToTarget(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, simTarget[1] + 0.05 * deltaDegree[1]);
 
                 var axis1Stopped = false;
                 var axis2Stopped = false;
@@ -1997,14 +1989,14 @@ namespace GreenSwamp.Alpaca.MountControl
 
             while (stopwatch.Elapsed.TotalSeconds <= timer)
             {
-                Thread.Sleep(50);
+                Thread.Sleep(250);
                 token.ThrowIfCancellationRequested();
 
                 var statusx = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis1);
                 var x = SkyQueueInstance.GetCommandResult(statusx);
                 var axis1Stopped = Convert.ToBoolean(x.Result);
 
-                Thread.Sleep(50);
+                Thread.Sleep(250);
                 token.ThrowIfCancellationRequested();
 
                 var statusy = new SkyIsAxisFullStop(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis2);
@@ -2096,22 +2088,23 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (maxTries >= 5) { break; }
                 maxTries++;
 
-                DateTime? predictedTime = null;
                 if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
                 {
                     var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
+                    // get predicted RA and Dec at update time
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+                    // convert to internal Ra and Dec
                     var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
                     target = [internalRaDec.X, internalRaDec.Y];
-                    predictedTime = nextTime; // Pass the prediction time to MapSlewTargetToAxes
                 }
 
-                var skyTargetAtTime = MapSlewTargetToAxes(target, slewType, predictedTime);
-                var skyTargetNow = MapSlewTargetToAxes(target, slewType);
-                var rawPositions = GetRawDegrees();
+                var skyTarget = MapSlewTargetToAxes(target, slewType);
 
-                deltaDegree[0] = Range.Range180((skyTargetNow[0] - rawPositions[0]));
-                deltaDegree[1] = Range.Range180(skyTargetNow[1] - rawPositions[1]);
+                // Calculate error
+                var rawPositions = GetRawDegrees();
+                if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1])) { break; }
+                deltaDegree[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
+                deltaDegree[1] = Range.Range180(skyTarget[1] - rawPositions[1]);
 
                 axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
                 axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
@@ -2120,7 +2113,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 token.ThrowIfCancellationRequested();
                 if (!axis1AtTarget)
                 {
-                    _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, skyTargetAtTime[0] + 0.25 * deltaDegree[0]);
+                    _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, skyTarget[0] + 0.25 * deltaDegree[0]);
                 }
                 var axis1Done = axis1AtTarget;
                 while (loopTimer.Elapsed.TotalMilliseconds < 3000)
@@ -2139,7 +2132,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (!axis2AtTarget)
                 {
                     token.ThrowIfCancellationRequested();
-                    _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, skyTargetAtTime[1] + 0.1 * deltaDegree[1]);
+                    _ = new SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, skyTarget[1] + 0.1 * deltaDegree[1]);
                 }
 
                 var axis2Done = axis2AtTarget;

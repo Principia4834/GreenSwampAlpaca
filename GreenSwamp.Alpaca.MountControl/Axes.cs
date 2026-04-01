@@ -657,6 +657,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         "Unsupported alignment mode");
             }
         }
+
         /// <summary>
         /// Determine if a flip is needed to reach the RA/Dec coordinates using context
         /// </summary>
@@ -791,24 +792,5 @@ namespace GreenSwamp.Alpaca.MountControl
                         "Unsupported alignment mode");
             }
         }
-
-        /// <summary>
-        /// Determine if a flip is needed to reach RA/Dec coordinates (backward compatibility)
-        /// </summary>
-        /// <param name="raDec">Target RA/Dec coordinates</param>
-        /// <param name="lst">Local Sidereal Time (optional, fetched from SkyServer if NaN)</param>
-        /// <returns>True if flip is required</returns>
-        //[Obsolete("Use IsFlipRequired(raDec, context) for better testability")]
-        //internal static bool IsFlipRequired(IReadOnlyList<double> raDec, double lst = double.NaN)
-        //{
-        //    var context = AxesContext.FromStatic();
-
-        //    // Override LST if provided
-        //    if (!double.IsNaN(lst))
-        //        context = context.WithLst(lst);
-
-        //    return IsFlipRequired(raDec, context);
-        //}
-
     }
 }
