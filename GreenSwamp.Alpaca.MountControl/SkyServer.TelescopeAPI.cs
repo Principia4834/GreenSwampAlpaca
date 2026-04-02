@@ -1312,7 +1312,24 @@ namespace GreenSwamp.Alpaca.MountControl
             get
             {
                 if (_parkSelected == null)
-                    _parkSelected = new ParkPosition("Park", _settings!.ParkAxes[0], _settings!.ParkAxes[1]);
+                {
+                    // Try to initialize from ParkName if available
+                    if (!string.IsNullOrEmpty(_settings?.ParkName))
+                    {
+                        var found = _settings.ParkPositions?.Find(x => x.Name == _settings.ParkName);
+                        if (found != null)
+                        {
+                            _parkSelected = new ParkPosition(found.Name, found.X, found.Y);
+                            return _parkSelected;
+                        }
+                    }
+
+                    // Fallback: try to use ParkAxes if populated
+                    if (_settings?.ParkAxes != null && _settings.ParkAxes.Length >= 2)
+                    {
+                        _parkSelected = new ParkPosition("Park", _settings.ParkAxes[0], _settings.ParkAxes[1]);
+                    }
+                }
                 return _parkSelected;
             }
             set

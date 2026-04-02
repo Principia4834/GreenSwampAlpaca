@@ -1234,7 +1234,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 // AltAz and German Polar: Store axis coordinates directly
                 if (_alignmentMode != AlignmentMode.Polar)
                 {
-                    if (Math.Abs(_parkAxes[0] - value[0]) <= 0.0000000000001 &&
+                    // Check if _parkAxes is initialized before comparing
+                    if (_parkAxes != null && _parkAxes.Length >= 2 &&
+                        Math.Abs(_parkAxes[0] - value[0]) <= 0.0000000000001 &&
                         Math.Abs(_parkAxes[1] - value[1]) <= 0.0000000000001)
                         return;
 
@@ -1250,8 +1252,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     return;
                 }
 
-                // Polar mode: Check if value is different
-                if (Math.Abs(_parkAxes[0] - value[0]) <= 0.0000000000001 &&
+                // Polar mode: Check if value is different (with null/length check)
+                if (_parkAxes != null && _parkAxes.Length >= 2 &&
+                    Math.Abs(_parkAxes[0] - value[0]) <= 0.0000000000001 &&
                     Math.Abs(_parkAxes[1] - value[1]) <= 0.0000000000001)
                     return;
 

@@ -1345,6 +1345,18 @@ namespace GreenSwamp.Alpaca.MountControl
             // home axes
             _homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
 
+            // Initialize ParkSelected from ParkName setting
+            if (!string.IsNullOrEmpty(_settings.ParkName))
+            {
+                var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkName);
+                if (found != null)
+                {
+                    SkyServer.ParkSelected = found;
+                    // Also ensure ParkAxes is populated for backward compatibility
+                    _settings.ParkAxes = new[] { found.X, found.Y };
+                }
+            }
+
             // Set slew rates for all speed levels
             // SetSlewRates expects degrees/second and stores values in degrees
             // (hardware layer converts to radians when needed)

@@ -623,6 +623,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             var voltage = StringToLong(response) / 100.0; // Convert to volts
             return voltage;
         }
+
         /// <summary>
         /// g Inquire High Speed Ratio, EQ6Pro, AZeQ5, EQ8 = 16   AZeQ6 = 32
         /// </summary>
@@ -1180,6 +1181,11 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             {
                 CmdToMount(axis, 'K', null);
             }
+
+            var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":X|{axis}|0504" };
+            MonitorLog.LogToMonitor(monitorItem);
+
             _axesStatus[(int)axis].SetFullStop();
         }
 
@@ -1190,6 +1196,11 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal void AxisStopInstant(Axis axis)
         {
             CmdToMount(axis, 'L', null);
+
+            var monitorItem = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $":L|{axis}" };
+            MonitorLog.LogToMonitor(monitorItem);
+
             _axesStatus[(int)axis].SetFullStop();
         }
 
@@ -1376,7 +1387,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Telescope,
                 Category = MonitorCategory.Server,
-                Type = MonitorType.Data,
+                Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message = $"axis|{axis}|X szCmd|{szCmd}|Rate|{rateInRadian}|Steps|{irateInSteps}"
@@ -1414,7 +1425,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Telescope,
                 Category = MonitorCategory.Server,
-                Type = MonitorType.Data,
+                Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message = $"axis|{axis}|X szCmd|{szCmd}|Target|{targetInRadian}|TSteps|{itargetInSteps}|RSteps|{irateInSteps}"
