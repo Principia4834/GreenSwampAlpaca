@@ -1392,8 +1392,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Adds or removes the given client ID from the connected-client set.
-        /// On first connect, starts the mount hardware. On last disconnect, the hardware
-        /// continues running until explicitly stopped.
+        /// On first connect, starts the mount hardware in a background task (ASCOM async pattern).
+        /// Returns within &lt;1 second per ASCOM specification. Connection completes when Connecting becomes false.
+        /// On last disconnect, the hardware continues running until explicitly stopped.
         /// </summary>
         public void SetConnected(long id, bool value)
         {
@@ -1401,14 +1402,73 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_connectStates.Count == 0) { Connecting = true; }
                 var notAlreadyPresent = _connectStates.TryAdd(id, true);
+
                 if (_connectStates.Count > 0 && !IsMountRunning)
+                {
+                    _loopCounter = 0;
+
+                    // Phase 1: Start mount initialization in background to comply with ASCOM <1 second return requirement
+                    _ = Task.Run(() =>
+                    {
+                        try
                         {
-                            _loopCounter = 0;
                             MountStart();
+
+                            // Wait for initial stability (up to 5 seconds)
                             var connectionTimer = Stopwatch.StartNew();
                             while (_loopCounter < 2 && connectionTimer.ElapsedMilliseconds < 5000)
                                 Thread.Sleep(100);
+
+                            // Mark connection as complete
+                            Connecting = false;
+
+                            var completionItem = new MonitorEntry
+                            {
+                                Datetime = HiResDateTime.UtcNow,
+                                Device = MonitorDevice.Server,
+                                Category = MonitorCategory.Server,
+                                Type = MonitorType.Information,
+                                Method = nameof(SetConnected),
+                                Thread = Thread.CurrentThread.ManagedThreadId,
+                                Message = $"Connection complete|Instance:{_id}|LoopCount:{_loopCounter}"
+                            };
+                            MonitorLog.LogToMonitor(completionItem);
                         }
+                        catch (Exception ex)
+                        {
+                            // Risk 2: Store exception for later retrieval
+                            _mountError = ex;
+                            Connecting = false;
+
+                            var errorItem = new MonitorEntry
+                            {
+                                Datetime = HiResDateTime.UtcNow,
+                                Device = MonitorDevice.Server,
+                                Category = MonitorCategory.Server,
+                                Type = MonitorType.Error,
+                                Method = nameof(SetConnected),
+                                Thread = Thread.CurrentThread.ManagedThreadId,
+                                Message = $"Connection failed|Instance:{_id}|Error:{ex.Message}"
+                            };
+                            MonitorLog.LogToMonitor(errorItem);
+                        }
+                    });
+
+                    // Return immediately - connection proceeds in background
+                    var startItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"Add|{id}|{notAlreadyPresent}|StartingAsync|Connecting:{Connecting}"
+                    };
+                    MonitorLog.LogToMonitor(startItem);
+                    return; // Early return - Connecting remains true until background task completes
+                }
+
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Add|{id}|{notAlreadyPresent}" };
                 MonitorLog.LogToMonitor(monitorItem);
