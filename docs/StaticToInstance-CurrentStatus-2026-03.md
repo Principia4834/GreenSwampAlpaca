@@ -2,56 +2,33 @@
 ## GreenSwamp Alpaca — SkyServer / MountControl
 
 **Prepared:** March 2026 (post-SkyWatcher GermanPolar confidence test)
-**Updated:** April 2026, 08:25 UTC — full re-verification against `master`
-**Updated:** April 2026, 14:30 UTC — `SkyServer.TelescopeAPI.cs` full region-by-region review; CTS delegation confirmed; new concerns G1–G3 identified
-**Updated:** 2026-04-03 09:00 — timestamp format standardised per copilot-instructions.md
-**Updated:** 2026-04-03 09:23 — Phase G complete (X1, X2, G1, G2, G3); all builds green
 **Branch:** `master`
 **Build baseline:** ✅ Green — Simulator and SkyWatcher GermanPolar pass confidence tests
-**Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs`
+**Assessment method:** Direct code review of all five key files + queue subsystem
 
 ---
 
 ## 1. Executive Summary
 
 The migration is **functionally complete for single-telescope operation** and is estimated
-at approximately **98 %** complete overall. Every piece of per-device state now lives on
+at approximately **93 %** complete overall. Every piece of per-device state now lives on
 `MountInstance`; the static `SkyServer.*` surface is a pure thin delegation layer to
 `MountInstanceRegistry.GetInstance(0)`. The ASCOM driver (`Telescope.cs`) routes entirely
 through `GetInstance(_deviceNumber)`.
 
-All 🔴 Critical and 🟠 High items from the March assessment have been resolved.
-The remaining **2 %** consists of two categories:
+The remaining **7 %** consists of three categories:
 
 | Category | Items | Blocking multi-telescope? |
 |---|---|---|
-| **Phase E — Blazor per-device UI notifications** | `StaticPropertyChanged` fires globally for all devices; no per-instance event on `MountInstance` | 🟡 UI only |
-| **Phase F — Option C Phase 3** | `Devices[]` array in `appsettings.json` has per-device serial fields; Blazor multi-device UI not started | 🟡 UI / config |
-
-**Minor residuals (cleanup only):**
-- `//lock (_goToAsyncLock)` commented reference in `SkyServer.TelescopeAPI.cs` line 787 — field is gone, comment can be removed
-- `SkySettingsBridge.cs` still exists on disk but is excluded from compilation via `<Compile Remove>` in the csproj; should be deleted
-
-**New concerns identified — April 2026 (TelescopeAPI review):**
-
-| ID | Item | File | Blocking multi-telescope? |
-|---|---|---|---|
-| **G1** ✅ | `RateDecOrg` / `RateRaOrg` converted to delegating computed properties | `SkyServer.TelescopeAPI.cs:538,572` | ✅ Resolved — Phase G |
-| **G2** ✅ | `MountInstance? instance` parameter threaded through `SlewAxes→SlewMount→GoToAsync` | `SkyServer.TelescopeAPI.cs:763`, `SkyServer.Core.cs` | ✅ Resolved — Phase G |
-| **G3** ✅ | `PulseGuideAltAz()` moved to `MountInstance` instance method | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | ✅ Resolved — Phase G |
-
-**Also confirmed correct (April 2026 TelescopeAPI review):**
-- G1/G2/G3 all resolved — Phase G complete (2026-04-03) ✅
-- All four CTS tokens
-- `SlewAsync` / `SlewSync` delegate to `_defaultInstance.SlewAsync/SlewSync` ✅
-- `SetTracking()` uses per-instance queue refs directly ✅
-- `PulseGuide()` (non-AltAz path) uses per-instance queue refs ✅
-- `_slewController` is a computed delegating property → `_defaultInstance?._slewController` ✅
-- `_parkSelected` is a delegating computed property → `_defaultInstance?._parkSelected` ✅
+| **Legacy static bridge methods** | `SkyTasks(MountTaskName)`, `AxesStopValidate()` (no-instance overloads) still compiled | 🔴 Yes — use `SkyQueue.Instance` |
+| **`SkyQueue` / `MountQueue` static facades** | Still referenced by legacy methods + `RegisterInstance()` still called | 🔴 Yes — single `_instance` slot |
+| **Remaining true static fields** | `StepsTimeFreq`, `_mountRunning`, `SnapPort1/2`, `_goToAsyncLock`, `LastDecDirection` | 🟠 Partial |
+| **B5 Blazor notifications** | `StaticPropertyChanged` fires globally for all devices | 🟡 UI only |
+| **Option C Phase 3** | Per-device serial config in JSON, Blazor status panel | 🟡 UI / config |
 
 ---
 
-## 2. What Is Confirmed Complete (code-verified, April 2026 re-check)
+## 2. What Is Confirmed Complete (code-verified)
 
 | Area | File(s) | Notes |
 |---|---|---|
@@ -73,135 +50,242 @@ The remaining **2 %** consists of two categories:
 | Instance-aware `SimTasks(MountTaskName, MountInstance)` | `SkyServer.Core.cs` | Complete; all commands use `q = instance.MountQueueInstance` |
 | Instance-aware `AxesStopValidate(MountInstance)` | `SkyServer.Core.cs` | Complete; uses per-instance queue refs |
 | `MountConnect()` reads capabilities from instance fields directly | `MountInstance.cs` | No `SkyServer.CanPPec` etc. read-back |
+| Shortcut ctors marked `[Obsolete]` in `SkyCommands.cs` | `SkyCommands.cs` | All 38+ classes |
 | PEC system fully migrated | `MountInstance.Pec.cs` | Fully instance-based |
 | Cancellation tokens per-instance | `MountInstance.cs` | `_ctsGoTo`, `_ctsPulseGuide*`, `_ctsHcPulseGuide` |
 | `SlewController` per-instance | `MountInstance.cs` | `_slewController` field |
 | HC anti-backlash fields per-instance | `MountInstance.cs` | `_hcPrevMoveRa/Dec`, `_hcPrevMovesDec` |
 | Tracking offset rate per-instance | `MountInstance.cs` | `_trackingOffsetRate` field |
 | `_skyTrackingOffset` per-instance | `MountInstance.cs` | `int[2]` array |
-| **A1 — Legacy `SkyTasks(MountTaskName)` deleted** ✅ | `SkyServer.Core.cs` | Only instance-aware overload remains; confirmed by direct search |
-| **A2 — Legacy `AxesStopValidate()` deleted** ✅ | `SkyServer.Core.cs` | Only `AxesStopValidate(MountInstance)` remains; "Phase A2 verified" commit |
-| **B1 — `SkyQueue.RegisterInstance()` removed** ✅ | `MountInstance.cs` | Zero calls remain in the codebase |
-| **B2/B3 — Dead `PropertyChangedSkyQueue`/`MountQueue` handlers deleted** ✅ | `SkyServer.Core.cs` | Static facades gone; handlers had nothing to subscribe to |
-| **B4/B5 — `[Obsolete]` shortcut constructors removed** ✅ | `SkyCommands.cs` | All base class ctors require `(long id, ICommandQueue<> queue)`; zero `[Obsolete]` attributes |
-| **B6 — Static `SkyQueue` class deleted** ✅ | `SkyQueue.cs` | File now contains only `SkyQueueImplementation` (109 lines) |
-| **B7 — Static `MountQueue` class deleted** ✅ | `MountQueue.cs` | File now contains only `MountQueueImplementation` (63 lines) |
-| **C1/C2 — Pulse-guide callbacks write to `this` fields** ✅ | `MountInstance.cs` | Both Simulator (line 1595–1596) and SkyWatcher (line 1632–1633) branches fixed |
-| **D1 — `_stepsTimeFreq` field added to `MountInstance`** ✅ | `MountInstance.cs` | `internal long[] _stepsTimeFreq = { 0, 0 };` at line 63 |
-| **D2/D3 — `StepsTimeFreq` delegates; instance `SkyTasks` writes instance field** ✅ | `SkyServer.cs`, `SkyServer.Core.cs` | `get => _defaultInstance?._stepsTimeFreq ?? new long[] { 0, 0 }` |
-| **D4 — `_mountRunning` static field removed** ✅ | `SkyServer.cs` | `IsMountRunning` is `get => _defaultInstance?.IsMountRunning ?? false` |
-| **D5/D6 — `SnapPort1/2` delegate to `_defaultInstance`** ✅ | `SkyServer.cs` | `get => _defaultInstance?._snapPort1 ?? false` etc. |
-| **D7 — `_goToAsyncLock` field removed** ✅ | `SkyServer.TelescopeAPI.cs` | Field declaration gone; only `//lock (_goToAsyncLock)` comment remains (cleanup item) |
-| **D8 — `LastDecDirection` delegates to `_defaultInstance._lastDecDirection`** ✅ | `SkyServer.cs` | `internal GuideDirection _lastDecDirection` on `MountInstance` at line 106 |
-| **3.11 — `SkySettingsBridge.cs` excluded from compilation** ✅ | `.csproj` | `<Compile Remove="SkySettingsBridge.cs" />` confirmed; file still exists on disk (delete when ready) |
-| **CTS tokens — all four delegate to `_defaultInstance`** ✅ | `SkyServer.Core.cs:131–150` | `_ctsGoTo`, `_ctsPulseGuideRa`, `_ctsPulseGuideDec`, `_ctsHcPulseGuide` — all computed delegating properties; comment: "Phase 5.3 — delegate to default instance to prevent cross-device cancellation" |
-| **`_slewController` — computed delegating property** ✅ | `SkyServer.TelescopeAPI.cs:~1549` | `get => _defaultInstance?._slewController` |
-| **`SlewAsync` / `SlewSync` delegate to instance** ✅ | `SkyServer.TelescopeAPI.cs:~1568–1590` | Both methods call `_defaultInstance.SlewAsync/SlewSync` |
-| **`_parkSelected` — delegating computed property** ✅ | `SkyServer.cs:64–68` | `get => _defaultInstance?._parkSelected; set { if (_defaultInstance != null) _defaultInstance._parkSelected = value; }` |
-| **X1 — `//lock (_goToAsyncLock)` comment removed** ✅ | `SkyServer.TelescopeAPI.cs` | Dead comment referencing deleted `_goToAsyncLock` field removed from `GoToAsync` |
-| **X2 — `SkySettingsBridge.cs` deleted** ✅ | `GreenSwamp.Alpaca.MountControl\` | File deleted; `<Compile Remove="SkySettingsBridge.cs" />` removed from `.csproj` |
-| **G1 — `RateDecOrg` / `RateRaOrg` delegating** ✅ | `SkyServer.TelescopeAPI.cs` | Converted from true static auto-properties to computed delegating properties routing to `_defaultInstance?.RateDecOrg/RateRaOrg`; `MountInstance` backing fields already existed |
-| **G2 — `MountInstance` param through `SlewAxes→SlewMount→GoToAsync`** ✅ | `SkyServer.TelescopeAPI.cs`, `SkyServer.Core.cs` | `MountInstance? instance = null` optional parameter added; `var effectiveInstance = instance ?? _defaultInstance!` resolves in `SlewMount` and `GoToAsync`; `AutoHome` callers backward-compat via default |
-| **G3 — `PulseGuideAltAz` moved to `MountInstance`** ✅ | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | New `internal void PulseGuideAltAz(...)` in `#region AltAz Pulse Guide`; uses `this.SkyPredictor`, `_monitorPulse` backing field, inlined `SiderealRate = 15.0410671786691`; `StopAltAzTrackingTimer` made `internal static`; 4 call sites updated |
 
 ---
 
-## 3. Remaining Work
+## 3. Remaining Work — Detailed Inventory
 
-All 🔴 Critical and 🟠 High items from the March 2026 assessment have been resolved.
-The sections below are retained for historical context with updated status markers.
+### 3.1 🔴 CRITICAL — Legacy `SkyTasks(MountTaskName)` Still Exists
 
-### 3.1 ✅ RESOLVED — Legacy `SkyTasks(MountTaskName)` Deleted
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.Core.cs`
+**Contrary to the previous progress report, this method was NOT deleted.**
+A comment immediately above the method body reads "Legacy SkyTasks(MountTaskName) removed"
+but the method definition continues below it. The method is live, compiled code.
 
-**Verified April 2026.** Searching `SkyServer.Core.cs` for the no-parameter overload yields
-zero results. Only the instance-aware `SkyTasks(MountTaskName taskName, MountInstance instance)`
-exists. The misleading "removed" comment is also gone.
+```csharp
+// SkyServer.Core.cs — this method still exists
+public static void SkyTasks(MountTaskName taskName)
+{
+#pragma warning disable CS0618   // still uses SkyQueue.NewId, SkyQueue.GetCommandResult
+    if (!IsMountRunning) { return; }
+    // ... switch (_settings!.Mount) ...
+    //     case SkyWatcher: uses SkyQueue.NewId, SkyQueue.GetCommandResult directly
+#pragma warning restore CS0618
+}
+```
+
+**Impact:** Any call reaching this overload dispatches to `SkyQueue.Instance` (whichever
+telescope last called `RegisterInstance()`), not the caller's telescope.
+
+**Callers confirmed in codebase:** None found by audit — all known external callers
+(`CommandStrings.cs`, `SkySettingsInstance.cs`, `SkyServer.TelescopeAPI.cs`) have already
+been migrated to the instance-aware two-parameter overload. The legacy method is dead
+for single-telescope operation but is compiled and creates risk if called via reflection
+or a future refactor path.
+
+**Action:** Delete the method body. The comment claiming "removed" should be deleted too.
 
 ---
 
-### 3.2 ✅ RESOLVED — Legacy `AxesStopValidate()` (No Instance Parameter) Deleted
+### 3.2 🔴 CRITICAL — Legacy `AxesStopValidate()` (No Instance Parameter) Still Exists
 
-**Verified April 2026.** The commit "Phase A2 verified — build clean" records this.
-Only `AxesStopValidate(MountInstance instance)` exists in `SkyServer.Core.cs`.
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.Core.cs`
+
+```csharp
+internal static bool AxesStopValidate()   // legacy overload — still compiled
+{
+#pragma warning disable CS0618
+    // ... uses SkyQueue.NewId, SkyQueue.GetCommandResult, MountQueue.NewId ...
+#pragma warning restore CS0618
+}
+```
+
+The instance-aware `AxesStopValidate(MountInstance instance)` overload is complete
+and correct. The no-parameter legacy overload should be deleted. Verify no callers remain
+before deletion.
 
 ---
 
-### 3.3 ✅ RESOLVED — `SkyQueue.RegisterInstance()` Removed
+### 3.3 🔴 CRITICAL — `SkyQueue.RegisterInstance(sqImpl)` Still Called from `MountStart()`
 
-**Verified April 2026.** Zero occurrences of `RegisterInstance` in `MountInstance.cs`
-or anywhere in the codebase. The static `SkyQueue` facade class has been deleted entirely
-(see 3.5 / B6).
+**File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs`
+
+```csharp
+// MountInstance.MountStart() — SkyWatcher branch
+SkyQueue.RegisterInstance(sqImpl);  // ← still present; overwrites single _instance slot
+sqImpl.Start(_serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
+SkyQueueInstance = sqImpl;
+```
+
+`SkyQueue._instance` is a single static pointer. A second telescope's `MountStart()`
+overwrites it. The comment in the source correctly notes:
+> "must be called before Start() so the facade is live when commands execute"
+
+This dependency means the static facade is still load-bearing for the SkyWatcher path.
+The facade needs to be removed, and with it this `RegisterInstance` call.
+
+**Root cause:** The legacy `SkyTasks(MountTaskName)` method still uses `SkyQueue.NewId`
+and `SkyQueue.GetCommandResult`, requiring the facade to be active. Once that method is
+deleted, `RegisterInstance()` can be removed.
+
+**Note:** The Simulator path does NOT call `MountQueue.RegisterInstance()` — it starts
+the queue directly. Only SkyWatcher still calls `RegisterInstance()`.
 
 ---
 
-### 3.4 ✅ RESOLVED — Pulse-Guide Callbacks Write to Instance Fields
+### 3.4 🔴 CRITICAL — Pulse-Guide Callbacks Write Through Static Property
 
-**Verified April 2026.** Both branches in `MountInstance.MountStart()` now use:
+**File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs`
+
+```csharp
+// MountStart() — both Simulator and SkyWatcher branches
+mqImpl.SetupCallbacks(
+    steps => ReceiveSteps(steps),              // ✅ per-instance
+    v => SkyServer.IsPulseGuidingRa = v,       // ❌ static setter → _defaultInstance
+    v => SkyServer.IsPulseGuidingDec = v);     // ❌ static setter → _defaultInstance
+```
+
+For a single telescope this works because `_defaultInstance` is the same instance.
+For multiple telescopes, all devices' pulse-guide callbacks write to device 0's
+`_isPulseGuidingRa/Dec` fields.
+
+**Fix:** Change callbacks to write directly to `this` fields:
 ```csharp
 v => { _isPulseGuidingRa = v; },
 v => { _isPulseGuidingDec = v; }
 ```
-Simulator branch: lines 1595–1596. SkyWatcher branch: lines 1632–1633.
 
 ---
 
-### 3.5 ✅ RESOLVED — `PropertyChangedSkyQueue` / `PropertyChangedMountQueue` Deleted
+### 3.5 🟠 HIGH — `PropertyChangedSkyQueue` / `PropertyChangedMountQueue` Are Dead Code
 
-**Verified April 2026.** Static facades (`SkyQueue`, `MountQueue`) are deleted; these
-handlers have no event to subscribe to and are gone.
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.Core.cs`
+
+These two handlers are defined but **never subscribed** to any event. Searching the
+entire codebase for `SkyQueue.StaticPropertyChanged += PropertyChangedSkyQueue` and
+`MountQueue.StaticPropertyChanged += PropertyChangedMountQueue` yields zero results.
+The `Initialize()` method only wires `_settings.PropertyChanged += PropertyChangedSkySettings`.
+
+The `MountStart()` callbacks (`ReceiveSteps`, static `IsPulseGuidingRa/Dec`) entirely
+bypass `SkyQueue.Steps`, `SkyQueue.IsPulseGuidingRa/Dec` static properties, so
+`SkyQueue.StaticPropertyChanged` is never fired in practice.
+
+**Impact:** Benign for single-telescope operation. These handlers and their references to
+`SkyQueue.Steps` / `MountQueue.Steps` are currently unreachable code.
+
+**Action:** Delete both handlers when the static queue facades are removed.
 
 ---
 
-### 3.6 ✅ RESOLVED — `StepsTimeFreq` Moved to Per-Instance Field
+### 3.6 🟠 HIGH — `StepsTimeFreq` Is a Truly Static Field
 
-**Verified April 2026.**
-- `MountInstance` has `internal long[] _stepsTimeFreq = { 0, 0 };` at line 63.
-- `SkyServer.StepsTimeFreq` delegates: `get => _defaultInstance?._stepsTimeFreq ?? new long[] { 0, 0 }`.
-- Instance-aware `SkyTasks(StepTimeFreq, instance)` writes to `instance._stepsTimeFreq`.
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs`
 
----
-
-### 3.7 ✅ RESOLVED — `_mountRunning` Static Field Removed
-
-**Verified April 2026.** `SkyServer.IsMountRunning` is now:
 ```csharp
-get => _defaultInstance?.IsMountRunning ?? false;
+public static long[] StepsTimeFreq { get; private set; } = { 0, 0 };
 ```
-No independent `_mountRunning` static field exists.
+
+This has no instance backing. It is written by:
+```csharp
+// In SkyTasks(MountTaskName.StepTimeFreq, instance) — instance-aware overload
+var skyStepTimeFreq = new SkyGetStepTimeFreq(q.NewId, q);
+StepsTimeFreq = (long[])q.GetCommandResult(skyStepTimeFreq).Result;  // ← writes static
+```
+
+The instance-aware `SkyTasks` overload still writes to the **static** `StepsTimeFreq`
+instead of `instance._stepsTimeFreq`. For a second telescope this overwrites the first
+telescope's timing frequency, breaking `CalcCustomTrackingOffset()` for both.
+
+**Fix required:** Add `_stepsTimeFreq` backing field to `MountInstance`; update the
+instance-aware `SkyTasks` to write `instance._stepsTimeFreq`; update
+`CalcCustomTrackingOffset()` to read from `instance._stepsTimeFreq`.
 
 ---
 
-### 3.8 ✅ RESOLVED — `SnapPort1` / `SnapPort2` Delegate to Instance
+### 3.7 🟠 HIGH — `_mountRunning` Static Field Still Exists
 
-**Verified April 2026.** Both delegate to `_defaultInstance._snapPort1/2`; backing fields
-exist on `MountInstance` at lines 104–105.
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs`
+
+```csharp
+private static bool _mountRunning;   // ← true static field
+
+public static bool IsMountRunning
+{
+    get => _defaultInstance?.IsMountRunning ?? _mountRunning;
+    set
+    {
+        _mountRunning = value;         // ← writes static
+        if (value) MountStart();
+        else       MountStop();
+    }
+}
+```
+
+`SkyErrorHandler()` sets `IsMountRunning = false` which writes `_mountRunning = false`
+and calls `MountStop()` on `_defaultInstance` only. The static `_mountRunning` is a
+remnant fallback that diverges from per-device truth once multiple devices are connected.
 
 ---
 
-### 3.9 ✅ RESOLVED — `_goToAsyncLock` Field Removed
+### 3.8 🟠 HIGH — `SnapPort1` / `SnapPort2` Are Truly Static
 
-**Verified April 2026.** The field declaration is gone from `SkyServer.TelescopeAPI.cs`.
-One residual `//lock (_goToAsyncLock)` comment remained at line 787 — **removed (X1, 2026-04-03)** ✅
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs`
+
+```csharp
+public static bool SnapPort1 { get; set; }
+public static bool SnapPort2 { get; set; }
+```
+
+These have no `_defaultInstance` delegation. For two telescopes, snap port state is a
+single global boolean. The `SnapPort1Result` / `SnapPort2Result` properties (which report
+the hardware response) are already per-instance. The command-trigger properties are not.
 
 ---
 
-### 3.10 ✅ RESOLVED — `LastDecDirection` Moved to Instance
+### 3.9 🟡 MEDIUM — `_goToAsyncLock` Is Static
 
-**Verified April 2026.** `MountInstance` has `internal GuideDirection _lastDecDirection` at
-line 106. `SkyServer.LastDecDirection` delegates get/set to `_defaultInstance._lastDecDirection`.
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs`
+
+```csharp
+private static readonly object _goToAsyncLock = new object();
+```
+
+GoTo on telescope 1 acquires this lock, blocking GoTo on telescope 2 during the
+entire slew setup phase. Note: the lock appears to currently be commented out in
+`GoToAsync()`, so the practical impact is low, but the field should move to
+`MountInstance` when GoTo logic is fully migrated.
 
 ---
 
-### 3.11 ✅ RESOLVED — `SkySettingsBridge.cs` Deleted
+### 3.10 🟡 MEDIUM — `LastDecDirection` Is Static
 
-**Verified April 2026.** `<Compile Remove="SkySettingsBridge.cs" />` was in the `.csproj`.
-**Resolved (X2, 2026-04-03):** File deleted from disk; `<Compile Remove>` entry removed from `.csproj`. ✅
+**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs`
+
+```csharp
+private static GuideDirection LastDecDirection { get; set; }
+```
+
+Used in pulse-guide Dec backlash logic. No instance backing. Second telescope's guiding
+corrupts first telescope's backlash direction state.
+
+---
+
+### 3.11 🟡 MEDIUM — `SkySettingsBridge.cs` Status Unclear
+
+The progress report states this file is "excluded from compilation." The file still
+exists in the workspace. Verify it is excluded from the `.csproj` and add a comment
+explaining why it is being kept, or delete it.
 
 ---
 
 ### 3.12 🟡 MEDIUM — B5: Blazor Per-Device UI Notifications Not Implemented
-
-**Status: unchanged from March 2026 assessment.**
 
 **File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs`
 
@@ -213,8 +297,6 @@ All Blazor UI components subscribe to this single static event. Every `SkyServer
 property setter fires it. For multiple telescopes, every state change on any device
 causes all Blazor components to refresh regardless of which device they are bound to.
 
-`MountInstance` has no `PropertyChanged` / `InstancePropertyChanged` event of its own.
-
 No per-device notification mechanism exists. Implementing it requires:
 - Each `MountInstance` to have its own `PropertyChanged` event
 - Blazor components to bind to the specific `MountInstance` event for their device number
@@ -223,103 +305,17 @@ No per-device notification mechanism exists. Implementing it requires:
 
 ---
 
-### 3.13 🟡 MEDIUM — Option C Phase 3: Config & UI (Partially Started)
+### 3.13 🟡 MEDIUM — Option C Phase 3: Config & UI
 
-**Status: F1 partially complete; F2/F3 not started.**
-
-Per-device serial config fields (`Port`, `BaudRate`, `DataBits`, `Handshake`,
-`ReadTimeout`, `DTREnable`, `RTSEnable`) already exist in the `Devices[]` array in
-`appsettings.json` — not inside `AlpacaDevices[]` as originally envisioned, but the
-data is present per device. The Blazor connection status panel still needs per-device
-controls (F2/F3).
-
----
-
-### 3.14 ✅ RESOLVED — G1: `RateDecOrg` / `RateRaOrg` Now Delegating Computed Properties
-
-**Resolved 2026-04-03 (Phase G).** `MountInstance` backing fields (`_rateDecOrg`, `_rateRaOrg`) and instance properties already existed. Converted `SkyServer.TelescopeAPI.cs` properties to computed delegating form routing to `_defaultInstance?.RateDecOrg/RateRaOrg`. ✅
-
-**Identified April 2026 (TelescopeAPI review).**
-
-**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs` lines 538, 572
-
-```csharp
-public static double RateDecOrg { get; set; }   // ⚠️ true static auto-property
-public static double RateRaOrg { get; set; }    // ⚠️ true static auto-property
-```
-
-These store the "original" tracking rate (before sign-correction direction is applied)
-used by `ActionRateRaDec()`. For a second telescope, setting `RateDecOrg` on device 1
-would silently overwrite the stored value for device 0.
-
-**Impact:** Low — these are momentary "previous value" helpers, not persistent state.
-Written and read within the same `RateDec`/`RateRa` setter call sequence. A second
-device running simultaneously could corrupt the direction logic for offset tracking
-rates (`RaRateOrg` / `DecRateOrg`), but only during active guiding with non-zero
-offset rates on both devices simultaneously.
-
-**Fix applied (Phase G, 2026-04-03):** `MountInstance` backing fields already existed; converted `SkyServer.TelescopeAPI.cs` properties to computed delegating form. ✅
-
----
-
-### 3.15 ✅ RESOLVED — G2: `MountInstance` Parameter Threaded Through `SlewAxes→SlewMount→GoToAsync`
-
-**Resolved 2026-04-03 (Phase G).** `MountInstance? instance = null` optional parameter added to `SlewAxes`, `SlewMount`, and `GoToAsync`. `var effectiveInstance = instance ?? _defaultInstance!` used throughout `GoToAsync`. `AutoHome` callers backward-compatible via default. ✅
-
-**Identified April 2026 (TelescopeAPI review).**
-
-**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs` line 763
-
-```csharp
-private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false)
-```
-
-**Call chain:** `SlewAxes()` → `SlewMount()` → `GoToAsync()` — this is the **handpad
-slew path** used by the Blazor HC panel. `GoToAsync` uses `_defaultInstance!` throughout
-(lines 795, 835, 843, 985, 996) and would always operate on device 0 regardless of
-which device the user intends to move.
-
-**Fix applied:** `SlewAxes()`, `SlewMount()`, and `GoToAsync()` all now accept an optional `MountInstance? instance` parameter; `GoToAsync` uses `effectiveInstance` throughout.
-
-**Note:** All primary ASCOM slew paths
-already been migrated to `SlewController` (`_defaultInstance.SlewAsync/SlewSync`) and
-are not affected. Only the axis-coordinate (handpad) slew path is impacted.
-
----
-
-### 3.16 ✅ RESOLVED — G3: `PulseGuideAltAz()` Moved to `MountInstance` Instance Method
-
-**Resolved 2026-04-03 (Phase G).** New `internal void PulseGuideAltAz(...)` added to `MountInstance` in `#region AltAz Pulse Guide`. Uses `this.SkyPredictor`, `_monitorPulse` backing field (inaccessible via `SkyServer.MonitorPulse` — `private get`), inlined `SiderealRate = 15.0410671786691`. `StopAltAzTrackingTimer()` made `internal static`. Four call sites in `SkyServer.TelescopeAPI.cs` updated to `_defaultInstance!.PulseGuideAltAz(...)`. Static method deleted. ✅
-
-**Identified April 2026 (TelescopeAPI review).**
-
-**File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs` ~line 1877 (method deleted)
-
-```csharp
-private static void PulseGuideAltAz(int axis, double guideRate, int duration,
-    Action<CancellationToken> pulseGoTo, CancellationToken token)
-{
-    Task.Run(() => {
-        // ...
-        _defaultInstance.SkyPredictor.Set(...);   // ⚠️ hardcoded to device 0
-    });
-}
-```
-
-This mirrors the original C1/C2 pulse-guide callback issue that was fixed for
-`_isPulseGuidingRa/Dec`. For AltAz mounts only: calling `PulseGuide()` on device 1
-would modify the `SkyPredictor` state of device 0.
-
-**Impact:** AltAz mode only. GermanPolar/Polar modes route pulse-guide commands
-directly to per-instance queue refs and are not affected.
-
-**Fix applied (Phase G, 2026-04-03):** `PulseGuideAltAz` moved to `MountInstance` instance method; `this.SkyPredictor` used; static method deleted; four call sites updated. ✅
+Not started. Per-device serial settings need to be moveable into the `AlpacaDevices`
+array in `appsettings.json` so each entry can specify `Port`, `BaudRate`, etc.
+independently. The Blazor connection status panel also needs per-device controls.
 
 ---
 
 ## 4. Data-Flow Verification (Single Telescope — Current Operation)
 
-The following paths have been code-verified as correct for single-telescope (April 2026):
+The following paths have been code-verified as correct for single-telescope:
 
 ```
 Hardware steps
@@ -328,27 +324,18 @@ Hardware steps
   → _steps[0,1] set
   → SetSteps() — coordinate conversion          ✅ per-instance settings
   → _mountPositionUpdatedEvent.Set()            ✅ per-instance event
-  → SkyServer.NotifyStepsChanged()              ✅ fires global Blazor event (Phase E caveat)
+  → SkyServer.NotifyStepsChanged()              ✅ fires global Blazor event (B5 caveat)
 
 Hardware pulse-guide Ra/Dec
   → _pulseGuideRaCallback / _pulseGuideDecCallback
-  → v => { _isPulseGuidingRa = v; }             ✅ writes directly to this instance (C1/C2 fixed)
-  → v => { _isPulseGuidingDec = v; }            ✅ writes directly to this instance
+  → SkyServer.IsPulseGuidingRa/Dec = v          ❌ writes _defaultInstance (Issue 3.4)
 
-ASCOM GoTo — primary path (SlewController, confirmed April 2026)
-  → Telescope.cs GetInstance(_deviceNumber)     ✅ per-device routing
-  → SkyServer.SlewRaDecAsync(ra, dec)           (static; uses SlewController)
-  → SlewAsync(target, SlewType.SlewRaDec)       ✅ delegates to _defaultInstance.SlewAsync
-  → MountInstance.SlewAsync(target, slewType)   ✅ per-instance SlewController
-
-ASCOM GoTo — handpad path (GoToAsync/SlewMount, G2 resolved 2026-04-03)
-  → SlewAxes(primary, secondary, slewState, instance)  ✅ MountInstance? param threaded (G2)
-  → SlewMount(Vector, slewState, ..., instance)         ✅ effectiveInstance = instance ?? _defaultInstance!
-  → GoToAsync(target, slewState, handle, instance)      ✅ uses effectiveInstance throughout
-
-CTS cancellation (confirmed April 2026)
-  → CancelAllAsync()                            ✅ _ctsGoTo/_ctsPulseGuide* are delegating
-  → SkyServer.Core.cs:131-150                   ✅ get/set route to _defaultInstance backing fields
+ASCOM GoTo (Telescope.cs)
+  → GetInstance(_deviceNumber)                  ✅ per-device routing
+  → SkyServer.SlewRaDecAsync(...)               (static method; uses _defaultInstance)
+  → GoToAsync → SkyGoTo → SkyPrecisionGoto/SkyPulseGoto
+  → MountInstance.SkyGoTo (instance method)     ✅
+  → SkyAxisGoToTarget(SkyQueueInstance!.NewId, SkyQueueInstance!, ...)  ✅ per-instance queue
 
 Mount position event wait (SkyPrecisionGoto)
   → _mountPositionUpdatedEvent.Reset/Wait       ✅ per-instance event
@@ -358,47 +345,50 @@ Mount position event wait (SkyPrecisionGoto)
 
 ## 5. Static Code Still Requiring Removal — Prioritised Task List
 
-### ✅ Phase A — Legacy Bridge Methods — COMPLETE
+The items below are ordered by dependency. Each must be done before the next
+unless marked as independent.
 
-| Task | File | Description | Status |
+### Phase A — Remove Legacy Bridge Methods (prerequisite for Phase B)
+
+| Task | File | Description | Dependency |
 |---|---|---|---|
-| **A1** | `SkyServer.Core.cs` | Delete `SkyTasks(MountTaskName)` legacy overload | ✅ Done |
-| **A2** | `SkyServer.Core.cs` | Delete `AxesStopValidate()` no-parameter overload | ✅ Done |
-| **A3** | `SkyServer.Core.cs` | Delete misleading "removed" comment above A1 body | ✅ Done |
+| **A1** | `SkyServer.Core.cs` | Delete `SkyTasks(MountTaskName)` legacy overload (confirm zero callers first) | None |
+| **A2** | `SkyServer.Core.cs` | Delete `AxesStopValidate()` no-parameter overload (confirm zero callers first) | None |
+| **A3** | `SkyServer.Core.cs` | Delete misleading "removed" comment above A1 body | A1 |
 
-### ✅ Phase B — Remove `SkyQueue` / `MountQueue` Static Facades — COMPLETE
+### Phase B — Remove `SkyQueue` / `MountQueue` Static Facades (requires Phase A)
 
-| Task | File | Description | Status |
+| Task | File | Description | Dependency |
 |---|---|---|---|
-| **B1** | `MountInstance.cs` | Remove `SkyQueue.RegisterInstance(sqImpl)` call | ✅ Done |
-| **B2** | `SkyServer.Core.cs` | Delete `PropertyChangedSkyQueue` handler | ✅ Done |
-| **B3** | `SkyServer.Core.cs` | Delete `PropertyChangedMountQueue` handler | ✅ Done |
-| **B4** | `SkyCommands.cs` | Remove `[Obsolete]` shortcut ctors from all command classes | ✅ Done |
-| **B5** | `SkyCommands.cs` | Remove `SkyCommandBase(long id)` etc. base class shortcut ctors | ✅ Done |
-| **B6** | `SkyQueue.cs` | Delete `public static class SkyQueue` entirely | ✅ Done — file is 109 lines, `SkyQueueImplementation` only |
-| **B7** | `MountQueue.cs` | Delete `public static class MountQueue` entirely | ✅ Done — file is 63 lines, `MountQueueImplementation` only |
+| **B1** | `MountInstance.cs` | Remove `SkyQueue.RegisterInstance(sqImpl)` call from `MountStart()` SkyWatcher branch | A1 (legacy method was the only static facade consumer) |
+| **B2** | `SkyServer.Core.cs` | Delete `PropertyChangedSkyQueue` handler (dead code, never subscribed) | B1 |
+| **B3** | `SkyServer.Core.cs` | Delete `PropertyChangedMountQueue` handler (dead code, never subscribed) | B1 |
+| **B4** | `SkyCommands.cs` | Remove shortcut (0-arg or 1-arg `id`) constructors marked `[Obsolete]` from all 38+ command classes | A1, B1 |
+| **B5** | `SkyCommands.cs` | Remove `SkyCommandBase(long id)`, `SkyQueryCommand(long id)`, `SkyActionCommand(long id)` base class shortcut ctors | B4 |
+| **B6** | `SkyQueue.cs` | Delete `public static class SkyQueue` entirely | B1–B5 |
+| **B7** | `MountQueue.cs` | Delete `public static class MountQueue` entirely | B1–B5 |
 
-### ✅ Phase C — Pulse-Guide Callback Routing — COMPLETE
+### Phase C — Fix Pulse-Guide Callback Routing (independent, can be done now)
 
-| Task | File | Description | Status |
+| Task | File | Description | Dependency |
 |---|---|---|---|
-| **C1** | `MountInstance.cs` | Simulator `SetupCallbacks` pulse-guide lambdas write to `this` fields | ✅ Done (lines 1595–1596) |
-| **C2** | `MountInstance.cs` | SkyWatcher `SetupCallbacks` pulse-guide lambdas write to `this` fields | ✅ Done (lines 1632–1633) |
+| **C1** | `MountInstance.cs` | Change Simulator `SetupCallbacks` pulse-guide lambdas to `v => { _isPulseGuidingRa = v; }` / `v => { _isPulseGuidingDec = v; }` | None |
+| **C2** | `MountInstance.cs` | Same fix for SkyWatcher `SetupCallbacks` | None |
 
-### ✅ Phase D — Fix Remaining True Static Fields — COMPLETE
+### Phase D — Fix Remaining True Static Fields (mostly independent)
 
-| Task | File | Description | Status |
+| Task | File | Description | Dependency |
 |---|---|---|---|
-| **D1** | `MountInstance.cs` | Add `internal long[] _stepsTimeFreq = { 0, 0 };` field | ✅ Done (line 63) |
-| **D2** | `SkyServer.cs` | `StepsTimeFreq` delegates to `_defaultInstance._stepsTimeFreq` | ✅ Done |
-| **D3** | `SkyServer.Core.cs` | Instance-aware `SkyTasks(StepTimeFreq, instance)` writes `instance._stepsTimeFreq` | ✅ Done |
-| **D4** | `SkyServer.cs` | Remove `private static bool _mountRunning` | ✅ Done — `IsMountRunning` is `_defaultInstance?.IsMountRunning ?? false` |
-| **D5** | `MountInstance.cs` | Add `internal bool _snapPort1`, `internal bool _snapPort2` fields | ✅ Done (lines 104–105) |
-| **D6** | `SkyServer.cs` | `SnapPort1`/`SnapPort2` delegate to `_defaultInstance` | ✅ Done |
-| **D7** | `SkyServer.TelescopeAPI.cs` | Remove `_goToAsyncLock` field | ✅ Done — field gone; residual `//lock (_goToAsyncLock)` comment at line 787 is cleanup |
-| **D8** | `SkyServer.cs` | Move `LastDecDirection` to `MountInstance` as `_lastDecDirection` | ✅ Done |
+| **D1** | `MountInstance.cs` | Add `internal long[] _stepsTimeFreq = { 0, 0 };` field | None |
+| **D2** | `SkyServer.cs` | Change `StepsTimeFreq` from auto-property to delegating property `=> _defaultInstance?._stepsTimeFreq ?? new long[]{0,0}` | D1 |
+| **D3** | `SkyServer.Core.cs` | Update instance-aware `SkyTasks(StepTimeFreq, instance)` to write `instance._stepsTimeFreq` | D1 |
+| **D4** | `SkyServer.cs` | Remove `private static bool _mountRunning`; `IsMountRunning` getter removes `?? _mountRunning` fallback | None |
+| **D5** | `MountInstance.cs` | Add `internal bool _snapPort1`, `internal bool _snapPort2` fields | None |
+| **D6** | `SkyServer.cs` | Change `SnapPort1`/`SnapPort2` to delegate to `_defaultInstance` | D5 |
+| **D7** | `SkyServer.TelescopeAPI.cs` | Move `_goToAsyncLock` to `MountInstance` (or remove if lock body is still commented out) | None |
+| **D8** | `SkyServer.cs` | Move `LastDecDirection` to `MountInstance` as `_lastDecDirection` | None |
 
-### Phase E — Blazor Per-Device UI (🟡 MEDIUM — not started)
+### Phase E — Blazor Per-Device UI (B5, independent sprint)
 
 | Task | Description |
 |---|---|
@@ -408,113 +398,73 @@ Mount position event wait (SkyPrecisionGoto)
 | **E4** | `NotifyStepsChanged()` in `SkyServer` changed to route per-instance |
 | **E5** | Evaluate whether `SkyServer.StaticPropertyChanged` can be removed once E1–E4 are complete |
 
-### Phase F — Configuration & UI (🟡 MEDIUM — F1 partial)
+### Phase F — Configuration & UI (Option C Phase 3)
 
-| Task | Description | Status |
-|---|---|---|
-| **F1** | Per-device serial config in `appsettings.json` | 🟡 Partial — fields exist in `Devices[]` array; not in `AlpacaDevices[]` |
-| **F2** | Update Blazor settings UI to show per-device serial controls | ⬜ Not started |
-| **F3** | Add Blazor connection status panel per registered device | ⬜ Not started |
-
-### Cleanup Items (minor, independent)
-
-| Item | File | Description |
-|---|---|---|
-| **X1** ✅ | `SkyServer.TelescopeAPI.cs` | Remove `//lock (_goToAsyncLock)` comment — field is gone — **Done** |
-| **X2** ✅ | `GreenSwamp.Alpaca.MountControl\` | Delete `SkySettingsBridge.cs` and remove `<Compile Remove="SkySettingsBridge.cs" />` from `.csproj` — **Done** |
-
-### ✅ Phase G — `SkyServer.TelescopeAPI.cs` Residuals — COMPLETE (2026-04-03)
-
-Identified April 2026 via full region-by-region code review of the file.
-
-| Task | File | Description | Priority |
-|---|---|---|---|
-| **G1** | `SkyServer.TelescopeAPI.cs:538,572` | Move `RateDecOrg` / `RateRaOrg` to `MountInstance` backing fields; bridge via delegating properties | ✅ Done |
-| **G2** | `SkyServer.TelescopeAPI.cs:763` / `SkyServer.Core.cs` | Add `MountInstance` parameter to `SlewAxes()` → `SlewMount()` → `GoToAsync()` chain (handpad slew path) | ✅ Done |
-| **G3** | `SkyServer.TelescopeAPI.cs:~1877` | Move `PulseGuideAltAz()` to an instance method on `MountInstance`; call via `_defaultInstance!.PulseGuideAltAz(...)` | ✅ Done |
+| Task | Description |
+|---|---|
+| **F1** | Add `Port`, `BaudRate`, `HandShake`, `DataBits`, `ReadTimeout`, `DtrEnable`, `RtsEnable` to each `AlpacaDevices[]` entry in `appsettings.json` schema |
+| **F2** | Update Blazor settings UI to show per-device serial controls |
+| **F3** | Add Blazor connection status panel per registered device |
 
 ---
 
 ## 6. Discrepancies Between Previous Progress Report and Current Code
 
-The March 2026 assessment identified the following discrepancies against `StaticToInstance-ProgressReport.md`.
-All have since been resolved.
+The following claims in `StaticToInstance-ProgressReport.md` do not match the actual
+code state as of this assessment:
 
-| Claim in ProgressReport | March 2026 actual state | April 2026 state |
-|---|---|---|
-| **Step 10b ✅ Done** — "Legacy `SkyTasks(MountTaskName)` deleted" | Method still existed with misleading "removed" comment | ✅ Deleted (A1) |
-| **Option C Phase 2 ✅ Complete** — "zero `RegisterInstance()` calls" | `SkyQueue.RegisterInstance(sqImpl)` still called in `MountStart()` | ✅ Removed (B1) |
-| **Option C Phase 2 ✅ Complete** — "zero `SkySystem` refs in driver" | Correctly deleted (matched) | ✅ Unchanged — still correct |
-| **Option C Phase 2 ✅ Complete** — "legacy method removed" | Legacy `SkyTasks(MountTaskName)` still existed | ✅ Deleted (A1) |
-| **Blocker B2 ✅ Resolved** | Correctly resolved — `Telescope.cs` uses `GetInstance()` | ✅ Unchanged — still correct |
-
----
-
-## 7. File Sizes (April 2026 — actual line counts)
-
-| File | March est. | April actual | Δ | Notes |
-|---|---:|---:|---:|---|
-| `SkyServer.Core.cs` | ~2 059 | **1 627** | −432 | ✅ Legacy methods A1/A2 deleted; dead handlers B2/B3 gone; CTS delegating properties at lines 131–150 confirmed; G2 SlewMount +1 line |
-| `SkyServer.TelescopeAPI.cs` | ~1 870 | **3 278** | +1 408 | G1/G2/G3 applied (was 3 369 pre-Phase G, −91 net); see TelescopeAPI analysis note below |
-| `SkyServer.cs` | ~998 | **1 023** | +25 | ✅ All static fields delegated; `_mountRunning` gone; `SnapPort1/2`, `StepsTimeFreq`, `LastDecDirection` now delegate |
-| `MountInstance.cs` | ~2 145 | **2 535** | +390 | ✅ New backing fields, pulse-guide callbacks fixed; G3 `PulseGuideAltAz` added (+91 from 2 444) |
-| `MountInstance.Pec.cs` | ~427 | **430** | +3 | ✅ Fully migrated — unchanged |
-| `SkyQueue.cs` | ~250 | **109** | −141 | ✅ Static `SkyQueue` facade deleted; `SkyQueueImplementation` only |
-| `MountQueue.cs` | ~185 | **63** | −122 | ✅ Static `MountQueue` facade deleted; `MountQueueImplementation` only |
-| `SkyCommands.cs` | ~large | **1 169** | — | ✅ All `[Obsolete]` shortcut ctors removed; base classes require `(id, queue)` |
-| `Telescope.cs` | ~2 127 | **2 067** | −60 | ✅ Fully migrated to `GetInstance()` |
-
-**Notable observation — `SkyServer.TelescopeAPI.cs` growth (reviewed April 2026):**
-The file nearly doubled in size. The 9 new regions reflect work completed during the async-slew / ConformU compliance sprints:
-
-| New Region | Status |
+| Claim | Actual state |
 |---|---|
-| `SlewController Integration` | ✅ `_slewController`, `SlewAsync`, `SlewSync` all correctly per-instance |
-| `Syncing` | ✅ `SyncToAltAzm`, `SyncToTargetRaDec` use per-instance queue refs |
-| `Pulse Guiding` | ✅ Non-AltAz path uses per-instance queues; ⚠️ `PulseGuideAltAz()` uses `_defaultInstance.SkyPredictor` (G3) |
-| `MoveAxis Support` | ✅ All delegate to `_defaultInstance` |
-| `Position Calculations` | ✅ All use `_settings` (delegated) |
-| `Tracking & Rates` | ✅ `SetTracking()` uses per-instance queues; `SetTrackingDirect()` new helper |
-| `Validation & Limits` | ✅ All use `_settings` / `_defaultInstance` |
-| `Async Operations` | ✅ `CancelAllAsync()` uses delegating CTS properties (confirmed `SkyServer.Core.cs:131–150`) |
-| `ASCOM Bridge Properties` | ✅ Thin forwarding wrappers only |
+| **Step 10b ✅ Done** — "Legacy `SkyTasks(MountTaskName)` method deleted" | Method still exists in `SkyServer.Core.cs` with a misleading "removed" comment above its body |
+| **Option C Phase 2 ✅ Complete** — "zero `RegisterInstance()` calls" | `SkyQueue.RegisterInstance(sqImpl)` is still called in `MountInstance.MountStart()` SkyWatcher branch |
+| **Option C Phase 2 ✅ Complete** — "zero `SkySystem` refs in driver" | `SkySystem` is correctly deleted (matches) |
+| **Option C Phase 2 ✅ Complete** — "legacy method removed" | Legacy `SkyTasks(MountTaskName)` still exists (contradicts) |
+| **Blocker B2 ✅ Resolved** | Correctly resolved — `Telescope.cs` uses `GetInstance()` |
 
-**Existing regions modified:** `GoToAsync` — instance parameter added (G2 ✅). `RateDecOrg`/`RateRaOrg` — delegating computed properties (G1 ✅). `PulseGuide` AltAz path — calls `_defaultInstance!.PulseGuideAltAz(...)` (G3 ✅). `StopAltAzTrackingTimer` made `internal static`.
-
-This file is a strong candidate for splitting — `Tracking & Rates`, `Validation & Limits`, and `Async Operations` are natural split points.
+The root cause is likely that Step 10b and Phase 2 completion were recorded when the
+work was planned, before a later change re-introduced or retained the legacy method,
+possibly during the `SkyTasks` instance-aware implementation sprint.
 
 ---
 
-## 8. Recommended Next Steps
+## 7. File Sizes (current)
 
-Phases A–D are complete. The April 2026 TelescopeAPI review identified three new 🟠 Medium items (G1–G3). Recommended sequencing:
+| File | Approx. Lines | Notes |
+|---|---:|---|
+| `SkyServer.Core.cs` | ~2 059 | Still contains two legacy static methods |
+| `SkyServer.TelescopeAPI.cs` | ~1 870 | Clean; all delegates to `_defaultInstance` |
+| `SkyServer.cs` | ~998 | Contains `_mountRunning`, `SnapPort1/2`, `StepsTimeFreq` |
+| `MountInstance.cs` | ~2 145 | Pulse-guide callback routing still uses static setters |
+| `MountInstance.Pec.cs` | ~427 | ✅ Fully migrated |
+| `SkyQueue.cs` | ~250 | Static facade — to be deleted |
+| `MountQueue.cs` | ~185 | Static facade — to be deleted |
+| `SkyCommands.cs` | ~large | 38+ command classes, all with `[Obsolete]` shortcut ctors |
+| `Telescope.cs` | ~2 127 | ✅ Fully migrated to `GetInstance()` |
+
+---
+
+## 8. Recommended Execution Sequence
 
 ```
-✅ X1/X2 + Phase G — COMPLETE (2026-04-03)
-  X1: //lock comment removed; X2: SkySettingsBridge.cs deleted
-  G1: RateDecOrg/RateRaOrg — delegating computed properties
-  G2: MountInstance? param threaded through SlewAxes→SlewMount→GoToAsync
-  G3: PulseGuideAltAz moved to MountInstance instance method
+Phase C (pulse-guide fix — 2 lines, zero risk, do immediately)
     ↓
-Integration test (gate for telescope #2)
-  Write WhenTwoDevicesConnectedThenQueuesAreIndependent
+Phase A (delete 2 legacy methods — verify callers first)
+    ↓
+Phase B (remove static facades SkyQueue/MountQueue + shortcut ctors)
+    ↓
+Phase D (fix StepsTimeFreq, _mountRunning, SnapPort, _goToAsyncLock, LastDecDirection)
     ↓
 Phase E (Blazor per-device notifications — design spike first)
-  E1: Add InstancePropertyChanged event to MountInstance
-  E2: MountInstance fires it for own state changes
-  E3: Blazor components bind per device number
-  E4: NotifyStepsChanged() routes per-instance
-  E5: Evaluate removal of SkyServer.StaticPropertyChanged
     ↓
 Phase F (Option C Phase 3 — config & UI last)
-  F1: Confirm/consolidate per-device serial config in appsettings.json
-  F2: Blazor settings UI per-device serial controls
-  F3: Blazor connection status panel per registered device
 ```
 
-**Consider splitting `SkyServer.TelescopeAPI.cs`** (3,278 lines after Phase G) —
-the `Tracking & Rates`, `Validation & Limits`, and `Async Operations` regions are
-natural split points.
+After **Phase B** completes, the following files can be deleted entirely:
+- `GreenSwamp.Alpaca.Mount.SkyWatcher\SkyQueue.cs` (the `public static class SkyQueue` portion)
+- `GreenSwamp.Alpaca.Simulator\MountQueue.cs` (the `public static class MountQueue` portion)
+
+The `SkyQueueImplementation` class (in `SkyQueue.cs`) and `MountQueueImplementation`
+class (in `MountQueue.cs`) must be kept — only the static wrapper classes are deleted.
 
 ---
 
@@ -522,31 +472,22 @@ natural split points.
 
 Before a second telescope can be connected without corrupting the first:
 
-- [x] **C1/C2** — Pulse-guide callbacks write directly to `this._isPulseGuidingRa/Dec` ✅
-- [x] **A1** — Legacy `SkyTasks(MountTaskName)` deleted ✅
-- [x] **B1** — `SkyQueue.RegisterInstance()` removed from `MountStart()` ✅
-- [x] **B6/B7** — `SkyQueue` / `MountQueue` static facades deleted ✅
-- [x] **D1–D3** — `StepsTimeFreq` moved to per-instance field ✅
-- [x] **D4** — `_mountRunning` static field removed ✅
-- [x] **D5–D6** — `SnapPort1/2` delegated to `_defaultInstance` ✅
-- [x] **CTS tokens** — `_ctsGoTo`, `_ctsPulseGuideRa`, `_ctsPulseGuideDec`, `_ctsHcPulseGuide` confirmed as delegating properties (`SkyServer.Core.cs:131–150`) ✅
-- [x] **SlewController** — `SlewAsync`/`SlewSync` delegate to `_defaultInstance.SlewAsync/SlewSync` ✅
-- [x] **G2** — `SlewAxes`/`SlewMount`/`GoToAsync` have `MountInstance?` parameter (handpad slew path) ✅
-- [x] **G3** — `PulseGuideAltAz()` moved to `MountInstance` instance method (AltAz pulse guide) ✅
-- [x] **G1** — `RateDecOrg`/`RateRaOrg` are delegating computed properties ✅
-- [ ] Integration test: `WhenTwoDevicesConnectedThenQueuesAreIndependent` — not yet written
-
-**All hard blockers are cleared.** G2 and G3 are correctness concerns for a second telescope;
-G1 is low-risk. The integration test is the ultimate gate.
+- [ ] **C1/C2** — Pulse-guide callbacks write directly to `this._isPulseGuidingRa/Dec`
+- [ ] **A1** — Legacy `SkyTasks(MountTaskName)` deleted
+- [ ] **B1** — `SkyQueue.RegisterInstance()` removed from `MountStart()`
+- [ ] **B6/B7** — `SkyQueue` / `MountQueue` static facades deleted (or at minimum `_instance` made per-key)
+- [ ] **D1–D3** — `StepsTimeFreq` moved to per-instance field
+- [ ] **D4** — `_mountRunning` static field removed
+- [ ] **D5–D6** — `SnapPort1/2` delegated to `_defaultInstance`
+- [ ] Integration test: `WhenTwoDevicesConnectedThenQueuesAreIndependent` passes
 
 Items **not** blocking a second telescope:
-- `//lock (_goToAsyncLock)` comment (field is gone — cosmetic only)
+- `_goToAsyncLock` (commented-out lock body)
+- `LastDecDirection` (backlash state; per-device corruption, not crash)
 - Phase E Blazor notifications (UI degradation, not correctness)
 - Phase F config/UI
 
 ---
 
-*Document originally generated from direct code review of `master` branch, March 2026.*
-*Re-verified and updated April 2026, 08:25 UTC — all ≥ 🟠 HIGH items confirmed resolved.*
-*Re-verified April 2026, 14:30 UTC — full `SkyServer.TelescopeAPI.cs` review; CTS delegation confirmed; G1–G3 identified.*
-*Re-verified 2026-04-03 09:23 — Phase G complete (X1, X2, G1, G2, G3); all builds green; `SkyServer.TelescopeAPI.cs` 3 278 lines, `MountInstance.cs` 2 535 lines.*
+*Document generated from direct code review of `master` branch, March 2026.*
+*No code was modified during this assessment.*

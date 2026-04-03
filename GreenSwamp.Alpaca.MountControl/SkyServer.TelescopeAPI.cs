@@ -535,11 +535,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Store the original DeclinationRate to maintain direction
         /// </summary>
-        public static double RateDecOrg
-        {
-            get => _defaultInstance?.RateDecOrg ?? 0.0;
-            set { if (_defaultInstance != null) _defaultInstance.RateDecOrg = value; }
-        }
+        public static double RateDecOrg { get; set; }
 
         /// <summary>
         /// The right ascension tracking in degrees, RightAscensionRate
@@ -573,11 +569,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Store the original RightAscensionRate and maintain direction
         /// Previous conversions were not exact
         /// </summary>
-        public static double RateRaOrg
-        {
-            get => _defaultInstance?.RateRaOrg ?? 0.0;
-            set { if (_defaultInstance != null) _defaultInstance.RateRaOrg = value; }
-        }
+        public static double RateRaOrg { get; set; }
 
         /// <summary>
         /// Dec target for slewing, epoch is same as EquatorialSystem Property
@@ -747,9 +739,9 @@ namespace GreenSwamp.Alpaca.MountControl
                  /// <param name="primaryAxis"></param>
                  /// <param name="secondaryAxis"></param>
                  /// <param name="slewState"></param>
-        public static void SlewAxes(double primaryAxis, double secondaryAxis, SlewType slewState, bool slewAsync = true, MountInstance? instance = null)
+        public static void SlewAxes(double primaryAxis, double secondaryAxis, SlewType slewState, bool slewAsync = true)
         {
-            SlewMount(new Vector(primaryAxis, secondaryAxis), slewState, false, slewAsync, instance);
+            SlewMount(new Vector(primaryAxis, secondaryAxis), slewState, false, slewAsync);
         }
 
         /// <summary>
@@ -768,9 +760,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="tracking">Optional. A boolean value indicating whether tracking should be enabled after the GoTo operation completes.
         /// Defaults to <see langword="false"/>.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if an unsupported mount type or slew type is specified.</exception>
-        private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false, MountInstance? instance = null)
+        private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false)
         {
-            var effectiveInstance = instance ?? _defaultInstance!;
             MonitorEntry monitorItem;
             monitorItem = new MonitorEntry
             {
@@ -789,13 +780,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 return;
             }
 
-            CancelAllAsync();
+            // bool trackingState;
+            // SlewType startingState;
+
+            // Synchronize access to prevent race conditions with cancellation token
+            //lock (_goToAsyncLock)
+            //{
+                CancelAllAsync();
                 var swCts = Stopwatch.StartNew();
                 while (_ctsGoTo != null && swCts.ElapsedMilliseconds < 5000) Thread.Sleep(10);
                 if (IsSlewing)
                 {
                     SlewState = SlewType.SlewNone;
-                    var stopped = AxesStopValidate(effectiveInstance);
+                    var stopped = AxesStopValidate(_defaultInstance!);
                     if (!stopped)
                     {
                         AbortSlew(true);
@@ -823,15 +820,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 Tracking = false;
                 if (slewState == SlewType.SlewRaDec)
                 {
-                    effectiveInstance.SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
+                    _defaultInstance.SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
                 }
                 IsSlewing = true;
                 goToStarted.Set(); // Signal that GoTo has started so async ASCOM operations can return with Slewing = true
 
-                // Assume fail
-                try
-                {
-                    _ctsGoTo = new CancellationTokenSource();
+                // Create new cancellation token source INSIDE the lock
+                // _ctsGoTo = new CancellationTokenSource();
+            // } // Release lock before starting the potentially long-running slew operation
+
+            // Assume fail
+            try
+            {
+                _ctsGoTo = new CancellationTokenSource();
                 var returnCode = 1;
                 switch (_settings!.Mount)
                 {
@@ -869,17 +870,17 @@ namespace GreenSwamp.Alpaca.MountControl
                             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                             {
                                 // update TargetRa and TargetDec after slewing with offset rates as per ASCOM spec
-                                if (effectiveInstance.SkyPredictor.RatesSet)
+                                if (_defaultInstance.SkyPredictor.RatesSet)
                                 {
-                                    var targetRaDec = effectiveInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                                    var targetRaDec = _defaultInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                                     TargetRa = targetRaDec[0];
                                     TargetDec = targetRaDec[1];
                                 }
 
                                 // use tracking to complete slew for Alt Az mounts
-                                effectiveInstance.SkyPredictor.Set(TargetRa, TargetDec);
-                                effectiveInstance.SetTracking(true);
-                                effectiveInstance.TrackingMode = TrackingMode.AltAz;
+                                _defaultInstance.SkyPredictor.Set(TargetRa, TargetDec);
+                                _defaultInstance.SetTracking(true);
+                                _defaultInstance.TrackingMode = TrackingMode.AltAz;
                                 SetTracking(); var sw = Stopwatch.StartNew();
                                 // wait before completing async slew, double time for low resolution mounts 
                                 var highResMount = Conversions.StepPerArcSec(Math.Min(StepsPerRevolution[0], StepsPerRevolution[1])) > 5;
@@ -907,15 +908,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         case SlewType.SlewPark:
                             trackingState = false;
                             AtPark = true;
-                            effectiveInstance.SkyPredictor.Reset();
+                            _defaultInstance.SkyPredictor.Reset();
                             break;
                         case SlewType.SlewHome:
                             trackingState = false;
-                            effectiveInstance.SkyPredictor.Reset();
+                            _defaultInstance.SkyPredictor.Reset();
                             break;
                         case SlewType.SlewHandpad:
                             // ensure tracking if enabled has the correct target
-                            effectiveInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                            _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
                             break;
                         case SlewType.SlewComplete:
                             break;
@@ -981,21 +982,21 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
                 // Reset rates and axis movement
-                if (effectiveInstance != null) effectiveInstance._rateMoveAxes = new Vector(0, 0);
+                if (_defaultInstance != null) _defaultInstance._rateMoveAxes = new Vector(0, 0);
                 MoveAxisActive = false;
-                if (effectiveInstance != null)
+                if (_defaultInstance != null)
                 {
-                    effectiveInstance.RateRa = 0.0;
-                    effectiveInstance.RateDec = 0.0;
+                    _defaultInstance.RateRa = 0.0;
+                    _defaultInstance.RateDec = 0.0;
                 }
                 // Stop axes
                 switch (_settings!.Mount)
                 {
                     case MountType.Simulator:
-                        SimTasks(MountTaskName.StopAxes, effectiveInstance);
+                        SimTasks(MountTaskName.StopAxes, _defaultInstance!);
                         break;
                     case MountType.SkyWatcher:
-                        SkyTasks(MountTaskName.StopAxes, effectiveInstance);
+                        SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -1866,6 +1867,96 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Pulse Guiding
 
         /// <summary>
+        /// Execute single axis pulse guide for AltAz using predictor
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <param name="guideRate"></param>
+        /// <param name="duration"></param>
+        /// <param name="pulseGoTo"></param>
+        /// <param name="token"></param>
+        private static void PulseGuideAltAz(int axis, double guideRate, int duration, Action<CancellationToken> pulseGoTo, CancellationToken token)
+        {
+            Task.Run(() =>
+            {
+                var pulseStartTime = HiResDateTime.UtcNow;
+                // stop alt az tracking and set predictor Ra and Dec ready for pulse go to action
+                switch (axis)
+                {
+                    case 0:
+                        if (!IsPulseGuidingDec)
+                            StopAltAzTrackingTimer();
+                        else
+                            _ctsPulseGuideDec.Cancel();
+                        _defaultInstance.SkyPredictor.Set(_defaultInstance.SkyPredictor.Ra - duration * 0.001 * guideRate / SiderealRate, _defaultInstance.SkyPredictor.Dec);
+                        break;
+                    case 1:
+                        if (!IsPulseGuidingRa)
+                            StopAltAzTrackingTimer();
+                        else
+                            _ctsPulseGuideRa.Cancel();
+                        _defaultInstance.SkyPredictor.Set(_defaultInstance.SkyPredictor.Ra, _defaultInstance.SkyPredictor.Dec + duration * guideRate * 0.001);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
+                }
+                // setup to log and graph the pulse
+                var pulseEntry = new PulseEntry();
+                if (MonitorPulse)
+                {
+                    pulseEntry.Axis = axis;
+                    pulseEntry.Duration = duration;
+                    pulseEntry.Rate = guideRate;
+                    pulseEntry.StartTime = pulseStartTime;
+                }
+                // execute pulse
+                pulseGoTo(token);
+                // pulse movement finished or cancelled so resume tracking
+                SetTracking();
+                // wait for pulse duration so completion variable IsPulseGuiding remains true 
+                var waitTime = (int)(pulseStartTime.AddMilliseconds(duration) - HiResDateTime.UtcNow).TotalMilliseconds;
+                var updateInterval = Math.Max(duration / 20, 50);
+                if (waitTime > 0)
+                {
+                    var stopwatch = Stopwatch.StartNew();
+                    while (stopwatch.Elapsed.TotalMilliseconds < waitTime && !token.IsCancellationRequested)
+                    {
+                        Thread.Sleep(updateInterval);
+                        UpdateSteps(); // Process positions while waiting
+                    }
+                }
+                // log and graph pulse
+                if (MonitorPulse)
+                {
+                    MonitorLog.LogToMonitor(pulseEntry);
+                }
+                if (token.IsCancellationRequested)
+                {
+                    var monitorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Warning,
+                        Method = MonitorLog.GetCurrentMethod(),
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"Axis|{axis}|Async operation cancelled"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
+                // set pulse guiding status
+                switch (axis)
+                {
+                    case 0:
+                        IsPulseGuidingRa = false;
+                        break;
+                    case 1:
+                        IsPulseGuidingDec = false;
+                        break;
+                }
+            });
+        }
+
+        /// <summary>
         /// Pulse commands
         /// </summary>
         /// <param name="direction">GuideDirections</param>
@@ -1937,7 +2028,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             switch (_settings!.AlignmentMode)
                             {
                                 case AlignmentMode.AltAz:
-                                    _defaultInstance!.PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, SimPulseGoto, _ctsPulseGuideDec.Token);
+                                    PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, SimPulseGoto, _ctsPulseGuideDec.Token);
                                     break;
                                 case AlignmentMode.Polar:
                                     if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
@@ -1960,7 +2051,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             switch (_settings!.AlignmentMode)
                             {
                                 case AlignmentMode.AltAz:
-                                    _defaultInstance!.PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, SkyPulseGoto, _ctsPulseGuideDec.Token);
+                                    PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, SkyPulseGoto, _ctsPulseGuideDec.Token);
                                     break;
                                 case AlignmentMode.Polar:
                                     if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
@@ -2012,7 +2103,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountType.Simulator:
                             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                             {
-                                _defaultInstance!.PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, SimPulseGoto, _ctsPulseGuideRa.Token);
+                                PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, SimPulseGoto, _ctsPulseGuideRa.Token);
                             }
                             else
                             {
@@ -2024,7 +2115,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountType.SkyWatcher:
                             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
                             {
-                                _defaultInstance!.PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, SkyPulseGoto, _ctsPulseGuideRa.Token);
+                                PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, SkyPulseGoto, _ctsPulseGuideRa.Token);
                             }
                             else
                             {
@@ -2656,7 +2747,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Stop Alt Az tracking timer
         /// </summary>
-        internal static void StopAltAzTrackingTimer()
+        private static void StopAltAzTrackingTimer()
         {
             var monitorItem = new MonitorEntry
             {

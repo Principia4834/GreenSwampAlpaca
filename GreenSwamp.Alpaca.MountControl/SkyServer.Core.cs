@@ -1399,7 +1399,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="slewAsync">A value indicating whether the slew operation should be performed asynchronously. <see langword="true"/> to
         /// perform the operation asynchronously; otherwise, <see langword="false"/>. The default is <see
         /// langword="true"/>.</param>
-        private static void SlewMount(Vector targetPosition, SlewType slewState, bool tracking = false, bool slewAsync = true, MountInstance? instance = null)
+        private static void SlewMount(Vector targetPosition, SlewType slewState, bool tracking = false, bool slewAsync = true)
         {
             if (!IsMountRunning) { return; }
 
@@ -1422,10 +1422,9 @@ namespace GreenSwamp.Alpaca.MountControl
             // ToDo reimplement later
             // SpeakSlewStart(slewState);
             // Set up event handle and task for checking slew started
-            var effectiveInstance = instance ?? _defaultInstance!;
             EventWaitHandle goToStartedEvent = new ManualResetEvent(false);
             Action goTo = () =>
-                GoToAsync(new[] { targetPosition.X, targetPosition.Y }, slewState, goToStartedEvent, tracking, effectiveInstance);
+                GoToAsync(new[] { targetPosition.X, targetPosition.Y }, slewState, goToStartedEvent, tracking);
             Task goToTask = new Task(goTo);
             // Start the go to and wait for the started event - IsSlewing will be set
             goToTask.Start();

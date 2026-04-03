@@ -12,6 +12,7 @@
     <Compile Remove="CommandQueue.cs" />
     <Compile Remove="IMountCommand.cs" />
     <Compile Remove="MountCommand.cs" />
+    <Compile Remove="SkySettingsBridge.cs" />
   </ItemGroup>
 
   <ItemGroup>
