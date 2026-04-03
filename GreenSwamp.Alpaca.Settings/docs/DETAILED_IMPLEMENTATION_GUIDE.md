@@ -360,10 +360,8 @@ private void ApplySettings(Settings.Models.SkySettings settings)
         _raBacklash = settings.RaBacklash;
         _decBacklash = settings.DecBacklash;
 
-        // Batch 5: Optics (6 fields)
+        // Batch 5: Optics (4 fields)
         _focalLength = settings.FocalLength;
-        _cameraWidth = settings.CameraWidth;
-        _cameraHeight = settings.CameraHeight;
         _eyepieceFs = settings.EyepieceFS;
         _apertureArea = settings.ApertureArea;
         _apertureDiameter = settings.ApertureDiameter;

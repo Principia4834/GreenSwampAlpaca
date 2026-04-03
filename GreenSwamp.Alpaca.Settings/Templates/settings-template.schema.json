@@ -74,16 +74,6 @@
           "maximum": 921600,
           "description": "Serial communication baud rate"
         },
-        "CameraHeight": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Camera sensor height in mm"
-        },
-        "CameraWidth": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Camera sensor width in mm"
-        },
         "CanSetPierSide": {
           "type": "boolean",
           "description": "Mount can set pier side (for meridian flips)"

@@ -95,10 +95,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _raBacklash = 0;
         private int _decBacklash = 0;
 
-        // Optics & Camera (6 fields)
+        // Optics & Camera (4 fields)
         private double _focalLength = 1000.0;
-        private double _cameraWidth = 10.0;
-        private double _cameraHeight = 10.0;
         private double _eyepieceFs = 50.0;
         private double _apertureArea = 0.0;
         private double _apertureDiameter = 0.0;
@@ -108,7 +106,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _fullCurrent = false;
         private bool _encoders = false;
         private bool _alternatingPPec = false;
-        private bool _globalStopOn = false;
         private bool _refraction = false;
         private double _gotoPrecision = 0.001;
 
@@ -873,32 +870,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        public double CameraWidth
-        {
-            get => _cameraWidth;
-            set
-            {
-                if (Math.Abs(_cameraWidth - value) > 0.01)
-                {
-                    _cameraWidth = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public double CameraHeight
-        {
-            get => _cameraHeight;
-            set
-            {
-                if (Math.Abs(_cameraHeight - value) > 0.01)
-                {
-                    _cameraHeight = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public double EyepieceFs
         {
             get => _eyepieceFs;
@@ -991,19 +962,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         SkyServer.SkyTasks(MountTaskName.AlternatingPpec, _owner);
                     }
-                }
-            }
-        }
-
-        public bool GlobalStopOn
-        {
-            get => _globalStopOn;
-            set
-            {
-                if (_globalStopOn != value)
-                {
-                    _globalStopOn = value;
-                    OnPropertyChanged();
                 }
             }
         }
@@ -1873,8 +1831,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Batch 5: Optics
                 _focalLength = settings.FocalLength;
-                _cameraWidth = settings.CameraWidth;
-                _cameraHeight = settings.CameraHeight;
                 _eyepieceFs = settings.EyepieceFS;
                 _apertureArea = settings.ApertureArea;
                 _apertureDiameter = settings.ApertureDiameter;
@@ -1884,7 +1840,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _fullCurrent = settings.FullCurrent;
                 _encoders = settings.EncodersOn;
                 _alternatingPPec = settings.AlternatingPPEC;
-                _globalStopOn = settings.GlobalStopOn;
                 _refraction = settings.Refraction;
                 _gotoPrecision = settings.GotoPrecision;
 
@@ -2086,15 +2041,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.DecBacklash = _decBacklash;
 
                 settings.FocalLength = _focalLength;
-                settings.CameraWidth = _cameraWidth;
-                settings.CameraHeight = _cameraHeight;
                 settings.EyepieceFS = _eyepieceFs;
 
                 settings.MaximumSlewRate = _maxSlewRate;
                 settings.FullCurrent = _fullCurrent;
                 settings.EncodersOn = _encoders;
                 settings.AlternatingPPEC = _alternatingPPec;
-                settings.GlobalStopOn = _globalStopOn;
                 settings.Refraction = _refraction;
 
                 settings.HomeAxisX = _homeAxisX;

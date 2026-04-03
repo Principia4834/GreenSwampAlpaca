@@ -3162,24 +3162,6 @@ namespace GreenSwamp.Alpaca.MountControl
             IsSlewing = slewing;
         }
 
-        // ToDo: Remove if not needed
-        /// <summary>
-        /// Resets the spiral list if slew is out of limit
-        /// </summary>
-        //private static void CheckSpiralLimit()
-        //{
-        //    if (!_settings!.SpiralLimits) return;
-        //    if (SpiralCollection.Count == 0) return;
-        //    var point = SpiralCollection[0];
-        //    if (point == null) return;
-        //    // calc distance between two coordinates
-        //    var distance = Calculations.AngularDistance(RightAscensionXForm, DeclinationXForm, point.RaDec.X, point.RaDec.Y);
-        //    if (distance <= _settings!.SpiralDistance) return;
-        //    SpiralCollection.Clear();
-        //    _settings!.SpiralDistance = 0;
-        //    SpiralChanged = true;
-        //}
-
         /// <summary>
         /// Checks if the target is within the defined limits.
         /// </summary>

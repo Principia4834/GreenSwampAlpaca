@@ -90,12 +90,12 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>
         /// Enable monitoring for 'Warning' type entries (also written to session log)
         /// </summary>
-        public bool Warning { get; set; } = false;
+        public bool Warning { get; set; } = true;
 
         /// <summary>
         /// Enable monitoring for 'Error' type entries (also written to error and session logs)
         /// </summary>
-        public bool Error { get; set; } = false;
+        public bool Error { get; set; } = true;
 
         /// <summary>
         /// Enable monitoring for 'Debug' type entries (troubleshooting data)
@@ -110,7 +110,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// Enable logging monitor entries to file (GSMonitorLog)
         /// Recommended: true for development, false for production
         /// </summary>
-        public bool LogMonitor { get; set; } = true;
+        public bool LogMonitor { get; set; } = false;
 
         /// <summary>
         /// Enable logging session entries to file (Information, Warning, Error types)

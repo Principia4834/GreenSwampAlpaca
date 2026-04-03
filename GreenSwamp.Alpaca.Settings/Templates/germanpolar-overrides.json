@@ -10,6 +10,7 @@
     "AxisHzTrackingLimit": 0.0,
     "AxisLimitX": 180.0,
     "AxisLowerLimitY": -180.0,
+    "AxisTrackingLimit": 0.0,
     "AxisUpperLimitY": 180.0,
     "CanSetPierSide": true,
     "HomeAxisX": 90.0,

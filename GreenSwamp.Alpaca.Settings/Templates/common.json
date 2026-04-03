@@ -18,8 +18,6 @@
                      "AxisTrackingLimit":  0.0,
                      "AxisUpperLimitY":  180.0,
                      "BaudRate":  9600,
-                     "CameraHeight":  0.0,
-                     "CameraWidth":  0.0,
                      "CanSetPierSide":  true,
                      "CustomDec360Steps":  0,
                      "CustomDecTrackingOffset":  0,
@@ -181,7 +179,6 @@
                      "CanTrackingRates": true,
                      "CanUnpark": true,
                      "FullCurrent": true,
-                     "GlobalStopOn":  false,
                      "GotoPrecision":  0.001,
                      "GpsBaudRate":  "ps4800",
                      "GpsPort":  1,
@@ -189,13 +186,6 @@
                      "NumMoveAxis":  2,
                      "PolarLedLevel":  -1,
                      "PolarMode":  "Right",
-                     "SpiralDistance":  30,
-                     "SpiralFov":  4800,
-                     "SpiralHeight":  4800,
-                     "SpiralLimits": true,
-                     "SpiralPause":  10,
-                     "SpiralSpeed":  4,
-                     "SpiralWidth":  4800,
                      "TraceLogger":  false
                  }
 }

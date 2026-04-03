@@ -103,6 +103,10 @@
           "type": "number",
           "description": "Horizontal tracking limit in degrees"
         },
+        "AxisTrackingLimit": {
+          "type": "number",
+          "description": "Axis tracking limit in degrees (0.0 = disabled)"
+        },
         "LimitTracking": {
           "type": "boolean",
           "description": "Enable tracking limits"

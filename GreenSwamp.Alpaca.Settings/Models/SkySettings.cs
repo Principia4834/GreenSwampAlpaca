@@ -149,8 +149,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public bool DisableKeysOnGoTo { get; set; }
         
         // Camera/Eyepiece Settings
-        public double CameraWidth { get; set; }
-        public double CameraHeight { get; set; }
         public double EyepieceFS { get; set; }
         
         // Capabilities
@@ -187,8 +185,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public double GotoPrecision { get; set; }
         public bool FullCurrent { get; set; }
         public int NumMoveAxis { get; set; }
-        public bool GlobalStopOn { get; set; }
-        
         // Display Settings
         public int DisplayInterval { get; set; }
         public bool TraceLogger { get; set; }

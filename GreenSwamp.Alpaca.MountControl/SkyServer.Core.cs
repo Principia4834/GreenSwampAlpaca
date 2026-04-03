@@ -118,15 +118,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private static IList<double> HcPrevMovesDec
             => _defaultInstance?._hcPrevMovesDec ?? new List<double>();
 
-        // Phase 4.1: Converted to delegating properties (fields removed, see properties below)
-
-        // ToDo: Remove if not needed
-        // public static readonly List<SpiralPoint> SpiralCollection;
-
-        // AlignmentModel
-        // ToDo: Remove if not needed
-        // public static readonly AlignmentModel AlignmentModel;
-
         // Phase 5.3: CancellationTokenSources — delegate to default instance to prevent cross-device cancellation
         private static CancellationTokenSource? _ctsGoTo
         {

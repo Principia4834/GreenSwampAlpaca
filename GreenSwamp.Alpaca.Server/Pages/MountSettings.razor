@@ -340,16 +340,6 @@
                     <h4>Imaging</h4>
 
                     <div class="mb-3">
-                        <label class="form-label">Camera Width (mm)</label>
-                        <InputNumber @bind-Value="_settings.CameraWidth" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Camera Height (mm)</label>
-                        <InputNumber @bind-Value="_settings.CameraHeight" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label">Eyepiece Field Stop (mm)</label>
                         <InputNumber @bind-Value="_settings.EyepieceFS" class="form-control" />
                     </div>
@@ -598,11 +588,6 @@
                     <div class="mb-3 form-check">
                         <InputCheckbox @bind-Value="_settings.FullCurrent" class="form-check-input" id="fullCurrent" />
                         <label class="form-check-label" for="fullCurrent">Full Current Mode</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.GlobalStopOn" class="form-check-input" id="globalStop" />
-                        <label class="form-check-label" for="globalStop">Global Stop Enabled</label>
                     </div>
 
                     <div class="mb-3 form-check">

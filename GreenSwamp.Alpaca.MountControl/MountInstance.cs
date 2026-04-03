@@ -1722,8 +1722,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _lha = Coordinate.Ra2Ha12(_rightAscensionXForm, _siderealTime);
                 SkyServer.CheckSlewState();
                 SkyServer.CheckAxisLimits();
-                // ToDo: Remove if not needed
-                // SkyServer.CheckSpiralLimit();
                 CheckPecTraining();
                 _isHome = this.AtHome;
                 switch (_settings.AlignmentMode)
