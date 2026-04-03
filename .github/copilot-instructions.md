@@ -1,6 +1,11 @@
 # GitHub Copilot Workspace Instructions
 # GreenSwamp Alpaca Solution
 
+## General instructions
+
+- Always use my name "Andy" when referring to the "user"
+- Always include a time and date stamp in any markdown document you create or update using the format "YYYY-MM-DD HH:MM"
+
 ## Shell & CLI guidance for Copilot suggestions
 
 - Default shell: `powershell.exe`. Always generate PowerShell-compatible commands unless the user explicitly requests a different shell.
