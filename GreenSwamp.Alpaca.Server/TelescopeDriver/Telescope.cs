@@ -1610,7 +1610,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
 
             // Enable tracking before starting slew
-            inst.CycleOnTracking(true);
+            // inst.CycleOnTracking(true);
+            if(!Tracking) Tracking = true;
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
@@ -1673,13 +1674,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckRange(ra, 0, 24, "SlewToTargetAsync", "TargetRightAscension");
             CheckRange(dec, -90, 90, "SlewToTargetAsync", "TargetDeclination");
             CheckParked("SlewToTargetAsync");
-            CheckTracking(true, "SlewToTargetAsync");
             CheckReachable(ra, dec, SlewType.SlewRaDec);
 
             var xy = Transforms.CoordTypeToInternal(ra, dec);
 
             // Enable tracking before starting slew
-            inst.CycleOnTracking(true);
+            if (!Tracking) Tracking = true;
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.

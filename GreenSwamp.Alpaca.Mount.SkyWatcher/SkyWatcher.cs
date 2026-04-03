@@ -246,6 +246,15 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                                      !highSpeed && // High speed not required
                                      (axesStatus.SlewingForward == forward); // No direction change
 
+                // Fix 5: If only the rate is changing (no direction or speed mode change), 
+                // update speed on-the-fly without stopping the axis
+                if (rateChangeOnly)
+                {
+                    _commands.SetStepSpeed(axis, speedInt); // I: Update speed without stopping
+                    _commands.GetAxisPositionCounter(axis); // read for plotting
+                    return;
+                }
+
                 if (axesStatus.FullStop || // Already stopped
                     (axesStatus.HighSpeed != highSpeed) || // Change high speed
                     highSpeed ||
