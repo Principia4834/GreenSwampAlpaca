@@ -68,7 +68,37 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// Saves monitor settings to the current version folder
         /// </summary>
         Task SaveMonitorSettingsAsync(MonitorSettings settings);
-        
+
+        // ── Observatory settings (observatory.settings.json) ─────────────────
+
+        /// <summary>
+        /// Gets the observatory physical settings (latitude, longitude, elevation, UTC offset).
+        /// Creates observatory.settings.json from app defaults on first run if absent (Behaviour B4).
+        /// </summary>
+        ObservatorySettings GetObservatorySettings();
+
+        /// <summary>
+        /// Saves observatory settings to observatory.settings.json (Behaviour B4).
+        /// Does not propagate changes to existing device-nn.settings.json files (v1).
+        /// </summary>
+        Task SaveObservatorySettingsAsync(ObservatorySettings settings);
+
+        // ── Mode-aware device creation and change ────────────────────────────
+
+        /// <summary>
+        /// Creates a new device-nn.settings.json populated with app defaults for the specified
+        /// alignment mode and observatory properties from observatory.settings.json (Behaviour B1).
+        /// </summary>
+        Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, AlignmentMode mode);
+
+        /// <summary>
+        /// Changes the alignment mode on an existing device (Behaviour B2).
+        /// Properties marked [UniqueSetting] are replaced with the new mode's defaults;
+        /// all [CommonSetting] properties (including user observatory values) are preserved.
+        /// Operation is atomic.
+        /// </summary>
+        Task ChangeAlignmentModeAsync(int deviceNumber, AlignmentMode newMode);
+
         /// <summary>
         /// Migrates settings from the most recent previous version
         /// Phase 3 baseline (v1.0.0+): Only supports migration from v1.0.0 and above

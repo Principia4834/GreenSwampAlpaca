@@ -1,7 +1,7 @@
 # Settings CSV Files — Progress Report
 
-**2026-04-03 18:33** → updated **2026-04-03 20:26**
-**Status:** All code tasks complete — G1 and M1–M5 implemented. Build verified ✅. Phase SB ready to begin.
+**2026-04-03 18:33** → updated **2026-04-03 22:46**
+**Status:** Phases SA, SB, SC, SF, SD complete — attributes, `SkySettings.cs` annotation, interface additions, `DeviceTemplates` + `ObservatoryDefaults` in `appsettings.json`, and B1/B2/B4 implementations done. Build verified ✅.
 **Scope:** Review of Andy's four CSV files against `SkySettings.cs` and existing override templates — Phase 2 post-decision verification; MonitorSettings design from `monitor.json`
 **Source files reviewed:** `T:\source\repos\SettingsExport\` — `SkyTelescope.csv`, `GermanPolarUnique.csv`, `PolarUnique.csv`, `AltAzUnique.csv`, `monitor.json`
 
@@ -106,11 +106,11 @@ The following is correct and ready — no further changes needed:
 
 | Phase | Can start now? | Blocked by |
 |-------|:-:|---|
-| **SA** — New attribute files + `ObservatorySettings` model | ✅ Yes | Not blocked on CSV |
-| **SC** — Add 4 new methods to interface (interface only) | ✅ Yes | Not blocked on CSV |
-| **SB** — Annotate `SkySettings.cs` | ✅ Yes | All CSV blockers cleared |
-| **SD** — Implement B1, B2, B4 in `VersionedSettingsService` | ❌ No | Blocked on SB |
-| **SF** — Populate `DeviceTemplates` + `ObservatoryDefaults` in `appsettings.json` | ❌ No | Blocked on SB only — G1 resolved ✅ |
+| **SA** — New attribute files + `ObservatorySettings` model | ✅ Done | 3 new files created; build verified |
+| **SC** — Add 4 new methods to interface (interface only) | ✅ Done | Methods added to interface; stubs in `VersionedSettingsService`; build verified |
+| **SB** — Annotate `SkySettings.cs` | ✅ Done | 97 `[CommonSetting]` + 24 `[UniqueSetting]` applied; build verified |
+| **SD** — Implement B1, B2, B4 in `VersionedSettingsService` | ✅ Done | B1 (CreateDeviceForModeAsync), B2 (ChangeAlignmentModeAsync), B4 (GetObservatorySettings + SaveObservatorySettingsAsync) implemented; build verified |
+| **SF** — Populate `DeviceTemplates` + `ObservatoryDefaults` in `appsettings.json` | ✅ Done | 3 mode templates (121 props each) + ObservatoryDefaults added; build verified |
 | **Monitor/other settings** | ✅ Design complete | `monitor.json` analysed — 3 model default fixes + 2 `appsettings.json` gaps (M1–M5 code tasks, see Section 9) |
 
 ---
@@ -123,7 +123,10 @@ The following is correct and ready — no further changes needed:
 | ✅ Done — M1–M3 | `Warning=true`, `Error=true`, `LogMonitor=false` defaults corrected | `GreenSwamp.Alpaca.Settings\Models\MonitorSettings.cs` |
 | ✅ Done — M4 | `MonitorSettings` section (20 props) added | `GreenSwamp.Alpaca.Settings\Templates\appsettings.json` |
 | ✅ Done — M5 | `MonitorSettings` section (20 props) added | `GreenSwamp.Alpaca.Server\appsettings.json` |
-| 🟡 Next — Phase SB | Annotate `SkySettings.cs` with `[CommonSetting]`/`[UniqueSetting]` | `GreenSwamp.Alpaca.Settings\Models\SkySettings.cs` |
+| ✅ Done — SA | New `Attributes\CommonSettingAttribute.cs`, `Attributes\UniqueSettingAttribute.cs`, `Models\ObservatorySettings.cs` | `GreenSwamp.Alpaca.Settings\` |
+| ✅ Done — SB | Annotated all 121 `SkySettings.cs` properties (97 common, 24 unique) | `GreenSwamp.Alpaca.Settings\Models\SkySettings.cs` |
+| ✅ Done — SC | 4 new methods added to `IVersionedSettingsService`; stubs in `VersionedSettingsService` | `GreenSwamp.Alpaca.Settings\Services\` |
+| ✅ Done — SD | Implement B1 (CreateDeviceForMode), B2 (ChangeAlignmentMode), B4 (GetObservatory/Save) | `GreenSwamp.Alpaca.Settings\Services\VersionedSettingsService.cs` |
 
 ---
 
@@ -242,6 +245,6 @@ Both files need a `"MonitorSettings"` block added at root level using Andy's `mo
 
 ---
 
-*Document created: 2026-04-03 15:48 | Last updated: 2026-04-03 20:26*
+*Document created: 2026-04-03 15:48 | Last updated: 2026-04-03 22:29*
 *Author: GitHub Copilot (GreenSwamp Alpaca workspace)*
-*Next actions: Phase SB — annotate `SkySettings.cs` with `[CommonSetting]`/`[UniqueSetting]`. All design tasks (G1, M1–M5) complete. Build ✅.*
+*Next actions: Phases S1–S8 (per-device file split, DeviceSynchronizationService removal, full interface redesign) — see `SettingsArchitecture-Redesign-Requirements.md`.*

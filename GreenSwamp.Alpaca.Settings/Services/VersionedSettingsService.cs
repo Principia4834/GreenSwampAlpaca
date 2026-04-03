@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using GreenSwamp.Alpaca.Settings.Attributes;
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
@@ -645,6 +646,124 @@ namespace GreenSwamp.Alpaca.Settings.Services
             {
                 _fileLock.Release();
             }
+        }
+
+        // ── Observatory settings (Behaviour B4) ─────────────────────────────
+
+        public ObservatorySettings GetObservatorySettings()
+        {
+            var observatoryPath = Path.Combine(_currentVersionPath, "observatory.settings.json");
+
+            if (File.Exists(observatoryPath))
+            {
+                try
+                {
+                    var json = File.ReadAllText(observatoryPath);
+                    var saved = JsonSerializer.Deserialize<ObservatorySettings>(json);
+                    if (saved != null)
+                    {
+                        ASCOM.Alpaca.Logging.LogVerbose("Loaded observatory settings from observatory.settings.json");
+                        return saved;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ASCOM.Alpaca.Logging.LogWarning($"Failed to read observatory.settings.json: {ex.Message} — using ObservatoryDefaults");
+                }
+            }
+
+            // First run (B4): bind from ObservatoryDefaults section in configuration
+            var defaults = new ObservatorySettings();
+            _configuration.GetSection("ObservatoryDefaults").Bind(defaults);
+            ASCOM.Alpaca.Logging.LogVerbose("observatory.settings.json not found — returning ObservatoryDefaults (first run)");
+            return defaults;
+        }
+
+        public async Task SaveObservatorySettingsAsync(ObservatorySettings settings)
+        {
+            // TODO: Future feature — optionally push updated observatory settings to all registered
+            // device-nn.settings.json files. This would iterate GetAllDeviceSettings(), update
+            // observatory properties in each, and call SaveDeviceSettingsAsync(). Deferred to v2;
+            // requires explicit user confirmation in UI to avoid accidental overwrites.
+            var observatoryPath = Path.Combine(_currentVersionPath, "observatory.settings.json");
+
+            await _fileLock.WaitAsync();
+            try
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var json = JsonSerializer.Serialize(settings, options);
+                await File.WriteAllTextAsync(observatoryPath, json);
+                ASCOM.Alpaca.Logging.LogVerbose($"Observatory settings saved to {observatoryPath}");
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+        }
+
+        // ── Mode-aware device creation and change ─────────────────────────────
+
+        public async Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, AlignmentMode mode)
+        {
+            var modeName = mode.ToString(); // "GermanPolar", "Polar", or "AltAz"
+
+            // B1: Bind factory defaults for the requested alignment mode from DeviceTemplates
+            var device = new SkySettings();
+            _configuration.GetSection($"DeviceTemplates:{modeName}").Bind(device);
+
+            // B1: Override observatory properties with current observatory.settings.json values
+            var observatory = GetObservatorySettings();
+            device.Latitude = observatory.Latitude;
+            device.Longitude = observatory.Longitude;
+            device.Elevation = observatory.Elevation;
+            device.UTCOffset = observatory.UTCOffset;
+
+            // Set identification properties
+            device.DeviceNumber = deviceNumber;
+            device.DeviceName = deviceName;
+            device.Enabled = true;
+
+            var devices = GetAllDevices();
+            var existingIndex = devices.FindIndex(d => d.DeviceNumber == deviceNumber);
+            if (existingIndex >= 0)
+                devices[existingIndex] = device;
+            else
+                devices.Add(device);
+
+            // SaveAllDevicesAsync acquires its own lock — call directly to avoid nested lock
+            await SaveAllDevicesAsync(devices);
+            await _syncService.EnsureAlpacaDeviceEntryAsync(deviceNumber, deviceName);
+            SettingsChanged?.Invoke(this, device);
+            ASCOM.Alpaca.Logging.LogVerbose($"Created device {deviceNumber} ({deviceName}) for mode {modeName}");
+        }
+
+        public async Task ChangeAlignmentModeAsync(int deviceNumber, AlignmentMode newMode)
+        {
+            var modeName = newMode.ToString(); // "GermanPolar", "Polar", or "AltAz"
+
+            var devices = GetAllDevices();
+            var existing = devices.FirstOrDefault(d => d.DeviceNumber == deviceNumber)
+                ?? throw new InvalidOperationException($"Device {deviceNumber} not found.");
+
+            // B2: Bind the new mode's template to get [UniqueSetting] replacement values
+            var modeTemplate = new SkySettings();
+            _configuration.GetSection($"DeviceTemplates:{modeName}").Bind(modeTemplate);
+
+            // B2: Copy [UniqueSetting] properties from template; all [CommonSetting] properties are preserved
+            var uniqueProps = typeof(SkySettings)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.GetCustomAttribute<UniqueSettingAttribute>() != null && p.CanWrite);
+
+            foreach (var prop in uniqueProps)
+            {
+                prop.SetValue(existing, prop.GetValue(modeTemplate));
+            }
+
+            // SaveAllDevicesAsync acquires its own lock — call directly to avoid nested lock
+            await SaveAllDevicesAsync(devices);
+            await _syncService.EnsureAlpacaDeviceEntryAsync(deviceNumber, existing.DeviceName);
+            SettingsChanged?.Invoke(this, existing);
+            ASCOM.Alpaca.Logging.LogVerbose($"Changed device {deviceNumber} alignment mode to {modeName}");
         }
 
         public async Task<bool> MigrateFromPreviousVersionAsync()
