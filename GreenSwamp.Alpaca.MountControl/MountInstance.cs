@@ -1671,9 +1671,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings.Mount}" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            // Stop all asynchronous operations
-            SkyServer.Tracking = false;
-            SkyServer.CancelAllAsync();
+            // Stop all asynchronous operations — per-instance (Phase H3: don't affect other devices)
+            _trackingMode = TrackingMode.Off;
+            _tracking = false;
+            _ctsGoTo?.Cancel();
+            _ctsPulseGuideRa?.Cancel();
+            _ctsPulseGuideDec?.Cancel();
+            _ctsHcPulseGuide?.Cancel();
             SkyServer.AxesStopValidate(this);
             if (_mediaTimer != null) { _mediaTimer.Tick -= OnUpdateServerEvent; }
             _mediaTimer?.Stop();
@@ -1720,8 +1724,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 _siderealTime = SkyServer.GetLocalSiderealTime();
                 this.UpdateSteps();
                 _lha = Coordinate.Ra2Ha12(_rightAscensionXForm, _siderealTime);
-                SkyServer.CheckSlewState();
-                SkyServer.CheckAxisLimits();
+                CheckSlewState();    // Phase H2: per-instance; updates this device's _isSlewing
+                CheckAxisLimits();   // Phase H2: per-instance; checks this device's axis limits
                 CheckPecTraining();
                 _isHome = this.AtHome;
                 switch (_settings.AlignmentMode)
@@ -1742,6 +1746,110 @@ namespace GreenSwamp.Alpaca.MountControl
             finally
             {
                 if (hasLock) { Monitor.Exit(_timerLock); }
+            }
+        }
+
+        /// <summary>
+        /// Phase H2: Per-instance slew-state check — replaces static SkyServer.CheckSlewState().
+        /// Updates this device's _isSlewing from its own _slewState and _rateMoveAxes.
+        /// </summary>
+        private void CheckSlewState()
+        {
+            var slewing = false;
+            switch (_slewState)
+            {
+                case SlewType.SlewNone:     slewing = false; break;
+                case SlewType.SlewSettle:   slewing = true;  break;
+                case SlewType.SlewMoveAxis: slewing = true;  break;
+                case SlewType.SlewRaDec:    slewing = true;  break;
+                case SlewType.SlewAltAz:    slewing = true;  break;
+                case SlewType.SlewPark:     slewing = true;  break;
+                case SlewType.SlewHome:     slewing = true;  break;
+                case SlewType.SlewHandpad:  slewing = true;  break;
+                case SlewType.SlewComplete: _slewState = SlewType.SlewNone; break;
+                default:                    _slewState = SlewType.SlewNone; break;
+            }
+            if ((Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0) { slewing = true; }
+            _isSlewing = slewing;
+        }
+
+        /// <summary>
+        /// Phase H2: Per-instance axis-limit check — replaces static SkyServer.CheckAxisLimits().
+        /// Note: SkyServer.LimitStatus remains static (AltAz/Polar hardware commands only; not GermanPolar).
+        ///       SkyServer.StopAxes() / GoToPark() remain static (limit actions — per Phase H pattern).
+        /// </summary>
+        private void CheckAxisLimits()
+        {
+            var meridianLimit = false;
+            var horizonLimit = false;
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server, Type = MonitorType.Warning,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId, Message = string.Empty
+            };
+            var totLimit = _settings.HourAngleLimit + _settings.AxisTrackingLimit;
+            switch (_settings.AlignmentMode)
+            {
+                case AlignmentMode.AltAz:
+                    meridianLimit = SkyServer.LimitStatus.AtLowerLimitAxisY || SkyServer.LimitStatus.AtUpperLimitAxisY;
+                    break;
+                case AlignmentMode.Polar:
+                    break;
+                case AlignmentMode.GermanPolar:
+                    bool sh = _settings.Latitude < 0;
+                    if (sh)
+                    {
+                        if (_appAxes.X >= _settings.HourAngleLimit || _appAxes.X <= -_settings.HourAngleLimit - 180) meridianLimit = true;
+                    }
+                    else
+                    {
+                        if (_appAxes.X >= _settings.HourAngleLimit + 180 || _appAxes.X <= -_settings.HourAngleLimit) meridianLimit = true;
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            if (_settings.HzLimitPark || _settings.HzLimitTracking)
+            {
+                switch (_settings.AlignmentMode)
+                {
+                    case AlignmentMode.AltAz:
+                        if ((_altAzm.Y <= _settings.AxisHzTrackingLimit || _altAzm.Y <= _settings.AxisLowerLimitY || _altAzm.Y >= _settings.AxisUpperLimitY) && _trackingMode != TrackingMode.Off)
+                        { horizonLimit = true; }
+                        break;
+                    case AlignmentMode.Polar:
+                        break;
+                    case AlignmentMode.GermanPolar:
+                        if (this.SideOfPier == PointingState.Normal && _altAzm.Y <= _settings.AxisHzTrackingLimit && _trackingMode != TrackingMode.Off)
+                        { horizonLimit = true; }
+                        break;
+                }
+            }
+            if (meridianLimit)
+            {
+                monitorItem.Message = $"Meridian Limit Alarm: Park: {_settings.LimitPark} | Position: {_settings.ParkLimitName} | Stop Tracking: {_settings.LimitTracking}";
+                MonitorLog.LogToMonitor(monitorItem);
+                if (_trackingMode != TrackingMode.Off && _settings.LimitTracking)
+                { _trackingMode = TrackingMode.Off; _tracking = false; }
+                if (_settings.LimitPark && _slewState != SlewType.SlewPark)
+                {
+                    var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkLimitName);
+                    if (found == null) SkyServer.StopAxes(); else { _parkSelected = found; SkyServer.GoToPark(); }
+                }
+            }
+            if (horizonLimit)
+            {
+                monitorItem.Message = $"Horizon Limit Alarm: Park: {_settings.HzLimitPark} | Position:{_settings.ParkHzLimitName} | Stop Tracking:{_settings.HzLimitTracking}";
+                MonitorLog.LogToMonitor(monitorItem);
+                if (_trackingMode != TrackingMode.Off && _settings.HzLimitTracking)
+                { _trackingMode = TrackingMode.Off; _tracking = false; }
+                if (_settings.HzLimitPark && _slewState != SlewType.SlewPark)
+                {
+                    var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkHzLimitName);
+                    if (found == null) SkyServer.StopAxes(); else { _parkSelected = found; SkyServer.GoToPark(); }
+                }
             }
         }
 

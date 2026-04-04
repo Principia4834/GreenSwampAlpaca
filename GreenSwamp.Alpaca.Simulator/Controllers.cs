@@ -25,7 +25,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         #region Fields
 
-        private static CancellationTokenSource _ctsMount = new CancellationTokenSource();
+        // Phase H1: instance field — each Controllers instance has its own CTS
+        private CancellationTokenSource _ctsMount;
+        // Phase H5: captured at construction time — avoids last-writer-wins race between two simulator devices
+        internal int AutoHomeAxisX;
+        internal int AutoHomeAxisY;
         private const long RevolutionSteps = 12960000;
         private const long WormRevolutionSteps = 64800;
         private const int MaxSteps = Int32.MaxValue;
@@ -108,6 +112,9 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             SlewSpeedEight = 13;
             SnapPort1 = false;
             SnapPort2 = false;
+            _ctsMount = new CancellationTokenSource();       // Phase H1: per-instance CTS
+            AutoHomeAxisX = Settings.AutoHomeAxisX;          // Phase H5: capture before next device overwrites
+            AutoHomeAxisY = Settings.AutoHomeAxisY;
         }
 
         /// <summary>
@@ -755,12 +762,12 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             switch (axis)
             {
                 case Axis.Axis1:
-                    if (DegreesX > Settings.AutoHomeAxisX) HomeSensorX = MinSteps;
-                    if (DegreesX < Settings.AutoHomeAxisX) HomeSensorX = MaxSteps;
+                    if (DegreesX > AutoHomeAxisX) HomeSensorX = MinSteps;  // Phase H5: use instance field
+                    if (DegreesX < AutoHomeAxisX) HomeSensorX = MaxSteps;
                     break;
                 case Axis.Axis2:
-                    if (DegreesY > Settings.AutoHomeAxisY) HomeSensorY = MinSteps;
-                    if (DegreesY < Settings.AutoHomeAxisY) HomeSensorY = MaxSteps;
+                    if (DegreesY > AutoHomeAxisY) HomeSensorY = MinSteps;  // Phase H5: use instance field
+                    if (DegreesY < AutoHomeAxisY) HomeSensorY = MaxSteps;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
@@ -797,7 +804,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <summary>
         /// Shutdown Mount
         /// </summary>
-        private static bool Stop()
+        private bool Stop()  // Phase H1: non-static — cancels only this instance's loop
         {
             _ctsMount?.Cancel();
             _ctsMount?.Dispose();

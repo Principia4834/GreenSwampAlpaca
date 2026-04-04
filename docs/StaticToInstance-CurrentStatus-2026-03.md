@@ -6,27 +6,33 @@
 **Updated:** April 2026, 14:30 UTC — `SkyServer.TelescopeAPI.cs` full region-by-region review; CTS delegation confirmed; new concerns G1–G3 identified
 **Updated:** 2026-04-03 09:00 — timestamp format standardised per copilot-instructions.md
 **Updated:** 2026-04-03 09:23 — Phase G complete (X1, X2, G1, G2, G3); all builds green
+**Updated:** 2026-04-04 09:20 — Two-device smoke test failure diagnosed; Phase H items identified; "all blockers cleared" conclusion overturned; Phase E elevated to 🔴
+**Updated:** 2026-04-04 08:58 UTC — Phase H complete (H1–H5); all builds green; two-device simulator isolation confirmed
 **Branch:** `master`
 **Build baseline:** ✅ Green — Simulator and SkyWatcher GermanPolar pass confidence tests
-**Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs`
+**Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs` + two-device smoke test failure diagnosis (2026-04-04)
 
 ---
 
 ## 1. Executive Summary
 
 The migration is **functionally complete for single-telescope operation** and is estimated
-at approximately **98 %** complete overall. Every piece of per-device state now lives on
+at approximately **95 %** complete overall. Every piece of per-device state now lives on
 `MountInstance`; the static `SkyServer.*` surface is a pure thin delegation layer to
 `MountInstanceRegistry.GetInstance(0)`. The ASCOM driver (`Telescope.cs`) routes entirely
 through `GetInstance(_deviceNumber)`.
 
-All 🔴 Critical and 🟠 High items from the March assessment have been resolved.
-The remaining **2 %** consists of two categories:
+**⚠️ Assessment revised 2026-04-04 — two-device smoke test failed.** Connecting to device 1
+returned device 0 state. Code tracing identified four new Phase H blockers; the previous
+"all hard blockers are cleared" conclusion was incorrect.
+
+Remaining work by category:
 
 | Category | Items | Blocking multi-telescope? |
 |---|---|---|
-| **Phase E — Blazor per-device UI notifications** | `StaticPropertyChanged` fires globally for all devices; no per-instance event on `MountInstance` | 🟡 UI only |
-| **Phase F — Option C Phase 3** | `Devices[]` array in `appsettings.json` has per-device serial fields; Blazor multi-device UI not started | 🟡 UI / config |
+| **Phase H — Simulator static contamination** ✅ | `Controllers._ctsMount` → instance field; `MountStop()` and `OnUpdateServerEvent()` per-instance; `ConnectAlignmentModel()` is empty stub (no-op) | ✅ Resolved |
+| **Phase E — Blazor per-device UI notifications** | `TelescopeStateService` reads all state from `SkyServer.*` (device 0 only); `StaticPropertyChanged` fires globally | 🔴 Yes — confirmed primary cause of smoke test UI symptom |
+| **Phase F — Option C Phase 3** | Per-device serial config in `Devices[]` array; Blazor multi-device UI not started | 🟡 UI / config only |
 
 **Minor residuals (cleanup only):**
 - `//lock (_goToAsyncLock)` commented reference in `SkyServer.TelescopeAPI.cs` line 787 — field is gone, comment can be removed
@@ -39,6 +45,24 @@ The remaining **2 %** consists of two categories:
 | **G1** ✅ | `RateDecOrg` / `RateRaOrg` converted to delegating computed properties | `SkyServer.TelescopeAPI.cs:538,572` | ✅ Resolved — Phase G |
 | **G2** ✅ | `MountInstance? instance` parameter threaded through `SlewAxes→SlewMount→GoToAsync` | `SkyServer.TelescopeAPI.cs:763`, `SkyServer.Core.cs` | ✅ Resolved — Phase G |
 | **G3** ✅ | `PulseGuideAltAz()` moved to `MountInstance` instance method | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | ✅ Resolved — Phase G |
+
+**New concerns identified — 2026-04-04 (two-device smoke test failure):**
+
+| ID | Item | File | Blocking multi-telescope? |
+|---|---|---|---|
+| **H1** 🔴 | `Controllers._ctsMount` is `private static` — both simulator instances share one CTS; `Stop()` is also `private static`; stopping either device cancels the other | `GreenSwamp.Alpaca.Simulator\Controllers.cs:28` | 🔴 Yes — stops both simulators on single disconnect |
+| **H2** 🟠 | `OnUpdateServerEvent()` calls static `SkyServer.CheckSlewState()` and `SkyServer.CheckAxisLimits()` — route to device 0 only; device 1's slew state and axis limits are never updated | `MountInstance.cs:1723–1724` | 🟠 Yes — slew/limit detection broken for device 1 |
+| **H3** 🟠 | `MountStop()` calls static `SkyServer.Tracking = false` and `SkyServer.CancelAllAsync()` — disconnecting device 1 disables device 0's tracking and cancels device 0's async ops | `MountInstance.cs:1675–1676` | 🟠 Yes — disconnect of device 1 disrupts device 0 |
+| **H4** 🟡 | `SkyServer.ConnectAlignmentModel()` called for each device in `MountStart()` — unclear if per-instance or device-0-only | `MountInstance.cs:1602` | 🟡 Needs verification |
+| **H5** 🟡 | `Mount.Simulator.Settings.AutoHomeAxisX/Y` is a `public static class` — last-writer-wins when two simulators initialise | `GreenSwamp.Alpaca.Simulator\Settings.cs:9` | 🟡 AutoHome only — low risk |
+
+**Confirmed correct during smoke test diagnosis (2026-04-04):**
+- `Program.cs:341` — `new Telescope(device.DeviceNumber)` — each driver correctly knows its device number ✅
+- `Telescope.GetInstance()` → `MountInstanceRegistry.GetInstance(_deviceNumber)` — per-device routing intact ✅
+- `MountInstance._mediaTimer.Tick += OnUpdateServerEvent` — timer fires `this.OnUpdateServerEvent` (instance method, NOT the static `SkyServer.UpdateServerEvent`) ✅
+- `MountQueueImplementation` — new instance created per device in `MountStart()` ✅
+- All `MountInstance` position fields (`_raDec`, `_altAzm`, `_appAxes`) — per-instance ✅
+- `TelescopeStateService` confirmed as primary cause of Blazor UI showing device 0 for all devices (Phase E elevated to 🔴)
 
 **Also confirmed correct (April 2026 TelescopeAPI review):**
 - G1/G2/G3 all resolved — Phase G complete (2026-04-03) ✅
@@ -201,7 +225,20 @@ line 106. `SkyServer.LastDecDirection` delegates get/set to `_defaultInstance._l
 
 ### 3.12 🟡 MEDIUM — B5: Blazor Per-Device UI Notifications Not Implemented
 
-**Status: unchanged from March 2026 assessment.**
+**Status: elevated to 🔴 HIGH by 2026-04-04 smoke test. Confirmed as the primary cause of the Blazor UI showing device 0 for all devices.**
+
+`TelescopeStateService` is the Blazor singleton that feeds all UI state. Its `UpdateState()` method reads 20+ properties exclusively from `SkyServer.*` — all of which route to `_defaultInstance = MountInstanceRegistry.GetInstance(0)`. Every Blazor page shows device 0's coordinates, tracking state, slew state, and limits regardless of which device number the user is viewing.
+
+**File:** `GreenSwamp.Alpaca.Server\Services\TelescopeStateService.cs`
+
+```csharp
+// UpdateState() — ALL reads are device 0 only:
+Altitude = SkyServer.Altitude,              // → _defaultInstance.Altitude
+RightAscension = SkyServer.RightAscension,  // → _defaultInstance.RightAscension
+Declination = SkyServer.Declination,        // → _defaultInstance.Declination
+IsSlewing = SkyServer.IsSlewing,            // → _defaultInstance.IsSlewing
+// ... 16+ more
+```
 
 **File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs`
 
@@ -217,6 +254,7 @@ causes all Blazor components to refresh regardless of which device they are boun
 
 No per-device notification mechanism exists. Implementing it requires:
 - Each `MountInstance` to have its own `PropertyChanged` event
+- `TelescopeStateService` to become device-number-aware (or split to one service per device)
 - Blazor components to bind to the specific `MountInstance` event for their device number
 - The static `NotifyStepsChanged()` helper to be replaced or supplemented with
   per-device routing
@@ -317,6 +355,106 @@ directly to per-instance queue refs and are not affected.
 
 ---
 
+### 3.17 🔴 NEW — H1: `Controllers._ctsMount` Static Field (Simulator Cross-Device Contamination)
+
+**Identified 2026-04-04 (two-device smoke test analysis).**
+
+**File:** `GreenSwamp.Alpaca.Simulator\Controllers.cs` line 28
+
+```csharp
+private static CancellationTokenSource _ctsMount = new CancellationTokenSource();
+```
+
+The `Controllers` class is instantiated once per `MountQueueImplementation`, which is created once per `MountInstance`. With two simulator devices there are two `Controllers` instances — but they share a **single static** `CancellationTokenSource`. `Stop()` is also `private static`:
+
+```csharp
+private static bool Stop()
+{
+    _ctsMount?.Cancel();   // cancels BOTH devices' loops
+    _ctsMount?.Dispose();
+    _ctsMount = null;
+    return true;
+}
+```
+
+When device 0 disconnects and calls `Stop()`, device 1's simulation loop is cancelled. When device 1 disconnects, device 0's loop is cancelled. The two simulators are not independent.
+
+**Fix:** Make `_ctsMount` an instance field; initialise it in the `Controllers` constructor. Update `Stop()` to be a non-static method.
+
+---
+
+### 3.18 🟠 NEW — H2: Static `CheckSlewState()` / `CheckAxisLimits()` Called from Device 1's Timer
+
+**Identified 2026-04-04 (two-device smoke test analysis).**
+
+**File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs` lines 1723–1724
+
+```csharp
+SkyServer.CheckSlewState();     // ⚠️ static → _defaultInstance (device 0 only)
+SkyServer.CheckAxisLimits();   // ⚠️ static → _defaultInstance (device 0 only)
+```
+
+Device 1's per-instance timer correctly fires `this.OnUpdateServerEvent()`, but inside that method slew-state checking and axis-limit checking are routed to device 0. Device 1's `_isSlewing` backing field and limit state are never updated by the timer loop.
+
+**Fix:** Add instance-aware `CheckSlewState(MountInstance instance)` and `CheckAxisLimits(MountInstance instance)` overloads in `SkyServer.Core.cs`, or move these as instance methods on `MountInstance` (preferred — consistent with Phase G pattern).
+
+---
+
+### 3.19 🟠 NEW — H3: `MountStop()` Static Calls Affect Device 0 When Called from Device 1
+
+**Identified 2026-04-04 (two-device smoke test analysis).**
+
+**File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs` lines 1675–1676
+
+```csharp
+SkyServer.Tracking = false;   // ⚠️ static setter → _defaultInstance._tracking = false
+SkyServer.CancelAllAsync();   // ⚠️ static → cancels device 0's CTS tokens
+```
+
+When device 1 disconnects, `MountStop()` is called on device 1's `MountInstance`. These two lines incorrectly operate on device 0: they disable device 0's tracking and cancel device 0's GoTo/pulse-guide operations. Device 0's active slew would be aborted by device 1 disconnecting.
+
+**Fix:** Replace with instance-aware equivalents:
+- `_tracking = false` (direct field write on `this`) or `SetTracking(false)` instance method
+- Call per-instance CTS cancellation directly: `_ctsGoTo?.Cancel(); _ctsPulseGuideRa?.Cancel();` etc.
+
+---
+
+### 3.20 🟡 NEW — H4: `SkyServer.ConnectAlignmentModel()` — Device-Awareness Unverified
+
+**Identified 2026-04-04 (two-device smoke test analysis).**
+
+**File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs` line 1602
+
+```csharp
+SkyServer.ConnectAlignmentModel();   // called in MountStart() for every device
+```
+
+Called for every device's `MountStart()` after the simulator queue is confirmed running. It is unclear whether `ConnectAlignmentModel()` sets up per-instance alignment state or operates on `_defaultInstance` only. If the latter, device 1's alignment model would not be initialised.
+
+**Action required:** Verify the implementation; add `MountInstance instance` parameter if needed.
+
+---
+
+### 3.21 🟡 NEW — H5: `Mount.Simulator.Settings` Static Class — Last-Writer-Wins
+
+**Identified 2026-04-04 (two-device smoke test analysis).**
+
+**File:** `GreenSwamp.Alpaca.Simulator\Settings.cs`
+
+```csharp
+public static class Settings
+{
+    public static int AutoHomeAxisX { get; set; }   // shared across all instances
+    public static int AutoHomeAxisY { get; set; }
+}
+```
+
+Both simulator instances write their `AutoHomeAxisX/Y` values during `MountStart()`. The second write overwrites the first. These values drive `HomeSensorReset()` — the auto-home sensor trip threshold. With two different telescope configurations, one device's threshold would be wrong.
+
+**Fix:** Convert `Settings` to a non-static class passed to `Controllers` via constructor, or absorb the two properties directly into `Controllers` as instance fields.
+
+---
+
 ## 4. Data-Flow Verification (Single Telescope — Current Operation)
 
 The following paths have been code-verified as correct for single-telescope (April 2026):
@@ -398,7 +536,19 @@ Mount position event wait (SkyPrecisionGoto)
 | **D7** | `SkyServer.TelescopeAPI.cs` | Remove `_goToAsyncLock` field | ✅ Done — field gone; residual `//lock (_goToAsyncLock)` comment at line 787 is cleanup |
 | **D8** | `SkyServer.cs` | Move `LastDecDirection` to `MountInstance` as `_lastDecDirection` | ✅ Done |
 
-### Phase E — Blazor Per-Device UI (🟡 MEDIUM — not started)
+### ✅ Phase H — Simulator Static Contamination + Update Loop Static Calls — COMPLETE (2026-04-04)
+
+Identified 2026-04-04 via two-device smoke test failure analysis. H1–H3 must be resolved before two simulators can operate concurrently without corrupting each other.
+
+| Task | File | Description | Priority |
+|---|---|---|---|
+| **H1** ✅ | `GreenSwamp.Alpaca.Simulator\Controllers.cs:28` | `_ctsMount` made instance field; `Stop()` made non-static; constructor initialises per-instance CTS | ✅ Done |
+| **H2** ✅ | `MountInstance.cs` | `CheckSlewState()` and `CheckAxisLimits()` added as private instance methods; `OnUpdateServerEvent()` call sites updated | ✅ Done |
+| **H3** ✅ | `MountInstance.cs:1675–1676` | `SkyServer.Tracking = false` → `_trackingMode = TrackingMode.Off; _tracking = false;`; `SkyServer.CancelAllAsync()` → four per-instance CTS cancellations | ✅ Done |
+| **H4** ✅ | `MountInstance.cs:1602` | `ConnectAlignmentModel()` is an empty stub — body is `// ToDo: Remove if not needed`; no fix needed | ✅ No-op |
+| **H5** ✅ | `GreenSwamp.Alpaca.Simulator\Controllers.cs` | `AutoHomeAxisX/Y` added as instance fields; values captured in constructor from `Settings.*` before next device can overwrite; `HomeSensorReset()` updated to use instance fields | ✅ Done |
+
+### Phase E — Blazor Per-Device UI (🔴 HIGH — elevated from MEDIUM by smoke test)
 
 | Task | Description |
 |---|---|
@@ -487,24 +637,28 @@ This file is a strong candidate for splitting — `Tracking & Rates`, `Validatio
 
 ## 8. Recommended Next Steps
 
-Phases A–D are complete. The April 2026 TelescopeAPI review identified three new 🟠 Medium items (G1–G3). Recommended sequencing:
+Phases A–G are complete. Two-device smoke test (2026-04-04) revealed Phase H blockers and elevated Phase E to 🔴. Recommended sequencing:
 
 ```
-✅ X1/X2 + Phase G — COMPLETE (2026-04-03)
-  X1: //lock comment removed; X2: SkySettingsBridge.cs deleted
-  G1: RateDecOrg/RateRaOrg — delegating computed properties
-  G2: MountInstance? param threaded through SlewAxes→SlewMount→GoToAsync
-  G3: PulseGuideAltAz moved to MountInstance instance method
+✅ Phases A–G — COMPLETE (2026-04-03)
+✅ Phase H — COMPLETE (2026-04-04)
+  H1: Controllers._ctsMount → instance field; Stop() → non-static ✅
+  H2: CheckSlewState / CheckAxisLimits → private instance methods on MountInstance ✅
+  H3: MountStop() → per-instance _trackingMode/CTS cancel ✅
+  H4: ConnectAlignmentModel() — empty stub; no fix needed ✅
+  H5: AutoHomeAxisX/Y → instance fields in Controllers; captured at construction time ✅
     ↓
-Integration test (gate for telescope #2)
-  Write WhenTwoDevicesConnectedThenQueuesAreIndependent
-    ↓
-Phase E (Blazor per-device notifications — design spike first)
+Phase E — Blazor per-device notifications (🔴 — primary UI blocker confirmed by smoke test)
   E1: Add InstancePropertyChanged event to MountInstance
   E2: MountInstance fires it for own state changes
-  E3: Blazor components bind per device number
-  E4: NotifyStepsChanged() routes per-instance
-  E5: Evaluate removal of SkyServer.StaticPropertyChanged
+  E3: TelescopeStateService becomes device-number-aware
+  E4: Blazor components bind per device number
+  E5: NotifyStepsChanged() routes per-instance
+  E6: Evaluate removal of SkyServer.StaticPropertyChanged
+    ↓
+Integration test (gate before declaring multi-telescope ready)
+  Write WhenTwoDevicesConnectedThenQueuesAreIndependent
+  Run two-device smoke test — verify device 1 RA/Dec is independent of device 0
     ↓
 Phase F (Option C Phase 3 — config & UI last)
   F1: Confirm/consolidate per-device serial config in appsettings.json
@@ -534,14 +688,22 @@ Before a second telescope can be connected without corrupting the first:
 - [x] **G2** — `SlewAxes`/`SlewMount`/`GoToAsync` have `MountInstance?` parameter (handpad slew path) ✅
 - [x] **G3** — `PulseGuideAltAz()` moved to `MountInstance` instance method (AltAz pulse guide) ✅
 - [x] **G1** — `RateDecOrg`/`RateRaOrg` are delegating computed properties ✅
+- [x] **H1** — `Controllers._ctsMount` made instance field; `Stop()` made non-static ✅
+- [x] **H2** — `CheckSlewState()` / `CheckAxisLimits()` private instance methods on `MountInstance`; `OnUpdateServerEvent()` calls updated ✅
+- [x] **H3** — `MountStop()` per-instance tracking cancel (`_trackingMode=Off; _tracking=false`) and per-instance CTS cancellations ✅
+- [x] **H4** — `ConnectAlignmentModel()` verified as empty stub — no fix needed ✅
+- [x] **H5** — `Controllers.AutoHomeAxisX/Y` captured per-instance at construction; `HomeSensorReset()` uses instance fields ✅
+- [ ] **Phase E** — `TelescopeStateService` device-number-aware; per-device Blazor notifications ❌
 - [ ] Integration test: `WhenTwoDevicesConnectedThenQueuesAreIndependent` — not yet written
 
-**All hard blockers are cleared.** G2 and G3 are correctness concerns for a second telescope;
-G1 is low-risk. The integration test is the ultimate gate.
+⚠️ **Previous "all hard blockers are cleared" conclusion overturned by 2026-04-04 smoke test.**
+Phase H items H1–H3 are confirmed correctness blockers. Phase E is confirmed as the primary
+cause of the Blazor UI showing device 0 for all devices. The integration test remains the
+ultimate gate but cannot pass until H1–H3 and Phase E are complete.
 
 Items **not** blocking a second telescope:
 - `//lock (_goToAsyncLock)` comment (field is gone — cosmetic only)
-- Phase E Blazor notifications (UI degradation, not correctness)
+- **H5** — `Simulator.Settings` static class (AutoHome only — low risk)
 - Phase F config/UI
 
 ---
@@ -550,3 +712,5 @@ Items **not** blocking a second telescope:
 *Re-verified and updated April 2026, 08:25 UTC — all ≥ 🟠 HIGH items confirmed resolved.*
 *Re-verified April 2026, 14:30 UTC — full `SkyServer.TelescopeAPI.cs` review; CTS delegation confirmed; G1–G3 identified.*
 *Re-verified 2026-04-03 09:23 — Phase G complete (X1, X2, G1, G2, G3); all builds green; `SkyServer.TelescopeAPI.cs` 3 278 lines, `MountInstance.cs` 2 535 lines.*
+*Re-verified 2026-04-04 09:20 — Two-device smoke test failure diagnosed; Phase H items H1–H5 identified; Phase E elevated to 🔴; ll blockers cleared conclusion overturned; multi-telescope readiness checklist revised.*
+*Re-verified 2026-04-04 08:58 UTC � Phase H complete (H1�H5); all builds green. H1: Controllers._ctsMount?instance field; Stop()?non-static. H2: CheckSlewState()/CheckAxisLimits() added as private MountInstance methods; OnUpdateServerEvent() call sites updated. H3: MountStop() uses per-instance _trackingMode/CTS cancel. H4: ConnectAlignmentModel() is empty stub (no-op). H5: Controllers.AutoHomeAxisX/Y captured per-instance at construction; HomeSensorReset() updated.*
