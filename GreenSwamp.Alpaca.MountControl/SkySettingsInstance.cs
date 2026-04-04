@@ -41,6 +41,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // Services
         private readonly IVersionedSettingsService _settingsService;
         private CancellationTokenSource? _saveCts;
+        private int _deviceNumber = 0;
 
         // Connection & Mount Settings (20 fields)
         private MountType _mount = MountType.Simulator;
@@ -73,7 +74,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _customDecWormTeeth = 130;
         private int _customRaTrackingOffset = 0;
         private int _customDecTrackingOffset = 0;
-        private bool _allowAdvancedCommandSet = false;
+        private bool _allowAdvancedCommandSet = true;
 
         // Tracking Rates (8 fields)
         private double _siderealRate = 15.0410671786691;
@@ -216,8 +217,8 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
-            // Load settings from JSON (uses first device for backward compatibility)
-            var settings = _settingsService.GetSettings();
+            // Load settings from JSON (uses device 0 for backward compatibility)
+            var settings = _settingsService.GetDeviceSettings(0) ?? new Settings.Models.SkySettings();
 
             // Apply settings to instance fields
             ApplySettings(settings);
@@ -1072,7 +1073,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 // Load from JSON settings service
-                var settings = _settingsService.GetSettings();
+                var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 var storedAzAlt = settings.ParkAxes;
 
                 // LOG 1: What's in the JSON file
@@ -1203,7 +1204,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     value[1] = Math.Round(value[1], 6);
 
                     // Directly update settings service (will be saved by QueueSave)
-                    var currentSettings = _settingsService.GetSettings();
+                    var currentSettings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                     currentSettings.ParkAxes = value;
 
                     OnPropertyChanged();
@@ -1234,7 +1235,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 alt = Math.Round(alt, 6);
                 var azAltArray = new[] { az, alt };
 
-                var settings = _settingsService.GetSettings();
+                var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 settings.ParkAxes = azAltArray;
 
                 // Cache axis coordinates in memory
@@ -1267,7 +1268,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 // Load from JSON settings service
-                var settings = _settingsService.GetSettings();
+                var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 var storedAzAlt = settings.ParkPositions;
 
                 if (storedAzAlt == null || storedAzAlt.Count == 0)
@@ -1315,7 +1316,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _parkPositions = value.OrderBy(p => p.Name).ToList();
 
                     // Update settings service
-                    var currentSettings = _settingsService.GetSettings();
+                    var currentSettings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                     currentSettings.ParkPositions = _parkPositions.Select(p =>
                         new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
 
@@ -1352,7 +1353,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Update settings service with Az/Alt (ordered by name)
                 var orderedList = azAltPositions.OrderBy(p => p.Name).ToList();
-                var settings = _settingsService.GetSettings();
+                var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 settings.ParkPositions = orderedList.Select(p =>
                     new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
 
@@ -1769,6 +1770,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             try
             {
+                // Store device number for persistence
+                _deviceNumber = settings.DeviceNumber;
+
                 // Batch 1: Connection & Mount
                 if (Enum.TryParse<MountType>(settings.Mount, true, out var mountType))
                     _mount = mountType;
@@ -1942,7 +1946,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     // Update the settings service to have the profile's Az/Alt values
                     // The backing fields (_parkAxes, _parkPositions) remain NaN/empty for lazy loading
-                    var currentSettings = _settingsService.GetSettings();
+                    var currentSettings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
 
                     // Copy ParkAxes from profile to settings service
                     currentSettings.ParkAxes = new[] { settings.ParkAxes[0], settings.ParkAxes[1] };
@@ -1958,7 +1962,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                 Y = p.Y
                             }).ToList();
                     }
-                    _settingsService.SaveSettingsAsync(currentSettings).GetAwaiter().GetResult();
+                    _settingsService.SaveDeviceSettingsAsync(_deviceNumber, currentSettings).GetAwaiter().GetResult();
                     LogSettings("InitializedPolarParkValues", $"ParkAxes:[{settings.ParkAxes[0]},{settings.ParkAxes[1]}]|ParkPositions:{settings.ParkPositions?.Count ?? 0}");
                 }
 
@@ -1992,7 +1996,8 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             try
             {
-                var settings = _settingsService.GetSettings();
+                var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
+                settings.DeviceNumber = _deviceNumber;
 
                 // Map instance fields → JSON model (93 writable properties)
                 settings.Mount = _mount.ToString();
@@ -2130,7 +2135,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.NoSyncPastMeridian = _noSyncPastMeridian;
                 settings.NumMoveAxis = _numMoveAxis;
 
-                await _settingsService.SaveSettingsAsync(settings);
+                await _settingsService.SaveDeviceSettingsAsync(_deviceNumber, settings);
                 LogSettings("SavedToJson", "Success");
             }
             catch (Exception ex)

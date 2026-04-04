@@ -3,6 +3,7 @@
 @using GreenSwamp.Alpaca.Settings.Services
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Server.Services
 @inject IVersionedSettingsService SettingsService
 @implements IDisposable
 
@@ -40,10 +41,7 @@
             {
                 <div class="alert alert-warning" role="alert">
                     <strong>No devices configured.</strong>
-                    <p class="mb-0">
-                        Devices are loaded from <code>appsettings.user.json</code> Devices array.
-                        Edit the settings file and restart the application to add devices.
-                    </p>
+                    <p class="mb-0">Use the Add Device form below to register the first device.</p>
                 </div>
             }
             else
@@ -93,24 +91,33 @@
                                         {
                                             @if (connected)
                                             {
-                                                <button class="btn btn-danger btn-sm" @onclick="() => Disconnect(device.DeviceNumber)" title="Disconnect this device">
+                                                <button class="btn btn-danger btn-sm me-1" @onclick="() => Disconnect(device.DeviceNumber)" title="Disconnect this device">
                                                     <span class="oi oi-power-standby" aria-hidden="true"></span> Disconnect
                                                 </button>
                                             }
                                             else
                                             {
-                                                <button class="btn btn-primary btn-sm" @onclick="() => Connect(device.DeviceNumber)" title="Connect this device">
+                                                <button class="btn btn-primary btn-sm me-1" @onclick="() => Connect(device.DeviceNumber)" title="Connect this device">
                                                     <span class="oi oi-power-standby" aria-hidden="true"></span> Connect
                                                 </button>
                                             }
-                                            <a href="/setup/v1/telescope/@device.DeviceNumber/setup" class="btn btn-info btn-sm" target="_blank" title="Open device setup page">
+                                            <a href="/setup/v1/telescope/@device.DeviceNumber/setup" class="btn btn-info btn-sm me-1" target="_blank" title="Open ASCOM device setup page">
                                                 <span class="oi oi-cog" aria-hidden="true"></span> Setup
                                             </a>
                                         }
                                         else
                                         {
-                                            <button class="btn btn-secondary btn-sm" disabled title="Device disabled in settings">
+                                            <button class="btn btn-secondary btn-sm me-1" disabled title="Device disabled in settings">
                                                 <span class="oi oi-power-standby" aria-hidden="true"></span> Disabled
+                                            </button>
+                                        }
+                                        <a href="/mountsettings/@device.DeviceNumber" class="btn btn-outline-secondary btn-sm me-1" title="Edit mount settings for device @device.DeviceNumber">
+                                            <span class="oi oi-list" aria-hidden="true"></span> Settings
+                                        </a>
+                                        @if (!UnifiedDeviceRegistry.IsReservedSlot(device.DeviceNumber))
+                                        {
+                                            <button class="btn btn-outline-danger btn-sm" @onclick="() => RemoveDevice(device.DeviceNumber)" title="Remove device @device.DeviceNumber">
+                                                <span class="oi oi-trash" aria-hidden="true"></span> Remove
                                             </button>
                                         }
                                     </td>
@@ -121,11 +128,12 @@
                 </div>
 
                 <div class="alert alert-info mt-3" role="alert">
-                    <strong>Phase 3 Settings-First Architecture:</strong>
+                    <strong>Device Management:</strong>
                     <ul class="mb-0">
-                        <li>Each device has all 137 settings properties (Port, BaudRate, Latitude, etc.)</li>
+                        <li>Each device has a dedicated <code>device-nn.settings.json</code> settings file</li>
                         <li>Devices with <code>Enabled: false</code> are not loaded at startup</li>
-                        <li>Edit <code>appsettings.user.json</code> to add/remove devices (requires restart)</li>
+                        <li>Use the Add Device form below to register new devices (restart required to activate)</li>
+                        <li>Reserved slots (0 and 1) cannot be removed</li>
                         <li>Connect/Disconnect controls mount hardware connection per device</li>
                     </ul>
                 </div>
@@ -134,12 +142,89 @@
     </div>
 </div>
 
+@if (_successMessage != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @_successMessage
+        <button type="button" class="btn-close" @onclick="@(() => _successMessage = null)"></button>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Add Device</h5>
+        <button class="btn btn-outline-primary btn-sm" @onclick="@(() => _showAddForm = !_showAddForm)">
+            @(_showAddForm ? "Cancel" : "Add New Device")
+        </button>
+    </div>
+    @if (_showAddForm)
+    {
+        <div class="card-body">
+            <EditForm Model="_newDevice" OnValidSubmit="AddDevice">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Device Number</label>
+                        <InputNumber @bind-Value="_newDevice.DeviceNumber" class="form-control" />
+                        <small class="form-text text-muted">0–99</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Device Name</label>
+                        <InputText @bind-Value="_newDevice.DeviceName" class="form-control" placeholder="e.g. SkyWatcher EQ6-R" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Mount Type</label>
+                        <InputSelect @bind-Value="_newDevice.Mount" class="form-select">
+                            <option value="Simulator">Simulator</option>
+                            <option value="SkyWatcher">SkyWatcher</option>
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Serial Port</label>
+                        <InputText @bind-Value="_newDevice.Port" class="form-control" placeholder="COM1" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Alignment Mode</label>
+                        <InputSelect @bind-Value="_newDevice.AlignmentMode" class="form-select">
+                            <option value="GermanPolar">German Polar</option>
+                            <option value="Polar">Polar</option>
+                            <option value="AltAz">Alt-Az</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary" disabled="@_adding">
+                        @if (_adding) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                        Add Device
+                    </button>
+                </div>
+                <p class="text-muted mt-2 mb-0">
+                    <small>The device settings file is created immediately. Restart the application to activate the device at runtime.</small>
+                </p>
+            </EditForm>
+        </div>
+    }
+</div>
+
 @code {
     private List<SkySettings> _devices = new();
     private bool loading = true;
     private string? errorMessage;
+    private string? _successMessage;
     private System.Threading.Timer? _refreshTimer;
     private long _clientId = DateTime.UtcNow.Ticks; // Unique ID for this browser session
+    private bool _showAddForm;
+    private NewDeviceModel _newDevice = new();
+    private bool _adding;
+
+    private class NewDeviceModel
+    {
+        public int DeviceNumber { get; set; }
+        public string DeviceName { get; set; } = string.Empty;
+        public string Mount { get; set; } = "Simulator";
+        public string Port { get; set; } = "COM1";
+        public string AlignmentMode { get; set; } = "GermanPolar";
+    }
 
     protected override void OnInitialized()
     {
@@ -162,7 +247,7 @@
             loading = true;
             errorMessage = null;
 
-            _devices = SettingsService.GetAllDevices();
+            _devices = SettingsService.GetAllDeviceSettings();
         }
         catch (Exception ex)
         {
@@ -217,6 +302,80 @@
         catch (Exception ex)
         {
             errorMessage = $"Failed to disconnect device {deviceNumber}: {ex.Message}";
+        }
+    }
+
+    private async Task AddDevice()
+    {
+        _adding = true;
+        errorMessage = null;
+        _successMessage = null;
+        try
+        {
+            if (SettingsService.DeviceSettingsExist(_newDevice.DeviceNumber))
+            {
+                errorMessage = $"Device {_newDevice.DeviceNumber} already exists. Choose a different device number.";
+                return;
+            }
+
+            // Populate full template defaults for the alignment mode (B1 behaviour)
+            if (!Enum.TryParse<AlignmentMode>(_newDevice.AlignmentMode, out var alignmentMode))
+                alignmentMode = AlignmentMode.GermanPolar;
+            await SettingsService.CreateDeviceForModeAsync(_newDevice.DeviceNumber, _newDevice.DeviceName, alignmentMode);
+
+            // Apply user-specified Mount and Port overrides on top of template defaults
+            var settings = SettingsService.GetDeviceSettings(_newDevice.DeviceNumber) ?? new SkySettings();
+            settings.Mount = _newDevice.Mount;
+            settings.Port = _newDevice.Port;
+            await SettingsService.SaveDeviceSettingsAsync(_newDevice.DeviceNumber, settings);
+
+            var alpacaDevice = new AlpacaDevice
+            {
+                DeviceNumber = _newDevice.DeviceNumber,
+                DeviceName = _newDevice.DeviceName,
+                DeviceType = "Telescope",
+                UniqueId = Guid.NewGuid().ToString()
+            };
+            await SettingsService.AddAlpacaDeviceAsync(alpacaDevice);
+
+            _showAddForm = false;
+            _newDevice = new NewDeviceModel();
+            _successMessage = $"Device added. Restart the application to activate it at runtime.";
+            LoadDevices();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to add device: {ex.Message}";
+        }
+        finally
+        {
+            _adding = false;
+        }
+    }
+
+    private async Task RemoveDevice(int deviceNumber)
+    {
+        errorMessage = null;
+        _successMessage = null;
+        try
+        {
+            if (UnifiedDeviceRegistry.IsReservedSlot(deviceNumber))
+            {
+                errorMessage = $"Device {deviceNumber} is a reserved slot and cannot be removed.";
+                return;
+            }
+
+            UnifiedDeviceRegistry.RemoveDevice(deviceNumber);
+            await SettingsService.RemoveAlpacaDeviceAsync(deviceNumber);
+            await SettingsService.DeleteDeviceSettingsAsync(deviceNumber);
+
+            _successMessage = $"Device {deviceNumber} removed.";
+            LoadDevices();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to remove device {deviceNumber}: {ex.Message}";
         }
     }
 

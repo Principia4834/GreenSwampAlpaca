@@ -49,7 +49,7 @@
             <!-- Settings File Path -->
             <div class="mb-3">
                 <small class="text-muted">
-                    <strong>Settings file:</strong> <code>@SettingsService.GetUserSettingsPath()</code>
+                    <strong>Settings file:</strong> <code>@SettingsService.UserSettingsPath</code>
                 </small>
             </div>
 
@@ -123,103 +123,6 @@
                 </div>
             }
 
-            <!-- Repair Button Section -->
-            @if (_validationResult.Errors.Any(e => e.IsAutoRepairable) || _validationResult.Warnings.Any(w => w.IsAutoRepairable))
-            {
-                <div class="d-grid gap-2">
-                    <button class="btn btn-warning btn-lg" @onclick="RepairSettings" disabled="@_repairing">
-                        @if (_repairing)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            <span>Repairing...</span>
-                        }
-                        else
-                        {
-                            <span class="oi oi-wrench me-2" aria-hidden="true"></span>
-                            <span>Repair Settings Automatically</span>
-                        }
-                    </button>
-                    <small class="text-muted text-center">
-                        <span class="oi oi-info me-1" aria-hidden="true"></span>
-                        A backup will be created before making any changes.
-                    </small>
-                </div>
-            }
-
-            <!-- Repair Result Section -->
-            @if (_repairResult != null)
-            {
-                <div class="mt-3">
-                    @if (_repairResult.Success)
-                    {
-                        <div class="alert alert-success" role="alert">
-                            <h6 class="alert-heading">
-                                <span class="oi oi-check me-2" aria-hidden="true"></span>
-                                Repair Successful
-                            </h6>
-                            <p class="mb-2">@_repairResult.Message</p>
-                            
-                            @if (_repairResult.ActionsPerformed.Any())
-                            {
-                                <hr />
-                                <h6>Actions Performed:</h6>
-                                <ul class="mb-2">
-                                    @foreach (var action in _repairResult.ActionsPerformed)
-                                    {
-                                        <li>@action</li>
-                                    }
-                                </ul>
-                            }
-
-                            @if (_repairResult.DevicesRepaired > 0)
-                            {
-                                <p class="mb-2">
-                                    <strong>Devices repaired:</strong> @_repairResult.DevicesRepaired
-                                </p>
-                            }
-
-                            @if (!string.IsNullOrEmpty(_repairResult.BackupPath))
-                            {
-                                <small class="text-muted">
-                                    <strong>Backup saved to:</strong> <code>@_repairResult.BackupPath</code>
-                                </small>
-                            }
-
-                            @if (_repairResult.RemainingErrors.Any())
-                            {
-                                <hr />
-                                <div class="alert alert-warning mb-0">
-                                    <h6 class="alert-heading">Remaining Issues (@_repairResult.RemainingErrors.Count)</h6>
-                                    <ul class="mb-0">
-                                        @foreach (var error in _repairResult.RemainingErrors)
-                                        {
-                                            <li><strong>[@error.ErrorCode]</strong> @error.Message</li>
-                                        }
-                                    </ul>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-danger" role="alert">
-                            <h6 class="alert-heading">
-                                <span class="oi oi-warning me-2" aria-hidden="true"></span>
-                                Repair Failed
-                            </h6>
-                            <p class="mb-0">@_repairResult.Message</p>
-                            @if (!string.IsNullOrEmpty(_repairResult.BackupPath))
-                            {
-                                <hr />
-                                <small class="text-muted">
-                                    Settings were restored from backup: <code>@_repairResult.BackupPath</code>
-                                </small>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-
             <!-- Action Buttons -->
             <div class="mt-3 d-flex gap-2">
                 <button class="btn btn-outline-primary" @onclick="RefreshValidation" disabled="@_loading">
@@ -248,9 +151,7 @@
 
 @code {
     private ValidationResult? _validationResult;
-    private RepairResult? _repairResult;
     private bool _loading = true;
-    private bool _repairing = false;
 
     protected override void OnInitialized()
     {
@@ -260,12 +161,11 @@
     private void ValidateSettings()
     {
         _loading = true;
-        _repairResult = null; // Clear previous repair result
         StateHasChanged();
 
         try
         {
-            _validationResult = SettingsService.ValidateSettings();
+            _validationResult = SettingsService.ValidateDeviceSettings(0);
         }
         catch (Exception ex)
         {
@@ -290,34 +190,6 @@
         }
     }
 
-    private async Task RepairSettings()
-    {
-        _repairing = true;
-        _repairResult = null;
-        StateHasChanged();
-
-        try
-        {
-            _repairResult = await SettingsService.RepairSettingsAsync();
-
-            // Re-validate after repair
-            ValidateSettings();
-        }
-        catch (Exception ex)
-        {
-            _repairResult = new RepairResult
-            {
-                Success = false,
-                Message = $"Repair failed with exception: {ex.Message}"
-            };
-        }
-        finally
-        {
-            _repairing = false;
-            StateHasChanged();
-        }
-    }
-
     private void RefreshValidation()
     {
         ValidateSettings();
@@ -327,7 +199,7 @@
     {
         try
         {
-            var settingsPath = SettingsService.GetUserSettingsPath();
+            var settingsPath = SettingsService.UserSettingsPath;
             var directory = System.IO.Path.GetDirectoryName(settingsPath);
             
             if (!string.IsNullOrEmpty(directory) && System.IO.Directory.Exists(directory))

@@ -1,4 +1,5 @@
 ﻿@page "/mountsettings"
+@page "/mountsettings/{DeviceNumber:int}"
 
 @inject NavigationManager NavManager
 
@@ -9,21 +10,7 @@
 
 <PageTitle>Mount Settings</PageTitle>
 
-<h3>Mount Settings - Version @SettingsService.CurrentVersion</h3>
-
-@if (_showMigration)
-{
-    <div class="alert alert-info">
-        <h5>New Version Detected</h5>
-        <p>Settings from version @_previousVersion are available.</p>
-        <button class="btn btn-primary" @onclick="MigrateSettings">
-            Migrate Settings
-        </button>
-        <button class="btn btn-secondary" @onclick="@(() => _showMigration = false)">
-            Use Defaults
-        </button>
-    </div>
-}
+<h3>Mount Settings - Device @DeviceNumber - Version @SettingsService.CurrentVersion</h3>
 
 @if (_message != null)
 {
@@ -638,48 +625,29 @@
             Save Settings
         </button>
 
-        <button type="button" class="btn btn-secondary" @onclick="ResetToDefaults" disabled="@_saving">
-            Reset to Defaults
-        </button>
-
         <button type="button" class="btn btn-info" @onclick="ReloadSettings">
             Reload
         </button>
     </div>
 </EditForm>
 
-<div class="mt-4">
-    <h5>Available Versions</h5>
-    <ul class="list-group">
-        @foreach (var version in SettingsService.AvailableVersions)
-        {
-            <li class="list-group-item">
-                Version @version
-                @if (version == SettingsService.CurrentVersion)
-                {
-                    <span class="badge bg-primary">Current</span>
-                }
-            </li>
-        }
-    </ul>
-</div>
-
 <div class="mt-3">
     <small class="text-muted">
-        Settings file: @SettingsService.UserSettingsPath
+        Settings path: @SettingsService.GetDeviceSettingsPath(DeviceNumber)
     </small>
 </div>
 
 @code {
+    [Parameter] public int DeviceNumber { get; set; } = 0;
+
     private SkySettings _settings = new();
     private bool _saving;
-    private bool _showMigration;
-    private string? _previousVersion;
     private string? _message;
     private bool _isError;
     private string _activeTab = "connection";
     private string _utcOffsetString = "00:00:00";
-    
+    private int _loadedDeviceNumber = -1;
+
     // JSON string properties for complex types
     private string _parkAxesJson = string.Empty;
     private string _parkPositionsJson = string.Empty;
@@ -687,34 +655,27 @@
 
     protected override void OnInitialized()
     {
-        LoadSettings();
-        CheckForMigration();
-        SettingsService.SettingsChanged += OnSettingsChanged;
+        SettingsService.DeviceSettingsChanged += OnSettingsChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedDeviceNumber != DeviceNumber)
+        {
+            LoadSettings();
+            _loadedDeviceNumber = DeviceNumber;
+        }
     }
 
     private void LoadSettings()
     {
-        _settings = SettingsService.GetSettings();
+        _settings = SettingsService.GetDeviceSettings(DeviceNumber) ?? new SkySettings();
         _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
         
         // Serialize complex types to JSON strings
         _parkAxesJson = JsonSerializer.Serialize(_settings.ParkAxes);
         _parkPositionsJson = JsonSerializer.Serialize(_settings.ParkPositions, new JsonSerializerOptions { WriteIndented = true });
         _hcPulseGuidesJson = JsonSerializer.Serialize(_settings.HcPulseGuides, new JsonSerializerOptions { WriteIndented = true });
-    }
-
-    private void CheckForMigration()
-    {
-        var versions = SettingsService.AvailableVersions
-            .Where(v => v != SettingsService.CurrentVersion)
-            .OrderByDescending(v => new Version(v))
-            .ToList();
-
-        if (versions.Any())
-        {
-            _previousVersion = versions.First();
-            _showMigration = true;
-        }
     }
 
     private async Task SaveSettings()
@@ -762,7 +723,7 @@
                 return;
             }
             
-            await SettingsService.SaveSettingsAsync(_settings);
+            await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, _settings);
             _message = "Settings saved successfully!";
             _isError = false;
         }
@@ -774,47 +735,6 @@
         finally
         {
             _saving = false;
-        }
-    }
-
-    private async Task ResetToDefaults()
-    {
-        try
-        {
-            await SettingsService.ResetToDefaultsAsync();
-            LoadSettings();
-            _message = "Settings reset to defaults";
-            _isError = false;
-        }
-        catch (Exception ex)
-        {
-            _message = $"Error resetting: {ex.Message}";
-            _isError = true;
-        }
-    }
-
-    private async Task MigrateSettings()
-    {
-        try
-        {
-            var success = await SettingsService.MigrateFromPreviousVersionAsync();
-            if (success)
-            {
-                LoadSettings();
-                _showMigration = false;
-                _message = $"Settings migrated from version {_previousVersion}";
-                _isError = false;
-            }
-            else
-            {
-                _message = "No settings to migrate";
-                _isError = true;
-            }
-        }
-        catch (Exception ex)
-        {
-            _message = $"Migration failed: {ex.Message}";
-            _isError = true;
         }
     }
 
@@ -835,6 +755,9 @@
 
     private void OnSettingsChanged(object? sender, SkySettings newSettings)
     {
+        if (newSettings.DeviceNumber != DeviceNumber)
+            return;
+
         _settings = newSettings;
         _utcOffsetString = _settings.UTCOffset.ToString(@"hh\:mm\:ss");
         
@@ -848,6 +771,6 @@
 
     public void Dispose()
     {
-        SettingsService.SettingsChanged -= OnSettingsChanged;
+        SettingsService.DeviceSettingsChanged -= OnSettingsChanged;
     }
 }

@@ -211,13 +211,13 @@ namespace GreenSwamp.Alpaca.Server
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
-                var testSettings = settingsService.GetSettings();
+                var testSettings = settingsService.GetDeviceSettings(0);
                 Logger.LogInformation("Phase 1: New settings system initialized successfully");
                 Logger.LogInformation($"  Settings Version: {settingsService.CurrentVersion}");
-                Logger.LogInformation($"  Mount Type: {testSettings.Mount}");
-                Logger.LogInformation($"  Serial Port: {testSettings.Port}");
+                Logger.LogInformation($"  Mount Type: {testSettings?.Mount}");
+                Logger.LogInformation($"  Serial Port: {testSettings?.Port}");
                 Logger.LogInformation($"  Settings Path: {settingsService.UserSettingsPath}");
-                Logger.LogInformation($"  Available Versions: {string.Join(", ", settingsService.AvailableVersions)}");
+                Logger.LogInformation($"  Alpaca Path: {settingsService.AlpacaSettingsPath}");
             }
             catch (Exception ex)
             {
@@ -249,7 +249,7 @@ namespace GreenSwamp.Alpaca.Server
 
                 // Step 9: Validate settings at startup and log results
                 Logger.LogInformation("Validating settings at startup...");
-                var validationResult = settingsService.ValidateSettings();
+                var validationResult = settingsService.ValidateDeviceSettings(0);
 
                 if (validationResult.IsValid)
                 {
@@ -281,9 +281,12 @@ namespace GreenSwamp.Alpaca.Server
                     Logger.LogWarning("Visit /settings-health in the web UI to view details and repair settings");
                 }
 
-                // Phase 3 baseline (v1.0.0+): Load all devices from settings service (Devices array in appsettings.user.json)
-                // Note: GetAllDevices() automatically quarantines invalid devices based on validation results
-                var allDevices = settingsService.GetAllDevices();
+                // Load all devices from per-device settings files (device-nn.settings.json)
+                var allDevices = settingsService.GetAllDeviceSettings();
+
+                // Trigger first-run creation of observatory.settings.json if not present (Behaviour B4)
+                settingsService.GetObservatorySettings();
+                Logger.LogInformation("Observatory settings initialised");
                 var enabledDevices = allDevices.Where(d => d.Enabled).ToList();
 
                 if (!enabledDevices.Any())
@@ -386,17 +389,6 @@ namespace GreenSwamp.Alpaca.Server
                     Logger.LogError("Critical initialization failure - cannot continue");
                     throw; // Re-throw only for non-settings critical failures (DI, filesystem, etc.)
                 }
-            }
-
-            // Migrate user settings if needed
-            try
-            {
-                var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
-                await settingsService.MigrateFromPreviousVersionAsync();
-            }
-            catch (Exception ex)
-            {
-                app.Logger.LogWarning(ex, "Could not migrate settings");
             }
 
             // Configure the HTTP request pipeline.

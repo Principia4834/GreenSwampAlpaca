@@ -1,6 +1,6 @@
 # Settings CSV Files — Progress Report
 
-**2026-04-03 18:33** → updated **2026-04-03 22:46**
+**2026-04-03 18:33** → updated **2026-04-04 08:49**
 **Status:** Phases SA, SB, SC, SF, SD complete — attributes, `SkySettings.cs` annotation, interface additions, `DeviceTemplates` + `ObservatoryDefaults` in `appsettings.json`, and B1/B2/B4 implementations done. Build verified ✅.
 **Scope:** Review of Andy's four CSV files against `SkySettings.cs` and existing override templates — Phase 2 post-decision verification; MonitorSettings design from `monitor.json`
 **Source files reviewed:** `T:\source\repos\SettingsExport\` — `SkyTelescope.csv`, `GermanPolarUnique.csv`, `PolarUnique.csv`, `AltAzUnique.csv`, `monitor.json`

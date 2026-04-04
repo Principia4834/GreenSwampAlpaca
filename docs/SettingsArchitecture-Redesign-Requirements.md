@@ -1,4 +1,4 @@
-# Settings Architecture Redesign — Requirements & Design
+ # Settings Architecture Redesign — Requirements & Design
 
 **2026-04-03 12:39**
 **Status:** Section 18 added — high-level design for alignment mode and observatory settings (pending CSV values from Andy)

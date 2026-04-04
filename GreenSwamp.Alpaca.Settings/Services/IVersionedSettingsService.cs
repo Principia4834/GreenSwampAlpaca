@@ -19,132 +19,102 @@ using GreenSwamp.Alpaca.Settings.Models;
 namespace GreenSwamp.Alpaca.Settings.Services
 {
     /// <summary>
-    /// Interface for versioned settings service
+    /// Interface for versioned settings service (redesigned for per-device file storage).
+    /// Each device's settings are stored in a dedicated device-nn.settings.json file.
+    /// Alpaca discovery metadata is stored in appsettings.alpaca.user.json.
+    /// Server-wide settings (monitor) are stored in appsettings.user.json.
     /// </summary>
     public interface IVersionedSettingsService
     {
-        /// <summary>
-        /// Gets the current settings (returns first device for single-device code compatibility)
-        /// Phase 3 baseline (v1.0.0+): Reads from Devices array
-        /// </summary>
-        SkySettings GetSettings();
+        // ── Metadata ──────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Phase 3 baseline (v1.0.0+): Gets all configured device settings from Devices array
-        /// </summary>
-        List<SkySettings> GetAllDevices();
+        /// <summary>Gets the current application version.</summary>
+        string CurrentVersion { get; }
 
-        /// <summary>
-        /// Gets all configured device settings with validation results
-        /// Invalid devices are quarantined (not included in returned list)
-        /// </summary>
-        /// <param name="validationResult">Detailed validation results including errors and warnings</param>
-        /// <returns>List of valid devices only</returns>
-        List<SkySettings> GetAllDevices(out ValidationResult validationResult);
+        /// <summary>Gets the path to appsettings.user.json for the current version.</summary>
+        string UserSettingsPath { get; }
 
-        /// <summary>
-        /// Validates current settings file without loading devices
-        /// </summary>
-        /// <returns>Validation results with all errors and warnings</returns>
-        ValidationResult ValidateSettings();
+        /// <summary>Gets the path to appsettings.alpaca.user.json for the current version.</summary>
+        string AlpacaSettingsPath { get; }
 
-        /// <summary>
-        /// Gets Alpaca device discovery metadata for all configured devices
-        /// Returns list of AlpacaDevices with DeviceNumber, DeviceName, DeviceType, and UniqueId
-        /// </summary>
-        List<GreenSwamp.Alpaca.Settings.Services.AlpacaDevice> GetAlpacaDevices();
+        /// <summary>Gets the path to device-nn.settings.json for the specified device number (0-99).</summary>
+        string GetDeviceSettingsPath(int deviceNumber);
 
-        /// <summary>
-        /// Saves settings to the current version folder
-        /// </summary>
-        Task SaveSettingsAsync(SkySettings settings);
-        
-        /// <summary>
-        /// Gets the current monitor settings
-        /// </summary>
+        // ── Server-wide settings (appsettings.user.json) ─────────────────────
+
+        /// <summary>Gets the current monitor settings.</summary>
         MonitorSettings GetMonitorSettings();
-        
-        /// <summary>
-        /// Saves monitor settings to the current version folder
-        /// </summary>
+
+        /// <summary>Saves monitor settings to appsettings.user.json.</summary>
         Task SaveMonitorSettingsAsync(MonitorSettings settings);
+
+        // ── Alpaca discovery (appsettings.alpaca.user.json) ──────────────────
+
+        /// <summary>Gets Alpaca device discovery metadata for all configured devices.</summary>
+        List<AlpacaDevice> GetAlpacaDevices();
+
+        /// <summary>Replaces the full AlpacaDevices list in appsettings.alpaca.user.json.</summary>
+        Task SaveAlpacaDevicesAsync(List<AlpacaDevice> devices);
+
+        /// <summary>Adds a new AlpacaDevice entry. Validates device number uniqueness and 100-device limit.</summary>
+        Task AddAlpacaDeviceAsync(AlpacaDevice device);
+
+        /// <summary>Removes the AlpacaDevice entry for the specified device number.</summary>
+        Task RemoveAlpacaDeviceAsync(int deviceNumber);
+
+        // ── Per-device settings (device-nn.settings.json) ────────────────────
+
+        /// <summary>Gets device settings for the specified device number, or null if not found.</summary>
+        SkySettings? GetDeviceSettings(int deviceNumber);
+
+        /// <summary>Gets all device settings by enumerating device-nn.settings.json files.
+        /// Runs first-run initialisation from factory defaults if no files exist.</summary>
+        List<SkySettings> GetAllDeviceSettings();
+
+        /// <summary>Saves device settings atomically (temp file → rename) under a per-device lock.</summary>
+        Task SaveDeviceSettingsAsync(int deviceNumber, SkySettings settings);
+
+        /// <summary>Deletes the device-nn.settings.json file for the specified device number.</summary>
+        Task DeleteDeviceSettingsAsync(int deviceNumber);
+
+        /// <summary>Returns true if device-nn.settings.json exists for the specified device number.</summary>
+        bool DeviceSettingsExist(int deviceNumber);
+
+        // ── Validation ────────────────────────────────────────────────────────
+
+        /// <summary>Validates device-nn.settings.json for the specified device number.</summary>
+        ValidationResult ValidateDeviceSettings(int deviceNumber);
+
+        /// <summary>Validates appsettings.alpaca.user.json.</summary>
+        ValidationResult ValidateAlpacaDevices();
 
         // ── Observatory settings (observatory.settings.json) ─────────────────
 
-        /// <summary>
-        /// Gets the observatory physical settings (latitude, longitude, elevation, UTC offset).
-        /// Creates observatory.settings.json from app defaults on first run if absent (Behaviour B4).
-        /// </summary>
+        /// <summary>Gets the observatory physical settings. Creates observatory.settings.json from
+        /// app defaults on first run if absent (Behaviour B4).</summary>
         ObservatorySettings GetObservatorySettings();
 
-        /// <summary>
-        /// Saves observatory settings to observatory.settings.json (Behaviour B4).
-        /// Does not propagate changes to existing device-nn.settings.json files (v1).
-        /// </summary>
+        /// <summary>Saves observatory settings to observatory.settings.json (Behaviour B4).
+        /// Does not propagate changes to existing device-nn.settings.json files (v1).</summary>
         Task SaveObservatorySettingsAsync(ObservatorySettings settings);
 
         // ── Mode-aware device creation and change ────────────────────────────
 
-        /// <summary>
-        /// Creates a new device-nn.settings.json populated with app defaults for the specified
-        /// alignment mode and observatory properties from observatory.settings.json (Behaviour B1).
-        /// </summary>
+        /// <summary>Creates a new device-nn.settings.json populated with app defaults for the specified
+        /// alignment mode and observatory properties from observatory.settings.json (Behaviour B1).</summary>
         Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, AlignmentMode mode);
 
-        /// <summary>
-        /// Changes the alignment mode on an existing device (Behaviour B2).
+        /// <summary>Changes the alignment mode on an existing device (Behaviour B2).
         /// Properties marked [UniqueSetting] are replaced with the new mode's defaults;
-        /// all [CommonSetting] properties (including user observatory values) are preserved.
-        /// Operation is atomic.
-        /// </summary>
+        /// all [CommonSetting] properties are preserved. Operation is atomic.</summary>
         Task ChangeAlignmentModeAsync(int deviceNumber, AlignmentMode newMode);
 
-        /// <summary>
-        /// Migrates settings from the most recent previous version
-        /// Phase 3 baseline (v1.0.0+): Only supports migration from v1.0.0 and above
-        /// </summary>
-        Task<bool> MigrateFromPreviousVersionAsync();
+        // ── Events ────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Resets settings to defaults from appsettings.json
-        /// </summary>
-        Task ResetToDefaultsAsync();
+        /// <summary>Event raised when device settings are changed via SaveDeviceSettingsAsync.</summary>
+        event EventHandler<SkySettings>? DeviceSettingsChanged;
 
-        /// <summary>
-        /// Performs automatic repair of common settings errors
-        /// Creates backup before repair, restores on failure
-        /// </summary>
-        /// <returns>Repair results including actions performed and remaining errors</returns>
-        Task<RepairResult> RepairSettingsAsync();
-
-        /// <summary>
-        /// Gets the current application version
-        /// </summary>
-        string CurrentVersion { get; }
-
-        /// <summary>
-        /// Gets all available version folders
-        /// </summary>
-        string[] AvailableVersions { get; }
-
-        /// <summary>
-        /// Gets the path to the user settings file for the current version
-        /// </summary>
-        string UserSettingsPath { get; }
-
-        /// <summary>
-        /// Gets the full path to the user settings file
-        /// </summary>
-        string GetUserSettingsPath();
-
-        /// <summary>
-        /// Event raised when settings are changed
-        /// </summary>
-        event EventHandler<SkySettings>? SettingsChanged;
-        
-        /// <summary>
-        /// Event raised when monitor settings are changed
-        /// </summary>
+        /// <summary>Event raised when monitor settings are changed.</summary>
         event EventHandler<MonitorSettings>? MonitorSettingsChanged;
     }
 }
