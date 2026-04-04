@@ -1248,8 +1248,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="steps">Raw step counts from the mount hardware [axis0, axis1]</param>
         internal void SetSteps(double[] steps)
         {
-            // Build axes context from instance settings
-            var context = AxesContext.FromSettings(_settings);
+            // Build axes context from instance settings, passing per-instance SideOfPier (J2)
+            var context = AxesContext.FromSettings(_settings, SideOfPier);
 
             // Implement PEC
             PecCheck();
@@ -1311,8 +1311,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>Home axes vector adjusted for alignment mode and hemisphere</returns>
         internal Vector GetHomeAxes(double xAxis, double yAxis)
         {
-            // Create context from current settings
-            var context = AxesContext.FromSettings(_settings);
+            // Create context from current settings, passing per-instance SideOfPier (J2)
+            var context = AxesContext.FromSettings(_settings, SideOfPier);
             var home = new[] { xAxis, yAxis };
             if (_settings.AlignmentMode != AlignmentMode.Polar)
             {
@@ -1320,7 +1320,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                var angleOffset = SkyServer.SouthernHemisphere ? 180.0 : 0.0;
+                var angleOffset = _settings.Latitude < 0 ? 180.0 : 0.0; // J2: use per-instance settings
                 home[0] -= angleOffset;
                 home = Axes.AzAltToAxesXy(home, context);
             }

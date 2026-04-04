@@ -2302,14 +2302,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Set tracking on or off
         /// </summary>
-        internal static void SetTracking()
+        internal static void SetTracking(MountInstance? instance = null)
         {
+            var inst = instance ?? _defaultInstance;
+            var settings = instance?.Settings ?? _settings;
             if (!IsMountRunning) { return; }
 
             double rateChange = 0;
             Vector rate;
             // Set rate change for tracking mode
-            var currentTrackingMode = _defaultInstance?.TrackingMode ?? TrackingMode.Off;
+            var currentTrackingMode = inst?.TrackingMode ?? TrackingMode.Off;
             switch (currentTrackingMode)
             {
                 case TrackingMode.Off:
@@ -2326,10 +2328,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            switch (_settings!.Mount)
+            switch (settings!.Mount)
             {
                 case MountType.Simulator:
-                    switch (_settings!.AlignmentMode)
+                    switch (settings!.AlignmentMode)
                     {
                         case AlignmentMode.AltAz:
                             if (rateChange != 0)
@@ -2345,7 +2347,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             rate = SkyGetRate();
                             // Tracking applied unless MoveAxis is active
                             {
-                                var mq = _defaultInstance!.MountQueueInstance!;
+                                var mq = inst!.MountQueueInstance!;
                                 if (!MovePrimaryAxisActive)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rate.X);
                                 if (!MoveSecondaryAxisActive)
@@ -2355,20 +2357,20 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.Polar:
                         case AlignmentMode.GermanPolar:
                             {
-                                var mq = _defaultInstance!.MountQueueInstance!;
+                                var mq = inst!.MountQueueInstance!;
                                 if (!MovePrimaryAxisActive) // Set current tracking rate and RA tracking rate offset (0 if not sidereal)
                                 {
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
                                 }
                                 // Clear rate offsets when tracking is off so simulator physics do not continue drifting
                                 var raRate = currentTrackingMode != TrackingMode.Off
-                                    ? GetRaRateDirection(_defaultInstance?.RateRa ?? 0.0)
+                                    ? GetRaRateDirection(inst?.RateRa ?? 0.0)
                                     : 0.0;
                                 _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, raRate);
                                 if (!MoveSecondaryAxisActive) // Set Dec tracking rate offset (0 if not sidereal)
                                 {
                                     var decRate = currentTrackingMode != TrackingMode.Off
-                                        ? GetDecRateDirection(_defaultInstance?.RateDec ?? 0.0)
+                                        ? GetDecRateDirection(inst?.RateDec ?? 0.0)
                                         : 0.0;
                                     _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, decRate);
                                 }
@@ -2379,7 +2381,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 case MountType.SkyWatcher:
-                    switch (_settings!.AlignmentMode)
+                    switch (settings!.AlignmentMode)
                     {
                         case AlignmentMode.AltAz:
                             if (rateChange != 0)
@@ -2407,7 +2409,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     rate = SkyGetRate(); // Get current tracking  including RA and Dec offsets
                     {
-                        var sq = _defaultInstance!.SkyQueueInstance!;
+                        var sq = inst!.SkyQueueInstance!;
                         if (!MovePrimaryAxisActive)
                             _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis1, rate.X);
                         if (!MoveSecondaryAxisActive)
@@ -2516,13 +2518,15 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Sets up offsets from the selected tracking rate
         /// </summary>
-        internal static void SetGuideRates()
+        internal static void SetGuideRates(MountInstance? instance = null)
         {
+            var inst = instance ?? _defaultInstance;
+            var settings = instance?.Settings ?? _settings;
             var rate = CurrentTrackingRate();
-            if (_defaultInstance != null)
+            if (inst != null)
             {
-                _defaultInstance.GuideRateRa = rate * _settings!.GuideRateOffsetX;
-                _defaultInstance.GuideRateDec = rate * _settings!.GuideRateOffsetY;
+                inst.GuideRateRa = rate * settings!.GuideRateOffsetX;
+                inst.GuideRateDec = rate * settings!.GuideRateOffsetY;
             }
 
             var monitorItem = new MonitorEntry
@@ -2533,7 +2537,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{_defaultInstance?.GuideRateRa ?? 0.0 * 3600}|{_defaultInstance?.GuideRateDec ?? 0.0 * 3600}"
+                Message = $"{inst?.GuideRateRa ?? 0.0 * 3600}|{inst?.GuideRateDec ?? 0.0 * 3600}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 

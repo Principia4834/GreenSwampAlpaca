@@ -6,6 +6,7 @@
 - Always use my name "Andy" when referring to the "user"
 - Always include and refresh a time and date stamp in any markdown document you create or update using the format "YYYY-MM-DD HH:MM"
 - Always refresh the date and time stamp by querying the current system time - do not hardcode or reuse old timestamps
+- After any PowerShell bulk write to a markdown file, always normalise line endings to LF before finishing
 
 ## Shell & CLI guidance for Copilot suggestions
 

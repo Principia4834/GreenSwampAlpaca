@@ -111,8 +111,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Create context from SkySettingsInstance (preferred for instance-based code)
         /// </summary>
         /// <param name="settings">Settings instance containing mount configuration</param>
+        /// <param name="sideOfPier">Optional side-of-pier from the calling MountInstance; falls back to SkyServer for device-0 callers</param>
         /// <returns>Populated AxesContext</returns>
-        public static AxesContext FromSettings(SkySettingsInstance settings)
+        public static AxesContext FromSettings(SkySettingsInstance settings, PointingState? sideOfPier = null)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -122,10 +123,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 AlignmentMode = settings.AlignmentMode,
                 MountType = settings.Mount,
                 Latitude = settings.Latitude,
-                SouthernHemisphere = SkyServer.SouthernHemisphere, // Still from SkyServer for now
+                SouthernHemisphere = settings.Latitude < 0, // J2: computed from passed-in settings, not static SkyServer
                 PolarMode = settings.PolarMode,
                 LocalSiderealTime = null, // Lazy load when needed
-                SideOfPier = SkyServer.SideOfPier,
+                SideOfPier = sideOfPier ?? SkyServer.SideOfPier, // J2: per-instance if provided, fallback to SkyServer for device-0 callers (J6)
                 AppAxisX = null,
                 AppAxisY = null,
                 AxisLimitX = settings.AxisLimitX,

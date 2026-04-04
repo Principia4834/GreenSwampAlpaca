@@ -1087,29 +1087,31 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Adjust tracking rate for Custom Mount Gearing Offset settings
         /// </summary>
         /// <returns>difference in rates</returns>
-        internal static void CalcCustomTrackingOffset()
+        internal static void CalcCustomTrackingOffset(MountInstance? instance = null)
         {
-            if (_defaultInstance != null) _defaultInstance._trackingOffsetRate = new Vector(0.0, 0.0);
+            var inst = instance ?? _defaultInstance;
+            var settings = instance?.Settings ?? _settings;
+            if (inst != null) inst._trackingOffsetRate = new Vector(0.0, 0.0);
 
             //calculate mount sidereal :I, add offset to :I, Calculate new rate, Add rate difference to rate
-            if (_settings!.Mount != MountType.SkyWatcher) { return; } //only use for sky watcher mounts
+            if (settings!.Mount != MountType.SkyWatcher) { return; } //only use for sky watcher mounts
 
-            if (_settings!.CustomGearing == false) { return; }
+            if (settings!.CustomGearing == false) { return; }
 
-            var ratioFactor = (double)StepsTimeFreq[0] / StepsPerRevolution[0] * 1296000.0;  //generic factor for calc
+            var ratioFactor = (double)inst!._stepsTimeFreq[0] / inst._stepsPerRevolution[0] * 1296000.0;  //generic factor for calc
             var siderealI = ratioFactor / SiderealRate;
-            siderealI += _settings!.CustomRaTrackingOffset;  //calc :I and add offset
+            siderealI += settings!.CustomRaTrackingOffset;  //calc :I and add offset
             var newRate = ratioFactor / siderealI; //calc new rate from offset
-            TrackingOffsetRaRate = SiderealRate - newRate;
+            inst._trackingOffsetRate.X = SiderealRate - newRate;
 
-            ratioFactor = (double)StepsTimeFreq[1] / StepsPerRevolution[1] * 1296000.0;  //generic factor for calc
+            ratioFactor = (double)inst._stepsTimeFreq[1] / inst._stepsPerRevolution[1] * 1296000.0;  //generic factor for calc
             siderealI = ratioFactor / SiderealRate;
-            siderealI += _settings!.CustomDecTrackingOffset;  //calc :I and add offset
+            siderealI += settings!.CustomDecTrackingOffset;  //calc :I and add offset
             newRate = ratioFactor / siderealI; //calc new rate from offset
-            TrackingOffsetDecRate = SiderealRate - newRate;
+            inst._trackingOffsetRate.Y = SiderealRate - newRate;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{TrackingOffsetRaRate}|{TrackingOffsetDecRate}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{inst._trackingOffsetRate.X}|{inst._trackingOffsetRate.Y}" };
             MonitorLog.LogToMonitor(monitorItem);
 
         }
@@ -1435,19 +1437,20 @@ namespace GreenSwamp.Alpaca.MountControl
         /// converts to radians when sending commands to mount.
         /// Called during initialization and when MaxSlewRate setting changes.
         /// </remarks>
-        internal static void SetSlewRates(double maxRate)
+        internal static void SetSlewRates(double maxRate, MountInstance? instance = null)
         {
+            var inst = instance ?? _defaultInstance;
             // Sky Speeds
-                if (_defaultInstance == null) return;
+                if (inst == null) return;
 
-                _defaultInstance._slewSpeedOne = Math.Round(maxRate * 0.0034, 3);
-                _defaultInstance._slewSpeedTwo = Math.Round(maxRate * 0.0068, 3);
-                _defaultInstance._slewSpeedThree = Math.Round(maxRate * 0.047, 3);
-                _defaultInstance._slewSpeedFour = Math.Round(maxRate * 0.068, 3);
-                _defaultInstance._slewSpeedFive = Math.Round(maxRate * 0.2, 3);
-                _defaultInstance._slewSpeedSix = Math.Round(maxRate * 0.4, 3);
-                _defaultInstance._slewSpeedSeven = Math.Round(maxRate * 0.8, 3);
-                _defaultInstance._slewSpeedEight = Math.Round(maxRate * 1.0, 3);
+                inst._slewSpeedOne = Math.Round(maxRate * 0.0034, 3);
+                inst._slewSpeedTwo = Math.Round(maxRate * 0.0068, 3);
+                inst._slewSpeedThree = Math.Round(maxRate * 0.047, 3);
+                inst._slewSpeedFour = Math.Round(maxRate * 0.068, 3);
+                inst._slewSpeedFive = Math.Round(maxRate * 0.2, 3);
+                inst._slewSpeedSix = Math.Round(maxRate * 0.4, 3);
+                inst._slewSpeedSeven = Math.Round(maxRate * 0.8, 3);
+                inst._slewSpeedEight = Math.Round(maxRate * 1.0, 3);
 
             // Log (same as before)
 
