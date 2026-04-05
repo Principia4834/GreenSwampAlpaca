@@ -18,6 +18,8 @@
 - 2026-04-04 22:49 Phase J complete (J1/J2/J4/J5/J7 resolved); git-restore I/R regressions re-applied; all builds green
 - 2026-04-05 09:06 Phase K complete; SlewController and SlewOperation fully instance-aware; all builds green
 - 2026-04-05 10:48 Phase L complete; Step 9 bridge region fully migrated per-instance; EmergencyStop fixed; commit 487c08e; all builds green
+- 2026-04-05 11:35 Phase M complete; guard-before-resolve and GoToAsync device-0 contamination fixed (M0/M1/M2/M3); commit b3bf74e; all builds green
+- 2026-04-05 11:40 Status doc completed; Phase M task table and Section 2 ledger entries added
 **Branch:** `master`
 **Build baseline:** Green Simulator and SkyWatcher GermanPolar pass confidence tests
 **Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs` + two-device smoke test failure diagnosis (2026-04-04)
@@ -45,6 +47,7 @@ Remaining work by category:
 | **Phase J Group 3 re-assessment** | J1/J2/J4/J5/J7 resolved ✅; J3 (logging labels) 🟠 still pending; J6 deferred to Phase E 🟡 | ✅ Mostly resolved — J3 logging labels remaining |
 | **Phase K SlewController/SlewOperation instance-aware** ✅ | `SlewController`/`SlewOperation` state/dispatch via `operation.MountInstance`; `InstanceApplyTracking`, `InstanceApplyTrackingDirect`, `InstanceSetTrackingMode`, `InstanceCompletePark` helpers added | ✅ Resolved |
 | **Phase L Step 9 bridge region fully migrated** ✅ | `MountInstance.cs`; 12 ConformU-failing bridge methods + `EmergencyStop` now operate on this device's hardware queue, settings, and CTS tokens; root cause of device-1 failures eliminated | ✅ Resolved |
+| **Phase M Guard-before-resolve audit + GoToAsync deep contamination** ✅ | `PulseGuide` (M0), `SlewMount` (M1), `SetTracking` (M2): static `IsMountRunning` guard fired before `var inst` was resolved; `GoToAsync` (M3): 12 sites routing to device 0 via `CancelAllAsync`, `_ctsGoTo`, `SlewState`, `Tracking`, `_settings`, `SimGoTo/SkyGoTo`, `TargetRa/Dec`, `StepsPerRevolution`, `StopAltAzTrackingTimer`, `StopAxes`, `AtPark`, `MountError`; all replaced with `effectiveInstance.*` equivalents | ✅ Resolved |
 | **Phase E Blazor per-device UI notifications** | `TelescopeStateService` reads all state from `SkyServer.*` (device 0 only); `StaticPropertyChanged` fires globally | 🔴 Yes confirmed primary cause of smoke test UI symptom |
 | **Phase F Option C Phase 3** | Per-device serial config in `Devices[]` array; Blazor multi-device UI not started | 🟡 UI / config only |
 
@@ -168,6 +171,10 @@ Remaining work by category:
 | **L13 `GoToHome` migrated** ✅ | `MountInstance.cs` | Uses `_homeAxes`, `AtHome`, `_slewState`; dispatches via `this.SlewAsync` |
 | **L14 `GoToParkAsync` migrated** ✅ | `MountInstance.cs` | Uses `this.ParkSelected`, updates `_settings.ParkAxes/ParkName`; dispatches via `this.SlewAsync` |
 | **L15 `EmergencyStop` fixed** ✅ | `MountInstance.cs` | Was `SkyServer.AbortSlewAsync(speak: false)` → `this.AbortSlewAsync(speak: false)` |
+| **M0 `PulseGuide` guard-before-resolve fixed** ✅ | `SkyServer.TelescopeAPI.cs` | `var inst = instance ?? _defaultInstance` moved above guard; guard now checks `inst.IsMountRunning` not static `SkyServer.IsMountRunning` |
+| **M1 `SlewMount` guard-before-resolve + instance routing** ✅ | `SkyServer.Core.cs` | `effectiveInstance` resolved at top of method before guard; guard per-instance; `HcResetPrevMove(Ra/Dec)` inlined to direct field sets; `AtPark = false` → `effectiveInstance.AtPark = false` |
+| **M2 `SetTracking` guard fixed** ✅ | `SkyServer.TelescopeAPI.cs` | Guard changed from `if (!IsMountRunning)` to `if (inst == null \|\| !inst.IsMountRunning)` (inst already resolved on the line above) |
+| **M3 `GoToAsync` 12-site deep contamination** ✅ | `SkyServer.TelescopeAPI.cs` | All state reads/writes and hardware dispatch via `effectiveInstance.*` — guard, `InstanceCancelAllAsync`, `_ctsGoTo`, `_isSlewing`, `_slewState`, `Tracking`/`SetTracking`, `Settings.Mount`, `SimGoTo`/`SkyGoTo` dispatch, AltAz block, `AtPark`, handpad predictor set, log fields, catch/finally |
 
 ---
 
@@ -783,3 +790,16 @@ The `#region Telescope API Bridge Methods (Step 8)` in `MountInstance.cs` was th
 | **L13** | `MountInstance.cs` | `GoToHome()`: uses `_homeAxes`, `AtHome`, `_slewState`; dispatches via `this.SlewAsync` | ✅ Done |
 | **L14** | `MountInstance.cs` | `GoToParkAsync()`: uses `this.ParkSelected`, updates `_settings.ParkAxes/ParkName`; dispatches via `this.SlewAsync` | ✅ Done |
 | **L15** | `MountInstance.cs` | `EmergencyStop()`: was `SkyServer.AbortSlewAsync(speak: false)` → `this.AbortSlewAsync(speak: false)` | ✅ Done |
+
+---
+
+### ✅ Phase M — Guard-Before-Resolve Audit + GoToAsync Deep Contamination — COMPLETE (2026-04-05)
+
+Full audit of all instance-aware static methods identified 4 instances of the guard-before-resolve pattern (static `IsMountRunning` guard firing before `var inst = instance ?? _defaultInstance` was resolved, or a variant where the guard still used the static path after the instance was resolved). `GoToAsync` additionally had 12 sites routing state reads/writes and hardware dispatch to device 0 via static `SkyServer.*` properties instead of `effectiveInstance.*`. Note: `_tracking` and `_settings` are `private` on `MountInstance`; writes use `effectiveInstance.SetTracking(bool)` and reads use `effectiveInstance.Tracking` / `effectiveInstance.Settings`.
+
+| Task | File | Description | Status |
+|---|---|---|
+| **M0** | `SkyServer.TelescopeAPI.cs` | `PulseGuide()`: `var inst = instance ?? _defaultInstance` moved above `if (!inst.IsMountRunning)` guard; guard changed to check `inst` not `SkyServer.IsMountRunning` | ✅ Done |
+| **M1** | `SkyServer.Core.cs` | `SlewMount()`: `var effectiveInstance` resolved at top of method before guard; guard changed to `if (effectiveInstance == null \|\| !effectiveInstance.IsMountRunning)`; `HcResetPrevMove(Ra/Dec)` inlined to direct field sets on `effectiveInstance`; `AtPark = false` → `effectiveInstance.AtPark = false` | ✅ Done |
+| **M2** | `SkyServer.TelescopeAPI.cs` | `SetTracking()`: guard changed from `if (!IsMountRunning)` to `if (inst == null \|\| !inst.IsMountRunning)` (inst already resolved on the line above) | ✅ Done |
+| **M3** | `SkyServer.TelescopeAPI.cs` | `GoToAsync()`: 12 device-0 contamination sites replaced with `effectiveInstance.*` — guard, `InstanceCancelAllAsync`, `_ctsGoTo`, `_isSlewing`, `_slewState`, `Tracking`/`SetTracking(bool)`, `Settings.Mount`, `SimGoTo`/`SkyGoTo` dispatch + token, AltAz block (`Settings.AlignmentMode`, `TargetRa/Dec`, `SkyPredictor.Set`, `SetTracking(effectiveInstance)`, `_stepsPerRevolution`, `Settings.AltAzTrackingUpdateInterval`, `_ctsGoTo.IsCancellationRequested`, `StopAltAzTrackingTimer`, `InstanceStopAxes`), `AtPark`, handpad `SkyPredictor.Set(RightAscensionXForm, DeclinationXForm)`, log message fields (`_slewState`, `RightAscensionXForm`, `DeclinationXForm`, `_actualAxisX/Y`), success/can't-slew/catch/finally `_slewState`+`SetTracking`+`_mountError`+`_ctsGoTo` disposal | ✅ Done |
