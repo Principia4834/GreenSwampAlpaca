@@ -1124,12 +1124,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// combines multiple Ra and Dec rates for a single slew rate
         /// </summary>
         /// <returns></returns>
-        private static Vector SkyGetRate()
+        private static Vector SkyGetRate(MountInstance? instance = null)
         {
+            var inst = instance ?? _defaultInstance!;
             var change = new Vector();
 
-            change += SkyTrackingRate; // Tracking
-            change += SkyHcRate; // Hand controller
+            change += inst._skyTrackingRate; // Tracking
+            change += inst._skyHcRate; // Hand controller
             // Primary axis
             change.X += RateMovePrimaryAxis;
             change.X += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(RateRa) : 0;

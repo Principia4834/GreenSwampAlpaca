@@ -2338,15 +2338,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.AltAz:
                             if (rateChange != 0)
                             {
-                                SetAltAzTrackingRates(AltAzTrackingType.Predictor);
+                                SetAltAzTrackingRates(AltAzTrackingType.Predictor, inst);
                                 if (inst!._altAzTrackingTimer?.IsRunning != true) inst!.StartAltAzTrackingTimer(); // J4: per-instance
                             }
                             else
                             {
                                 if (inst!._altAzTrackingTimer?.IsRunning == true) inst!.StopAltAzTrackingTimer(); // J4: per-instance
-                                SkyTrackingRate = new Vector(0, 0);
+                                inst._skyTrackingRate = new Vector(0, 0);
                             }
-                            rate = SkyGetRate();
+                            rate = SkyGetRate(inst);
                             // Tracking applied unless MoveAxis is active
                             {
                                 var mq = inst!.MountQueueInstance!;
@@ -2388,13 +2388,13 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.AltAz:
                             if (rateChange != 0)
                             {
-                                SetAltAzTrackingRates(AltAzTrackingType.Predictor);
+                                SetAltAzTrackingRates(AltAzTrackingType.Predictor, inst);
                                 if (inst!._altAzTrackingTimer?.IsRunning != true) inst!.StartAltAzTrackingTimer(); // J4: per-instance
                             }
                             else
                             {
                                 if (inst!._altAzTrackingTimer?.IsRunning == true) inst!.StopAltAzTrackingTimer(); // J4: per-instance
-                                SkyTrackingRate = new Vector(0, 0);
+                                inst._skyTrackingRate = new Vector(0, 0);
                             }
 
                             // Get current tracking  including RA and Dec offsets
@@ -2402,14 +2402,14 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case AlignmentMode.Polar:
                         case AlignmentMode.GermanPolar:
-                            SkyTrackingRate = new Vector(rateChange, 0);
+                            inst._skyTrackingRate = new Vector(rateChange, 0);
                             // Get current tracking including RA and Dec offsets
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
 
-                    rate = SkyGetRate(); // Get current tracking  including RA and Dec offsets
+                    rate = SkyGetRate(inst); // Get current tracking  including RA and Dec offsets
                     {
                         var sq = inst!.SkyQueueInstance!;
                         if (!MovePrimaryAxisActive)
@@ -2720,29 +2720,33 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Update AltAz tracking rates including delta for tracking error
         /// </summary>
-        private static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType)
+        private static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, MountInstance? instance = null)
         {
+            var inst = instance ?? _defaultInstance!;
             switch (altAzTrackingType)
             {
                 case AltAzTrackingType.Predictor:
                     double[] delta = { 0.0, 0.0 };
-                    if (_defaultInstance.SkyPredictor.RaDecSet)
+                    if (inst.SkyPredictor.RaDecSet)
                     {
                         // Update mount position
-                        WaitMountPositionUpdated();
-                        var steps = Steps;
+                        var evt = inst._mountPositionUpdatedEvent;
+                        evt.Reset();
+                        inst.UpdateSteps();
+                        if (!evt.Wait(5000)) break;
+                        var steps = inst._steps;
                         DateTime nextTime = HiResDateTime.UtcNow.AddMilliseconds(_settings!.AltAzTrackingUpdateInterval);
-                        var raDec = _defaultInstance.SkyPredictor.GetRaDecAtTime(nextTime);
+                        var raDec = inst.SkyPredictor.GetRaDecAtTime(nextTime);
                         // get required target position in topo coordinates
                         var internalRaDec = Transforms.CoordTypeToInternal(raDec[0], raDec[1]);
                         var skyTarget = Coordinate.RaDec2AltAz(internalRaDec.X, internalRaDec.Y, GetLocalSiderealTime(nextTime), _settings!.Latitude);
                         Array.Reverse(skyTarget);
                         skyTarget = GetSyncedAxes(skyTarget);
-                        var rawPositions = new[] { ConvertStepsToDegrees(steps[0], 0), ConvertStepsToDegrees(steps[1], 1) };
+                        var rawPositions = new[] { inst.ConvertStepsToDegrees(steps[0], 0), inst.ConvertStepsToDegrees(steps[1], 1) };
                         delta[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
                         delta[1] = Range.Range180((skyTarget[1] - rawPositions[1]));
                         const double milliSecond = 0.001;
-                        SkyTrackingRate = new Vector(
+                        inst._skyTrackingRate = new Vector(
                             delta[0] / (_settings!.AltAzTrackingUpdateInterval * milliSecond),
                             delta[1] / (_settings!.AltAzTrackingUpdateInterval * milliSecond)
                         );
@@ -2760,7 +2764,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 case AltAzTrackingType.Rate:
-                    SkyTrackingRate = ConvertRateToAltAz(CurrentTrackingRate(), 0.0, DeclinationXForm);
+                    inst._skyTrackingRate = ConvertRateToAltAz(CurrentTrackingRate(), 0.0, inst.DeclinationXForm);
                     break;
             }
         }
