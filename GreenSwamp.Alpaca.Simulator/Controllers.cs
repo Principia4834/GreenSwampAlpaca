@@ -714,28 +714,28 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             {
                 case Axis.Axis1:
                     // if (DegreesX > 110 || DegreesX < 70) return;
-                    if (DegreesX > Settings.AutoHomeAxisX && _homeSensorX)
+                    if (DegreesX > AutoHomeAxisX && _homeSensorX)  // Phase H5: use instance field
                     {
-                        HomeSensorX = Settings.AutoHomeAxisX * 36000;
+                        HomeSensorX = AutoHomeAxisX * 36000;
                         _homeSensorX = false;
                     }
-                    if (DegreesX < Settings.AutoHomeAxisX && !_homeSensorX)
+                    if (DegreesX < AutoHomeAxisX && !_homeSensorX)  // Phase H5: use instance field
                     {
-                        HomeSensorX = Settings.AutoHomeAxisX * 36000;
+                        HomeSensorX = AutoHomeAxisX * 36000;
                         _homeSensorX = true;
                     }
                     break;
                 case Axis.Axis2:
                     // if (DegreesY > 110 || DegreesY < 70) return;
-                    if (DegreesY > Settings.AutoHomeAxisY && _homeSensorY)
+                    if (DegreesY > AutoHomeAxisY && _homeSensorY)  // Phase H5: use instance field
                     {
-                        HomeSensorY = Settings.AutoHomeAxisY * 36000;
+                        HomeSensorY = AutoHomeAxisY * 36000;
                         _homeSensorY = false;
                     }
 
-                    if (DegreesY < Settings.AutoHomeAxisY && !_homeSensorY)
+                    if (DegreesY < AutoHomeAxisY && !_homeSensorY)  // Phase H5: use instance field
                     {
-                        HomeSensorY = Settings.AutoHomeAxisY * 36000;
+                        HomeSensorY = AutoHomeAxisY * 36000;
                         _homeSensorY = true;
                     }
                     break;

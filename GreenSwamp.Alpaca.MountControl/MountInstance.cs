@@ -1,4 +1,4 @@
-﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿ /* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -86,6 +86,9 @@ namespace GreenSwamp.Alpaca.MountControl
         internal bool _lowVoltageEventState;
         internal bool _monitorPulse;
         internal double _slewSettleTime;
+
+        // J5: Per-instance AltAz limit status (isolates limit state across devices)
+        internal SkyServer.LimitStatusType _limitStatus;
 
         // Phase 6: new per-instance backing fields (migrated from static SkyServer)
         internal bool _isPulseGuidingRa;
@@ -388,7 +391,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             get
             {
-                var context = AxesContext.FromSettings(_settings);
+                var context = AxesContext.FromSettings(_settings, SideOfPier);
                 var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, context);
                 double dX = Math.Abs(_appAxes.X - home[0]);
                 dX = Math.Min(dX, 360.0 - dX);
@@ -718,10 +721,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     _wormTeethCount = new[] { raWormTeeth, decWormTeeth };
                     _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
-                    SkyServer.CalcCustomTrackingOffset();
+                    SkyServer.CalcCustomTrackingOffset(this);
 
                     // Initialize slew speeds
-                    SkyServer.SetSlewRates(_settings.MaxSlewRate);
+                    SkyServer.SetSlewRates(_settings.MaxSlewRate, this);
 
                     //log current positions
                     var steps = GetRawSteps();
@@ -791,11 +794,11 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
             monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"MountAxes|{_appAxes.X}|{_appAxes.Y}|Actual|{SkyServer.ActualAxisX}|{SkyServer.ActualAxisY}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"MountAxes|{_appAxes.X}|{_appAxes.Y}|Actual|{_actualAxisX}|{_actualAxisY}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"StepsPerRevolution|{SkyServer.StepsPerRevolution[0]}|{SkyServer.StepsPerRevolution[1]}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"StepsPerRevolution|{_stepsPerRevolution[0]}|{_stepsPerRevolution[1]}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             //Load Pec Files
@@ -991,9 +994,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Start park async — delegates to SkyServer.GoToParkAsync.</summary>
         public Task<SlewResult> GoToParkAsync() => SkyServer.GoToParkAsync();
 
-        /// <summary>Issue a pulse guide command — delegates to SkyServer.PulseGuide.</summary>
+        /// <summary>Issue a pulse guide command — passes this instance to SkyServer.PulseGuide (J1).</summary>
         public void PulseGuide(GuideDirection direction, int duration, double altRate) =>
-            SkyServer.PulseGuide(direction, duration, altRate);
+            SkyServer.PulseGuide(direction, duration, altRate, this); // J1: per-instance
 
         /// <summary>Synchronous Alt/Az slew — dispatches on this instance directly.</summary>
         public void SlewAltAz(double altitude, double azimuth) =>
@@ -1056,7 +1059,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             // Convert target to axes based on slew type
             // Create context from current settings
-            var context = AxesContext.FromSettings(_settings);
+            var context = AxesContext.FromSettings(_settings, SideOfPier);
 
             switch (slewType)
             {
@@ -1262,6 +1265,22 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             SkyServer.UpdateMountLimitStatus(rawPositions);
 
+            // J5: Per-instance limit status (isolates AltAz limit state per device)
+            {
+                const double oneArcSec = 1.0 / 3600;
+                _limitStatus.AtLowerLimitAxisX = rawPositions[0] <= -_settings.AxisLimitX - oneArcSec;
+                _limitStatus.AtUpperLimitAxisX = rawPositions[0] >= _settings.AxisLimitX + oneArcSec;
+                var axisUpperLimitY = _settings.AxisUpperLimitY;
+                var axisLowerLimitY = _settings.AxisLowerLimitY;
+                if (_settings.AlignmentMode == AlignmentMode.Polar && _settings.PolarMode == PolarMode.Left)
+                {
+                    axisLowerLimitY = 180 - _settings.AxisUpperLimitY;
+                    axisUpperLimitY = 180 - _settings.AxisLowerLimitY;
+                }
+                _limitStatus.AtLowerLimitAxisY = rawPositions[1] <= axisLowerLimitY - oneArcSec;
+                _limitStatus.AtUpperLimitAxisY = rawPositions[1] >= axisUpperLimitY + oneArcSec;
+            }
+
             // UI diagnostics in degrees
             _actualAxisX = rawPositions[0];
             _actualAxisY = rawPositions[1];
@@ -1337,7 +1356,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal void Defaults()
         {
-            SkyServer.SlewSettleTime = 0;
+            _slewSettleTime = 0;
 
             // Initialize FactorStep array (already initialized in constructor, but keep for compatibility)
             // _factorStep is already initialized as new double[2]
@@ -1351,7 +1370,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkName);
                 if (found != null)
                 {
-                    SkyServer.ParkSelected = found;
+                    _parkSelected = found;
                     // Also ensure ParkAxes is populated for backward compatibility
                     _settings.ParkAxes = new[] { found.X, found.Y };
                 }
@@ -1360,11 +1379,11 @@ namespace GreenSwamp.Alpaca.MountControl
             // Set slew rates for all speed levels
             // SetSlewRates expects degrees/second and stores values in degrees
             // (hardware layer converts to radians when needed)
-            SkyServer.SetSlewRates(_settings.MaxSlewRate);
+            SkyServer.SetSlewRates(_settings.MaxSlewRate, this);
 
             // set the guiderates
             _guideRate = new Vector(_settings.GuideRateOffsetY, _settings.GuideRateOffsetX);
-            SkyServer.SetGuideRates();
+            SkyServer.SetGuideRates(this);
         }
 
         /// <summary>
@@ -1682,7 +1701,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_mediaTimer != null) { _mediaTimer.Tick -= OnUpdateServerEvent; }
             _mediaTimer?.Stop();
             _mediaTimer?.Dispose();
-            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= SkyServer.AltAzTrackingTimerEvent; }
+            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4: per-instance handler
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
 
@@ -1775,8 +1794,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Phase H2: Per-instance axis-limit check — replaces static SkyServer.CheckAxisLimits().
-        /// Note: SkyServer.LimitStatus remains static (AltAz/Polar hardware commands only; not GermanPolar).
-        ///       SkyServer.StopAxes() / GoToPark() remain static (limit actions — per Phase H pattern).
+        /// J5: reads per-instance _limitStatus instead of static SkyServer.LimitStatus.
+        /// J7: calls InstanceStopAxes/InstanceGoToPark to halt the correct physical device.
         /// </summary>
         private void CheckAxisLimits()
         {
@@ -1793,7 +1812,7 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (_settings.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    meridianLimit = SkyServer.LimitStatus.AtLowerLimitAxisY || SkyServer.LimitStatus.AtUpperLimitAxisY;
+                    meridianLimit = _limitStatus.AtLowerLimitAxisY || _limitStatus.AtUpperLimitAxisY; // J5: per-instance
                     break;
                 case AlignmentMode.Polar:
                     break;
@@ -1836,7 +1855,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.LimitPark && _slewState != SlewType.SlewPark)
                 {
                     var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkLimitName);
-                    if (found == null) SkyServer.StopAxes(); else { _parkSelected = found; SkyServer.GoToPark(); }
+                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; InstanceGoToPark(); } // J7: per-instance
                 }
             }
             if (horizonLimit)
@@ -1848,8 +1867,92 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.HzLimitPark && _slewState != SlewType.SlewPark)
                 {
                     var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkHzLimitName);
-                    if (found == null) SkyServer.StopAxes(); else { _parkSelected = found; SkyServer.GoToPark(); }
+                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; InstanceGoToPark(); } // J7: per-instance
                 }
+            }
+        }
+
+        /// <summary>
+        /// J7: Per-instance axis stop — halts this device's mount axes without affecting other devices.
+        /// Cancels any active GoTo, clears rate moves, then issues hardware stop commands.
+        /// </summary>
+        internal void InstanceStopAxes()
+        {
+            _ctsGoTo?.Cancel();
+            _moveAxisActive = false;
+            _rateMoveAxes = new Vector(0, 0);
+            _rateRaDec = new Vector(0, 0);
+            if (!SkyServer.AxesStopValidate(this))
+            {
+                switch (_settings.Mount)
+                {
+                    case MountType.Simulator:
+                        SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                        break;
+                    case MountType.SkyWatcher:
+                        SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                        break;
+                }
+            }
+            _slewState = SlewType.SlewNone;
+            _tracking = false;
+            _trackingMode = TrackingMode.Off;
+        }
+
+        /// <summary>
+        /// J7: Per-instance park — moves this device to its selected park position.
+        /// </summary>
+        internal void InstanceGoToPark()
+        {
+            var ps = _parkSelected;
+            if (ps == null || double.IsNaN(ps.X) || double.IsNaN(ps.Y)) return;
+            _tracking = false;
+            _trackingMode = TrackingMode.Off;
+            _settings.ParkAxes = new[] { ps.X, ps.Y };
+            _settings.ParkName = ps.Name;
+            _ = SlewAsync(new[] { ps.X, ps.Y }, SlewType.SlewPark, tracking: false);
+        }
+
+        #endregion
+
+        #region AltAz Tracking Timer (J4 — per-instance)
+
+        /// <summary>
+        /// J4: Per-instance AltAz tracking timer tick handler.
+        /// Replaces static SkyServer.AltAzTrackingTimerEvent for this device.
+        /// </summary>
+        internal void AltAzTrackingTimerTick(object sender, EventArgs e)
+        {
+            if (_altAzTrackingTimer?.IsRunning == true &&
+                Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) == 0)
+            {
+                SkyServer.SetTracking(this);
+                _altAzTrackingLock = 0;
+            }
+        }
+
+        /// <summary>
+        /// J4: Start the per-instance AltAz tracking timer using this device's update interval.
+        /// </summary>
+        internal void StartAltAzTrackingTimer()
+        {
+            StopAltAzTrackingTimer();
+            _altAzTrackingTimer = new MediaTimer { Period = _settings.AltAzTrackingUpdateInterval };
+            _altAzTrackingTimer.Tick += AltAzTrackingTimerTick;
+            _altAzTrackingTimer.Start();
+        }
+
+        /// <summary>
+        /// J4: Stop and dispose the per-instance AltAz tracking timer.
+        /// </summary>
+        internal void StopAltAzTrackingTimer()
+        {
+            if (_altAzTrackingTimer != null)
+            {
+                _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick;
+                if (_altAzTrackingTimer.IsRunning) _altAzTrackingTimer.Stop();
+                _altAzTrackingTimer.Dispose();
+                _altAzTrackingTimer = null;
             }
         }
 
@@ -1871,7 +1974,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Instance:{_instanceName}|from|{SkyServer.ActualAxisX}|{SkyServer.ActualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
+                Message = $"Instance:{_instanceName}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1904,8 +2007,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 var axis2Stopped = axis2Status.Stopped;
 
                 if (!axis1Stopped || !axis2Stopped) continue;
-                if (SkyServer.SlewSettleTime > 0)
-                    Tasks.DelayHandler(TimeSpan.FromSeconds(SkyServer.SlewSettleTime).Milliseconds);
+                if (_slewSettleTime > 0)
+                    Tasks.DelayHandler(TimeSpan.FromSeconds(_slewSettleTime).Milliseconds);
                 break;
             }
             stopwatch.Stop();
@@ -1947,7 +2050,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Instance:{_instanceName}|from|({SkyServer.ActualAxisX},{SkyServer.ActualAxisY})|to|({target[0]},{target[1]})"
+                Message = $"Instance:{_instanceName}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -2149,7 +2252,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Instance:{_instanceName}|from|{SkyServer.ActualAxisX}|{SkyServer.ActualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
+                Message = $"Instance:{_instanceName}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
             };
             MonitorLog.LogToMonitor(monitorItem);
             token.ThrowIfCancellationRequested();
@@ -2183,8 +2286,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 if (!axis1Stopped || !axis2Stopped) { continue; }
 
-                if (SkyServer.SlewSettleTime > 0)
-                    Tasks.DelayHandler(TimeSpan.FromSeconds(SkyServer.SlewSettleTime).Milliseconds);
+                if (_slewSettleTime > 0)
+                    Tasks.DelayHandler(TimeSpan.FromSeconds(_slewSettleTime).Milliseconds);
                 break;
             }
             stopwatch.Stop();
@@ -2226,7 +2329,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Instance:{_instanceName}|from|({SkyServer.ActualAxisX},{SkyServer.ActualAxisY})|to|({target[0]},{target[1]})"
+                Message = $"Instance:{_instanceName}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -2415,7 +2518,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     var axis1Done = axis1AtTarget;
                     while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                     {
-                        if (SkyServer.SlewState == SlewType.SlewNone) { break; }
+                        if (_slewState == SlewType.SlewNone) { break; }
                         Thread.Sleep(30);
                         token.ThrowIfCancellationRequested();
 
@@ -2436,7 +2539,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     var axis2Done = axis2AtTarget;
                     while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                     {
-                        if (SkyServer.SlewState == SlewType.SlewNone) { break; }
+                        if (_slewState == SlewType.SlewNone) { break; }
                         Thread.Sleep(30);
                         token.ThrowIfCancellationRequested();
 
@@ -2537,15 +2640,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (axis)
                 {
                     case 0:
-                        if (!SkyServer.IsPulseGuidingDec)
-                            SkyServer.StopAltAzTrackingTimer();
+                        if (!_isPulseGuidingDec)
+                            this.StopAltAzTrackingTimer(); // J4: per-instance
                         else
                             _ctsPulseGuideDec?.Cancel();
                         SkyPredictor.Set(SkyPredictor.Ra - duration * 0.001 * guideRate / 15.0410671786691, SkyPredictor.Dec);
                         break;
                     case 1:
-                        if (!SkyServer.IsPulseGuidingRa)
-                            SkyServer.StopAltAzTrackingTimer();
+                        if (!_isPulseGuidingRa)
+                            this.StopAltAzTrackingTimer(); // J4: per-instance
                         else
                             _ctsPulseGuideRa?.Cancel();
                         SkyPredictor.Set(SkyPredictor.Ra, SkyPredictor.Dec + duration * guideRate * 0.001);
@@ -2565,7 +2668,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // execute pulse
                 pulseGoTo(token);
                 // pulse movement finished or cancelled so resume tracking
-                SkyServer.SetTracking();
+                SkyServer.SetTracking(this);
                 // wait for pulse duration so completion variable IsPulseGuiding remains true
                 var waitTime = (int)(pulseStartTime.AddMilliseconds(duration) - Principles.HiResDateTime.UtcNow).TotalMilliseconds;
                 var updateInterval = Math.Max(duration / 20, 50);
@@ -2575,7 +2678,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     while (stopwatch.Elapsed.TotalMilliseconds < waitTime && !token.IsCancellationRequested)
                     {
                         Thread.Sleep(updateInterval);
-                        SkyServer.UpdateSteps(); // Process positions while waiting
+                        this.UpdateSteps(); // Process positions while waiting
                     }
                 }
                 // log and graph pulse
@@ -2601,10 +2704,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (axis)
                 {
                     case 0:
-                        SkyServer.IsPulseGuidingRa = false;
+                        _isPulseGuidingRa = false;
                         break;
                     case 1:
-                        SkyServer.IsPulseGuidingDec = false;
+                        _isPulseGuidingDec = false;
                         break;
                 }
             });

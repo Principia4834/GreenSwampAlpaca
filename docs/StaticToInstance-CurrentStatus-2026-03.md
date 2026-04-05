@@ -1,17 +1,18 @@
-# Static-to-Instance Migration Current Status Report
+﻿# Static-to-Instance Migration Current Status Report
 ## GreenSwamp Alpaca SkyServer / MountControl
 
 **Prepared:** March 2026 (post-SkyWatcher GermanPolar confidence test)
 **Updated:** April 2026, 08:25 UTC full re-verification against `master`
-**Updated:** April 2026, 14:30 UTC `SkyServer.TelescopeAPI.cs` full region-by-region review; CTS delegation confirmed; new concerns G1–G3 identified
+**Updated:** April 2026, 14:30 UTC `SkyServer.TelescopeAPI.cs` full region-by-region review; CTS delegation confirmed; new concerns G1â€“G3 identified
 **Updated:** 2026-04-03 09:00 timestamp format standardised per copilot-instructions.md
 **Updated:** 2026-04-03 09:23 Phase G complete (X1, X2, G1, G2, G3); all builds green
-**Updated:** 2026-04-04 09:20 Two-device smoke test failure diagnosed; Phase H items identified; "all blockers cleared" conclusion overturned; Phase E elevated to 🔴
+**Updated:** 2026-04-04 09:20 Two-device smoke test failure diagnosed; Phase H items identified; "all blockers cleared" conclusion overturned; Phase E elevated to ðŸ”´
 **Updated:** 2026-04-04 08:58 UTC Phase H complete (H1-H5); all builds green; two-device simulator isolation confirmed
-**Updated:** 2026-04-04 19:48 Encoding fixed (Windows-1252 mojibake → UTF-8 without BOM)
-**Updated:** 2026-04-04 19:53 Phase I complete (I1–I5, R1–R5); all builds green; ConformU device-1 rate blockers resolved
-**Updated:** 2026-04-04 20:58 Group 3 low-risk items re-assessed; Phase J (J1–J7) identified; J1/J2/J4/J5/J7 elevated to 🔴; J3 elevated to 🟠; J6 deferred to Phase E
+**Updated:** 2026-04-04 19:48 Encoding fixed (Windows-1252 mojibake â†’ UTF-8 without BOM)
+**Updated:** 2026-04-04 19:53 Phase I complete (I1â€“I5, R1â€“R5); all builds green; ConformU device-1 rate blockers resolved
+**Updated:** 2026-04-04 20:58 Group 3 low-risk items re-assessed; Phase J (J1â€“J7) identified; J1/J2/J4/J5/J7 elevated to ðŸ”´; J3 elevated to ðŸŸ ; J6 deferred to Phase E
 **Updated:** 2026-04-04 20:12 Duplicate sections removed; Phase J task table added to Section 5; LF line endings normalised
+**Updated:** 2026-04-04 22:49 Phase J complete (J1/J2/J4/J5/J7 resolved); git-restore I/R regressions re-applied; all builds green
 **Branch:** `master`
 **Build baseline:** Green Simulator and SkyWatcher GermanPolar pass confidence tests
 **Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs` + two-device smoke test failure diagnosis (2026-04-04)
@@ -26,7 +27,7 @@ at approximately **95 %** complete overall. Every piece of per-device state now 
 `MountInstanceRegistry.GetInstance(0)`. The ASCOM driver (`Telescope.cs`) routes entirely
 through `GetInstance(_deviceNumber)`.
 
-**⚠️ Assessment revised 2026-04-04 two-device smoke test failed.** Connecting to device 1
+**âš ï¸ Assessment revised 2026-04-04 two-device smoke test failed.** Connecting to device 1
 returned device 0 state. Code tracing identified four new Phase H blockers; the previous
 "all hard blockers are cleared" conclusion was incorrect.
 
@@ -34,11 +35,11 @@ Remaining work by category:
 
 | Category | Items | Blocking multi-telescope? |
 |---|---|---|
-| **Phase H Simulator static contamination** ✅ | `Controllers._ctsMount` → instance field; `MountStop()` and `OnUpdateServerEvent()` per-instance; `ConnectAlignmentModel()` is empty stub (no-op) | ✅ Resolved |
-| **Phase I Static method instance-awareness** ✅ | `SetSlewRates`, `SetGuideRates`, `CalcCustomTrackingOffset`, `SetTracking` accept `MountInstance? instance`; `Defaults()`/`MountConnect()` pass `this`; `SkyPulseGoto`, `SimGoTo`, `SkyGoTo`, `PulseGuideAltAz` read/write instance fields directly | ✅ Resolved |
-| **Phase J Group 3 re-assessment** | `SouthernHemisphere` in `PulseGuide()` static; `AxesContext.FromSettings` reads device 0; AltAz timer static/shared; `LimitStatus` static struct; limit actions command wrong device | 🔴 Blocking — 5 items elevated, code fixes pending |
-| **Phase E Blazor per-device UI notifications** | `TelescopeStateService` reads all state from `SkyServer.*` (device 0 only); `StaticPropertyChanged` fires globally | 🔴 Yes confirmed primary cause of smoke test UI symptom |
-| **Phase F Option C Phase 3** | Per-device serial config in `Devices[]` array; Blazor multi-device UI not started | 🟡 UI / config only |
+| **Phase H Simulator static contamination** âœ… | `Controllers._ctsMount` â†’ instance field; `MountStop()` and `OnUpdateServerEvent()` per-instance; `ConnectAlignmentModel()` is empty stub (no-op) | âœ… Resolved |
+| **Phase I Static method instance-awareness** âœ… | `SetSlewRates`, `SetGuideRates`, `CalcCustomTrackingOffset`, `SetTracking` accept `MountInstance? instance`; `Defaults()`/`MountConnect()` pass `this`; `SkyPulseGoto`, `SimGoTo`, `SkyGoTo`, `PulseGuideAltAz` read/write instance fields directly | âœ… Resolved |
+| **Phase J Group 3 re-assessment** | J1/J2/J4/J5/J7 resolved âœ…; J3 (logging labels) ðŸŸ  still pending; J6 deferred to Phase E ðŸŸ¡ | âœ… Mostly resolved â€” J3 logging labels remaining |
+| **Phase E Blazor per-device UI notifications** | `TelescopeStateService` reads all state from `SkyServer.*` (device 0 only); `StaticPropertyChanged` fires globally | ðŸ”´ Yes confirmed primary cause of smoke test UI symptom |
+| **Phase F Option C Phase 3** | Per-device serial config in `Devices[]` array; Blazor multi-device UI not started | ðŸŸ¡ UI / config only |
 
 **Minor residuals (cleanup only):**
 - `//lock (_goToAsyncLock)` commented reference in `SkyServer.TelescopeAPI.cs` line 787 field is gone, comment can be removed
@@ -48,31 +49,31 @@ Remaining work by category:
 
 | ID | Item | File | Blocking multi-telescope? |
 |---|---|---|---|
-| **G1** ✅ | `RateDecOrg` / `RateRaOrg` converted to delegating computed properties | `SkyServer.TelescopeAPI.cs:538,572` | ✅ Resolved Phase G |
-| **G2** ✅ | `MountInstance? instance` parameter threaded through `SlewAxes→SlewMount→GoToAsync` | `SkyServer.TelescopeAPI.cs:763`, `SkyServer.Core.cs` | ✅ Resolved Phase G |
-| **G3** ✅ | `PulseGuideAltAz()` moved to `MountInstance` instance method | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | ✅ Resolved Phase G |
+| **G1** âœ… | `RateDecOrg` / `RateRaOrg` converted to delegating computed properties | `SkyServer.TelescopeAPI.cs:538,572` | âœ… Resolved Phase G |
+| **G2** âœ… | `MountInstance? instance` parameter threaded through `SlewAxesâ†’SlewMountâ†’GoToAsync` | `SkyServer.TelescopeAPI.cs:763`, `SkyServer.Core.cs` | âœ… Resolved Phase G |
+| **G3** âœ… | `PulseGuideAltAz()` moved to `MountInstance` instance method | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | âœ… Resolved Phase G |
 
 **New concerns identified 2026-04-04 (two-device smoke test failure):**
 
 | ID | Item | File | Blocking multi-telescope? |
 |---|---|---|---|
-| **H1** 🔴 | `Controllers._ctsMount` is `private static` both simulator instances share one CTS; `Stop()` is also `private static`; stopping either device cancels the other | `GreenSwamp.Alpaca.Simulator\Controllers.cs:28` | 🔴 Yes stops both simulators on single disconnect |
-| **H2** 🟠 | `OnUpdateServerEvent()` calls static `SkyServer.CheckSlewState()` and `SkyServer.CheckAxisLimits()` route to device 0 only; device 1's slew state and axis limits are never updated | `MountInstance.cs:1723–1724` | 🟠 Yes slew/limit detection broken for device 1 |
-| **H3** 🟠 | `MountStop()` calls static `SkyServer.Tracking = false` and `SkyServer.CancelAllAsync()` disconnecting device 1 disables device 0's tracking and cancels device 0's async ops | `MountInstance.cs:1675–1676` | 🟠 Yes disconnect of device 1 disrupts device 0 |
-| **H4** 🟡 | `SkyServer.ConnectAlignmentModel()` called for each device in `MountStart()` unclear if per-instance or device-0-only | `MountInstance.cs:1602` | 🟡 Needs verification |
-| **H5** 🟡 | `Mount.Simulator.Settings.AutoHomeAxisX/Y` is a `public static class` last-writer-wins when two simulators initialise | `GreenSwamp.Alpaca.Simulator\Settings.cs:9` | 🟡 AutoHome only low risk |
+| **H1** ðŸ”´ | `Controllers._ctsMount` is `private static` both simulator instances share one CTS; `Stop()` is also `private static`; stopping either device cancels the other | `GreenSwamp.Alpaca.Simulator\Controllers.cs:28` | ðŸ”´ Yes stops both simulators on single disconnect |
+| **H2** ðŸŸ  | `OnUpdateServerEvent()` calls static `SkyServer.CheckSlewState()` and `SkyServer.CheckAxisLimits()` route to device 0 only; device 1's slew state and axis limits are never updated | `MountInstance.cs:1723â€“1724` | ðŸŸ  Yes slew/limit detection broken for device 1 |
+| **H3** ðŸŸ  | `MountStop()` calls static `SkyServer.Tracking = false` and `SkyServer.CancelAllAsync()` disconnecting device 1 disables device 0's tracking and cancels device 0's async ops | `MountInstance.cs:1675â€“1676` | ðŸŸ  Yes disconnect of device 1 disrupts device 0 |
+| **H4** ðŸŸ¡ | `SkyServer.ConnectAlignmentModel()` called for each device in `MountStart()` unclear if per-instance or device-0-only | `MountInstance.cs:1602` | ðŸŸ¡ Needs verification |
+| **H5** ðŸŸ¡ | `Mount.Simulator.Settings.AutoHomeAxisX/Y` is a `public static class` last-writer-wins when two simulators initialise | `GreenSwamp.Alpaca.Simulator\Settings.cs:9` | ðŸŸ¡ AutoHome only low risk |
 
-**New concerns identified 2026-04-04 (Group 3 re-assessment — previously low risk, now elevated):**
+**New concerns identified 2026-04-04 (Group 3 re-assessment â€” previously low risk, now elevated):**
 
 | ID | Item | File | Blocking multi-telescope? |
 |---|---|---|---|
-| **J1** 🔴 | `PulseGuide()` static method reads `SkyServer.SouthernHemisphere` (→ `_defaultInstance.Settings.Latitude < 0`); Dec direction inversion always uses device 0's latitude; device 1 at a different hemisphere gets wrong Dec guide direction | `SkyServer.TelescopeAPI.cs` | 🔴 Yes — incorrect Dec pulse-guide direction for device 1 |
-| **J2** 🔴 | `AxesContext.FromSettings(settings)` sets `SouthernHemisphere = SkyServer.SouthernHemisphere` (comment: "Still from SkyServer for now") — always device 0; also `SideOfPier = SkyServer.SideOfPier` — device 0 only; coordinate conversion pipeline uses wrong hemisphere for device 1 | `AxesContext.cs:130,131` | 🔴 Yes — coordinate conversions for device 1 compute against device 0 position/hemisphere |
-| **J3** 🟠 | All `MonitorEntry` records in `MountInstance.cs` use `Device = MonitorDevice.Server` with no device-number identifier in `Message`; log entries from device 0 and device 1 are indistinguishable in the log file | `MountInstance.cs` (all MonitorLog calls) | 🟠 Not functionally blocking, but makes two-device troubleshooting impossible |
-| **J4** 🔴 | `_altAzTrackingTimer` is `private static`; `StartAltAzTrackingTimer()` is `private static`; `AltAzTrackingTimerEvent` is `internal static` and always calls `SetTracking()` on `_defaultInstance`; timer `Period` comes from `_settings!.AltAzTrackingUpdateInterval` (device 0 only); two AltAz mounts share one timer at device 0's interval — device 1's tracking never updated | `SkyServer.TelescopeAPI.cs` | 🔴 Yes — device 1 AltAz tracking completely broken |
-| **J5** 🔴 | `SkyServer.LimitStatus` is `public static LimitStatusType` (a value-type struct); `MountInstance.CheckAxisLimits()` reads `SkyServer.LimitStatus` for the AltAz case; axis limit *settings* (`HourAngleLimit`, `AxisLimitX` etc.) are correctly per-instance in `_settings` ✅ but limit *state* is a shared static — last-writer-wins for two AltAz devices | `SkyServer.cs:951`, `MountInstance.cs` | 🔴 Yes — device 1 AltAz limit state contaminates device 0 |
-| **J6** 🟡 | UI-only residuals: `AxesContext.FromSettings` reading `SkyServer.SideOfPier` for display; `AutoHomeProgressBar` and similar UI-state statics always show device 0 — no motor control impact | `SkyServer.cs`, `AxesContext.cs` | 🟡 No — display only; deferred to Phase E |
-| **J7** 🔴 | `MountInstance.CheckAxisLimits()` limit-enforcement calls `SkyServer.StopAxes()` and `SkyServer.GoToPark()` — both are static and route to `_defaultInstance`; when device 1 hits a physical limit, device 0's motors are stopped / device 0 parks; each device is a physically distinct mount with separate hardware and power supply | `MountInstance.cs` (limit action code) | 🔴 Yes — safety critical; wrong physical mount halted on limit breach |
+| **J1** âœ… | `PulseGuide()` static method reads `SkyServer.SouthernHemisphere` (â†’ `_defaultInstance.Settings.Latitude < 0`); Dec direction inversion always uses device 0's latitude; device 1 at a different hemisphere gets wrong Dec guide direction | `SkyServer.TelescopeAPI.cs` | âœ… Resolved Phase J |
+| **J2** âœ… | `AxesContext.FromSettings(settings)` sets `SouthernHemisphere = SkyServer.SouthernHemisphere` (comment: "Still from SkyServer for now") â€” always device 0; also `SideOfPier = SkyServer.SideOfPier` â€” device 0 only; coordinate conversion pipeline uses wrong hemisphere for device 1 | `AxesContext.cs:130,131` | âœ… Resolved Phase J |
+| **J3** ðŸŸ  | All `MonitorEntry` records in `MountInstance.cs` use `Device = MonitorDevice.Server` with no device-number identifier in `Message`; log entries from device 0 and device 1 are indistinguishable in the log file | `MountInstance.cs` (all MonitorLog calls) | ðŸŸ  Not functionally blocking, but makes two-device troubleshooting impossible |
+| **J4** âœ… | `_altAzTrackingTimer` is `private static`; `StartAltAzTrackingTimer()` is `private static`; `AltAzTrackingTimerEvent` is `internal static` and always calls `SetTracking()` on `_defaultInstance`; timer `Period` comes from `_settings!.AltAzTrackingUpdateInterval` (device 0 only); two AltAz mounts share one timer at device 0's interval â€” device 1's tracking never updated | `SkyServer.TelescopeAPI.cs` | âœ… Resolved Phase J |
+| **J5** âœ… | `SkyServer.LimitStatus` is `public static LimitStatusType` (a value-type struct); `MountInstance.CheckAxisLimits()` reads `SkyServer.LimitStatus` for the AltAz case; axis limit *settings* (`HourAngleLimit`, `AxisLimitX` etc.) are correctly per-instance in `_settings` âœ… but limit *state* is a shared static â€” last-writer-wins for two AltAz devices | `SkyServer.cs:951`, `MountInstance.cs` | âœ… Resolved Phase J |
+| **J6** ðŸŸ¡ | UI-only residuals: `AxesContext.FromSettings` reading `SkyServer.SideOfPier` for display; `AutoHomeProgressBar` and similar UI-state statics always show device 0 â€” no motor control impact | `SkyServer.cs`, `AxesContext.cs` | ðŸŸ¡ No â€” display only; deferred to Phase E |
+| **J7** âœ… | `MountInstance.CheckAxisLimits()` limit-enforcement calls `SkyServer.StopAxes()` and `SkyServer.GoToPark()` â€” both are static and route to `_defaultInstance`; when device 1 hits a physical limit, device 0's motors are stopped / device 0 parks; each device is a physically distinct mount with separate hardware and power supply | `MountInstance.cs` (limit action code) | âœ… Resolved Phase J |
 
 ---
 
@@ -85,7 +86,7 @@ Remaining work by category:
 | `SkyServer.*` properties all delegate to `_defaultInstance` | All three `SkyServer.*.cs` partials | Zero independent static backing values |
 | `SkyQueueImplementation` owned by `MountInstance` | `MountInstance.cs` | `SkyQueueInstance` field; started in `MountStart()` |
 | `MountQueueImplementation` owned by `MountInstance` | `MountInstance.cs` | `MountQueueInstance` field; started in `MountStart()` |
-| `ReceiveSteps()` per-instance with full pipeline | `MountInstance.cs` | Steps → coordinates → event signal → UI notify |
+| `ReceiveSteps()` per-instance with full pipeline | `MountInstance.cs` | Steps â†’ coordinates â†’ event signal â†’ UI notify |
 | `_mountPositionUpdatedEvent` per-instance | `MountInstance.cs` | `SkyPrecisionGoto` and `SkyPulseGoto` use it |
 | `OnUpdateServerEvent()` instance method | `MountInstance.cs` | Per-device timer lock |
 | `UpdateServerEvent` delegates to `_defaultInstance` | `SkyServer.Core.cs` | Single-telescope path correct |
@@ -104,49 +105,54 @@ Remaining work by category:
 | HC anti-backlash fields per-instance | `MountInstance.cs` | `_hcPrevMoveRa/Dec`, `_hcPrevMovesDec` |
 | Tracking offset rate per-instance | `MountInstance.cs` | `_trackingOffsetRate` field |
 | `_skyTrackingOffset` per-instance | `MountInstance.cs` | `int[2]` array |
-| **A1 Legacy `SkyTasks(MountTaskName)` deleted** ✅ | `SkyServer.Core.cs` | Only instance-aware overload remains; confirmed by direct search |
-| **A2 Legacy `AxesStopValidate()` deleted** ✅ | `SkyServer.Core.cs` | Only `AxesStopValidate(MountInstance)` remains; "Phase A2 verified" commit |
-| **B1 `SkyQueue.RegisterInstance()` removed** ✅ | `MountInstance.cs` | Zero calls remain in the codebase |
-| **B2/B3 Dead `PropertyChangedSkyQueue`/`MountQueue` handlers deleted** ✅ | `SkyServer.Core.cs` | Static facades gone; handlers had nothing to subscribe to |
-| **B4/B5 `[Obsolete]` shortcut constructors removed** ✅ | `SkyCommands.cs` | All base class ctors require `(long id, ICommandQueue<> queue)`; zero `[Obsolete]` attributes |
-| **B6 Static `SkyQueue` class deleted** ✅ | `SkyQueue.cs` | File now contains only `SkyQueueImplementation` (109 lines) |
-| **B7 Static `MountQueue` class deleted** ✅ | `MountQueue.cs` | File now contains only `MountQueueImplementation` (63 lines) |
-| **C1/C2 Pulse-guide callbacks write to `this` fields** ✅ | `MountInstance.cs` | Both Simulator (line 1595–1596) and SkyWatcher (line 1632–1633) branches fixed |
-| **D1 `_stepsTimeFreq` field added to `MountInstance`** ✅ | `MountInstance.cs` | `internal long[] _stepsTimeFreq = { 0, 0 };` at line 63 |
-| **D2/D3 `StepsTimeFreq` delegates; instance `SkyTasks` writes instance field** ✅ | `SkyServer.cs`, `SkyServer.Core.cs` | `get => _defaultInstance?._stepsTimeFreq ?? new long[] { 0, 0 }` |
-| **D4 `_mountRunning` static field removed** ✅ | `SkyServer.cs` | `IsMountRunning` is `get => _defaultInstance?.IsMountRunning ?? false` |
-| **D5/D6 `SnapPort1/2` delegate to `_defaultInstance`** ✅ | `SkyServer.cs` | `get => _defaultInstance?._snapPort1 ?? false` etc. |
-| **D7 `_goToAsyncLock` field removed** ✅ | `SkyServer.TelescopeAPI.cs` | Field declaration gone; only `//lock (_goToAsyncLock)` comment remains (cleanup item) |
-| **D8 `LastDecDirection` delegates to `_defaultInstance._lastDecDirection`** ✅ | `SkyServer.cs` | `internal GuideDirection _lastDecDirection` on `MountInstance` at line 106 |
-| **3.11 `SkySettingsBridge.cs` excluded from compilation** ✅ | `.csproj` | `<Compile Remove="SkySettingsBridge.cs" />` confirmed; file still exists on disk (delete when ready) |
-| **CTS tokens all four delegate to `_defaultInstance`** ✅ | `SkyServer.Core.cs:131–150` | `_ctsGoTo`, `_ctsPulseGuideRa`, `_ctsPulseGuideDec`, `_ctsHcPulseGuide` all computed delegating properties; comment: "Phase 5.3 delegate to default instance to prevent cross-device cancellation" |
-| **`_slewController` computed delegating property** ✅ | `SkyServer.TelescopeAPI.cs:~1549` | `get => _defaultInstance?._slewController` |
-| **`SlewAsync` / `SlewSync` delegate to instance** ✅ | `SkyServer.TelescopeAPI.cs:~1568–1590` | Both methods call `_defaultInstance.SlewAsync/SlewSync` |
-| **`_parkSelected` delegating computed property** ✅ | `SkyServer.cs:64–68` | `get => _defaultInstance?._parkSelected; set { if (_defaultInstance != null) _defaultInstance._parkSelected = value; }` |
-| **X1 `//lock (_goToAsyncLock)` comment removed** ✅ | `SkyServer.TelescopeAPI.cs` | Dead comment referencing deleted `_goToAsyncLock` field removed from `GoToAsync` |
-| **X2 `SkySettingsBridge.cs` deleted** ✅ | `GreenSwamp.Alpaca.MountControl\` | File deleted; `<Compile Remove="SkySettingsBridge.cs" />` removed from `.csproj` |
-| **G1 `RateDecOrg` / `RateRaOrg` delegating** ✅ | `SkyServer.TelescopeAPI.cs` | Converted from true static auto-properties to computed delegating properties routing to `_defaultInstance?.RateDecOrg/RateRaOrg`; `MountInstance` backing fields already existed |
-| **G2 `MountInstance` param through `SlewAxes→SlewMount→GoToAsync`** ✅ | `SkyServer.TelescopeAPI.cs`, `SkyServer.Core.cs` | `MountInstance? instance = null` optional parameter added; `var effectiveInstance = instance ?? _defaultInstance!` resolves in `SlewMount` and `GoToAsync`; `AutoHome` callers backward-compat via default |
-| **G3 `PulseGuideAltAz` moved to `MountInstance`** ✅ | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | New `internal void PulseGuideAltAz(...)` in `#region AltAz Pulse Guide`; uses `this.SkyPredictor`, `_monitorPulse` backing field, inlined `SiderealRate = 15.0410671786691`; `StopAltAzTrackingTimer` made `internal static`; 4 call sites updated |
-| **I1 `SetSlewRates` instance-aware** ✅ | `SkyServer.Core.cs`, `MountInstance.cs` | `SetSlewRates(double maxRate, MountInstance? instance = null)`; `var inst = instance ?? _defaultInstance`; all `_slewSpeedOne…Eight` writes use `inst.*`; `Defaults()` and `MountConnect()` pass `this` |
-| **I2 `SetGuideRates` instance-aware** ✅ | `SkyServer.TelescopeAPI.cs`, `MountInstance.cs` | `SetGuideRates(MountInstance? instance = null)`; `inst.GuideRateRa/Dec`; `Defaults()` passes `this` |
-| **I3 `CalcCustomTrackingOffset` instance-aware** ✅ | `SkyServer.Core.cs`, `MountInstance.cs` | `CalcCustomTrackingOffset(MountInstance? instance = null)`; reads `inst._stepsTimeFreq[n]`/`inst._stepsPerRevolution[n]`; writes `inst._trackingOffsetRate.X/Y` directly; `MountConnect()` passes `this` |
-| **I4 `Defaults()` — `_slewSettleTime` direct write** ✅ | `MountInstance.cs` | `_slewSettleTime = 0` replaces `SkyServer.SlewSettleTime = 0` |
-| **I5 `Defaults()` — `_parkSelected` direct write** ✅ | `MountInstance.cs` | `_parkSelected = found` replaces `SkyServer.ParkSelected = found` |
-| **R1 `SkyPulseGoto` — `_slewState` direct read** ✅ | `MountInstance.cs` | Both spin-wait loop checks use `_slewState == SlewType.SlewNone` (×2); no longer reads device-0 static |
-| **R2 `SimGoTo`/`SkyGoTo` — `_slewSettleTime` direct read** ✅ | `MountInstance.cs` | Both goto methods read `_slewSettleTime` directly; `TimeSpan.FromSeconds(_slewSettleTime)` |
-| **R3 `PulseGuideAltAz` — `SetTracking(this)`** ✅ | `MountInstance.cs` | `SkyServer.SetTracking(this)` passes instance; no longer routes SetTracking to device 0 |
-| **R4 `PulseGuideAltAz` — `_isPulseGuidingRa/Dec` direct access** ✅ | `MountInstance.cs` | Three sites: axis-0 guard (`_isPulseGuidingDec`), axis-1 guard (`_isPulseGuidingRa`), reset at end (`_isPulseGuidingRa = false; _isPulseGuidingDec = false`) |
-| **R5 `PulseGuideAltAz` — `this.UpdateSteps()`** ✅ | `MountInstance.cs` | `this.UpdateSteps()` replaces `SkyServer.UpdateSteps()` |
+| **A1 Legacy `SkyTasks(MountTaskName)` deleted** âœ… | `SkyServer.Core.cs` | Only instance-aware overload remains; confirmed by direct search |
+| **A2 Legacy `AxesStopValidate()` deleted** âœ… | `SkyServer.Core.cs` | Only `AxesStopValidate(MountInstance)` remains; "Phase A2 verified" commit |
+| **B1 `SkyQueue.RegisterInstance()` removed** âœ… | `MountInstance.cs` | Zero calls remain in the codebase |
+| **B2/B3 Dead `PropertyChangedSkyQueue`/`MountQueue` handlers deleted** âœ… | `SkyServer.Core.cs` | Static facades gone; handlers had nothing to subscribe to |
+| **B4/B5 `[Obsolete]` shortcut constructors removed** âœ… | `SkyCommands.cs` | All base class ctors require `(long id, ICommandQueue<> queue)`; zero `[Obsolete]` attributes |
+| **B6 Static `SkyQueue` class deleted** âœ… | `SkyQueue.cs` | File now contains only `SkyQueueImplementation` (109 lines) |
+| **B7 Static `MountQueue` class deleted** âœ… | `MountQueue.cs` | File now contains only `MountQueueImplementation` (63 lines) |
+| **C1/C2 Pulse-guide callbacks write to `this` fields** âœ… | `MountInstance.cs` | Both Simulator (line 1595â€“1596) and SkyWatcher (line 1632â€“1633) branches fixed |
+| **D1 `_stepsTimeFreq` field added to `MountInstance`** âœ… | `MountInstance.cs` | `internal long[] _stepsTimeFreq = { 0, 0 };` at line 63 |
+| **D2/D3 `StepsTimeFreq` delegates; instance `SkyTasks` writes instance field** âœ… | `SkyServer.cs`, `SkyServer.Core.cs` | `get => _defaultInstance?._stepsTimeFreq ?? new long[] { 0, 0 }` |
+| **D4 `_mountRunning` static field removed** âœ… | `SkyServer.cs` | `IsMountRunning` is `get => _defaultInstance?.IsMountRunning ?? false` |
+| **D5/D6 `SnapPort1/2` delegate to `_defaultInstance`** âœ… | `SkyServer.cs` | `get => _defaultInstance?._snapPort1 ?? false` etc. |
+| **D7 `_goToAsyncLock` field removed** âœ… | `SkyServer.TelescopeAPI.cs` | Field declaration gone; only `//lock (_goToAsyncLock)` comment remains (cleanup item) |
+| **D8 `LastDecDirection` delegates to `_defaultInstance._lastDecDirection`** âœ… | `SkyServer.cs` | `internal GuideDirection _lastDecDirection` on `MountInstance` at line 106 |
+| **3.11 `SkySettingsBridge.cs` excluded from compilation** âœ… | `.csproj` | `<Compile Remove="SkySettingsBridge.cs" />` confirmed; file still exists on disk (delete when ready) |
+| **CTS tokens all four delegate to `_defaultInstance`** âœ… | `SkyServer.Core.cs:131â€“150` | `_ctsGoTo`, `_ctsPulseGuideRa`, `_ctsPulseGuideDec`, `_ctsHcPulseGuide` all computed delegating properties; comment: "Phase 5.3 delegate to default instance to prevent cross-device cancellation" |
+| **`_slewController` computed delegating property** âœ… | `SkyServer.TelescopeAPI.cs:~1549` | `get => _defaultInstance?._slewController` |
+| **`SlewAsync` / `SlewSync` delegate to instance** âœ… | `SkyServer.TelescopeAPI.cs:~1568â€“1590` | Both methods call `_defaultInstance.SlewAsync/SlewSync` |
+| **`_parkSelected` delegating computed property** âœ… | `SkyServer.cs:64â€“68` | `get => _defaultInstance?._parkSelected; set { if (_defaultInstance != null) _defaultInstance._parkSelected = value; }` |
+| **X1 `//lock (_goToAsyncLock)` comment removed** âœ… | `SkyServer.TelescopeAPI.cs` | Dead comment referencing deleted `_goToAsyncLock` field removed from `GoToAsync` |
+| **X2 `SkySettingsBridge.cs` deleted** âœ… | `GreenSwamp.Alpaca.MountControl\` | File deleted; `<Compile Remove="SkySettingsBridge.cs" />` removed from `.csproj` |
+| **G1 `RateDecOrg` / `RateRaOrg` delegating** âœ… | `SkyServer.TelescopeAPI.cs` | Converted from true static auto-properties to computed delegating properties routing to `_defaultInstance?.RateDecOrg/RateRaOrg`; `MountInstance` backing fields already existed |
+| **G2 `MountInstance` param through `SlewAxesâ†’SlewMountâ†’GoToAsync`** âœ… | `SkyServer.TelescopeAPI.cs`, `SkyServer.Core.cs` | `MountInstance? instance = null` optional parameter added; `var effectiveInstance = instance ?? _defaultInstance!` resolves in `SlewMount` and `GoToAsync`; `AutoHome` callers backward-compat via default |
+| **G3 `PulseGuideAltAz` moved to `MountInstance`** âœ… | `MountInstance.cs`, `SkyServer.TelescopeAPI.cs` | New `internal void PulseGuideAltAz(...)` in `#region AltAz Pulse Guide`; uses `this.SkyPredictor`, `_monitorPulse` backing field, inlined `SiderealRate = 15.0410671786691`; `StopAltAzTrackingTimer` made `internal static`; 4 call sites updated |
+| **I1 `SetSlewRates` instance-aware** âœ… | `SkyServer.Core.cs`, `MountInstance.cs` | `SetSlewRates(double maxRate, MountInstance? instance = null)`; `var inst = instance ?? _defaultInstance`; all `_slewSpeedOneâ€¦Eight` writes use `inst.*`; `Defaults()` and `MountConnect()` pass `this` |
+| **I2 `SetGuideRates` instance-aware** âœ… | `SkyServer.TelescopeAPI.cs`, `MountInstance.cs` | `SetGuideRates(MountInstance? instance = null)`; `inst.GuideRateRa/Dec`; `Defaults()` passes `this` |
+| **I3 `CalcCustomTrackingOffset` instance-aware** âœ… | `SkyServer.Core.cs`, `MountInstance.cs` | `CalcCustomTrackingOffset(MountInstance? instance = null)`; reads `inst._stepsTimeFreq[n]`/`inst._stepsPerRevolution[n]`; writes `inst._trackingOffsetRate.X/Y` directly; `MountConnect()` passes `this` |
+| **I4 `Defaults()` â€” `_slewSettleTime` direct write** âœ… | `MountInstance.cs` | `_slewSettleTime = 0` replaces `SkyServer.SlewSettleTime = 0` |
+| **I5 `Defaults()` â€” `_parkSelected` direct write** âœ… | `MountInstance.cs` | `_parkSelected = found` replaces `SkyServer.ParkSelected = found` |
+| **R1 `SkyPulseGoto` â€” `_slewState` direct read** âœ… | `MountInstance.cs` | Both spin-wait loop checks use `_slewState == SlewType.SlewNone` (Ã—2); no longer reads device-0 static |
+| **R2 `SimGoTo`/`SkyGoTo` â€” `_slewSettleTime` direct read** âœ… | `MountInstance.cs` | Both goto methods read `_slewSettleTime` directly; `TimeSpan.FromSeconds(_slewSettleTime)` |
+| **R3 `PulseGuideAltAz` â€” `SetTracking(this)`** âœ… | `MountInstance.cs` | `SkyServer.SetTracking(this)` passes instance; no longer routes SetTracking to device 0 |
+| **R4 `PulseGuideAltAz` â€” `_isPulseGuidingRa/Dec` direct access** âœ… | `MountInstance.cs` | Three sites: axis-0 guard (`_isPulseGuidingDec`), axis-1 guard (`_isPulseGuidingRa`), reset at end (`_isPulseGuidingRa = false; _isPulseGuidingDec = false`) |
+| **R5 `PulseGuideAltAz` â€” `this.UpdateSteps()`** âœ… | `MountInstance.cs` | `this.UpdateSteps()` replaces `SkyServer.UpdateSteps()` |
+| **J1 `PulseGuide()` â€” per-instance `SouthernHemisphere`** âœ… | `SkyServer.TelescopeAPI.cs` | Reads `inst._settings.Latitude < 0` for the active device; no longer uses `SkyServer.SouthernHemisphere` (device 0) |
+| **J2 `AxesContext.FromSettings` â€” per-instance hemisphere + SideOfPier** âœ… | `AxesContext.cs` | `SouthernHemisphere = settings.Latitude < 0`; optional `PointingState? sideOfPier` param; all `MountInstance` callers pass `SideOfPier` |
+| **J4 AltAz tracking timer per-instance** âœ… | `MountInstance.cs` | `_altAzTrackingTimer` instance field; `StartAltAzTrackingTimer()` / `StopAltAzTrackingTimer()` instance methods; `AltAzTrackingTimerTick` instance handler; `_altAzTrackingLock` Int32 per-instance |
+| **J5 `_limitStatus` per-instance** âœ… | `MountInstance.cs` | `internal SkyServer.LimitStatusType _limitStatus` on `MountInstance`; `CheckAxisLimits()` reads/writes `_limitStatus` directly (not static `SkyServer.LimitStatus`) |
+| **J7 `InstanceStopAxes` / `InstanceGoToPark` per-instance** âœ… | `MountInstance.cs` | `CheckAxisLimits()` calls `InstanceStopAxes()` and `InstanceGoToPark()` which operate on `this` device's queues only; no longer calls `SkyServer.StopAxes()` / `SkyServer.GoToPark()` |
 
 ---
 
 ## 3. Remaining Work
 
-All 🔴 Critical and 🟠 High items from the March 2026 assessment have been resolved.
+All ðŸ”´ Critical and ðŸŸ  High items from the March 2026 assessment have been resolved.
 The sections below are retained for historical context with updated status markers.
 
-### 3.1 ✅ RESOLVED Legacy `SkyTasks(MountTaskName)` Deleted
+### 3.1 âœ… RESOLVED Legacy `SkyTasks(MountTaskName)` Deleted
 
 **Verified April 2026.** Searching `SkyServer.Core.cs` for the no-parameter overload yields
 zero results. Only the instance-aware `SkyTasks(MountTaskName taskName, MountInstance instance)`
@@ -154,14 +160,14 @@ exists. The misleading "removed" comment is also gone.
 
 ---
 
-### 3.2 ✅ RESOLVED Legacy `AxesStopValidate()` (No Instance Parameter) Deleted
+### 3.2 âœ… RESOLVED Legacy `AxesStopValidate()` (No Instance Parameter) Deleted
 
 **Verified April 2026.** The commit "Phase A2 verified build clean" records this.
 Only `AxesStopValidate(MountInstance instance)` exists in `SkyServer.Core.cs`.
 
 ---
 
-### 3.3 ✅ RESOLVED `SkyQueue.RegisterInstance()` Removed
+### 3.3 âœ… RESOLVED `SkyQueue.RegisterInstance()` Removed
 
 **Verified April 2026.** Zero occurrences of `RegisterInstance` in `MountInstance.cs`
 or anywhere in the codebase. The static `SkyQueue` facade class has been deleted entirely
@@ -169,25 +175,25 @@ or anywhere in the codebase. The static `SkyQueue` facade class has been deleted
 
 ---
 
-### 3.4 ✅ RESOLVED Pulse-Guide Callbacks Write to Instance Fields
+### 3.4 âœ… RESOLVED Pulse-Guide Callbacks Write to Instance Fields
 
 **Verified April 2026.** Both branches in `MountInstance.MountStart()` now use:
 ```csharp
 v => { _isPulseGuidingRa = v; },
 v => { _isPulseGuidingDec = v; }
 ```
-Simulator branch: lines 1595–1596. SkyWatcher branch: lines 1632–1633.
+Simulator branch: lines 1595â€“1596. SkyWatcher branch: lines 1632â€“1633.
 
 ---
 
-### 3.5 ✅ RESOLVED `PropertyChangedSkyQueue` / `PropertyChangedMountQueue` Deleted
+### 3.5 âœ… RESOLVED `PropertyChangedSkyQueue` / `PropertyChangedMountQueue` Deleted
 
 **Verified April 2026.** Static facades (`SkyQueue`, `MountQueue`) are deleted; these
 handlers have no event to subscribe to and are gone.
 
 ---
 
-### 3.6 ✅ RESOLVED `StepsTimeFreq` Moved to Per-Instance Field
+### 3.6 âœ… RESOLVED `StepsTimeFreq` Moved to Per-Instance Field
 
 **Verified April 2026.**
 - `MountInstance` has `internal long[] _stepsTimeFreq = { 0, 0 };` at line 63.
@@ -196,7 +202,7 @@ handlers have no event to subscribe to and are gone.
 
 ---
 
-### 3.7 ✅ RESOLVED `_mountRunning` Static Field Removed
+### 3.7 âœ… RESOLVED `_mountRunning` Static Field Removed
 
 **Verified April 2026.** `SkyServer.IsMountRunning` is now:
 ```csharp
@@ -206,37 +212,37 @@ No independent `_mountRunning` static field exists.
 
 ---
 
-### 3.8 ✅ RESOLVED `SnapPort1` / `SnapPort2` Delegate to Instance
+### 3.8 âœ… RESOLVED `SnapPort1` / `SnapPort2` Delegate to Instance
 
 **Verified April 2026.** Both delegate to `_defaultInstance._snapPort1/2`; backing fields
-exist on `MountInstance` at lines 104–105.
+exist on `MountInstance` at lines 104â€“105.
 
 ---
 
-### 3.9 ✅ RESOLVED `_goToAsyncLock` Field Removed
+### 3.9 âœ… RESOLVED `_goToAsyncLock` Field Removed
 
 **Verified April 2026.** The field declaration is gone from `SkyServer.TelescopeAPI.cs`.
-One residual `//lock (_goToAsyncLock)` comment remained at line 787 **removed (X1, 2026-04-03)** ✅
+One residual `//lock (_goToAsyncLock)` comment remained at line 787 **removed (X1, 2026-04-03)** âœ…
 
 ---
 
-### 3.10 ✅ RESOLVED `LastDecDirection` Moved to Instance
+### 3.10 âœ… RESOLVED `LastDecDirection` Moved to Instance
 
 **Verified April 2026.** `MountInstance` has `internal GuideDirection _lastDecDirection` at
 line 106. `SkyServer.LastDecDirection` delegates get/set to `_defaultInstance._lastDecDirection`.
 
 ---
 
-### 3.11 ✅ RESOLVED `SkySettingsBridge.cs` Deleted
+### 3.11 âœ… RESOLVED `SkySettingsBridge.cs` Deleted
 
 **Verified April 2026.** `<Compile Remove="SkySettingsBridge.cs" />` was in the `.csproj`.
-**Resolved (X2, 2026-04-03):** File deleted from disk; `<Compile Remove>` entry removed from `.csproj`. ✅
+**Resolved (X2, 2026-04-03):** File deleted from disk; `<Compile Remove>` entry removed from `.csproj`. âœ…
 
 ---
 
-### 3.12 🟡 MEDIUM B5: Blazor Per-Device UI Notifications Not Implemented
+### 3.12 ðŸŸ¡ MEDIUM B5: Blazor Per-Device UI Notifications Not Implemented
 
-**Status: elevated to 🔴 HIGH by 2026-04-04 smoke test. Confirmed as the primary cause of the Blazor UI showing device 0 for all devices.**
+**Status: elevated to ðŸ”´ HIGH by 2026-04-04 smoke test. Confirmed as the primary cause of the Blazor UI showing device 0 for all devices.**
 
 `TelescopeStateService` is the Blazor singleton that feeds all UI state. Its `UpdateState()` method reads 20+ properties exclusively from `SkyServer.*` all of which route to `_defaultInstance = MountInstanceRegistry.GetInstance(0)`. Every Blazor page shows device 0's coordinates, tracking state, slew state, and limits regardless of which device number the user is viewing.
 
@@ -244,10 +250,10 @@ line 106. `SkyServer.LastDecDirection` delegates get/set to `_defaultInstance._l
 
 ```csharp
 // UpdateState() ALL reads are device 0 only:
-Altitude = SkyServer.Altitude,              // → _defaultInstance.Altitude
-RightAscension = SkyServer.RightAscension,  // → _defaultInstance.RightAscension
-Declination = SkyServer.Declination,        // → _defaultInstance.Declination
-IsSlewing = SkyServer.IsSlewing,            // → _defaultInstance.IsSlewing
+Altitude = SkyServer.Altitude,              // â†’ _defaultInstance.Altitude
+RightAscension = SkyServer.RightAscension,  // â†’ _defaultInstance.RightAscension
+Declination = SkyServer.Declination,        // â†’ _defaultInstance.Declination
+IsSlewing = SkyServer.IsSlewing,            // â†’ _defaultInstance.IsSlewing
 // ... 16+ more
 ```
 
@@ -272,7 +278,7 @@ No per-device notification mechanism exists. Implementing it requires:
 
 ---
 
-### 3.13 🟡 MEDIUM Option C Phase 3: Config & UI (Partially Started)
+### 3.13 ðŸŸ¡ MEDIUM Option C Phase 3: Config & UI (Partially Started)
 
 **Status: F1 partially complete; F2/F3 not started.**
 
@@ -284,17 +290,17 @@ controls (F2/F3).
 
 ---
 
-### 3.14 ✅ RESOLVED G1: `RateDecOrg` / `RateRaOrg` Now Delegating Computed Properties
+### 3.14 âœ… RESOLVED G1: `RateDecOrg` / `RateRaOrg` Now Delegating Computed Properties
 
-**Resolved 2026-04-03 (Phase G).** `MountInstance` backing fields (`_rateDecOrg`, `_rateRaOrg`) and instance properties already existed. Converted `SkyServer.TelescopeAPI.cs` properties to computed delegating form routing to `_defaultInstance?.RateDecOrg/RateRaOrg`. ✅
+**Resolved 2026-04-03 (Phase G).** `MountInstance` backing fields (`_rateDecOrg`, `_rateRaOrg`) and instance properties already existed. Converted `SkyServer.TelescopeAPI.cs` properties to computed delegating form routing to `_defaultInstance?.RateDecOrg/RateRaOrg`. âœ…
 
 **Identified April 2026 (TelescopeAPI review).**
 
 **File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs` lines 538, 572
 
 ```csharp
-public static double RateDecOrg { get; set; }   // ⚠️ true static auto-property
-public static double RateRaOrg { get; set; }    // ⚠️ true static auto-property
+public static double RateDecOrg { get; set; }   // âš ï¸ true static auto-property
+public static double RateRaOrg { get; set; }    // âš ï¸ true static auto-property
 ```
 
 These store the "original" tracking rate (before sign-correction direction is applied)
@@ -307,13 +313,13 @@ device running simultaneously could corrupt the direction logic for offset track
 rates (`RaRateOrg` / `DecRateOrg`), but only during active guiding with non-zero
 offset rates on both devices simultaneously.
 
-**Fix applied (Phase G, 2026-04-03):** `MountInstance` backing fields already existed; converted `SkyServer.TelescopeAPI.cs` properties to computed delegating form. ✅
+**Fix applied (Phase G, 2026-04-03):** `MountInstance` backing fields already existed; converted `SkyServer.TelescopeAPI.cs` properties to computed delegating form. âœ…
 
 ---
 
-### 3.15 ✅ RESOLVED G2: `MountInstance` Parameter Threaded Through `SlewAxes→SlewMount→GoToAsync`
+### 3.15 âœ… RESOLVED G2: `MountInstance` Parameter Threaded Through `SlewAxesâ†’SlewMountâ†’GoToAsync`
 
-**Resolved 2026-04-03 (Phase G).** `MountInstance? instance = null` optional parameter added to `SlewAxes`, `SlewMount`, and `GoToAsync`. `var effectiveInstance = instance ?? _defaultInstance!` used throughout `GoToAsync`. `AutoHome` callers backward-compatible via default. ✅
+**Resolved 2026-04-03 (Phase G).** `MountInstance? instance = null` optional parameter added to `SlewAxes`, `SlewMount`, and `GoToAsync`. `var effectiveInstance = instance ?? _defaultInstance!` used throughout `GoToAsync`. `AutoHome` callers backward-compatible via default. âœ…
 
 **Identified April 2026 (TelescopeAPI review).**
 
@@ -323,7 +329,7 @@ offset rates on both devices simultaneously.
 private static void GoToAsync(double[] target, SlewType slewState, EventWaitHandle goToStarted, bool tracking = false)
 ```
 
-**Call chain:** `SlewAxes()` → `SlewMount()` → `GoToAsync` this is the **handpad
+**Call chain:** `SlewAxes()` â†’ `SlewMount()` â†’ `GoToAsync` this is the **handpad
 slew path** used by the Blazor HC panel. `GoToAsync` uses `_defaultInstance!` throughout
 (lines 795, 835, 843, 985, 996) and would always operate on device 0 regardless of
 which device the user intends to move.
@@ -336,9 +342,9 @@ are not affected. Only the axis-coordinate (handpad) slew path is impacted.
 
 ---
 
-### 3.16 ✅ RESOLVED G3: `PulseGuideAltAz()` Moved to `MountInstance` Instance Method
+### 3.16 âœ… RESOLVED G3: `PulseGuideAltAz()` Moved to `MountInstance` Instance Method
 
-**Resolved 2026-04-03 (Phase G).** New `internal void PulseGuideAltAz(...)` added to `MountInstance` in `#region AltAz Pulse Guide`. Uses `this.SkyPredictor`, `_monitorPulse` backing field (inaccessible via `SkyServer.MonitorPulse` `private get`), inlined `SiderealRate = 15.0410671786691`. `StopAltAzTrackingTimer()` made `internal static`. Four call sites in `SkyServer.TelescopeAPI.cs` updated to `_defaultInstance!.PulseGuideAltAz(...)`. Static method deleted. ✅
+**Resolved 2026-04-03 (Phase G).** New `internal void PulseGuideAltAz(...)` added to `MountInstance` in `#region AltAz Pulse Guide`. Uses `this.SkyPredictor`, `_monitorPulse` backing field (inaccessible via `SkyServer.MonitorPulse` `private get`), inlined `SiderealRate = 15.0410671786691`. `StopAltAzTrackingTimer()` made `internal static`. Four call sites in `SkyServer.TelescopeAPI.cs` updated to `_defaultInstance!.PulseGuideAltAz(...)`. Static method deleted. âœ…
 
 **Identified April 2026 (TelescopeAPI review).**
 
@@ -350,7 +356,7 @@ private static void PulseGuideAltAz(int axis, double guideRate, int duration,
 {
     Task.Run(() => {
         // ...
-        _defaultInstance.SkyPredictor.Set(...);   // ⚠️ hardcoded to device 0
+        _defaultInstance.SkyPredictor.Set(...);   // âš ï¸ hardcoded to device 0
     });
 }
 ```
@@ -362,88 +368,88 @@ would modify the `SkyPredictor` state of device 0.
 **Impact:** AltAz mode only. GermanPolar/Polar modes route pulse-guide commands
 directly to per-instance queue refs and are not affected.
 
-**Fix applied (Phase G, 2026-04-03):** `PulseGuideAltAz` moved to `MountInstance` instance method; `this.SkyPredictor` used; static method deleted; four call sites updated. ✅
+**Fix applied (Phase G, 2026-04-03):** `PulseGuideAltAz` moved to `MountInstance` instance method; `this.SkyPredictor` used; static method deleted; four call sites updated. âœ…
 
 ---
 
-### 3.17 ✅ RESOLVED H1: `Controllers._ctsMount` Static Field (Simulator Cross-Device Contamination)
+### 3.17 âœ… RESOLVED H1: `Controllers._ctsMount` Static Field (Simulator Cross-Device Contamination)
 
 **Identified 2026-04-04 (two-device smoke test analysis). Resolved 2026-04-04 (Phase H).**
 
 **File:** `GreenSwamp.Alpaca.Simulator\Controllers.cs`
 
-`_ctsMount` made an instance field; initialised in the `Controllers` constructor. `Stop()` converted from `private static` to a non-static method. Two simulator instances now each own their own `CancellationTokenSource`. ✅
+`_ctsMount` made an instance field; initialised in the `Controllers` constructor. `Stop()` converted from `private static` to a non-static method. Two simulator instances now each own their own `CancellationTokenSource`. âœ…
 
 ---
 
-### 3.18 ✅ RESOLVED H2: Static `CheckSlewState()` / `CheckAxisLimits()` Called from Device 1's Timer
+### 3.18 âœ… RESOLVED H2: Static `CheckSlewState()` / `CheckAxisLimits()` Called from Device 1's Timer
 
 **Identified 2026-04-04 (two-device smoke test analysis). Resolved 2026-04-04 (Phase H).**
 
 **File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs`
 
-`CheckSlewState()` and `CheckAxisLimits()` added as private instance methods on `MountInstance`. `OnUpdateServerEvent()` call sites updated to call `this.CheckSlewState()` / `this.CheckAxisLimits()`. Device 1's slew state and axis limits are now updated by its own timer loop. ✅
+`CheckSlewState()` and `CheckAxisLimits()` added as private instance methods on `MountInstance`. `OnUpdateServerEvent()` call sites updated to call `this.CheckSlewState()` / `this.CheckAxisLimits()`. Device 1's slew state and axis limits are now updated by its own timer loop. âœ…
 
 ---
 
-### 3.19 ✅ RESOLVED H3: `MountStop()` Static Calls Affect Device 0 When Called from Device 1
+### 3.19 âœ… RESOLVED H3: `MountStop()` Static Calls Affect Device 0 When Called from Device 1
 
 **Identified 2026-04-04 (two-device smoke test analysis). Resolved 2026-04-04 (Phase H).**
 
 **File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs`
 
 `SkyServer.Tracking = false` replaced with `_trackingMode = TrackingMode.Off; _tracking = false;`.
-`SkyServer.CancelAllAsync()` replaced with four per-instance CTS cancellations: `_ctsGoTo?.Cancel(); _ctsPulseGuideRa?.Cancel(); _ctsPulseGuideDec?.Cancel(); _ctsHcPulseGuide?.Cancel();`. ✅
+`SkyServer.CancelAllAsync()` replaced with four per-instance CTS cancellations: `_ctsGoTo?.Cancel(); _ctsPulseGuideRa?.Cancel(); _ctsPulseGuideDec?.Cancel(); _ctsHcPulseGuide?.Cancel();`. âœ…
 
 ---
 
-### 3.20 ✅ RESOLVED H4: `SkyServer.ConnectAlignmentModel()` — Device-Awareness Verified
+### 3.20 âœ… RESOLVED H4: `SkyServer.ConnectAlignmentModel()` â€” Device-Awareness Verified
 
 **Identified 2026-04-04 (two-device smoke test analysis). Resolved 2026-04-04 (Phase H).**
 
 **File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs` line 1602
 
-`ConnectAlignmentModel()` body is `// ToDo: Remove if not needed` — empty stub, no-op. No fix required. ✅
+`ConnectAlignmentModel()` body is `// ToDo: Remove if not needed` â€” empty stub, no-op. No fix required. âœ…
 
 ---
 
-### 3.21 ✅ RESOLVED H5: `Mount.Simulator.Settings` Static Class — Last-Writer-Wins
+### 3.21 âœ… RESOLVED H5: `Mount.Simulator.Settings` Static Class â€” Last-Writer-Wins
 
 **Identified 2026-04-04 (two-device smoke test analysis). Resolved 2026-04-04 (Phase H).**
 
 **File:** `GreenSwamp.Alpaca.Simulator\Controllers.cs`
 
-`AutoHomeAxisX` and `AutoHomeAxisY` added as instance fields on `Controllers`. Values captured from `Settings.*` in the constructor before the next device initialises and can overwrite them. `HomeSensorReset()` updated to use instance fields. ✅
+`AutoHomeAxisX` and `AutoHomeAxisY` added as instance fields on `Controllers`. Values captured from `Settings.*` in the constructor before the next device initialises and can overwrite them. `HomeSensorReset()` updated to use instance fields. âœ…
 
 ---
 
-### 3.22 ✅ RESOLVED Phase I: Static Methods Made Instance-Aware
+### 3.22 âœ… RESOLVED Phase I: Static Methods Made Instance-Aware
 
 **Identified 2026-04-04 (ConformU device-1 compliance failure). Resolved 2026-04-04 (Phase I).**
 
 Four static helper methods operated exclusively on `_defaultInstance`, causing device 1 to be initialised with zero slew speeds, zero guide rates, and uninitialised tracking-offset state. Several `MountInstance` methods read static `SkyServer.*` properties instead of their own backing fields.
 
-**Initialization fixes (I1–I5):**
-- `SetSlewRates(double maxRate, MountInstance? instance = null)` — `Defaults()` and `MountConnect()` pass `this`
-- `SetGuideRates(MountInstance? instance = null)` — `Defaults()` passes `this`
-- `CalcCustomTrackingOffset(MountInstance? instance = null)` — `MountConnect()` passes `this`
+**Initialization fixes (I1â€“I5):**
+- `SetSlewRates(double maxRate, MountInstance? instance = null)` â€” `Defaults()` and `MountConnect()` pass `this`
+- `SetGuideRates(MountInstance? instance = null)` â€” `Defaults()` passes `this`
+- `CalcCustomTrackingOffset(MountInstance? instance = null)` â€” `MountConnect()` passes `this`
 - `Defaults()`: `_slewSettleTime = 0` (was `SkyServer.SlewSettleTime = 0`)
 - `Defaults()`: `_parkSelected = found` (was `SkyServer.ParkSelected = found`)
 
-**Runtime fixes (R1–R5):**
-- `SkyPulseGoto`: both spin-wait loop checks use `_slewState` directly (×2)
+**Runtime fixes (R1â€“R5):**
+- `SkyPulseGoto`: both spin-wait loop checks use `_slewState` directly (Ã—2)
 - `SimGoTo` + `SkyGoTo`: read `_slewSettleTime` directly
 - `PulseGuideAltAz`: `SkyServer.SetTracking(this)` routes to correct device
-- `PulseGuideAltAz`: `_isPulseGuidingDec`/`_isPulseGuidingRa` read/written directly (×3)
+- `PulseGuideAltAz`: `_isPulseGuidingDec`/`_isPulseGuidingRa` read/written directly (Ã—3)
 - `PulseGuideAltAz`: `this.UpdateSteps()` replaces `SkyServer.UpdateSteps()`
 
-All builds green. ✅
+All builds green. âœ…
 
 ---
 
-### 3.23 🔴 J1: `SouthernHemisphere` in Static `PulseGuide()` — Device 0 Only
+### 3.23 ðŸ”´ J1: `SouthernHemisphere` in Static `PulseGuide()` â€” Device 0 Only
 
-**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to 🔴.**
+**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to ðŸ”´.**
 
 **File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs`
 
@@ -453,7 +459,7 @@ The static `PulseGuide()` method reads `SkyServer.SouthernHemisphere` to determi
 if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate);
 ```
 
-`SkyServer.SouthernHemisphere` delegates to `_defaultInstance.Settings.Latitude < 0` — always device 0. If device 1 is configured at a different latitude that places it in the opposite hemisphere (e.g., device 0 is northern, device 1 is southern for test purposes), the Dec direction inversion for device 1's pulse guides will be wrong — guiding north when it should guide south.
+`SkyServer.SouthernHemisphere` delegates to `_defaultInstance.Settings.Latitude < 0` â€” always device 0. If device 1 is configured at a different latitude that places it in the opposite hemisphere (e.g., device 0 is northern, device 1 is southern for test purposes), the Dec direction inversion for device 1's pulse guides will be wrong â€” guiding north when it should guide south.
 
 **Impact:** Polar and GermanPolar pulse-guide commands deliver incorrect Dec corrections for device 1 when at a different hemisphere than device 0.
 
@@ -461,11 +467,11 @@ if (!SouthernHemisphere) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRat
 
 ---
 
-### 3.24 🔴 J2: `AxesContext.FromSettings()` Reads Static `SouthernHemisphere` and `SideOfPier`
+### 3.24 ðŸ”´ J2: `AxesContext.FromSettings()` Reads Static `SouthernHemisphere` and `SideOfPier`
 
-**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to 🔴.**
+**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to ðŸ”´.**
 
-**File:** `GreenSwamp.Alpaca.MountControl\AxesContext.cs:130–131`
+**File:** `GreenSwamp.Alpaca.MountControl\AxesContext.cs:130â€“131`
 
 `AxesContext.FromSettings(SkySettingsInstance settings)` receives the correct per-device settings but then reads two values from static `SkyServer.*`:
 
@@ -474,7 +480,7 @@ SouthernHemisphere = SkyServer.SouthernHemisphere, // Still from SkyServer for n
 SideOfPier = SkyServer.SideOfPier,
 ```
 
-Both delegate to `_defaultInstance` (device 0). `SouthernHemisphere` is used in the coordinate conversion pipeline in `Axes.cs` for hemisphere inversion — a motor-control concern. When device 1 calls `AxesContext.FromSettings(device1Settings)`, it receives device 0's hemisphere flag and side-of-pier position, causing all coordinate conversions for device 1 to be computed against device 0's geometry.
+Both delegate to `_defaultInstance` (device 0). `SouthernHemisphere` is used in the coordinate conversion pipeline in `Axes.cs` for hemisphere inversion â€” a motor-control concern. When device 1 calls `AxesContext.FromSettings(device1Settings)`, it receives device 0's hemisphere flag and side-of-pier position, causing all coordinate conversions for device 1 to be computed against device 0's geometry.
 
 **Impact:** All axis coordinate conversions for device 1 use device 0's hemisphere and pier state. Slew targets and tracking calculations will be wrong for a device 1 in a different hemisphere.
 
@@ -482,9 +488,9 @@ Both delegate to `_defaultInstance` (device 0). `SouthernHemisphere` is used in 
 
 ---
 
-### 3.25 🟠 J3: Log Messages Do Not Identify the Device
+### 3.25 ðŸŸ  J3: Log Messages Do Not Identify the Device
 
-**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to 🟠.**
+**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to ðŸŸ .**
 
 **File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs` (all `MonitorLog.LogToMonitor` call sites)
 
@@ -496,9 +502,9 @@ All `MonitorEntry` records emitted from `MountInstance.cs` use `Device = Monitor
 
 ---
 
-### 3.26 🔴 J4: AltAz Tracking Timer Is Static — Shared Across All Devices
+### 3.26 ðŸ”´ J4: AltAz Tracking Timer Is Static â€” Shared Across All Devices
 
-**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to 🔴.**
+**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to ðŸ”´.**
 
 **File:** `GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs`
 
@@ -526,9 +532,9 @@ When G3 moved `PulseGuideAltAz` to `MountInstance`, `StopAltAzTrackingTimer()` w
 
 ---
 
-### 3.27 🔴 J5: `SkyServer.LimitStatus` Is a Shared Static Struct
+### 3.27 ðŸ”´ J5: `SkyServer.LimitStatus` Is a Shared Static Struct
 
-**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to 🔴.**
+**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to ðŸ”´.**
 
 **File:** `GreenSwamp.Alpaca.MountControl\SkyServer.cs:951`
 
@@ -536,7 +542,7 @@ When G3 moved `PulseGuideAltAz` to `MountInstance`, `StopAltAzTrackingTimer()` w
 public static LimitStatusType LimitStatus = new LimitStatusType();
 ```
 
-`LimitStatus` is a `public static` value-type struct. The axis limit *settings* (`HourAngleLimit`, `AxisLimitX`, `AxisUpperLimitY`, etc.) are correctly stored per-instance in `SkySettingsInstance` and read via `_settings` in `MountInstance.CheckAxisLimits()`. However, the limit *state* — which axes have exceeded their limits — is stored in this single shared struct.
+`LimitStatus` is a `public static` value-type struct. The axis limit *settings* (`HourAngleLimit`, `AxisLimitX`, `AxisUpperLimitY`, etc.) are correctly stored per-instance in `SkySettingsInstance` and read via `_settings` in `MountInstance.CheckAxisLimits()`. However, the limit *state* â€” which axes have exceeded their limits â€” is stored in this single shared struct.
 
 For the AltAz case, `MountInstance.CheckAxisLimits()` reads `SkyServer.LimitStatus.AtLowerLimitAxisX` etc. to determine `meridianLimit` and `horizonLimit`. When device 0 and device 1 are both AltAz mounts with different physical axis extents, their limit states will overwrite each other in `LimitStatus`.
 
@@ -546,21 +552,21 @@ For the AltAz case, `MountInstance.CheckAxisLimits()` reads `SkyServer.LimitStat
 
 ---
 
-### 3.28 🟡 J6: UI-Only Residuals — Deferred to Phase E
+### 3.28 ðŸŸ¡ J6: UI-Only Residuals â€” Deferred to Phase E
 
 **Identified 2026-04-04 (Group 3 re-assessment). Confirmed low risk. No change to priority.**
 
 Several static reads on `SkyServer.*` that are consumed only by the Blazor UI (not by motor-control logic) remain routing to device 0. These include `SkyServer.SideOfPier` in `AxesContext.FromSettings` for display coordinate reads, `AutoHomeProgressBar`, and similar UI-only state statics that always show device 0's value.
 
-**Impact:** Device 0's state is displayed for all devices in the Blazor UI — this is the same root cause as Phase E (`TelescopeStateService`). These residuals do not affect motor commands.
+**Impact:** Device 0's state is displayed for all devices in the Blazor UI â€” this is the same root cause as Phase E (`TelescopeStateService`). These residuals do not affect motor commands.
 
 **Fix:** Deferred to Phase E. Once `TelescopeStateService` is made device-number-aware and Blazor components bind to per-device `MountInstance.InstancePropertyChanged`, these UI-only reads will be corrected as part of that work.
 
 ---
 
-### 3.29 🔴 J7: Limit Enforcement Actions Command the Wrong Physical Mount
+### 3.29 ðŸ”´ J7: Limit Enforcement Actions Command the Wrong Physical Mount
 
-**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to 🔴 — safety concern.**
+**Identified 2026-04-04 (Group 3 re-assessment). Previously classified low risk. Elevated to ðŸ”´ â€” safety concern.**
 
 **File:** `GreenSwamp.Alpaca.MountControl\MountInstance.cs` (limit action code in `CheckAxisLimits()`)
 
@@ -570,7 +576,7 @@ When `MountInstance.CheckAxisLimits()` detects a limit breach it calls:
 if (found == null) SkyServer.StopAxes(); else { _parkSelected = found; SkyServer.GoToPark(); }
 ```
 
-`SkyServer.StopAxes()` and `SkyServer.GoToPark()` are static methods that route to `_defaultInstance` (device 0). When device 1 hits a physical axis limit, the limit enforcement stops device 0's motors and/or commands device 0 to park — leaving device 1's motors running and device 1 potentially driving past its hardware stop.
+`SkyServer.StopAxes()` and `SkyServer.GoToPark()` are static methods that route to `_defaultInstance` (device 0). When device 1 hits a physical axis limit, the limit enforcement stops device 0's motors and/or commands device 0 to park â€” leaving device 1's motors running and device 1 potentially driving past its hardware stop.
 
 Each device is a physically distinct mount with its own hardware, motors, gear train, and power supply. Stopping the wrong device has no effect on the mount that is actually in danger.
 
@@ -580,136 +586,136 @@ Each device is a physically distinct mount with its own hardware, motors, gear t
 
 ---
 
-## 4. Data-Flow Verification (Single Telescope — Current Operation)
+## 4. Data-Flow Verification (Single Telescope â€” Current Operation)
 
 The following paths have been code-verified as correct for single-telescope (April 2026):
 
 ```
 Hardware steps
-  → SkyWatcher executor (_stepsCallback)
-  → MountInstance.ReceiveSteps(steps)            ✅ per-instance
-  → _steps[0,1] set
-  → SetSteps() — coordinate conversion          ✅ per-instance settings
-  → _mountPositionUpdatedEvent.Set()            ✅ per-instance event
-  → SkyServer.NotifyStepsChanged()              ✅ fires global Blazor event (Phase E caveat)
+  â†’ SkyWatcher executor (_stepsCallback)
+  â†’ MountInstance.ReceiveSteps(steps)            âœ… per-instance
+  â†’ _steps[0,1] set
+  â†’ SetSteps() â€” coordinate conversion          âœ… per-instance settings
+  â†’ _mountPositionUpdatedEvent.Set()            âœ… per-instance event
+  â†’ SkyServer.NotifyStepsChanged()              âœ… fires global Blazor event (Phase E caveat)
 
 Hardware pulse-guide Ra/Dec
-  → _pulseGuideRaCallback / _pulseGuideDecCallback
-  → v => { _isPulseGuidingRa = v; }             ✅ writes directly to this instance (C1/C2 fixed)
-  → v => { _isPulseGuidingDec = v; }            ✅ writes directly to this instance
+  â†’ _pulseGuideRaCallback / _pulseGuideDecCallback
+  â†’ v => { _isPulseGuidingRa = v; }             âœ… writes directly to this instance (C1/C2 fixed)
+  â†’ v => { _isPulseGuidingDec = v; }            âœ… writes directly to this instance
 
-ASCOM GoTo — primary path (SlewController, confirmed April 2026)
-  → Telescope.cs GetInstance(_deviceNumber)     ✅ per-device routing
-  → SkyServer.SlewRaDecAsync(ra, dec)           (static; uses SlewController)
-  → SlewAsync(target, SlewType.SlewRaDec)       ✅ delegates to _defaultInstance.SlewAsync
-  → MountInstance.SlewAsync(target, slewType)   ✅ per-instance SlewController
+ASCOM GoTo â€” primary path (SlewController, confirmed April 2026)
+  â†’ Telescope.cs GetInstance(_deviceNumber)     âœ… per-device routing
+  â†’ SkyServer.SlewRaDecAsync(ra, dec)           (static; uses SlewController)
+  â†’ SlewAsync(target, SlewType.SlewRaDec)       âœ… delegates to _defaultInstance.SlewAsync
+  â†’ MountInstance.SlewAsync(target, slewType)   âœ… per-instance SlewController
 
-ASCOM GoTo — handpad path (GoToAsync/SlewMount, G2 resolved 2026-04-03)
-  → SlewAxes(primary, secondary, slewState, instance)  ✅ MountInstance? param threaded (G2)
-  → SlewMount(Vector, slewState, ..., instance)         ✅ effectiveInstance = instance ?? _defaultInstance!
-  → GoToAsync(target, slewState, handle, instance)      ✅ uses effectiveInstance throughout
+ASCOM GoTo â€” handpad path (GoToAsync/SlewMount, G2 resolved 2026-04-03)
+  â†’ SlewAxes(primary, secondary, slewState, instance)  âœ… MountInstance? param threaded (G2)
+  â†’ SlewMount(Vector, slewState, ..., instance)         âœ… effectiveInstance = instance ?? _defaultInstance!
+  â†’ GoToAsync(target, slewState, handle, instance)      âœ… uses effectiveInstance throughout
 
 CTS cancellation (confirmed April 2026)
-  → CancelAllAsync()                            ✅ _ctsGoTo/_ctsPulseGuide* are delegating
-  → SkyServer.Core.cs:131-150                   ✅ get/set route to _defaultInstance backing fields
+  â†’ CancelAllAsync()                            âœ… _ctsGoTo/_ctsPulseGuide* are delegating
+  â†’ SkyServer.Core.cs:131-150                   âœ… get/set route to _defaultInstance backing fields
 
 Mount position event wait (SkyPrecisionGoto)
-  → _mountPositionUpdatedEvent.Reset/Wait       ✅ per-instance event
+  â†’ _mountPositionUpdatedEvent.Reset/Wait       âœ… per-instance event
 
 SetSlewRates / SetGuideRates / CalcCustomTrackingOffset (Phase I, 2026-04-04)
-  → Defaults()/MountConnect() call with this    ✅ all rate fields written to correct instance
-  → device 1 SlewSpeedEight/GuideRateRa/Dec    ✅ non-zero after connect (ConformU fix)
+  â†’ Defaults()/MountConnect() call with this    âœ… all rate fields written to correct instance
+  â†’ device 1 SlewSpeedEight/GuideRateRa/Dec    âœ… non-zero after connect (ConformU fix)
 ```
 
 ---
 
-## 5. Static Code Still Requiring Removal — Prioritised Task List
+## 5. Static Code Still Requiring Removal â€” Prioritised Task List
 
-### ✅ Phase A — Legacy Bridge Methods — COMPLETE
-
-| Task | File | Description | Status |
-|---|---|---|---|
-| **A1** | `SkyServer.Core.cs` | Delete `SkyTasks(MountTaskName)` legacy overload | ✅ Done |
-| **A2** | `SkyServer.Core.cs` | Delete `AxesStopValidate()` no-parameter overload | ✅ Done |
-| **A3** | `SkyServer.Core.cs` | Delete misleading "removed" comment above A1 body | ✅ Done |
-
-### ✅ Phase B — Remove `SkyQueue` / `MountQueue` Static Facades — COMPLETE
+### âœ… Phase A â€” Legacy Bridge Methods â€” COMPLETE
 
 | Task | File | Description | Status |
 |---|---|---|---|
-| **B1** | `MountInstance.cs` | Remove `SkyQueue.RegisterInstance(sqImpl)` call | ✅ Done |
-| **B2** | `SkyServer.Core.cs` | Delete `PropertyChangedSkyQueue` handler | ✅ Done |
-| **B3** | `SkyServer.Core.cs` | Delete `PropertyChangedMountQueue` handler | ✅ Done |
-| **B4** | `SkyCommands.cs` | Remove `[Obsolete]` shortcut ctors from all command classes | ✅ Done |
-| **B5** | `SkyCommands.cs` | Remove `SkyCommandBase(long id)` etc. base class shortcut ctors | ✅ Done |
-| **B6** | `SkyQueue.cs` | Delete `public static class SkyQueue` entirely | ✅ Done — file is 109 lines, `SkyQueueImplementation` only |
-| **B7** | `MountQueue.cs` | Delete `public static class MountQueue` entirely | ✅ Done — file is 63 lines, `MountQueueImplementation` only |
+| **A1** | `SkyServer.Core.cs` | Delete `SkyTasks(MountTaskName)` legacy overload | âœ… Done |
+| **A2** | `SkyServer.Core.cs` | Delete `AxesStopValidate()` no-parameter overload | âœ… Done |
+| **A3** | `SkyServer.Core.cs` | Delete misleading "removed" comment above A1 body | âœ… Done |
 
-### ✅ Phase C — Pulse-Guide Callback Routing — COMPLETE
+### âœ… Phase B â€” Remove `SkyQueue` / `MountQueue` Static Facades â€” COMPLETE
 
 | Task | File | Description | Status |
 |---|---|---|---|
-| **C1** | `MountInstance.cs` | Simulator `SetupCallbacks` pulse-guide lambdas write to `this` fields | ✅ Done (lines 1595–1596) |
-| **C2** | `MountInstance.cs` | SkyWatcher `SetupCallbacks` pulse-guide lambdas write to `this` fields | ✅ Done (lines 1632–1633) |
+| **B1** | `MountInstance.cs` | Remove `SkyQueue.RegisterInstance(sqImpl)` call | âœ… Done |
+| **B2** | `SkyServer.Core.cs` | Delete `PropertyChangedSkyQueue` handler | âœ… Done |
+| **B3** | `SkyServer.Core.cs` | Delete `PropertyChangedMountQueue` handler | âœ… Done |
+| **B4** | `SkyCommands.cs` | Remove `[Obsolete]` shortcut ctors from all command classes | âœ… Done |
+| **B5** | `SkyCommands.cs` | Remove `SkyCommandBase(long id)` etc. base class shortcut ctors | âœ… Done |
+| **B6** | `SkyQueue.cs` | Delete `public static class SkyQueue` entirely | âœ… Done â€” file is 109 lines, `SkyQueueImplementation` only |
+| **B7** | `MountQueue.cs` | Delete `public static class MountQueue` entirely | âœ… Done â€” file is 63 lines, `MountQueueImplementation` only |
 
-### ✅ Phase D — Fix Remaining True Static Fields — COMPLETE
+### âœ… Phase C â€” Pulse-Guide Callback Routing â€” COMPLETE
 
 | Task | File | Description | Status |
 |---|---|---|---|
-| **D1** | `MountInstance.cs` | Add `internal long[] _stepsTimeFreq = { 0, 0 };` field | ✅ Done (line 63) |
-| **D2** | `SkyServer.cs` | `StepsTimeFreq` delegates to `_defaultInstance._stepsTimeFreq` | ✅ Done |
-| **D3** | `SkyServer.Core.cs` | Instance-aware `SkyTasks(StepTimeFreq, instance)` writes `instance._stepsTimeFreq` | ✅ Done |
-| **D4** | `SkyServer.cs` | Remove `private static bool _mountRunning` | ✅ Done — `IsMountRunning` is `_defaultInstance?.IsMountRunning ?? false` |
-| **D5** | `MountInstance.cs` | Add `internal bool _snapPort1`, `internal bool _snapPort2` fields | ✅ Done (lines 104–105) |
-| **D6** | `SkyServer.cs` | `SnapPort1`/`SnapPort2` delegate to `_defaultInstance` | ✅ Done |
-| **D7** | `SkyServer.TelescopeAPI.cs` | Remove `_goToAsyncLock` field | ✅ Done — field gone; residual `//lock (_goToAsyncLock)` comment at line 787 is cleanup |
-| **D8** | `SkyServer.cs` | Move `LastDecDirection` to `MountInstance` as `_lastDecDirection` | ✅ Done |
+| **C1** | `MountInstance.cs` | Simulator `SetupCallbacks` pulse-guide lambdas write to `this` fields | âœ… Done (lines 1595â€“1596) |
+| **C2** | `MountInstance.cs` | SkyWatcher `SetupCallbacks` pulse-guide lambdas write to `this` fields | âœ… Done (lines 1632â€“1633) |
 
-### ✅ Phase G — `SkyServer.TelescopeAPI.cs` Residuals — COMPLETE (2026-04-03)
+### âœ… Phase D â€” Fix Remaining True Static Fields â€” COMPLETE
+
+| Task | File | Description | Status |
+|---|---|---|---|
+| **D1** | `MountInstance.cs` | Add `internal long[] _stepsTimeFreq = { 0, 0 };` field | âœ… Done (line 63) |
+| **D2** | `SkyServer.cs` | `StepsTimeFreq` delegates to `_defaultInstance._stepsTimeFreq` | âœ… Done |
+| **D3** | `SkyServer.Core.cs` | Instance-aware `SkyTasks(StepTimeFreq, instance)` writes `instance._stepsTimeFreq` | âœ… Done |
+| **D4** | `SkyServer.cs` | Remove `private static bool _mountRunning` | âœ… Done â€” `IsMountRunning` is `_defaultInstance?.IsMountRunning ?? false` |
+| **D5** | `MountInstance.cs` | Add `internal bool _snapPort1`, `internal bool _snapPort2` fields | âœ… Done (lines 104â€“105) |
+| **D6** | `SkyServer.cs` | `SnapPort1`/`SnapPort2` delegate to `_defaultInstance` | âœ… Done |
+| **D7** | `SkyServer.TelescopeAPI.cs` | Remove `_goToAsyncLock` field | âœ… Done â€” field gone; residual `//lock (_goToAsyncLock)` comment at line 787 is cleanup |
+| **D8** | `SkyServer.cs` | Move `LastDecDirection` to `MountInstance` as `_lastDecDirection` | âœ… Done |
+
+### âœ… Phase G â€” `SkyServer.TelescopeAPI.cs` Residuals â€” COMPLETE (2026-04-03)
 
 | Task | File | Description | Priority |
 |---|---|---|---|
-| **G1** | `SkyServer.TelescopeAPI.cs:538,572` | Move `RateDecOrg` / `RateRaOrg` to `MountInstance` backing fields; bridge via delegating properties | ✅ Done |
-| **G2** | `SkyServer.TelescopeAPI.cs:763` / `SkyServer.Core.cs` | Add `MountInstance` parameter to `SlewAxes()` → `SlewMount()` → `GoToAsync()` chain (handpad slew path) | ✅ Done |
-| **G3** | `SkyServer.TelescopeAPI.cs:~1877` | Move `PulseGuideAltAz()` to an instance method on `MountInstance`; call via `_defaultInstance!.PulseGuideAltAz(...)` | ✅ Done |
+| **G1** | `SkyServer.TelescopeAPI.cs:538,572` | Move `RateDecOrg` / `RateRaOrg` to `MountInstance` backing fields; bridge via delegating properties | âœ… Done |
+| **G2** | `SkyServer.TelescopeAPI.cs:763` / `SkyServer.Core.cs` | Add `MountInstance` parameter to `SlewAxes()` â†’ `SlewMount()` â†’ `GoToAsync()` chain (handpad slew path) | âœ… Done |
+| **G3** | `SkyServer.TelescopeAPI.cs:~1877` | Move `PulseGuideAltAz()` to an instance method on `MountInstance`; call via `_defaultInstance!.PulseGuideAltAz(...)` | âœ… Done |
 
-### ✅ Phase H — Simulator Static Contamination + Update Loop Static Calls — COMPLETE (2026-04-04)
+### âœ… Phase H â€” Simulator Static Contamination + Update Loop Static Calls â€” COMPLETE (2026-04-04)
 
 | Task | File | Description | Status |
 |---|---|---|---|
-| **H1** ✅ | `GreenSwamp.Alpaca.Simulator\Controllers.cs:28` | `_ctsMount` made instance field; `Stop()` made non-static; constructor initialises per-instance CTS | ✅ Done |
-| **H2** ✅ | `MountInstance.cs` | `CheckSlewState()` and `CheckAxisLimits()` added as private instance methods; `OnUpdateServerEvent()` call sites updated | ✅ Done |
-| **H3** ✅ | `MountInstance.cs:1675–1676` | `SkyServer.Tracking = false` → `_trackingMode = TrackingMode.Off; _tracking = false;`; `SkyServer.CancelAllAsync()` → four per-instance CTS cancellations | ✅ Done |
-| **H4** ✅ | `MountInstance.cs:1602` | `ConnectAlignmentModel()` is an empty stub — no fix required | ✅ No-op |
-| **H5** ✅ | `GreenSwamp.Alpaca.Simulator\Controllers.cs` | `AutoHomeAxisX` and `AutoHomeAxisY` added as instance fields; values captured in constructor from `Settings.*` before next device can overwrite; `HomeSensorReset()` updated to use instance fields | ✅ Done |
+| **H1** âœ… | `GreenSwamp.Alpaca.Simulator\Controllers.cs:28` | `_ctsMount` made instance field; `Stop()` made non-static; constructor initialises per-instance CTS | âœ… Done |
+| **H2** âœ… | `MountInstance.cs` | `CheckSlewState()` and `CheckAxisLimits()` added as private instance methods; `OnUpdateServerEvent()` call sites updated | âœ… Done |
+| **H3** âœ… | `MountInstance.cs:1675â€“1676` | `SkyServer.Tracking = false` â†’ `_trackingMode = TrackingMode.Off; _tracking = false;`; `SkyServer.CancelAllAsync()` â†’ four per-instance CTS cancellations | âœ… Done |
+| **H4** âœ… | `MountInstance.cs:1602` | `ConnectAlignmentModel()` is an empty stub â€” no fix required | âœ… No-op |
+| **H5** âœ… | `GreenSwamp.Alpaca.Simulator\Controllers.cs` | `AutoHomeAxisX` and `AutoHomeAxisY` added as instance fields; values captured in constructor from `Settings.*` before next device can overwrite; `HomeSensorReset()` updated to use instance fields | âœ… Done |
 
-### ✅ Phase I — Static Method Instance-Awareness — COMPLETE (2026-04-04)
+### âœ… Phase I â€” Static Method Instance-Awareness â€” COMPLETE (2026-04-04)
 
 Identified via ConformU device-1 compliance failure: `SetSlewRates`, `SetGuideRates`, `CalcCustomTrackingOffset`, and `SetTracking` all operated on `_defaultInstance` only; device 1 was never initialised with correct rates. `SkyPulseGoto`, `SimGoTo`, `SkyGoTo`, and `PulseGuideAltAz` read/wrote static `SkyServer.*` properties instead of `this` instance fields.
 
 | Task | File | Description | Status |
 |---|---|---|---|
-| **I1** | `SkyServer.Core.cs`, `MountInstance.cs` | `SetSlewRates(double maxRate, MountInstance? instance = null)`; `var inst = instance ?? _defaultInstance`; all `_slewSpeedOne…Eight` writes use `inst.*`; `Defaults()` and `MountConnect()` pass `this` | ✅ Done |
-| **I2** | `SkyServer.TelescopeAPI.cs`, `MountInstance.cs` | `SetGuideRates(MountInstance? instance = null)`; `inst.GuideRateRa/Dec`; `Defaults()` passes `this` | ✅ Done |
-| **I3** | `SkyServer.Core.cs`, `MountInstance.cs` | `CalcCustomTrackingOffset(MountInstance? instance = null)`; reads `inst._stepsTimeFreq[n]`/`inst._stepsPerRevolution[n]`; writes `inst._trackingOffsetRate.X/Y` directly; `MountConnect()` passes `this` | ✅ Done |
-| **I4** | `MountInstance.cs` | `Defaults()`: `_slewSettleTime = 0` (was `SkyServer.SlewSettleTime = 0`) | ✅ Done |
-| **I5** | `MountInstance.cs` | `Defaults()`: `_parkSelected = found` (was `SkyServer.ParkSelected = found`) | ✅ Done |
-| **R1** | `MountInstance.cs` | `SkyPulseGoto`: both spin-wait loop checks use `_slewState` from `this` (not device 0) ✅ | ✅ Done |
-| **R2** | `MountInstance.cs` | `SimGoTo` + `SkyGoTo`: both read `_slewSettleTime` from `this` ✅ | ✅ Done |
-| **R3** | `MountInstance.cs` | `PulseGuideAltAz`: `SkyServer.SetTracking(this)` — routes SetTracking to correct device | ✅ Done |
-| **R4** | `MountInstance.cs` | `PulseGuideAltAz`: axis-0/1 guards and end-of-pulse reset use `_isPulseGuidingDec`/`_isPulseGuidingRa` directly (×3) | ✅ Done |
-| **R5** | `MountInstance.cs` | `PulseGuideAltAz`: `this.UpdateSteps()` replaces `SkyServer.UpdateSteps()` | ✅ Done |
+| **I1** | `SkyServer.Core.cs`, `MountInstance.cs` | `SetSlewRates(double maxRate, MountInstance? instance = null)`; `var inst = instance ?? _defaultInstance`; all `_slewSpeedOneâ€¦Eight` writes use `inst.*`; `Defaults()` and `MountConnect()` pass `this` | âœ… Done |
+| **I2** | `SkyServer.TelescopeAPI.cs`, `MountInstance.cs` | `SetGuideRates(MountInstance? instance = null)`; `inst.GuideRateRa/Dec`; `Defaults()` passes `this` | âœ… Done |
+| **I3** | `SkyServer.Core.cs`, `MountInstance.cs` | `CalcCustomTrackingOffset(MountInstance? instance = null)`; reads `inst._stepsTimeFreq[n]`/`inst._stepsPerRevolution[n]`; writes `inst._trackingOffsetRate.X/Y` directly; `MountConnect()` passes `this` | âœ… Done |
+| **I4** | `MountInstance.cs` | `Defaults()`: `_slewSettleTime = 0` (was `SkyServer.SlewSettleTime = 0`) | âœ… Done |
+| **I5** | `MountInstance.cs` | `Defaults()`: `_parkSelected = found` (was `SkyServer.ParkSelected = found`) | âœ… Done |
+| **R1** | `MountInstance.cs` | `SkyPulseGoto`: both spin-wait loop checks use `_slewState` from `this` (not device 0) âœ… | âœ… Done |
+| **R2** | `MountInstance.cs` | `SimGoTo` + `SkyGoTo`: both read `_slewSettleTime` from `this` âœ… | âœ… Done |
+| **R3** | `MountInstance.cs` | `PulseGuideAltAz`: `SkyServer.SetTracking(this)` â€” routes SetTracking to correct device | âœ… Done |
+| **R4** | `MountInstance.cs` | `PulseGuideAltAz`: axis-0/1 guards and end-of-pulse reset use `_isPulseGuidingDec`/`_isPulseGuidingRa` directly (Ã—3) | âœ… Done |
+| **R5** | `MountInstance.cs` | `PulseGuideAltAz`: `this.UpdateSteps()` replaces `SkyServer.UpdateSteps()` | âœ… Done |
 
 ---
 
-### 🔴 Phase J — Group 3 Re-Assessment Items — PENDING
+### âœ… Phase J â€” Group 3 Re-Assessment Items â€” MOSTLY COMPLETE (J3/J6 Remaining)
 
 | Task | File | Description | Priority |
 |---|---|---|---|
-| **J1** | `SkyServer.TelescopeAPI.cs` | `PulseGuide()` reads `SkyServer.SouthernHemisphere` (device 0); read `instance._settings.Latitude < 0` for the active device | 🔴 Blocking |
-| **J2** | `AxesContext.cs:130-131` | `FromSettings()` reads static `SkyServer.SouthernHemisphere` and `SkyServer.SideOfPier`; compute `SouthernHemisphere = settings.Latitude < 0` from passed-in settings; pass `SideOfPier` from `MountInstance` | 🔴 Blocking |
-| **J3** | `MountInstance.cs` | All `MonitorEntry` records have no device identifier; prepend `[Dev{DeviceNumber}]` to `Message` at all `MonitorLog.LogToMonitor` call sites | 🟠 High |
-| **J4** | `SkyServer.TelescopeAPI.cs` | `_altAzTrackingTimer`, `StartAltAzTrackingTimer()`, `AltAzTrackingTimerEvent` are static/shared; move to `MountInstance` as instance members | 🔴 Blocking |
-| **J5** | `SkyServer.cs:951` | `LimitStatus` is a shared static struct; add `_limitStatus` instance field to `MountInstance`; route AltAz hardware callbacks per-instance | 🔴 Blocking |
-| **J6** | `SkyServer.cs`, `AxesContext.cs` | UI-only reads of `SkyServer.SideOfPier` and `AutoHomeProgressBar` always show device 0 | 🟡 Deferred to Phase E |
-| **J7** | `MountInstance.cs` | `CheckAxisLimits()` calls `SkyServer.StopAxes()` and `SkyServer.GoToPark()` (device 0); replace with instance-level equivalents | 🔴 Safety critical |
+| **J1** | `SkyServer.TelescopeAPI.cs` | `PulseGuide()` reads `SkyServer.SouthernHemisphere` (device 0); read `instance._settings.Latitude < 0` for the active device | âœ… Done |
+| **J2** | `AxesContext.cs:130-131` | `FromSettings()` reads static `SkyServer.SouthernHemisphere` and `SkyServer.SideOfPier`; compute `SouthernHemisphere = settings.Latitude < 0` from passed-in settings; pass `SideOfPier` from `MountInstance` | âœ… Done |
+| **J3** | `MountInstance.cs` | All `MonitorEntry` records have no device identifier; prepend `[Dev{DeviceNumber}]` to `Message` at all `MonitorLog.LogToMonitor` call sites | ðŸŸ  High |
+| **J4** | `SkyServer.TelescopeAPI.cs` | `_altAzTrackingTimer`, `StartAltAzTrackingTimer()`, `AltAzTrackingTimerEvent` are static/shared; move to `MountInstance` as instance members | âœ… Done |
+| **J5** | `SkyServer.cs:951` | `LimitStatus` is a shared static struct; add `_limitStatus` instance field to `MountInstance`; route AltAz hardware callbacks per-instance | âœ… Done |
+| **J6** | `SkyServer.cs`, `AxesContext.cs` | UI-only reads of `SkyServer.SideOfPier` and `AutoHomeProgressBar` always show device 0 | ðŸŸ¡ Deferred to Phase E |
+| **J7** | `MountInstance.cs` | `CheckAxisLimits()` calls `SkyServer.StopAxes()` and `SkyServer.GoToPark()` (device 0); replace with instance-level equivalents | âœ… Done |
