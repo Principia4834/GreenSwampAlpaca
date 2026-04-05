@@ -1912,6 +1912,78 @@ namespace GreenSwamp.Alpaca.MountControl
             _settings.ParkName = ps.Name;
             _ = SlewAsync(new[] { ps.X, ps.Y }, SlewType.SlewPark, tracking: false);
         }
+        /// <summary>
+        /// K: Per-instance equivalent of SkyServer.SetTrackingMode.
+        /// Sets _trackingMode from this device alignment and hemisphere settings.
+        /// </summary>
+        internal void InstanceSetTrackingMode()
+        {
+            switch (_settings.AlignmentMode)
+            {
+                case AlignmentMode.AltAz:
+                    _trackingMode = TrackingMode.AltAz;
+                    break;
+                case AlignmentMode.Polar:
+                case AlignmentMode.GermanPolar:
+                    _trackingMode = _settings.Latitude < 0 ? TrackingMode.EqS : TrackingMode.EqN;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// K: Per-instance equivalent of SkyServer.Tracking setter.
+        /// Resets SkyPredictor, sets tracking mode, and applies hardware.
+        /// Early-exits if already in requested state (mirrors SkyServer.Tracking early-exit).
+        /// </summary>
+        internal void InstanceApplyTracking(bool tracking)
+        {
+            if (tracking == _tracking) return;
+            SkyPredictor.Reset();
+            _tracking = tracking;
+            if (tracking)
+            {
+                InstanceSetTrackingMode();
+                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    _altAzTrackingMode = AltAzTrackingType.Predictor;
+                    if (!SkyPredictor.RaDecSet)
+                        SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0);
+                    else
+                        SkyPredictor.ReferenceTime = DateTime.Now;
+                }
+            }
+            else
+            {
+                _isPulseGuidingRa = false;
+                _isPulseGuidingDec = false;
+                _trackingMode = TrackingMode.Off;
+            }
+            SkyServer.SetTracking(this);
+        }
+
+        /// <summary>
+        /// K: Per-instance equivalent of SkyServer.SetTrackingDirect.
+        /// Sets tracking state and mode without resetting SkyPredictor.
+        /// </summary>
+        internal void InstanceApplyTrackingDirect(bool tracking, TrackingMode mode)
+        {
+            _tracking = tracking;
+            _trackingMode = mode;
+            SkyServer.SetTracking(this);
+        }
+
+        /// <summary>
+        /// K: Per-instance park completion. Replaces SkyServer.CompletePark().
+        /// Sets AtPark, disables tracking, and resets predictor for this device.
+        /// </summary>
+        internal void InstanceCompletePark()
+        {
+            AtPark = true;
+            _tracking = false;
+            _trackingMode = TrackingMode.Off;
+            SkyPredictor.Reset();
+            SkyServer.SetTracking(this);
+        }
 
         #endregion
 
