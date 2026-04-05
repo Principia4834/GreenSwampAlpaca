@@ -1394,7 +1394,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// langword="true"/>.</param>
         private static void SlewMount(Vector targetPosition, SlewType slewState, bool tracking = false, bool slewAsync = true, MountInstance? instance = null)
         {
-            if (!IsMountRunning) { return; }
+            var effectiveInstance = instance ?? _defaultInstance!;  // M1: resolve before guard
+            if (effectiveInstance == null || !effectiveInstance.IsMountRunning) { return; }
 
             var monitorItem = new MonitorEntry
             {
@@ -1408,14 +1409,12 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            HcResetPrevMove(MountAxis.Ra);
-            HcResetPrevMove(MountAxis.Dec);
-
-            AtPark = false;
+            effectiveInstance._hcPrevMoveRa = null;   // M1: per-instance (was HcResetPrevMove device-0)
+            effectiveInstance._hcPrevMoveDec = null;  // M1: per-instance
+            effectiveInstance.AtPark = false;  // M1: per-instance (was AtPark = false, device-0 setting)
             // ToDo reimplement later
             // SpeakSlewStart(slewState);
             // Set up event handle and task for checking slew started
-            var effectiveInstance = instance ?? _defaultInstance!;
             EventWaitHandle goToStartedEvent = new ManualResetEvent(false);
             Action goTo = () =>
                 GoToAsync(new[] { targetPosition.X, targetPosition.Y }, slewState, goToStartedEvent, tracking, effectiveInstance);

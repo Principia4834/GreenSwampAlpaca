@@ -783,18 +783,18 @@ namespace GreenSwamp.Alpaca.MountControl
                 Message = $"Starting {slewState}|{target[0]}|{target[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            if (!IsMountRunning)
+            if (!effectiveInstance.IsMountRunning)  // M3: per-instance guard
             {
                 goToStarted.Set();
                 return;
             }
 
-            CancelAllAsync();
+            effectiveInstance.InstanceCancelAllAsync();  // M3: per-instance cancel
                 var swCts = Stopwatch.StartNew();
-                while (_ctsGoTo != null && swCts.ElapsedMilliseconds < 5000) Thread.Sleep(10);
-                if (IsSlewing)
+                while (effectiveInstance._ctsGoTo != null && swCts.ElapsedMilliseconds < 5000) Thread.Sleep(10);  // M3
+                if (effectiveInstance._isSlewing)  // M3: per-instance
                 {
-                    SlewState = SlewType.SlewNone;
+                    effectiveInstance._slewState = SlewType.SlewNone;  // M3
                     var stopped = AxesStopValidate(effectiveInstance);
                     if (!stopped)
                     {
@@ -814,32 +814,32 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                 }
 
-                SlewState = slewState;
+                effectiveInstance._slewState = slewState;  // M3
                 var startingState = slewState;
                 // Planetarium fix to set Tracking for non-ASCOM compliant programs - set true by GoToCoordinatesAsync()
-                var trackingState = tracking || Tracking;
+                var trackingState = tracking || effectiveInstance.Tracking;  // M3
                 // ToDo re-enable voice prompt later
                 // TrackingSpeak = false;
-                Tracking = false;
+                effectiveInstance.SetTracking(false);  // M3
                 if (slewState == SlewType.SlewRaDec)
                 {
-                    effectiveInstance.SkyPredictor.Set(TargetRa, TargetDec, RateRa, RateDec); // 
+                    effectiveInstance.SkyPredictor.Set(effectiveInstance.TargetRa, effectiveInstance.TargetDec, effectiveInstance.RateRa, effectiveInstance.RateDec);  // M3
                 }
-                IsSlewing = true;
+                effectiveInstance._isSlewing = true;  // M3
                 goToStarted.Set(); // Signal that GoTo has started so async ASCOM operations can return with Slewing = true
 
                 // Assume fail
                 try
                 {
-                    _ctsGoTo = new CancellationTokenSource();
+                    effectiveInstance._ctsGoTo = new CancellationTokenSource();  // M3
                 var returnCode = 1;
-                switch (_settings!.Mount)
+                switch (effectiveInstance.Settings.Mount)  // M3
                 {
                     case MountType.Simulator:
-                        returnCode = SimGoTo(target, trackingState, slewState, _ctsGoTo.Token);
+                        returnCode = effectiveInstance.SimGoTo(target, trackingState, slewState, effectiveInstance._ctsGoTo.Token);  // M3
                         break;
                     case MountType.SkyWatcher:
-                        returnCode = SkyGoTo(target, trackingState, slewState, _ctsGoTo.Token);
+                        returnCode = effectiveInstance.SkyGoTo(target, trackingState, slewState, effectiveInstance._ctsGoTo.Token);  // M3
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -851,9 +851,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 if (returnCode == 0)
                 {
-                    if (SlewState == SlewType.SlewNone)
+                    if (effectiveInstance._slewState == SlewType.SlewNone)  // M3
                     {
-                        Tracking = trackingState;
+                        effectiveInstance.SetTracking(trackingState);  // M3
                         // ToDo re-enable voice prompt later
                         // TrackingSpeak = true;
                         return;
@@ -866,34 +866,34 @@ namespace GreenSwamp.Alpaca.MountControl
                         case SlewType.SlewMoveAxis:
                             break;
                         case SlewType.SlewRaDec:
-                            if (_settings!.AlignmentMode == AlignmentMode.AltAz)
+                            if (effectiveInstance.Settings.AlignmentMode == AlignmentMode.AltAz)  // M3
                             {
                                 // update TargetRa and TargetDec after slewing with offset rates as per ASCOM spec
                                 if (effectiveInstance.SkyPredictor.RatesSet)
                                 {
                                     var targetRaDec = effectiveInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
-                                    TargetRa = targetRaDec[0];
-                                    TargetDec = targetRaDec[1];
+                                    effectiveInstance.TargetRa = targetRaDec[0];  // M3
+                                    effectiveInstance.TargetDec = targetRaDec[1];  // M3
                                 }
 
                                 // use tracking to complete slew for Alt Az mounts
-                                effectiveInstance.SkyPredictor.Set(TargetRa, TargetDec);
+                                effectiveInstance.SkyPredictor.Set(effectiveInstance.TargetRa, effectiveInstance.TargetDec);  // M3
                                 effectiveInstance.SetTracking(true);
                                 effectiveInstance.TrackingMode = TrackingMode.AltAz;
-                                SetTracking(); var sw = Stopwatch.StartNew();
+                                SetTracking(effectiveInstance); var sw = Stopwatch.StartNew();  // M3
                                 // wait before completing async slew, double time for low resolution mounts 
-                                var highResMount = Conversions.StepPerArcSec(Math.Min(StepsPerRevolution[0], StepsPerRevolution[1])) > 5;
-                                var waitTime = highResMount ? 2 * _settings!.AltAzTrackingUpdateInterval : 4 * _settings!.AltAzTrackingUpdateInterval;
+                                var highResMount = Conversions.StepPerArcSec(Math.Min(effectiveInstance._stepsPerRevolution[0], effectiveInstance._stepsPerRevolution[1])) > 5;  // M3
+                                var waitTime = highResMount ? 2 * effectiveInstance.Settings.AltAzTrackingUpdateInterval : 4 * effectiveInstance.Settings.AltAzTrackingUpdateInterval;  // M3
                                 while (sw.ElapsedMilliseconds < waitTime)
                                 {
-                                    if (_ctsGoTo?.IsCancellationRequested == true)
+                                    if (effectiveInstance._ctsGoTo?.IsCancellationRequested == true)  // M3
                                     {
                                         // Stop current Alt Az tracking timed action
-                                        StopAltAzTrackingTimer();
+                                        effectiveInstance.StopAltAzTrackingTimer();  // M3
                                         // Prevent re-enabling by this thread
                                         trackingState = false;
                                         // Stop tracking motion 
-                                        StopAxes();
+                                        effectiveInstance.InstanceStopAxes();  // M3
                                         break;
                                     }
                                     else
@@ -906,7 +906,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case SlewType.SlewPark:
                             trackingState = false;
-                            AtPark = true;
+                            effectiveInstance.AtPark = true;  // M3
                             effectiveInstance.SkyPredictor.Reset();
                             break;
                         case SlewType.SlewHome:
@@ -915,7 +915,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case SlewType.SlewHandpad:
                             // ensure tracking if enabled has the correct target
-                            effectiveInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                            effectiveInstance.SkyPredictor.Set(effectiveInstance.RightAscensionXForm, effectiveInstance.DeclinationXForm);  // M3
                             break;
                         case SlewType.SlewComplete:
                             break;
@@ -932,13 +932,13 @@ namespace GreenSwamp.Alpaca.MountControl
                         Method = MonitorLog.GetCurrentMethod(),
                         Thread = Thread.CurrentThread.ManagedThreadId,
                         Message =
-                            $"{SlewState} finished|code|{returnCode}|{Utilities.HoursToHMS(RightAscensionXForm, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(DeclinationXForm, " ", ":", "", 2)}|Actual|{ActualAxisX}|{ActualAxisY}"
-                    };
-                    MonitorLog.LogToMonitor(monitorItem);
-                    SlewState = SlewType.SlewNone;
-                    // ToDo re-enable voice prompt later
-                    // SpeakSlewEnd(startingState);
-                    Tracking = trackingState;
+                                $"{effectiveInstance._slewState} finished|code|{returnCode}|{Utilities.HoursToHMS(effectiveInstance.RightAscensionXForm, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(effectiveInstance.DeclinationXForm, " ", ":", "", 2)}|Actual|{effectiveInstance._actualAxisX}|{effectiveInstance._actualAxisY}"  // M3
+                        };
+                        MonitorLog.LogToMonitor(monitorItem);
+                        effectiveInstance._slewState = SlewType.SlewNone;  // M3
+                        // ToDo re-enable voice prompt later
+                        // SpeakSlewEnd(startingState);
+                        effectiveInstance.SetTracking(trackingState);  // M3
                     // ToDo re-enable voice prompt later
                     // TrackingSpeak = true;
                 }
@@ -956,10 +956,10 @@ namespace GreenSwamp.Alpaca.MountControl
                         Message = "GoTo coordinates outside axes limits"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
-                    SlewState = SlewType.SlewNone;
+                    effectiveInstance._slewState = SlewType.SlewNone;  // M3
                     // ToDo re-enable voice prompt later
                     // SpeakSlewEnd(startingState);
-                    Tracking = false;
+                    effectiveInstance.SetTracking(false);  // M3
                     // ToDo re-enable voice prompt later
                     // TrackingSpeak = true;
                 }
@@ -982,14 +982,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 MonitorLog.LogToMonitor(monitorItem);
                 // Reset rates and axis movement
                 if (effectiveInstance != null) effectiveInstance._rateMoveAxes = new Vector(0, 0);
-                MoveAxisActive = false;
+                effectiveInstance._moveAxisActive = false;  // M3
                 if (effectiveInstance != null)
                 {
                     effectiveInstance.RateRa = 0.0;
                     effectiveInstance.RateDec = 0.0;
                 }
                 // Stop axes
-                switch (_settings!.Mount)
+                switch (effectiveInstance.Settings.Mount)  // M3
                 {
                     case MountType.Simulator:
                         SimTasks(MountTaskName.StopAxes, effectiveInstance);
@@ -1001,16 +1001,16 @@ namespace GreenSwamp.Alpaca.MountControl
                         throw new ArgumentOutOfRangeException();
                 }
 
-                SlewState = SlewType.SlewNone;
-                Tracking = trackingState;
+                effectiveInstance._slewState = SlewType.SlewNone;  // M3
+                effectiveInstance.SetTracking(trackingState);  // M3
                 // Some unknown exception
                 if (!cancelled)
-                    MountError = new Exception($"GoTo Async Error|{ex.Message}");
+                    effectiveInstance._mountError = new Exception($"GoTo Async Error|{ex.Message}");  // M3
             }
             finally
             {
-                _ctsGoTo?.Dispose();
-                _ctsGoTo = null;
+                effectiveInstance._ctsGoTo?.Dispose();  // M3
+                effectiveInstance._ctsGoTo = null;  // M3
             }
         }
 
@@ -1873,10 +1873,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// /// <param name="altRate">alternate rate to replace the guide rate</param>
         public static void PulseGuide(GuideDirection direction, int duration, double altRate, MountInstance? instance = null) // J1: instance-aware
         {
-            if (!IsMountRunning) { throw new Exception("Mount not running"); }
-
-            var inst = instance ?? _defaultInstance;     // J1: per-instance
-            var settings = instance?.Settings ?? _settings; // J1: per-instance settings
+            var inst = instance ?? _defaultInstance;     // M0: resolve instance before guard
+            var settings = instance?.Settings ?? _settings; // M0: per-instance settings
+            if (inst == null || !inst.IsMountRunning) { throw new Exception("Mount not running"); }
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{direction}|{duration}" };
@@ -2309,7 +2308,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var inst = instance ?? _defaultInstance;
             var settings = instance?.Settings ?? _settings;
-            if (!IsMountRunning) { return; }
+            if (inst == null || !inst.IsMountRunning) { return; }  // M2: per-instance guard
 
             double rateChange = 0;
             Vector rate;

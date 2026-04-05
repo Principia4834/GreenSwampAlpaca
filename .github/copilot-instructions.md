@@ -6,9 +6,10 @@
 - Always use my name "Andy" when referring to the "user"
 - Always include and refresh a time and date stamp in any markdown document you create or update using the format "YYYY-MM-DD HH:MM"
 - Always refresh the date and time stamp by querying the current system time - do not hardcode or reuse old timestamps
-- After any PowerShell bulk write to a markdown file, always normalise line endings to LF before finishing
+- After any PowerShell bulk write to a markdown file, always normalise line endings to CR/LF before finishing and set thecorrect BOM for UTF-8 encoding
 - Never use the edit_file tool to make edits in files over 1500 lines, instead use surgical edits with get_file_with_lines to capture context and verify line numbers before editing
 - When using the edit_file tool always confirm the context is unique and the line numbers are correct by first using get_file_with_lines to read the exact lines you plan to edit, and verifying the content matches what you expect to change
+- After each phase of edits, always commit the changes with a one line message such as "feat: add new feature X" or "fix: resolve issue Y", do not add detailed descriptions in the commit message, instead save detailed explanations for the final commit message when the entire task is complete and verified
 
 ## Shell & CLI guidance for Copilot suggestions
 
@@ -217,21 +218,6 @@ get_file "path/to/found/file.cs"
 ---
 
 ## ?? Settings System (IMPORTANT)
-
-### Legacy vs Modern (Migration in Progress)
-
-| Aspect | Legacy (.NET 4.8) | Modern (.NET 8) |
-|--------|-------------------|-----------------|
-| **Format** | XML (`user.config`) | JSON (`appsettings.user.json`) |
-| **Location** | `%LocalAppData%` auto | `%AppData%/GreenSwampAlpaca/{version}/` |
-| **Access** | `ConfigurationManager` | `IVersionedSettingsService` |
-| **Status** | ? Being removed | ? Active |
-
-### Rules for Settings Code:
-
-1. **NO `System.Configuration` references**
-   - Do not use `ConfigurationManager`
-   - Do not reference .NET Framework config APIs
 
 2. **Use modern settings service:**
    ```csharp
@@ -461,88 +447,3 @@ If you break the build:
 > **Build first. Edit small. Verify immediately. Own your mistakes.**
 
 This is a production astronomy mount control system. Breaking the build wastes telescope time and frustrates users. ALWAYS follow the verification workflow.
-
----
-
-## ?? Specific Task Instructions
-
-### Task: Replace user.config with appsettings.user.json in MountConnect()
-
-**Location:** `GreenSwamp.Alpaca.MountControl/SkyServer.Core.cs` lines ~318-335
-
-**Critical Requirements:**
-
-1. **Use get_file_with_lines to read the exact block first:**
-   ```
-   get_file_with_lines "GreenSwamp.Alpaca.MountControl/SkyServer.Core.cs" [{"start": 310, "end": 340}]
-   ```
-
-2. **Remove the using directive at the top:**
-   - Line ~42: `using System.Configuration;` ? DELETE THIS
-
-3. **Replace ONLY the try-catch block** (NOT surrounding code):
-   ```csharp
-   try
-   {
-       // Get path to current version's appsettings.user.json file
-       var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-       var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-       
-       // Get version from assembly (matches VersionedSettingsService logic)
-       var infoVersionAttr = assembly
-           .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
-           .FirstOrDefault() as AssemblyInformationalVersionAttribute;
-       
-       var version = infoVersionAttr?.InformationalVersion 
-           ?? assembly.GetName().Version?.ToString() 
-           ?? "1.0.0";
-       
-       // Remove build metadata (e.g., +commitHash)
-       var plusIndex = version.IndexOf('+');
-       if (plusIndex > 0)
-       {
-           version = version.Substring(0, plusIndex);
-       }
-       
-       var userSettingsPath = Path.Combine(appData, "GreenSwampAlpaca", version, "appsettings.user.json");
-       var logDirectoryPath = GsFile.GetLogPath();
-       
-       if (File.Exists(userSettingsPath))
-       {
-           // Copy the appsettings.user.json file to the log directory
-           var destinationPath = Path.Combine(logDirectoryPath, "appsettings.user.json");
-           File.Copy(userSettingsPath, destinationPath, true);
-           
-           monitorItem = new MonitorEntry
-           { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Copied appsettings.user.json to {logDirectoryPath}" };
-           MonitorLog.LogToMonitor(monitorItem);
-       }
-       else
-       {
-           // Settings file doesn't exist yet - log info (it will be created later by the settings service)
-           monitorItem = new MonitorEntry
-           { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"appsettings.user.json not found at {userSettingsPath} - will be created on first settings save" };
-           MonitorLog.LogToMonitor(monitorItem);
-       }
-   }
-   catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
-   {
-       monitorItem = new MonitorEntry
-       { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Cannot copy appsettings.user.json. {e.Message}" };
-       MonitorLog.LogToMonitor(monitorItem);
-   }
-   ```
-
-4. **Make TWO separate edits:**
-   - Edit 1: Remove `using System.Configuration;` from top of file
-   - Edit 2: Replace the try-catch block with new code
-
-5. **Run build after EACH edit**
-
-6. **DO NOT:**
-   - Include surrounding case statements in the edit
-   - Replace entire methods
-   - Touch any switch statement structure
-   - Edit more than the exact lines specified
-
-**Rationale:** This replaces legacy .NET Framework XML config with modern JSON settings.
