@@ -922,14 +922,11 @@ namespace GreenSwamp.Alpaca.MountControl
         }
         /// <summary>
         /// Emergency stop - halt all motion immediately
-        /// Delegates to static method
         /// </summary>
         public void EmergencyStop()
         {
             LogMount($"EmergencyStop() called on instance {_id}");
-            
-            // Delegate to static
-            SkyServer.AbortSlewAsync(speak: false);
+            AbortSlewAsync(speak: false);
         }
 
         /// <summary>
@@ -943,56 +940,219 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Telescope API Bridge Methods (Step 8 — delegates to SkyServer until logic migrates in Step 9)
+        #region Telescope API Bridge Methods (Step 9 — fully migrated per-instance implementations)
 
-        /// <summary>Rate move on primary axis — delegates to SkyServer until Step 9.</summary>
+        /// <summary>Rate move on primary axis — L: dispatches to this device's hardware queue.</summary>
         public double RateMovePrimaryAxis
         {
             get => _rateMoveAxes.X;
-            set => SkyServer.RateMovePrimaryAxis = value;
+            set
+            {
+                if (Math.Abs(_rateMoveAxes.X - value) < 0.0000000001) return;
+                _rateMoveAxes.X = value;
+                InstanceCancelAllAsync();
+                InstanceSetRateMoveSlewState();
+                switch (_settings.Mount)
+                {
+                    case MountType.Simulator:
+                        _ = new CmdMoveAxisRate(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, _rateMoveAxes.X);
+                        break;
+                    case MountType.SkyWatcher:
+                        _ = new SkyAxisSlew(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, _rateMoveAxes.X);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                if (_tracking) SkyServer.SetTracking(this);
+                LogMount($"RateMovePrimaryAxis|{_rateMoveAxes.X}|offset:{_skyTrackingOffset[0]}");
+            }
         }
 
-        /// <summary>Rate move on secondary axis — delegates to SkyServer until Step 9.</summary>
+        /// <summary>Rate move on secondary axis — L: dispatches to this device's hardware queue.</summary>
         public double RateMoveSecondaryAxis
         {
             get => _rateMoveAxes.Y;
-            set => SkyServer.RateMoveSecondaryAxis = value;
+            set
+            {
+                if (Math.Abs(_rateMoveAxes.Y - value) < 0.0000000001) return;
+                _rateMoveAxes.Y = value;
+                InstanceCancelAllAsync();
+                InstanceSetRateMoveSlewState();
+                switch (_settings.Mount)
+                {
+                    case MountType.Simulator:
+                        _ = new CmdMoveAxisRate(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis2, -_rateMoveAxes.Y);
+                        break;
+                    case MountType.SkyWatcher:
+                        _ = new SkyAxisSlew(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis2, _rateMoveAxes.Y);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                if (_tracking) SkyServer.SetTracking(this);
+                LogMount($"RateMoveSecondaryAxis|{_rateMoveAxes.Y}|offset:{_skyTrackingOffset[1]}");
+            }
         }
 
-        /// <summary>Selected park position — delegates to SkyServer until Step 9.</summary>
+        /// <summary>Selected park position — L: uses this device's _parkSelected field and settings.</summary>
         public ParkPosition ParkSelected
         {
-            get => SkyServer.ParkSelected;
-            set => SkyServer.ParkSelected = value;
+            get
+            {
+                if (_parkSelected == null)
+                {
+                    if (!string.IsNullOrEmpty(_settings.ParkName))
+                    {
+                        var found = _settings.ParkPositions?.Find(x => x.Name == _settings.ParkName);
+                        if (found != null)
+                        {
+                            _parkSelected = new ParkPosition(found.Name, found.X, found.Y);
+                            return _parkSelected;
+                        }
+                    }
+                    if (_settings.ParkAxes != null && _settings.ParkAxes.Length >= 2)
+                    {
+                        _parkSelected = new ParkPosition("Park", _settings.ParkAxes[0], _settings.ParkAxes[1]);
+                    }
+                }
+                return _parkSelected;
+            }
+            set
+            {
+                if (_parkSelected != null)
+                {
+                    if (_parkSelected.Name == value.Name && Math.Abs(_parkSelected.X - value.X) < 0 &&
+                        Math.Abs(_parkSelected.Y - value.Y) < 0) { return; }
+                }
+                _parkSelected = new ParkPosition(value.Name, value.X, value.Y);
+                LogMount($"ParkSelected|{value.Name}|{value.X}|{value.Y}");
+            }
         }
 
-        /// <summary>Apply full tracking state change including side effects — delegates to SkyServer.Tracking setter.</summary>
-        public void ApplyTracking(bool value) => SkyServer.Tracking = value;
+        /// <summary>Apply full tracking state change including side effects — L: calls Phase K InstanceApplyTracking.</summary>
+        public void ApplyTracking(bool value) => InstanceApplyTracking(value);
 
-        /// <summary>Set SideOfPier (triggers pier flip) — delegates to SkyServer.SideOfPier setter.</summary>
-        public void SetSideOfPier(PointingState value) => SkyServer.SideOfPier = value;
+        /// <summary>Set SideOfPier (triggers pier flip) — L: uses per-instance slews and flip flag.</summary>
+        public void SetSideOfPier(PointingState value)
+        {
+            var axes = new[] { _actualAxisX, _actualAxisY };
+            var context = AxesContext.FromSettings(_settings);
+            if (SkyServer.IsWithinFlipLimits(Axes.AxesMountToApp(axes, context)))
+            {
+                _flipOnNextGoto = true;
+                if (_tracking)
+                    _ = SlewRaDecAsync(RightAscensionXForm, DeclinationXForm, true);
+                else
+                    _ = SlewAltAzAsync(Altitude, Azimuth);
+                LogMount($"SetSideOfPier|{value}|limit:{_settings.HourAngleLimit}|{axes[0]}|{axes[1]}");
+            }
+            else
+            {
+                throw new InvalidOperationException($"SideOfPier ({value}) is outside the range of set Limits");
+            }
+        }
 
-        /// <summary>Set RateDec with ActionRateRaDec side effect — delegates to SkyServer.RateDec setter.</summary>
-        public void SetRateDec(double degrees) => SkyServer.RateDec = degrees;
+        /// <summary>Set RateDec with ActionRateRaDec side effect — L: uses this device's fields.</summary>
+        public void SetRateDec(double degrees)
+        {
+            RateDec = degrees;
+            InstanceActionRateRaDec();
+            LogMount($"SetRateDec|{degrees}|offset:{_skyTrackingOffset[1]}");
+        }
 
-        /// <summary>Set RateRa with ActionRateRaDec side effect — delegates to SkyServer.RateRa setter.</summary>
-        public void SetRateRa(double degrees) => SkyServer.RateRa = degrees;
+        /// <summary>Set RateRa with ActionRateRaDec side effect — L: uses this device's fields.</summary>
+        public void SetRateRa(double degrees)
+        {
+            RateRa = degrees;
+            InstanceActionRateRaDec();
+            LogMount($"SetRateRa|{degrees}|offset:{_skyTrackingOffset[0]}");
+        }
 
-        /// <summary>Abort any active slew — delegates to SkyServer.AbortSlewAsync.</summary>
-        public void AbortSlewAsync(bool speak) => SkyServer.AbortSlewAsync(speak);
+        /// <summary>Abort any active slew — L: operates on this device's hardware queue.</summary>
+        public void AbortSlewAsync(bool speak)
+        {
+            if (!IsMountRunning) return;
+            var tracking = _tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
+            InstanceApplyTracking(false);
+            _slewController?.CancelCurrentSlewAsync().Wait();
+            InstanceCancelAllAsync();
+            _moveAxisActive = false;
+            _rateMoveAxes = new Vector(0, 0);
+            _rateRaDec = new Vector(0, 0);
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                    break;
+                case MountType.SkyWatcher:
+                    SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+            InstanceApplyTracking(tracking);
+            _slewState = SlewType.SlewNone;
+            LogMount($"AbortSlewAsync|restored tracking:{tracking}");
+        }
 
-        /// <summary>Returns whether the specified axis can be moved — delegates to SkyServer.CanMoveAxis.</summary>
-        public bool CanMoveAxis(TelescopeAxis axis) => SkyServer.CanMoveAxis(axis);
+        /// <summary>Returns whether the specified axis can be moved — L: uses this device's NumMoveAxis setting.</summary>
+        public bool CanMoveAxis(TelescopeAxis axis)
+        {
+            var ax = axis switch
+            {
+                TelescopeAxis.Primary => 1,
+                TelescopeAxis.Secondary => 2,
+                TelescopeAxis.Tertiary => 3,
+                _ => 0
+            };
+            return ax != 0 && ax <= _settings.NumMoveAxis;
+        }
 
-        /// <summary>Determine side of pier for given RA/Dec — delegates to SkyServer.DetermineSideOfPier.</summary>
-        public PointingState DetermineSideOfPier(double rightAscension, double declination) =>
-            SkyServer.DetermineSideOfPier(rightAscension, declination);
+        /// <summary>Determine side of pier for given RA/Dec — L: uses this device's SideOfPier and settings.</summary>
+        public PointingState DetermineSideOfPier(double rightAscension, double declination)
+        {
+            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                return PointingState.Unknown;
+            var sop = SideOfPier;
+            var context = AxesContext.FromSettings(_settings);
+            var flipReq = Axes.IsFlipRequired(new[] { rightAscension, declination }, context);
+            LogMount($"DetermineSideOfPier|Ra:{rightAscension}|Dec:{declination}|Flip:{flipReq}|SoP:{sop}");
+            return sop switch
+            {
+                PointingState.Normal => flipReq ? PointingState.ThroughThePole : PointingState.Normal,
+                PointingState.ThroughThePole => flipReq ? PointingState.Normal : PointingState.ThroughThePole,
+                _ => PointingState.Unknown
+            };
+        }
 
-        /// <summary>Start GoTo Home — delegates to SkyServer.GoToHome.</summary>
-        public Task<SlewResult> GoToHome() => SkyServer.GoToHome();
+        /// <summary>Start GoTo Home — L: uses this device's HomeAxes, AtHome, and SlewAsync.</summary>
+        public Task<SlewResult> GoToHome()
+        {
+            if (AtHome || _slewState == SlewType.SlewHome)
+                return Task.FromResult(SlewResult.Failed("Already at home or home slew in progress"));
+            InstanceApplyTracking(false);
+            LogMount("GoToHome|Async using per-instance SlewController");
+            var target = new[] { _homeAxes.X, _homeAxes.Y };
+            return SlewAsync(target, SlewType.SlewHome, tracking: false);
+        }
 
-        /// <summary>Start park async — delegates to SkyServer.GoToParkAsync.</summary>
-        public Task<SlewResult> GoToParkAsync() => SkyServer.GoToParkAsync();
+        /// <summary>Start park async — L: uses this device's ParkSelected and SlewAsync.</summary>
+        public async Task<SlewResult> GoToParkAsync()
+        {
+            InstanceApplyTracking(false);
+            var ps = ParkSelected;
+            if (ps == null)
+                return SlewResult.Failed("No park position selected");
+            if (double.IsNaN(ps.X) || double.IsNaN(ps.Y))
+                return SlewResult.Failed("Invalid park coordinates");
+            _settings.ParkAxes = new[] { ps.X, ps.Y };
+            _settings.ParkName = ps.Name;
+            LogMount($"GoToParkAsync|{ps.Name}|{ps.X}|{ps.Y}");
+            var target = new[] { ps.X, ps.Y };
+            return await SlewAsync(target, SlewType.SlewPark, tracking: false);
+        }
 
         /// <summary>Issue a pulse guide command — passes this instance to SkyServer.PulseGuide (J1).</summary>
         public void PulseGuide(GuideDirection direction, int duration, double altRate) =>
@@ -1983,6 +2143,72 @@ namespace GreenSwamp.Alpaca.MountControl
             _trackingMode = TrackingMode.Off;
             SkyPredictor.Reset();
             SkyServer.SetTracking(this);
+        }
+
+        /// <summary>
+        /// L: Per-instance cancel all async operations.
+        /// Cancels this device's GoTo, pulse guide, and HC pulse guide tasks and waits briefly for them to complete.
+        /// </summary>
+        internal void InstanceCancelAllAsync()
+        {
+            if (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null)
+            {
+                _ctsGoTo?.Cancel();
+                _ctsPulseGuideDec?.Cancel();
+                _ctsPulseGuideRa?.Cancel();
+                _ctsHcPulseGuide?.Cancel();
+                var sw = Stopwatch.StartNew();
+                while ((_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null)
+                       && sw.ElapsedMilliseconds < 2000)
+                    Thread.Sleep(200);
+            }
+        }
+
+        /// <summary>
+        /// L: Per-instance set/reset tracking and slewing state while MoveAxis is active.
+        /// Mirrors SkyServer.SetRateMoveSlewState using this device's own fields.
+        /// </summary>
+        private void InstanceSetRateMoveSlewState()
+        {
+            bool primaryActive = _rateMoveAxes.X != 0.0;
+            bool secondaryActive = _rateMoveAxes.Y != 0.0;
+            if (primaryActive || secondaryActive)
+            {
+                _moveAxisActive = true;
+                _isSlewing = true;
+                _slewState = SlewType.SlewMoveAxis;
+            }
+            if (!primaryActive && !secondaryActive)
+            {
+                _moveAxisActive = false;
+                _isSlewing = false;
+                _slewState = SlewType.SlewNone;
+                if (_tracking) SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+            }
+        }
+
+        /// <summary>
+        /// L: Per-instance Ra/Dec rate action — updates this device's predictor and applies hardware tracking rate.
+        /// Mirrors SkyServer.ActionRateRaDec using this device's own fields.
+        /// </summary>
+        private void InstanceActionRateRaDec()
+        {
+            if (_tracking)
+            {
+                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                    SkyPredictor.Set(raDec[0], raDec[1], _rateRaDec.X, _rateRaDec.Y);
+                }
+                SkyServer.SetTracking(this);
+            }
+            else
+            {
+                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _rateRaDec.X, _rateRaDec.Y);
+                }
+            }
         }
 
         #endregion
