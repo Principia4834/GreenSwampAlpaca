@@ -17,6 +17,7 @@
 - 2026-04-04 20:12 Duplicate sections removed; Phase J task table added to Section 5; LF line endings normalised
 - 2026-04-04 22:49 Phase J complete (J1/J2/J4/J5/J7 resolved); git-restore I/R regressions re-applied; all builds green
 - 2026-04-05 09:06 Phase K complete; SlewController and SlewOperation fully instance-aware; all builds green
+- 2026-04-05 10:48 Phase L complete; Step 9 bridge region fully migrated per-instance; EmergencyStop fixed; commit 487c08e; all builds green
 **Branch:** `master`
 **Build baseline:** Green Simulator and SkyWatcher GermanPolar pass confidence tests
 **Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs` + two-device smoke test failure diagnosis (2026-04-04)
@@ -43,6 +44,7 @@ Remaining work by category:
 | **Phase I Static method instance-awareness** ✅ | `SetSlewRates`, `SetGuideRates`, `CalcCustomTrackingOffset`, `SetTracking` accept `MountInstance? instance`; `Defaults()`/`MountConnect()` pass `this`; `SkyPulseGoto`, `SimGoTo`, `SkyGoTo`, `PulseGuideAltAz` read/write instance fields directly | ✅ Resolved |
 | **Phase J Group 3 re-assessment** | J1/J2/J4/J5/J7 resolved ✅; J3 (logging labels) 🟠 still pending; J6 deferred to Phase E 🟡 | ✅ Mostly resolved — J3 logging labels remaining |
 | **Phase K SlewController/SlewOperation instance-aware** ✅ | `SlewController`/`SlewOperation` state/dispatch via `operation.MountInstance`; `InstanceApplyTracking`, `InstanceApplyTrackingDirect`, `InstanceSetTrackingMode`, `InstanceCompletePark` helpers added | ✅ Resolved |
+| **Phase L Step 9 bridge region fully migrated** ✅ | `MountInstance.cs`; 12 ConformU-failing bridge methods + `EmergencyStop` now operate on this device's hardware queue, settings, and CTS tokens; root cause of device-1 failures eliminated | ✅ Resolved |
 | **Phase E Blazor per-device UI notifications** | `TelescopeStateService` reads all state from `SkyServer.*` (device 0 only); `StaticPropertyChanged` fires globally | 🔴 Yes confirmed primary cause of smoke test UI symptom |
 | **Phase F Option C Phase 3** | Per-device serial config in `Devices[]` array; Blazor multi-device UI not started | 🟡 UI / config only |
 
@@ -151,6 +153,21 @@ Remaining work by category:
 | **J7 `InstanceStopAxes` / `InstanceGoToPark` per-instance** ✅ | `MountInstance.cs` | `CheckAxisLimits()` calls `InstanceStopAxes()` and `InstanceGoToPark()` which operate on `this` device's queues only; no longer calls `SkyServer.StopAxes()` / `SkyServer.GoToPark()` |
 | **K1 `InstanceApplyTracking/Direct/SetTrackingMode/CompletePark` helpers** ✅ | `MountInstance.cs` | `InstanceSetTrackingMode()`, `InstanceApplyTracking(bool)`, `InstanceApplyTrackingDirect(bool, TrackingMode)`, `InstanceCompletePark()` added before AltAz timer region |
 | **K2 `SlewController`/`SlewOperation` fully instance-aware** ✅ | `SlewController.cs` | All state transitions and hardware dispatch use `operation.MountInstance`; `ForceStopAxesAsync(MountInstance?)` added; tracking via instance helpers; no static `SkyServer` routing in slew execution path |
+| **L1 `InstanceCancelAllAsync` helper** ✅ | `MountInstance.cs` | Per-instance cancel of `_ctsGoTo`, `_ctsPulseGuideRa/Dec`, `_ctsHcPulseGuide` with 2 s spin-wait; mirrors `SkyServer.CancelAllAsync` |
+| **L2 `InstanceSetRateMoveSlewState` helper** ✅ | `MountInstance.cs` | Per-instance slew-state update from `_rateMoveAxes.X/Y`; sets `_moveAxisActive`, `_isSlewing`, `_slewState`; mirrors `SkyServer.SetRateMoveSlewState` |
+| **L3 `InstanceActionRateRaDec` helper** ✅ | `MountInstance.cs` | Per-instance RA/Dec rate action; updates `SkyPredictor` and calls `SkyServer.SetTracking(this)`; mirrors `SkyServer.ActionRateRaDec` |
+| **L4 `RateMovePrimaryAxis` setter migrated** ✅ | `MountInstance.cs` | Dispatches to `this.SkyQueueInstance`/`MountQueueInstance` Axis1; no longer routes via `SkyServer._defaultInstance` |
+| **L5 `RateMoveSecondaryAxis` setter migrated** ✅ | `MountInstance.cs` | Dispatches to `this.SkyQueueInstance`/`MountQueueInstance` Axis2; Simulator correctly negates Y |
+| **L6 `ParkSelected` get/set migrated** ✅ | `MountInstance.cs` | Reads/writes `_parkSelected` using this device's `_settings.ParkName/ParkAxes/ParkPositions` |
+| **L7 `ApplyTracking` migrated** ✅ | `MountInstance.cs` | Delegates to Phase K `InstanceApplyTracking(bool)` |
+| **L8 `SetSideOfPier` migrated** ✅ | `MountInstance.cs` | Per-instance pier flip via `_flipOnNextGoto`, `SlewRaDecAsync`/`SlewAltAzAsync`, `SkyServer.IsWithinFlipLimits` |
+| **L9 `SetRateDec` / `SetRateRa` migrated** ✅ | `MountInstance.cs` | Sets `RateDec`/`RateRa` on this instance; calls `InstanceActionRateRaDec()` |
+| **L10 `AbortSlewAsync` migrated** ✅ | `MountInstance.cs` | Cancels `_slewController`, `InstanceCancelAllAsync`, stops axes, restores tracking — all on `this`; no device-0 contamination |
+| **L11 `CanMoveAxis` migrated** ✅ | `MountInstance.cs` | Reads `_settings.NumMoveAxis` from this device's settings |
+| **L12 `DetermineSideOfPier` migrated** ✅ | `MountInstance.cs` | Uses `this.SideOfPier` and `AxesContext.FromSettings(_settings)` |
+| **L13 `GoToHome` migrated** ✅ | `MountInstance.cs` | Uses `_homeAxes`, `AtHome`, `_slewState`; dispatches via `this.SlewAsync` |
+| **L14 `GoToParkAsync` migrated** ✅ | `MountInstance.cs` | Uses `this.ParkSelected`, updates `_settings.ParkAxes/ParkName`; dispatches via `this.SlewAsync` |
+| **L15 `EmergencyStop` fixed** ✅ | `MountInstance.cs` | Was `SkyServer.AbortSlewAsync(speak: false)` → `this.AbortSlewAsync(speak: false)` |
 
 ---
 
@@ -742,3 +759,27 @@ Identified via ConformU device-1 compliance failure: `SetSlewRates`, `SetGuideRa
 | **K7** | `SlewController.cs` | `SlewOperation.CompleteRaDecSlewAsync()`: reads `Settings`, target RA/Dec, `_stepsPerRevolution` from instance; applies tracking via `InstanceApplyTrackingDirect` | ✅ Done |
 | **K8** | `SlewController.cs` | `SlewOperation.CompleteAsync()`: SlewPark path uses `MountInstance.InstanceCompletePark()` | ✅ Done |
 | **K9** | `SlewController.cs` | `ForceStopAxesAsync(MountInstance?)`: optional instance param; uses `instance.InstanceStopAxes()` with safe fallback to `SkyServer.StopAxes()` | ✅ Done |
+
+---
+
+### ✅ Phase L — Step 9 Bridge Region Migration — COMPLETE (2026-04-05)
+
+The `#region Telescope API Bridge Methods (Step 8)` in `MountInstance.cs` was the root cause of all ConformU device-1 failures. Every action method in the region delegated back to `SkyServer` static methods that hardcode `_defaultInstance` (device 0). `DeclinationRate`, `RightAscensionRate`, `MoveAxis`, `Park`, `FindHome`, and `PulseGuide` guard checks all silently operated on device 0's hardware queue and CTS tokens. Phase L (Step 9) replaces all 12 failing bridge methods and adds 3 per-instance helpers. `EmergencyStop` is also fixed.
+
+| Task | File | Description | Status |
+|---|---|---|---|
+| **L1** | `MountInstance.cs` | Add `InstanceCancelAllAsync()`: per-instance CTS cancel (`_ctsGoTo`, `_ctsPulseGuideRa/Dec`, `_ctsHcPulseGuide`) with 2 s spin-wait | ✅ Done |
+| **L2** | `MountInstance.cs` | Add `InstanceSetRateMoveSlewState()`: per-instance `_moveAxisActive`, `_isSlewing`, `_slewState` from `_rateMoveAxes.X/Y` | ✅ Done |
+| **L3** | `MountInstance.cs` | Add `InstanceActionRateRaDec()`: per-instance predictor update + `SkyServer.SetTracking(this)` | ✅ Done |
+| **L4** | `MountInstance.cs` | `RateMovePrimaryAxis` setter: dispatch to `this.SkyQueueInstance`/`MountQueueInstance` Axis1 | ✅ Done |
+| **L5** | `MountInstance.cs` | `RateMoveSecondaryAxis` setter: dispatch to `this.SkyQueueInstance`/`MountQueueInstance` Axis2; Simulator correctly negates Y | ✅ Done |
+| **L6** | `MountInstance.cs` | `ParkSelected` get/set: read/write `_parkSelected` using this device's `_settings.ParkName/ParkAxes/ParkPositions` | ✅ Done |
+| **L7** | `MountInstance.cs` | `ApplyTracking(bool)`: delegate to Phase K `InstanceApplyTracking(bool)` | ✅ Done |
+| **L8** | `MountInstance.cs` | `SetSideOfPier(PointingState)`: per-instance pier flip via `_flipOnNextGoto`, `SlewRaDecAsync`/`SlewAltAzAsync`, `SkyServer.IsWithinFlipLimits` | ✅ Done |
+| **L9** | `MountInstance.cs` | `SetRateDec(double)` / `SetRateRa(double)`: set on this instance; call `InstanceActionRateRaDec()` | ✅ Done |
+| **L10** | `MountInstance.cs` | `AbortSlewAsync(bool)`: cancel `_slewController`, `InstanceCancelAllAsync`, stop axes, restore tracking — all on `this` | ✅ Done |
+| **L11** | `MountInstance.cs` | `CanMoveAxis(TelescopeAxis)`: reads `_settings.NumMoveAxis` from this device | ✅ Done |
+| **L12** | `MountInstance.cs` | `DetermineSideOfPier(double, double)`: uses `this.SideOfPier` and `AxesContext.FromSettings(_settings)` | ✅ Done |
+| **L13** | `MountInstance.cs` | `GoToHome()`: uses `_homeAxes`, `AtHome`, `_slewState`; dispatches via `this.SlewAsync` | ✅ Done |
+| **L14** | `MountInstance.cs` | `GoToParkAsync()`: uses `this.ParkSelected`, updates `_settings.ParkAxes/ParkName`; dispatches via `this.SlewAsync` | ✅ Done |
+| **L15** | `MountInstance.cs` | `EmergencyStop()`: was `SkyServer.AbortSlewAsync(speak: false)` → `this.AbortSlewAsync(speak: false)` | ✅ Done |
