@@ -20,6 +20,7 @@
 - 2026-04-05 10:48 Phase L complete; Step 9 bridge region fully migrated per-instance; EmergencyStop fixed; commit 487c08e; all builds green
 - 2026-04-05 11:35 Phase M complete; guard-before-resolve and GoToAsync device-0 contamination fixed (M0/M1/M2/M3); commit b3bf74e; all builds green
 - 2026-04-05 11:40 Status doc completed; Phase M task table and Section 2 ledger entries added
+- 2026-04-05 17:24 Phase N handover: commit 6b95251 (SkyGetRate/SetAltAzTrackingRates instance-aware) did not resolve device-1 AltAz tracking; remaining suspects catalogued; session closed for fresh debug session
 **Branch:** `master`
 **Build baseline:** Green Simulator and SkyWatcher GermanPolar pass confidence tests
 **Assessment method:** Direct code review of all five key files + queue subsystem + full read of all 14 regions of `SkyServer.TelescopeAPI.cs` + two-device smoke test failure diagnosis (2026-04-04)
@@ -48,7 +49,8 @@ Remaining work by category:
 | **Phase K SlewController/SlewOperation instance-aware** ✅ | `SlewController`/`SlewOperation` state/dispatch via `operation.MountInstance`; `InstanceApplyTracking`, `InstanceApplyTrackingDirect`, `InstanceSetTrackingMode`, `InstanceCompletePark` helpers added | ✅ Resolved |
 | **Phase L Step 9 bridge region fully migrated** ✅ | `MountInstance.cs`; 12 ConformU-failing bridge methods + `EmergencyStop` now operate on this device's hardware queue, settings, and CTS tokens; root cause of device-1 failures eliminated | ✅ Resolved |
 | **Phase M Guard-before-resolve audit + GoToAsync deep contamination** ✅ | `PulseGuide` (M0), `SlewMount` (M1), `SetTracking` (M2): static `IsMountRunning` guard fired before `var inst` was resolved; `GoToAsync` (M3): 12 sites routing to device 0 via `CancelAllAsync`, `_ctsGoTo`, `SlewState`, `Tracking`, `_settings`, `SimGoTo/SkyGoTo`, `TargetRa/Dec`, `StepsPerRevolution`, `StopAltAzTrackingTimer`, `StopAxes`, `AtPark`, `MountError`; all replaced with `effectiveInstance.*` equivalents | ✅ Resolved |
-| **Phase E Blazor per-device UI notifications** | `TelescopeStateService` reads all state from `SkyServer.*` (device 0 only); `StaticPropertyChanged` fires globally | 🔴 Yes confirmed primary cause of smoke test UI symptom |
+| **Phase N AltAz `SetTracking` dispatch audit** | N1: `SetTracking()` `SkyAxisSlew`/`CmdAxisTracking` queue references not yet verified per-instance (M2 only changed the guard); N2: `MovePrimaryAxisActive`/`MoveSecondaryAxisActive` guards still static; N3: `GetSyncedAxes` in `SetAltAzTrackingRates` still static | 🔴 Yes — device-1 AltAz does not track; commit 6b95251 was necessary but insufficient |
+| **Phase E Blazor per-device UI notifications** |
 | **Phase F Option C Phase 3** | Per-device serial config in `Devices[]` array; Blazor multi-device UI not started | 🟡 UI / config only |
 
 **Minor residuals (cleanup only):**
@@ -803,3 +805,194 @@ Full audit of all instance-aware static methods identified 4 instances of the gu
 | **M1** | `SkyServer.Core.cs` | `SlewMount()`: `var effectiveInstance` resolved at top of method before guard; guard changed to `if (effectiveInstance == null \|\| !effectiveInstance.IsMountRunning)`; `HcResetPrevMove(Ra/Dec)` inlined to direct field sets on `effectiveInstance`; `AtPark = false` → `effectiveInstance.AtPark = false` | ✅ Done |
 | **M2** | `SkyServer.TelescopeAPI.cs` | `SetTracking()`: guard changed from `if (!IsMountRunning)` to `if (inst == null \|\| !inst.IsMountRunning)` (inst already resolved on the line above) | ✅ Done |
 | **M3** | `SkyServer.TelescopeAPI.cs` | `GoToAsync()`: 12 device-0 contamination sites replaced with `effectiveInstance.*` — guard, `InstanceCancelAllAsync`, `_ctsGoTo`, `_isSlewing`, `_slewState`, `Tracking`/`SetTracking(bool)`, `Settings.Mount`, `SimGoTo`/`SkyGoTo` dispatch + token, AltAz block (`Settings.AlignmentMode`, `TargetRa/Dec`, `SkyPredictor.Set`, `SetTracking(effectiveInstance)`, `_stepsPerRevolution`, `Settings.AltAzTrackingUpdateInterval`, `_ctsGoTo.IsCancellationRequested`, `StopAltAzTrackingTimer`, `InstanceStopAxes`), `AtPark`, handpad `SkyPredictor.Set(RightAscensionXForm, DeclinationXForm)`, log message fields (`_slewState`, `RightAscensionXForm`, `DeclinationXForm`, `_actualAxisX/Y`), success/can't-slew/catch/finally `_slewState`+`SetTracking`+`_mountError`+`_ctsGoTo` disposal | ✅ Done |
+
+---
+
+### 🔴 Phase N — AltAz `SetTracking` Dispatch Audit (New Debug Session)
+
+Commit `6b95251` made `SkyGetRate` and `SetAltAzTrackingRates` instance-aware, and build is green, but device-1 AltAz tracking remains broken. The `SetTracking` method's command dispatch was **not** changed in either M2 or 6b95251. Queue references in the dispatch block (`SkyAxisSlew` / `CmdAxisTracking`) may still be static (device-0). See **Section 6** for the full debugging handover.
+
+| Task | File | Description | Priority |
+|---|---|---|---|
+| **N1** | `SkyServer.TelescopeAPI.cs` | `SetTracking()`: verify `SkyAxisSlew`/`CmdAxisTracking` dispatch uses `inst.SkyQueueInstance`/`inst.MountQueueInstance` — not bare static `SkyQueueInstance`/`MountQueueInstance`; M2 only changed the guard, not the dispatch | 🔴 Primary suspect |
+| **N2** | `SkyServer.TelescopeAPI.cs` | `SetTracking()`: `if (!MovePrimaryAxisActive)` and `if (!MoveSecondaryAxisActive)` guards read device-0's `_rateMoveAxes`; change to `inst._rateMoveAxes.X != 0` / `inst._rateMoveAxes.Y != 0` | 🟠 High |
+| **N3** | `SkyServer.TelescopeAPI.cs` | `SetAltAzTrackingRates()`: `GetSyncedAxes(skyTarget)` is a static call using device-0's alignment model; low impact if no star sync done | 🟡 Medium |
+| **N4** | `SkyServer.TelescopeAPI.cs` | `SetTracking()` log line: `SkyTrackingOffset[0]`/`[1]` are static delegates to `_defaultInstance`; replace with `inst._skyTrackingOffset[0]`/`[1]` | 🟢 Low (logging only) |
+
+---
+
+## 6. Phase N — AltAz Device-1 Debugging Handover (2026-04-05 17:24)
+
+### Git State at Handover
+
+- **HEAD**: `6b95251` — `fix: make SkyGetRate and SetAltAzTrackingRates instance-aware for multi-device AltAz tracking`
+- **Branch**: `master`
+- **Build**: ✅ Green
+- **Problem**: Device-1 AltAz tracking STILL broken after 6b95251
+- **Prior revert**: `git reset --hard HEAD~2` removed bad commits `370bbbf` and `2ccf3f2` before this session started
+
+---
+
+### ⚠️ Critical Architecture Rule
+
+`_defaultInstance` in `SkyServer` is a **computed property**, not a field:
+
+```csharp
+private static MountInstance? _defaultInstance => MountInstanceRegistry.GetInstance(0);
+```
+
+**Never use reference equality** (`inst == _defaultInstance`). Every access returns a fresh registry lookup result — a cached local `inst` variable will never compare equal to `_defaultInstance`. This was the root cause of a safety-critical guard in the reverted commits.
+
+---
+
+### What Commit 6b95251 Fixed
+
+| Method | What changed |
+|---|---|
+| `SkyGetRate(MountInstance? instance)` | Reads `inst._skyTrackingRate`, `inst._skyHcRate` (was static `_defaultInstance._skyTrackingRate/SkyHcRate`) |
+| `SetAltAzTrackingRates(..., MountInstance? instance)` | Uses `inst.SkyPredictor`, reads `inst._steps` (was static `Steps`), waits on `inst._mountPositionUpdatedEvent` (was `WaitMountPositionUpdated()`), calls `inst.ConvertStepsToDegrees`, writes `inst._skyTrackingRate.X/Y` |
+| `SetTracking` call sites | Passes `inst` to both `SetAltAzTrackingRates(inst.AltAzTrackingMode, inst)` and `rate = SkyGetRate(inst)` |
+
+**What was NOT changed in 6b95251 or M2:** The `SkyAxisSlew` / `CmdAxisTracking` hardware command dispatch lines inside `SetTracking`.
+
+---
+
+### AltAz Tracking Call Chain — Current State at HEAD 6b95251
+
+```
+MountInstance.AltAzTrackingTimerTick(sender, e)          [✅ per-instance, J4]
+  SkyServer.SetTracking(this)                            [✅ passes inst]
+
+SetTracking(MountInstance? instance):
+  var inst = instance ?? _defaultInstance               [✅ resolves device-1]
+  if (inst==null || !inst.IsMountRunning) return        [✅ per-instance guard, M2]
+  SetAltAzTrackingRates(inst.AltAzTrackingMode, inst)   [✅ 6b95251]
+    inst.SkyPredictor.GetRaDecAtTime(...)               [✅ 6b95251]
+    inst._steps[0/1]                                    [✅ 6b95251]
+    inst._mountPositionUpdatedEvent.Wait(...)           [✅ 6b95251]
+    inst.ConvertStepsToDegrees(...)                     [✅ 6b95251]
+    GetSyncedAxes(skyTarget)                            [⚠️ STATIC → device-0 alignment model]
+    inst._skyTrackingRate.X/Y = rate                   [✅ 6b95251]
+  rate = SkyGetRate(inst)                               [✅ 6b95251]
+    inst._skyTrackingRate                               [✅ 6b95251]
+    inst._skyHcRate                                     [✅ 6b95251]
+    change += RateMovePrimaryAxis                       [⚠️ STATIC → device-0._rateMoveAxes.X]
+    change += RateMoveSecondaryAxis                     [⚠️ STATIC → device-0._rateMoveAxes.Y]
+  if (!MovePrimaryAxisActive)                           [⚠️ STATIC → device-0._rateMoveAxes.X]
+  SkyAxisSlew(???.NewId, ???, Axis.Axis1, rate.X)       [❓ QUEUE REF NOT VERIFIED ← PRIMARY SUSPECT]
+```
+
+---
+
+### N1 — Primary Suspect: `SetTracking` Command Dispatch Queue Reference
+
+The M2 fix **only** changed the entry guard of `SetTracking`. The `SkyAxisSlew` (SkyWatcher) and `CmdAxisTracking` (Simulator) dispatch lines in the AltAz branch were **not** touched in M2 or 6b95251.
+
+**Step 1 — Read the current code:**
+
+```powershell
+get_file "GreenSwamp.Alpaca.MountControl\SkyServer.TelescopeAPI.cs" 2300 2460
+```
+
+**Step 2 — Find every `SkyAxisSlew` and `CmdAxisTracking` call in the AltAz dispatch block. Check whether they use `inst.SkyQueueInstance` or bare `SkyQueueInstance`:**
+
+```csharp
+// ❌ WRONG — static facade, routes to device-0 queue:
+_ = new SkyAxisSlew(SkyQueueInstance!.NewId, SkyQueueInstance, Axis.Axis1, rate.X);
+_ = new CmdAxisTracking(MountQueueInstance!.NewId, MountQueueInstance, Axis.Axis1, ...);
+
+// ✅ CORRECT — per-instance queue:
+_ = new SkyAxisSlew(inst.SkyQueueInstance!.NewId, inst.SkyQueueInstance, Axis.Axis1, rate.X);
+_ = new CmdAxisTracking(inst.MountQueueInstance!.NewId, inst.MountQueueInstance, Axis.Axis1, ...);
+```
+
+**Step 3 — If wrong, replace all bare queue refs in the AltAz dispatch block with `inst.*`. Build and test device-1 AltAz.**
+
+---
+
+### N2 — Secondary Suspect: `MovePrimaryAxisActive` / `MoveSecondaryAxisActive` Guards
+
+**File:** `SkyServer.TelescopeAPI.cs` — inside `SetTracking()` (~lines 2353, 2355, 2415, 2417)
+
+```csharp
+if (!MovePrimaryAxisActive)   // ⚠️ static → _defaultInstance._rateMoveAxes.X != 0
+if (!MoveSecondaryAxisActive) // ⚠️ static → _defaultInstance._rateMoveAxes.Y != 0
+```
+
+These gates prevent `SkyAxisSlew`/`CmdAxisTracking` from being issued while a rate move is active. For a **basic tracking test** (no active rate move on any device) `MovePrimaryAxisActive = false`, so `!MovePrimaryAxisActive = true` and the dispatch **is** reached. Impact is low for simple tests; only manifests when device-0 has an active rate move while device-1 does not.
+
+**Fix:** Change to `inst._rateMoveAxes.X != 0` and `inst._rateMoveAxes.Y != 0`.
+
+---
+
+### N3 — Secondary Suspect: `GetSyncedAxes` in `SetAltAzTrackingRates`
+
+**File:** `SkyServer.TelescopeAPI.cs` — inside `SetAltAzTrackingRates()` (~line 2740)
+
+```csharp
+skyTarget = GetSyncedAxes(skyTarget); // static → device-0 alignment model
+```
+
+`GetSyncedAxes` applies star-alignment sync corrections. If no sync has been performed on device-0, it returns the input unchanged — no functional error. **Low impact for un-synced tests.** Fix by passing `inst` to the method or computing from `inst`'s alignment model.
+
+---
+
+### Recommended Debug Steps for New Session
+
+1. **Verify build baseline** — confirm HEAD is `6b95251` and build is green.
+
+2. **Read `SetTracking` body** (N1 primary suspect):
+   ```powershell
+   # Use get_file on SkyServer.TelescopeAPI.cs lines 2300-2460
+   ```
+   Find every `SkyAxisSlew` and `CmdAxisTracking` in the AltAz block. Are they prefixed with `inst.` or not?
+
+3. **Read `SkyGetRate` body** (verify N2 impact):
+   ```powershell
+   # Use get_file on SkyServer.Core.cs lines 1127-1200
+   ```
+   Check `RateMovePrimaryAxis`, `RateMoveSecondaryAxis` — these add 0 for basic tests so low priority.
+
+4. **Read `SetAltAzTrackingRates` body** (N3):
+   ```powershell
+   # Use get_file on SkyServer.TelescopeAPI.cs lines 2723-2860
+   ```
+   Check `GetSyncedAxes` call.
+
+5. **Fix N1 first**, build, test. If still broken, proceed to N2.
+
+6. **If still broken after N1+N2**, add diagnostic logging inside `SetTracking` immediately before the dispatch to confirm: (a) `inst.Id` is the correct device, (b) `inst.SkyQueueInstance` is non-null, (c) `rate.X/Y` are non-zero.
+
+---
+
+### Confirmed Working at HEAD `6b95251`
+
+| Component | File | Status |
+|---|---|---|
+| `AltAzTrackingTimerTick` — per-instance field + handler | `MountInstance.cs` | ✅ J4 |
+| Timer calls `SkyServer.SetTracking(this)` | `MountInstance.cs` | ✅ J4 |
+| `SetTracking` entry guard is per-instance | `SkyServer.TelescopeAPI.cs` | ✅ M2 |
+| `SetAltAzTrackingRates` uses `inst.SkyPredictor` | `SkyServer.TelescopeAPI.cs` | ✅ 6b95251 |
+| `SetAltAzTrackingRates` reads `inst._steps` | `SkyServer.TelescopeAPI.cs` | ✅ 6b95251 |
+| `SetAltAzTrackingRates` waits `inst._mountPositionUpdatedEvent` | `SkyServer.TelescopeAPI.cs` | ✅ 6b95251 |
+| `SetAltAzTrackingRates` writes `inst._skyTrackingRate` | `SkyServer.TelescopeAPI.cs` | ✅ 6b95251 |
+| `SkyGetRate` reads `inst._skyTrackingRate` | `SkyServer.Core.cs` | ✅ 6b95251 |
+| `SkyGetRate` reads `inst._skyHcRate` | `SkyServer.Core.cs` | ✅ 6b95251 |
+
+### Not Yet Verified / Confirmed Static (Investigate in New Session)
+
+| ID | Component | File | Approx. Line | Issue |
+|---|---|---|---|---|
+| **N1** | `SkyAxisSlew`/`CmdAxisTracking` queue ref in `SetTracking` AltAz block | `SkyServer.TelescopeAPI.cs` | ~2353–2420 | ❓ May still be bare static — PRIMARY SUSPECT |
+| **N2** | `MovePrimaryAxisActive`/`MoveSecondaryAxisActive` guards in `SetTracking` | `SkyServer.TelescopeAPI.cs` | ~2353, 2355, 2415, 2417 | ⚠️ Confirmed static → device-0 |
+| **N3** | `GetSyncedAxes(skyTarget)` in `SetAltAzTrackingRates` | `SkyServer.TelescopeAPI.cs` | ~2740 | ⚠️ Confirmed static → device-0 alignment model |
+| **N4** | `SkyTrackingOffset[0/1]` log line in `SetTracking` | `SkyServer.TelescopeAPI.cs` | ~2436 | ⚠️ Static — logging only, no functional impact |
+
+### Remaining Non-AltAz Residuals (Not Blocking)
+
+| ID | Item | Impact |
+|---|---|---|
+| **J3** | `MountInstance.cs` log entries have no device identifier | 🟠 Makes two-device troubleshooting harder; functionally harmless |
+| **J6** | `TelescopeStateService` / Blazor UI always shows device-0 state | 🟡 UI only — Phase E work |
+| **Phase E** | Per-device Blazor notifications and `TelescopeStateService` device-awareness | 🟡 UI only |
+| **Phase F** | Option C Phase 3 — per-device serial config in Blazor UI | 🟡 UI / config only |
