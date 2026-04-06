@@ -1857,13 +1857,16 @@ namespace GreenSwamp.Alpaca.MountControl
             _ctsPulseGuideRa?.Cancel();
             _ctsPulseGuideDec?.Cancel();
             _ctsHcPulseGuide?.Cancel();
-            SkyServer.AxesStopValidate(this);
+            // N6: Stop timers BEFORE AxesStopValidate — prevents timer from re-queuing motion commands
+            //     after the stop commands, which would leave the motor running after Disconnect.
+            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4 / N6: moved before AxesStopValidate
+            _altAzTrackingTimer?.Stop();
+            _altAzTrackingTimer?.Dispose();
+            _altAzTrackingTimer = null;  // N6: null the field — was missing, causing IsRunning check on disposed timer after reconnect
             if (_mediaTimer != null) { _mediaTimer.Tick -= OnUpdateServerEvent; }
             _mediaTimer?.Stop();
             _mediaTimer?.Dispose();
-            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4: per-instance handler
-            _altAzTrackingTimer?.Stop();
-            _altAzTrackingTimer?.Dispose();
+            SkyServer.AxesStopValidate(this); // N6: now safe — no timer can race and re-queue motion
 
             if (MountQueueInstance?.IsRunning == true) { MountQueueInstance.Stop(); }
 
@@ -2098,7 +2101,6 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void InstanceApplyTracking(bool tracking)
         {
             if (tracking == _tracking) return;
-            SkyPredictor.Reset();
             _tracking = tracking;
             if (tracking)
             {
@@ -2107,13 +2109,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     _altAzTrackingMode = AltAzTrackingType.Predictor;
                     if (!SkyPredictor.RaDecSet)
-                        SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0);
+                        SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0); // N5: first-time seed
                     else
-                        SkyPredictor.ReferenceTime = DateTime.Now;
+                        SkyPredictor.ReferenceTime = DateTime.Now; // N5: preserve existing target — don't reset
                 }
             }
             else
             {
+                SkyPredictor.Reset(); // N5: reset on tracking OFF only — never on re-enable
                 _isPulseGuidingRa = false;
                 _isPulseGuidingDec = false;
                 _trackingMode = TrackingMode.Off;

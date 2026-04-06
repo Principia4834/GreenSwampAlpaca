@@ -2349,7 +2349,8 @@ namespace GreenSwamp.Alpaca.MountControl
                             rate = SkyGetRate(inst);
                             // Tracking applied unless MoveAxis is active
                             {
-                                var mq = inst!.MountQueueInstance!;
+                                var mq = inst!.MountQueueInstance; // N4: null guard — MountStop may race here
+                                if (mq == null) return;
                                 if (!MovePrimaryAxisActive)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rate.X);
                                 if (!MoveSecondaryAxisActive)
@@ -2411,7 +2412,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     rate = SkyGetRate(inst); // Get current tracking  including RA and Dec offsets
                     {
-                        var sq = inst!.SkyQueueInstance!;
+                        var sq = inst!.SkyQueueInstance; // N4: null guard — MountStop may race here
+                        if (sq == null) return;
                         if (!MovePrimaryAxisActive)
                             _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis1, rate.X);
                         if (!MoveSecondaryAxisActive)
