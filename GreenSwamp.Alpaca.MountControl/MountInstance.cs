@@ -45,7 +45,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private readonly string _id;
         private readonly string _deviceName;
         private readonly SkySettingsInstance _settings;
-        public readonly SkyPredictor SkyPredictor = new SkyPredictor();
+        public readonly SkyPredictor SkyPredictor;
 
         // Instance state fields (migrated from static)
         private MediaTimer? _mediaTimer;
@@ -500,6 +500,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             // Wire settings back-reference so settings can call instance-aware tasks
             _settings._owner = this;
+            SkyPredictor = new SkyPredictor(() => SkyServer.CurrentTrackingRate(this));
 
             var monitorItem = new MonitorEntry
             {

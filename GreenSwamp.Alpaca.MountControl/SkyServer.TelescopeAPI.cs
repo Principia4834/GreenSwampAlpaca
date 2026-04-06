@@ -2520,6 +2520,45 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
+        /// Calculates the current RA tracking rate for a specific instance (arc seconds per second).
+        /// Used by per-instance SkyPredictor to avoid reading from _defaultInstance.
+        /// </summary>
+        public static double CurrentTrackingRate(MountInstance inst)
+        {
+            double rate;
+            switch (inst.Settings.TrackingRate)
+            {
+                case DriveRate.Sidereal:
+                    rate = inst.Settings.SiderealRate;
+                    break;
+                case DriveRate.Solar:
+                    rate = inst.Settings.SolarRate;
+                    break;
+                case DriveRate.Lunar:
+                    rate = inst.Settings.LunarRate;
+                    break;
+                case DriveRate.King:
+                    rate = inst.Settings.KingRate;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            if (rate < SiderealRate * 2 & rate != 0)
+                rate += inst._trackingOffsetRate.X;
+
+            if (inst.Settings.PecOn && inst.Tracking && inst._pecBinNow != null && !double.IsNaN(inst._pecBinNow.Item2))
+                if (Math.Abs(inst._pecBinNow.Item2 - 1) < .04)
+                    rate *= inst._pecBinNow.Item2;
+
+            rate /= 3600;
+            if (inst.Settings.RaTrackingOffset <= 0) { return rate; }
+            var offsetrate = rate * (Convert.ToDouble(inst.Settings.RaTrackingOffset) / 100000);
+            rate += offsetrate;
+            return rate;
+        }
+
+        /// <summary>
         /// Sets up offsets from the selected tracking rate
         /// </summary>
         internal static void SetGuideRates(MountInstance? instance = null)

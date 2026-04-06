@@ -32,14 +32,18 @@ namespace GreenSwamp.Alpaca.MountControl
     public class SkyPredictor
     {
         /// <summary>
-        /// Initialise Right Ascension, Declination, Rates and ReferenceTime to default values
+        /// Initialise Right Ascension, Declination, Rates and ReferenceTime to default values.
+        /// The optional trackingRateProvider delegate allows per-instance tracking rate lookup;
+        /// defaults to SkyServer.CurrentTrackingRate() for backward compatibility.
         /// </summary>
-        public SkyPredictor()
+        public SkyPredictor(Func<double> trackingRateProvider = null)
         {
+            _trackingRateProvider = trackingRateProvider ?? SkyServer.CurrentTrackingRate;
             Reset();
         }
 
         private const double SiderealRate = 15.0410671786691;
+        private readonly Func<double> _trackingRateProvider;
 
         private double _ra;
         /// <summary>
@@ -224,7 +228,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 else
                 {
                     var deltaTime = (time - ReferenceTime).TotalSeconds;
-                    var deltaRaRate = (SkyServer.CurrentTrackingRate() - SiderealRate) * 3600;
+                    var deltaRaRate = (_trackingRateProvider() - SiderealRate) * 3600;
                     raOut = Range.Range24(_ra + deltaTime * (_rateRa + deltaRaRate) / 15.0);
                     decOut = _dec + deltaTime * _rateDec;
                 }
