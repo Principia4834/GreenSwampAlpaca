@@ -1,8 +1,10 @@
 # Tracking Functionality Audit
-**Generated:** 2026-04-06 12:51
+**Generated:** 2026-04-06 18:06
 **Scope:** Simulator · GermanPolar · Northern Hemisphere · Device-00 (Sections 1–13)  
-**Extended:** SkyWatcher · AltAz · Device-00 (Sections 14–22)
-**Compares:** GreenSwamp.Alpaca (current) vs GSServer (legacy at `T:\source\repos\Principia4834\GSServer`)
+**Extended:** SkyWatcher · AltAz · Device-00 (Sections 14–24)  
+**Further extended:** ASCOM V4 Rate Offset Spec Compliance (Section 25)
+**Compares:** GreenSwamp.Alpaca (current) vs GSServer (legacy at `T:\source\repos\Principia4834\GSServer`)  
+**ASCOM spec ref:** [ITelescope V4 — `RightAscensionRate` / `DeclinationRate`](https://ascom-standards.org/newdocs/telescope.html#Telescope.RightAscensionRate)
 
 ---
 
@@ -193,8 +195,14 @@ This is `SkyServer.SetTracking(MountInstance inst)` in SkyServer.TelescopeAPI.cs
 | `CmdRaDecRate(Axis1, GetRaRateDirection(raOffset))` | ✅ **unconditional** — sends current offset | ✅ **sends 0** (`currentTrackingMode == Off`) | **Subtle difference below** |
 | `CmdRaDecRate(Axis2, GetDecRateDirection(decOffset))` | ✅ unconditional | ✅ **sends 0** when tracking Off | Same subtle difference |
 
-**Subtle behavioural difference on tracking OFF with active offset rates:**
-Legacy: When tracking is turned off with a non-zero RA/Dec rate offset (e.g. `RightAscensionRate = 0.5`), the old code sends the non-zero offset rate to the simulator, meaning the axis continues to drift at the user-set offset rate even with tracking nominally off. The new code explicitly zeros these rates when tracking mode is Off. The new behaviour is arguably more correct but could appear as a regression to anyone who expects the legacy behaviour.
+**Behavioural difference on tracking OFF with active offset rates — now spec-compliant:**  
+The ASCOM ITelescope V4 specification (formalised in V4) states that `RightAscensionRate` and `DeclinationRate` **apply only when the mount is tracking at sidereal rate**. When tracking is off, offset rates must not be applied to the hardware.
+
+| Behaviour | Legacy | New | Spec compliance |
+|-----------|--------|-----|-----------------|
+| Tracking OFF + non-zero RA/Dec rate offset | Sends non-zero rate to hardware — axis drifts | Sends 0 — axis stops | Legacy ❌ non-compliant; New ✅ compliant |
+
+**Implication for Finding 7:** What was described as a subtle difference that is "arguably more correct" is in fact a straightforward **spec compliance fix**. The legacy behaviour of continuing to apply offset rates when tracking is off violates the ITelescope V4 contract. See Section 25 for the full spec analysis.
 
 ### Simulator MoveAxes loop (Controllers.cs):
 ```
@@ -307,7 +315,7 @@ All three are normally in sync. However, any code path that sets `_tracking` wit
 | 4 | **High** | `Unpark()` ignores `TrackAfterUnpark` user setting; always enables tracking for GermanPolar | `Telescope.cs` | `Unpark()` |
 | 5 | **Medium** | `_objectId` always 0 — connection reference counting broken for multi-client ASCOM scenarios | `Telescope.cs` | Constructor |
 | 6 | **Low** | `AsComOn` guard removed — command rejection changed from silent no-op to thrown exception | `Telescope.cs` | Multiple methods |
-| 7 | **Low** | Offset rates (RaDecRate/DecRate) now zeroed on tracking OFF, vs legacy sending current values — subtle but arguably more correct | `SkyServer.TelescopeAPI.cs` | `SetTracking()` |
+| 7 | **Positive** | Offset rates zeroed on tracking OFF — legacy applied non-zero rates when tracking off (spec-non-compliant with ITelescope V4); new correctly zeros them (spec-compliant). See Section 25. | `SkyServer.TelescopeAPI.cs` | `SetTracking()` |
 
 ---
 
@@ -736,7 +744,9 @@ Both ON and OFF paths are functionally equivalent to the legacy.
 
 ### FINDING 8 (Medium): Predictor re-enable with non-zero offset rates starts from stale RA/Dec epoch
 
-The legacy always calls `SkyPredictor.Reset()` before seeding, which forces `RaDecSet = false` and guarantees `SkyPredictor.Set(RA, Dec, 0, 0)` is always called with the current sky position. The new code preserves the existing predictor state on re-enable (`ReferenceTime = DateTime.Now`), which is an intentional improvement for pure sidereal tracking (Finding 3 from the original audit is a positive finding that applies here).
+**ASCOM V4 spec context:** The spec permits setting non-zero `RightAscensionRate`/`DeclinationRate` on an AltAz mount provided `TrackingRate = driveSidereal` — the setter throws `InvalidOperationException` otherwise (verified in `Telescope.cs` line 553 / 864). Setting these rates while in AltAz tracking mode is therefore a valid ASCOM scenario (comet/asteroid tracking via AltAz correction loop). The rates feed `SkyPredictor.Set()` via `InstanceActionRateRaDec()`, modifying the predicted RA/Dec trajectory used by the AltAz correction loop.
+
+**The stale-epoch issue:** The legacy always calls `SkyPredictor.Reset()` before seeding, which forces `RaDecSet = false` and guarantees `SkyPredictor.Set(RA, Dec, 0, 0)` is always called with the current sky position. The new code preserves the existing predictor state on re-enable (`ReferenceTime = DateTime.Now`), which is an intentional improvement for pure sidereal tracking (Finding 3 from the original audit is a positive finding that applies here).
 
 However, for non-zero offset rates (`RightAscensionRate ≠ 0` or `DeclinationRate ≠ 0` — comet/asteroid tracking), re-enabling tracking after an extended pause uses the stale `_ra/_dec` epoch from the last `Set()` call. The delta accumulates from that old epoch at the preserved rate, potentially placing the predicted position far from the actual current sky position of the target. The legacy avoids this by always reseeding from `RightAscensionXForm`/`DeclinationXForm`.
 
@@ -806,13 +816,14 @@ The Alt/Az correction loop still works correctly because `RaDec2AltAz` is called
 | 4 | **High** | `Unpark()` ignores `TrackAfterUnpark` / `AutoTrack` user setting; always enables tracking for GermanPolar and AltAz | `Telescope.cs` | `Unpark()` |
 | 5 | **Medium** | `_objectId` always 0 — connection reference counting broken for multi-client ASCOM scenarios | `Telescope.cs` | Constructor |
 | 6 | **Low** | `AsComOn` guard removed — command rejection changed from silent no-op to thrown exception | `Telescope.cs` | Multiple methods |
-| 7 | **Low** | Offset rates (RaDecRate/DecRate) now zeroed on tracking OFF, vs legacy sending current values — subtle but arguably more correct | `SkyServer.TelescopeAPI.cs` | `SetTracking()` |
-| 8 | **Medium** | Predictor re-enable preserves stale RA/Dec epoch for non-zero offset rates — legacy always reseeds with current sky position | `MountInstance.cs` | `InstanceApplyTracking` (AltAz ON branch) |
+| 7 | **Positive** | Offset rates zeroed on tracking OFF — legacy applied non-zero rates when tracking off (ITelescope V4 non-compliant); new code correctly zeros them (spec-compliant). See Section 25. | `SkyServer.TelescopeAPI.cs` | `SetTracking()` |
+| 8 | **Medium** | Predictor re-enable preserves stale RA/Dec epoch for non-zero offset rates — legacy always reseeds with current sky position; valid per ASCOM spec for AltAz + driveSidereal but causes drift after extended pause | `MountInstance.cs` | `InstanceApplyTracking` (AltAz ON branch) |
 | 9 | **Low** | `SetAltAzTrackingRates` 5-second timeout silently skips rate update with no log warning — stale tracking rate used for one timer interval | `SkyServer.TelescopeAPI.cs` | `SetAltAzTrackingRates` Predictor case |
 | 10 | **Low** | Static AltAz timer (`AltAzTrackingTimerEvent`, static `StartAltAzTrackingTimer`, static `StopAltAzTrackingTimer`) in `SkyServer.TelescopeAPI.cs` is dead code | `SkyServer.TelescopeAPI.cs` | AltAz timer region |
 | 11 | **Positive** | Per-instance AltAz timer on `MountInstance` correctly scoped per device — a genuine improvement over the legacy for multi-device AltAz | `MountInstance.cs` | `AltAzTrackingTimerTick`, `StartAltAzTrackingTimer` |
 | 12 | **Medium** | `SkyPredictor.GetRaDecAtTime` (`out` overload) calls static `SkyServer.CurrentTrackingRate()` — reads `_defaultInstance`; incorrect for non-default device predictors | `SkyPredictor.cs` | `GetRaDecAtTime` (out overload) line 227 |
 | 13 | **Low** | `GetRaDecAtTime` (both overloads) mutates `ReferenceTime` on zero-rate read — `time` parameter ignored for pure sidereal; `nextTime` projection handled at coordinate layer, not predictor layer | `SkyPredictor.cs` | `GetRaDecAtTime` zero-rate branch |
+| 14 | **Low** | `RightAscensionRate` and `DeclinationRate` getters return raw stored value — spec requires returning 0 when `TrackingRate ≠ driveSidereal`; setters correctly throw but getters do not zero | `Telescope.cs` | `RightAscensionRate` getter (line 846), `DeclinationRate` getter (line 536) |
 
 ---
 
@@ -842,4 +853,102 @@ The AltAz correction loop continuously steers the mount to track the sky rotatio
 
 ---
 
-*End of audit extension (AltAz/SkyWatcher) — 2026-04-06 12:51*
+---
+
+## 25. ASCOM ITelescope V4 — Rate Offset Spec Compliance
+
+**Reference:** [ITelescope V4 `RightAscensionRate`](https://ascom-standards.org/newdocs/telescope.html#Telescope.RightAscensionRate) · [FAQ: What are `RightAscensionRate` and `DeclinationRate`?](https://ascom-standards.org/newdocs/trkoffset-faq.html)
+
+### 25.1 What ITelescope V4 Requires
+
+ITelescope V4 formalised the following rules for `RightAscensionRate` and `DeclinationRate` (the change note reads: *"Formalized to clarify that these rates apply only when the mount is tracking at sidereal rate"*):
+
+| Rule | Requirement | Source |
+|------|------------|--------|
+| **Scope of application** | Rate offsets apply **only** when `TrackingRate = driveSidereal` | Spec note |
+| **Setter guard** | Must throw `InvalidOperationException` if `TrackingRate ≠ driveSidereal` | Raises section |
+| **Getter zero return** | Must return **0** if `TrackingRate ≠ driveSidereal` | Spec note |
+| **Hardware application** | Rates must not be applied to hardware when tracking is off | Implied by "only during sidereal tracking" |
+
+The distinction between `TrackingRate` and `Tracking` is important:
+- `TrackingRate` selects the drive rate (`driveSidereal`, `driveLunar`, `driveSolar`, `driveKing`)
+- `Tracking` turns the selected tracking rate on or off
+- The spec guard applies to `TrackingRate ≠ driveSidereal`, but the "apply only during sidereal tracking" note implies both `TrackingRate = driveSidereal` **and** `Tracking = true` are required for offset rates to take effect at the hardware level
+
+### 25.2 Current Implementation — Setter Compliance ✅
+
+Both setters guard correctly:
+
+```csharp
+// Telescope.cs line 553 — DeclinationRate setter
+if (TrackingRate != DriveRate.Sidereal)
+    throw new ASCOM.InvalidOperationException("DeclinationRate - cannot set rate because TrackingRate is not Sidereal");
+
+// Telescope.cs line 864 — RightAscensionRate setter
+if (TrackingRate != DriveRate.Sidereal)
+    throw new InvalidOperationException("RightAscensionRate - cannot set rate because TrackingRate is not Sidereal");
+```
+
+Both setters throw the correct exception type (`InvalidOperationException`) with a descriptive message. **Setter compliance: ✅ spec-correct.**
+
+### 25.3 Current Implementation — Getter Compliance ❌ (Finding 14)
+
+Both getters return the raw stored value without a `TrackingRate` check:
+
+```csharp
+// Telescope.cs line 536 — DeclinationRate getter
+var r = inst.RateDecOrg;   // ← no TrackingRate check; returns stored value
+
+// Telescope.cs line 846 — RightAscensionRate getter
+var r = inst.RateRaOrg;   // ← no TrackingRate check; returns stored value
+```
+
+The spec requires both getters to return `0` when `TrackingRate ≠ driveSidereal`. While the setter guard makes it hard to store a non-zero value with a non-sidereal `TrackingRate` (since the setter throws), it is possible:
+
+```
+1. TrackingRate = driveSidereal
+2. RightAscensionRate = 0.5   → stored in RateRaOrg
+3. TrackingRate = driveLunar  → no setter fired; RateRaOrg still 0.5
+4. RightAscensionRate getter  → returns 0.5  ← spec requires 0
+```
+
+**Getter compliance: ❌ spec gap. Both getters should add:**
+```csharp
+if (TrackingRate != DriveRate.Sidereal) return 0;
+```
+
+### 25.4 Current Implementation — Hardware Application Compliance ✅
+
+The new `SetTracking()` zeros `CmdRaDecRate` (Simulator) or `_skyTrackingRate` (SkyWatcher) when `_trackingMode == TrackingMode.Off`:
+
+```csharp
+// SkyServer.TelescopeAPI.cs — Simulator + GermanPolar/Polar
+// When tracking mode is Off, sends 0 for both axes:
+_ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, 0);
+_ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, 0);
+```
+
+The legacy sent the non-zero offset rates to hardware even when tracking was off — that is non-compliant with the spec's intent that rates only apply during active sidereal tracking. **Hardware application compliance: ✅ new code; ❌ legacy.**
+
+### 25.5 Rate Offsets in AltAz Mode
+
+Setting non-zero `RightAscensionRate`/`DeclinationRate` on an AltAz mount with `TrackingRate = driveSidereal` is **valid per the ASCOM spec**. The setter guard does not distinguish by `AlignmentMode` — only by `TrackingRate`. The GreenSwamp implementation routes these rates into `SkyPredictor` via `InstanceActionRateRaDec()`, feeding `SkyPredictor.Set(ra, dec, _rateRaDec.X, _rateRaDec.Y)`. The AltAz correction loop then uses the predicted moving RA/Dec to compute the required Az/Alt axis rates — effectively tracking a moving solar system object (comet, asteroid) in AltAz mode. This is a valid and spec-compliant use case.
+
+The stale-epoch risk on re-enable (Finding 8) applies specifically to this non-zero rate + AltAz + re-enable scenario.
+
+### 25.6 Legacy Rate Compliance
+
+The legacy GSServer had the same setter guard and getter gap. It also sent non-zero rates to the hardware simulator when tracking was off (Finding 7 / Section 5). The legacy was therefore equally non-compliant with ITelescope V4 on the getter and hardware-application dimensions.
+
+### 25.7 Recommended Fixes
+
+| Priority | Fix | Location |
+|----------|-----|---------|
+| 1 | Add `if (TrackingRate != DriveRate.Sidereal) return 0;` to `RightAscensionRate` getter | `Telescope.cs` line 844 |
+| 2 | Add `if (TrackingRate != DriveRate.Sidereal) return 0;` to `DeclinationRate` getter | `Telescope.cs` line 534 |
+
+These are two-line fixes with no risk of hardware impact (the rate is already stored; only the getter return value changes).
+
+---
+
+*End of audit extension (ASCOM V4 Rate Offset Spec Compliance) — 2026-04-06 18:06*
