@@ -1,8 +1,9 @@
-# Tracking Functionality Audit
-**Generated:** 2026-04-06 18:06
+﻿# Tracking Functionality Audit
+**Generated:** 2026-04-06 19:08
 **Scope:** Simulator · GermanPolar · Northern Hemisphere · Device-00 (Sections 1–13)  
 **Extended:** SkyWatcher · AltAz · Device-00 (Sections 14–24)  
-**Further extended:** ASCOM V4 Rate Offset Spec Compliance (Section 25)
+**Further extended:** ASCOM V4 Rate Offset Spec Compliance (Section 25)  
+**Further extended:** `InstanceSetTrackingMode` deep-dive · Finding 14 correction · Finding 15 (Sections 26–27)  
 **Compares:** GreenSwamp.Alpaca (current) vs GSServer (legacy at `T:\source\repos\Principia4834\GSServer`)  
 **ASCOM spec ref:** [ITelescope V4 — `RightAscensionRate` / `DeclinationRate`](https://ascom-standards.org/newdocs/telescope.html#Telescope.RightAscensionRate)
 
@@ -952,3 +953,144 @@ These are two-line fixes with no risk of hardware impact (the rate is already st
 ---
 
 *End of audit extension (ASCOM V4 Rate Offset Spec Compliance) — 2026-04-06 18:06*
+
+---
+
+## 26. `InstanceSetTrackingMode` — Deep-Dive Analysis
+
+### 26.1 Implementation
+
+```csharp
+// MountInstance.cs — InstanceSetTrackingMode()
+internal void InstanceSetTrackingMode()
+{
+    switch (_settings.AlignmentMode)
+    {
+        case AlignmentMode.AltAz:
+            _trackingMode = TrackingMode.AltAz;
+            break;
+        case AlignmentMode.Polar:
+        case AlignmentMode.GermanPolar:
+            _trackingMode = _settings.Latitude < 0 ? TrackingMode.EqS : TrackingMode.EqN;
+            break;
+    }
+}
+```
+
+### 26.2 Comparison with Static `SetTrackingMode()`
+
+| Aspect | `InstanceSetTrackingMode` | Static `SetTrackingMode` |
+|--------|--------------------------|--------------------------|
+| Hemisphere logic | `_settings.Latitude < 0` | `SouthernHemisphere` = `_settings!.Latitude < 0` — identical |
+| Write target | `_trackingMode` direct field write | `_defaultInstance.TrackingMode = ...` property setter |
+| Property setter side-effects | n/a (bypassed) | `get => _trackingMode; set => _trackingMode = value;` — trivial, none |
+| Null guard | None needed (instance method) | `if (_defaultInstance == null) return;` |
+| Default case | No `default:` — unrecognised mode silently no-ops | Same |
+
+**`TrackingMode` property setter confirmed trivial** — `get => _trackingMode; set => _trackingMode = value;`. Direct field write in `InstanceSetTrackingMode` is exactly equivalent to the property setter call in the static version.
+
+### 26.3 Verdict
+
+`InstanceSetTrackingMode` is a clean, correct per-instance equivalent of `SetTrackingMode`. Called exactly once from `InstanceApplyTracking` on the tracking-ON path. No divergence from legacy semantics. No latent risk. **No action needed.**
+
+---
+
+## 27. Finding 14 Correction — Rate Getters Already Fixed
+
+Section 25.3 identified Finding 14: that the `RightAscensionRate` and `DeclinationRate` getters returned the raw stored value without a `TrackingRate` check.
+
+**Inspection of current `Telescope.cs` shows this is already resolved:**
+
+```csharp
+// DeclinationRate getter
+var r = (TrackingRate == DriveRate.Sidereal) ? inst.RateDecOrg : 0.0;
+
+// RightAscensionRate getter
+var r = (TrackingRate == DriveRate.Sidereal) ? inst.RateRaOrg : 0.0;
+```
+
+Both getters return `0.0` when `TrackingRate != DriveRate.Sidereal`, as the ITelescope V4 spec requires.
+
+**Finding 14 status: Already fixed. The Section 25.7 recommended fixes are already in place. No action needed.**
+
+---
+
+## 28. FINDING 15 (Medium): `SyncToTarget` Passes Current Scope Position to Sync-Limit Guard
+
+### 28.1 The Bug
+
+```csharp
+// Telescope.cs — SyncToTarget()
+public void SyncToTarget()
+{
+    var inst = GetInstance();
+    // ...ranges checked on inst.TargetRa / inst.TargetDec above...
+
+    var a = Transforms.CoordTypeToInternal(RightAscension, Declination);  // <-- BUG
+    CheckRaDecSync(a.X, a.Y, "SyncToTarget");
+    // ...
+}
+```
+
+`RightAscension` and `Declination` resolve to `this.RightAscension` and `this.Declination` — the ASCOM property getters returning the **current telescope position** — not the sync target. `CheckRaDecSync` is therefore always checking the current position against a transform of itself, producing a near-zero delta that always passes regardless of how far the actual target is from the current position. The sync-limit guard is completely ineffective.
+
+### 28.2 Contrast with `SyncToCoordinates` (Correct)
+
+```csharp
+// Telescope.cs — SyncToCoordinates(double RightAscension, double Declination)
+var a = Transforms.CoordTypeToInternal(RightAscension, Declination);  // <-- method params: correct
+CheckRaDecSync(a.X, a.Y, "SyncToCoordinates");
+```
+
+In `SyncToCoordinates`, `RightAscension`/`Declination` are method parameters (the sync target). In `SyncToTarget` there are no parameters, so the same names silently resolve to the ASCOM property getters.
+
+### 28.3 Fix
+
+```csharp
+// SyncToTarget() — replace the buggy line:
+var a = Transforms.CoordTypeToInternal(inst.TargetRa, inst.TargetDec);
+CheckRaDecSync(a.X, a.Y, "SyncToTarget");
+```
+
+### 28.4 Impact
+
+The sync-limit guard in `SyncToTarget` has been silently ineffective since this method was written. Clients calling `SyncToTarget` with a target far outside the configured sync-limit radius will succeed without error, potentially corrupting alignment silently. `SyncToCoordinates` and `SyncToAltAz` are unaffected.
+
+---
+
+## 29. Final Consolidated Findings
+
+| # | Severity | Status | Finding | File | Area |
+|---|----------|--------|---------|------|------|
+| 1 | **Medium** | Open | `OnStaticPropertyChanged()` not called via `ApplyTracking` — UI bindings not notified on ASCOM tracking toggle | `MountInstance.cs` | `InstanceApplyTracking` |
+| 2 | **Medium** | Open | Two parallel setter paths with different side effects; no single authoritative toggle point | `SkyServer.TelescopeAPI.cs` / `MountInstance.cs` | static setter vs instance method |
+| 3 | **Positive** | Good | `SkyPredictor.Reset()` correctly deferred to OFF path only | `MountInstance.cs` | `InstanceApplyTracking` |
+| 4 | **High** | Open | `Unpark()` ignores `AutoTrack` setting; always enables tracking for GermanPolar/Polar | `Telescope.cs` | `Unpark()` |
+| 5 | **Medium** | Open | `_objectId` always 0 — multi-client connection reference counting broken | `Telescope.cs` | Constructors |
+| 6 | **Low** | Documented | `AsComOn` guard removed — command rejection now throws instead of silent no-op | `Telescope.cs` | Multiple methods |
+| 7 | **Positive** | Good | Offset rates zeroed on tracking OFF — new code is spec-compliant; legacy was not | `SkyServer.TelescopeAPI.cs` | `SetTracking()` |
+| 8 | **Medium** | Open | Predictor re-enable with non-zero offset rates starts from stale RA/Dec epoch (AltAz only) | `MountInstance.cs` | `InstanceApplyTracking` AltAz ON branch |
+| 9 | **Low** | Open | 5-second timeout in `SetAltAzTrackingRates` silently skips rate update with no log warning | `SkyServer.TelescopeAPI.cs` | `SetAltAzTrackingRates` |
+| 10 | **Low** | Open | Static AltAz timer infrastructure is dead code | `SkyServer.TelescopeAPI.cs` | AltAz timer region |
+| 11 | **Positive** | Good | Per-instance AltAz timer correctly scoped per device | `MountInstance.cs` | `AltAzTrackingTimerTick` |
+| 12 | **Medium** | Open | `SkyPredictor.GetRaDecAtTime` (`out` overload) calls static `CurrentTrackingRate()` — reads `_defaultInstance` | `SkyPredictor.cs` | `GetRaDecAtTime` out overload |
+| 13 | **Low** | Documented | `GetRaDecAtTime` mutates `ReferenceTime` as read side-effect on zero-rate path | `SkyPredictor.cs` | Both overloads |
+| 14 | **Low** | **Already Fixed** | Rate getters returned raw value when `TrackingRate != Sidereal` — both getters now use ternary guard | `Telescope.cs` | `RightAscensionRate` / `DeclinationRate` getters |
+| 15 | **Medium** | Open | `SyncToTarget` passes current scope position to `CheckRaDecSync` instead of target — sync-limit guard always passes | `Telescope.cs` | `SyncToTarget()` |
+
+### Priority Action List
+
+| Priority | Finding | Change | Effort |
+|----------|---------|--------|--------|
+| 1 | **F4 High** — Restore `AutoTrack` in `Unpark()` | `inst.ApplyTracking(inst.Settings.AutoTrack && AlignmentMode != AlignmentMode.AltAz)` | 1 line |
+| 2 | **F15 Medium** — Fix `SyncToTarget` coordinate bug | Replace `RightAscension, Declination` with `inst.TargetRa, inst.TargetDec` | 1 line |
+| 3 | **F1 Medium** — Add `OnStaticPropertyChanged()` after `SkyServer.SetTracking(this)` in `InstanceApplyTracking` | 1 line | Low risk |
+| 4 | **F5 Medium** — Assign `_objectId` from thread-safe counter in constructors | 3 lines | Low risk |
+| 5 | **F8 Medium** — Reseed predictor on AltAz re-enable when rates non-zero | 3 lines | Medium risk |
+| 6 | **F9 Low** — Add `MonitorLog` warning at 5-second timeout in `SetAltAzTrackingRates` | 1 line | No risk |
+| 7 | **F10 Low** — Remove dead static AltAz timer infrastructure | Cleanup | No risk |
+| 8 | **F12 Medium** — Pass tracking rate as parameter to predictor | Refactor | Medium risk |
+
+---
+
+*End of audit — complete — 2026-04-06 19:08*
