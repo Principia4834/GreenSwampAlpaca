@@ -533,6 +533,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
+                if (TrackingRate != DriveRate.Sidereal) return 0;
                 var r = inst.RateDecOrg;
 
                 var monitorItem = new MonitorEntry
@@ -843,6 +844,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
+                if (TrackingRate != DriveRate.Sidereal) return 0;
                 var r = inst.RateRaOrg;
 
                 var monitorItem = new MonitorEntry
