@@ -24,10 +24,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                             switch (command.Substring(3, 1))
                             {
                                 case "0": // Off
-                                    SkyServer.SnapPort1 = false;
+                                    instance.SnapPort1 = false;
                                     break;
                                 case "1": // On
-                                    SkyServer.SnapPort1 = true;
+                                    instance.SnapPort1 = true;
                                     break;
                                 default:
                                     throw new DriverException("Param error");
@@ -43,15 +43,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                                 default:
                                     throw new DriverException("Mount type error");
                             }
-                            return SkyServer.SnapPort1Result ? "1" : "0";
+                            return instance.SnapPort1Result ? "1" : "0";
                         case "2"://Port 2
                             switch (command.Substring(3, 1))
                             {
                                 case "0": // Off
-                                    SkyServer.SnapPort2 = false;
+                                    instance.SnapPort2 = false;
                                     break;
                                 case "1": // On
-                                    SkyServer.SnapPort2 = true;
+                                    instance.SnapPort2 = true;
                                     break;
                                 default:
                                     throw new DriverException("Param 2 error");
@@ -67,7 +67,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                                 default:
                                     throw new DriverException("Mount type error");
                             }
-                            return SkyServer.SnapPort2Result ? "1" : "0";
+                            return instance.SnapPort2Result ? "1" : "0";
                         default:
                             throw new DriverException("Param Port error");
                     }

@@ -1313,11 +1313,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             switch (Axis)
             {
                 case TelescopeAxis.Primary:
-                    return new AxisRates(TelescopeAxis.Primary);
+                    return new AxisRates(TelescopeAxis.Primary, GetInstance());
                 case TelescopeAxis.Secondary:
-                    return new AxisRates(TelescopeAxis.Secondary);
+                    return new AxisRates(TelescopeAxis.Secondary, GetInstance());
                 case TelescopeAxis.Tertiary:
-                    return new AxisRates(TelescopeAxis.Tertiary);
+                    return new AxisRates(TelescopeAxis.Tertiary, GetInstance());
                 default:
                     return null;
             }

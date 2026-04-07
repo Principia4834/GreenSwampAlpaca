@@ -491,6 +491,10 @@ namespace GreenSwamp.Alpaca.MountControl
         public double SlewSpeedSix => _slewSpeedSix;
         public double SlewSpeedSeven => _slewSpeedSeven;
         public double SlewSpeedEight => _slewSpeedEight;
+        public bool SnapPort1 { get => _snapPort1; set => _snapPort1 = value; }
+        public bool SnapPort2 { get => _snapPort2; set => _snapPort2 = value; }
+        public bool SnapPort1Result => _snapPort1Result;
+        public bool SnapPort2Result => _snapPort2Result;
         #endregion
         /// <summary>
         /// Phase 4.2: Constructor with optional settings file path
