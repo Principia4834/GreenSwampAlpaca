@@ -67,6 +67,12 @@ namespace GreenSwamp.Alpaca.MountControl
         public double? LocalSiderealTime { get; init; }
 
         /// <summary>
+        /// Observatory longitude in degrees (positive east, negative west).
+        /// Populated by <see cref="FromSettings"/> to enable per-instance LST computation.
+        /// </summary>
+        public double Longitude { get; init; }
+
+        /// <summary>
         /// Current side of pier state: Normal, ThroughThePole, or Unknown
         /// Used for flip calculations
         /// </summary>
@@ -126,6 +132,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SouthernHemisphere = settings.Latitude < 0, // J2: computed from passed-in settings, not static SkyServer
                 PolarMode = settings.PolarMode,
                 LocalSiderealTime = null, // Lazy load when needed
+                Longitude = settings.Longitude,
                 SideOfPier = sideOfPier ?? SkyServer.SideOfPier, // J2: per-instance if provided, fallback to SkyServer for device-0 callers (J6)
                 AppAxisX = null,
                 AppAxisY = null,
@@ -174,7 +181,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>LST in hours (0-24)</returns>
         public double GetLst()
         {
-            return LocalSiderealTime ?? SkyServer.SiderealTime;
+            return LocalSiderealTime ?? SkyServer.GetLocalSiderealTime(Longitude);
         }
 
         /// <summary>

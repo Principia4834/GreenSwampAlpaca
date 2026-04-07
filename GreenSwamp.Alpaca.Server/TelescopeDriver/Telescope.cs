@@ -533,8 +533,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                if (TrackingRate != DriveRate.Sidereal) return 0;
-                var r = inst.RateDecOrg;
+                var r = (TrackingRate == DriveRate.Sidereal) ? inst.RateDecOrg : 0.0;
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
@@ -844,8 +843,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var inst = GetInstance();
-                if (TrackingRate != DriveRate.Sidereal) return 0;
-                var r = inst.RateRaOrg;
+                var r = (TrackingRate == DriveRate.Sidereal) ? inst.RateRaOrg : 0.0;
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
@@ -1802,7 +1800,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckParked("SyncToTarget");
             CheckTracking(true, "SyncToTarget");
 
-            var a = Transforms.CoordTypeToInternal(RightAscension, Declination);
+            var a = Transforms.CoordTypeToInternal(inst.TargetRa, inst.TargetDec);  
             CheckRaDecSync(a.X, a.Y, "SyncToTarget");
 
             inst.AtPark = false;

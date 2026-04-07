@@ -710,6 +710,16 @@ namespace GreenSwamp.Alpaca.MountControl
             return Time.Lst(JDate.Epoch2000Days(), gsjd, false, _settings!.Longitude);
         }
 
+        /// <summary>
+        /// Get local sidereal time for the current UTC time using an explicit longitude.
+        /// Use this overload from per-instance code to avoid reading device-00's longitude.
+        /// </summary>
+        internal static double GetLocalSiderealTime(double longitude)
+        {
+            var gsjd = JDate.Ole2Jd(HiResDateTime.UtcNow);
+            return Time.Lst(JDate.Epoch2000Days(), gsjd, false, longitude);
+        }
+
         #endregion
 
         #region Alignment

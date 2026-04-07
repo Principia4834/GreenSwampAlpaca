@@ -1413,7 +1413,9 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void SetSteps(double[] steps)
         {
             // Build axes context from instance settings, passing per-instance SideOfPier (J2)
-            var context = AxesContext.FromSettings(_settings, SideOfPier);
+            // N7: Pass computed LST directly — avoids SkyServer.SiderealTime which reads _defaultInstance
+            //     (device-00), so device-01 would always see LST=0.0 if device-00 is not running.
+            var context = AxesContext.FromSettings(_settings, SideOfPier).WithLst(SkyServer.GetLocalSiderealTime(_settings.Longitude));
 
             // Implement PEC
             PecCheck();
@@ -1904,7 +1906,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 _loopCounter++;
-                _siderealTime = SkyServer.GetLocalSiderealTime();
+                _siderealTime = SkyServer.GetLocalSiderealTime(_settings.Longitude);
                 this.UpdateSteps();
                 _lha = Coordinate.Ra2Ha12(_rightAscensionXForm, _siderealTime);
                 CheckSlewState();    // Phase H2: per-instance; updates this device's _isSlewing
@@ -2109,10 +2111,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     _altAzTrackingMode = AltAzTrackingType.Predictor;
-                    // Always re-seed from current mount position; preserve any active offset rates
-                    var keepRateRa = SkyPredictor.RaDecSet ? SkyPredictor.RateRa : 0.0;
-                    var keepRateDec = SkyPredictor.RaDecSet ? SkyPredictor.RateDec : 0.0;
-                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, keepRateRa, keepRateDec);
+                    if (!SkyPredictor.RaDecSet)
+                        SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0); // N5: first-time seed
+                    else
+                        SkyPredictor.ReferenceTime = DateTime.Now; // N5: preserve existing target — don't reset
                 }
             }
             else
