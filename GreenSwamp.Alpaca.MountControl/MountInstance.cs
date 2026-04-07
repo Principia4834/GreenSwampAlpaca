@@ -2109,10 +2109,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     _altAzTrackingMode = AltAzTrackingType.Predictor;
-                    if (!SkyPredictor.RaDecSet)
-                        SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, 0, 0); // N5: first-time seed
-                    else
-                        SkyPredictor.ReferenceTime = DateTime.Now; // N5: preserve existing target — don't reset
+                    // Always re-seed from current mount position; preserve any active offset rates
+                    var keepRateRa = SkyPredictor.RaDecSet ? SkyPredictor.RateRa : 0.0;
+                    var keepRateDec = SkyPredictor.RaDecSet ? SkyPredictor.RateDec : 0.0;
+                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, keepRateRa, keepRateDec);
                 }
             }
             else
