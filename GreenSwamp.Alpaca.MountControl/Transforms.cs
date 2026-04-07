@@ -106,17 +106,18 @@ namespace GreenSwamp.Alpaca.Server.MountControl
         /// <param name="declination"></param>
         /// /// <param name="log"></param>
         /// <returns></returns>
-        public static Vector CoordTypeToInternal(double rightAscension, double declination, bool log = false)
+        public static Vector CoordTypeToInternal(double rightAscension, double declination, bool log = false, SkySettingsInstance? settings = null)
         {
+            var s = settings ?? SkyServer.Settings;
             //internal is already to-po so return it
-            if (SkyServer.Settings?.EquatorialCoordinateType == EquatorialCoordinateType.Topocentric) return new Vector(rightAscension, declination);
+            if (s?.EquatorialCoordinateType == EquatorialCoordinateType.Topocentric) return new Vector(rightAscension, declination);
 
-            xForm.SiteElevation = SkyServer.Settings?.Elevation ?? default;
-            xForm.SiteLatitude = SkyServer.Settings?.Latitude ?? default;
-            xForm.SiteLongitude = SkyServer.Settings?.Longitude ?? default;
-            xForm.Refraction = SkyServer.Settings?.Refraction ?? default;
-            xForm.SiteTemperature = SkyServer.Settings?.Temperature ?? default;
-            switch (SkyServer.Settings?.EquatorialCoordinateType ?? default)
+            xForm.SiteElevation = s?.Elevation ?? default;
+            xForm.SiteLatitude = s?.Latitude ?? default;
+            xForm.SiteLongitude = s?.Longitude ?? default;
+            xForm.Refraction = s?.Refraction ?? default;
+            xForm.SiteTemperature = s?.Temperature ?? default;
+            switch (s?.EquatorialCoordinateType ?? default)
             {
                 case EquatorialCoordinateType.J2000:
                     xForm.SetJ2000(rightAscension, declination);
@@ -146,7 +147,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"lat:{SkyServer.Settings?.Latitude ?? default}|long:{SkyServer.Settings?.Longitude ?? default}|Ref:{SkyServer.Settings?.Refraction ?? default}|Ele:{SkyServer.Settings?.Elevation ?? default}|ra/dec:{rightAscension},{declination}|{xForm.RATopocentric},{xForm.DECTopocentric}"
+                    Message = $"lat:{s?.Latitude ?? default}|long:{s?.Longitude ?? default}|Ref:{s?.Refraction ?? default}|Ele:{s?.Elevation ?? default}|ra/dec:{rightAscension},{declination}|{xForm.RATopocentric},{xForm.DECTopocentric}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -162,19 +163,20 @@ namespace GreenSwamp.Alpaca.Server.MountControl
         /// <param name="declination"></param>
         /// /// <param name="log"></param>
         /// <returns></returns>
-        public static Vector InternalToCoordType(double rightAscension, double declination, bool log = false)
+        public static Vector InternalToCoordType(double rightAscension, double declination, bool log = false, SkySettingsInstance? settings = null)
         {
+            var s = settings ?? SkyServer.Settings;
             var radec = new Vector();
             //internal is already to-po so return it
-            if (SkyServer.Settings?.EquatorialCoordinateType == EquatorialCoordinateType.Topocentric) return new Vector(rightAscension, declination);
+            if (s?.EquatorialCoordinateType == EquatorialCoordinateType.Topocentric) return new Vector(rightAscension, declination);
 
-            xForm.SiteElevation = SkyServer.Settings?.Elevation ?? default;
-            xForm.SiteLatitude = SkyServer.Settings?.Latitude ?? default;
-            xForm.SiteLongitude = SkyServer.Settings?.Longitude ?? default;
-            xForm.Refraction = SkyServer.Settings?.Refraction ?? default;
-            xForm.SiteTemperature = SkyServer.Settings?.Temperature ?? default;
+            xForm.SiteElevation = s?.Elevation ?? default;
+            xForm.SiteLatitude = s?.Latitude ?? default;
+            xForm.SiteLongitude = s?.Longitude ?? default;
+            xForm.Refraction = s?.Refraction ?? default;
+            xForm.SiteTemperature = s?.Temperature ?? default;
             xForm.SetTopocentric(rightAscension, declination);
-            switch (SkyServer.Settings?.EquatorialCoordinateType ?? default)
+            switch (s?.EquatorialCoordinateType ?? default)
             {
                 case EquatorialCoordinateType.J2000:
                     radec.X = xForm.RAJ2000;
@@ -211,7 +213,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"lat:{SkyServer.Settings?.Latitude ?? default}|long:{SkyServer.Settings?.Longitude ?? default}|Ref:{SkyServer.Settings?.Refraction ?? default}|Ele:{SkyServer.Settings?.Elevation ?? default}|ra/dec:{rightAscension},{declination}/{radec.X},{radec.Y}"
+                    Message = $"lat:{s?.Latitude ?? default}|long:{s?.Longitude ?? default}|Ref:{s?.Refraction ?? default}|Ele:{s?.Elevation ?? default}|ra/dec:{rightAscension},{declination}/{radec.X},{radec.Y}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }

@@ -1477,7 +1477,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _raDec.Y = raDec[1];
 
             // Calculate EquatorialSystem RA/Dec for UI
-            var xy = Transforms.InternalToCoordType(raDec[0], raDec[1]);
+            var xy = Transforms.InternalToCoordType(raDec[0], raDec[1], settings: _settings);
             _rightAscensionXForm = xy.X;
             _declinationXForm = xy.Y;
         }
@@ -2392,7 +2392,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // get predicted RA and Dec at update time
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                     // convert to internal Ra and Dec
-                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
                     target = [internalRaDec.X, internalRaDec.Y];
                 }
 
@@ -2486,10 +2486,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         var now = HiResDateTime.UtcNow;
                         var predictorRaDec = SkyPredictor.GetRaDecAtTime(now.AddMilliseconds(deltaTime));
-                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
                         simTargetAtTime = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                         predictorRaDec = SkyPredictor.GetRaDecAtTime(now);
-                        internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                        internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
                         simTargetNow = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
@@ -2690,7 +2690,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // get predicted RA and Dec at update time
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                     // convert to internal Ra and Dec
-                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
                     target = [internalRaDec.X, internalRaDec.Y];
                 }
 
@@ -2809,7 +2809,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                         var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
-                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1]);
+                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
                         skyTarget = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
