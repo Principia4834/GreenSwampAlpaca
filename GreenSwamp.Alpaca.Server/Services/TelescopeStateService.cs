@@ -22,138 +22,76 @@ using ASCOM.Common.DeviceInterfaces;
 namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
-    /// Service that provides telescope state updates synchronized with SkyServer main loop
-    /// Implements observer pattern for real-time UI updates
+    /// Service that provides telescope state snapshots for the Blazor UI.
+    /// Fires a tick event on a 100 ms timer; callers read per-device state via GetCurrentState(deviceNumber).
     /// </summary>
     public class TelescopeStateService : IDisposable
     {
         private readonly Timer _updateTimer;
-        private TelescopeStateModel _currentState;
-        private readonly object _stateLock = new object();
-        
+
         /// <summary>
-        /// Event fired when telescope state is updated (synchronized with SkyServer loop)
+        /// Fired every 100 ms so Blazor pages can call StateHasChanged().
         /// </summary>
-        public event EventHandler<TelescopeStateModel>? StateChanged;
-        
-        /// <summary>
-        /// Constructor initializes the service and subscribes to SkyServer property changes
-        /// </summary>
+        public event EventHandler? StateChanged;
+
         public TelescopeStateService()
         {
-            _currentState = new TelescopeStateModel();
-            
-            // Subscribe to SkyServer static property changes
-            SkyServer.StaticPropertyChanged += OnSkyServerPropertyChanged;
-            
-            // Create a backup timer (100ms) in case property change events are missed
-            _updateTimer = new Timer(UpdateState, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
+            _updateTimer = new Timer(OnTimerTick, null,
+                TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
         }
-        
+
+        private void OnTimerTick(object? state) =>
+            StateChanged?.Invoke(this, EventArgs.Empty);
+
         /// <summary>
-        /// Handler for SkyServer property changes - updates state and notifies subscribers
+        /// Builds a state snapshot directly from the per-instance MountInstance.
+        /// Returns an empty model when the device number is not registered.
         /// </summary>
-        private void OnSkyServerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            // Update on key property changes that indicate server loop update
-            if (e.PropertyName == nameof(SkyServer.LoopCounter) || 
-                e.PropertyName == nameof(SkyServer.Steps) ||
-                e.PropertyName == null) // null means multiple properties changed
-            {
-                UpdateState(null);
-            }
-        }
-        
-        /// <summary>
-        /// Updates the current telescope state from SkyServer
-        /// </summary>
-        private void UpdateState(object? state)
+        public TelescopeStateModel GetCurrentState(int deviceNumber = 0)
         {
             try
             {
-                var newState = new TelescopeStateModel
+                var inst = MountInstanceRegistry.GetInstance(deviceNumber);
+                if (inst == null) return new TelescopeStateModel();
+
+                return new TelescopeStateModel
                 {
-                    // Core positioning
-                    Altitude = SkyServer.Altitude,
-                    Azimuth = SkyServer.Azimuth,
-                    Declination = SkyServer.Declination,
-                    RightAscension = SkyServer.RightAscension,
-                    
-                    // Pier side and timing
-                    SideOfPier = SkyServer.SideOfPier,
-                    LocalHourAngle = SkyServer.Lha,
+                    Altitude = inst.Altitude,
+                    Azimuth = inst.Azimuth,
+                    Declination = inst.Declination,
+                    RightAscension = inst.RightAscension,
+                    SideOfPier = inst.SideOfPier,
+                    LocalHourAngle = inst.Lha,
                     UTCDate = HiResDateTime.UtcNow,
                     LocalDate = DateTime.Now,
-                    
-                    // Mount state
-                    Slewing = SkyServer.IsSlewing,
-                    Tracking = SkyServer.Tracking,
-                    AtPark = SkyServer.AtPark,
-                    AtHome = SkyServer.IsHome,
-                    IsMountRunning = SkyServer.IsMountRunning,
-                    
-                    // Target information
-                    TargetRightAscension = SkyServer.TargetRa,
-                    TargetDeclination = SkyServer.TargetDec,
-                    
-                    // Axis positions - mount coordinates (internal) and app coordinates (local)
-                    ActualAxisX = SkyServer.ActualAxisX,
-                    ActualAxisY = SkyServer.ActualAxisY,
-                    AppAxisX = SkyServer.AppAxisX,
-                    AppAxisY = SkyServer.AppAxisY,
-
-                    // Axis step positions
-                    Axis1Steps = SkyServer.Steps?[0] ?? 0,
-                    Axis2Steps = SkyServer.Steps?[1] ?? 0,
-
-                    // Rates and guides
-                    TrackingRate = DriveRate.Sidereal,  // Use constant for now
-                    IsPulseGuidingRa = SkyServer.IsPulseGuidingRa,
-                    IsPulseGuidingDec = SkyServer.IsPulseGuidingDec,
-                    
-                    // Slew state
-                    SlewState = SkyServer.SlewState,
-                    
-                    // Performance
-                    LoopCounter = SkyServer.LoopCounter,
-                    TimerOverruns = 0,  // Not publicly accessible
-                    
+                    Slewing = inst.IsSlewing,
+                    Tracking = inst.Tracking,
+                    AtPark = inst.AtPark,
+                    AtHome = inst.AtHome,
+                    IsMountRunning = inst.IsMountRunning,
+                    TargetRightAscension = inst.TargetRa,
+                    TargetDeclination = inst.TargetDec,
+                    ActualAxisX = inst.ActualAxisX,
+                    ActualAxisY = inst.ActualAxisY,
+                    AppAxisX = inst.AppAxisX,
+                    AppAxisY = inst.AppAxisY,
+                    Axis1Steps = inst.Steps?[0] ?? 0,
+                    Axis2Steps = inst.Steps?[1] ?? 0,
+                    TrackingRate = DriveRate.Sidereal,
+                    IsPulseGuidingRa = inst.IsPulseGuidingRa,
+                    IsPulseGuidingDec = inst.IsPulseGuidingDec,
+                    SlewState = inst.SlewState,
+                    LoopCounter = inst.LoopCounter,
+                    TimerOverruns = inst.TimerOverruns,
                     LastUpdate = DateTime.UtcNow
                 };
-                
-                lock (_stateLock)
-                {
-                    _currentState = newState;
-                }
-                
-                // Notify subscribers on thread pool to avoid blocking
-                Task.Run(() => StateChanged?.Invoke(this, newState));
             }
             catch (Exception)
             {
-                // Silently handle errors to prevent service failure
-                // Could log here if needed
+                return new TelescopeStateModel();
             }
         }
-        
-        /// <summary>
-        /// Gets the current telescope state (thread-safe)
-        /// </summary>
-        public TelescopeStateModel GetCurrentState()
-        {
-            lock (_stateLock)
-            {
-                return _currentState;
-            }
-        }
-        
-        /// <summary>
-        /// Cleanup resources
-        /// </summary>
-        public void Dispose()
-        {
-            SkyServer.StaticPropertyChanged -= OnSkyServerPropertyChanged;
-            _updateTimer?.Dispose();
-        }
+
+        public void Dispose() => _updateTimer?.Dispose();
     }
 }

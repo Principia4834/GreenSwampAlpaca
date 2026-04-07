@@ -449,6 +449,13 @@ namespace GreenSwamp.Alpaca.MountControl
         public int TimerOverruns { get => _timerOverruns; internal set => _timerOverruns = value; }
         public AltAzTrackingType AltAzTrackingMode { get => _altAzTrackingMode; set => _altAzTrackingMode = value; }
 
+        // Blazor UI: axis and step positions readable without going through SkyServer static facade
+        public double ActualAxisX => _actualAxisX;
+        public double ActualAxisY => _actualAxisY;
+        public double AppAxisX => _appAxes.X;
+        public double AppAxisY => _appAxes.Y;
+        public double[] Steps => _steps;
+
         #endregion
 
         #region Internal State Exposure (for other MountControl classes)

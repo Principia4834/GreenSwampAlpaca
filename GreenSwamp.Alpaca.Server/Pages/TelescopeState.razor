@@ -1,6 +1,8 @@
 ﻿@page "/telescope-state"
+@page "/telescope-state/{DeviceNumber:int}"
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Server.Models
+@using GreenSwamp.Alpaca.MountControl
 @using ASCOM.Common.DeviceInterfaces
 @inject TelescopeStateService StateService
 @implements IDisposable
@@ -8,6 +10,15 @@
 <PageTitle>Telescope State</PageTitle>
 
 <h3>Telescope Device State</h3>
+
+<div class="device-selector mb-3">
+    @foreach (var kvp in MountInstanceRegistry.GetAllInstances())
+    {
+        var dn = kvp.Key;
+        var activeClass = dn == DeviceNumber ? "btn btn-primary btn-sm me-1" : "btn btn-outline-secondary btn-sm me-1";
+        <a href="/telescope-state/@dn" class="@activeClass">Device @dn</a>
+    }
+</div>
 
 <div class="state-container">
     <div class="state-section">
@@ -160,23 +171,27 @@
 </div>
 
 @code {
+    [Parameter] public int DeviceNumber { get; set; }
+
     private TelescopeStateModel _state = new();
-    
+
     protected override void OnInitialized()
     {
-        // Subscribe to state changes
         StateService.StateChanged += OnStateChanged;
-        
-        // Get initial state
-        _state = StateService.GetCurrentState();
+        _state = StateService.GetCurrentState(DeviceNumber);
     }
-    
-    private void OnStateChanged(object? sender, TelescopeStateModel newState)
+
+    protected override void OnParametersSet()
     {
-        _state = newState;
+        _state = StateService.GetCurrentState(DeviceNumber);
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        _state = StateService.GetCurrentState(DeviceNumber);
         InvokeAsync(StateHasChanged);
     }
-    
+
     public void Dispose()
     {
         StateService.StateChanged -= OnStateChanged;
