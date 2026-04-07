@@ -108,14 +108,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 case MountType.SkyWatcher:
                     if (!_pPecTraining)
                     {
-                        SkyServer.PecTrainInProgress = false;
+                        _pPecTrainInProgress = false;
                         return;
                     }
                     var ppectrain = new SkyIsPPecInTrainingOn(SkyQueueInstance.NewId, SkyQueueInstance);
                     if (bool.TryParse(Convert.ToString(SkyQueueInstance.GetCommandResult(ppectrain).Result), out bool bTrain))
                     {
-                        SkyServer.PecTraining = bTrain;
-                        SkyServer.PecTrainInProgress = bTrain;
+                        _pPecTraining = bTrain;
+                        SkyServer.SkyTasks(MountTaskName.PecTraining, this);
+                        _pPecTrainInProgress = bTrain;
                         if (!bTrain && _settings.PPecOn) //restart pec
                         {
                             _settings.PPecOn = false;
@@ -178,12 +179,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (pecBin == null) { throw new Exception("Pec not found"); }
 
                 var binNew = new Tuple<int, double, int>(newBinNo, pecBin.Item1, pecBin.Item2);
-                SkyServer.PecBinNow = binNew;
-                SkyServer.SetTracking();
+                _pecBinNow = binNew;
+                SkyServer.SetTracking(this);
             }
             catch (Exception ex)
             {
-                SkyServer.PecOn = false;
+                _settings.PecOn = false;
+                if (_tracking) SkyServer.SetTracking(this);
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,

@@ -268,9 +268,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Stop mount when type changes
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.IsMountRunning = false;
+                        _owner.Stop();
                     }
                 }
             }
@@ -801,9 +801,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Update guide rates
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SetGuideRates();
+                        SkyServer.SetGuideRates(_owner);
                     }
                 }
             }
@@ -820,9 +820,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Update guide rates
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SetGuideRates();
+                        SkyServer.SetGuideRates(_owner);
                     }
                 }
             }
@@ -902,9 +902,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     OnPropertyChanged();
 
                     // SIDE EFFECT: Update slew rates
-                    if (SkyServer.IsMountRunning)
+                    if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SetSlewRates(value);
+                        SkyServer.SetSlewRates(value, _owner);
                     }
                 }
             }
