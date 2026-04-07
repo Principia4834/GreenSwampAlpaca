@@ -859,54 +859,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Auto Home
-
-        /// <summary>
-        /// UI progress bar for autoHome 
-        /// </summary>
-        public static int AutoHomeProgressBar
-        {
-            get => _defaultInstance?._autoHomeProgressBar ?? 0;
-            set
-            {
-                if (_defaultInstance == null) return;
-                _defaultInstance._autoHomeProgressBar = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Cancel button status for auto home
-        /// </summary>
-        public static bool AutoHomeStop
-        {
-            get => _defaultInstance?._autoHomeStop ?? false;
-            set
-            {
-                if (_defaultInstance == null) return;
-                _defaultInstance._autoHomeStop = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Checks if the auto home async process is running
-        /// </summary>
-        public static bool IsAutoHomeRunning
-        {
-            get => _defaultInstance?._isAutoHomeRunning ?? false;
-            private set
-            {
-                if (_defaultInstance == null) return;
-                _defaultInstance._isAutoHomeRunning = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
-        // AutoHomeAsync, GetAutoHomeResultMessage, IsAutoHomeRunning, etc. will be moved here
-
-        #endregion
-
         #region Server Items
 
         /// <summary>

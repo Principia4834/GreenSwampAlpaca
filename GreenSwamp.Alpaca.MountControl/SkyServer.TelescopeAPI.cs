@@ -486,20 +486,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>
-        /// Checks if the auto home async process is running
-        /// </summary>
-        public static Exception? LastAutoHomeError
-        {
-            get => _defaultInstance?._lastAutoHomeError;
-            private set
-            {
-                if (_defaultInstance == null) return;
-                _defaultInstance._lastAutoHomeError = value;
-                OnStaticPropertyChanged();
-            }
-        }
-
         #endregion
 
         #region Target & Rate Properties
@@ -1125,7 +1111,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsMountRunning) { return; }
 
-            AutoHomeStop = true;
+            if (_defaultInstance != null) _defaultInstance.AutoHomeStop = true;
 
             var monitorItem = new MonitorEntry
             {
@@ -1417,8 +1403,11 @@ namespace GreenSwamp.Alpaca.MountControl
             try
             {
                 if (!IsMountRunning) return;
-                IsAutoHomeRunning = true;
-                LastAutoHomeError = null;
+                if (_defaultInstance != null)
+                {
+                    _defaultInstance.IsAutoHomeRunning = true;
+                    _defaultInstance.LastAutoHomeError = null;
+                }
 
                 MonitorLog.LogToMonitor(new MonitorEntry
                 {
@@ -1432,7 +1421,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 });
 
                 if (degreeLimit < 20) degreeLimit = 100;
-                AutoHomeProgressBar = 0;
+                if (_defaultInstance != null) _defaultInstance.AutoHomeProgressBar = 0;
                 var encoderTemp = _settings!.Encoders;
                 if (Tracking) Tracking = false;
                 // ToDo re-enable voice prompt later
@@ -1446,13 +1435,13 @@ namespace GreenSwamp.Alpaca.MountControl
                     case MountType.Simulator:
                         var autoHomeSim = new AutoHomeSim(_settings, _defaultInstance!.MountQueueInstance!, _defaultInstance!);
                         raResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis1, degreeLimit));
-                        AutoHomeProgressBar = 50;
+                        if (_defaultInstance != null) _defaultInstance.AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     case MountType.SkyWatcher:
                         var autoHomeSky = new AutoHomeSky(_settings, _defaultInstance!.SkyQueueInstance!, _defaultInstance!);
                         raResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis1, degreeLimit));
-                        AutoHomeProgressBar = 50;
+                        if (_defaultInstance != null) _defaultInstance.AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     default:
@@ -1491,7 +1480,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     string raMsg = GetAutoHomeResultMessage(raResult, "RA");
                     string decMsg = GetAutoHomeResultMessage(decResult, "Dec");
                     var ex = new Exception($"Incomplete: {raMsg} ({raResult}), {decMsg} ({decResult})");
-                    LastAutoHomeError = ex;
+                    if (_defaultInstance != null) _defaultInstance.LastAutoHomeError = ex;
                     throw ex;
                 }
             }
@@ -1507,13 +1496,16 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Thread.CurrentThread.ManagedThreadId,
                     Message = $"{ex.Message}|{ex.StackTrace}"
                 });
-                LastAutoHomeError = ex;
+                if (_defaultInstance != null) _defaultInstance.LastAutoHomeError = ex;
                 MountError = ex;
             }
             finally
             {
-                AutoHomeProgressBar = 100;
-                IsAutoHomeRunning = false;
+                if (_defaultInstance != null)
+                {
+                    _defaultInstance.AutoHomeProgressBar = 100;
+                    _defaultInstance.IsAutoHomeRunning = false;
+                }
                 // ToDo re-enable voice prompt later
                 // Synthesizer.VoicePause = false;
             }
