@@ -693,6 +693,16 @@ namespace GreenSwamp.Alpaca.MountControl
                         return false;
                     }
 
+                    var controllerVoltage = double.NaN;
+                    try
+                    {
+                        if (SkyQueueInstance != null)
+                        {
+                            var vs = new SkyGetControllerVoltage(SkyQueueInstance.NewId, SkyQueueInstance, Axis.Axis1);
+                            controllerVoltage = (double)SkyQueueInstance.GetCommandResult(vs).Result;
+                        }
+                    }
+                    catch { }
                     monitorItem = new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow,
@@ -701,7 +711,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"Voltage|{SkyServer.ControllerVoltage.ToString("F2") + " V"}"
+                        Message = $"Voltage|{controllerVoltage:F2} V"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
                     // defaults
@@ -967,11 +977,10 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Get last error from mount
-        /// Delegates to static property
         /// </summary>
         public Exception? GetLastError()
         {
-            return SkyServer.MountError;
+            return _mountError;
         }
 
         #endregion

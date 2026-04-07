@@ -181,6 +181,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _defaultInstance.IsSideOfPier = value;
                 OnStaticPropertyChanged();
 
+                var appAxisY = _defaultInstance._appAxes.Y;
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
@@ -189,7 +190,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{value}|{AppAxisY}|{AppAxisY < 90 || AppAxisY.IsEqualTo(90, 0.0000000001)}|{AppAxisY > -90 || AppAxisY.IsEqualTo(-90, 0.0000000001)} "
+                    Message = $"{value}|{appAxisY}|{appAxisY < 90 || appAxisY.IsEqualTo(90, 0.0000000001)}|{appAxisY > -90 || appAxisY.IsEqualTo(-90, 0.0000000001)} "
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -207,23 +208,23 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings!.AlignmentMode)
                 {
                     case AlignmentMode.AltAz:
-                        sideOfPier = ActualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
+                        sideOfPier = (_defaultInstance?._actualAxisX ?? 0.0) >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
                         break;
                     case AlignmentMode.Polar:
-                        sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
+                        sideOfPier = ((_defaultInstance?._appAxes.Y ?? 0.0) < 90.0000000001 && (_defaultInstance?._appAxes.Y ?? 0.0) > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
                         break;
                     case AlignmentMode.GermanPolar:
-                        if (SouthernHemisphere)
+                        if (_settings!.Latitude < 0)
                         {
                             //return AppAxes.Y <= 90 && AppAxes.Y >= -90 ? PointingState.ThroughThePole : PointingState.Normal;
                             // replaced with ...
-                            sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.ThroughThePole : PointingState.Normal;
+                            sideOfPier = ((_defaultInstance?._appAxes.Y ?? 0.0) < 90.0000000001 && (_defaultInstance?._appAxes.Y ?? 0.0) > -90.0000000001) ? PointingState.ThroughThePole : PointingState.Normal;
                         }
                         else
                         {
                             // return AppAxes.Y <= 90 && AppAxes.Y >= -90 ? PointingState.Normal : PointingState.ThroughThePole;
                             // replaced with ...
-                            sideOfPier = (AppAxisY < 90.0000000001 && AppAxisY > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
+                            sideOfPier = ((_defaultInstance?._appAxes.Y ?? 0.0) < 90.0000000001 && (_defaultInstance?._appAxes.Y ?? 0.0) > -90.0000000001) ? PointingState.Normal : PointingState.ThroughThePole;
                         }
                         break;
                     default:
@@ -233,7 +234,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             set
             {
-                var axes = new[] { ActualAxisX, ActualAxisY };
+                var axes = new[] { _defaultInstance?._actualAxisX ?? 0.0, _defaultInstance?._actualAxisY ?? 0.0 };
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
@@ -324,7 +325,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     switch (_settings!.AlignmentMode)
                     {
                         case AlignmentMode.AltAz:
-                            AltAzTrackingMode = AltAzTrackingType.Predictor;
+                            if (_defaultInstance != null) _defaultInstance.AltAzTrackingMode = AltAzTrackingType.Predictor;
                             // Must have a tracking target for Alt Az otherwise just set the reference time to now
                             if (!_defaultInstance.SkyPredictor.RaDecSet)
                             {
@@ -348,8 +349,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 else
                 {
                     // Tracking off
-                    IsPulseGuidingDec = false; // Ensure pulses are off
-                    IsPulseGuidingRa = false;
+                    if (_defaultInstance != null)
+                    {
+                        _defaultInstance._isPulseGuidingDec = false;
+                        _ctsPulseGuideDec?.Dispose(); _ctsPulseGuideDec = null;
+                        _defaultInstance._isPulseGuidingRa = false;
+                        _ctsPulseGuideRa?.Dispose(); _ctsPulseGuideRa = null;
+                    }
                     // ToDo re-enable voice prompt later
                     // if (TrackingSpeak && _trackingMode != TrackingMode.Off) { Synthesizer.Speak(MediaTypeNames.Application.Current.Resources["vceTrackingOff"].ToString()); }
                     _defaultInstance.TrackingMode = TrackingMode.Off;
@@ -403,7 +409,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var context = AxesContext.FromSettings(_settings);
                 var home = Axes.AxesMountToApp(new[] { HomeAxes.X, HomeAxes.Y }, context);
                 var h = new Vector(home[0], home[1]);
-                var m = new Vector(AppAxisX, AppAxisY);
+                var m = new Vector(_defaultInstance?._appAxes.X ?? 0.0, _defaultInstance?._appAxes.Y ?? 0.0);
                 double dX = Abs(m.X - h.X);
                 dX = Min(dX, 360.0 - dX);   // Az Alt can have home (0, 0) so wrap at 360
                 double dY = Abs(m.Y - h.Y);
@@ -445,7 +451,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Pulse reporting to driver
         /// Alt Az uses both axes so always synchronous pulse guiding on one of Ra or Dec
         /// </summary>
-        public static bool IsPulseGuiding => (IsPulseGuidingDec || IsPulseGuidingRa);
+        public static bool IsPulseGuiding => (_defaultInstance?._isPulseGuidingDec ?? false) || (_defaultInstance?._isPulseGuidingRa ?? false);
 
         /// <summary>
         /// UI Checkbox option to flip on the next goto
@@ -1364,7 +1370,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{name}|{park[0]}|{park[1]}|{AppAxisX}|{AppAxisY}"
+                Message = $"{name}|{park[0]}|{park[1]}|{_defaultInstance?._appAxes.X ?? 0.0}|{_defaultInstance?._appAxes.Y ?? 0.0}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1497,7 +1503,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = $"{ex.Message}|{ex.StackTrace}"
                 });
                 if (_defaultInstance != null) _defaultInstance.LastAutoHomeError = ex;
-                MountError = ex;
+                if (_defaultInstance != null) _defaultInstance._mountError = ex;
             }
             finally
             {
@@ -1780,7 +1786,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var target = Axes.AxesMountToApp(GetSyncedAxes(xy), context);
 
             //get current mount position in app coordinates
-            var current = new[] { AppAxisX, AppAxisY };
+            var current = new[] { _defaultInstance?._appAxes.X ?? 0.0, _defaultInstance?._appAxes.Y ?? 0.0 };
             //compare ra dec / az alt to current mount position
             var a = Math.Abs(target[0]) - Math.Abs(current[0]);
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
@@ -1821,14 +1827,14 @@ namespace GreenSwamp.Alpaca.MountControl
             var target = Axes.AxesMountToApp(GetSyncedAxes(xy), context);
 
             //get current mount position in app coordinates
-            var current = new[] { AppAxisX, AppAxisY };
+            var current = new[] { _defaultInstance?._appAxes.X ?? 0.0, _defaultInstance?._appAxes.Y ?? 0.0 };
 
             if (_settings!.AlignmentMode == AlignmentMode.AltAz)
             {
                 target[0] = az;
                 target[1] = alt;
-                current[0] = Range.Range360(AppAxisX);
-                current[1] = AppAxisY;
+                current[0] = Range.Range360(_defaultInstance?._appAxes.X ?? 0.0);
+                current[1] = _defaultInstance?._appAxes.Y ?? 0.0;
             }
 
             //compare ra dec to current position
@@ -2151,7 +2157,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var alt = Axes.GetAltAxisPosition(position, context);
             if (!IsWithinFlipLimits(alt)) { return null; }
 
-            var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
+            var cl = ChooseClosestPosition(_defaultInstance?._actualAxisX ?? 0.0, position, alt);  //choose the closest angle to slew 
             if (FlipOnNextGoto) // implement the forced flip for a goto
             {
                 cl = cl == "a" ? "b" : "a"; //choose the farthest angle to slew which will flip
@@ -2163,7 +2169,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"flip|{cl}|{ActualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                    Message = $"flip|{cl}|{_defaultInstance?._actualAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -2183,7 +2189,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!IsWithinFlipLimits(position)) { return null; }
             var context = AxesContext.FromSettings(_settings);
             var alt = Axes.GetAltAxisPosition(position, context);
-            var cl = ChooseClosestPosition(ActualAxisX, position, alt);  //choose the closest angle to slew 
+            var cl = ChooseClosestPosition(_defaultInstance?._actualAxisX ?? 0.0, position, alt);  //choose the closest angle to slew 
             if (FlipOnNextGoto) // implement the forced flip for a goto
             {
                 cl = cl == "a" ? "b" : "a"; //choose the farthest angle to slew which will flip
@@ -2195,7 +2201,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"flip|{cl}|{ActualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                    Message = $"flip|{cl}|{_defaultInstance?._actualAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -2223,7 +2229,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!altOk) return null; // alternate target position not within limits, return null
             if (posOk && altOk)
             {
-                var cl = ChooseClosestPositionPolar([ActualAxisX, ActualAxisY], position, alt);  //choose the closest angle to slew 
+                var cl = ChooseClosestPositionPolar([_defaultInstance?._actualAxisX ?? 0.0, _defaultInstance?._actualAxisY ?? 0.0], position, alt);  //choose the closest angle to slew 
                 if (FlipOnNextGoto) // implement the forced flip for a goto
                 {
                     cl = cl == "a" ? "b" : "a"; //choose the farthest angle to slew which will flip
@@ -2235,7 +2241,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"flip|{cl}|{ActualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                        Message = $"flip|{cl}|{_defaultInstance?._actualAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
                 }
@@ -2417,7 +2423,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             // don't log if pec is on
-            if (PecOn) { return; }
+            if (_defaultInstance?.Settings.PecOn == true) { return; }
 
             var monitorItem = new MonitorEntry
             {
@@ -2427,7 +2433,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{currentTrackingMode}|{rateChange * 3600}|{PecBinNow}|{SkyTrackingOffset[0]}|{SkyTrackingOffset[1]}"
+                Message = $"{currentTrackingMode}|{rateChange * 3600}|{_defaultInstance?._pecBinNow}|{SkyTrackingOffset[0]}|{SkyTrackingOffset[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -2446,7 +2452,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
-                    _defaultInstance.TrackingMode = SouthernHemisphere ? TrackingMode.EqS : TrackingMode.EqN;
+                    _defaultInstance.TrackingMode = _settings!.Latitude < 0 ? TrackingMode.EqS : TrackingMode.EqN;
                     break;
             }
         }
@@ -2496,12 +2502,12 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             //Implement Pec
-            if (PecOn && Tracking && PecBinNow != null && !double.IsNaN(PecBinNow.Item2))
+            if ((_defaultInstance?.Settings.PecOn ?? false) && Tracking && _defaultInstance?._pecBinNow != null && !double.IsNaN(_defaultInstance._pecBinNow.Item2))
             {
                 // safety check to make sure factor isn't too big
-                if (Math.Abs(PecBinNow.Item2 - 1) < .04)
+                if (Math.Abs(_defaultInstance._pecBinNow.Item2 - 1) < .04)
                 {
-                    rate *= PecBinNow.Item2;
+                    rate *= _defaultInstance._pecBinNow.Item2;
                 }
             }
             rate /= 3600;
@@ -2644,8 +2650,8 @@ namespace GreenSwamp.Alpaca.MountControl
             // stop the secondary going past the vertical
             if (change.Y > 90 - Altitude) { change.Y = 0; }
             // limit the primary to the maximum slew rate
-            if (change.X < -SlewSpeedEight) { change.X = -SlewSpeedEight; }
-            if (change.X > SlewSpeedEight) { change.X = SlewSpeedEight; }
+            if (change.X < -(_defaultInstance?._slewSpeedEight ?? 4.0)) { change.X = -(_defaultInstance?._slewSpeedEight ?? 4.0); }
+            if (change.X > (_defaultInstance?._slewSpeedEight ?? 4.0)) { change.X = (_defaultInstance?._slewSpeedEight ?? 4.0); }
 
             var monitorItem = new MonitorEntry
             {
@@ -2809,7 +2815,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         private static PointingState GetAzDirection()
         {
-            var azDirection = ActualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
+            var azDirection = (_defaultInstance?._actualAxisX ?? 0.0) >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
             if (AtHome) azDirection = PointingState.Normal;
             return azDirection;
         }
@@ -2842,18 +2848,18 @@ namespace GreenSwamp.Alpaca.MountControl
                             {
                                 if (_settings!.Mount == MountType.Simulator)
                                 {
-                                    if (SouthernHemisphere)
+                                    if (_settings!.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && !moveNorth) || (isWest && moveNorth);
                                 }
                                 else // SkyWatcher
                                 {
-                                    if (SouthernHemisphere)
+                                    if (_settings!.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
-                                    if (PolarMode == PolarMode.Left) invert = !invert;
+                                    if (_settings!.PolarMode == PolarMode.Left) invert = !invert;
                                 }
                             }
                             break;
@@ -2862,14 +2868,14 @@ namespace GreenSwamp.Alpaca.MountControl
                             {
                                 if (_settings!.Mount == MountType.Simulator)
                                 {
-                                    if (SouthernHemisphere)
+                                    if (_settings!.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && !moveNorth) || (isWest && moveNorth);
                                 }
                                 else // SkyWatcher
                                 {
-                                    if (SouthernHemisphere)
+                                    if (_settings!.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
@@ -2896,7 +2902,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var east = rate > 0;
             rate = Math.Abs(rate);
 
-            if (SouthernHemisphere)
+            if (_settings!.Latitude < 0)
             {
                 if (!east) { rate = -rate; }
             }
@@ -3031,34 +3037,37 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 // Check the ranges of the primary axis and -hourAngleLimit to 180 + hourAngleLimit for german polar
                 case AlignmentMode.GermanPolar:
-                    // the primary axis needs to be in the range -180 to +180 to correspond with hour angles of -12 to 12.
-                    // check if we have hit the hour angle limit 
-                    if (SouthernHemisphere)
                     {
-                        if (AppAxes.X >= _settings!.HourAngleLimit ||
-                            AppAxes.X <= -_settings!.HourAngleLimit - 180)
+                        // the primary axis needs to be in the range -180 to +180 to correspond with hour angles of -12 to 12.
+                        // check if we have hit the hour angle limit
+                        var appX = _defaultInstance?._appAxes.X ?? 0.0;
+                        if (_settings!.Latitude < 0)
                         {
-                            limitHit = true;
-                        }
+                            if (appX >= _settings!.HourAngleLimit ||
+                                appX <= -_settings!.HourAngleLimit - 180)
+                            {
+                                limitHit = true;
+                            }
 
-                        // Check tracking limit
-                        if (AppAxes.X >= totLimit || AppAxes.X <= -totLimit - 180)
-                        {
-                            meridianLimit = true;
+                            // Check tracking limit
+                            if (appX >= totLimit || appX <= -totLimit - 180)
+                            {
+                                meridianLimit = true;
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (AppAxes.X >= _settings!.HourAngleLimit + 180 ||
-                            AppAxes.X <= -_settings!.HourAngleLimit)
+                        else
                         {
-                            limitHit = true;
-                        }
+                            if (appX >= _settings!.HourAngleLimit + 180 ||
+                                appX <= -_settings!.HourAngleLimit)
+                            {
+                                limitHit = true;
+                            }
 
-                        //Check Tracking Limit
-                        if (AppAxes.X >= totLimit + 180 || AppAxes.X <= -totLimit)
-                        {
-                            meridianLimit = true;
+                            //Check Tracking Limit
+                            if (appX >= totLimit + 180 || appX <= -totLimit)
+                            {
+                                meridianLimit = true;
+                            }
                         }
                     }
 
@@ -3116,7 +3125,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Tracking = false;
                 } // turn off tracking
 
-                if (_settings!.LimitPark && SlewState != SlewType.SlewPark) // only hit this once while in limit
+                if (_settings!.LimitPark && (_defaultInstance?._slewState ?? SlewType.SlewNone) != SlewType.SlewPark) // only hit this once while in limit
                 {
                     var found = _settings!.ParkPositions.Find(x => x.Name == _settings!.ParkLimitName);
                     if (found == null)
@@ -3142,7 +3151,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Tracking = false;
                 } // turn off tracking
 
-                if (_settings!.HzLimitPark && SlewState != SlewType.SlewPark) // only hit this once while in limit
+                if (_settings!.HzLimitPark && (_defaultInstance?._slewState ?? SlewType.SlewNone) != SlewType.SlewPark) // only hit this once while in limit
                 {
                     var found = _settings!.ParkPositions.Find(x => x.Name == _settings!.ParkHzLimitName);
                     if (found == null)
@@ -3164,7 +3173,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static void CheckSlewState()
         {
             var slewing = false;
-            switch (SlewState)
+            switch (_defaultInstance?._slewState ?? SlewType.SlewNone)
             {
                 case SlewType.SlewNone:
                     slewing = false;
@@ -3194,10 +3203,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     slewing = true;
                     break;
                 case SlewType.SlewComplete:
-                    SlewState = SlewType.SlewNone;
+                    if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewNone;
                     break;
                 default:
-                    SlewState = SlewType.SlewNone;
+                    if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewNone;
                     break;
             }
 
@@ -3215,7 +3224,7 @@ namespace GreenSwamp.Alpaca.MountControl
             const double oneArcSec = 1.0 / 3600;
             var axisUpperLimitY = _settings!.AxisUpperLimitY;
             var axisLowerLimitY = _settings!.AxisLowerLimitY;
-            if (_settings!.AlignmentMode == AlignmentMode.Polar && PolarMode == PolarMode.Left)
+            if (_settings!.AlignmentMode == AlignmentMode.Polar && _settings!.PolarMode == PolarMode.Left)
             {
                 axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
                 axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;

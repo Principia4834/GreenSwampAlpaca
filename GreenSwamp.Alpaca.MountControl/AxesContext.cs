@@ -190,7 +190,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>App axis X in degrees</returns>
         public double GetAppAxisX()
         {
-            return AppAxisX ?? SkyServer.AppAxisX;
+            return AppAxisX ?? MountInstanceRegistry.GetInstance(0)?.AppAxisX ?? 0.0;
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>App axis Y in degrees</returns>
         public double GetAppAxisY()
         {
-            return AppAxisY ?? SkyServer.AppAxisY;
+            return AppAxisY ?? MountInstanceRegistry.GetInstance(0)?.AppAxisY ?? 0.0;
         }
 
         /// <summary>

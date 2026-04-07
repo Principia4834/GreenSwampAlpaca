@@ -107,7 +107,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             //
             // Safety check: Use settings fallback if SlewSpeedEight not yet initialized
             // (e.g., if AxisRates is queried before mount connects)
-            var speedEight = instance?.SlewSpeedEight ?? SkyServer.SlewSpeedEight;
+            var speedEight = instance?.SlewSpeedEight ?? MountInstanceRegistry.GetInstance(0)?.SlewSpeedEight ?? 4.0;
             var maxSlewRate = speedEight > 0 ? speedEight : 4.0;
 
             switch (axis)

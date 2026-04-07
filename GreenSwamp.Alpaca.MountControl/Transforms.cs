@@ -46,7 +46,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
             xForm.SiteElevation = elevation;
             xForm.SiteLatitude = latitude;
             xForm.SiteLongitude = longitude;
-            xForm.Refraction = SkyServer.Settings?.Refraction ?? default;
+            xForm.Refraction = MountInstanceRegistry.GetInstance(0)?.Settings?.Refraction ?? default;
             switch (from.ToLower())
             {
                 case "j2000":
@@ -91,7 +91,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"lat:{latitude}|long:{longitude}|Ref:{SkyServer.Settings?.Refraction ?? default}|Ele:{elevation}|ra/dec:{rightAscension},{declination}|{r.X},{r.Y}"
+                    Message = $"lat:{latitude}|long:{longitude}|Ref:{MountInstanceRegistry.GetInstance(0)?.Settings?.Refraction ?? default}|Ele:{elevation}|ra/dec:{rightAscension},{declination}|{r.X},{r.Y}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -108,7 +108,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
         /// <returns></returns>
         public static Vector CoordTypeToInternal(double rightAscension, double declination, bool log = false, SkySettingsInstance? settings = null)
         {
-            var s = settings ?? SkyServer.Settings;
+            var s = settings ?? MountInstanceRegistry.GetInstance(0)?.Settings;
             //internal is already to-po so return it
             if (s?.EquatorialCoordinateType == EquatorialCoordinateType.Topocentric) return new Vector(rightAscension, declination);
 
@@ -165,7 +165,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
         /// <returns></returns>
         public static Vector InternalToCoordType(double rightAscension, double declination, bool log = false, SkySettingsInstance? settings = null)
         {
-            var s = settings ?? SkyServer.Settings;
+            var s = settings ?? MountInstanceRegistry.GetInstance(0)?.Settings;
             var radec = new Vector();
             //internal is already to-po so return it
             if (s?.EquatorialCoordinateType == EquatorialCoordinateType.Topocentric) return new Vector(rightAscension, declination);

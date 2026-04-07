@@ -69,17 +69,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private static MountInstance? _defaultInstance => MountInstanceRegistry.GetInstance(0);
         // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
         private static SkySettingsInstance? _settings => _defaultInstance?.Settings;
-        internal static SkySettingsInstance? Settings => _settings;
-
-        // Phase 4.2: Slew speed properties (delegate to default instance)
-        public static double SlewSpeedOne => _defaultInstance?.SlewSpeedOne ?? 0.0;
-        public static double SlewSpeedTwo => _defaultInstance?.SlewSpeedTwo ?? 0.0;
-        public static double SlewSpeedThree => _defaultInstance?.SlewSpeedThree ?? 0.0;
-        public static double SlewSpeedFour => _defaultInstance?.SlewSpeedFour ?? 0.0;
-        public static double SlewSpeedFive => _defaultInstance?.SlewSpeedFive ?? 0.0;
-        public static double SlewSpeedSix => _defaultInstance?.SlewSpeedSix ?? 0.0;
-        public static double SlewSpeedSeven => _defaultInstance?.SlewSpeedSeven ?? 0.0;
-        public static double SlewSpeedEight => _defaultInstance?.SlewSpeedEight ?? 4.0;
 
         // Phase 4.3: SkyWatcher tracking rates (internal - delegates to instance)
         internal static Vector SkyTrackingRate
@@ -148,15 +137,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private static Vector HomeAxes
         {
             get => _defaultInstance?.HomeAxes ?? new Vector(0, 0);
-        }
-
-        /// <summary>
-        /// Application axes position (derived from mount axes by AxesMountToApp)
-        /// Delegates to default instance
-        /// </summary>
-        private static Vector AppAxes
-        {
-            get => _defaultInstance?.AppAxes ?? new Vector(0, 0);
         }
 
         /// <summary>
@@ -484,11 +464,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         case SkyWatcherErrorCode.ErrQueueFailed:
                         case SkyWatcherErrorCode.ErrTooManyRetries:
                             IsMountRunning = false;
-                            MountError = mounterr;
+                            if (_defaultInstance != null) _defaultInstance._mountError = mounterr;
                             break;
                         default:
                             IsMountRunning = false;
-                            MountError = mounterr;
+                            if (_defaultInstance != null) _defaultInstance._mountError = mounterr;
                             break;
                     }
 
@@ -502,17 +482,17 @@ namespace GreenSwamp.Alpaca.MountControl
                         case ErrorCode.ErrUnableToDeqeue:
                         case ErrorCode.ErrSerialFailed:
                             IsMountRunning = false;
-                            MountError = skyerr;
+                            if (_defaultInstance != null) _defaultInstance._mountError = skyerr;
                             break;
                         default:
                             IsMountRunning = false;
-                            MountError = skyerr;
+                            if (_defaultInstance != null) _defaultInstance._mountError = skyerr;
                             break;
                     }
 
                     break;
                 default:
-                    MountError = ex;
+                    if (_defaultInstance != null) _defaultInstance._mountError = ex;
                     IsMountRunning = false;
                     break;
             }
@@ -679,7 +659,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal static void LowVoltageEventSet(object sender, EventArgs e)
         {
-            LowVoltageEventState = true;
+            if (_defaultInstance != null) _defaultInstance._lowVoltageEventState = true;
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1019,11 +999,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountTaskName.SetSt4Guiderate:
                             break;
                         case MountTaskName.SetSnapPort1:
-                            _ = new CmdSnapPort(0, q, 1, SnapPort1);
+                            _ = new CmdSnapPort(0, q, 1, instance._snapPort1);
                             instance._snapPort1Result = false;
                             break;
                         case MountTaskName.SetSnapPort2:
-                            _ = new CmdSnapPort(0, q, 2, SnapPort2);
+                            _ = new CmdSnapPort(0, q, 2, instance._snapPort2);
                             instance._snapPort2Result = true;
                             break;
                         case MountTaskName.MountName:
@@ -1278,7 +1258,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             _ = new SkySetMonitorPulse(0, q, instance._monitorPulse);
                             break;
                         case MountTaskName.PecTraining:
-                            _ = new SkySetPPecTrain(0, q, Axis.Axis1, PecTraining);
+                            _ = new SkySetPPecTrain(0, q, Axis.Axis1, instance._pPecTraining);
                             break;
                         case MountTaskName.Pec:
                             var ppeOcn = new SkySetPPec(q.NewId, q, Axis.Axis1, instance.Settings.PPecOn);
@@ -1305,12 +1285,12 @@ namespace GreenSwamp.Alpaca.MountControl
                             _ = new SkySetSouthernHemisphere(q.NewId, q, instance.Settings.Latitude < 0);
                             break;
                         case MountTaskName.SetSnapPort1:
-                            var sp1 = new SkySetSnapPort(q.NewId, q, 1, SnapPort1);
+                            var sp1 = new SkySetSnapPort(q.NewId, q, 1, instance._snapPort1);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(sp1).Result), out bool port1Result);
                             instance._snapPort1Result = port1Result;
                             break;
                         case MountTaskName.SetSnapPort2:
-                            var sp2 = new SkySetSnapPort(q.NewId, q, 2, SnapPort2);
+                            var sp2 = new SkySetSnapPort(q.NewId, q, 2, instance._snapPort2);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(sp2).Result), out bool port2Result);
                             instance._snapPort2Result = port2Result;
                             break;
@@ -1416,7 +1396,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"from|{ActualAxisX}|{ActualAxisY}|to|{targetPosition.X}|{targetPosition.Y}|SlewType|{slewState}"
+                Message = $"from|{effectiveInstance._actualAxisX}|{effectiveInstance._actualAxisY}|to|{targetPosition.X}|{targetPosition.Y}|SlewType|{slewState}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1473,7 +1453,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message =
-                    $"{SlewSpeedOne}|{SlewSpeedTwo}|{SlewSpeedThree}|{SlewSpeedFour}|{SlewSpeedFive}|{SlewSpeedSix}|{SlewSpeedSeven}|{SlewSpeedEight}"
+                    $"{inst._slewSpeedOne}|{inst._slewSpeedTwo}|{inst._slewSpeedThree}|{inst._slewSpeedFour}|{inst._slewSpeedFive}|{inst._slewSpeedSix}|{inst._slewSpeedSeven}|{inst._slewSpeedEight}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1562,13 +1542,13 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 MoveAxisActive = true;
                 IsSlewing = true;
-                SlewState = SlewType.SlewMoveAxis;
+                if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewMoveAxis;
             }
             if (!MovePrimaryAxisActive && !MoveSecondaryAxisActive)
             {
                 MoveAxisActive = false;
                 IsSlewing = false;
-                SlewState = SlewType.SlewNone;
+                if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewNone;
                 if (Tracking) _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
         }
@@ -1616,7 +1596,7 @@ namespace GreenSwamp.Alpaca.MountControl
             LimitStatus.AtUpperLimitAxisX = RawPositions[0] >= _settings!.AxisLimitX + oneArcSec;
             var axisUpperLimitY = _settings!.AxisUpperLimitY;
             var axisLowerLimitY = _settings!.AxisLowerLimitY;
-            if (_settings!.AlignmentMode == AlignmentMode.Polar && PolarMode == PolarMode.Left)
+            if (_settings!.AlignmentMode == AlignmentMode.Polar && _settings!.PolarMode == PolarMode.Left)
             {
                 axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
                 axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;
