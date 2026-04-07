@@ -456,6 +456,30 @@ namespace GreenSwamp.Alpaca.MountControl
         public double AppAxisY => _appAxes.Y;
         public double[] Steps => _steps;
 
+        public int AutoHomeProgressBar
+        {
+            get => _autoHomeProgressBar;
+            set => _autoHomeProgressBar = value;
+        }
+
+        public bool AutoHomeStop
+        {
+            get => _autoHomeStop;
+            set => _autoHomeStop = value;
+        }
+
+        public bool IsAutoHomeRunning
+        {
+            get => _isAutoHomeRunning;
+            internal set => _isAutoHomeRunning = value;
+        }
+
+        public Exception? LastAutoHomeError
+        {
+            get => _lastAutoHomeError;
+            internal set => _lastAutoHomeError = value;
+        }
+
         #endregion
 
         #region Internal State Exposure (for other MountControl classes)

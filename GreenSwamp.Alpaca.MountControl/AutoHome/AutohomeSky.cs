@@ -31,13 +31,15 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         private bool HasHomeSensor { get; set; }
         private readonly SkySettingsInstance SettingsInstance;
         private readonly ICommandQueue<SkyWatcherHardware> _skyQueue;
+        private readonly MountInstance _owner;
 
         /// <summary>
         /// auto home for skywatcher mounts
         /// </summary>
         /// <param name="settingsInstance"></param>
         /// <param name="skyQueue"></param>
-        public AutoHomeSky(SkySettingsInstance settingsInstance, ICommandQueue<SkyWatcherHardware> skyQueue)
+        /// <param name="owner"></param>
+        public AutoHomeSky(SkySettingsInstance settingsInstance, ICommandQueue<SkyWatcherHardware> skyQueue, MountInstance owner)
         {
             var monitorItem = new MonitorEntry
             {
@@ -52,6 +54,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             MonitorLog.LogToMonitor(monitorItem);
             this.SettingsInstance = settingsInstance;
             _skyQueue = skyQueue;
+            _owner = owner;
         }
 
         /// <summary>
@@ -164,14 +167,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             HomeSensorCapabilityCheck();
             if (!HasHomeSensor) { return AutoHomeResult.HomeCapabilityCheckFailed; }
             _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
-            if (SkyServer.Tracking) SkyServer.Tracking = false;
+            if (_owner.Tracking) _owner.InstanceApplyTracking(false);
             var totalMove = 0.0;
             // ReSharper disable once RedundantAssignment
             var clockwise = false;
             var startOvers = 0;
             bool? status;
             bool? loopStatus = null;
-            SkyServer.AutoHomeProgressBar += 5;
+            _owner._autoHomeProgressBar += 5;
 
             // slew away from those that start at home position
             var slewResult = SlewAxis(3.3, axis);
@@ -181,7 +184,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             // 5 degree loops to look for sensor
             for (var i = 0; i <= (maxMove / 5); i++)
             {
-                if (SkyServer.AutoHomeStop) return AutoHomeResult.StopRequested;
+                if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
                 if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
                 if (startOvers >= 2) return AutoHomeResult.TooManyRestarts;
 
@@ -209,14 +212,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 switch (status)
                 {
                     case null:
-                        return SkyServer.AutoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
+                        return _owner._autoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
                     case true:
                     case false:
                         clockwise = (bool)status;
                         break;
                 }
 
-                SkyServer.AutoHomeProgressBar += 1;
+                _owner._autoHomeProgressBar += 1;
 
                 slewResult = SlewAxis(5.0, axis, clockwise); //slew 5 degrees
                 if (slewResult != AutoHomeResult.Success) return slewResult;
@@ -240,7 +243,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 }
                 break;
             }
-            if (SkyServer.AutoHomeStop) return AutoHomeResult.StopRequested;
+            if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
             if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
             if (startOvers >= 2) return AutoHomeResult.TooManyRestarts;
 
@@ -248,7 +251,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             slewResult = SlewToHome(axis);
             if (slewResult != AutoHomeResult.Success) return slewResult;
 
-            SkyServer.AutoHomeProgressBar += 5;
+            _owner._autoHomeProgressBar += 5;
 
             // 3.7 degree slew away from home for a validation move
             slewResult = SlewAxis(3.7, axis); // slew away from home
@@ -257,14 +260,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             switch (status)
             {
                 case null:
-                    return SkyServer.AutoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
+                    return _owner._autoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
                 case true:
                 case false:
                     clockwise = (bool)status;
                     break;
             }
 
-            SkyServer.AutoHomeProgressBar += 5;
+            _owner._autoHomeProgressBar += 5;
 
             // slew back over home to validate home position
             slewResult = SlewAxis(5, axis, clockwise); // slew over home
@@ -280,13 +283,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                     return AutoHomeResult.HomeSensorNotFound; // home not found
             }
 
-            SkyServer.AutoHomeProgressBar += 5;
+            _owner._autoHomeProgressBar += 5;
 
             // slew back to remove backlash
             slewResult = SlewAxis(3, axis, !clockwise); // slew over home
             if (slewResult != AutoHomeResult.Success) return slewResult;
 
-            SkyServer.AutoHomeProgressBar += 5;
+            _owner._autoHomeProgressBar += 5;
 
             // slew to home
             slewResult = SlewToHome(axis);
@@ -308,7 +311,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <param name="axis"></param>
         private AutoHomeResult SlewToHome(Axis axis)
         {
-            if (SkyServer.AutoHomeStop) return AutoHomeResult.StopRequested;
+            if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
 
             //convert position to mount degrees 
             var a = TripPosition; // -= 0x00800000;
@@ -323,23 +326,18 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             {
                 case Axis.Axis1:
                     var d = Axes.AxesMountToApp(new[] { c, 0 }, context); // Convert to local
-                    if ((SettingsInstance.AlignmentMode == AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) d[0] = d[0] + 180;
+                    if ((SettingsInstance.AlignmentMode == AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0)) d[0] = d[0] + 180;
 
-                    SkyServer.SlewAxes(d[0], positions[1], SlewType.SlewMoveAxis, slewAsync: false);
+                    _owner.SlewSync(new[] { d[0], positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
                     var e = Axes.AxesMountToApp(new[] { 0, c }, context); // Convert to local
-                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere)) e[1] = 180 - e[1];
+                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0)) e[1] = 180 - e[1];
 
-                    SkyServer.SlewAxes(positions[0], e[1], SlewType.SlewMoveAxis, slewAsync: false);
+                    _owner.SlewSync(new[] { positions[0], e[1] }, SlewType.SlewMoveAxis);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
-            }
-
-            while (SkyServer.IsSlewing)
-            {
-                Thread.Sleep(300);
             }
 
             _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
@@ -355,13 +353,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <param name="axis"></param>
         private AutoHomeResult SlewAxis(double degrees, Axis axis, bool direction = false)
         {
-            if (SkyServer.AutoHomeStop) return AutoHomeResult.StopRequested;
+            if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
 
-            if (SkyServer.Tracking)
+            if (_owner.Tracking)
             {
                 // ToDo implement if needed
                 // SkyServer.TrackingSpeak = false;
-                SkyServer.Tracking = false;
+                _owner.InstanceApplyTracking(false);
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
@@ -372,15 +370,15 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             {
                 case Axis.Axis1:
                     degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
-                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere))
+                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0))
                         degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
-                    SkyServer.SlewAxes(positions[0] + degrees, positions[1], SlewType.SlewMoveAxis, slewAsync: false);
+                    _owner.SlewSync(new[] { positions[0] + degrees, positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
                     degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
-                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SkyServer.SouthernHemisphere))
+                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0))
                         degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
-                    SkyServer.SlewAxes(positions[0], positions[1] + degrees, SlewType.SlewMoveAxis, slewAsync: false);
+                    _owner.SlewSync(new[] { positions[0], positions[1] + degrees }, SlewType.SlewMoveAxis);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
@@ -397,11 +395,6 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Message = $"{positions[0]}|{positions[1]}|{degrees}|{axis}|{direction}"
             };
             MonitorLog.LogToMonitor(monitorItem);
-
-            while (SkyServer.IsSlewing)
-            {
-                Thread.Sleep(300);
-            }
 
             _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
 
