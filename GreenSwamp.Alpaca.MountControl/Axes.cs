@@ -348,7 +348,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     axes[1] = azAlt[1];
                     //check for alternative position within hardware limits
                     b = AxesAppToMount(axes, context);
-                    alt = SkyServer.GetAlternatePosition(b);
+                    alt = SkyServer.GetAlternatePosition(b, context);
                     if (alt != null) axes = alt;
                     break;
                 case AlignmentMode.Polar:
@@ -547,7 +547,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     // Check for alternative position within hardware limits
                     b = AxesAppToMount(axes, context);
-                    alt = SkyServer.GetAlternatePosition(b);
+                    alt = SkyServer.GetAlternatePosition(b, context);
                     if (alt != null) axes = alt;
                     return AxesAppToMount(axes, context);
 
@@ -632,7 +632,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // Skip alternate position selection when loading park/home positions
                     if (!skipAlternatePosition)
                     {
-                        alt = SkyServer.GetAlternatePosition(axes);
+                        alt = SkyServer.GetAlternatePosition(axes, context);
                     }
                     else
                     {

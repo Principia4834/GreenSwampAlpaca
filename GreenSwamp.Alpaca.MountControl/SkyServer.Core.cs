@@ -338,74 +338,6 @@ namespace GreenSwamp.Alpaca.MountControl
             return _defaultInstance?.MapSlewTargetToAxes(target, slewType) ?? new[] { double.NaN, double.NaN };
         }
 
-        /// <summary>
-        /// Used when the mount is first turned on and the instance is created
-        /// </summary>
-        internal static double[] GetDefaultPositions_Internal()
-        {
-            // set default home position or get home override from the settings 
-            double[] positions = { 0, 0 };
-            string name = String.Empty;
-            // home axes are mount values
-            var homeAxes = GetHomeAxes(_settings!.HomeAxisX, _settings!.HomeAxisY);
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Home position,{name}|{homeAxes.X}|{homeAxes.Y}|{_settings!.HomeAxisX}|{_settings!.HomeAxisY}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            if (AtPark)
-            {
-                if (_settings!.AutoTrack)
-                {
-                    AtPark = false;
-                    Tracking = _settings!.AutoTrack;
-                }
-                // Create context from current settings
-                var context = AxesContext.FromSettings(_settings);
-                positions = Axes.AxesAppToMount(_settings!.ParkAxes, context);
-                ParkSelected = GetStoredParkPosition();
-
-                monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Server,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Parked,{_settings!.ParkName}|{_settings!.ParkAxes[0]}|{_settings!.ParkAxes[1]}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-
-            }
-            else
-            {
-                positions = new[] { homeAxes.X, homeAxes.Y };
-            }
-
-            monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Load:{positions[0]}|{positions[1]}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            return positions;
-        }
-
         #endregion
 
         #region Coordinate Transformations
@@ -1038,12 +970,10 @@ namespace GreenSwamp.Alpaca.MountControl
             change += inst._skyHcRate; // Hand controller
             // Primary axis
             change.X += inst._rateMoveAxes.X;
-            change.X += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(inst.RateRa) : 0;
+            change.X += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(inst.RateRa, inst.Settings) : 0;
             // Secondary axis
             change.Y += inst._rateMoveAxes.Y;
-            change.Y += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(inst.RateDec) : 0;
-
-            CheckAxisLimits();
+            change.Y += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(inst.RateDec, inst) : 0;
 
             var monitorItem = new MonitorEntry
             {
@@ -1285,54 +1215,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Slewing & Movement Core
 
         /// <summary>
-        /// Initiates a slew operation to move the mount to the specified target position.
-        /// </summary>
-        /// <remarks>This method will only execute if the mount is running. If <paramref
-        /// name="slewAsync"/> is <see langword="false"/>,  the method will block until the slew operation is complete.
-        /// Otherwise, the operation will proceed asynchronously.</remarks>
-        /// <param name="targetPosition">The target position to which the mount should slew, specified as a <see cref="Vector"/> with X and Y
-        /// coordinates.</param>
-        /// <param name="slewState">The type of slew operation to perform, specified as a <see cref="SlewType"/>.</param>
-        /// <param name="tracking">A value indicating whether tracking should be enabled during the slew operation. <see langword="true"/> to
-        /// enable tracking; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
-        /// <param name="slewAsync">A value indicating whether the slew operation should be performed asynchronously. <see langword="true"/> to
-        /// perform the operation asynchronously; otherwise, <see langword="false"/>. The default is <see
-        /// langword="true"/>.</param>
-        private static void SlewMount(Vector targetPosition, SlewType slewState, bool tracking = false, bool slewAsync = true, MountInstance? instance = null)
-        {
-            var effectiveInstance = instance ?? _defaultInstance!;  // M1: resolve before guard
-            if (effectiveInstance == null || !effectiveInstance.IsMountRunning) { return; }
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"from|{effectiveInstance._actualAxisX}|{effectiveInstance._actualAxisY}|to|{targetPosition.X}|{targetPosition.Y}|SlewType|{slewState}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            effectiveInstance._hcPrevMoveRa = null;   // M1: per-instance (was HcResetPrevMove device-0)
-            effectiveInstance._hcPrevMoveDec = null;  // M1: per-instance
-            effectiveInstance.AtPark = false;  // M1: per-instance (was AtPark = false, device-0 setting)
-            // ToDo reimplement later
-            // SpeakSlewStart(slewState);
-            // Set up event handle and task for checking slew started
-            EventWaitHandle goToStartedEvent = new ManualResetEvent(false);
-            Action goTo = () =>
-                GoToAsync(new[] { targetPosition.X, targetPosition.Y }, slewState, goToStartedEvent, tracking, effectiveInstance);
-            Task goToTask = new Task(goTo);
-            // Start the go to and wait for the started event - IsSlewing will be set
-            goToTask.Start();
-            goToStartedEvent.WaitOne(5000); // Timeout for the event to be set
-            if (!slewAsync) goToTask.Wait();
-            goToStartedEvent = null;
-        }
-
-        /// <summary>
         /// Sets slew rates for all speed levels (1-8) based on maximum slew rate.
         /// All speeds are stored in degrees/second for ASCOM AxisRates compliance.
         /// </summary>
@@ -1426,100 +1308,9 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>
-        /// Asynchronously aborts the current slew operation of the mount.
-        /// Telescope V4 requires asynchronous operation for aborting a slew.
-        /// </summary>
-        /// <param name="speak">A value indicating whether a verbal notification should be provided upon aborting the slew.  <see
-        /// langword="true"/> to enable verbal notification; otherwise, <see langword="false"/>.</param>
-        public static void AbortSlewAsync(bool speak)
-        {
-            // Set up event handle and task for checking slew started
-            EventWaitHandle abortSlewStartedEvent = new ManualResetEvent(false);
-            Action abortSlew = () => AbortSlew(speak, abortSlewStartedEvent);
-            Task abortSlewTask = new Task(abortSlew);
-            // Start the Abort Slew and wait for the started event
-            abortSlewTask.Start();
-            abortSlewStartedEvent.WaitOne(5000); // Timeout for the event to be set
-            abortSlewStartedEvent = null;
-        }
-
-        #endregion
-
-        #region Tracking & Rate Management
-
-        /// <summary>
-        /// Set/ reset tracking and slewing state whilst MoveAxis is active
-        /// </summary>
-        private static void SetRateMoveSlewState()
-        {
-            if ((_defaultInstance?._rateMoveAxes.X ?? 0.0) != 0.0 || (_defaultInstance?._rateMoveAxes.Y ?? 0.0) != 0.0)
-            {
-                MoveAxisActive = true;
-                IsSlewing = true;
-                if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewMoveAxis;
-            }
-            if ((_defaultInstance?._rateMoveAxes.X ?? 0.0) == 0.0 && (_defaultInstance?._rateMoveAxes.Y ?? 0.0) == 0.0)
-            {
-                MoveAxisActive = false;
-                IsSlewing = false;
-                if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewNone;
-                if (Tracking) _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
-            }
-        }
-
-        /// <summary>
-        /// Action Ra and Dec tracking rate offsets
-        /// </summary>
-        private static void ActionRateRaDec()
-        {
-            // If tracking is on then change the mount tracking rate
-            if (Tracking)
-            {
-                if (_settings!.AlignmentMode == AlignmentMode.AltAz)
-                {
-                    // get tracking target at time now
-                    var raDec = _defaultInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
-                    // set predictor parameters ready for tracking
-                    _defaultInstance.SkyPredictor.Set(raDec[0], raDec[1], _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
-                }
-                SetTracking();
-            }
-            else
-            {
-                if (_settings!.AlignmentMode == AlignmentMode.AltAz)
-                {
-                    // no tracking target so set to current position 
-                    _defaultInstance.SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _defaultInstance?.RateRa ?? 0.0, _defaultInstance?.RateDec ?? 0.0);
-                }
-            }
-        }
-
         #endregion
 
         #region Internal State & Calculations
-
-        /// <summary>
-        /// Updates axis upper and lower limit states using raw position in degrees
-        /// X and Y axis limit values from SkySettings
-        /// </summary>
-        /// <param name="RawPositions">Raw position (X,Y) in degrees</param>
-        public static void UpdateMountLimitStatus(double[] RawPositions)
-        {
-            const double oneArcSec = 1.0 / 3600;
-            LimitStatus.AtLowerLimitAxisX = RawPositions[0] <= -_settings!.AxisLimitX - oneArcSec;
-            LimitStatus.AtUpperLimitAxisX = RawPositions[0] >= _settings!.AxisLimitX + oneArcSec;
-            var axisUpperLimitY = _settings!.AxisUpperLimitY;
-            var axisLowerLimitY = _settings!.AxisLowerLimitY;
-            if (_settings!.AlignmentMode == AlignmentMode.Polar && _settings!.PolarMode == PolarMode.Left)
-            {
-                axisLowerLimitY = 180 - _settings!.AxisUpperLimitY;
-                axisUpperLimitY = 180 - _settings!.AxisLowerLimitY;
-            }
-            LimitStatus.AtLowerLimitAxisY = RawPositions[1] <= axisLowerLimitY - oneArcSec;
-            LimitStatus.AtUpperLimitAxisY = RawPositions[1] >= axisUpperLimitY + oneArcSec;
-        }
-
 
         #endregion
     }

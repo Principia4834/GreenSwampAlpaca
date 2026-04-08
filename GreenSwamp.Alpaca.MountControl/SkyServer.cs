@@ -140,75 +140,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
         #endregion
 
-        #region Resync
-        /// <summary>
-        /// Reset positions for the axes.
-        /// </summary>
-        /// <param name="parkPosition">ParkPosition or Null for home</param>
-        public static void ReSyncAxes(ParkPosition parkPosition = null, bool saveParkPosition = true)
-        {
-            if (!IsMountRunning) { return; }
-            Tracking = false;
-            StopAxes();
-
-            //set to home position
-            double[] position = { HomeAxes.X, HomeAxes.Y };
-            var name = "home";
-
-            //set to park position
-            if (parkPosition != null)
-            {
-                // Set context from current settings
-                var context = AxesContext.FromSettings(_settings);
-                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y }, context);
-                name = parkPosition.Name;
-            }
-
-            //log
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{name}|{position[0]}|{position[1]}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            switch (_settings!.Mount) // mount type check
-            {
-                case MountType.Simulator:
-                    SimTasks(MountTaskName.StopAxes, _defaultInstance!);
-                    var mq = _defaultInstance!.MountQueueInstance!;
-                    _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis1, position[0]);
-                    _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis2, position[1]);
-                    break;
-                case MountType.SkyWatcher:
-                    SkyTasks(MountTaskName.StopAxes, _defaultInstance!);
-                    var sq = _defaultInstance!.SkyQueueInstance!;
-                    _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis1, position[0]);
-                    _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis2, position[1]);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            //all good, go ahead and set dropdown to the park position and park
-            if (parkPosition != null && saveParkPosition)
-            {
-                ParkSelected = parkPosition;
-                GoToPark();
-            }
-
-            //reset any hc moves
-            HcResetPrevMove(MountAxis.Ra);
-            HcResetPrevMove(MountAxis.Dec);
-        }
-
-        #endregion
-
         #region Alignment
 
         // internal static double DegToRad(double degree) { return (degree / 180.0 * Math.PI); }
@@ -223,12 +154,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Park Management
-
-        public static ParkPosition GetStoredParkPosition()
-        {
-            var p = new ParkPosition (_settings!.ParkName, _settings!.ParkAxes[0], _settings!.ParkAxes[1]);
-            return p;
-        }
 
         // ParkSelected, SetParkAxis will be moved here
 

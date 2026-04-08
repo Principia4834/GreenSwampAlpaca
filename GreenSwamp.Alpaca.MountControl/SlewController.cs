@@ -470,7 +470,7 @@ namespace GreenSwamp.Alpaca.MountControl
             try
             {
                 // Call public SkyServer stop method
-                await Task.Run(() => { if (instance != null) instance.InstanceStopAxes(); else SkyServer.StopAxes(); });
+                await Task.Run(() => { instance?.InstanceStopAxes(); });
             }
             catch (Exception ex)
             {

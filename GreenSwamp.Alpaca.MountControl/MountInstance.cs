@@ -1083,7 +1083,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var axes = new[] { _actualAxisX, _actualAxisY };
             var context = AxesContext.FromSettings(_settings);
-            if (SkyServer.IsWithinFlipLimits(Axes.AxesMountToApp(axes, context)))
+            if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, context)))
             {
                 _flipOnNextGoto = true;
                 if (_tracking)
@@ -1220,8 +1220,8 @@ namespace GreenSwamp.Alpaca.MountControl
         public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false) =>
             SlewAsync(new[] { rightAscension, declination }, SlewType.SlewRaDec, tracking);
 
-        /// <summary>Enable tracking on a slew cycle — delegates to SkyServer.CycleOnTracking.</summary>
-        public void CycleOnTracking(bool silence) => SkyServer.CycleOnTracking(silence);
+        /// <summary>Enable tracking on a slew cycle — delegates to per-instance tracking.</summary>
+        public void CycleOnTracking(bool silence) => InstanceApplyTracking(true);
 
         /// <summary>Save current position as a named park position — instance version.</summary>
         public void SetParkAxis(string name)

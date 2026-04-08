@@ -91,12 +91,12 @@ namespace GreenSwamp.Alpaca.MountControl
                                 if (_rateMoveAxes.X == 0.0)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
                                 var raRate = currentTrackingMode != TrackingMode.Off
-                                    ? SkyServer.GetRaRateDirection(RateRa) : 0.0;
+                                    ? SkyServer.GetRaRateDirection(RateRa, _settings) : 0.0;
                                 _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, raRate);
                                 if (_rateMoveAxes.Y == 0.0)
                                 {
                                     var decRate = currentTrackingMode != TrackingMode.Off
-                                        ? SkyServer.GetDecRateDirection(RateDec) : 0.0;
+                                        ? SkyServer.GetDecRateDirection(RateDec, this) : 0.0;
                                     _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, decRate);
                                 }
                             }
@@ -164,9 +164,9 @@ namespace GreenSwamp.Alpaca.MountControl
             change += _skyTrackingRate;
             change += _skyHcRate;
             change.X += _rateMoveAxes.X;
-            change.X += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetRaRateDirection(RateRa) : 0;
+            change.X += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetRaRateDirection(RateRa, _settings) : 0;
             change.Y += _rateMoveAxes.Y;
-            change.Y += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetDecRateDirection(RateDec) : 0;
+            change.Y += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetDecRateDirection(RateDec, this) : 0;
             CheckAxisLimits();
             var monitorItem = new MonitorEntry
             {
