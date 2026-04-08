@@ -133,7 +133,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 PolarMode = settings.PolarMode,
                 LocalSiderealTime = null, // Lazy load when needed
                 Longitude = settings.Longitude,
-                SideOfPier = sideOfPier ?? SkyServer.SideOfPier, // J2: per-instance if provided, fallback to SkyServer for device-0 callers (J6)
+                SideOfPier = sideOfPier ?? PointingState.Unknown, // J2: per-instance if provided, default to Unknown
                 AppAxisX = null,
                 AppAxisY = null,
                 AxisLimitX = settings.AxisLimitX,

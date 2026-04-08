@@ -270,60 +270,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Position Update Methods
-        // Contains: GetRawDegrees, ConvertStepsToDegrees, GetRawSteps (3 overloads), UpdateSteps, GetRawStepsDt,
-        //           MapSlewTargetToAxes, GetDefaultPositions
-
-        /// <summary>
-        /// Gets current converted positions from the mount in degrees
-        /// Renamed to _Internal, delegated to instance
-        /// </summary>
-        internal static double[]? GetRawDegrees()
-        {
-            // Delegate to default instance
-            return _defaultInstance?.GetRawDegrees() ?? new[] { double.NaN, double.NaN };
-        }
-        
-        /// <summary>
-        /// Convert steps to degrees
-        /// Renamed to _Internal, delegated to instance
-        /// </summary>
-        internal static double ConvertStepsToDegrees(double steps, int axis)
-        {
-            // Delegate to default instance
-            return _defaultInstance?.ConvertStepsToDegrees(steps, axis) ?? double.NaN;
-        }
-
-        /// <summary>
-        /// Get steps from the mount
-        /// Renamed to _Internal, delegated to instance
-        /// </summary>
-        internal static double[]? GetRawSteps()
-        {
-            // Delegate to default instance
-            return _defaultInstance?.GetRawSteps() ?? new[] { double.NaN, double.NaN };
-        }
-
-        /// <summary>
-        /// Main get for the Steps
-        /// Delegated to instance
-        /// </summary>
-        internal static void UpdateSteps()
-        {
-            _defaultInstance?.UpdateSteps();
-        }
-
-        /// <summary>
-        /// Maps a slew target to the corresponding axes based on the specified slew type.
-        /// Delegated to instance
-        /// </summary>
-        public static double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
-        {
-            return _defaultInstance?.MapSlewTargetToAxes(target, slewType) ?? new[] { double.NaN, double.NaN };
-        }
-
-        #endregion
-
         #region Coordinate Transformations
         // Contains: GetSyncedAxes, GetUnsyncedAxes (currently in Alignment region - will be moved here)
         // Note: These methods are alignment-model-aware coordinate transformations
@@ -499,7 +445,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var evt = _defaultInstance?._mountPositionUpdatedEvent;
             if (evt is null) return;
             evt.Reset();
-            UpdateSteps();  // Immediate position for tight control
+            _defaultInstance?.UpdateSteps();  // Immediate position for tight control
             if (!evt.Wait(5000))
                 throw new TimeoutException();
         }
@@ -567,56 +513,6 @@ namespace GreenSwamp.Alpaca.MountControl
         //    };
         //    MonitorLog.LogToMonitor(monitorItem);
         //}
-
-        /// <summary>
-        /// Add an alignment point to the alignment model
-        /// </summary>
-        private static void AddAlignmentPoint()
-        {
-            // At this point:
-            //      SkyServer.Steps contains the current encoder positions.
-            //      SkyServer.FactorStep contains the conversion from radians to steps
-            // To get the target steps
-            // Set context from current settings
-            var context = AxesContext.FromSettings(_settings);
-            var a = Transforms.CoordTypeToInternal(_defaultInstance?.TargetRa ?? double.NaN, _defaultInstance?.TargetDec ?? double.NaN);
-            var xy = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
-            var unSynced = Axes.AxesAppToMount(new[] { xy[0], xy[1] }, context);
-            var rawSteps = GetRawSteps();
-            var synced = new[] { ConvertStepsToDegrees(rawSteps[0], 0), ConvertStepsToDegrees(rawSteps[1], 1) };
-            // ToDo: Remove if not needed
-            //if (AlignmentModel.SyncToRaDec(
-            //        unSynced,
-            //        synced,
-            //        DateTime.Now))
-            //{
-            //    var monitorItem = new MonitorEntry
-            //    {
-            //        Datetime = HiResDateTime.UtcNow,
-            //        Device = MonitorDevice.Server,
-            //        Category = MonitorCategory.Alignment,
-            //        Type = MonitorType.Information,
-            //        Method = MethodBase.GetCurrentMethod()?.Name,
-            //        Thread = Thread.CurrentThread.ManagedThreadId,
-            //        Message = $"Alignment point added: Un-synced axis = {unSynced[0]}/{unSynced[1]}, RA/Dec = {a.X}/{a.Y}, Synched axis = {synced[0]}/{synced[1]}"
-            //    };
-            //    MonitorLog.LogToMonitor(monitorItem);
-            //}
-            //else
-            //{
-            //    var monitorItem = new MonitorEntry
-            //    {
-            //        Datetime = HiResDateTime.UtcNow,
-            //        Device = MonitorDevice.Server,
-            //        Category = MonitorCategory.Alignment,
-            //        Type = MonitorType.Error,
-            //        Method = MethodBase.GetCurrentMethod()?.Name,
-            //        Thread = Thread.CurrentThread.ManagedThreadId,
-            //        Message = $"Alignment point added: Un-synced axis = {unSynced[0]}/{unSynced[1]}, RA/Dec = {a.X}/{a.Y}, Synched axis = {synced[0]}/{synced[1]}"
-            //    };
-            //    MonitorLog.LogToMonitor(monitorItem);
-            //}
-        }
 
         /// <summary>
         /// Gets the alignment model corrected target (physical) axis positions for a given calculated axis position.
@@ -884,26 +780,6 @@ namespace GreenSwamp.Alpaca.MountControl
         // Contains: TrackingOffsetRaRate, TrackingOffsetDecRate, CalcCustomTrackingOffset, SkyGetRate,
         //           SkyGoTo, SkyPrecisionGoto, SkyPulseGoto, SkyTasks
 
-        // _trackingOffsetRate field moved to MountInstance._trackingOffsetRate (Step 2)
-
-        /// <summary>
-        /// Custom Tracking Offset for RA calculate into arc seconds per sec
-        /// </summary>
-        public static double TrackingOffsetRaRate
-        {
-            get => _defaultInstance?._trackingOffsetRate.X ?? 0.0;
-            private set { if (_defaultInstance != null) _defaultInstance._trackingOffsetRate.X = value; }
-        }
-
-        /// <summary>
-        /// Custom Tracking Offset for Dec calculate into arc seconds per sec
-        /// </summary>
-        public static double TrackingOffsetDecRate
-        {
-            get => _defaultInstance?._trackingOffsetRate.Y ?? 0.0;
-            private set { if (_defaultInstance != null) _defaultInstance._trackingOffsetRate.Y = value; }
-        }
-
         /// <summary>
         /// Adjust tracking rate for Custom Mount Gearing Offset settings
         /// </summary>
@@ -936,10 +812,6 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
         }
-
-        // used to combine multiple sources for a single slew rate
-        // include tracking, hand controller, etc..
-        private static int[] SkyTrackingOffset => _defaultInstance?._skyTrackingOffset ?? new[] { 0, 0 }; // Store for custom mount :I offset
 
         /// <summary>
         /// combines multiple Ra and Dec rates for a single slew rate
