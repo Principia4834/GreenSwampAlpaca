@@ -1,7 +1,7 @@
 ﻿# Multi-Telescope Migration Plan
 # Eliminating Static SkyServer -- Device-Neutral Architecture
 
-**Document updated:** 2026-04-08 10:31
+**Document updated:** 2026-04-08 16:26
 **Baseline build status:** [x] SUCCESS -- 0 errors, 0 warnings
 **Author:** GitHub Copilot (analysis) / Andy (owner)
 
@@ -396,6 +396,27 @@ After Phases M1--M3, the following items remain in SkyServer.Core.cs and need mi
 ### Phase M5 -- Remove `_defaultInstance` and `_settings` Computed Properties
 
 **Target file:** `SkyServer.Core.cs`
+
+**Status:** PARTIAL — dead delegating wrappers removed; root properties pending full M2/M3/M4 completion.
+
+**Completed in this phase:**
+- [x] Deleted `SkyServer.cs`: `Mount` property, `_parkSelected` wrapper, `HcResetPrevMove`, `LimitStatus` static field
+- [x] Deleted `SkyServer.Core.cs`: `_hcPrevMoveRa`, `_hcPrevMoveDec`, `HcPrevMovesDec` HC anti-backlash wrappers
+- [x] Build: SUCCESS -- 0 errors
+
+**Remaining reference count** (must reach 0 before deleting `_defaultInstance` / `_settings`):
+```powershell
+Select-String -Path "GreenSwamp.Alpaca.MountControl\SkyServer*.cs" -Pattern "_defaultInstance|_settings" | Measure-Object | Select-Object -ExpandProperty Count
+# Current: ~178  Target: 0
+```
+
+**Blockers** — the following live-code groups still reference `_defaultInstance` / `_settings`
+and require M2/M3/M4 migration work before M5 can complete:
+- `AltAzTrackingTimerEvent`, `StopAltAzTrackingTimer`, `StartAltAzTrackingTimer` (use `_altAzTrackingTimer` wrapper and `_settings!`)
+- `CancelAllAsync` (uses `_ctsGoTo`, `_ctsPulseGuideRa`, `_ctsPulseGuideDec`, `_ctsHcPulseGuide` wrappers)
+- `SkyTrackingRate`, `SkyHcRate` (used by live `SetTracking`)
+- ~40 static ASCOM property facade entries remaining in the Properties block of `SkyServer.TelescopeAPI.cs`
+- `SkyErrorHandler`, `ShutdownServer`, `Initialize` in `SkyServer.Core.cs`
 
 This is the definitive cleanup. After Phases M1--M4, `_defaultInstance` and `_settings` should have
 zero remaining references in the SkyServer files. Verify:

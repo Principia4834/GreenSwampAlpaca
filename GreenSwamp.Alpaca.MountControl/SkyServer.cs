@@ -48,9 +48,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region Property Settings 
 
-        /// <summary>Mount hardware type for the default instance (Simulator or SkyWatcher)</summary>
-        public static MountType Mount => _settings?.Mount ?? default;
-
         #region Backers
         // private static bool _alertState;
         // private static bool _asComOn;
@@ -60,12 +57,6 @@ namespace GreenSwamp.Alpaca.MountControl
         //          _isAutoHomeRunning, _isPulseGuidingDec, _isPulseGuidingRa, _canPPec,
         //          _canPolarLed, _canAdvancedCmdSupport, _rateMoveAxes, _moveAxisActive,
         //          _snapPort1Result, _snapPort2Result moved to MountInstance backing fields.
-        // Phase 6: _parkSelected moved to MountInstance backing field
-        private static ParkPosition? _parkSelected
-        {
-            get => _defaultInstance?._parkSelected;
-            set { if (_defaultInstance != null) _defaultInstance._parkSelected = value; }
-        }
         // Step 7: _steps moved to MountInstance backing field
 
         #endregion
@@ -123,21 +114,6 @@ namespace GreenSwamp.Alpaca.MountControl
         //    }
         //}
 
-        /// <summary>
-        /// Resets the anti-backlash for the hand controller
-        /// </summary>
-        private static void HcResetPrevMove(MountAxis axis)
-        {
-            switch (axis)
-            {
-                case MountAxis.Dec:
-                    _hcPrevMoveDec = null;
-                    break;
-                case MountAxis.Ra:
-                    _hcPrevMoveRa = null;
-                    break;
-            }
-        }
         #endregion
 
         #region Alignment
@@ -197,8 +173,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 get => AtLowerLimitAxisX || AtUpperLimitAxisX || AtLowerLimitAxisY || AtUpperLimitAxisY;
             }
         }
-
-        public static LimitStatusType LimitStatus = new LimitStatusType();
 
         #endregion
 

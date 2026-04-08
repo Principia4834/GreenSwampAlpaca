@@ -91,23 +91,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        // HC Anti-Backlash
-        private static HcPrevMove? _hcPrevMoveRa
-        {
-            get => _defaultInstance?._hcPrevMoveRa;
-            set { if (_defaultInstance != null) _defaultInstance._hcPrevMoveRa = value; }
-        }
-
-        private static HcPrevMove? _hcPrevMoveDec
-        {
-            get => _defaultInstance?._hcPrevMoveDec;
-            set { if (_defaultInstance != null) _defaultInstance._hcPrevMoveDec = value; }
-        }
-
-        private static IList<double> HcPrevMovesDec
-            => _defaultInstance?._hcPrevMovesDec ?? new List<double>();
-
-        // Phase 5.3: CancellationTokenSources — delegate to default instance to prevent cross-device cancellation
+        // Phase 5.3:
         private static CancellationTokenSource? _ctsGoTo
         {
             get => _defaultInstance?._ctsGoTo;
