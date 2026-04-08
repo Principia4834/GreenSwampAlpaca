@@ -1,7 +1,7 @@
 ﻿# Multi-Telescope Migration Plan
 # Eliminating Static SkyServer -- Device-Neutral Architecture
 
-**Document updated:** 2026-04-08 16:26
+**Document updated:** 2026-04-08 19:05
 **Baseline build status:** [x] SUCCESS -- 0 errors, 0 warnings
 **Author:** GitHub Copilot (analysis) / Andy (owner)
 
@@ -465,6 +465,8 @@ to a per-instance handler and performs the same logging as the old `SkyServer.In
 
 **Build checkpoint:** [x] Green.
 
+**Status:** [x] COMPLETE
+
 ---
 
 ### Phase M7 -- Remove UnifiedDeviceRegistry Reserved Slots
@@ -655,8 +657,10 @@ This change is minimal (one constructor argument) and already fully supported by
 - [ ] Build and verify: [x]
 
 ### Phase M6 -- Program.cs
-- [ ] Replace `SkyServer.Initialize()` call with per-device loop
-- [ ] Build and verify: [x]
+- [x] Replace `SkyServer.Initialize()` call with per-device loop
+- [x] Delete dead `SkyServer.Initialize()` from `SkyServer.Core.cs` (+ empty `#region Core Mount Operations`)
+- [x] Verified 0 `GetInstance(0)` hits in `SkyServer*.cs` (DoD item 2)
+- [x] Build and verify: GREEN
 
 ### Phase M7 -- UnifiedDeviceRegistry
 - [ ] Remove reserved slot constants
@@ -717,4 +721,4 @@ The migration is complete when:
 
 ---
 
-*Document updated: 2026-04-08 10:31*
+*Document updated: 2026-04-08 19:05*

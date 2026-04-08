@@ -114,32 +114,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Core Mount Operations
-        // Contains: Initialize
-
-        /// <summary>
-        /// Initialize SkyServer. Must be called after MountInstanceRegistry slot 0 has been registered.
-        /// </summary>
-        public static void Initialize()
-        {
-            // Wire per-device settings change notifications via instance method (M4)
-            MountInstanceRegistry.GetInstance(0)?.InitializeSettings();
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"SkyServer initialized | Mount:{MountInstanceRegistry.GetInstance(0)?.Settings?.Mount} | Port:{MountInstanceRegistry.GetInstance(0)?.Settings?.Port}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-        }
-
-        #endregion
-
         #region Coordinate Transformations
         // Contains: GetSyncedAxes, GetUnsyncedAxes (currently in Alignment region - will be moved here)
         // Note: These methods are alignment-model-aware coordinate transformations

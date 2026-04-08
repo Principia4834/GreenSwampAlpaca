@@ -354,11 +354,15 @@ namespace GreenSwamp.Alpaca.Server
 
                 Logger.LogInformation($"Device registry initialization complete - {registeredDeviceCount} device(s) registered successfully");
 
-                // Initialize SkyServer only if at least one device was registered
+                // Per-device initialization -- wire settings listeners for each registered device
                 if (registeredDeviceCount > 0)
                 {
-                    GreenSwamp.Alpaca.MountControl.SkyServer.Initialize();
-                    Logger.LogInformation("SkyServer initialized (using registered slot 0 settings)");
+                    foreach (var kvp in MountInstanceRegistry.GetAllInstances())
+                    {
+                        kvp.Value.InitializeSettings();
+                        Logger.LogInformation($"Device {kvp.Key}: settings initialized");
+                    }
+                    Logger.LogInformation($"SkyServer initialization complete - {registeredDeviceCount} device(s) initialized");
                 }
                 else
                 {
