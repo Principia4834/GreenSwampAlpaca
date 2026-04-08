@@ -138,28 +138,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Server Items
 
         /// <summary>
-        /// Starts/Stops current selected mount
-        /// </summary>
-        public static bool IsMountRunning
-        {
-            get => _defaultInstance?.IsMountRunning ?? false;
-            set
-            {
-                if (_defaultInstance != null) _defaultInstance._loopCounter = 0;
-                if (value)
-                {
-                    MountStart();
-                }
-                else
-                {
-                    MountStop();
-                }
-
-                OnStaticPropertyChanged();
-            }
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         public struct LimitStatusType

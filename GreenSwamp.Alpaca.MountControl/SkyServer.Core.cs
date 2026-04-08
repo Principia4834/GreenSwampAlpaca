@@ -64,27 +64,6 @@ namespace GreenSwamp.Alpaca.MountControl
         // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
         private static SkySettingsInstance? _settings => _defaultInstance?.Settings;
 
-        // Phase 4.3: SkyWatcher tracking rates (internal - delegates to instance)
-        internal static Vector SkyTrackingRate
-        {
-            get => _defaultInstance?._skyTrackingRate ?? new Vector(0, 0);
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance._skyTrackingRate = value;
-            }
-        }
-
-        internal static Vector SkyHcRate
-        {
-            get => _defaultInstance?._skyHcRate ?? new Vector(0, 0);
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance._skyHcRate = value;
-            }
-        }
-
         // Phase 5.3:
         private static CancellationTokenSource? _ctsGoTo
         {
@@ -107,30 +86,6 @@ namespace GreenSwamp.Alpaca.MountControl
             set { if (_defaultInstance != null) _defaultInstance._ctsHcPulseGuide = value; }
         }
 
-        // Phase 4.1: Delegating properties for instance state
-        /// <summary>
-        /// Home axes position (mount coordinates)
-        /// Delegates to default instance
-        /// </summary>
-        private static Vector HomeAxes
-        {
-            get => _defaultInstance?.HomeAxes ?? new Vector(0, 0);
-        }
-
-        /// <summary>
-        /// Alt/Az sync position for Alt/Az mode syncing
-        /// Delegates to default instance
-        /// </summary>
-        private static Vector AltAzSync
-        {
-            get => _defaultInstance?.AltAzSync ?? new Vector(0, 0);
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance.AltAzSync = value;
-            }
-        }
-        
         #endregion
 
         #region Static Constructor
@@ -188,54 +143,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Core Mount Operations
-        // Contains: MountStart, MountStop, MountReset, GetHomeAxes, ShutdownServer
-
-        /// <summary>
-        /// Start connection, queues, and events
-        /// Delegated to instance
-        /// </summary>
-        private static void MountStart()
-        {
-            // If _defaultInstance is null, this is a no-op (safe)
-            _defaultInstance?.MountStart();
-        }
-
-        /// <summary>
-        /// Stop queues and events
-        /// Delegated to instance
-        /// </summary>
-        private static void MountStop()
-        {
-            // If _defaultInstance is null, this is a no-op (safe)
-            _defaultInstance?.MountStop();
-        }
-
-        /// <summary>
-        /// Get home axes adjusted for angle offset
-        /// Delegated to instance
-        /// </summary>
-        public static Vector GetHomeAxes(double xAxis, double yAxis)
-        {
-            return _defaultInstance?.GetHomeAxes(xAxis, yAxis) ?? new Vector(0, 0);
-        }
-
-        /// <summary>
-        /// Shuts down everything and exists
-        /// </summary>
-        public static void ShutdownServer()
-        {
-            IsMountRunning = false;
-
-            var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "MainWindow Closing" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            // ToDo - fix reference counting on shutdown
-            //for (var intCounter = MediaTypeNames.Application.Current.Windows.Count - 1; intCounter >= 0; intCounter--)
-            //{
-            //    MediaTypeNames.Application.Current.Windows[intCounter]?.Close();
-            //}
-        }
+        // Contains: Initialize
 
         /// <summary>
         /// Initialize SkyServer. Must be called after MountInstanceRegistry slot 0 has been registered.
@@ -316,11 +224,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         case SkyWatcherErrorCode.ErrWrongAlignmentData:
                         case SkyWatcherErrorCode.ErrQueueFailed:
                         case SkyWatcherErrorCode.ErrTooManyRetries:
-                            IsMountRunning = false;
+                            effectiveInstance?.MountStop();
                             if (effectiveInstance != null) effectiveInstance._mountError = mounterr;
                             break;
                         default:
-                            IsMountRunning = false;
+                            effectiveInstance?.MountStop();
                             if (effectiveInstance != null) effectiveInstance._mountError = mounterr;
                             break;
                     }
@@ -334,11 +242,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         case ErrorCode.ErrExecutingCommand:
                         case ErrorCode.ErrUnableToDeqeue:
                         case ErrorCode.ErrSerialFailed:
-                            IsMountRunning = false;
+                            effectiveInstance?.MountStop();
                             if (effectiveInstance != null) effectiveInstance._mountError = skyerr;
                             break;
                         default:
-                            IsMountRunning = false;
+                            effectiveInstance?.MountStop();
                             if (effectiveInstance != null) effectiveInstance._mountError = skyerr;
                             break;
                     }
@@ -346,7 +254,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 default:
                     if (effectiveInstance != null) effectiveInstance._mountError = ex;
-                    IsMountRunning = false;
+                    effectiveInstance?.MountStop();
                     break;
             }
         }
@@ -415,21 +323,6 @@ namespace GreenSwamp.Alpaca.MountControl
         // Contains: WaitMountPositionUpdated, GetLocalSiderealTime (2 overloads)
         // M4: PropertyChangedSkySettings, PropertyChangedAlignmentSettings, UpdateServerEvent,
         //     LowVoltageEventSet moved to MountInstance (OnPropertyChangedSkySettings, OnLowVoltageEvent)
-
-        /// <summary>
-        /// Wait for mount position to be updated using event signalling.
-        /// Delegates to the default instance's per-instance event (Step 6).
-        /// </summary>
-        /// <exception cref="TimeoutException"></exception>
-        public static void WaitMountPositionUpdated()
-        {
-            var evt = _defaultInstance?._mountPositionUpdatedEvent;
-            if (evt is null) return;
-            evt.Reset();
-            _defaultInstance?.UpdateSteps();  // Immediate position for tight control
-            if (!evt.Wait(5000))
-                throw new TimeoutException();
-        }
 
         /// <summary>
         /// Get current local sidereal time
