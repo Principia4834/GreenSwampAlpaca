@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+ï»¿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -57,12 +57,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Core Fields
 
         private const double SiderealRate = 15.0410671786691;
-
-        // _altAzTrackingLock removed from static
-        // Default mount instance — computed from registry slot 0 (Step 9: Bridge B0 removed)
-        private static MountInstance? _defaultInstance => MountInstanceRegistry.GetInstance(0);
-        // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
-        private static SkySettingsInstance? _settings => _defaultInstance?.Settings;
 
         #endregion
 
@@ -125,12 +119,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Initialize SkyServer. Must be called after MountInstanceRegistry slot 0 has been registered.
-        /// Settings are read directly from the registered slot 0 instance via the computed _settings property.
         /// </summary>
         public static void Initialize()
         {
             // Wire per-device settings change notifications via instance method (M4)
-            _defaultInstance?.InitializeSettings();
+            MountInstanceRegistry.GetInstance(0)?.InitializeSettings();
 
             var monitorItem = new MonitorEntry
             {
@@ -140,7 +133,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"SkyServer initialized | Mount:{_settings?.Mount} | Port:{_settings?.Port}"
+                Message = $"SkyServer initialized | Mount:{MountInstanceRegistry.GetInstance(0)?.Settings?.Mount} | Port:{MountInstanceRegistry.GetInstance(0)?.Settings?.Port}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -178,7 +171,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // ToDo: improve exception handling
             // AlertState = true;
             var extype = ex.GetType().ToString().Trim();
-            var effectiveInstance = instance ?? _defaultInstance;
+            var effectiveInstance = instance;
             switch (extype)
             {
                 case "GS.SkyWatcher.MountControlException":

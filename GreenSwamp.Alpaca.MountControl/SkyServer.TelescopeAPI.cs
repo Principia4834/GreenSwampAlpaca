@@ -53,33 +53,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #region ASCOM State Properties
 
-        /// <summary>
-        /// UI Checkbox option to flip on the next goto
-        /// </summary>
-        public static bool FlipOnNextGoto
-        {
-            get => _defaultInstance?._flipOnNextGoto ?? false;
-            set
-            {
-                if (_defaultInstance == null) return;
-                _defaultInstance._flipOnNextGoto = value;
-
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Server,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"{value}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-
-                OnStaticPropertyChanged();
-            }
-        }
-
         #endregion
 
         #region Position Calculations
@@ -121,7 +94,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var alt = Axes.GetAltAxisPosition(position, context);
             if (!context.IsWithinFlipLimits(alt)) { return null; }
             var cl = ChooseClosestPosition(context.AppAxisX ?? 0.0, position, alt);
-            if (FlipOnNextGoto)
+            if (context.FlipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
                 MonitorLog.LogToMonitor(new MonitorEntry
@@ -141,7 +114,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!context.IsWithinFlipLimits(position)) { return null; }
             var alt = Axes.GetAltAxisPosition(position, context);
             var cl = ChooseClosestPosition(context.AppAxisX ?? 0.0, position, alt);
-            if (FlipOnNextGoto)
+            if (context.FlipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
                 MonitorLog.LogToMonitor(new MonitorEntry
@@ -166,7 +139,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (posOk && altOk)
             {
                 var cl = ChooseClosestPositionPolar([context.AppAxisX ?? 0.0, context.AppAxisY ?? 0.0], position, alt);
-                if (FlipOnNextGoto)
+                if (context.FlipOnNextGoto)
                 {
                     cl = cl == "a" ? "b" : "a";
                     MonitorLog.LogToMonitor(new MonitorEntry

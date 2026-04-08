@@ -109,6 +109,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public Func<double[], bool>? IsWithinFlipLimitsFunc { get; init; }
 
+        /// <summary>
+        /// True to flip to the alternate axis position on the next GoTo
+        /// </summary>
+        public bool FlipOnNextGoto { get; init; }
+
         #endregion
 
         #region Factory Methods
@@ -138,7 +143,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 AppAxisY = null,
                 AxisLimitX = settings.AxisLimitX,
                 HourAngleLimit = settings.HourAngleLimit,
-                IsWithinFlipLimitsFunc = null // Use default logic
+                IsWithinFlipLimitsFunc = null, // Use default logic
+                FlipOnNextGoto = false
             };
         }
 
@@ -169,6 +175,7 @@ namespace GreenSwamp.Alpaca.MountControl
             AxisLimitX = null;
             HourAngleLimit = null;
             IsWithinFlipLimitsFunc = null;
+            FlipOnNextGoto = false;
         }
 
         #endregion
