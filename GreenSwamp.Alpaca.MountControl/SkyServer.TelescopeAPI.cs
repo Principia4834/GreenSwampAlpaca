@@ -379,7 +379,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     return true;
 
                 // Check MoveAxis activity (direct axis rate commands)
-                if ((Math.Abs(RateMovePrimaryAxis) + Math.Abs(RateMoveSecondaryAxis)) > 0)
+                if ((Math.Abs(_defaultInstance?._rateMoveAxes.X ?? 0.0) + Math.Abs(_defaultInstance?._rateMoveAxes.Y ?? 0.0)) > 0)
                     return true;
 
                 // Fall back to instance backing field
@@ -1056,10 +1056,10 @@ namespace GreenSwamp.Alpaca.MountControl
             CancelAllAsync();
             // Stop all MoveAxis commands
             MoveAxisActive = false;
-            RateMovePrimaryAxis = 0.0;
-            RateMoveSecondaryAxis = 0.0;
             if (_defaultInstance != null)
             {
+                _defaultInstance._rateMoveAxes.X = 0.0;
+                _defaultInstance._rateMoveAxes.Y = 0.0;
                 _defaultInstance.RateRa = 0.0;
                 _defaultInstance.RateDec = 0.0;
             }
@@ -1134,10 +1134,10 @@ namespace GreenSwamp.Alpaca.MountControl
             CancelAllAsync();
             // Stop all MoveAxis and do not restore tracking
             MoveAxisActive = false;
-            RateMovePrimaryAxis = 0.0;
-            RateMoveSecondaryAxis = 0.0;
             if (_defaultInstance != null)
             {
+                _defaultInstance._rateMoveAxes.X = 0.0;
+                _defaultInstance._rateMoveAxes.Y = 0.0;
                 _defaultInstance.RateRa = 0.0;
                 _defaultInstance.RateDec = 0.0;
             }
@@ -2349,9 +2349,9 @@ namespace GreenSwamp.Alpaca.MountControl
                             {
                                 var mq = inst!.MountQueueInstance; // N4: null guard — MountStop may race here
                                 if (mq == null) return;
-                                if (!MovePrimaryAxisActive)
+                                if (inst._rateMoveAxes.X == 0.0)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rate.X);
-                                if (!MoveSecondaryAxisActive)
+                                if (inst._rateMoveAxes.Y == 0.0)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis2, rate.Y);
                             }
                             break;
@@ -2359,16 +2359,16 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.GermanPolar:
                             {
                                 var mq = inst!.MountQueueInstance!;
-                                if (!MovePrimaryAxisActive) // Set current tracking rate and RA tracking rate offset (0 if not sidereal)
-                                {
-                                    _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
-                                }
+                                if (inst._rateMoveAxes.X == 0.0) // Set current tracking rate and RA tracking rate offset (0 if not sidereal)
+                                        {
+                                            _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
+                                        }
                                 // Clear rate offsets when tracking is off so simulator physics do not continue drifting
                                 var raRate = currentTrackingMode != TrackingMode.Off
                                     ? GetRaRateDirection(inst?.RateRa ?? 0.0)
                                     : 0.0;
                                 _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, raRate);
-                                if (!MoveSecondaryAxisActive) // Set Dec tracking rate offset (0 if not sidereal)
+                                if (inst._rateMoveAxes.Y == 0.0) // Set Dec tracking rate offset (0 if not sidereal)
                                 {
                                     var decRate = currentTrackingMode != TrackingMode.Off
                                         ? GetDecRateDirection(inst?.RateDec ?? 0.0)
@@ -2412,9 +2412,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         var sq = inst!.SkyQueueInstance; // N4: null guard — MountStop may race here
                         if (sq == null) return;
-                        if (!MovePrimaryAxisActive)
+                        if (inst._rateMoveAxes.X == 0.0)
                             _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis1, rate.X);
-                        if (!MoveSecondaryAxisActive)
+                        if (inst._rateMoveAxes.Y == 0.0)
                             _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis2, rate.Y);
                     }
                     break;
@@ -3210,7 +3210,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
             }
 
-            if ((Math.Abs(RateMovePrimaryAxis) + Math.Abs(RateMoveSecondaryAxis)) > 0) { slewing = true; }
+            if ((Math.Abs(_defaultInstance?._rateMoveAxes.X ?? 0.0) + Math.Abs(_defaultInstance?._rateMoveAxes.Y ?? 0.0)) > 0) { slewing = true; }
             IsSlewing = slewing;
         }
 

@@ -1122,11 +1122,11 @@ namespace GreenSwamp.Alpaca.MountControl
             change += inst._skyTrackingRate; // Tracking
             change += inst._skyHcRate; // Hand controller
             // Primary axis
-            change.X += RateMovePrimaryAxis;
-            change.X += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(RateRa) : 0;
+            change.X += inst._rateMoveAxes.X;
+            change.X += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(inst.RateRa) : 0;
             // Secondary axis
-            change.Y += RateMoveSecondaryAxis;
-            change.Y += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(RateDec) : 0;
+            change.Y += inst._rateMoveAxes.Y;
+            change.Y += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(inst.RateDec) : 0;
 
             CheckAxisLimits();
 
