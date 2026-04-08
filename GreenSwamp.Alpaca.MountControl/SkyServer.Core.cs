@@ -268,9 +268,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static void Initialize()
         {
-            // Wire settings change notifications now that slot 0 is registered
-            if (_settings != null)
-                _settings.PropertyChanged += PropertyChangedSkySettings;
+            // Wire per-device settings change notifications via instance method (M4)
+            _defaultInstance?.InitializeSettings();
 
             var monitorItem = new MonitorEntry
             {
@@ -423,7 +422,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Handles MountControlException and SkyServerException
         /// </summary>
         /// <param name="ex"></param>
-        public static void SkyErrorHandler(Exception ex)
+        public static void SkyErrorHandler(Exception ex, MountInstance? instance = null)
         {
             var monitorItem = new MonitorEntry
             {
@@ -440,6 +439,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // ToDo: improve exception handling
             // AlertState = true;
             var extype = ex.GetType().ToString().Trim();
+            var effectiveInstance = instance ?? _defaultInstance;
             switch (extype)
             {
                 case "GS.SkyWatcher.MountControlException":
@@ -464,11 +464,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         case SkyWatcherErrorCode.ErrQueueFailed:
                         case SkyWatcherErrorCode.ErrTooManyRetries:
                             IsMountRunning = false;
-                            if (_defaultInstance != null) _defaultInstance._mountError = mounterr;
+                            if (effectiveInstance != null) effectiveInstance._mountError = mounterr;
                             break;
                         default:
                             IsMountRunning = false;
-                            if (_defaultInstance != null) _defaultInstance._mountError = mounterr;
+                            if (effectiveInstance != null) effectiveInstance._mountError = mounterr;
                             break;
                     }
 
@@ -482,17 +482,17 @@ namespace GreenSwamp.Alpaca.MountControl
                         case ErrorCode.ErrUnableToDeqeue:
                         case ErrorCode.ErrSerialFailed:
                             IsMountRunning = false;
-                            if (_defaultInstance != null) _defaultInstance._mountError = skyerr;
+                            if (effectiveInstance != null) effectiveInstance._mountError = skyerr;
                             break;
                         default:
                             IsMountRunning = false;
-                            if (_defaultInstance != null) _defaultInstance._mountError = skyerr;
+                            if (effectiveInstance != null) effectiveInstance._mountError = skyerr;
                             break;
                     }
 
                     break;
                 default:
-                    if (_defaultInstance != null) _defaultInstance._mountError = ex;
+                    if (effectiveInstance != null) effectiveInstance._mountError = ex;
                     IsMountRunning = false;
                     break;
             }
@@ -569,75 +569,9 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Event Handlers
-        // Contains: PropertyChangedSkySettings, PropertyChangedAlignmentSettings,
-        //           UpdateServerEvent, LowVoltageEventSet, GetLocalSiderealTime (2 overloads)
-
-        /// <summary>
-        /// Property changes from SkySettings
-        /// </summary>
-        private static void PropertyChangedSkySettings(object sender, PropertyChangedEventArgs e)
-        {
-            switch (e.PropertyName)
-            {
-                case "AtPark":
-                    if (AtPark != _settings!.AtPark) AtPark = _settings!.AtPark;
-                    break;
-                case "Latitude":
-                    // ToDo: Remove if not needed
-                    // AlignmentModel.SiteLatitude = _settings!.Latitude;
-                    break;
-                case "Longitude":
-                    // ToDo: Remove if not needed
-                    // AlignmentModel.SiteLongitude = _settings!.Longitude;
-                    break;
-                case "Elevation":
-                    // ToDo: Remove if not needed
-                    // AlignmentModel.SiteElevation = _settings!.Elevation;
-                    break;
-                case "AlignmentMode":
-                    Tracking = false;
-                    _defaultInstance.SkyPredictor.Reset();
-                    break;
-            }
-        }
-
-        // ToDo: Remove if not needed
-        /// <summary>
-        /// Property changes from AlignmentSettings
-        /// </summary>
-        private static void PropertyChangedAlignmentSettings(object sender, PropertyChangedEventArgs e)
-        {
-            //switch (e.PropertyName)
-            //{
-            //    case "IsAlignmentOn":
-            //        AlignmentModel.IsAlignmentOn = AlignmentSettings.IsAlignmentOn;
-            //        break;
-            //    case "ProximityLimit":
-            //        AlignmentModel.ProximityLimit = AlignmentSettings.ProximityLimit;
-            //        break;
-            //    case "AlignmentBehaviour":
-            //        AlignmentModel.AlignmentBehaviour = AlignmentSettings.AlignmentBehaviour;
-            //        break;
-            //    case "ActivePoints":
-            //        AlignmentModel.ActivePoints = AlignmentSettings.ActivePoints;
-            //        break;
-            //    case "ThreePointAlgorithm":
-            //        AlignmentModel.ThreePointAlgorithm = AlignmentSettings.ThreePointAlgorithm;
-            //        break;
-            //    case "AlignmentWarningThreshold":
-            //        AlignmentModel.AlignmentWarningThreshold = AlignmentSettings.AlignmentWarningThreshold;
-            //        break;
-            //}
-        }
-
-        /// <summary>
-        /// Update the Server and UI from the axis positions
-        /// Phase 5.4: Delegates to instance-owned OnUpdateServerEvent for per-device lock isolation.
-        /// </summary>
-        internal static void UpdateServerEvent(object sender, EventArgs e)
-        {
-            _defaultInstance?.OnUpdateServerEvent(sender, e);
-        }
+        // Contains: WaitMountPositionUpdated, GetLocalSiderealTime (2 overloads)
+        // M4: PropertyChangedSkySettings, PropertyChangedAlignmentSettings, UpdateServerEvent,
+        //     LowVoltageEventSet moved to MountInstance (OnPropertyChangedSkySettings, OnLowVoltageEvent)
 
         /// <summary>
         /// Wait for mount position to be updated using event signalling.
@@ -652,25 +586,6 @@ namespace GreenSwamp.Alpaca.MountControl
             UpdateSteps();  // Immediate position for tight control
             if (!evt.Wait(5000))
                 throw new TimeoutException();
-        }
-
-        /// <summary>
-        /// Handles the event triggered when a low voltage condition is detected.
-        /// </summary>
-        internal static void LowVoltageEventSet(object sender, EventArgs e)
-        {
-            if (_defaultInstance != null) _defaultInstance._lowVoltageEventState = true;
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Mount,
-                Type = MonitorType.Error,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Mount detected low voltage: check power supply and wiring"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
         }
 
         /// <summary>
@@ -1123,10 +1038,10 @@ namespace GreenSwamp.Alpaca.MountControl
             change += inst._skyHcRate; // Hand controller
             // Primary axis
             change.X += inst._rateMoveAxes.X;
-            change.X += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(inst.RateRa) : 0;
+            change.X += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(inst.RateRa) : 0;
             // Secondary axis
             change.Y += inst._rateMoveAxes.Y;
-            change.Y += _settings!.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(inst.RateDec) : 0;
+            change.Y += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(inst.RateDec) : 0;
 
             CheckAxisLimits();
 

@@ -29,6 +29,7 @@ using System.Globalization;
 using System.IO.Ports;
 using System.Net;
 using System.Reflection;
+using System.ComponentModel;
 using GreenSwamp.Alpaca.Shared.Transport;
 
 namespace GreenSwamp.Alpaca.MountControl
@@ -689,7 +690,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         // ToDo: fix string resource
                         init.Exception = new Exception($"CheckMount{Environment.NewLine}{init.Exception.Message}", init.Exception);
                         // init.Exception = new Exception($"{MediaTypeNames.Application.Current.Resources["CheckMount"]}{Environment.NewLine}{init.Exception.Message}", init.Exception);
-                        SkyServer.SkyErrorHandler(init.Exception);
+                        SkyServer.SkyErrorHandler(init.Exception, this);
                         return false;
                     }
 
@@ -1637,9 +1638,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 ConvertStepsToDegrees(steps[0], 0),
                 ConvertStepsToDegrees(steps[1], 1)
             };
-            SkyServer.UpdateMountLimitStatus(rawPositions);
 
-            // J5: Per-instance limit status (isolates AltAz limit state per device)
+            // J5: Per-instance limit status
             {
                 const double oneArcSec = 1.0 / 3600;
                 _limitStatus.AtLowerLimitAxisX = rawPositions[0] <= -_settings.AxisLimitX - oneArcSec;
@@ -2024,7 +2024,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         steps => ReceiveSteps(steps),
                         v => { _isPulseGuidingRa = v; },
                         v => { _isPulseGuidingDec = v; });
-                    sqImpl.Start(_serial, custom360Steps, customWormSteps, SkyServer.LowVoltageEventSet);
+                    sqImpl.Start(_serial, custom360Steps, customWormSteps, this.OnLowVoltageEvent);
                     SkyQueueInstance = sqImpl;
                     if (!sqImpl.IsRunning)
                     {
@@ -2137,12 +2137,64 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             catch (Exception ex)
             {
-                SkyServer.SkyErrorHandler(ex);
+                SkyServer.SkyErrorHandler(ex, this);
             }
             finally
             {
                 if (hasLock) { Monitor.Exit(_timerLock); }
             }
+        }
+
+        /// <summary>
+        /// Wires per-device settings change notifications.
+        /// Called from SkyServer.Initialize() for device-0; called per-device in future phases.
+        /// </summary>
+        public void InitializeSettings()
+        {
+            _settings.PropertyChanged -= OnPropertyChangedSkySettings; // Prevent double-wiring
+            _settings.PropertyChanged += OnPropertyChangedSkySettings;
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Settings listener wired | Mount:{_settings.Mount} | Port:{_settings.Port}"
+            });
+        }
+
+        private void OnPropertyChangedSkySettings(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case "AtPark":
+                    if (AtPark != _settings.AtPark) AtPark = _settings.AtPark;
+                    break;
+                case "AlignmentMode":
+                    SetTracking(false);
+                    SkyPredictor.Reset();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Per-instance low voltage event handler. Replaces static SkyServer.LowVoltageEventSet.
+        /// </summary>
+        internal void OnLowVoltageEvent(object sender, EventArgs e)
+        {
+            _lowVoltageEventState = true;
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Mount,
+                Type = MonitorType.Error,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "Mount detected low voltage: check power supply and wiring"
+            });
         }
 
         /// <summary>
