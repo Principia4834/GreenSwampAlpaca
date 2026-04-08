@@ -33,12 +33,11 @@ namespace GreenSwamp.Alpaca.MountControl
     {
         /// <summary>
         /// Initialise Right Ascension, Declination, Rates and ReferenceTime to default values.
-        /// The optional trackingRateProvider delegate allows per-instance tracking rate lookup;
-        /// defaults to SkyServer.CurrentTrackingRate() for backward compatibility.
+        /// trackingRateProvider is required; each MountInstance passes () => SkyServer.CurrentTrackingRate(this).
         /// </summary>
-        public SkyPredictor(Func<double> trackingRateProvider = null)
+        public SkyPredictor(Func<double> trackingRateProvider)
         {
-            _trackingRateProvider = trackingRateProvider ?? SkyServer.CurrentTrackingRate;
+            _trackingRateProvider = trackingRateProvider ?? throw new ArgumentNullException(nameof(trackingRateProvider));
             Reset();
         }
 

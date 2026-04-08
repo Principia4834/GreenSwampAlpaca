@@ -767,10 +767,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     _wormTeethCount = new[] { raWormTeeth, decWormTeeth };
                     _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
-                    SkyServer.CalcCustomTrackingOffset(this);
+                    this.CalcCustomTrackingOffset();
 
                     // Initialize slew speeds
-                    SkyServer.SetSlewRates(_settings.MaxSlewRate, this);
+                    this.SetSlewRates(_settings.MaxSlewRate);
 
                     //log current positions
                     var steps = GetRawSteps();
@@ -1008,7 +1008,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (_tracking) SkyServer.SetTracking(this);
+                if (_tracking) this.SetTracking();
                 LogMount($"RateMovePrimaryAxis|{_rateMoveAxes.X}|offset:{_skyTrackingOffset[0]}");
             }
         }
@@ -1034,7 +1034,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (_tracking) SkyServer.SetTracking(this);
+                if (_tracking) this.SetTracking();
                 LogMount($"RateMoveSecondaryAxis|{_rateMoveAxes.Y}|offset:{_skyTrackingOffset[1]}");
             }
         }
@@ -1586,11 +1586,11 @@ namespace GreenSwamp.Alpaca.MountControl
             // Set slew rates for all speed levels
             // SetSlewRates expects degrees/second and stores values in degrees
             // (hardware layer converts to radians when needed)
-            SkyServer.SetSlewRates(_settings.MaxSlewRate, this);
+            this.SetSlewRates(_settings.MaxSlewRate);
 
             // set the guiderates
             _guideRate = new Vector(_settings.GuideRateOffsetY, _settings.GuideRateOffsetX);
-            SkyServer.SetGuideRates(this);
+            this.SetGuideRates();
         }
 
         /// <summary>
@@ -2168,7 +2168,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _isPulseGuidingDec = false;
                 _trackingMode = TrackingMode.Off;
             }
-            SkyServer.SetTracking(this);
+            this.SetTracking();
         }
 
         /// <summary>
@@ -2179,7 +2179,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             _tracking = tracking;
             _trackingMode = mode;
-            SkyServer.SetTracking(this);
+            this.SetTracking();
         }
 
         /// <summary>
@@ -2192,7 +2192,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _tracking = false;
             _trackingMode = TrackingMode.Off;
             SkyPredictor.Reset();
-            SkyServer.SetTracking(this);
+            this.SetTracking();
         }
 
         /// <summary>
@@ -2250,7 +2250,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                     SkyPredictor.Set(raDec[0], raDec[1], _rateRaDec.X, _rateRaDec.Y);
                 }
-                SkyServer.SetTracking(this);
+                this.SetTracking();
             }
             else
             {
@@ -2274,7 +2274,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_altAzTrackingTimer?.IsRunning == true &&
                 Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) == 0)
             {
-                SkyServer.SetTracking(this);
+                this.SetTracking();
                 _altAzTrackingLock = 0;
             }
         }
@@ -3016,7 +3016,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // execute pulse
                 pulseGoTo(token);
                 // pulse movement finished or cancelled so resume tracking
-                SkyServer.SetTracking(this);
+                this.SetTracking();
                 // wait for pulse duration so completion variable IsPulseGuiding remains true
                 var waitTime = (int)(pulseStartTime.AddMilliseconds(duration) - Principles.HiResDateTime.UtcNow).TotalMilliseconds;
                 var updateInterval = Math.Max(duration / 20, 50);

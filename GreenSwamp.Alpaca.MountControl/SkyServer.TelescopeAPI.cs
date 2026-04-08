@@ -2317,13 +2317,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 case TrackingMode.Off:
                     break;
                 case TrackingMode.AltAz:
-                    rateChange = CurrentTrackingRate();
+                    rateChange = CurrentTrackingRate(inst!);
                     break;
                 case TrackingMode.EqN:
-                    rateChange = CurrentTrackingRate();
+                    rateChange = CurrentTrackingRate(inst!);
                     break;
                 case TrackingMode.EqS:
-                    rateChange = -CurrentTrackingRate();
+                    rateChange = -CurrentTrackingRate(inst!);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -2423,7 +2423,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             // don't log if pec is on
-            if (_defaultInstance?.Settings.PecOn == true) { return; }
+            if (inst?.Settings.PecOn == true) { return; }
 
             var monitorItem = new MonitorEntry
             {
@@ -2433,7 +2433,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{currentTrackingMode}|{rateChange * 3600}|{_defaultInstance?._pecBinNow}|{SkyTrackingOffset[0]}|{SkyTrackingOffset[1]}"
+                Message = $"{currentTrackingMode}|{rateChange * 3600}|{inst?._pecBinNow}|{inst?._skyTrackingOffset[0] ?? 0}|{inst?._skyTrackingOffset[1] ?? 0}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -2469,52 +2469,6 @@ namespace GreenSwamp.Alpaca.MountControl
             _defaultInstance.TrackingMode = mode;
             SetTracking(); // Apply to hardware
             OnStaticPropertyChanged();
-        }
-
-        /// <summary>
-        /// Calculates the current RA tracking rate used in arc seconds per second
-        /// </summary>
-        /// <returns></returns>
-        public static double CurrentTrackingRate()
-        {
-            double rate;
-            switch (_settings!.TrackingRate)
-            {
-                case DriveRate.Sidereal:
-                    rate = _settings!.SiderealRate;
-                    break;
-                case DriveRate.Solar:
-                    rate = _settings!.SolarRate;
-                    break;
-                case DriveRate.Lunar:
-                    rate = _settings!.LunarRate;
-                    break;
-                case DriveRate.King:
-                    rate = _settings!.KingRate;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            if (rate < SiderealRate * 2 & rate != 0) //add any custom gearing offset
-            {
-                rate += TrackingOffsetRaRate;
-            }
-
-            //Implement Pec
-            if ((_defaultInstance?.Settings.PecOn ?? false) && Tracking && _defaultInstance?._pecBinNow != null && !double.IsNaN(_defaultInstance._pecBinNow.Item2))
-            {
-                // safety check to make sure factor isn't too big
-                if (Math.Abs(_defaultInstance._pecBinNow.Item2 - 1) < .04)
-                {
-                    rate *= _defaultInstance._pecBinNow.Item2;
-                }
-            }
-            rate /= 3600;
-            if (_settings!.RaTrackingOffset <= 0) { return rate; }
-            var offsetrate = rate * (Convert.ToDouble(_settings!.RaTrackingOffset) / 100000);
-            rate += offsetrate;
-            return rate;
         }
 
         /// <summary>
@@ -2563,7 +2517,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var inst = instance ?? _defaultInstance;
             var settings = instance?.Settings ?? _settings;
-            var rate = CurrentTrackingRate();
+            var rate = inst != null ? CurrentTrackingRate(inst) : 0.0;
             if (inst != null)
             {
                 inst.GuideRateRa = rate * settings!.GuideRateOffsetX;
@@ -2759,7 +2713,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Update AltAz tracking rates including delta for tracking error
         /// </summary>
-        private static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, MountInstance? instance = null)
+        internal static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, MountInstance? instance = null)
         {
             var inst = instance ?? _defaultInstance!;
             switch (altAzTrackingType)
@@ -2803,7 +2757,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 case AltAzTrackingType.Rate:
-                    inst._skyTrackingRate = ConvertRateToAltAz(CurrentTrackingRate(), 0.0, inst.DeclinationXForm);
+                    inst._skyTrackingRate = ConvertRateToAltAz(CurrentTrackingRate(inst), 0.0, inst.DeclinationXForm);
                     break;
             }
         }
@@ -2825,7 +2779,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Positive direction mean go mechanical north
         /// </summary>
         /// <returns></returns>
-        private static double GetDecRateDirection(double rate)
+        internal static double GetDecRateDirection(double rate)
         {
             bool moveNorth = rate > 0;
             bool isEast = SideOfPier == PointingState.Normal;
@@ -2897,7 +2851,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Positive direction mean go mechanical east
         /// </summary>
         /// <returns></returns>
-        private static double GetRaRateDirection(double rate)
+        internal static double GetRaRateDirection(double rate)
         {
             var east = rate > 0;
             rate = Math.Abs(rate);

@@ -180,12 +180,12 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 var binNew = new Tuple<int, double, int>(newBinNo, pecBin.Item1, pecBin.Item2);
                 _pecBinNow = binNew;
-                SkyServer.SetTracking(this);
+                this.SetTracking();
             }
             catch (Exception ex)
             {
                 _settings.PecOn = false;
-                if (_tracking) SkyServer.SetTracking(this);
+                if (_tracking) this.SetTracking();
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,

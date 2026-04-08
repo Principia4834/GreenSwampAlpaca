@@ -803,7 +803,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // SIDE EFFECT: Update guide rates
                     if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SetGuideRates(_owner);
+                        _owner.SetGuideRates();
                     }
                 }
             }
@@ -822,7 +822,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // SIDE EFFECT: Update guide rates
                     if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SetGuideRates(_owner);
+                        _owner.SetGuideRates();
                     }
                 }
             }
@@ -904,7 +904,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // SIDE EFFECT: Update slew rates
                     if (_owner?.IsMountRunning == true)
                     {
-                        SkyServer.SetSlewRates(value, _owner);
+                        _owner.SetSlewRates(value);
                     }
                 }
             }
