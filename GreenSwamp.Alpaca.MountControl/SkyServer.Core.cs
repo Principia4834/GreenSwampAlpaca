@@ -58,13 +58,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private const double SiderealRate = 15.0410671786691;
 
-        // Phase 6: AltAz timer delegates to default instance (per-device isolation)
-        private static MediaTimer? _altAzTrackingTimer
-        {
-            get => _defaultInstance?._altAzTrackingTimer;
-            set { if (_defaultInstance != null) _defaultInstance._altAzTrackingTimer = value; }
-        }
-        // _altAzTrackingLock removed from static — use _defaultInstance._altAzTrackingLock directly (ref semantics required by Interlocked)
+        // _altAzTrackingLock removed from static
         // Default mount instance — computed from registry slot 0 (Step 9: Bridge B0 removed)
         private static MountInstance? _defaultInstance => MountInstanceRegistry.GetInstance(0);
         // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
@@ -1004,7 +998,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             MonitorLog.LogToMonitor(monitorItem);
                             break;
                         case MountTaskName.SyncTarget:
-                            var a = Transforms.CoordTypeToInternal(_defaultInstance?.TargetRa ?? double.NaN, _defaultInstance?.TargetDec ?? double.NaN);
+                            var a = Transforms.CoordTypeToInternal(instance?.TargetRa ?? double.NaN, instance?.TargetDec ?? double.NaN);
                             var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
                             _ = new SkySyncAxis(0, q, Axis.Axis1, targetR[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, targetR[1]);

@@ -120,7 +120,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!context.IsWithinFlipLimits(position)) { return null; }
             var alt = Axes.GetAltAxisPosition(position, context);
             if (!context.IsWithinFlipLimits(alt)) { return null; }
-            var cl = ChooseClosestPosition(_defaultInstance?._actualAxisX ?? 0.0, position, alt);
+            var cl = ChooseClosestPosition(context.AppAxisX ?? 0.0, position, alt);
             if (FlipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
@@ -129,7 +129,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                     Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"flip|{cl}|{_defaultInstance?._actualAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                    Message = $"flip|{cl}|{context.AppAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
             if (cl != "b") { return null; }
@@ -140,7 +140,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!context.IsWithinFlipLimits(position)) { return null; }
             var alt = Axes.GetAltAxisPosition(position, context);
-            var cl = ChooseClosestPosition(_defaultInstance?._actualAxisX ?? 0.0, position, alt);
+            var cl = ChooseClosestPosition(context.AppAxisX ?? 0.0, position, alt);
             if (FlipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
@@ -149,7 +149,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                     Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"flip|{cl}|{_defaultInstance?._actualAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                    Message = $"flip|{cl}|{context.AppAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
             if (cl != "b") { return null; }
@@ -165,7 +165,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!altOk) return null;
             if (posOk && altOk)
             {
-                var cl = ChooseClosestPositionPolar([_defaultInstance?._actualAxisX ?? 0.0, _defaultInstance?._actualAxisY ?? 0.0], position, alt);
+                var cl = ChooseClosestPositionPolar([context.AppAxisX ?? 0.0, context.AppAxisY ?? 0.0], position, alt);
                 if (FlipOnNextGoto)
                 {
                     cl = cl == "a" ? "b" : "a";
@@ -174,7 +174,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"flip|{cl}|{_defaultInstance?._actualAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                        Message = $"flip|{cl}|{context.AppAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                     });
                 }
                 if (cl != "b") { return null; }
@@ -574,94 +574,6 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
 
         }
-
-        /// <summary>
-        /// Event handler for timed update AltAz tracking
-        /// </summary>
-        internal static void AltAzTrackingTimerEvent(object sender, EventArgs e)
-        {
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MonitorLog.GetCurrentMethod(),
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"TimerID|{_altAzTrackingTimer?.TimerID}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-            // timer must be running to update tracking
-            if (_altAzTrackingTimer?.IsRunning == true)
-            {
-                // handle timer race condition triggering handler
-                    if (_defaultInstance != null &&
-                        Interlocked.CompareExchange(ref _defaultInstance._altAzTrackingLock, -1, 0) == 0)
-                    {
-                        SetTracking();
-                        // Release the lock
-                        _defaultInstance._altAzTrackingLock = 0;
-                    }
-            }
-        }
-
-        /// <summary>
-        /// Stop Alt Az tracking timer
-        /// </summary>
-        internal static void StopAltAzTrackingTimer()
-        {
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MonitorLog.GetCurrentMethod(),
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"TimerID|{_altAzTrackingTimer?.TimerID}|Running|{_altAzTrackingTimer?.IsRunning}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-            if (_altAzTrackingTimer != null)
-            {
-                _altAzTrackingTimer.Tick -= AltAzTrackingTimerEvent;
-                if (_altAzTrackingTimer.IsRunning)
-                {
-                    _altAzTrackingTimer.Stop();
-                }
-                _altAzTrackingTimer.Dispose();
-                _altAzTrackingTimer = null;
-            }
-        }
-
-        /// <summary>
-        /// Start Alt Az tracking timer
-        /// </summary>
-        private static void StartAltAzTrackingTimer()
-        {
-            var timerId = _altAzTrackingTimer?.TimerID;
-            _altAzTrackingTimer = new MediaTimer
-            {
-                Period = _settings!.AltAzTrackingUpdateInterval
-            };
-            _altAzTrackingTimer.Tick += AltAzTrackingTimerEvent;
-            _altAzTrackingTimer.Start();
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MonitorLog.GetCurrentMethod(),
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"TimerID on entry|{timerId}|TimerID|{_altAzTrackingTimer?.TimerID}|Running|{_altAzTrackingTimer?.IsRunning}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-        }
-
-        /// <summary>
-        /// Alt Az timer is running property
-        /// </summary>
-        private static bool AltAzTimerIsRunning => _altAzTrackingTimer?.IsRunning == true;
 
         /// <summary>
         /// Update AltAz tracking rates including delta for tracking error
