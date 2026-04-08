@@ -748,7 +748,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // To get the target steps
             // Set context from current settings
             var context = AxesContext.FromSettings(_settings);
-            var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
+            var a = Transforms.CoordTypeToInternal(_defaultInstance?.TargetRa ?? double.NaN, _defaultInstance?.TargetDec ?? double.NaN);
             var xy = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
             var unSynced = Axes.AxesAppToMount(new[] { xy[0], xy[1] }, context);
             var rawSteps = GetRawSteps();
@@ -1303,7 +1303,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             MonitorLog.LogToMonitor(monitorItem);
                             break;
                         case MountTaskName.SyncTarget:
-                            var a = Transforms.CoordTypeToInternal(TargetRa, TargetDec);
+                            var a = Transforms.CoordTypeToInternal(_defaultInstance?.TargetRa ?? double.NaN, _defaultInstance?.TargetDec ?? double.NaN);
                             var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
                             _ = new SkySyncAxis(0, q, Axis.Axis1, targetR[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, targetR[1]);
@@ -1538,13 +1538,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private static void SetRateMoveSlewState()
         {
-            if (MovePrimaryAxisActive || MoveSecondaryAxisActive)
+            if ((_defaultInstance?._rateMoveAxes.X ?? 0.0) != 0.0 || (_defaultInstance?._rateMoveAxes.Y ?? 0.0) != 0.0)
             {
                 MoveAxisActive = true;
                 IsSlewing = true;
                 if (_defaultInstance != null) _defaultInstance._slewState = SlewType.SlewMoveAxis;
             }
-            if (!MovePrimaryAxisActive && !MoveSecondaryAxisActive)
+            if ((_defaultInstance?._rateMoveAxes.X ?? 0.0) == 0.0 && (_defaultInstance?._rateMoveAxes.Y ?? 0.0) == 0.0)
             {
                 MoveAxisActive = false;
                 IsSlewing = false;

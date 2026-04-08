@@ -448,12 +448,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Pulse reporting to driver
-        /// Alt Az uses both axes so always synchronous pulse guiding on one of Ra or Dec
-        /// </summary>
-        public static bool IsPulseGuiding => (_defaultInstance?._isPulseGuidingDec ?? false) || (_defaultInstance?._isPulseGuidingRa ?? false);
-
-        /// <summary>
         /// UI Checkbox option to flip on the next goto
         /// </summary>
         public static bool FlipOnNextGoto
@@ -525,15 +519,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Store the original DeclinationRate to maintain direction
-        /// </summary>
-        public static double RateDecOrg
-        {
-            get => _defaultInstance?.RateDecOrg ?? 0.0;
-            set { if (_defaultInstance != null) _defaultInstance.RateDecOrg = value; }
-        }
-
-        /// <summary>
         /// The right ascension tracking in degrees, RightAscensionRate
         /// corrected direction applied
         /// </summary>
@@ -558,72 +543,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = $"{value}|{SkyTrackingOffset[0]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
-            }
-        }
-
-        /// <summary>
-        /// Store the original RightAscensionRate and maintain direction
-        /// Previous conversions were not exact
-        /// </summary>
-        public static double RateRaOrg
-        {
-            get => _defaultInstance?.RateRaOrg ?? 0.0;
-            set { if (_defaultInstance != null) _defaultInstance.RateRaOrg = value; }
-        }
-
-        /// <summary>
-        /// Dec target for slewing, epoch is same as EquatorialSystem Property
-        /// initialised to NaN to catch read before write
-        /// convert to top-o-centric for any internal calculations
-        /// </summary>
-        public static double TargetDec
-        {
-            get => _defaultInstance?.TargetDec ?? double.NaN;
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance.TargetDec = value;
-            }
-        }
-
-        /// <summary>
-        /// Ra target for slewing, epoch is same as EquatorialSystem Property
-        /// initialised to NaN to catch read before write
-        /// convert to top-o-centric for any internal calculations
-        /// </summary>
-        public static double TargetRa
-        {
-            get => _defaultInstance?.TargetRa ?? double.NaN;
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance.TargetRa = value;
-            }
-        }
-
-        /// <summary>
-        /// The current Declination movement rate offset for telescope guiding (degrees/sec) 
-        /// </summary>
-        public static double GuideRateDec
-        {
-            get => _defaultInstance?.GuideRateDec ?? 0.0;
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance.GuideRateDec = value;
-            }
-        }
-
-        /// <summary>
-        /// The current Right Ascension movement rate offset for telescope guiding (degrees/sec) 
-        /// </summary>
-        public static double GuideRateRa
-        {
-            get => _defaultInstance?.GuideRateRa ?? 0.0;
-            set
-            {
-                if (_defaultInstance != null)
-                    _defaultInstance.GuideRateRa = value;
             }
         }
 
@@ -1700,7 +1619,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $" {TargetRa}|{TargetDec}|{Tracking}"
+                Message = $" {_defaultInstance?.TargetRa ?? double.NaN}|{_defaultInstance?.TargetDec ?? double.NaN}|{Tracking}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1751,7 +1670,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     // set up tracking for Alt Az
                     // NOTE: Use SetTrackingDirect to avoid Tracking property's _defaultInstance.SkyPredictor.Reset()
-                    _defaultInstance.SkyPredictor.Set(TargetRa, TargetDec);
+                    _defaultInstance.SkyPredictor.Set(_defaultInstance.TargetRa, _defaultInstance.TargetDec);
                     SetTrackingDirect(true, TrackingMode.AltAz);
                 }
                 else
@@ -2044,40 +1963,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region MoveAxis Support
-
-        /// <summary>
-        /// Reports to driver is axis can move
-        /// </summary>
-        /// <param name="axis"></param>
-        /// <returns></returns>
-        public static bool CanMoveAxis(TelescopeAxis axis)
-        {
-            var ax = 0;
-            switch (axis)
-            {
-                case TelescopeAxis.Primary:
-                    ax = 1;
-                    break;
-                case TelescopeAxis.Secondary:
-                    ax = 2;
-                    break;
-                case TelescopeAxis.Tertiary:
-                    ax = 3;
-                    break;
-            }
-
-            return ax != 0 && ax <= _settings!.NumMoveAxis;
-        }
-
-        /// <summary>
-        /// Status of primary axis move
-        /// </summary>
-        public static bool MovePrimaryAxisActive => (_defaultInstance?._rateMoveAxes.X ?? 0.0) != 0.0;
-
-        /// <summary>
-        /// Status of secondary axis move
-        /// </summary>
-        public static bool MoveSecondaryAxisActive => (_defaultInstance?._rateMoveAxes.Y ?? 0.0) != 0.0;
 
         public static bool MoveAxisActive
         {
@@ -3234,33 +3119,5 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region ASCOM Bridge Properties
-
-        /// <summary>
-        /// Bridge property to UI RightAscensionXForm for ASCOM API compatibility
-        /// </summary>
-        public static double RightAscensionXFormBridge => RightAscensionXForm;
-
-        /// <summary>
-        /// Bridge property to UI DeclinationXForm for ASCOM API compatibility  
-        /// </summary>
-        public static double DeclinationXFormBridge => DeclinationXForm;
-
-        /// <summary>
-        /// Bridge property to UI SiderealTime for ASCOM API compatibility
-        /// </summary>
-        public static double SiderealTimeBridge => SiderealTime;
-
-        /// <summary>
-        /// Bridge property to UI Lha for ASCOM API compatibility
-        /// </summary>
-        public static double LhaBridge => Lha;
-
-        /// <summary>
-        /// Bridge property to UI IsSideOfPier for ASCOM API compatibility
-        /// </summary>
-        public static PointingState SideOfPierBridge => IsSideOfPier;
-
-        #endregion
-    }
-}
+            }
+        }
