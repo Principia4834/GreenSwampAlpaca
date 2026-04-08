@@ -151,9 +151,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                // load some things
-                Defaults();
-                
                 // ToDo: Remove if not needed
                 // initialise the alignment model
                 //AlignmentSettings.Load();
@@ -381,17 +378,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Internal Utility Methods
-        // Contains: Defaults, OnStaticPropertyChanged, DegToRad, RadToDeg
-
-        /// <summary>
-        /// Load default settings and slew rates
-        /// Delegated to instance
-        /// </summary>
-        private static void Defaults()
-        {
-            _defaultInstance?.Defaults();
-            // Fallback not needed - this is internal initialization only
-        }
+        // Contains: OnStaticPropertyChanged, DegToRad, RadToDeg
 
         /// <summary>
         /// Property change notification for static properties
@@ -597,33 +584,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // Contains mount-specific implementations for Simulator and SkyWatcher
 
         #region Simulator Items
-        // Contains: SimGoTo, SimPrecisionGoto, SimPulseGoto, SimTasks
-
-        /// <summary>
-        /// Sim GOTO slew (static wrapper - delegates to default instance)
-        /// </summary>
-        internal static int SimGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
-        {
-            return _defaultInstance?.SimGoTo(target, trackingState, slewType, token) ?? -1;
-        }
-
-        /// <summary>
-        /// Sim precision GOTO (static wrapper - delegates to default instance)
-        /// </summary>
-        private static int SimPrecisionGoto(double[] target, SlewType slewType, CancellationToken token)
-        {
-            return _defaultInstance?.SimPrecisionGoto(target, slewType, token) ?? -1;
-        }
-
-        /// <summary>
-        /// Sim pulse GOTO (static wrapper - delegates to default instance)
-        /// </summary>
-        private static void SimPulseGoto(CancellationToken token)
-        {
-            _defaultInstance?.SimPulseGoto(token);
-        }
-
-
+        // Contains: SimTasks
 
                                 /// <summary>
                                 /// Instance-aware SimTasks: routes commands and capability writes to the given MountInstance.
@@ -837,30 +798,6 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
             return change;
-        }
-
-        /// <summary>
-        /// SkyWatcher GOTO slew (static wrapper - delegates to default instance)
-        /// </summary>
-        internal static int SkyGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
-        {
-            return _defaultInstance?.SkyGoTo(target, trackingState, slewType, token) ?? -1;
-        }
-
-        /// <summary>
-        /// SkyWatcher precision GOTO (static wrapper - delegates to default instance)
-        /// </summary>
-        private static int SkyPrecisionGoto(double[] target, SlewType slewType, CancellationToken token)
-        {
-            return _defaultInstance?.SkyPrecisionGoto(target, slewType, token) ?? -1;
-        }
-
-        /// <summary>
-        /// SkyWatcher pulse GOTO (static wrapper - delegates to default instance)
-        /// </summary>
-        private static void SkyPulseGoto(CancellationToken token)
-        {
-            _defaultInstance?.SkyPulseGoto(token);
         }
 
         /// <summary>
