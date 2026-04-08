@@ -89,7 +89,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double _slewSettleTime;
 
         // J5: Per-instance AltAz limit status (isolates limit state across devices)
-        internal SkyServer.LimitStatusType _limitStatus;
+        internal LimitStatusType _limitStatus;
 
         // Phase 6: new per-instance backing fields (migrated from static SkyServer)
         internal bool _isPulseGuidingRa;
@@ -674,8 +674,6 @@ namespace GreenSwamp.Alpaca.MountControl
                         positionsSet = true;
 
                     }
-                    // Update AlignmentModel settings.
-                    SkyServer.ConnectAlignmentModel();
 
                     break;
                 case MountType.SkyWatcher:
@@ -826,9 +824,6 @@ namespace GreenSwamp.Alpaca.MountControl
                         positionsSet = true;
 
                     }
-
-                    // Update AlignmentModel settings.
-                    SkyServer.ConnectAlignmentModel();
 
                     break;
                 default:
@@ -1692,7 +1687,6 @@ namespace GreenSwamp.Alpaca.MountControl
             _steps = steps;
             SetSteps(steps);
             _mountPositionUpdatedEvent.Set();
-            SkyServer.NotifyStepsChanged();
         }
 
         /// <summary>
@@ -1990,11 +1984,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // Start the instance-owned simulator queue directly (no static facade)
                     mqImpl.Start();
                     MountQueueInstance = mqImpl;
-                    if (mqImpl.IsRunning)
-                    {
-                        SkyServer.ConnectAlignmentModel();
-                    }
-                    else
+                    if (!mqImpl.IsRunning)
                     {
                         throw new Exception("Failed to start simulator queue");
                     }

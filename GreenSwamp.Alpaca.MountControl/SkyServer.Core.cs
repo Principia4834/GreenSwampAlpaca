@@ -40,10 +40,8 @@ using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.MountControl;
 using GreenSwamp.Alpaca.Shared;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Range = GreenSwamp.Alpaca.Principles.Range;
 using SkyWatcherErrorCode = GreenSwamp.Alpaca.Mount.SkyWatcher.ErrorCode;
 
@@ -111,13 +109,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 throw;
             }
         }
-
-        #endregion
-
-        #region Coordinate Transformations
-        // Contains: GetSyncedAxes, GetUnsyncedAxes (currently in Alignment region - will be moved here)
-        // Note: These methods are alignment-model-aware coordinate transformations
-        // TODO: Move GetSyncedAxes and GetUnsyncedAxes from Alignment region to here for better organization
 
         #endregion
 
@@ -231,16 +222,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Internal Utility Methods
-        // Contains: OnStaticPropertyChanged, DegToRad, RadToDeg
-
-        /// <summary>
-        /// Property change notification for static properties
-        /// </summary>
-        /// <param name="propertyName"></param>
-        private static void OnStaticPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
-        }
 
         /// <summary>
         /// Convert degrees to radians
@@ -282,39 +263,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Alignment
-        // Contains: ConnectAlignmentModel, AlignmentModel_Notification, AddAlignmentPoint, 
-        //           GetSyncedAxes, GetUnsyncedAxes
-        // Note: GetSyncedAxes and GetUnsyncedAxes should ideally be in Coordinate Transformations region
-        //       but are kept here due to their tight coupling with AlignmentModel
-
-        /// <summary>
-        /// Initialize alignment model connection with current mount parameters
-        /// </summary>
-        internal static void ConnectAlignmentModel()
-        {
-            // ToDo: Remove if not needed
-            // AlignmentModel.Connect(_homeAxes.X, _homeAxes.Y, StepsPerRevolution, AlignmentSettings.ClearModelOnStartup);
-        }
-
-        // ToDo: Remove if not needed
-        /// <summary>
-        /// Event handler for alignment model notifications
-        /// </summary>
-        //private static void AlignmentModel_Notification(object sender, NotificationEventArgs e)
-        //{
-        //    // Luckily the NotificationType enum and mimics MonitorType enum.
-        //    var monitorItem = new MonitorEntry
-        //    {
-        //        Datetime = HiResDateTime.UtcNow,
-        //        Device = MonitorDevice.Server,
-        //        Category = MonitorCategory.Alignment,
-        //        Type = (MonitorType)e.NotificationType,
-        //        Method = e.Method,
-        //        Thread = e.Thread,
-        //        Message = e.Message
-        //    };
-        //    MonitorLog.LogToMonitor(monitorItem);
-        //}
 
         /// <summary>
         /// Gets the alignment model corrected target (physical) axis positions for a given calculated axis position.
@@ -369,34 +317,6 @@ namespace GreenSwamp.Alpaca.MountControl
             //{
                 return unsynced;
             //}
-        }
-
-        /// <summary>
-        /// Get the axis positions to report for a given physical axis position.
-        /// </summary>
-        /// <param name="synced">Physical axis position</param>
-        /// <returns>Calculated axis position</returns>
-        private static double[] GetUnsyncedAxes(double[] synced)
-        {
-            // ToDo: Remove if not needed
-            //if (AlignmentModel.IsAlignmentOn && SkyServer.SlewState != SlewType.SlewPark && SkyServer.SlewState != SlewType.SlewHome
-            //    && !SkyServer.IsHome && !SkyServer.AtPark)
-            //{
-            //    var monitorItem = new MonitorEntry
-            //    {
-            //        Datetime = HiResDateTime.UtcNow,
-            //        Device = MonitorDevice.Server,
-            //        Category = MonitorCategory.Alignment,
-            //        Type = MonitorType.Data,
-            //        Method = MethodBase.GetCurrentMethod()?.Name,
-            //        Thread = Thread.CurrentThread.ManagedThreadId,
-            //        Message = $"Mapped synced axis angles: {synced[0]}/{synced[1]} to {unsynced[0]}/{unsynced[1]}"
-            //    };
-            //    MonitorLog.LogToMonitor(monitorItem);
-            //    return AlignmentModel.GetUnsyncedValue(synced);
-            //}
-
-            return synced;
         }
 
         #endregion
@@ -807,10 +727,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-        #endregion
-
-        #region Internal State & Calculations
 
         #endregion
     }

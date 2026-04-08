@@ -1,7 +1,7 @@
 ﻿# Multi-Telescope Migration Plan
 # Eliminating Static SkyServer -- Device-Neutral Architecture
 
-**Document updated:** 2026-04-08 19:49
+**Document updated:** 2026-04-08 20:56
 **Baseline build status:** [x] SUCCESS -- 0 errors, 0 warnings
 **Author:** GitHub Copilot (analysis) / Andy (owner)
 
@@ -674,11 +674,18 @@ This change is minimal (one constructor argument) and already fully supported by
 - [x] Build and verify: GREEN
 
 ### Phase M8 -- Final Cleanup
-- [ ] Delete or shrink SkyServer partial files
-- [ ] Move `LimitStatusType` struct to standalone file or to MountInstance
-- [ ] Mark `StaticPropertyChanged` as `[Obsolete]` then remove
-- [ ] Run all tests: [x]
-- [ ] Final build: [x] 0 errors
+- [x] Move `LimitStatusType` struct to standalone `LimitStatusType.cs` in `GreenSwamp.Alpaca.MountControl`
+- [x] Update `MountInstance.cs` L92: `SkyServer.LimitStatusType` -> `LimitStatusType`
+- [x] Remove 3x `SkyServer.ConnectAlignmentModel()` calls from `MountInstance.cs` (no-op method)
+- [x] Remove `SkyServer.NotifyStepsChanged()` call from `MountInstance.ReceiveSteps()` (zero subscribers)
+- [x] Delete `SkyServer.ConnectAlignmentModel()` no-op from `SkyServer.Core.cs`
+- [x] Delete `SkyServer.GetUnsyncedAxes()` private unused method from `SkyServer.Core.cs`
+- [x] Delete `SkyServer.OnStaticPropertyChanged()` from `SkyServer.Core.cs` (no callers)
+- [x] Remove empty `#region Coordinate Transformations` from `SkyServer.Core.cs`
+- [x] Remove empty `#region Internal State & Calculations` from `SkyServer.Core.cs`
+- [x] Remove stale `using System.ComponentModel` and `using System.Runtime.CompilerServices` from `SkyServer.Core.cs`
+- [x] Delete `SkyServer.cs` (`StaticPropertyChanged` event + `NotifyStepsChanged()` + dead commented code)
+- [x] Build and verify: GREEN
 
 ---
 
