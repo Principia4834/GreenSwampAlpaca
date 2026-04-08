@@ -74,7 +74,6 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                     DeviceNumber = deviceNumber,
                     DeviceName = instance.DeviceName,
                     Connected = instance.IsConnected,
-                    IsReserved = Services.UnifiedDeviceRegistry.IsReservedSlot(deviceNumber), // Phase 4.11
                     AlignmentMode = settings.AlignmentMode.ToString(),
                     MountType = settings.Mount.ToString(),
                     ComPort = null, // TODO: Add to SkySettingsInstance in physical mount phase
@@ -109,21 +108,12 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                 return BadRequest(new ErrorResponse { Error = $"Validation failed: {errors}" });
             }
 
-            // Auto-assign device number if requested (0 = auto)
+            // Auto-assign to lowest available slot when device number is 0
             var deviceNumber = request.DeviceNumber;
             if (deviceNumber == 0)
             {
                 deviceNumber = Services.UnifiedDeviceRegistry.GetNextAvailableDeviceNumber();
                 _logger.LogInformation("Auto-assigned device number {DeviceNumber}", deviceNumber);
-            }
-
-            // Phase 4.11: Prevent manual addition to reserved slots
-            if (Services.UnifiedDeviceRegistry.IsReservedSlot(deviceNumber))
-            {
-                return BadRequest(new ErrorResponse
-                {
-                    Error = $"Cannot add device to reserved slot {deviceNumber}. Slots 0 and 1 are reserved. Use device number 2 or higher, or 0 for auto-assign."
-                });
             }
 
             // Check if device number is already in use (checks BOTH registries)
@@ -210,12 +200,10 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                     return NotFound(new ErrorResponse { Error = $"Device {deviceNumber} not found" });
                 }
 
-                // Note: DeviceManager doesn't have RemoveTelescope method
-                // Device will remain in DeviceManager.Telescopes until server restart
-                // This is acceptable because:
-                // - MountInstanceRegistry controls actual device behavior
-                // - Removed devices become non-functional (no MountInstance)
-                // - Reserved slots (0, 1) cannot be removed
+                // Note: DeviceManager doesn't have RemoveTelescope method.
+                // Device will remain in DeviceManager.Telescopes until server restart.
+                // MountInstanceRegistry controls actual device behavior -- removed
+                // devices become non-functional (no MountInstance).
 
                 _logger.LogInformation("Successfully removed device {DeviceNumber} from registry", deviceNumber);
 

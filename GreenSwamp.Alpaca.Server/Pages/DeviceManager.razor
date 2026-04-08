@@ -114,12 +114,9 @@
                                         <a href="/mountsettings/@device.DeviceNumber" class="btn btn-outline-secondary btn-sm me-1" title="Edit mount settings for device @device.DeviceNumber">
                                             <span class="oi oi-list" aria-hidden="true"></span> Settings
                                         </a>
-                                        @if (!UnifiedDeviceRegistry.IsReservedSlot(device.DeviceNumber))
-                                        {
-                                            <button class="btn btn-outline-danger btn-sm" @onclick="() => RemoveDevice(device.DeviceNumber)" title="Remove device @device.DeviceNumber">
-                                                <span class="oi oi-trash" aria-hidden="true"></span> Remove
-                                            </button>
-                                        }
+                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => RemoveDevice(device.DeviceNumber)" title="Remove device @device.DeviceNumber">
+                                            <span class="oi oi-trash" aria-hidden="true"></span> Remove
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -359,12 +356,6 @@
         _successMessage = null;
         try
         {
-            if (UnifiedDeviceRegistry.IsReservedSlot(deviceNumber))
-            {
-                errorMessage = $"Device {deviceNumber} is a reserved slot and cannot be removed.";
-                return;
-            }
-
             UnifiedDeviceRegistry.RemoveDevice(deviceNumber);
             await SettingsService.RemoveAlpacaDeviceAsync(deviceNumber);
             await SettingsService.DeleteDeviceSettingsAsync(deviceNumber);

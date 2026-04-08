@@ -1,7 +1,7 @@
 ﻿# Multi-Telescope Migration Plan
 # Eliminating Static SkyServer -- Device-Neutral Architecture
 
-**Document updated:** 2026-04-08 19:05
+**Document updated:** 2026-04-08 19:49
 **Baseline build status:** [x] SUCCESS -- 0 errors, 0 warnings
 **Author:** GitHub Copilot (analysis) / Andy (owner)
 
@@ -663,12 +663,15 @@ This change is minimal (one constructor argument) and already fully supported by
 - [x] Build and verify: GREEN
 
 ### Phase M7 -- UnifiedDeviceRegistry
-- [ ] Remove reserved slot constants
-- [ ] Remove `IsReservedSlot()`
-- [ ] Allow deletion of any device number
-- [ ] Update `GetNextAvailableDeviceNumber()` to start from 0
-- [ ] Update SetupDevicesController and Blazor pages if they call `IsReservedSlot`
-- [ ] Build and verify: [x]
+- [x] Remove reserved slot constants (`SimulatorSlot`, `PhysicalMountSlot`, `FirstDynamicSlot`)
+- [x] Remove `IsReservedSlot()` method
+- [x] Allow deletion of any device number (`RemoveDevice()` guard removed)
+- [x] Update `GetNextAvailableDeviceNumber()` to start from 0
+- [x] Update `SetupDevicesController`: remove `IsReservedSlot` checks, remove `IsReserved` from response
+- [x] Update `DeviceManager.razor`: remove `IsReservedSlot` guards on Remove button and in `RemoveDevice()`
+- [x] Remove dead `InitializeReservedSlots()` method
+- [x] Remove `IsReserved` from `DeviceInfoResponse`
+- [x] Build and verify: GREEN
 
 ### Phase M8 -- Final Cleanup
 - [ ] Delete or shrink SkyServer partial files
@@ -721,4 +724,4 @@ The migration is complete when:
 
 ---
 
-*Document updated: 2026-04-08 19:05*
+*Document updated: 2026-04-08 19:49*
