@@ -1,0 +1,430 @@
+﻿ /* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  */
+
+using ASCOM.Common.DeviceInterfaces;
+using GreenSwamp.Alpaca.Mount.AutoHome;
+using GreenSwamp.Alpaca.Mount.Commands;
+using GreenSwamp.Alpaca.Mount.Simulator;
+using GreenSwamp.Alpaca.Mount.SkyWatcher;
+using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Shared;
+using System.Reflection;
+
+namespace GreenSwamp.Alpaca.MountControl
+{
+    /// <summary>MountInstance partial — core operations (Stop, Abort, Park, Home, Sync, AutoHome). Phase M2.</summary>
+    public partial class MountInstance
+    {
+        #region Core Operations (Phase M2)
+
+        /// <summary>Stop axes in a normal motion — instance version.</summary>
+        public void StopAxes()
+        {
+            if (!IsMountRunning) return;
+            AutoHomeStop = true;
+            var monitorItem = new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{_slewState}"
+            };
+            MonitorLog.LogToMonitor(monitorItem);
+            InstanceCancelAllAsync();
+            _moveAxisActive = false;
+            _rateMoveAxes.X = 0.0;
+            _rateMoveAxes.Y = 0.0;
+            RateRa = 0.0;
+            RateDec = 0.0;
+            if (!SkyServer.AxesStopValidate(this))
+            {
+                switch (_settings.Mount)
+                {
+                    case MountType.Simulator:
+                        SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                        break;
+                    case MountType.SkyWatcher:
+                        SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            _slewState = SlewType.SlewNone;
+            _tracking = false;
+            _trackingMode = TrackingMode.Off;
+        }
+
+        /// <summary>Abort any active slew with optional start notification — instance version.</summary>
+        public void AbortSlew(bool speak, EventWaitHandle? abortSlewStarted = null)
+        {
+            if (!IsMountRunning)
+            {
+                abortSlewStarted?.Set();
+                return;
+            }
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{_slewState}|{_tracking}"
+            });
+            abortSlewStarted?.Set();
+            var tracking = _tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
+            InstanceApplyTracking(false);
+            if (_slewController != null)
+            {
+                MonitorLog.LogToMonitor(new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "Cancelling SlewController operation"
+                });
+                _slewController.CancelCurrentSlewAsync().Wait();
+            }
+            InstanceCancelAllAsync();
+            _moveAxisActive = false;
+            _rateMoveAxes.X = 0.0;
+            _rateMoveAxes.Y = 0.0;
+            RateRa = 0.0;
+            RateDec = 0.0;
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                    break;
+                case MountType.SkyWatcher:
+                    SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+            {
+                AxesRateOfChange.Reset();
+                SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+            }
+            InstanceApplyTracking(tracking);
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "AbortSlew completed"
+            });
+        }
+
+        /// <summary>GoTo home slew — synchronous instance version.</summary>
+        public void GoToHomeX()
+        {
+            if (AtHome || _slewState == SlewType.SlewHome) return;
+            InstanceApplyTracking(false);
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = "Slew to Home (using SlewController)"
+            });
+            SlewSync(new[] { _homeAxes.X, _homeAxes.Y }, SlewType.SlewHome, tracking: false);
+        }
+
+        /// <summary>GoTo park slew — synchronous instance version.</summary>
+        public void GoToPark()
+        {
+            InstanceApplyTracking(false);
+            var ps = _parkSelected;
+            if (ps == null || double.IsNaN(ps.X) || double.IsNaN(ps.Y)) return;
+            SetParkAxis(ps.Name, ps.X, ps.Y);
+            _settings.ParkAxes = new[] { ps.X, ps.Y };
+            _settings.ParkName = ps.Name;
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Slew to Park: {ps.Name}|{ps.X}|{ps.Y}"
+            });
+            SlewSync(new[] { ps.X, ps.Y }, SlewType.SlewPark, tracking: false);
+        }
+
+        /// <summary>Complete park — delegates to InstanceCompletePark.</summary>
+        public void CompletePark() => InstanceCompletePark();
+
+        /// <summary>Auto home using mount home sensor — instance version.</summary>
+        public async void AutoHomeAsync(int degreeLimit = 100, int offSetDec = 0)
+        {
+            try
+            {
+                if (!IsMountRunning) return;
+                IsAutoHomeRunning = true;
+                LastAutoHomeError = null;
+                MonitorLog.LogToMonitor(new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MonitorLog.GetCurrentMethod(),
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = "Started"
+                });
+                if (degreeLimit < 20) degreeLimit = 100;
+                AutoHomeProgressBar = 0;
+                var encoderTemp = _settings.Encoders;
+                if (_tracking) InstanceApplyTracking(false);
+                AutoHomeResult raResult, decResult;
+                switch (_settings.Mount)
+                {
+                    case MountType.Simulator:
+                        var autoHomeSim = new AutoHomeSim(_settings, MountQueueInstance!, this);
+                        raResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis1, degreeLimit));
+                        AutoHomeProgressBar = 50;
+                        decResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
+                        break;
+                    case MountType.SkyWatcher:
+                        var autoHomeSky = new AutoHomeSky(_settings, SkyQueueInstance!, this);
+                        raResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis1, degreeLimit));
+                        AutoHomeProgressBar = 50;
+                        decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                _settings.Encoders = encoderTemp;
+                StopAxes();
+                MonitorLog.LogToMonitor(new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MonitorLog.GetCurrentMethod(),
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Complete: {raResult}|{decResult}"
+                });
+                if (raResult == AutoHomeResult.Success && decResult == AutoHomeResult.Success)
+                {
+                    ReSyncAxes(new ParkPosition("AutoHome", _settings.AutoHomeAxisX, _settings.AutoHomeAxisY), false);
+                    Thread.Sleep(1500);
+                }
+                else if (raResult == AutoHomeResult.StopRequested || decResult == AutoHomeResult.StopRequested)
+                {
+                    return;
+                }
+                else
+                {
+                    string raMsg = GetAutoHomeResultMessage(raResult, "RA");
+                    string decMsg = GetAutoHomeResultMessage(decResult, "Dec");
+                    var ex = new Exception($"Incomplete: {raMsg} ({raResult}), {decMsg} ({decResult})");
+                    LastAutoHomeError = ex;
+                    _mountError = ex;
+                    throw ex;
+                }
+            }
+            catch (Exception ex)
+            {
+                MonitorLog.LogToMonitor(new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Error,
+                    Method = MonitorLog.GetCurrentMethod(),
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"{ex.Message}|{ex.StackTrace}"
+                });
+                LastAutoHomeError = ex;
+                _mountError = ex;
+            }
+            finally
+            {
+                AutoHomeProgressBar = 100;
+                IsAutoHomeRunning = false;
+            }
+        }
+
+        private static string GetAutoHomeResultMessage(AutoHomeResult result, string axisName)
+        {
+            switch (result)
+            {
+                case AutoHomeResult.Success: return $"{axisName} homed successfully";
+                case AutoHomeResult.FailedHomeSensorReset: return $"{axisName} failed home sensor reset";
+                case AutoHomeResult.HomeSensorNotFound: return $"{axisName} home sensor not found";
+                case AutoHomeResult.TooManyRestarts: return $"{axisName} too many restarts";
+                case AutoHomeResult.HomeCapabilityCheckFailed: return $"{axisName} home capability check failed";
+                case AutoHomeResult.StopRequested: return $"{axisName} auto home stopped";
+                default: return $"{axisName} unknown error";
+            }
+        }
+
+        /// <summary>Reset axes positions — instance version.</summary>
+        public void ReSyncAxes(ParkPosition? parkPosition = null, bool saveParkPosition = true)
+        {
+            if (!IsMountRunning) return;
+            InstanceApplyTracking(false);
+            StopAxes();
+            double[] position = { _homeAxes.X, _homeAxes.Y };
+            var name = "home";
+            if (parkPosition != null)
+            {
+                var context = AxesContext.FromSettings(_settings);
+                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y }, context);
+                name = parkPosition.Name;
+            }
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{name}|{position[0]}|{position[1]}"
+            });
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                    var mq = MountQueueInstance!;
+                    _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis1, position[0]);
+                    _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis2, position[1]);
+                    break;
+                case MountType.SkyWatcher:
+                    SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                    var sq = SkyQueueInstance!;
+                    _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis1, position[0]);
+                    _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis2, position[1]);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            if (parkPosition != null && saveParkPosition)
+            {
+                _parkSelected = parkPosition;
+                GoToPark();
+            }
+            _hcPrevMoveRa = null;
+            _hcPrevMoveDec = null;
+        }
+
+        /// <summary>Get default startup positions — instance version of GetDefaultPositions_Internal.</summary>
+        public double[] GetDefaultPositions()
+        {
+            double[] positions = { 0, 0 };
+            var homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Home|{homeAxes.X}|{homeAxes.Y}|{_settings.HomeAxisX}|{_settings.HomeAxisY}"
+            });
+            if (AtPark)
+            {
+                if (_settings.AutoTrack)
+                {
+                    AtPark = false;
+                    InstanceApplyTracking(_settings.AutoTrack);
+                }
+                var context = AxesContext.FromSettings(_settings);
+                positions = Axes.AxesAppToMount(_settings.ParkAxes, context);
+                _parkSelected = GetStoredParkPosition();
+                MonitorLog.LogToMonitor(new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Parked,{_settings.ParkName}|{_settings.ParkAxes[0]}|{_settings.ParkAxes[1]}"
+                });
+            }
+            else
+            {
+                positions = new[] { homeAxes.X, homeAxes.Y };
+            }
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"Load:{positions[0]}|{positions[1]}"
+            });
+            return positions;
+        }
+
+        /// <summary>Get stored park position from settings — instance version.</summary>
+        public ParkPosition GetStoredParkPosition()
+            => new ParkPosition(_settings.ParkName, _settings.ParkAxes[0], _settings.ParkAxes[1]);
+
+        /// <summary>Set park axis by coordinates — private instance helper.</summary>
+        private void SetParkAxis(string name, double x, double y)
+        {
+            if (string.IsNullOrEmpty(name)) name = "Empty";
+            _parkSelected = new ParkPosition(name, x, y);
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{name}|{x}|{y}"
+            });
+        }
+
+        /// <summary>Start axes slew using SlewController.</summary>
+        public void SlewAxes(double primaryAxis, double secondaryAxis, SlewType slewState, bool slewAsync = true)
+        {
+            if (!IsMountRunning) return;
+            if (slewAsync)
+                _ = SlewAsync(new[] { primaryAxis, secondaryAxis }, slewState);
+            else
+                SlewSync(new[] { primaryAxis, secondaryAxis }, slewState);
+        }
+
+        #endregion
+    }
+}

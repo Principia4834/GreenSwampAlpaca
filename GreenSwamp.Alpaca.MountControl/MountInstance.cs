@@ -587,7 +587,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool MountConnect()
         {
             _targetRaDec = new Vector(double.NaN, double.NaN);
-            var positions = SkyServer.GetDefaultPositions_Internal();
+            var positions = this.GetDefaultPositions();
             double[]? rawPositions = null;
             var counter = 0;
             int raWormTeeth;
@@ -1222,27 +1222,194 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Enable tracking on a slew cycle — delegates to SkyServer.CycleOnTracking.</summary>
         public void CycleOnTracking(bool silence) => SkyServer.CycleOnTracking(silence);
 
-        /// <summary>Save current position as a named park position — delegates to SkyServer.SetParkAxis.</summary>
-        public void SetParkAxis(string name) => SkyServer.SetParkAxis(name);
+        /// <summary>Save current position as a named park position — instance version.</summary>
+        public void SetParkAxis(string name)
+        {
+            if (string.IsNullOrEmpty(name)) { name = "Empty"; }
+            var context = AxesContext.FromSettings(_settings);
+            var park = Axes.MountAxis2Mount(context);
+            if (park == null) { return; }
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{name}|{park[0]}|{park[1]}|{_appAxes.X}|{_appAxes.Y}"
+            });
+            SetParkAxis(name, park[0], park[1]);
+        }
 
-        /// <summary>Sync to given Alt/Az position — delegates to SkyServer.SyncToAltAzm.</summary>
-        public void SyncToAltAzm(double azimuth, double altitude) => SkyServer.SyncToAltAzm(azimuth, altitude);
+        /// <summary>Sync to given Alt/Az position — instance version.</summary>
+        public void SyncToAltAzm(double azimuth, double altitude)
+        {
+            if (!IsMountRunning) { return; }
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{azimuth}|{altitude}"
+            });
+            var trackingstate = _tracking;
+            if (trackingstate) { InstanceApplyTracking(false); }
+            _altAzSync = new Vector(altitude, azimuth);
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                    SkyServer.SimTasks(MountTaskName.SyncAltAz, this);
+                    break;
+                case MountType.SkyWatcher:
+                    SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                    SkyServer.SkyTasks(MountTaskName.SyncAltAz, this);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            WaitMountPositionUpdated();
+            if (trackingstate)
+            {
+                var internalAltAz = Transforms.CoordTypeToInternal(azimuth, altitude);
+                var raDec = Coordinate.AltAz2RaDec(internalAltAz.X, internalAltAz.Y, SiderealTime, _settings.Latitude);
+                SkyPredictor.Set(raDec[0], raDec[1]);
+                InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
+            }
+        }
 
-        /// <summary>Sync to current target RA/Dec — delegates to SkyServer.SyncToTargetRaDec.</summary>
-        public void SyncToTargetRaDec() => SkyServer.SyncToTargetRaDec();
+        /// <summary>Sync to current target RA/Dec — instance version.</summary>
+        public void SyncToTargetRaDec()
+        {
+            if (!IsMountRunning) { return; }
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Information,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $" {TargetRa}|{TargetDec}|{_tracking}"
+            });
+            var trackingstate = _tracking;
+            if (trackingstate) { InstanceApplyTracking(false); }
+            switch (_settings.Mount)
+            {
+                case MountType.Simulator:
+                    SkyServer.SimTasks(MountTaskName.StopAxes, this);
+                    SkyServer.SimTasks(MountTaskName.SyncTarget, this);
+                    break;
+                case MountType.SkyWatcher:
+                    SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                    SkyServer.SkyTasks(MountTaskName.SyncTarget, this);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            WaitMountPositionUpdated();
+            if (trackingstate)
+            {
+                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    SkyPredictor.Set(TargetRa, TargetDec);
+                    InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
+                }
+                else
+                {
+                    InstanceApplyTracking(true);
+                }
+            }
+        }
 
-        /// <summary>Block until mount position is updated or timeout — delegates to SkyServer.WaitMountPositionUpdated.</summary>
-        public void WaitMountPositionUpdated() => SkyServer.WaitMountPositionUpdated();
+        /// <summary>Block until mount position is updated or timeout — instance version.</summary>
+        public void WaitMountPositionUpdated()
+        {
+            _mountPositionUpdatedEvent.Reset();
+            UpdateSteps();
+            if (!_mountPositionUpdatedEvent.Wait(5000))
+                throw new TimeoutException();
+        }
 
-        /// <summary>Check if RA/Dec is within sync limits — delegates to SkyServer.CheckRaDecSyncLimit.</summary>
-        public bool CheckRaDecSyncLimit(double ra, double dec) => SkyServer.CheckRaDecSyncLimit(ra, dec);
+        /// <summary>Check if RA/Dec is within sync limits — instance version.</summary>
+        public bool CheckRaDecSyncLimit(double ra, double dec)
+        {
+            if (!_settings.SyncLimitOn) { return true; }
+            if (_settings.NoSyncPastMeridian) { return false; }
+            var context = AxesContext.FromSettings(_settings);
+            var xy = Axes.RaDecToAxesXy(new[] { ra, dec }, context);
+            var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), context);
+            var current = new[] { _appAxes.X, _appAxes.Y };
+            var a = Math.Abs(target[0]) - Math.Abs(current[0]);
+            var b = Math.Abs(target[1]) - Math.Abs(current[1]);
+            var ret = !(Math.Abs(a) > _settings.SyncLimit || Math.Abs(b) > _settings.SyncLimit);
+            if (ret) return true;
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Warning,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{xy[0]}|{xy[1]}|{target[0]}|{target[1]}|{current[0]}|{current[1]}|{_settings.SyncLimit}"
+            });
+            return false;
+        }
 
-        /// <summary>Check if Alt/Az is within sync limits — delegates to SkyServer.CheckAltAzSyncLimit.</summary>
-        public bool CheckAltAzSyncLimit(double alt, double az) => SkyServer.CheckAltAzSyncLimit(alt, az);
+        /// <summary>Check if Alt/Az is within sync limits — instance version.</summary>
+        public bool CheckAltAzSyncLimit(double alt, double az)
+        {
+            if (!_settings.SyncLimitOn) { return true; }
+            if (_settings.NoSyncPastMeridian) { return false; }
+            var context = AxesContext.FromSettings(_settings);
+            var xy = Axes.AzAltToAxesXy(new[] { az, alt }, context);
+            var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), context);
+            var current = new[] { _appAxes.X, _appAxes.Y };
+            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+            {
+                target[0] = az;
+                target[1] = alt;
+                current[0] = Range.Range360(_appAxes.X);
+                current[1] = _appAxes.Y;
+            }
+            var a = Math.Abs(target[0]) - Math.Abs(current[0]);
+            var b = Math.Abs(target[1]) - Math.Abs(current[1]);
+            var ret = !(Math.Abs(a) > _settings.SyncLimit || Math.Abs(b) > _settings.SyncLimit);
+            if (ret) return true;
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Warning,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Thread.CurrentThread.ManagedThreadId,
+                Message = $"{xy[0]}|{xy[1]}|{target[0]}|{target[1]}|{current[0]}|{current[1]}|{_settings.SyncLimit}"
+            });
+            return false;
+        }
 
-        /// <summary>Check if target is within reachable hardware limits — delegates to SkyServer.IsTargetReachable.</summary>
-        public bool IsTargetReachable(double[] target, SlewType slewType) =>
-            SkyServer.IsTargetReachable(target, slewType);
+        /// <summary>Check if target is within reachable hardware limits — instance version.</summary>
+        public bool IsTargetReachable(double[] target, SlewType slewType)
+        {
+            if (_settings.AlignmentMode == AlignmentMode.GermanPolar) return true;
+            switch (slewType)
+            {
+                case SlewType.SlewRaDec:
+                case SlewType.SlewAltAz:
+                    var savedFlip = _flipOnNextGoto;
+                    var result = IsTargetWithinLimits(MapSlewTargetToAxes(target, slewType));
+                    _flipOnNextGoto = savedFlip;
+                    return result;
+                default:
+                    return false;
+            }
+        }
 
         #endregion
 
