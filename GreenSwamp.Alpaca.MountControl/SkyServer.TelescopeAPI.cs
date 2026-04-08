@@ -195,8 +195,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// /// <param name="altRate">alternate rate to replace the guide rate</param>
         public static void PulseGuide(GuideDirection direction, int duration, double altRate, MountInstance? instance = null) // J1: instance-aware
         {
-            var inst = instance ?? _defaultInstance;     // M0: resolve instance before guard
-            var settings = instance?.Settings ?? _settings; // M0: per-instance settings
+            var inst = instance;
+            var settings = instance?.Settings;
             if (inst == null || !inst.IsMountRunning) { throw new Exception("Mount not running"); }
 
             var monitorItem = new MonitorEntry
@@ -370,145 +370,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Tracking & Rates
 
         /// <summary>
-        /// Set tracking on or off
-        /// </summary>
-        internal static void SetTracking(MountInstance? instance = null)
-        {
-            var inst = instance ?? _defaultInstance;
-            var settings = instance?.Settings ?? _settings;
-            if (inst == null || !inst.IsMountRunning) { return; }  // M2: per-instance guard
-
-            double rateChange = 0;
-            Vector rate;
-            // Set rate change for tracking mode
-            var currentTrackingMode = inst?.TrackingMode ?? TrackingMode.Off;
-            switch (currentTrackingMode)
-            {
-                case TrackingMode.Off:
-                    break;
-                case TrackingMode.AltAz:
-                    rateChange = CurrentTrackingRate(inst!);
-                    break;
-                case TrackingMode.EqN:
-                    rateChange = CurrentTrackingRate(inst!);
-                    break;
-                case TrackingMode.EqS:
-                    rateChange = -CurrentTrackingRate(inst!);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            switch (settings!.Mount)
-            {
-                case MountType.Simulator:
-                    switch (settings!.AlignmentMode)
-                    {
-                        case AlignmentMode.AltAz:
-                            if (rateChange != 0)
-                            {
-                                SetAltAzTrackingRates(AltAzTrackingType.Predictor, inst);
-                                if (inst!._altAzTrackingTimer?.IsRunning != true) inst!.StartAltAzTrackingTimer(); // J4: per-instance
-                            }
-                            else
-                            {
-                                if (inst!._altAzTrackingTimer?.IsRunning == true) inst!.StopAltAzTrackingTimer(); // J4: per-instance
-                                inst._skyTrackingRate = new Vector(0, 0);
-                            }
-                            rate = SkyGetRate(inst);
-                            // Tracking applied unless MoveAxis is active
-                            {
-                                var mq = inst!.MountQueueInstance; // N4: null guard â€” MountStop may race here
-                                if (mq == null) return;
-                                if (inst._rateMoveAxes.X == 0.0)
-                                    _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rate.X);
-                                if (inst._rateMoveAxes.Y == 0.0)
-                                    _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis2, rate.Y);
-                            }
-                            break;
-                        case AlignmentMode.Polar:
-                        case AlignmentMode.GermanPolar:
-                            {
-                                var mq = inst!.MountQueueInstance!;
-                                if (inst._rateMoveAxes.X == 0.0) // Set current tracking rate and RA tracking rate offset (0 if not sidereal)
-                                        {
-                                            _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
-                                        }
-                                // Clear rate offsets when tracking is off so simulator physics do not continue drifting
-                                var raRate = currentTrackingMode != TrackingMode.Off
-                                    ? GetRaRateDirection(inst?.RateRa ?? 0.0, inst!.Settings)
-                                    : 0.0;
-                                _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, raRate);
-                                if (inst._rateMoveAxes.Y == 0.0) // Set Dec tracking rate offset (0 if not sidereal)
-                                {
-                                    var decRate = currentTrackingMode != TrackingMode.Off
-                                        ? GetDecRateDirection(inst?.RateDec ?? 0.0, inst!)
-                                        : 0.0;
-                                    _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis2, decRate);
-                                }
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                    break;
-                case MountType.SkyWatcher:
-                    switch (settings!.AlignmentMode)
-                    {
-                        case AlignmentMode.AltAz:
-                            if (rateChange != 0)
-                            {
-                                SetAltAzTrackingRates(AltAzTrackingType.Predictor, inst);
-                                if (inst!._altAzTrackingTimer?.IsRunning != true) inst!.StartAltAzTrackingTimer(); // J4: per-instance
-                            }
-                            else
-                            {
-                                if (inst!._altAzTrackingTimer?.IsRunning == true) inst!.StopAltAzTrackingTimer(); // J4: per-instance
-                                inst._skyTrackingRate = new Vector(0, 0);
-                            }
-
-                            // Get current tracking  including RA and Dec offsets
-                            // Tracking applied unless MoveAxis is active
-                            break;
-                        case AlignmentMode.Polar:
-                        case AlignmentMode.GermanPolar:
-                            inst._skyTrackingRate = new Vector(rateChange, 0);
-                            // Get current tracking including RA and Dec offsets
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-
-                    rate = SkyGetRate(inst); // Get current tracking  including RA and Dec offsets
-                    {
-                        var sq = inst!.SkyQueueInstance; // N4: null guard â€” MountStop may race here
-                        if (sq == null) return;
-                        if (inst._rateMoveAxes.X == 0.0)
-                            _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis1, rate.X);
-                        if (inst._rateMoveAxes.Y == 0.0)
-                            _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis2, rate.Y);
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            // don't log if pec is on
-            if (inst?.Settings.PecOn == true) { return; }
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{currentTrackingMode}|{rateChange * 3600}|{inst?._pecBinNow}|{inst?._skyTrackingOffset[0] ?? 0}|{inst?._skyTrackingOffset[1] ?? 0}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-        }
-
-        /// <summary>
         /// Calculates the current RA tracking rate for a specific instance (arc seconds per second).
         /// Used by per-instance SkyPredictor to avoid reading from _defaultInstance.
         /// </summary>
@@ -545,34 +406,6 @@ namespace GreenSwamp.Alpaca.MountControl
             var offsetrate = rate * (Convert.ToDouble(inst.Settings.RaTrackingOffset) / 100000);
             rate += offsetrate;
             return rate;
-        }
-
-        /// <summary>
-        /// Sets up offsets from the selected tracking rate
-        /// </summary>
-        internal static void SetGuideRates(MountInstance? instance = null)
-        {
-            var inst = instance ?? _defaultInstance;
-            var settings = instance?.Settings ?? _settings;
-            var rate = inst != null ? CurrentTrackingRate(inst) : 0.0;
-            if (inst != null)
-            {
-                inst.GuideRateRa = rate * settings!.GuideRateOffsetX;
-                inst.GuideRateDec = rate * settings!.GuideRateOffsetY;
-            }
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{inst?.GuideRateRa ?? 0.0 * 3600}|{inst?.GuideRateDec ?? 0.0 * 3600}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
         }
 
         /// <summary>
@@ -719,26 +552,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Async Operations
-
-        /// <summary>
-        /// Cancel all currently executing async operations
-        /// </summary>
-        public static void CancelAllAsync()
-        {
-            if (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null)
-            {
-                _ctsGoTo?.Cancel();
-                _ctsPulseGuideDec?.Cancel();
-                _ctsPulseGuideRa?.Cancel();
-                _ctsHcPulseGuide?.Cancel();
-                var sw = Stopwatch.StartNew();
-                while (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null && sw.ElapsedMilliseconds < 2000)
-                    Thread.Sleep(200); // wait for any pending pulse guide operations to wake up and cancel
-            }
-        }
-
-        #endregion
 
             }
         }

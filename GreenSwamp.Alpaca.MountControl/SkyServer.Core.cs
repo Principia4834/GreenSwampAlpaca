@@ -64,28 +64,6 @@ namespace GreenSwamp.Alpaca.MountControl
         // Option C: _settings is now a computed property — always reads from the registered slot 0 instance
         private static SkySettingsInstance? _settings => _defaultInstance?.Settings;
 
-        // Phase 5.3:
-        private static CancellationTokenSource? _ctsGoTo
-        {
-            get => _defaultInstance?._ctsGoTo;
-            set { if (_defaultInstance != null) _defaultInstance._ctsGoTo = value; }
-        }
-        private static CancellationTokenSource? _ctsPulseGuideRa
-        {
-            get => _defaultInstance?._ctsPulseGuideRa;
-            set { if (_defaultInstance != null) _defaultInstance._ctsPulseGuideRa = value; }
-        }
-        private static CancellationTokenSource? _ctsPulseGuideDec
-        {
-            get => _defaultInstance?._ctsPulseGuideDec;
-            set { if (_defaultInstance != null) _defaultInstance._ctsPulseGuideDec = value; }
-        }
-        private static CancellationTokenSource? _ctsHcPulseGuide
-        {
-            get => _defaultInstance?._ctsHcPulseGuide;
-            set { if (_defaultInstance != null) _defaultInstance._ctsHcPulseGuide = value; }
-        }
-
         #endregion
 
         #region Static Constructor
@@ -320,26 +298,9 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Event Handlers
-        // Contains: WaitMountPositionUpdated, GetLocalSiderealTime (2 overloads)
+        // Contains: GetLocalSiderealTime (longitude overload)
         // M4: PropertyChangedSkySettings, PropertyChangedAlignmentSettings, UpdateServerEvent,
         //     LowVoltageEventSet moved to MountInstance (OnPropertyChangedSkySettings, OnLowVoltageEvent)
-
-        /// <summary>
-        /// Get current local sidereal time
-        /// </summary>
-        internal static double GetLocalSiderealTime()
-        {
-            return GetLocalSiderealTime(HiResDateTime.UtcNow);
-        }
-
-        /// <summary>
-        /// Get local sidereal time for specific UTC time
-        /// </summary>
-        internal static double GetLocalSiderealTime(DateTime utcNow)
-        {
-            var gsjd = JDate.Ole2Jd(utcNow);
-            return Time.Lst(JDate.Epoch2000Days(), gsjd, false, _settings!.Longitude);
-        }
 
         /// <summary>
         /// Get local sidereal time for the current UTC time using an explicit longitude.
@@ -625,73 +586,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region SkyWatcher Items
-        // Contains: TrackingOffsetRaRate, TrackingOffsetDecRate, CalcCustomTrackingOffset, SkyGetRate,
-        //           SkyGoTo, SkyPrecisionGoto, SkyPulseGoto, SkyTasks
-
-        /// <summary>
-        /// Adjust tracking rate for Custom Mount Gearing Offset settings
-        /// </summary>
-        /// <returns>difference in rates</returns>
-        internal static void CalcCustomTrackingOffset(MountInstance? instance = null)
-        {
-            var inst = instance ?? _defaultInstance;
-            var settings = instance?.Settings ?? _settings;
-            if (inst != null) inst._trackingOffsetRate = new Vector(0.0, 0.0);
-
-            //calculate mount sidereal :I, add offset to :I, Calculate new rate, Add rate difference to rate
-            if (settings!.Mount != MountType.SkyWatcher) { return; } //only use for sky watcher mounts
-
-            if (settings!.CustomGearing == false) { return; }
-
-            var ratioFactor = (double)inst!._stepsTimeFreq[0] / inst._stepsPerRevolution[0] * 1296000.0;  //generic factor for calc
-            var siderealI = ratioFactor / SiderealRate;
-            siderealI += settings!.CustomRaTrackingOffset;  //calc :I and add offset
-            var newRate = ratioFactor / siderealI; //calc new rate from offset
-            inst._trackingOffsetRate.X = SiderealRate - newRate;
-
-            ratioFactor = (double)inst._stepsTimeFreq[1] / inst._stepsPerRevolution[1] * 1296000.0;  //generic factor for calc
-            siderealI = ratioFactor / SiderealRate;
-            siderealI += settings!.CustomDecTrackingOffset;  //calc :I and add offset
-            newRate = ratioFactor / siderealI; //calc new rate from offset
-            inst._trackingOffsetRate.Y = SiderealRate - newRate;
-
-            var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{inst._trackingOffsetRate.X}|{inst._trackingOffsetRate.Y}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-        }
-
-        /// <summary>
-        /// combines multiple Ra and Dec rates for a single slew rate
-        /// </summary>
-        /// <returns></returns>
-        private static Vector SkyGetRate(MountInstance? instance = null)
-        {
-            var inst = instance ?? _defaultInstance!;
-            var change = new Vector();
-
-            change += inst._skyTrackingRate; // Tracking
-            change += inst._skyHcRate; // Hand controller
-            // Primary axis
-            change.X += inst._rateMoveAxes.X;
-            change.X += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetRaRateDirection(inst.RateRa, inst.Settings) : 0;
-            // Secondary axis
-            change.Y += inst._rateMoveAxes.Y;
-            change.Y += inst.Settings.AlignmentMode != AlignmentMode.AltAz ? GetDecRateDirection(inst.RateDec, inst) : 0;
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Data,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{change}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-            return change;
-        }
+        // Contains: SkyTasks
 
         /// <summary>
         /// Instance-aware SkyTasks: routes commands and capability writes to the given MountInstance.
@@ -893,48 +788,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #endregion
 
         #region Slewing & Movement Core
-
-        /// <summary>
-        /// Sets slew rates for all speed levels (1-8) based on maximum slew rate.
-        /// All speeds are stored in degrees/second for ASCOM AxisRates compliance.
-        /// </summary>
-        /// <param name="maxRate">Maximum slew rate in degrees/second</param>
-        /// <remarks>
-        /// Values stored in degrees/second. Hardware layer (SkyWatcher/Simulator)
-        /// converts to radians when sending commands to mount.
-        /// Called during initialization and when MaxSlewRate setting changes.
-        /// </remarks>
-        internal static void SetSlewRates(double maxRate, MountInstance? instance = null)
-        {
-            var inst = instance ?? _defaultInstance;
-            // Sky Speeds
-                if (inst == null) return;
-
-                inst._slewSpeedOne = Math.Round(maxRate * 0.0034, 3);
-                inst._slewSpeedTwo = Math.Round(maxRate * 0.0068, 3);
-                inst._slewSpeedThree = Math.Round(maxRate * 0.047, 3);
-                inst._slewSpeedFour = Math.Round(maxRate * 0.068, 3);
-                inst._slewSpeedFive = Math.Round(maxRate * 0.2, 3);
-                inst._slewSpeedSix = Math.Round(maxRate * 0.4, 3);
-                inst._slewSpeedSeven = Math.Round(maxRate * 0.8, 3);
-                inst._slewSpeedEight = Math.Round(maxRate * 1.0, 3);
-
-            // Log (same as before)
-
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message =
-                    $"{inst._slewSpeedOne}|{inst._slewSpeedTwo}|{inst._slewSpeedThree}|{inst._slewSpeedFour}|{inst._slewSpeedFive}|{inst._slewSpeedSix}|{inst._slewSpeedSeven}|{inst._slewSpeedEight}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
-
-        }
 
         /// <summary>
         /// Instance-aware AxesStopValidate: routes stop commands and status queries to the given MountInstance's queues.
