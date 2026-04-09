@@ -320,18 +320,17 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             var c = Units.Rad2Deg1(b);
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(_settings);
-            var positions = Axes.MountAxis2Mount(context);
+            var positions = Axes.MountAxis2Mount(_settings, _mount.AppAxes.X, _mount.AppAxes.Y);
             switch (axis)
             {
                 case Axis.Axis1:
-                    var d = Axes.AxesMountToApp([c, 0], context); // Convert to local
+                    var d = Axes.AxesMountToApp([c, 0], _settings); // Convert to local
                     if ((_settings.AlignmentMode == AlignmentMode.AltAz) && (_settings.Latitude < 0)) d[0] = d[0] + 180;
 
                     _mount.SlewSync([d[0], positions[1]], SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
-                    var e = Axes.AxesMountToApp([0, c], context); // Convert to local
+                    var e = Axes.AxesMountToApp([0, c], _settings); // Convert to local
                     if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0)) e[1] = 180 - e[1];
 
                     _mount.SlewSync([positions[0], e[1]], SlewType.SlewMoveAxis);
@@ -363,8 +362,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(_settings);
-            var positions = Axes.MountAxis2Mount(context);
+            var positions = Axes.MountAxis2Mount(_settings, _mount.AppAxes.X, _mount.AppAxes.Y);
 
             switch (axis)
             {

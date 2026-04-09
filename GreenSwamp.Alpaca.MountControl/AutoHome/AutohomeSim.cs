@@ -268,8 +268,7 @@ namespace GreenSwamp.Alpaca.MountControl.AutoHome
 
             var a = TripPosition / 36000;
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(_settings);
-            var positions = Axes.MountAxis2Mount(context);
+            var positions = Axes.MountAxis2Mount(_settings, _mount.AppAxes.X, _mount.AppAxes.Y);
             switch (axis)
             {
                 case Axis.Axis1:
@@ -305,8 +304,7 @@ namespace GreenSwamp.Alpaca.MountControl.AutoHome
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(_settings);
-            var positions = Axes.MountAxis2Mount(context);
+            var positions = Axes.MountAxis2Mount(_settings, _mount.AppAxes.X, _mount.AppAxes.Y);
 
             switch (axis)
             {

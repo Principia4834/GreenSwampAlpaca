@@ -30,9 +30,9 @@ using Range = GreenSwamp.Alpaca.Principles.Range;
 namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
-    /// Instance-based settings - owns all data (no static delegation).
-    /// Multi-telescope ready: each Mount has its own SkySettings.
-    /// Direct JSON persistence via IVersionedSettingsService (no bridge required).
+    /// Instance-based settings - owns all data.
+    /// Multi-telescope: each Mount has its own SkySettings.
+    /// Direct JSON persistence via IVersionedSettingsService.
     /// </summary>
     public class SkySettings : INotifyPropertyChanged
     {
@@ -224,19 +224,6 @@ namespace GreenSwamp.Alpaca.MountControl
             ApplySettings(settings);
 
             LogSettings("Initialized", $"Mount:{_mount}|Port:{_port}");
-        }
-
-        #endregion
-
-        #region Helper Methods for Coordinate Transformations
-
-        /// <summary>
-        /// Create AxesContext from current instance settings for coordinate transformations
-        /// Used by ParkAxes and ParkPositions properties
-        /// </summary>
-        private AxesContext GetAxesContext()
-        {
-            return AxesContext.FromSettings(this);
         }
 
         #endregion
@@ -1140,7 +1127,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 // Convert Az/Alt → Mount axis positions (skip alternate position selection for park loading)
-                var context = AxesContext.FromSettings(this);
 
                 // LOG 3: Before coordinate transformation
                 monitorItem = new MonitorEntry
@@ -1155,7 +1141,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                double[] axes = Axes.AzAltToAxesXy([az, alt], context, skipAlternatePosition: true);
+                double[] axes = Axes.AzAltToAxesXy([az, alt], this, skipAlternatePosition: true);
 
                 // LOG 4: After coordinate transformation
                 monitorItem = new MonitorEntry
@@ -1218,8 +1204,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     return;
 
                 // Convert axis coordinates to Az/Alt for storage
-                var context = AxesContext.FromSettings(this);
-                double[] azAlt = Axes.AxesXyToAzAlt([value[0], value[1]], context);
+                double[] azAlt = Axes.AxesXyToAzAlt([value[0], value[1]], this);
 
                 double az = azAlt[0];   // Azimuth (local coordinates)
                 double alt = azAlt[1];  // Altitude
@@ -1278,7 +1263,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Convert each position from Az/Alt to mount axis coordinates
                 var axisPositions = new List<ParkPosition>();
-                var context = AxesContext.FromSettings(this);
 
                 foreach (var azAltPos in storedAzAlt)
                 {
@@ -1292,7 +1276,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     // Convert Az/Alt → Mount axis positions
-                    double[] axes = Axes.AzAltToAxesXy([az, alt], context);
+                    double[] axes = Axes.AzAltToAxesXy([az, alt], this);
 
                     // Create ParkPosition with axis coordinates
                     axisPositions.Add(new ParkPosition(AlignmentMode)
@@ -1326,12 +1310,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Polar mode: Convert axis coordinates to Az/Alt for storage
                 var azAltPositions = new List<ParkPosition>();
-                var context = AxesContext.FromSettings(this);
 
                 foreach (var axisPos in value)
                 {
                     // Convert Mount axis positions → Az/Alt
-                    double[] azAlt = Axes.AxesXyToAzAlt([axisPos.X, axisPos.Y], context);
+                    double[] azAlt = Axes.AxesXyToAzAlt([axisPos.X, axisPos.Y], this);
 
                     double az = azAlt[0];   // Azimuth (local coordinates)
                     double alt = azAlt[1];  // Altitude

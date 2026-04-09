@@ -339,8 +339,7 @@ namespace GreenSwamp.Alpaca.MountControl
             get
             {
                 if (!IsConnected) return false;
-                var context = AxesContext.FromSettings(Settings, SideOfPier);
-                var home = Axes.AxesMountToApp([_homeAxes.X, _homeAxes.Y], context);
+                var home = Axes.AxesMountToApp([_homeAxes.X, _homeAxes.Y], Settings);
                 double dX = Math.Abs(_appAxes.X - home[0]);
                 dX = Math.Min(dX, 360.0 - dX);
                 double dY = Math.Abs(_appAxes.Y - home[1]);
@@ -1021,8 +1020,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public void SetSideOfPier(PointingState value)
         {
             var axes = new[] { _actualAxisX, _actualAxisY };
-            var context = AxesContext.FromSettings(Settings);
-            if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, context)))
+            if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, Settings)))
             {
                 _flipOnNextGoto = true;
                 if (Tracking)
@@ -1101,8 +1099,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 return PointingState.Unknown;
             var sop = SideOfPier;
-            var context = AxesContext.FromSettings(Settings);
-            var flipReq = Axes.IsFlipRequired([rightAscension, declination], context);
+            var flipReq = Axes.IsFlipRequired([rightAscension, declination], Settings, sop);
             LogMount($"DetermineSideOfPier|Ra:{rightAscension}|Dec:{declination}|Flip:{flipReq}|SoP:{sop}");
             return sop switch
             {
@@ -1166,8 +1163,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public void SetParkAxis(string name)
         {
             if (string.IsNullOrEmpty(name)) { name = "Empty"; }
-            var context = AxesContext.FromSettings(Settings);
-            var park = Axes.MountAxis2Mount(context);
+            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y);
             if (park == null) { return; }
             MonitorLog.LogToMonitor(new MonitorEntry
             {
@@ -1280,9 +1276,8 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!Settings.SyncLimitOn) { return true; }
             if (Settings.NoSyncPastMeridian) { return false; }
-            var context = AxesContext.FromSettings(Settings);
-            var xy = Axes.RaDecToAxesXy([ra, dec], context);
-            var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), context);
+            var xy = Axes.RaDecToAxesXy([ra, dec], Settings);
+            var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), Settings);
             var current = new[] { _appAxes.X, _appAxes.Y };
             var a = Math.Abs(target[0]) - Math.Abs(current[0]);
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
@@ -1306,9 +1301,8 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!Settings.SyncLimitOn) { return true; }
             if (Settings.NoSyncPastMeridian) { return false; }
-            var context = AxesContext.FromSettings(Settings);
-            var xy = Axes.AzAltToAxesXy([az, alt], context);
-            var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), context);
+            var xy = Axes.AzAltToAxesXy([az, alt], Settings);
+            var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), Settings);
             var current = new[] { _appAxes.X, _appAxes.Y };
             if (Settings.AlignmentMode == AlignmentMode.AltAz)
             {
@@ -1370,29 +1364,26 @@ namespace GreenSwamp.Alpaca.MountControl
         public double[] MapSlewTargetToAxes(double[] target, SlewType slewType)
         {
             // Convert target to axes based on slew type
-            // Create context from current settings
-            var context = AxesContext.FromSettings(Settings, SideOfPier);
-
             switch (slewType)
             {
                 case SlewType.SlewRaDec:
                     // convert target to axis for Ra / Dec slew
-                    target = Axes.RaDecToAxesXy(target, context);
+                    target = Axes.RaDecToAxesXy(target, Settings, selectAlternatePosition: GetAlternatePosition);
                     // Convert to synced axes
                     // target = SkyServer.GetSyncedAxes(target);
                     break;
                 case SlewType.SlewAltAz:
                     // convert target to axis for Az / Alt slew
-                    target = Axes.AzAltToAxesXy(target, context);
+                    target = Axes.AzAltToAxesXy(target, Settings, selectAlternatePosition: GetAlternatePosition);
                     break;
                 case SlewType.SlewHome:
                     break;
                 case SlewType.SlewPark:
                     // convert to mount coordinates for park
-                    target = Axes.AxesAppToMount(target, context);
+                    target = Axes.AxesAppToMount(target, Settings);
                     break;
                 case SlewType.SlewMoveAxis:
-                    target = Axes.AxesAppToMount(target, context);
+                    target = Axes.AxesAppToMount(target, Settings);
                     break;
                 default:
                     break;
@@ -1563,10 +1554,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="steps">Raw step counts from the mount hardware [axis0, axis1]</param>
         internal void SetSteps(double[] steps)
         {
-            // Build axes context from instance settings, passing per-instance SideOfPier (J2)
             // N7: Pass computed LST directly — avoids SkyServer.SiderealTime which reads _defaultInstance
             //     (device-00), so device-01 would always see LST=0.0 if device-00 is not running.
-            var context = AxesContext.FromSettings(Settings, SideOfPier).WithLst(SkyServer.GetLocalSiderealTime(Settings.Longitude));
+            var lst = SkyServer.GetLocalSiderealTime(Settings.Longitude);
 
             // Implement PEC
             PecCheck();
@@ -1599,19 +1589,19 @@ namespace GreenSwamp.Alpaca.MountControl
             _actualAxisY = rawPositions[1];
 
             // Convert physical positions to local app axes
-            var axes = Axes.AxesMountToApp(rawPositions, context);
+            var axes = Axes.AxesMountToApp(rawPositions, Settings);
 
             // UI diagnostics for local app axes
             _appAxes.X = axes[0];
             _appAxes.Y = axes[1];
 
             // Calculate mount Alt/Az
-            var altAz = Axes.AxesXyToAzAlt(axes, context);
+            var altAz = Axes.AxesXyToAzAlt(axes, Settings);
             _altAzm.X = altAz[0];
             _altAzm.Y = altAz[1];
 
             // Calculate topocentric RA/Dec
-            var raDec = Axes.AxesXyToRaDec(axes, context);
+            var raDec = Axes.AxesXyToRaDec(axes, Settings, lst);
             _raDec.X = raDec[0];
             _raDec.Y = raDec[1];
 
@@ -1642,18 +1632,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>Home axes vector adjusted for alignment mode and hemisphere</returns>
         private Vector GetHomeAxes(double xAxis, double yAxis)
         {
-            // Create context from current settings, passing per-instance SideOfPier (J2)
-            var context = AxesContext.FromSettings(Settings, SideOfPier);
             var home = new[] { xAxis, yAxis };
             if (Settings.AlignmentMode != AlignmentMode.Polar)
             {
-                home = Axes.AxesAppToMount([xAxis, yAxis], context);
+                home = Axes.AxesAppToMount([xAxis, yAxis], Settings);
             }
             else
             {
                 var angleOffset = Settings.Latitude < 0 ? 180.0 : 0.0; // J2: use per-instance settings
                 home[0] -= angleOffset;
-                home = Axes.AzAltToAxesXy(home, context);
+                home = Axes.AzAltToAxesXy(home, Settings);
             }
             return new Vector(home[0], home[1]);
         }

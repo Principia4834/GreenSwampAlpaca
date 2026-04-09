@@ -65,8 +65,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double[] GetAlternatePositionGEM(double[] position)
         {
             if (!IsWithinFlipLimits(position)) { return null; }
-            var context = AxesContext.FromSettings(Settings);
-            var alt = Axes.GetAltAxisPosition(position, context);
+            var alt = Axes.GetAltAxisPosition(position, Settings);
             if (!IsWithinFlipLimits(alt)) { return null; }
             var cl = ChooseClosestPosition(_actualAxisX, position, alt);
             if (_flipOnNextGoto)
@@ -91,8 +90,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double[] GetAlternatePositionAltAz(double[] position)
         {
             if (!IsWithinFlipLimits(position)) { return null; }
-            var context = AxesContext.FromSettings(Settings);
-            var alt = Axes.GetAltAxisPosition(position, context);
+            var alt = Axes.GetAltAxisPosition(position, Settings);
             var cl = ChooseClosestPosition(_actualAxisX, position, alt);
             if (_flipOnNextGoto)
             {
@@ -115,8 +113,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Polar: within hardware limits and flip angle get alternate position — instance version.</summary>
         private double[] GetAlternatePositionPolar(double[] position)
         {
-            var context = AxesContext.FromSettings(Settings);
-            var alt = Axes.GetAltAxisPosition(position, context);
+            var alt = Axes.GetAltAxisPosition(position, Settings);
             alt[0] = Range.Range180(alt[0]);
             var altOk = IsTargetWithinLimits(alt);
             var posOk = IsTargetWithinLimits(position);

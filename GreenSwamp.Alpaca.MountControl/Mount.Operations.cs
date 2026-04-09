@@ -283,8 +283,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var name = "home";
             if (parkPosition != null)
             {
-                var context = AxesContext.FromSettings(Settings);
-                position = Axes.AxesAppToMount([parkPosition.X, parkPosition.Y], context);
+                position = Axes.AxesAppToMount([parkPosition.X, parkPosition.Y], Settings);
                 name = parkPosition.Name;
             }
             MonitorLog.LogToMonitor(new MonitorEntry
@@ -345,8 +344,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     AtPark = false;
                     ApplyTracking(Settings.AutoTrack);
                 }
-                var context = AxesContext.FromSettings(Settings);
-                positions = Axes.AxesAppToMount(Settings.ParkAxes, context);
+                positions = Axes.AxesAppToMount(Settings.ParkAxes, Settings);
                 _parkSelected = GetStoredParkPosition();
                 MonitorLog.LogToMonitor(new MonitorEntry
                 {
