@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ASCOM.AstrometryTools" Version="2.2.1" />
-    <PackageReference Include="ASCOM.Tools" Version="2.2.1" />
+    <PackageReference Include="ASCOM.AstrometryTools" Version="3.1.0" />
+    <PackageReference Include="ASCOM.Tools" Version="3.1.0" />
   </ItemGroup>
 
 </Project>

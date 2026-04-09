@@ -1,4 +1,4 @@
-﻿/* Copyright(C) 2019-2025 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -134,11 +134,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 AlignmentMode = settings.AlignmentMode,
                 MountType = settings.Mount,
                 Latitude = settings.Latitude,
-                SouthernHemisphere = settings.Latitude < 0, // J2: computed from passed-in settings, not static SkyServer
+                SouthernHemisphere = settings.Latitude < 0, // Computed from passed-in settings, not static SkyServer
                 PolarMode = settings.PolarMode,
                 LocalSiderealTime = null, // Lazy load when needed
                 Longitude = settings.Longitude,
-                SideOfPier = sideOfPier ?? PointingState.Unknown, // J2: per-instance if provided, default to Unknown
+                SideOfPier = sideOfPier ?? PointingState.Unknown, // Per-instance if provided, default to Unknown
                 AppAxisX = null,
                 AppAxisY = null,
                 AxisLimitX = settings.AxisLimitX,
@@ -161,7 +161,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MountType mountType,
             double latitude,
             bool southernHemisphere,
-            PolarMode polarMode = PolarMode.Left)
+            PolarMode polarMode = PolarMode.Right)
         {
             AlignmentMode = alignmentMode;
             MountType = mountType;
