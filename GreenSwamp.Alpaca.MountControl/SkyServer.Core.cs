@@ -347,13 +347,13 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case MountTaskName.SyncAxes:
                             var appAxes = mount.AppAxes;
-                            var sync = Axes.AxesAppToMount(new[] { appAxes.X, appAxes.Y }, context);
+                            var sync = Axes.AxesAppToMount([appAxes.X, appAxes.Y], context);
                             _ = new CmdAxisToDegrees(0, q, Axis.Axis1, sync[0]);
                             _ = new CmdAxisToDegrees(0, q, Axis.Axis2, sync[1]);
                             break;
                         case MountTaskName.SyncTarget:
                             var a = Transforms.CoordTypeToInternal(mount.TargetRa, mount.TargetDec);
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
+                            var targetR = Axes.RaDecToAxesXy([a.X, a.Y], context);
                             _ = new CmdAxisToDegrees(0, q, Axis.Axis1, targetR[0]);
                             _ = new CmdAxisToDegrees(0, q, Axis.Axis2, targetR[1]);
                             break;
@@ -399,12 +399,12 @@ namespace GreenSwamp.Alpaca.MountControl
                         case MountTaskName.StepsPerRevolution:
                             var spr = new CmdSpr(q.NewId, q);
                             var sprnum = (long)q.GetCommandResult(spr).Result;
-                            mount._stepsPerRevolution = new[] { sprnum, sprnum };
+                            mount._stepsPerRevolution = [sprnum, sprnum];
                             break;
                         case MountTaskName.StepsWormPerRevolution:
                             var spw = new CmdSpw(q.NewId, q);
                             var spwnum = (double)q.GetCommandResult(spw).Result;
-                            mount._stepsWormPerRevolution = new[] { spwnum, spwnum };
+                            mount._stepsWormPerRevolution = [spwnum, spwnum];
                             break;
                         case MountTaskName.SetHomePositions:
                             var homeAxesSim = mount.HomeAxes;
@@ -558,7 +558,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case MountTaskName.SyncAxes:
                             var appAxesSync = instance.AppAxes;
-                            var sync = Axes.AxesAppToMount(new[] { appAxesSync.X, appAxesSync.Y }, context);
+                            var sync = Axes.AxesAppToMount([appAxesSync.X, appAxesSync.Y], context);
                             _ = new SkySyncAxis(0, q, Axis.Axis1, sync[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, sync[1]);
                             monitorItem.Message += $",{appAxesSync.X}|{appAxesSync.Y}|{sync[0]}|{sync[1]}";
@@ -566,7 +566,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         case MountTaskName.SyncTarget:
                             var a = Transforms.CoordTypeToInternal(instance?.TargetRa ?? double.NaN, instance?.TargetDec ?? double.NaN);
-                            var targetR = Axes.RaDecToAxesXy(new[] { a.X, a.Y }, context);
+                            var targetR = Axes.RaDecToAxesXy([a.X, a.Y], context);
                             _ = new SkySyncAxis(0, q, Axis.Axis1, targetR[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, targetR[1]);
                             monitorItem.Message += $",{Utilities.HoursToHMS(a.X, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(a.Y, " ", ":", "", 2)}|{targetR[0]}|{targetR[1]}";

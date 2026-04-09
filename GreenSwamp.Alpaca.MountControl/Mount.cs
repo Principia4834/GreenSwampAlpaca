@@ -42,9 +42,6 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Private backing fields
 
         private readonly string _instanceName;
-        private readonly string _id;
-        private readonly string _deviceName;
-        private readonly SkySettings _settings;
         public readonly SkyPredictor SkyPredictor;
 
         // State fields
@@ -59,7 +56,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // Factor steps (conversion ratios)
         internal double[] _factorStep = new double[2];
         internal long[] _stepsPerRevolution = new long[2];
-        internal long[] _stepsTimeFreq = { 0, 0 };
+        internal long[] _stepsTimeFreq = [0, 0];
         internal double[] _stepsWormPerRevolution = new double[2];
 
         // PEC fields
@@ -78,28 +75,28 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // Mount state
         private bool _atPark;
-        internal double _actualAxisX;
-        internal double _actualAxisY;
-        internal bool _isHome;
-        internal bool _lowVoltageEventState;
+        private double _actualAxisX;
+        private double _actualAxisY;
+        private bool _isHome;
+        private bool _lowVoltageEventState;
         internal bool _monitorPulse;
-        internal double _slewSettleTime;
+        private double _slewSettleTime;
 
         // AltAz limit status
-        internal LimitStatusType _limitStatus;
+        private LimitStatusType _limitStatus;
 
         // Backing fields
-        internal bool _isPulseGuidingRa;
-        internal bool _isPulseGuidingDec;
+        private bool _isPulseGuidingRa;
+        private bool _isPulseGuidingDec;
         internal Vector _rateMoveAxes;
         internal bool _moveAxisActive;
-        internal bool _isSlewing;
-        internal bool _flipOnNextGoto;
+        private bool _isSlewing;
+        private bool _flipOnNextGoto;
         internal SlewType _slewState;
-        internal Exception? _lastAutoHomeError;
+        private Exception? _lastAutoHomeError;
         internal int _autoHomeProgressBar;
         internal bool _autoHomeStop;
-        internal bool _isAutoHomeRunning;
+        private bool _isAutoHomeRunning;
         internal bool _snapPort1Result;
         internal bool _snapPort2Result;
         internal bool _snapPort1;
@@ -107,14 +104,14 @@ namespace GreenSwamp.Alpaca.MountControl
         internal GuideDirection _lastDecDirection;
 
         // Diagnostics
-        internal ulong _loopCounter;
-        internal int _timerOverruns;
-        internal AltAzTrackingType _altAzTrackingMode;
-        internal ParkPosition? _parkSelected;
+        private ulong _loopCounter;
+        private int _timerOverruns;
+        private AltAzTrackingType _altAzTrackingMode;
+        private ParkPosition? _parkSelected;
         // PAltAz tracking lock (Int32 for Interlocked; direct field access required for ref semantics)
-        internal Int32 _altAzTrackingLock;
+        private Int32 _altAzTrackingLock;
         //Raw step counts from hardware — backing field Steps
-        internal double[] _steps = { 0.0, 0.0 };
+        internal double[] _steps = [0.0, 0.0];
 
         // Position-update event _mountPositionUpdatedEvent
         internal readonly ManualResetEventSlim _mountPositionUpdatedEvent = new ManualResetEventSlim(false);
@@ -130,18 +127,16 @@ namespace GreenSwamp.Alpaca.MountControl
         // Slew speed fields
         // All speeds stored in degrees/second for ASCOM AxisRates compliance
         // Hardware layer (SkyWatcher.AxisSlew, Simulator.MoveAxisRate) converts to radians as needed
-        internal double _slewSpeedOne;      // Speed level 1: maxRate × 0.0034
-        internal double _slewSpeedTwo;      // Speed level 2: maxRate × 0.0068
-        internal double _slewSpeedThree;    // Speed level 3: maxRate × 0.047
-        internal double _slewSpeedFour;     // Speed level 4: maxRate × 0.068
-        internal double _slewSpeedFive;     // Speed level 5: maxRate × 0.2
-        internal double _slewSpeedSix;      // Speed level 6: maxRate × 0.4
-        internal double _slewSpeedSeven;    // Speed level 7: maxRate × 0.8
-        internal double _slewSpeedEight;    // Speed level 8: maxRate × 1.0 (max slew rate)
+        private double _slewSpeedOne;      // Speed level 1: maxRate × 0.0034
+        private double _slewSpeedTwo;      // Speed level 2: maxRate × 0.0068
+        private double _slewSpeedThree;    // Speed level 3: maxRate × 0.047
+        private double _slewSpeedFour;     // Speed level 4: maxRate × 0.068
+        private double _slewSpeedFive;     // Speed level 5: maxRate × 0.2
+        private double _slewSpeedSix;      // Speed level 6: maxRate × 0.4
+        private double _slewSpeedSeven;    // Speed level 7: maxRate × 0.8
+        private double _slewSpeedEight;    // Speed level 8: maxRate × 1.0 (max slew rate)
 
         // Tracking state fields
-        private bool _tracking;
-        private TrackingMode _trackingMode = TrackingMode.Off;
 
         // CancellationTokenSources
         internal volatile CancellationTokenSource? _ctsGoTo;
@@ -149,26 +144,25 @@ namespace GreenSwamp.Alpaca.MountControl
         internal volatile CancellationTokenSource? _ctsPulseGuideDec;
         internal volatile CancellationTokenSource? _ctsHcPulseGuide;
 
-        // Phase 5.3: SlewController — per-instance to isolate slew state across devices
-        internal SlewController? _slewController;
+        // SlewController — isolate slew state across devices
+        private SlewController? _slewController;
 
-        // Phase 5.4: Per-instance timer lock (isolates update loop re-entrancy per device)
+        // Timer lock (isolates update loop re-entrancy per device)
         private readonly object _timerLock = new object();
 
         // SkyWatcher tracking rates (internal use only)
-        internal Vector _skyHcRate = new Vector(0, 0);
         internal Vector _skyTrackingRate = new Vector(0, 0);
 
-        // HC anti-backlash direction state (Issue 10)
+        // HC anti-backlash direction state
         internal HcPrevMove? _hcPrevMoveRa;
         internal HcPrevMove? _hcPrevMoveDec;
         internal readonly IList<double> _hcPrevMovesDec = new List<double>();
 
-        // Custom tracking rate offset (Issue 8)
+        // Custom tracking rate offset
         internal Vector _trackingOffsetRate;
 
-        // Step 2: SkyWatcher :I offset accumulator (Issue 9)
-        internal readonly int[] _skyTrackingOffset = { 0, 0 };
+        // Step 2: SkyWatcher :I offset accumulator
+        private readonly int[] _skyTrackingOffset = [0, 0];
 
         // Guide rate field
         private Vector _guideRate;
@@ -177,19 +171,12 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector _rateRaDec = new Vector(0, 0);
 
         // Original rate storage (for direction tracking)
-        private double _rateRaOrg;
-        private double _rateDecOrg;
 
         // Position and coordinate fields
         private Vector _raDec = new Vector(0, 0);
-        private double _rightAscensionXForm;
-        private double _declinationXForm;
         private Vector _altAzm = new Vector(0, 0);
-        private double _siderealTime;
-        private double _lha;
-        private PointingState _isSideOfPier = PointingState.Unknown;
 
-        // Serial connection fields (migrated from SkySystem)
+        // Serial connection fields
         private ISerialPort? _serial;
         private ConnectType _connectType = ConnectType.None;
         private Exception? _serialError;
@@ -203,7 +190,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Gets whether the mount hardware queue is currently running.
         /// </summary>
-        public bool IsMountRunning => _settings.Mount switch
+        public bool IsMountRunning => Settings.Mount switch
         {
             MountType.Simulator => SimQueue?.IsRunning ?? false,
             MountType.SkyWatcher => SkyQueue?.IsRunning ?? false,
@@ -213,12 +200,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Gets the user-provided device name
         /// </summary>
-        public string DeviceName => _deviceName;
+        public string DeviceName { get; }
 
         /// <summary>
         /// Gets the settings for this mount
         /// </summary>
-        public SkySettings Settings => _settings;
+        public SkySettings Settings { get; }
 
         /// <summary>
         /// Gets or sets the target RA/Dec position
@@ -231,13 +218,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
 
         // Tracking state properties
-        public bool Tracking => _tracking;
+        public bool Tracking { get; private set; }
 
-        public TrackingMode TrackingMode
-        {
-            get => _trackingMode;
-            set => _trackingMode = value;
-        }
+        private TrackingMode TrackingMode { get; set; } = TrackingMode.Off;
 
         // SkyWatcher-specific tracking rates (internal access only)
         internal Vector SkyTrackingRate
@@ -246,11 +229,7 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _skyTrackingRate = value;
         }
 
-        internal Vector SkyHcRate
-        {
-            get => _skyHcRate;
-            set => _skyHcRate = value;
-        }
+        private Vector SkyHcRate { get; set; } = new Vector(0, 0);
 
         // Target and rate properties
         public double TargetRa
@@ -265,29 +244,21 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _targetRaDec.Y = value;
         }
 
-        public double RateRa
+        private double RateRa
         {
             get => _rateRaDec.X;
             set => _rateRaDec.X = value;
         }
 
-        public double RateDec
+        private double RateDec
         {
             get => _rateRaDec.Y;
             set => _rateRaDec.Y = value;
         }
 
-        public double RateRaOrg
-        {
-            get => _rateRaOrg;
-            set => _rateRaOrg = value;
-        }
+        public double RateRaOrg { get; set; }
 
-        public double RateDecOrg
-        {
-            get => _rateDecOrg;
-            set => _rateDecOrg = value;
-        }
+        public double RateDecOrg { get; set; }
 
         public double GuideRateRa
         {
@@ -314,17 +285,9 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _raDec.Y = value;
         }
 
-        public double RightAscensionXForm
-        {
-            get => _rightAscensionXForm;
-            set => _rightAscensionXForm = value;
-        }
+        public double RightAscensionXForm { get; private set; }
 
-        public double DeclinationXForm
-        {
-            get => _declinationXForm;
-            set => _declinationXForm = value;
-        }
+        public double DeclinationXForm { get; private set; }
 
         public double Altitude
         {
@@ -338,30 +301,18 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _altAzm.X = value;
         }
 
-        public double SiderealTime
-        {
-            get => _siderealTime;
-            set => _siderealTime = value;
-        }
+        public double SiderealTime { get; private set; }
 
-        public double Lha
-        {
-            get => _lha;
-            set => _lha = value;
-        }
+        public double Lha { get; private set; }
 
-        public PointingState IsSideOfPier
-        {
-            get => _isSideOfPier;
-            set => _isSideOfPier = value;
-        }
+        public PointingState IsSideOfPier { get; set; } = PointingState.Unknown;
 
         // Computed pier-side (same logic as static SkyServer.SideOfPier)
         public PointingState SideOfPier
         {
             get
             {
-                switch (_settings.AlignmentMode)
+                switch (Settings.AlignmentMode)
                 {
                     case AlignmentMode.AltAz:
                         return _actualAxisX >= 0.0 ? PointingState.Normal : PointingState.ThroughThePole;
@@ -369,7 +320,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         return (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001)
                             ? PointingState.Normal : PointingState.ThroughThePole;
                     case AlignmentMode.GermanPolar:
-                        bool southernHemisphere = _settings.Latitude < 0;
+                        bool southernHemisphere = Settings.Latitude < 0;
                         if (southernHemisphere)
                             return (_appAxes.Y < 90.0000000001 && _appAxes.Y > -90.0000000001)
                                 ? PointingState.ThroughThePole : PointingState.Normal;
@@ -387,8 +338,8 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             get
             {
-                var context = AxesContext.FromSettings(_settings, SideOfPier);
-                var home = Axes.AxesMountToApp(new[] { _homeAxes.X, _homeAxes.Y }, context);
+                var context = AxesContext.FromSettings(Settings, SideOfPier);
+                var home = Axes.AxesMountToApp([_homeAxes.X, _homeAxes.Y], context);
                 double dX = Math.Abs(_appAxes.X - home[0]);
                 dX = Math.Min(dX, 360.0 - dX);
                 double dY = Math.Abs(_appAxes.Y - home[1]);
@@ -399,8 +350,8 @@ namespace GreenSwamp.Alpaca.MountControl
         //AtPark — delegates to settings (same source as SkyServer.AtPark)
         public bool AtPark
         {
-            get => _settings.AtPark;
-            set => _settings.AtPark = value;
+            get => Settings.AtPark;
+            set => Settings.AtPark = value;
         }
 
         // IsSlewing — mirrors SkyServer.IsSlewing logic using per-instance fields
@@ -485,9 +436,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Called by SkyServer.Tracking property setter
         /// </summary>
         /// <param name="tracking">New tracking state</param>
-        internal void SetTracking(bool tracking)
+        private void SetTracking(bool tracking)
         {
-            _tracking = tracking;
+            Tracking = tracking;
         }
         
         /// <summary>
@@ -525,12 +476,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="deviceName">User-provided device name (defaults to id if null)</param>
         public Mount(string id, SkySettings settings, string? deviceName = null)
         {
-            _id = id ?? "mount-0";
+            Id = id ?? "mount-0";
             _instanceName = id ?? "default";
-            _deviceName = deviceName ?? id ?? "Unnamed Device";
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            DeviceName = deviceName ?? id ?? "Unnamed Device";
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             // Wire settings back-reference so settings can call instance-aware tasks
-            _settings._owner = this;
+            Settings._owner = this;
             SkyPredictor = new SkyPredictor(() => SkyServer.CurrentTrackingRate(this));
 
             var monitorItem = new MonitorEntry
@@ -541,7 +492,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Phase4.2|Mount created|ID:{_id}|Mount:{_settings.Mount}|Port:{_settings.Port}"
+                Message = $"Phase4.2|Mount created|ID:{Id}|Mount:{Settings.Mount}|Port:{Settings.Port}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -551,7 +502,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Gets the unique identifier for this mount instance
         /// </summary>
-        public string Id => _id;
+        public string Id { get; }
 
         /// <summary>
         /// Gets whether the mount is currently connected
@@ -569,7 +520,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public bool Connect()
         {
-            LogMount($"Connect() called on instance {_id}");
+            LogMount($"Connect() called on instance {Id}");
 
             // Call the actual connect implementation
             // This will be MountConnect() migrated from static
@@ -592,7 +543,7 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorEntry monitorItem;
             string msg;
 
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     // defaults
@@ -614,7 +565,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"Phase4.1|Mount:{_id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
+                        Message = $"Phase4.1|Mount:{Id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
                                   $"FactorStep:{_factorStep[0]:F10},{_factorStep[1]:F10}|" +
                                   $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
                                   $"CanPPec:{_canPPec}|MountName:{_mountName}"
@@ -623,7 +574,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
                     decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
-                    _wormTeethCount = new[] { raWormTeeth, decWormTeeth };
+                    _wormTeethCount = [raWormTeeth, decWormTeeth];
                     _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
                     // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
@@ -709,7 +660,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     };
                     MonitorLog.LogToMonitor(monitorItem);
                     // defaults
-                    if (_settings.Mount == MountType.SkyWatcher)
+                    if (Settings.Mount == MountType.SkyWatcher)
                     {
                         SkyServer.SkyTasks(MountTaskName.AllowAdvancedCommandSet, this);
                     }
@@ -747,7 +698,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Thread.CurrentThread.ManagedThreadId,
-                        Message = $"Mount:{_id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
+                        Message = $"Mount:{Id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
                                   $"FactorStep:{_factorStep[0]:F10},{_factorStep[1]:F10}|" +
                                   $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
                                   $"CanPPec:{_canPPec}|MountName:{_mountName}"
@@ -758,13 +709,13 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
                     decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
-                    _wormTeethCount = new[] { raWormTeeth, decWormTeeth };
+                    _wormTeethCount = [raWormTeeth, decWormTeeth];
                     _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
                     this.CalcCustomTrackingOffset();
 
                     // Initialize slew speeds
-                    this.SetSlewRates(_settings.MaxSlewRate);
+                    this.SetSlewRates(Settings.MaxSlewRate);
 
                     //log current positions
                     var steps = GetRawSteps();
@@ -840,16 +791,16 @@ namespace GreenSwamp.Alpaca.MountControl
 
             //Load Pec Files
             var pecmsg = string.Empty;
-            if (File.Exists(_settings.PecWormFile))
+            if (File.Exists(Settings.PecWormFile))
             {
-                LoadPecFile(_settings.PecWormFile);
-                pecmsg += _settings.PecWormFile;
+                LoadPecFile(Settings.PecWormFile);
+                pecmsg += Settings.PecWormFile;
             }
 
-            if (File.Exists(_settings.Pec360File))
+            if (File.Exists(Settings.Pec360File))
             {
-                LoadPecFile(_settings.Pec360File);
-                pecmsg += ", " + _settings.Pec360File;
+                LoadPecFile(Settings.Pec360File);
+                pecmsg += ", " + Settings.Pec360File;
             }
 
             monitorItem = new MonitorEntry
@@ -915,7 +866,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Disconnect()
         {
-            LogMount($"Disconnect() called on instance {_id}");
+            LogMount($"Disconnect() called on instance {Id}");
 
             // Stop mount operations (timers, tracking, queues, serial)
             MountStop();
@@ -928,7 +879,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Start()
         {
-            LogMount($"Start() called on instance {_id}");
+            LogMount($"Start() called on instance {Id}");
 
             // Call instance method directly
             MountStart();
@@ -940,7 +891,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Stop()
         {
-            LogMount($"Stop() called on instance {_id}");
+            LogMount($"Stop() called on instance {Id}");
 
             // Call instance method directly
             MountStop();
@@ -952,7 +903,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Reset()
         {
-            LogMount($"Reset() called on instance {_id}");
+            LogMount($"Reset() called on instance {Id}");
 
             // Call instance method directly
             MountReset();
@@ -962,7 +913,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void EmergencyStop()
         {
-            LogMount($"EmergencyStop() called on instance {_id}");
+            LogMount($"EmergencyStop() called on instance {Id}");
             AbortSlewAsync(speak: false);
         }
 
@@ -988,7 +939,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _rateMoveAxes.X = value;
                 CancelAllAsync();
                 SetRateMoveSlewState();
-                switch (_settings.Mount)
+                switch (Settings.Mount)
                 {
                     case MountType.Simulator:
                         _ = new CmdMoveAxisRate(SimQueue!.NewId, SimQueue, Axis.Axis1, _rateMoveAxes.X);
@@ -999,7 +950,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (_tracking) this.SetTracking();
+                if (Tracking) this.SetTracking();
                 LogMount($"RateMovePrimaryAxis|{_rateMoveAxes.X}|offset:{_skyTrackingOffset[0]}");
             }
         }
@@ -1014,7 +965,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _rateMoveAxes.Y = value;
                 CancelAllAsync();
                 SetRateMoveSlewState();
-                switch (_settings.Mount)
+                switch (Settings.Mount)
                 {
                     case MountType.Simulator:
                         _ = new CmdMoveAxisRate(SimQueue!.NewId, SimQueue, Axis.Axis2, -_rateMoveAxes.Y);
@@ -1025,7 +976,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (_tracking) this.SetTracking();
+                if (Tracking) this.SetTracking();
                 LogMount($"RateMoveSecondaryAxis|{_rateMoveAxes.Y}|offset:{_skyTrackingOffset[1]}");
             }
         }
@@ -1037,18 +988,18 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (_parkSelected == null)
                 {
-                    if (!string.IsNullOrEmpty(_settings.ParkName))
+                    if (!string.IsNullOrEmpty(Settings.ParkName))
                     {
-                        var found = _settings.ParkPositions?.Find(x => x.Name == _settings.ParkName);
+                        var found = Settings.ParkPositions?.Find(x => x.Name == Settings.ParkName);
                         if (found != null)
                         {
                             _parkSelected = new ParkPosition(found.Name, found.X, found.Y);
                             return _parkSelected;
                         }
                     }
-                    if (_settings.ParkAxes != null && _settings.ParkAxes.Length >= 2)
+                    if (Settings.ParkAxes != null && Settings.ParkAxes.Length >= 2)
                     {
-                        _parkSelected = new ParkPosition("Park", _settings.ParkAxes[0], _settings.ParkAxes[1]);
+                        _parkSelected = new ParkPosition("Park", Settings.ParkAxes[0], Settings.ParkAxes[1]);
                     }
                 }
                 return _parkSelected;
@@ -1065,22 +1016,19 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>Apply full tracking state change including side effects — L: calls Phase K InstanceApplyTracking.</summary>
-        public void ApplyTracking(bool value) => InstanceApplyTracking(value);
-
         /// <summary>Set SideOfPier (triggers pier flip).</summary>
         public void SetSideOfPier(PointingState value)
         {
             var axes = new[] { _actualAxisX, _actualAxisY };
-            var context = AxesContext.FromSettings(_settings);
+            var context = AxesContext.FromSettings(Settings);
             if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, context)))
             {
                 _flipOnNextGoto = true;
-                if (_tracking)
+                if (Tracking)
                     _ = SlewRaDecAsync(RightAscensionXForm, DeclinationXForm, true);
                 else
                     _ = SlewAltAzAsync(Altitude, Azimuth);
-                LogMount($"SetSideOfPier|{value}|limit:{_settings.HourAngleLimit}|{axes[0]}|{axes[1]}");
+                LogMount($"SetSideOfPier|{value}|limit:{Settings.HourAngleLimit}|{axes[0]}|{axes[1]}");
             }
             else
             {
@@ -1108,14 +1056,14 @@ namespace GreenSwamp.Alpaca.MountControl
         public void AbortSlewAsync(bool speak)
         {
             if (!IsMountRunning) return;
-            var tracking = _tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
-            InstanceApplyTracking(false);
+            var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
+            ApplyTracking(false);
             _slewController?.CancelCurrentSlewAsync().Wait();
             CancelAllAsync();
             _moveAxisActive = false;
             _rateMoveAxes = new Vector(0, 0);
             _rateRaDec = new Vector(0, 0);
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -1126,9 +1074,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+            if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
-            InstanceApplyTracking(tracking);
+            ApplyTracking(tracking);
             _slewState = SlewType.SlewNone;
             LogMount($"AbortSlewAsync|restored tracking:{tracking}");
         }
@@ -1143,17 +1091,17 @@ namespace GreenSwamp.Alpaca.MountControl
                 TelescopeAxis.Tertiary => 3,
                 _ => 0
             };
-            return ax != 0 && ax <= _settings.NumMoveAxis;
+            return ax != 0 && ax <= Settings.NumMoveAxis;
         }
 
         /// <summary>Determine side of pier for given RA/Dec — L: uses this device's SideOfPier and settings.</summary>
         public PointingState DetermineSideOfPier(double rightAscension, double declination)
         {
-            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+            if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 return PointingState.Unknown;
             var sop = SideOfPier;
-            var context = AxesContext.FromSettings(_settings);
-            var flipReq = Axes.IsFlipRequired(new[] { rightAscension, declination }, context);
+            var context = AxesContext.FromSettings(Settings);
+            var flipReq = Axes.IsFlipRequired([rightAscension, declination], context);
             LogMount($"DetermineSideOfPier|Ra:{rightAscension}|Dec:{declination}|Flip:{flipReq}|SoP:{sop}");
             return sop switch
             {
@@ -1168,7 +1116,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (AtHome || _slewState == SlewType.SlewHome)
                 return Task.FromResult(SlewResult.Failed("Already at home or home slew in progress"));
-            InstanceApplyTracking(false);
+            ApplyTracking(false);
             LogMount("GoToHome|Async using per-instance SlewController");
             var target = new[] { _homeAxes.X, _homeAxes.Y };
             return SlewAsync(target, SlewType.SlewHome, tracking: false);
@@ -1177,14 +1125,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Start park async — L: uses this device's ParkSelected and SlewAsync.</summary>
         public async Task<SlewResult> GoToParkAsync()
         {
-            InstanceApplyTracking(false);
+            ApplyTracking(false);
             var ps = ParkSelected;
             if (ps == null)
                 return SlewResult.Failed("No park position selected");
             if (double.IsNaN(ps.X) || double.IsNaN(ps.Y))
                 return SlewResult.Failed("Invalid park coordinates");
-            _settings.ParkAxes = new[] { ps.X, ps.Y };
-            _settings.ParkName = ps.Name;
+            Settings.ParkAxes = [ps.X, ps.Y];
+            Settings.ParkName = ps.Name;
             LogMount($"GoToParkAsync|{ps.Name}|{ps.X}|{ps.Y}");
             var target = new[] { ps.X, ps.Y };
             return await SlewAsync(target, SlewType.SlewPark, tracking: false);
@@ -1196,28 +1144,28 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>Synchronous Alt/Az slew — dispatches on this instance directly.</summary>
         public void SlewAltAz(double altitude, double azimuth) =>
-            SlewSync(new[] { azimuth, altitude }, SlewType.SlewAltAz);
+            SlewSync([azimuth, altitude], SlewType.SlewAltAz);
 
         /// <summary>Async Alt/Az slew — dispatches on this instance directly.</summary>
         public Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth) =>
-            SlewAsync(new[] { azimuth, altitude }, SlewType.SlewAltAz);
+            SlewAsync([azimuth, altitude], SlewType.SlewAltAz);
 
         /// <summary>Synchronous RA/Dec slew — dispatches on this instance directly.</summary>
         public void SlewRaDec(double rightAscension, double declination, bool tracking = false) =>
-            SlewSync(new[] { rightAscension, declination }, SlewType.SlewRaDec, tracking);
+            SlewSync([rightAscension, declination], SlewType.SlewRaDec, tracking);
 
         /// <summary>Async RA/Dec slew — dispatches on this instance directly.</summary>
         public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false) =>
-            SlewAsync(new[] { rightAscension, declination }, SlewType.SlewRaDec, tracking);
+            SlewAsync([rightAscension, declination], SlewType.SlewRaDec, tracking);
 
         /// <summary>Enable tracking on a slew cycle — delegates to per-instance tracking.</summary>
-        public void CycleOnTracking(bool silence) => InstanceApplyTracking(true);
+        public void CycleOnTracking(bool silence) => ApplyTracking(true);
 
         /// <summary>Save current position as a named park position — instance version.</summary>
         public void SetParkAxis(string name)
         {
             if (string.IsNullOrEmpty(name)) { name = "Empty"; }
-            var context = AxesContext.FromSettings(_settings);
+            var context = AxesContext.FromSettings(Settings);
             var park = Axes.MountAxis2Mount(context);
             if (park == null) { return; }
             MonitorLog.LogToMonitor(new MonitorEntry
@@ -1247,10 +1195,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message = $"{azimuth}|{altitude}"
             });
-            var trackingstate = _tracking;
-            if (trackingstate) { InstanceApplyTracking(false); }
+            var trackingstate = Tracking;
+            if (trackingstate) { ApplyTracking(false); }
             _altAzSync = new Vector(altitude, azimuth);
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -1267,7 +1215,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (trackingstate)
             {
                 var internalAltAz = Transforms.CoordTypeToInternal(azimuth, altitude);
-                var raDec = Coordinate.AltAz2RaDec(internalAltAz.X, internalAltAz.Y, SiderealTime, _settings.Latitude);
+                var raDec = Coordinate.AltAz2RaDec(internalAltAz.X, internalAltAz.Y, SiderealTime, Settings.Latitude);
                 SkyPredictor.Set(raDec[0], raDec[1]);
                 InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
             }
@@ -1285,11 +1233,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $" {TargetRa}|{TargetDec}|{_tracking}"
+                Message = $" {TargetRa}|{TargetDec}|{Tracking}"
             });
-            var trackingstate = _tracking;
-            if (trackingstate) { InstanceApplyTracking(false); }
-            switch (_settings.Mount)
+            var trackingstate = Tracking;
+            if (trackingstate) { ApplyTracking(false); }
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -1305,14 +1253,14 @@ namespace GreenSwamp.Alpaca.MountControl
             WaitMountPositionUpdated();
             if (trackingstate)
             {
-                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     SkyPredictor.Set(TargetRa, TargetDec);
                     InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
                 }
                 else
                 {
-                    InstanceApplyTracking(true);
+                    ApplyTracking(true);
                 }
             }
         }
@@ -1329,15 +1277,15 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Check if RA/Dec is within sync limits — instance version.</summary>
         public bool CheckRaDecSyncLimit(double ra, double dec)
         {
-            if (!_settings.SyncLimitOn) { return true; }
-            if (_settings.NoSyncPastMeridian) { return false; }
-            var context = AxesContext.FromSettings(_settings);
-            var xy = Axes.RaDecToAxesXy(new[] { ra, dec }, context);
+            if (!Settings.SyncLimitOn) { return true; }
+            if (Settings.NoSyncPastMeridian) { return false; }
+            var context = AxesContext.FromSettings(Settings);
+            var xy = Axes.RaDecToAxesXy([ra, dec], context);
             var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), context);
             var current = new[] { _appAxes.X, _appAxes.Y };
             var a = Math.Abs(target[0]) - Math.Abs(current[0]);
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
-            var ret = !(Math.Abs(a) > _settings.SyncLimit || Math.Abs(b) > _settings.SyncLimit);
+            var ret = !(Math.Abs(a) > Settings.SyncLimit || Math.Abs(b) > Settings.SyncLimit);
             if (ret) return true;
             MonitorLog.LogToMonitor(new MonitorEntry
             {
@@ -1347,7 +1295,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Warning,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{xy[0]}|{xy[1]}|{target[0]}|{target[1]}|{current[0]}|{current[1]}|{_settings.SyncLimit}"
+                Message = $"{xy[0]}|{xy[1]}|{target[0]}|{target[1]}|{current[0]}|{current[1]}|{Settings.SyncLimit}"
             });
             return false;
         }
@@ -1355,13 +1303,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Check if Alt/Az is within sync limits — instance version.</summary>
         public bool CheckAltAzSyncLimit(double alt, double az)
         {
-            if (!_settings.SyncLimitOn) { return true; }
-            if (_settings.NoSyncPastMeridian) { return false; }
-            var context = AxesContext.FromSettings(_settings);
-            var xy = Axes.AzAltToAxesXy(new[] { az, alt }, context);
+            if (!Settings.SyncLimitOn) { return true; }
+            if (Settings.NoSyncPastMeridian) { return false; }
+            var context = AxesContext.FromSettings(Settings);
+            var xy = Axes.AzAltToAxesXy([az, alt], context);
             var target = Axes.AxesMountToApp(SkyServer.GetSyncedAxes(xy), context);
             var current = new[] { _appAxes.X, _appAxes.Y };
-            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+            if (Settings.AlignmentMode == AlignmentMode.AltAz)
             {
                 target[0] = az;
                 target[1] = alt;
@@ -1370,7 +1318,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             var a = Math.Abs(target[0]) - Math.Abs(current[0]);
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
-            var ret = !(Math.Abs(a) > _settings.SyncLimit || Math.Abs(b) > _settings.SyncLimit);
+            var ret = !(Math.Abs(a) > Settings.SyncLimit || Math.Abs(b) > Settings.SyncLimit);
             if (ret) return true;
             MonitorLog.LogToMonitor(new MonitorEntry
             {
@@ -1380,7 +1328,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Warning,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{xy[0]}|{xy[1]}|{target[0]}|{target[1]}|{current[0]}|{current[1]}|{_settings.SyncLimit}"
+                Message = $"{xy[0]}|{xy[1]}|{target[0]}|{target[1]}|{current[0]}|{current[1]}|{Settings.SyncLimit}"
             });
             return false;
         }
@@ -1388,7 +1336,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Check if target is within reachable hardware limits — instance version.</summary>
         public bool IsTargetReachable(double[] target, SlewType slewType)
         {
-            if (_settings.AlignmentMode == AlignmentMode.GermanPolar) return true;
+            if (Settings.AlignmentMode == AlignmentMode.GermanPolar) return true;
             switch (slewType)
             {
                 case SlewType.SlewRaDec:
@@ -1422,7 +1370,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             // Convert target to axes based on slew type
             // Create context from current settings
-            var context = AxesContext.FromSettings(_settings, SideOfPier);
+            var context = AxesContext.FromSettings(Settings, SideOfPier);
 
             switch (slewType)
             {
@@ -1460,7 +1408,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var actualDegrees = new[] { double.NaN, double.NaN };
             if (!IsMountRunning) { return actualDegrees; }
 
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     var simPositions = new CmdAxesDegrees(SimQueue!.NewId, SimQueue);
@@ -1488,7 +1436,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double ConvertStepsToDegrees(double steps, int axis)
         {
             double degrees;
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     degrees = steps / _factorStep[axis];
@@ -1513,7 +1461,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var steps = new[] { double.NaN, double.NaN };
             if (!IsMountRunning) { return steps; }
 
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     var simPositions = new CmdAxesDegrees(SimQueue!.NewId, SimQueue);
@@ -1546,7 +1494,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsMountRunning) { return null; }
 
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     var simPositions = new CmdAxisSteps(SimQueue!.NewId, SimQueue);
@@ -1590,7 +1538,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (IsMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
                 {
-                    switch (_settings.Mount)
+                    switch (Settings.Mount)
                     {
                         case MountType.Simulator:
                             _ = new CmdAxesSteps(SimQueue!.NewId, SimQueue);
@@ -1617,7 +1565,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Build axes context from instance settings, passing per-instance SideOfPier (J2)
             // N7: Pass computed LST directly — avoids SkyServer.SiderealTime which reads _defaultInstance
             //     (device-00), so device-01 would always see LST=0.0 if device-00 is not running.
-            var context = AxesContext.FromSettings(_settings, SideOfPier).WithLst(SkyServer.GetLocalSiderealTime(_settings.Longitude));
+            var context = AxesContext.FromSettings(Settings, SideOfPier).WithLst(SkyServer.GetLocalSiderealTime(Settings.Longitude));
 
             // Implement PEC
             PecCheck();
@@ -1632,14 +1580,14 @@ namespace GreenSwamp.Alpaca.MountControl
             // J5: Per-instance limit status
             {
                 const double oneArcSec = 1.0 / 3600;
-                _limitStatus.AtLowerLimitAxisX = rawPositions[0] <= -_settings.AxisLimitX - oneArcSec;
-                _limitStatus.AtUpperLimitAxisX = rawPositions[0] >= _settings.AxisLimitX + oneArcSec;
-                var axisUpperLimitY = _settings.AxisUpperLimitY;
-                var axisLowerLimitY = _settings.AxisLowerLimitY;
-                if (_settings.AlignmentMode == AlignmentMode.Polar && _settings.PolarMode == PolarMode.Left)
+                _limitStatus.AtLowerLimitAxisX = rawPositions[0] <= -Settings.AxisLimitX - oneArcSec;
+                _limitStatus.AtUpperLimitAxisX = rawPositions[0] >= Settings.AxisLimitX + oneArcSec;
+                var axisUpperLimitY = Settings.AxisUpperLimitY;
+                var axisLowerLimitY = Settings.AxisLowerLimitY;
+                if (Settings.AlignmentMode == AlignmentMode.Polar && Settings.PolarMode == PolarMode.Left)
                 {
-                    axisLowerLimitY = 180 - _settings.AxisUpperLimitY;
-                    axisUpperLimitY = 180 - _settings.AxisLowerLimitY;
+                    axisLowerLimitY = 180 - Settings.AxisUpperLimitY;
+                    axisUpperLimitY = 180 - Settings.AxisLowerLimitY;
                 }
                 _limitStatus.AtLowerLimitAxisY = rawPositions[1] <= axisLowerLimitY - oneArcSec;
                 _limitStatus.AtUpperLimitAxisY = rawPositions[1] >= axisUpperLimitY + oneArcSec;
@@ -1667,9 +1615,9 @@ namespace GreenSwamp.Alpaca.MountControl
             _raDec.Y = raDec[1];
 
             // Calculate EquatorialSystem RA/Dec for UI
-            var xy = Transforms.InternalToCoordType(raDec[0], raDec[1], settings: _settings);
-            _rightAscensionXForm = xy.X;
-            _declinationXForm = xy.Y;
+            var xy = Transforms.InternalToCoordType(raDec[0], raDec[1], settings: Settings);
+            RightAscensionXForm = xy.X;
+            DeclinationXForm = xy.Y;
         }
 
         /// <summary>
@@ -1694,15 +1642,15 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector GetHomeAxes(double xAxis, double yAxis)
         {
             // Create context from current settings, passing per-instance SideOfPier (J2)
-            var context = AxesContext.FromSettings(_settings, SideOfPier);
+            var context = AxesContext.FromSettings(Settings, SideOfPier);
             var home = new[] { xAxis, yAxis };
-            if (_settings.AlignmentMode != AlignmentMode.Polar)
+            if (Settings.AlignmentMode != AlignmentMode.Polar)
             {
-                home = Axes.AxesAppToMount(new[] { xAxis, yAxis }, context);
+                home = Axes.AxesAppToMount([xAxis, yAxis], context);
             }
             else
             {
-                var angleOffset = _settings.Latitude < 0 ? 180.0 : 0.0; // J2: use per-instance settings
+                var angleOffset = Settings.Latitude < 0 ? 180.0 : 0.0; // J2: use per-instance settings
                 home[0] -= angleOffset;
                 home = Axes.AzAltToAxesXy(home, context);
             }
@@ -1725,27 +1673,27 @@ namespace GreenSwamp.Alpaca.MountControl
             // _factorStep is already initialized as new double[2]
 
             // home axes
-            _homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
+            _homeAxes = GetHomeAxes(Settings.HomeAxisX, Settings.HomeAxisY);
 
             // Initialize ParkSelected from ParkName setting
-            if (!string.IsNullOrEmpty(_settings.ParkName))
+            if (!string.IsNullOrEmpty(Settings.ParkName))
             {
-                var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkName);
+                var found = Settings.ParkPositions.Find(x => x.Name == Settings.ParkName);
                 if (found != null)
                 {
                     _parkSelected = found;
                     // Also ensure ParkAxes is populated for backward compatibility
-                    _settings.ParkAxes = new[] { found.X, found.Y };
+                    Settings.ParkAxes = [found.X, found.Y];
                 }
             }
 
             // Set slew rates for all speed levels
             // SetSlewRates expects degrees/second and stores values in degrees
             // (hardware layer converts to radians when needed)
-            this.SetSlewRates(_settings.MaxSlewRate);
+            this.SetSlewRates(Settings.MaxSlewRate);
 
             // set the guiderates
-            _guideRate = new Vector(_settings.GuideRateOffsetY, _settings.GuideRateOffsetX);
+            _guideRate = new Vector(Settings.GuideRateOffsetY, Settings.GuideRateOffsetX);
             this.SetGuideRates();
         }
 
@@ -1760,7 +1708,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // All 121 properties are synced bidirectionally by the bridge
 
             // Set home positions using current settings (already loaded)
-            _homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
+            _homeAxes = GetHomeAxes(Settings.HomeAxisX, Settings.HomeAxisY);
 
             // Set axis positions
             _appAxes = new Vector(_homeAxes.X, _homeAxes.Y);
@@ -1812,7 +1760,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                 Type = MonitorType.Information,
                                 Method = nameof(SetConnected),
                                 Thread = Thread.CurrentThread.ManagedThreadId,
-                                Message = $"Connection complete|Mount:{_id}|LoopCount:{_loopCounter}"
+                                Message = $"Connection complete|Mount:{Id}|LoopCount:{_loopCounter}"
                             };
                             MonitorLog.LogToMonitor(completionItem);
                         }
@@ -1830,7 +1778,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                 Type = MonitorType.Error,
                                 Method = nameof(SetConnected),
                                 Thread = Thread.CurrentThread.ManagedThreadId,
-                                Message = $"Connection failed|Mount:{_id}|Error:{ex.Message}"
+                                Message = $"Connection failed|Mount:{Id}|Error:{ex.Message}"
                             };
                             MonitorLog.LogToMonitor(errorItem);
                         }
@@ -1882,27 +1830,27 @@ namespace GreenSwamp.Alpaca.MountControl
                 _serial = null;
                 _connectType = ConnectType.None;
 
-                var readTimeout = TimeSpan.FromMilliseconds(_settings.ReadTimeout);
-                if (_settings.Port.Contains("COM"))
+                var readTimeout = TimeSpan.FromMilliseconds(Settings.ReadTimeout);
+                if (Settings.Port.Contains("COM"))
                 {
                     var options = SerialOptions.DiscardNull
-                        | (_settings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)
-                        | (_settings.RtsEnable ? SerialOptions.RtsEnable : SerialOptions.None);
+                        | (Settings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)
+                        | (Settings.RtsEnable ? SerialOptions.RtsEnable : SerialOptions.None);
 
                     _serial = new GsSerialPort(
-                        _settings.Port,
-                        (int)_settings.BaudRate,
+                        Settings.Port,
+                        (int)Settings.BaudRate,
                         readTimeout,
-                        _settings.HandShake,
+                        Settings.HandShake,
                         Parity.None,
                         StopBits.One,
-                        _settings.DataBits,
+                        Settings.DataBits,
                         options);
                     _connectType = ConnectType.Com;
                 }
                 else
                 {
-                    var endpoint = CreateIpEndPoint(_settings.Port);
+                    var endpoint = CreateIpEndPoint(Settings.Port);
                     _serial = new SerialOverUdpPort(endpoint, readTimeout);
                     _connectType = ConnectType.Wifi;
                 }
@@ -1961,16 +1909,16 @@ namespace GreenSwamp.Alpaca.MountControl
         private void MountStart()
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings.Mount}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Settings.Mount}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             // setup server defaults, stop auto-discovery, connect serial port, start queues
             Defaults();
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
-                    Alpaca.Mount.Simulator.Settings.AutoHomeAxisX = (int)_settings.AutoHomeAxisX;
-                    Alpaca.Mount.Simulator.Settings.AutoHomeAxisY = (int)_settings.AutoHomeAxisY;
+                    Alpaca.Mount.Simulator.Settings.AutoHomeAxisX = (int)Settings.AutoHomeAxisX;
+                    Alpaca.Mount.Simulator.Settings.AutoHomeAxisY = (int)Settings.AutoHomeAxisY;
                     var mqImpl = new GreenSwamp.Alpaca.Mount.Simulator.MountQueueImplementation();
                     mqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
@@ -1997,10 +1945,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     // Start up, pass custom mount gearing if needed
                     var custom360Steps = new[] { 0, 0 };
                     var customWormSteps = new[] { 0.0, 0.0 };
-                    if (_settings.CustomGearing)
+                    if (Settings.CustomGearing)
                     {
-                        custom360Steps = new[] { _settings.CustomRa360Steps, _settings.CustomDec360Steps };
-                        customWormSteps = new[] { (double)_settings.CustomRa360Steps / _settings.CustomRaWormTeeth, (double)_settings.CustomDec360Steps / _settings.CustomDecWormTeeth };
+                        custom360Steps = [Settings.CustomRa360Steps, Settings.CustomDec360Steps];
+                        customWormSteps = [(double)Settings.CustomRa360Steps / Settings.CustomRaWormTeeth, (double)Settings.CustomDec360Steps / Settings.CustomDecWormTeeth
+                        ];
                     }
 
                     // Q2: Create instance-owned queue for SkyWatcher.
@@ -2028,7 +1977,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Event to get mount positions and update UI
                 // Ensure DisplayInterval is valid for MediaTimer (must be > 0)
-                var displayInterval = _settings.DisplayInterval > 0 ? _settings.DisplayInterval : 200;
+                var displayInterval = Settings.DisplayInterval > 0 ? Settings.DisplayInterval : 200;
                 _mediaTimer = new MediaTimer { Period = displayInterval, Resolution = 5 };
                 _mediaTimer.Tick += OnUpdateServerEvent;
                 _mediaTimer.Start();
@@ -2046,12 +1995,12 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void MountStop()
         {
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_settings.Mount}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Settings.Mount}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             // Stop all asynchronous operations — per-instance (Phase H3: don't affect other devices)
-            _trackingMode = TrackingMode.Off;
-            _tracking = false;
+            TrackingMode = TrackingMode.Off;
+            Tracking = false;
             _ctsGoTo?.Cancel();
             _ctsPulseGuideRa?.Cancel();
             _ctsPulseGuideDec?.Cancel();
@@ -2102,19 +2051,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 _loopCounter++;
-                _siderealTime = SkyServer.GetLocalSiderealTime(_settings.Longitude);
+                SiderealTime = SkyServer.GetLocalSiderealTime(Settings.Longitude);
                 this.UpdateSteps();
-                _lha = Coordinate.Ra2Ha12(_rightAscensionXForm, _siderealTime);
+                Lha = Coordinate.Ra2Ha12(RightAscensionXForm, SiderealTime);
                 CheckSlewState();    // Updates this device's _isSlewing
                 CheckAxisLimits();   // Checks this device's axis limits
                 CheckPecTraining();
                 _isHome = this.AtHome;
-                switch (_settings.AlignmentMode)
+                switch (Settings.AlignmentMode)
                 {
                     case AlignmentMode.AltAz:
                     case AlignmentMode.Polar:
                     case AlignmentMode.GermanPolar:
-                        _isSideOfPier = this.SideOfPier;
+                        IsSideOfPier = this.SideOfPier;
                         break;
                     default:
                         break;
@@ -2135,8 +2084,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void InitializeSettings()
         {
-            _settings.PropertyChanged -= OnPropertyChangedSkySettings; // Prevent double-wiring
-            _settings.PropertyChanged += OnPropertyChangedSkySettings;
+            Settings.PropertyChanged -= OnPropertyChangedSkySettings; // Prevent double-wiring
+            Settings.PropertyChanged += OnPropertyChangedSkySettings;
             MonitorLog.LogToMonitor(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -2145,7 +2094,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Settings listener wired | Mount:{_settings.Mount} | Port:{_settings.Port}"
+                Message = $"Settings listener wired | Mount:{Settings.Mount} | Port:{Settings.Port}"
             });
         }
 
@@ -2154,7 +2103,7 @@ namespace GreenSwamp.Alpaca.MountControl
             switch (e.PropertyName)
             {
                 case "AtPark":
-                    if (AtPark != _settings.AtPark) AtPark = _settings.AtPark;
+                    if (AtPark != Settings.AtPark) AtPark = Settings.AtPark;
                     break;
                 case "AlignmentMode":
                     SetTracking(false);
@@ -2221,8 +2170,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId, Message = string.Empty
             };
-            var totLimit = _settings.HourAngleLimit + _settings.AxisTrackingLimit;
-            switch (_settings.AlignmentMode)
+            var totLimit = Settings.HourAngleLimit + Settings.AxisTrackingLimit;
+            switch (Settings.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
                     meridianLimit = _limitStatus.AtLowerLimitAxisY || _limitStatus.AtUpperLimitAxisY; // J5: per-instance
@@ -2230,56 +2179,56 @@ namespace GreenSwamp.Alpaca.MountControl
                 case AlignmentMode.Polar:
                     break;
                 case AlignmentMode.GermanPolar:
-                    bool sh = _settings.Latitude < 0;
+                    bool sh = Settings.Latitude < 0;
                     if (sh)
                     {
-                        if (_appAxes.X >= _settings.HourAngleLimit || _appAxes.X <= -_settings.HourAngleLimit - 180) meridianLimit = true;
+                        if (_appAxes.X >= Settings.HourAngleLimit || _appAxes.X <= -Settings.HourAngleLimit - 180) meridianLimit = true;
                     }
                     else
                     {
-                        if (_appAxes.X >= _settings.HourAngleLimit + 180 || _appAxes.X <= -_settings.HourAngleLimit) meridianLimit = true;
+                        if (_appAxes.X >= Settings.HourAngleLimit + 180 || _appAxes.X <= -Settings.HourAngleLimit) meridianLimit = true;
                     }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            if (_settings.HzLimitPark || _settings.HzLimitTracking)
+            if (Settings.HzLimitPark || Settings.HzLimitTracking)
             {
-                switch (_settings.AlignmentMode)
+                switch (Settings.AlignmentMode)
                 {
                     case AlignmentMode.AltAz:
-                        if ((_altAzm.Y <= _settings.AxisHzTrackingLimit || _altAzm.Y <= _settings.AxisLowerLimitY || _altAzm.Y >= _settings.AxisUpperLimitY) && _trackingMode != TrackingMode.Off)
+                        if ((_altAzm.Y <= Settings.AxisHzTrackingLimit || _altAzm.Y <= Settings.AxisLowerLimitY || _altAzm.Y >= Settings.AxisUpperLimitY) && TrackingMode != TrackingMode.Off)
                         { horizonLimit = true; }
                         break;
                     case AlignmentMode.Polar:
                         break;
                     case AlignmentMode.GermanPolar:
-                        if (this.SideOfPier == PointingState.Normal && _altAzm.Y <= _settings.AxisHzTrackingLimit && _trackingMode != TrackingMode.Off)
+                        if (this.SideOfPier == PointingState.Normal && _altAzm.Y <= Settings.AxisHzTrackingLimit && TrackingMode != TrackingMode.Off)
                         { horizonLimit = true; }
                         break;
                 }
             }
             if (meridianLimit)
             {
-                monitorItem.Message = $"Meridian Limit Alarm: Park: {_settings.LimitPark} | Position: {_settings.ParkLimitName} | Stop Tracking: {_settings.LimitTracking}";
+                monitorItem.Message = $"Meridian Limit Alarm: Park: {Settings.LimitPark} | Position: {Settings.ParkLimitName} | Stop Tracking: {Settings.LimitTracking}";
                 MonitorLog.LogToMonitor(monitorItem);
-                if (_trackingMode != TrackingMode.Off && _settings.LimitTracking)
-                { _trackingMode = TrackingMode.Off; _tracking = false; }
-                if (_settings.LimitPark && _slewState != SlewType.SlewPark)
+                if (TrackingMode != TrackingMode.Off && Settings.LimitTracking)
+                { TrackingMode = TrackingMode.Off; Tracking = false; }
+                if (Settings.LimitPark && _slewState != SlewType.SlewPark)
                 {
-                    var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkLimitName);
+                    var found = Settings.ParkPositions.Find(x => x.Name == Settings.ParkLimitName);
                     if (found == null) InstanceStopAxes(); else { _parkSelected = found; StartGoToParkAsync(); } // J7: per-instance
                 }
             }
             if (horizonLimit)
             {
-                monitorItem.Message = $"Horizon Limit Alarm: Park: {_settings.HzLimitPark} | Position:{_settings.ParkHzLimitName} | Stop Tracking:{_settings.HzLimitTracking}";
+                monitorItem.Message = $"Horizon Limit Alarm: Park: {Settings.HzLimitPark} | Position:{Settings.ParkHzLimitName} | Stop Tracking:{Settings.HzLimitTracking}";
                 MonitorLog.LogToMonitor(monitorItem);
-                if (_trackingMode != TrackingMode.Off && _settings.HzLimitTracking)
-                { _trackingMode = TrackingMode.Off; _tracking = false; }
-                if (_settings.HzLimitPark && _slewState != SlewType.SlewPark)
+                if (TrackingMode != TrackingMode.Off && Settings.HzLimitTracking)
+                { TrackingMode = TrackingMode.Off; Tracking = false; }
+                if (Settings.HzLimitPark && _slewState != SlewType.SlewPark)
                 {
-                    var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkHzLimitName);
+                    var found = Settings.ParkPositions.Find(x => x.Name == Settings.ParkHzLimitName);
                     if (found == null) InstanceStopAxes(); else { _parkSelected = found; StartGoToParkAsync(); } // J7: per-instance
                 }
             }
@@ -2297,7 +2246,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _rateRaDec = new Vector(0, 0);
             if (!SkyServer.AxesStopValidate(this))
             {
-                switch (_settings.Mount)
+                switch (Settings.Mount)
                 {
                     case MountType.Simulator:
                         SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -2308,8 +2257,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
             _slewState = SlewType.SlewNone;
-            _tracking = false;
-            _trackingMode = TrackingMode.Off;
+            Tracking = false;
+            TrackingMode = TrackingMode.Off;
         }
 
         /// <summary>
@@ -2322,11 +2271,11 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var ps = _parkSelected;
             if (ps == null || double.IsNaN(ps.X) || double.IsNaN(ps.Y)) return;
-            _tracking = false;
-            _trackingMode = TrackingMode.Off;
-            _settings.ParkAxes = new[] { ps.X, ps.Y };
-            _settings.ParkName = ps.Name;
-            _ = SlewAsync(new[] { ps.X, ps.Y }, SlewType.SlewPark, tracking: false);
+            Tracking = false;
+            TrackingMode = TrackingMode.Off;
+            Settings.ParkAxes = [ps.X, ps.Y];
+            Settings.ParkName = ps.Name;
+            _ = SlewAsync([ps.X, ps.Y], SlewType.SlewPark, tracking: false);
         }
         /// <summary>
         /// K: Per-instance equivalent of SkyServer.SetTrackingMode.
@@ -2334,14 +2283,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private void InstanceSetTrackingMode()
         {
-            switch (_settings.AlignmentMode)
+            switch (Settings.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    _trackingMode = TrackingMode.AltAz;
+                    TrackingMode = TrackingMode.AltAz;
                     break;
                 case AlignmentMode.Polar:
                 case AlignmentMode.GermanPolar:
-                    _trackingMode = _settings.Latitude < 0 ? TrackingMode.EqS : TrackingMode.EqN;
+                    TrackingMode = Settings.Latitude < 0 ? TrackingMode.EqS : TrackingMode.EqN;
                     break;
             }
         }
@@ -2351,14 +2300,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Resets SkyPredictor, sets tracking mode, and applies hardware.
         /// Early-exits if already in requested state (mirrors SkyServer.Tracking early-exit).
         /// </summary>
-        public void InstanceApplyTracking(bool tracking)
+        public void ApplyTracking(bool tracking)
         {
-            if (tracking == _tracking) return;
-            _tracking = tracking;
+            if (tracking == Tracking) return;
+            Tracking = tracking;
             if (tracking)
             {
                 InstanceSetTrackingMode();
-                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     _altAzTrackingMode = AltAzTrackingType.Predictor;
                     if (!SkyPredictor.RaDecSet)
@@ -2372,7 +2321,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyPredictor.Reset(); // N5: reset on tracking OFF only — never on re-enable
                 _isPulseGuidingRa = false;
                 _isPulseGuidingDec = false;
-                _trackingMode = TrackingMode.Off;
+                TrackingMode = TrackingMode.Off;
             }
             this.SetTracking();
         }
@@ -2383,8 +2332,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal void InstanceApplyTrackingDirect(bool tracking, TrackingMode mode)
         {
-            _tracking = tracking;
-            _trackingMode = mode;
+            Tracking = tracking;
+            TrackingMode = mode;
             this.SetTracking();
         }
 
@@ -2395,8 +2344,8 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void InstanceCompletePark()
         {
             AtPark = true;
-            _tracking = false;
-            _trackingMode = TrackingMode.Off;
+            Tracking = false;
+            TrackingMode = TrackingMode.Off;
             SkyPredictor.Reset();
             this.SetTracking();
         }
@@ -2439,7 +2388,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _moveAxisActive = false;
                 _isSlewing = false;
                 _slewState = SlewType.SlewNone;
-                if (_tracking) SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                if (Tracking) SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
         }
 
@@ -2449,9 +2398,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private void ActionRateRaDec()
         {
-            if (_tracking)
+            if (Tracking)
             {
-                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
                     SkyPredictor.Set(raDec[0], raDec[1], _rateRaDec.X, _rateRaDec.Y);
@@ -2460,7 +2409,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _rateRaDec.X, _rateRaDec.Y);
                 }
@@ -2491,7 +2440,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private void StartAltAzTrackingTimer()
         {
             StopAltAzTrackingTimer();
-            _altAzTrackingTimer = new MediaTimer { Period = _settings.AltAzTrackingUpdateInterval };
+            _altAzTrackingTimer = new MediaTimer { Period = Settings.AltAzTrackingUpdateInterval };
             _altAzTrackingTimer.Tick += AltAzTrackingTimerTick;
             _altAzTrackingTimer.Start();
         }
@@ -2625,13 +2574,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 maxTries++;
 
                 DateTime? predictedTime = null;
-                if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
+                if (Settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
                 {
                     var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                     // get predicted RA and Dec at update time
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                     // convert to internal Ra and Dec
-                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
+                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: Settings);
                     target = [internalRaDec.X, internalRaDec.Y];
                 }
 
@@ -2721,14 +2670,14 @@ namespace GreenSwamp.Alpaca.MountControl
                     double[] simTargetNow = [0.0, 0.0];
                     double[] simTargetAtTime = [0.0, 0.0];
 
-                    if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                    if (Settings.AlignmentMode == AlignmentMode.AltAz)
                     {
                         var now = HiResDateTime.UtcNow;
                         var predictorRaDec = SkyPredictor.GetRaDecAtTime(now.AddMilliseconds(deltaTime));
-                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
+                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: Settings);
                         simTargetAtTime = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                         predictorRaDec = SkyPredictor.GetRaDecAtTime(now);
-                        internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
+                        internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: Settings);
                         simTargetNow = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
@@ -2892,7 +2841,7 @@ namespace GreenSwamp.Alpaca.MountControl
             double[] deltaDegree = [0.0, 0.0];
             var axis1AtTarget = false;
             var axis2AtTarget = false;
-            double[] gotoPrecision = [_settings.GotoPrecision, _settings.GotoPrecision];
+            double[] gotoPrecision = [Settings.GotoPrecision, Settings.GotoPrecision];
             long deltaTime = 800;
 
             while (true)
@@ -2923,13 +2872,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (maxTries >= 5) { break; }
                 maxTries++;
 
-                if (_settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
+                if (Settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
                 {
                     var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                     // get predicted RA and Dec at update time
                     var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
                     // convert to internal Ra and Dec
-                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
+                    var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: Settings);
                     target = [internalRaDec.X, internalRaDec.Y];
                 }
 
@@ -3011,7 +2960,7 @@ namespace GreenSwamp.Alpaca.MountControl
             double[] deltaDegree = [0.0, 0.0];
             var axis1AtTarget = false;
             var axis2AtTarget = false;
-            double[] gotoPrecision = [_settings.GotoPrecision, _settings.GotoPrecision];
+            double[] gotoPrecision = [Settings.GotoPrecision, Settings.GotoPrecision];
             long deltaTime = 400;
 
             try
@@ -3044,11 +2993,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     maxTries++;
                     double[] skyTarget = [0.0, 0.0];
 
-                    if (_settings.AlignmentMode == AlignmentMode.AltAz)
+                    if (Settings.AlignmentMode == AlignmentMode.AltAz)
                     {
                         var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
                         var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
-                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: _settings);
+                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: Settings);
                         skyTarget = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
                     }
 
@@ -3135,7 +3084,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = nameof(EnsureSlewController),
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"SlewController initialized|Mount:{_id}"
+                    Message = $"SlewController initialized|Mount:{Id}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }

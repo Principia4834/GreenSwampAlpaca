@@ -384,7 +384,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Range:{axes[0]}|{axes[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            return new[] { axes[0], axes[1] };
+            return [axes[0], axes[1]];
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             altAz = Range.RangeAltAz(altAz);
-            return new[] { altAz[1], altAz[0] };
+            return [altAz[1], altAz[0]];
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         internal static double[] AxesXyToRaDec(IReadOnlyList<double> axes, AxesContext context)
         {
-            double[] raDec = new[] { axes[0], axes[1] };
+            double[] raDec = [axes[0], axes[1]];
             double lst = context.GetLst(); // ✅ From context
             switch (context.AlignmentMode)
             {
@@ -533,7 +533,7 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            double[] axes = { coordinates[0], coordinates[1] };
+            double[] axes = [coordinates[0], coordinates[1]];
             double[] b;
             double[] alt;
 

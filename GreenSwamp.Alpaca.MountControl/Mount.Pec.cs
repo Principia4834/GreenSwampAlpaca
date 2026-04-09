@@ -101,7 +101,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>pPEC Monitors the mount doing pPEC training</summary>
         internal void CheckPecTraining()
         {
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     break;
@@ -117,11 +117,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         _pPecTraining = bTrain;
                         SkyServer.SkyTasks(MountTaskName.PecTraining, this);
                         _pPecTrainInProgress = bTrain;
-                        if (!bTrain && _settings.PPecOn) //restart pec
+                        if (!bTrain && Settings.PPecOn) //restart pec
                         {
-                            _settings.PPecOn = false;
+                            Settings.PPecOn = false;
                             SkyServer.SkyTasks(MountTaskName.Pec, this);
-                            _settings.PPecOn = true;
+                            Settings.PPecOn = true;
                             SkyServer.SkyTasks(MountTaskName.Pec, this);
                         }
                     }
@@ -136,13 +136,13 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             try
             {
-                if (!_settings.PecOn || !Tracking || PecBinCount < 0 || IsSlewing || !_pecShow) return;
+                if (!Settings.PecOn || !Tracking || PecBinCount < 0 || IsSlewing || !_pecShow) return;
 
                 var position = (int)Range.RangeDouble(_steps[0], Convert.ToDouble(_stepsPerRevolution[0]));
-                var newBinNo = (int)((position + _settings.PecOffSet) / PecBinSteps);
+                var newBinNo = (int)((position + Settings.PecOffSet) / PecBinSteps);
                 Tuple<double, int> pecBin = null;
 
-                switch (_settings.PecMode)
+                switch (Settings.PecMode)
                 {
                     case PecMode.PecWorm:
                         newBinNo %= 100;
@@ -184,8 +184,8 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             catch (Exception ex)
             {
-                _settings.PecOn = false;
-                if (_tracking) this.SetTracking();
+                Settings.PecOn = false;
+                if (Tracking) this.SetTracking();
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
@@ -353,10 +353,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 case PecFileType.GsPecWorm:
                     var master = MakeWormMaster(bins);
                     UpdateWormMaster(master, PecMergeType.Replace);
-                    _settings.PecWormFile = fileName;
+                    Settings.PecWormFile = fileName;
                     break;
                 case PecFileType.GsPec360:
-                    _settings.Pec360File = fileName;
+                    Settings.Pec360File = fileName;
                     break;
                 case PecFileType.GsPecDebug:
                     break;
@@ -406,11 +406,11 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case PecMergeType.Replace:
                     PecWormMaster = mBins;
-                    _settings.PecOffSet = 0;
+                    Settings.PecOffSet = 0;
                     return;
                 case PecMergeType.Merge:
                     var pecBins = PecWormMaster;
-                    if (pecBins == null) { PecWormMaster = mBins; _settings.PecOffSet = 0; return; }
+                    if (pecBins == null) { PecWormMaster = mBins; Settings.PecOffSet = 0; return; }
                     for (var i = 0; i < mBins.Count; i++)
                     {
                         if (double.IsNaN(pecBins[i].Item1))

@@ -36,17 +36,16 @@ namespace GreenSwamp.Alpaca.MountControl.Pulses
     {
         //default list of pulses for the HC
         public List<HcPulseGuide> DefaultPulseGuides =>
-            new List<HcPulseGuide>
-            {
-                new HcPulseGuide { Speed = 1, Duration = 1000, Interval = 1000, Rate = 0.012 },
-                new HcPulseGuide { Speed = 2, Duration = 1000, Interval = 1000, Rate = 0.024 },
-                new HcPulseGuide { Speed = 3, Duration = 1000, Interval = 1000, Rate = 0.165 },
-                new HcPulseGuide { Speed = 4, Duration = 1000, Interval = 1000, Rate = 0.238 },
-                new HcPulseGuide { Speed = 5, Duration = 1000, Interval = 1000, Rate = 0.7 },
-                new HcPulseGuide { Speed = 6, Duration = 1000, Interval = 1000, Rate = 1.4 },
-                new HcPulseGuide { Speed = 7, Duration = 1000, Interval = 1000, Rate = 2.8 },
-                new HcPulseGuide { Speed = 8, Duration = 1000, Interval = 1000, Rate = 3.5}
-            };
+        [
+            new HcPulseGuide { Speed = 1, Duration = 1000, Interval = 1000, Rate = 0.012 },
+            new HcPulseGuide { Speed = 2, Duration = 1000, Interval = 1000, Rate = 0.024 },
+            new HcPulseGuide { Speed = 3, Duration = 1000, Interval = 1000, Rate = 0.165 },
+            new HcPulseGuide { Speed = 4, Duration = 1000, Interval = 1000, Rate = 0.238 },
+            new HcPulseGuide { Speed = 5, Duration = 1000, Interval = 1000, Rate = 0.7 },
+            new HcPulseGuide { Speed = 6, Duration = 1000, Interval = 1000, Rate = 1.4 },
+            new HcPulseGuide { Speed = 7, Duration = 1000, Interval = 1000, Rate = 2.8 },
+            new HcPulseGuide { Speed = 8, Duration = 1000, Interval = 1000, Rate = 3.5 }
+        ];
 
         /// <summary>
         /// Gets a HcPulseGuide by speed number from the default list

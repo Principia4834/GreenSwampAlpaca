@@ -614,7 +614,7 @@ namespace GreenSwamp.Alpaca.MountControl
             WasTracking = Mount.Tracking;
 
             // Disable tracking during slew (will be restored in completion phase)
-            Mount.InstanceApplyTracking(false);
+            Mount.ApplyTracking(false);
 
             // Prepare predictor for Ra/Dec slews.
             // Use Target[] and the per-instance rates captured at construction —
@@ -704,11 +704,11 @@ namespace GreenSwamp.Alpaca.MountControl
 
             if (success && SlewType != SlewType.SlewPark)  // ← Add Park check
             {
-                Mount.InstanceApplyTracking(TrackingAfterSlew);
+                Mount.ApplyTracking(TrackingAfterSlew);
             }
             else
             {
-                Mount.InstanceApplyTracking(false);
+                Mount.ApplyTracking(false);
             }
         }
 
@@ -725,7 +725,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Mark slew as complete (direct access, no reflection needed)
             Mount._slewState = SlewType.SlewNone;
 
-            Mount.InstanceApplyTracking(TrackingAfterSlew);
+            Mount.ApplyTracking(TrackingAfterSlew);
         }
 
         /// <summary>
@@ -739,7 +739,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Mark slew as complete (direct access, no reflection needed)
             Mount._slewState = SlewType.SlewNone;
 
-            Mount.InstanceApplyTracking(false);
+            Mount.ApplyTracking(false);
         }
 
         #endregion

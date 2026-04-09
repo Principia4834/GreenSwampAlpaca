@@ -63,7 +63,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         }
 
         /// <summary>
-        /// Phase 4.8: Constructor with device number for multi-instance support
+        /// Constructor with device number for multi-instance support
         /// </summary>
         /// <param name="deviceNumber">Device number (0-based)</param>
         public Telescope(int deviceNumber)
@@ -95,7 +95,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         }
 
         /// <summary>
-        /// Phase 4.8: Get the Mount for this device number
+        /// Get the Mount for this device number
         /// </summary>
         private Alpaca.MountControl.Mount GetInstance()
         {

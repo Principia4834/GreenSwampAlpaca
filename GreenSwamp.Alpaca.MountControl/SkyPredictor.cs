@@ -179,7 +179,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns></returns>
         public double[] GetRaDecAtTime(DateTime time)
         {
-            double[] result = { Ra, Dec, };
+            double[] result = [Ra, Dec];
             if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && (ReferenceTime != DateTime.MaxValue))
                 if (_rateRa == 0 && _rateDec == 0)
                 {

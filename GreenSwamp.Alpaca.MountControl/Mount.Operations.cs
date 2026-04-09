@@ -22,6 +22,7 @@ using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
 using System.Reflection;
+using GreenSwamp.Alpaca.MountControl.AutoHome;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
@@ -54,7 +55,7 @@ namespace GreenSwamp.Alpaca.MountControl
             RateDec = 0.0;
             if (!SkyServer.AxesStopValidate(this))
             {
-                switch (_settings.Mount)
+                switch (Settings.Mount)
                 {
                     case MountType.Simulator:
                         SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -67,8 +68,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
             _slewState = SlewType.SlewNone;
-            _tracking = false;
-            _trackingMode = TrackingMode.Off;
+            Tracking = false;
+            TrackingMode = TrackingMode.Off;
         }
 
         /// <summary>Abort any active slew with optional start notification — instance version.</summary>
@@ -87,11 +88,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{_slewState}|{_tracking}"
+                Message = $"{_slewState}|{Tracking}"
             });
             abortSlewStarted?.Set();
-            var tracking = _tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
-            InstanceApplyTracking(false);
+            var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
+            ApplyTracking(false);
             if (_slewController != null)
             {
                 MonitorLog.LogToMonitor(new MonitorEntry
@@ -112,7 +113,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _rateMoveAxes.Y = 0.0;
             RateRa = 0.0;
             RateDec = 0.0;
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -123,12 +124,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            if (_settings.AlignmentMode == AlignmentMode.AltAz)
+            if (Settings.AlignmentMode == AlignmentMode.AltAz)
             {
                 AxesRateOfChange.Reset();
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
-            InstanceApplyTracking(tracking);
+            ApplyTracking(tracking);
             MonitorLog.LogToMonitor(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -144,12 +145,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>GoTo park slew — synchronous version.</summary>
         private void GoToPark()
         {
-            InstanceApplyTracking(false);
+            ApplyTracking(false);
             var ps = _parkSelected;
             if (ps == null || double.IsNaN(ps.X) || double.IsNaN(ps.Y)) return;
             SetParkAxis(ps.Name, ps.X, ps.Y);
-            _settings.ParkAxes = new[] { ps.X, ps.Y };
-            _settings.ParkName = ps.Name;
+            Settings.ParkAxes = [ps.X, ps.Y];
+            Settings.ParkName = ps.Name;
             MonitorLog.LogToMonitor(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -160,7 +161,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message = $"Slew to Park: {ps.Name}|{ps.X}|{ps.Y}"
             });
-            SlewSync(new[] { ps.X, ps.Y }, SlewType.SlewPark, tracking: false);
+            SlewSync([ps.X, ps.Y], SlewType.SlewPark, tracking: false);
         }
 
         /// <summary>Complete park — delegates to InstanceCompletePark.</summary>
@@ -186,19 +187,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 });
                 if (degreeLimit < 20) degreeLimit = 100;
                 AutoHomeProgressBar = 0;
-                var encoderTemp = _settings.Encoders;
-                if (_tracking) InstanceApplyTracking(false);
+                var encoderTemp = Settings.Encoders;
+                if (Tracking) ApplyTracking(false);
                 AutoHomeResult raResult, decResult;
-                switch (_settings.Mount)
+                switch (Settings.Mount)
                 {
                     case MountType.Simulator:
-                        var autoHomeSim = new AutoHomeSim(_settings, SimQueue!, this);
+                        var autoHomeSim = new AutoHomeSim(Settings, SimQueue!, this);
                         raResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     case MountType.SkyWatcher:
-                        var autoHomeSky = new AutoHomeSky(_settings, SkyQueue!, this);
+                        var autoHomeSky = new AutoHomeSky(Settings, SkyQueue!, this);
                         raResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
@@ -206,7 +207,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                _settings.Encoders = encoderTemp;
+                Settings.Encoders = encoderTemp;
                 StopAxes();
                 MonitorLog.LogToMonitor(new MonitorEntry
                 {
@@ -220,7 +221,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 });
                 if (raResult == AutoHomeResult.Success && decResult == AutoHomeResult.Success)
                 {
-                    ReSyncAxes(new ParkPosition("AutoHome", _settings.AutoHomeAxisX, _settings.AutoHomeAxisY), false);
+                    ReSyncAxes(new ParkPosition("AutoHome", Settings.AutoHomeAxisX, Settings.AutoHomeAxisY), false);
                     Thread.Sleep(1500);
                 }
                 else if (raResult == AutoHomeResult.StopRequested || decResult == AutoHomeResult.StopRequested)
@@ -277,14 +278,14 @@ namespace GreenSwamp.Alpaca.MountControl
         private void ReSyncAxes(ParkPosition? parkPosition = null, bool saveParkPosition = true)
         {
             if (!IsMountRunning) return;
-            InstanceApplyTracking(false);
+            ApplyTracking(false);
             StopAxes();
-            double[] position = { _homeAxes.X, _homeAxes.Y };
+            double[] position = [_homeAxes.X, _homeAxes.Y];
             var name = "home";
             if (parkPosition != null)
             {
-                var context = AxesContext.FromSettings(_settings);
-                position = Axes.AxesAppToMount(new[] { parkPosition.X, parkPosition.Y }, context);
+                var context = AxesContext.FromSettings(Settings);
+                position = Axes.AxesAppToMount([parkPosition.X, parkPosition.Y], context);
                 name = parkPosition.Name;
             }
             MonitorLog.LogToMonitor(new MonitorEntry
@@ -297,7 +298,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Thread.CurrentThread.ManagedThreadId,
                 Message = $"{name}|{position[0]}|{position[1]}"
             });
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
                     SkyServer.SimTasks(MountTaskName.StopAxes, this);
@@ -326,8 +327,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Get default startup positions — instance version of GetDefaultPositions_Internal.</summary>
         private double[] GetDefaultPositions()
         {
-            double[] positions = { 0, 0 };
-            var homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
+            double[] positions = [0, 0];
+            var homeAxes = GetHomeAxes(Settings.HomeAxisX, Settings.HomeAxisY);
             MonitorLog.LogToMonitor(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -336,17 +337,17 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Home|{homeAxes.X}|{homeAxes.Y}|{_settings.HomeAxisX}|{_settings.HomeAxisY}"
+                Message = $"Home|{homeAxes.X}|{homeAxes.Y}|{Settings.HomeAxisX}|{Settings.HomeAxisY}"
             });
             if (AtPark)
             {
-                if (_settings.AutoTrack)
+                if (Settings.AutoTrack)
                 {
                     AtPark = false;
-                    InstanceApplyTracking(_settings.AutoTrack);
+                    ApplyTracking(Settings.AutoTrack);
                 }
-                var context = AxesContext.FromSettings(_settings);
-                positions = Axes.AxesAppToMount(_settings.ParkAxes, context);
+                var context = AxesContext.FromSettings(Settings);
+                positions = Axes.AxesAppToMount(Settings.ParkAxes, context);
                 _parkSelected = GetStoredParkPosition();
                 MonitorLog.LogToMonitor(new MonitorEntry
                 {
@@ -356,12 +357,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Thread.CurrentThread.ManagedThreadId,
-                    Message = $"Parked,{_settings.ParkName}|{_settings.ParkAxes[0]}|{_settings.ParkAxes[1]}"
+                    Message = $"Parked,{Settings.ParkName}|{Settings.ParkAxes[0]}|{Settings.ParkAxes[1]}"
                 });
             }
             else
             {
-                positions = new[] { homeAxes.X, homeAxes.Y };
+                positions = [homeAxes.X, homeAxes.Y];
             }
             MonitorLog.LogToMonitor(new MonitorEntry
             {
@@ -378,7 +379,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>Get stored park position from settings — instance version.</summary>
         private ParkPosition GetStoredParkPosition()
-            => new ParkPosition(_settings.ParkName, _settings.ParkAxes[0], _settings.ParkAxes[1]);
+            => new ParkPosition(Settings.ParkName, Settings.ParkAxes[0], Settings.ParkAxes[1]);
 
         /// <summary>Set park axis by coordinates — private instance helper.</summary>
         private void SetParkAxis(string name, double x, double y)
@@ -402,9 +403,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsMountRunning) return;
             if (slewAsync)
-                _ = SlewAsync(new[] { primaryAxis, secondaryAxis }, slewState);
+                _ = SlewAsync([primaryAxis, secondaryAxis], slewState);
             else
-                SlewSync(new[] { primaryAxis, secondaryAxis }, slewState);
+                SlewSync([primaryAxis, secondaryAxis], slewState);
         }
 
         #endregion

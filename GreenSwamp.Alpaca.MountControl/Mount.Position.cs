@@ -31,7 +31,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Get alternate position based on alignment mode — instance version.</summary>
         public double[] GetAlternatePosition(double[] position)
         {
-            switch (_settings.AlignmentMode)
+            switch (Settings.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
                     return GetAlternatePositionAltAz(position);
@@ -40,7 +40,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 case AlignmentMode.GermanPolar:
                     return GetAlternatePositionGEM(position);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(_settings.AlignmentMode), _settings.AlignmentMode, "Unsupported alignment mode for alternate position calculation.");
+                    throw new ArgumentOutOfRangeException(nameof(Settings.AlignmentMode), Settings.AlignmentMode, "Unsupported alignment mode for alternate position calculation.");
             }
         }
 
@@ -66,7 +66,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double[] GetAlternatePositionGEM(double[] position)
         {
             if (!IsWithinFlipLimits(position)) { return null; }
-            var context = AxesContext.FromSettings(_settings);
+            var context = AxesContext.FromSettings(Settings);
             var alt = Axes.GetAltAxisPosition(position, context);
             if (!IsWithinFlipLimits(alt)) { return null; }
             var cl = ChooseClosestPosition(_actualAxisX, position, alt);
@@ -92,7 +92,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double[] GetAlternatePositionAltAz(double[] position)
         {
             if (!IsWithinFlipLimits(position)) { return null; }
-            var context = AxesContext.FromSettings(_settings);
+            var context = AxesContext.FromSettings(Settings);
             var alt = Axes.GetAltAxisPosition(position, context);
             var cl = ChooseClosestPosition(_actualAxisX, position, alt);
             if (_flipOnNextGoto)
@@ -116,7 +116,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Polar: within hardware limits and flip angle get alternate position — instance version.</summary>
         private double[] GetAlternatePositionPolar(double[] position)
         {
-            var context = AxesContext.FromSettings(_settings);
+            var context = AxesContext.FromSettings(Settings);
             var alt = Axes.GetAltAxisPosition(position, context);
             alt[0] = Range.Range180(alt[0]);
             var altOk = IsTargetWithinLimits(alt);
@@ -124,7 +124,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!altOk) return null;
             if (posOk && altOk)
             {
-                var cl = ChooseClosestPositionPolar(new[] { _actualAxisX, _actualAxisY }, position, alt);
+                var cl = ChooseClosestPositionPolar([_actualAxisX, _actualAxisY], position, alt);
                 if (_flipOnNextGoto)
                 {
                     cl = cl == "a" ? "b" : "a";
@@ -153,7 +153,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double GetLocalSiderealTime(DateTime utcNow)
         {
             var gsjd = JDate.Ole2Jd(utcNow);
-            return Time.Lst(JDate.Epoch2000Days(), gsjd, false, _settings.Longitude);
+            return Time.Lst(JDate.Epoch2000Days(), gsjd, false, Settings.Longitude);
         }
 
         /// <summary>Get local sidereal time for an explicit longitude — instance version.</summary>
@@ -167,15 +167,15 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool IsWithinFlipLimits(IReadOnlyList<double> position)
         {
             var absPos0 = Math.Abs(position[0]);
-            switch (_settings.AlignmentMode)
+            switch (Settings.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    return (_settings.AxisLimitX >= absPos0) && (absPos0 >= 360.0 - _settings.AxisLimitX);
+                    return (Settings.AxisLimitX >= absPos0) && (absPos0 >= 360.0 - Settings.AxisLimitX);
                 case AlignmentMode.Polar:
-                    return (180.0 - _settings.AxisLimitX <= absPos0) && (absPos0 <= _settings.AxisLimitX);
+                    return (180.0 - Settings.AxisLimitX <= absPos0) && (absPos0 <= Settings.AxisLimitX);
                 case AlignmentMode.GermanPolar:
-                    return -_settings.HourAngleLimit < absPos0 && absPos0 < _settings.HourAngleLimit ||
-                           180 - _settings.HourAngleLimit < absPos0 && absPos0 < 180 + _settings.HourAngleLimit;
+                    return -Settings.HourAngleLimit < absPos0 && absPos0 < Settings.HourAngleLimit ||
+                           180 - Settings.HourAngleLimit < absPos0 && absPos0 < 180 + Settings.HourAngleLimit;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -185,14 +185,14 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool IsTargetWithinLimits(double[] target)
         {
             const double oneArcSec = 1.0 / 3600;
-            var axisUpperLimitY = _settings.AxisUpperLimitY;
-            var axisLowerLimitY = _settings.AxisLowerLimitY;
-            if (_settings.AlignmentMode == AlignmentMode.Polar && _settings.PolarMode == PolarMode.Left)
+            var axisUpperLimitY = Settings.AxisUpperLimitY;
+            var axisLowerLimitY = Settings.AxisLowerLimitY;
+            if (Settings.AlignmentMode == AlignmentMode.Polar && Settings.PolarMode == PolarMode.Left)
             {
-                axisLowerLimitY = 180 - _settings.AxisUpperLimitY;
-                axisUpperLimitY = 180 - _settings.AxisLowerLimitY;
+                axisLowerLimitY = 180 - Settings.AxisUpperLimitY;
+                axisUpperLimitY = 180 - Settings.AxisLowerLimitY;
             }
-            return (-_settings.AxisLimitX - oneArcSec <= target[0] && target[0] <= _settings.AxisLimitX + oneArcSec) &&
+            return (-Settings.AxisLimitX - oneArcSec <= target[0] && target[0] <= Settings.AxisLimitX + oneArcSec) &&
                    (axisLowerLimitY <= target[1] && target[1] <= axisUpperLimitY);
         }
 

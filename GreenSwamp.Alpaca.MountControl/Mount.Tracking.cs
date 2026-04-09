@@ -44,7 +44,7 @@ namespace GreenSwamp.Alpaca.MountControl
     ///   <item><description>Runs the per-tick update loop (<see cref="OnUpdateServerEvent"/>) that converts
     ///   raw hardware step counts to topocentric RA/Dec, Alt/Az, and app-axis coordinates.</description></item>
     ///   <item><description>Manages sidereal, AltAz, and custom tracking modes via
-    ///   <see cref="InstanceApplyTracking"/> and the per-instance AltAz tracking timer.</description></item>
+    ///   <see cref="ApplyTracking"/> and the per-instance AltAz tracking timer.</description></item>
     ///   <item><description>Executes GoTo slews (coarse + precision pass) for RA/Dec, Alt/Az,
     ///   Home, and Park targets through <see cref="SlewAsync"/> / <see cref="SlewSync"/>.</description></item>
     ///   <item><description>Handles pulse guiding (equatorial and AltAz predictor-based) with
@@ -90,10 +90,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
 
-            switch (_settings.Mount)
+            switch (Settings.Mount)
             {
                 case MountType.Simulator:
-                    switch (_settings.AlignmentMode)
+                    switch (Settings.AlignmentMode)
                     {
                         case AlignmentMode.AltAz:
                             if (rateChange != 0)
@@ -123,7 +123,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                 if (_rateMoveAxes.X == 0.0)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
                                 var raRate = currentTrackingMode != TrackingMode.Off
-                                    ? SkyServer.GetRaRateDirection(RateRa, _settings) : 0.0;
+                                    ? SkyServer.GetRaRateDirection(RateRa, Settings) : 0.0;
                                 _ = new CmdRaDecRate(mq.NewId, mq, Axis.Axis1, raRate);
                                 if (_rateMoveAxes.Y == 0.0)
                                 {
@@ -139,7 +139,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 case MountType.SkyWatcher:
-                    switch (_settings.AlignmentMode)
+                    switch (Settings.AlignmentMode)
                     {
                         case AlignmentMode.AltAz:
                             if (rateChange != 0)
@@ -175,7 +175,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (_settings.PecOn) return;
+            if (Settings.PecOn) return;
 
             var monitorItem = new MonitorEntry
             {
@@ -194,9 +194,9 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var change = new Vector();
             change += _skyTrackingRate;
-            change += _skyHcRate;
+            change += SkyHcRate;
             change.X += _rateMoveAxes.X;
-            change.X += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetRaRateDirection(RateRa, _settings) : 0;
+            change.X += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetRaRateDirection(RateRa, Settings) : 0;
             change.Y += _rateMoveAxes.Y;
             change.Y += Settings.AlignmentMode != AlignmentMode.AltAz ? SkyServer.GetDecRateDirection(RateDec, this) : 0;
             CheckAxisLimits();
@@ -217,8 +217,8 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void SetGuideRates()
         {
             var rate = SkyServer.CurrentTrackingRate(this);
-            GuideRateRa = rate * _settings.GuideRateOffsetX;
-            GuideRateDec = rate * _settings.GuideRateOffsetY;
+            GuideRateRa = rate * Settings.GuideRateOffsetX;
+            GuideRateDec = rate * Settings.GuideRateOffsetY;
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -235,18 +235,18 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void CalcCustomTrackingOffset()
         {
             _trackingOffsetRate = new Vector(0.0, 0.0);
-            if (_settings.Mount != MountType.SkyWatcher) return;
-            if (_settings.CustomGearing == false) return;
+            if (Settings.Mount != MountType.SkyWatcher) return;
+            if (Settings.CustomGearing == false) return;
 
             var ratioFactor = (double)_stepsTimeFreq[0] / _stepsPerRevolution[0] * 1296000.0;
             var siderealI = ratioFactor / SiderealRate;
-            siderealI += _settings.CustomRaTrackingOffset;
+            siderealI += Settings.CustomRaTrackingOffset;
             var newRate = ratioFactor / siderealI;
             _trackingOffsetRate.X = SiderealRate - newRate;
 
             ratioFactor = (double)_stepsTimeFreq[1] / _stepsPerRevolution[1] * 1296000.0;
             siderealI = ratioFactor / SiderealRate;
-            siderealI += _settings.CustomDecTrackingOffset;
+            siderealI += Settings.CustomDecTrackingOffset;
             newRate = ratioFactor / siderealI;
             _trackingOffsetRate.Y = SiderealRate - newRate;
 

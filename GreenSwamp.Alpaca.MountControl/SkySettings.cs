@@ -116,8 +116,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _autoHomeAxisX = 0.0;
         private double _autoHomeAxisY = 0.0;
         private string _parkName = "Default";
-        private double[] _parkAxes = new[] { 0.0, 0.0 };
-        private List<ParkPosition> _parkPositions = new();
+        private double[] _parkAxes = [0.0, 0.0];
+        private List<ParkPosition> _parkPositions = [];
         private bool _limitPark = false;
         private string _parkLimitName = string.Empty;
 
@@ -146,7 +146,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _hcAntiDec = false;
         private bool _hcFlipEw = false;
         private bool _hcFlipNs = false;
-        private List<HcPulseGuide> _hcPulseGuides = new();
+        private List<HcPulseGuide> _hcPulseGuides = [];
         private bool _disableKeysOnGoTo = false;
 
         // Miscellaneous (5 fields)
@@ -318,7 +318,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _alignmentMode = value;
 
                     // Invalidate cached park coordinates when alignment mode changes
-                    _parkAxes = new[] { double.NaN, double.NaN };
+                    _parkAxes = [double.NaN, double.NaN];
                     _parkPositions = null;
 
                     OnPropertyChanged();
@@ -1102,7 +1102,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Message = "ParkAxes.Get|Polar mode: storedAzAlt is null or invalid length - returning NaN"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
-                    return new[] { double.NaN, double.NaN };
+                    return [double.NaN, double.NaN];
                 }
 
                 double az = storedAzAlt[0];   // Azimuth from storage (NH convention)
@@ -1155,7 +1155,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context, skipAlternatePosition: true);
+                double[] axes = Axes.AzAltToAxesXy([az, alt], context, skipAlternatePosition: true);
 
                 // LOG 4: After coordinate transformation
                 monitorItem = new MonitorEntry
@@ -1219,7 +1219,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 // Convert axis coordinates to Az/Alt for storage
                 var context = AxesContext.FromSettings(this);
-                double[] azAlt = Axes.AxesXyToAzAlt(new[] { value[0], value[1] }, context);
+                double[] azAlt = Axes.AxesXyToAzAlt([value[0], value[1]], context);
 
                 double az = azAlt[0];   // Azimuth (local coordinates)
                 double alt = azAlt[1];  // Altitude
@@ -1273,7 +1273,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 if (storedAzAlt == null || storedAzAlt.Count == 0)
                 {
-                    return new List<ParkPosition>();
+                    return [];
                 }
 
                 // Convert each position from Az/Alt to mount axis coordinates
@@ -1292,7 +1292,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     // Convert Az/Alt → Mount axis positions
-                    double[] axes = Axes.AzAltToAxesXy(new[] { az, alt }, context);
+                    double[] axes = Axes.AzAltToAxesXy([az, alt], context);
 
                     // Create ParkPosition with axis coordinates
                     axisPositions.Add(new ParkPosition(AlignmentMode)
@@ -1331,7 +1331,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 foreach (var axisPos in value)
                 {
                     // Convert Mount axis positions → Az/Alt
-                    double[] azAlt = Axes.AxesXyToAzAlt(new[] { axisPos.X, axisPos.Y }, context);
+                    double[] azAlt = Axes.AxesXyToAzAlt([axisPos.X, axisPos.Y], context);
 
                     double az = azAlt[0];   // Azimuth (local coordinates)
                     double alt = azAlt[1];  // Altitude
@@ -1656,7 +1656,7 @@ namespace GreenSwamp.Alpaca.MountControl
             get => _hcPulseGuides;
             set
             {
-                _hcPulseGuides = value ?? new List<HcPulseGuide>();
+                _hcPulseGuides = value ?? [];
                 OnPropertyChanged();
             }
         }
@@ -1857,22 +1857,22 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Load ParkAxes - raw assignment for AltAz/GermanPolar, NaN for Polar (forces transformation)
                 if (_alignmentMode == AlignmentMode.Polar)
                 {
-                    _parkAxes = new[] { double.NaN, double.NaN }; // Force lazy load + transformation
+                    _parkAxes = [double.NaN, double.NaN]; // Force lazy load + transformation
                 }
                 else
                 {
-                    _parkAxes = settings.ParkAxes ?? new[] { double.NaN, double.NaN };
+                    _parkAxes = settings.ParkAxes ?? [double.NaN, double.NaN];
                 }
 
                 // Load ParkPositions - raw assignment (transformation handled by property getter if needed)
                 if (_alignmentMode == AlignmentMode.Polar)
                 {
-                    _parkPositions = new List<ParkPosition>(); // Force lazy load + transformation
+                    _parkPositions = []; // Force lazy load + transformation
                 }
                 else
                 {
                     _parkPositions = settings.ParkPositions?.Select(p =>
-                        new ParkPosition ( p.Name, p.X, p.Y )).ToList() ?? new List<ParkPosition>();
+                        new ParkPosition ( p.Name, p.X, p.Y )).ToList() ?? [];
                 }
 
                 _limitPark = settings.LimitPark;
@@ -1949,7 +1949,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     var currentSettings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
 
                     // Copy ParkAxes from profile to settings service
-                    currentSettings.ParkAxes = new[] { settings.ParkAxes[0], settings.ParkAxes[1] };
+                    currentSettings.ParkAxes = [settings.ParkAxes[0], settings.ParkAxes[1]];
 
                     // Copy ParkPositions from profile to settings service
                     if (settings.ParkPositions != null && settings.ParkPositions.Count > 0)

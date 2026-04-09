@@ -51,38 +51,38 @@ namespace GreenSwamp.Alpaca.Server.Services
         {
             try
             {
-                var inst = MountRegistry.GetInstance(deviceNumber);
-                if (inst == null) return new TelescopeStateModel();
+                var mount = MountRegistry.GetInstance(deviceNumber);
+                if (mount == null) return new TelescopeStateModel();
 
                 return new TelescopeStateModel
                 {
-                    Altitude = inst.Altitude,
-                    Azimuth = inst.Azimuth,
-                    Declination = inst.Declination,
-                    RightAscension = inst.RightAscension,
-                    SideOfPier = inst.SideOfPier,
-                    LocalHourAngle = inst.Lha,
+                    Altitude = mount.Altitude,
+                    Azimuth = mount.Azimuth,
+                    Declination = mount.Declination,
+                    RightAscension = mount.RightAscension,
+                    SideOfPier = mount.SideOfPier,
+                    LocalHourAngle = mount.Lha,
                     UTCDate = HiResDateTime.UtcNow,
                     LocalDate = DateTime.Now,
-                    Slewing = inst.IsSlewing,
-                    Tracking = inst.Tracking,
-                    AtPark = inst.AtPark,
-                    AtHome = inst.AtHome,
-                    IsMountRunning = inst.IsMountRunning,
-                    TargetRightAscension = inst.TargetRa,
-                    TargetDeclination = inst.TargetDec,
-                    ActualAxisX = inst.ActualAxisX,
-                    ActualAxisY = inst.ActualAxisY,
-                    AppAxisX = inst.AppAxisX,
-                    AppAxisY = inst.AppAxisY,
-                    Axis1Steps = inst.Steps?[0] ?? 0,
-                    Axis2Steps = inst.Steps?[1] ?? 0,
+                    Slewing = mount.IsSlewing,
+                    Tracking = mount.Tracking,
+                    AtPark = mount.AtPark,
+                    AtHome = mount.AtHome,
+                    IsMountRunning = mount.IsMountRunning,
+                    TargetRightAscension = mount.TargetRa,
+                    TargetDeclination = mount.TargetDec,
+                    ActualAxisX = mount.ActualAxisX,
+                    ActualAxisY = mount.ActualAxisY,
+                    AppAxisX = mount.AppAxisX,
+                    AppAxisY = mount.AppAxisY,
+                    Axis1Steps = mount.Steps?[0] ?? 0,
+                    Axis2Steps = mount.Steps?[1] ?? 0,
                     TrackingRate = DriveRate.Sidereal,
-                    IsPulseGuidingRa = inst.IsPulseGuidingRa,
-                    IsPulseGuidingDec = inst.IsPulseGuidingDec,
-                    SlewState = inst.SlewState,
-                    LoopCounter = inst.LoopCounter,
-                    TimerOverruns = inst.TimerOverruns,
+                    IsPulseGuidingRa = mount.IsPulseGuidingRa,
+                    IsPulseGuidingDec = mount.IsPulseGuidingDec,
+                    SlewState = mount.SlewState,
+                    LoopCounter = mount.LoopCounter,
+                    TimerOverruns = mount.TimerOverruns,
                     LastUpdate = DateTime.UtcNow
                 };
             }

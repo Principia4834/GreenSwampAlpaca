@@ -166,11 +166,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="direction">GuideDirections</param>
         /// <param name="duration">in milliseconds</param>
         /// /// <param name="altRate">alternate rate to replace the guide rate</param>
-        public static void PulseGuide(GuideDirection direction, int duration, double altRate, Mount? instance = null) // J1: instance-aware
+        public static void PulseGuide(GuideDirection direction, int duration, double altRate, Mount? instance = null)
         {
-            var inst = instance;
+            var mount = instance;
             var settings = instance?.Settings;
-            if (inst == null || !inst.IsMountRunning) { throw new Exception("Mount not running"); }
+            if (mount == null || !mount.IsMountRunning) { throw new Exception("Mount not running"); }
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{direction}|{duration}" };
@@ -184,19 +184,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 case GuideDirection.South:
                     if (duration == 0)
                     {
-                        inst!.IsPulseGuidingDec = false; // J1: per-instance
+                        mount!.IsPulseGuidingDec = false; // J1: per-instance
                         return;
                     }
-                    inst!.IsPulseGuidingDec = true; // J1: per-instance
-                    inst!._hcPrevMoveDec = null; // J1: per-instance (replaces HcResetPrevMove(MountAxis.Dec))
-                    var decGuideRate = useAltRate ? altRate : Math.Abs(inst!.GuideRateDec); // J1: per-instance
+                    mount!.IsPulseGuidingDec = true; // J1: per-instance
+                    mount!._hcPrevMoveDec = null; // J1: per-instance (replaces HcResetPrevMove(MountAxis.Dec))
+                    var decGuideRate = useAltRate ? altRate : Math.Abs(mount!.GuideRateDec); // J1: per-instance
                     switch (settings!.AlignmentMode) // J1: per-instance settings
                     {
                         case AlignmentMode.AltAz:
                             if (direction == GuideDirection.South) { decGuideRate = -decGuideRate; }
                             break;
                         case AlignmentMode.Polar:
-                            if (inst!.SideOfPier == PointingState.Normal) // J1: per-instance
+                            if (mount!.SideOfPier == PointingState.Normal) // J1: per-instance
                             {
                                 if (direction == GuideDirection.North) { decGuideRate = -decGuideRate; }
                             }
@@ -204,10 +204,10 @@ namespace GreenSwamp.Alpaca.MountControl
                             {
                                 if (direction == GuideDirection.South) { decGuideRate = -decGuideRate; }
                             }
-                            if (inst!.Settings.PolarMode == PolarMode.Left) decGuideRate = -decGuideRate; // J1: per-instance; swap direction because primary OTA is flipped
+                            if (mount!.Settings.PolarMode == PolarMode.Left) decGuideRate = -decGuideRate; // J1: per-instance; swap direction because primary OTA is flipped
                             break;
                         case AlignmentMode.GermanPolar:
-                            if (inst!.SideOfPier == PointingState.Normal) // J1: per-instance
+                            if (mount!.SideOfPier == PointingState.Normal) // J1: per-instance
                             {
                                 if (direction == GuideDirection.North) { decGuideRate = -decGuideRate; }
                             }
@@ -220,31 +220,31 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     // Direction switched add backlash compensation
                     var decBacklashAmount = 0;
-                    if (direction != inst!._lastDecDirection) decBacklashAmount = settings!.DecBacklash; // J1: per-instance
-                    inst!._lastDecDirection = direction; // J1: per-instance
-                    inst!._ctsPulseGuideDec?.Cancel(); // J1: per-instance
-                    inst!._ctsPulseGuideDec?.Dispose();
-                    inst!._ctsPulseGuideDec = new CancellationTokenSource();
+                    if (direction != mount!._lastDecDirection) decBacklashAmount = settings!.DecBacklash; // J1: per-instance
+                    mount!._lastDecDirection = direction; // J1: per-instance
+                    mount!._ctsPulseGuideDec?.Cancel(); // J1: per-instance
+                    mount!._ctsPulseGuideDec?.Dispose();
+                    mount!._ctsPulseGuideDec = new CancellationTokenSource();
 
                     switch (settings!.Mount) // J1: per-instance
                     {
                         case MountType.Simulator:
                         {
-                            var mq = inst!.SimQueue!; // J1: per-instance
+                            var mq = mount!.SimQueue!; // J1: per-instance
                             switch (settings!.AlignmentMode) // J1: per-instance
                             {
                                 case AlignmentMode.AltAz:
-                                    inst!.PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, inst.SimPulseGoto, inst!._ctsPulseGuideDec.Token); // J1: per-instance
+                                    mount!.PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, mount.SimPulseGoto, mount!._ctsPulseGuideDec.Token); // J1: per-instance
                                     break;
                                 case AlignmentMode.Polar:
-                                    if (!(inst!.Settings.Latitude < 0)) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate); // J1: SouthernHemisphereâ†’per-instance
+                                    if (!(mount!.Settings.Latitude < 0)) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate); // J1: SouthernHemisphereâ†’per-instance
                                     _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis2, decGuideRate, duration,
-                                        inst!._ctsPulseGuideDec.Token);
+                                        mount!._ctsPulseGuideDec.Token);
                                     break;
                                 case AlignmentMode.GermanPolar:
-                                    if (!(inst!.Settings.Latitude < 0)) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate); // J1: SouthernHemisphereâ†’per-instance
+                                    if (!(mount!.Settings.Latitude < 0)) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate); // J1: SouthernHemisphereâ†’per-instance
                                     _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis2, decGuideRate, duration,
-                                        inst!._ctsPulseGuideDec.Token);
+                                        mount!._ctsPulseGuideDec.Token);
                                     break;
                                 default:
                                     break;
@@ -253,18 +253,18 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         case MountType.SkyWatcher:
                         {
-                            var sq = inst!.SkyQueue!; // J1: per-instance
+                            var sq = mount!.SkyQueue!; // J1: per-instance
                             switch (settings!.AlignmentMode) // J1: per-instance
                             {
                                 case AlignmentMode.AltAz:
-                                    inst!.PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, inst.SkyPulseGoto, inst!._ctsPulseGuideDec.Token); // J1: per-instance
+                                    mount!.PulseGuideAltAz((int)Axis.Axis2, decGuideRate, duration, mount.SkyPulseGoto, mount!._ctsPulseGuideDec.Token); // J1: per-instance
                                     break;
                                 case AlignmentMode.Polar:
-                                    if (!(inst!.Settings.Latitude < 0)) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate); // J1: SouthernHemisphereâ†’per-instance
-                                    _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis2, decGuideRate, duration, decBacklashAmount, inst!._ctsPulseGuideDec.Token);
+                                    if (!(mount!.Settings.Latitude < 0)) decGuideRate = decGuideRate > 0 ? -Math.Abs(decGuideRate) : Math.Abs(decGuideRate); // J1: SouthernHemisphereâ†’per-instance
+                                    _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis2, decGuideRate, duration, decBacklashAmount, mount!._ctsPulseGuideDec.Token);
                                     break;
                                 case AlignmentMode.GermanPolar:
-                                    _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis2, decGuideRate, duration, decBacklashAmount, inst!._ctsPulseGuideDec.Token);
+                                    _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis2, decGuideRate, duration, decBacklashAmount, mount!._ctsPulseGuideDec.Token);
                                     break;
                                 default:
                                     break;
@@ -279,15 +279,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 case GuideDirection.West:
                     if (duration == 0)
                     {
-                        inst!.IsPulseGuidingRa = false; // J1: per-instance
+                        mount!.IsPulseGuidingRa = false; // J1: per-instance
                         return;
                     }
-                    inst!.IsPulseGuidingRa = true; // J1: per-instance
-                    inst!._hcPrevMoveRa = null; // J1: per-instance (replaces HcResetPrevMove(MountAxis.Ra))
-                    var raGuideRate = useAltRate ? altRate : Math.Abs(inst!.GuideRateRa); // J1: per-instance
+                    mount!.IsPulseGuidingRa = true; // J1: per-instance
+                    mount!._hcPrevMoveRa = null; // J1: per-instance (replaces HcResetPrevMove(MountAxis.Ra))
+                    var raGuideRate = useAltRate ? altRate : Math.Abs(mount!.GuideRateRa); // J1: per-instance
                     if (settings!.AlignmentMode != AlignmentMode.AltAz) // J1: per-instance
                     {
-                        if (inst!.Settings.Latitude < 0) // J1: SouthernHemisphereâ†’per-instance
+                        if (mount!.Settings.Latitude < 0) // J1: SouthernHemisphereâ†’per-instance
                         {
                             if (direction == GuideDirection.West) { raGuideRate = -raGuideRate; }
                         }
@@ -301,32 +301,32 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (direction == GuideDirection.East) { raGuideRate = -raGuideRate; }
                     }
 
-                    inst!._ctsPulseGuideRa?.Cancel(); // J1: per-instance
-                    inst!._ctsPulseGuideRa?.Dispose();
-                    inst!._ctsPulseGuideRa = new CancellationTokenSource();
+                    mount!._ctsPulseGuideRa?.Cancel(); // J1: per-instance
+                    mount!._ctsPulseGuideRa?.Dispose();
+                    mount!._ctsPulseGuideRa = new CancellationTokenSource();
                     switch (settings!.Mount) // J1: per-instance
                     {
                         case MountType.Simulator:
                             if (settings!.AlignmentMode == AlignmentMode.AltAz) // J1: per-instance
                             {
-                                inst!.PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, inst.SimPulseGoto, inst!._ctsPulseGuideRa.Token); // J1: per-instance
+                                mount!.PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, mount.SimPulseGoto, mount!._ctsPulseGuideRa.Token); // J1: per-instance
                             }
                             else
                             {
-                                var mq = inst!.SimQueue!; // J1: per-instance
-                                _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis1, raGuideRate, duration, inst!._ctsPulseGuideRa.Token);
+                                var mq = mount!.SimQueue!; // J1: per-instance
+                                _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis1, raGuideRate, duration, mount!._ctsPulseGuideRa.Token);
                             }
 
                             break;
                         case MountType.SkyWatcher:
                             if (settings!.AlignmentMode == AlignmentMode.AltAz) // J1: per-instance
                             {
-                                inst!.PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, inst.SkyPulseGoto, inst!._ctsPulseGuideRa.Token); // J1: per-instance
+                                mount!.PulseGuideAltAz((int)Axis.Axis1, raGuideRate, duration, mount.SkyPulseGoto, mount!._ctsPulseGuideRa.Token); // J1: per-instance
                             }
                             else
                             {
-                                var sq = inst!.SkyQueue!; // J1: per-instance
-                                _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis1, raGuideRate, duration, 0, inst!._ctsPulseGuideRa.Token);
+                                var sq = mount!.SkyQueue!; // J1: per-instance
+                                _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis1, raGuideRate, duration, 0, mount!._ctsPulseGuideRa.Token);
                             }
                             break;
                         default:
@@ -346,37 +346,37 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Calculates the current RA tracking rate for a specific instance (arc seconds per second).
         /// Used by per-instance SkyPredictor to avoid reading from _defaultInstance.
         /// </summary>
-        public static double CurrentTrackingRate(Mount inst)
+        public static double CurrentTrackingRate(Mount mount)
         {
             double rate;
-            switch (inst.Settings.TrackingRate)
+            switch (mount.Settings.TrackingRate)
             {
                 case DriveRate.Sidereal:
-                    rate = inst.Settings.SiderealRate;
+                    rate = mount.Settings.SiderealRate;
                     break;
                 case DriveRate.Solar:
-                    rate = inst.Settings.SolarRate;
+                    rate = mount.Settings.SolarRate;
                     break;
                 case DriveRate.Lunar:
-                    rate = inst.Settings.LunarRate;
+                    rate = mount.Settings.LunarRate;
                     break;
                 case DriveRate.King:
-                    rate = inst.Settings.KingRate;
+                    rate = mount.Settings.KingRate;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
             if (rate < SiderealRate * 2 & rate != 0)
-                rate += inst._trackingOffsetRate.X;
+                rate += mount._trackingOffsetRate.X;
 
-            if (inst.Settings.PecOn && inst.Tracking && inst._pecBinNow != null && !double.IsNaN(inst._pecBinNow.Item2))
-                if (Math.Abs(inst._pecBinNow.Item2 - 1) < .04)
-                    rate *= inst._pecBinNow.Item2;
+            if (mount.Settings.PecOn && mount.Tracking && mount._pecBinNow != null && !double.IsNaN(mount._pecBinNow.Item2))
+                if (Math.Abs(mount._pecBinNow.Item2 - 1) < .04)
+                    rate *= mount._pecBinNow.Item2;
 
             rate /= 3600;
-            if (inst.Settings.RaTrackingOffset <= 0) { return rate; }
-            var offsetrate = rate * (Convert.ToDouble(inst.Settings.RaTrackingOffset) / 100000);
+            if (mount.Settings.RaTrackingOffset <= 0) { return rate; }
+            var offsetrate = rate * (Convert.ToDouble(mount.Settings.RaTrackingOffset) / 100000);
             rate += offsetrate;
             return rate;
         }
@@ -384,34 +384,34 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Update AltAz tracking rates including delta for tracking error
         /// </summary>
-        internal static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, Mount inst)
+        internal static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, Mount mount)
         {
             switch (altAzTrackingType)
             {
                 case AltAzTrackingType.Predictor:
-                    double[] delta = { 0.0, 0.0 };
-                    if (inst.SkyPredictor.RaDecSet)
+                    double[] delta = [0.0, 0.0];
+                    if (mount.SkyPredictor.RaDecSet)
                     {
                         // Update mount position
-                        var evt = inst._mountPositionUpdatedEvent;
+                        var evt = mount._mountPositionUpdatedEvent;
                         evt.Reset();
-                        inst.UpdateSteps();
+                        mount.UpdateSteps();
                         if (!evt.Wait(5000)) break;
-                        var steps = inst._steps;
-                        DateTime nextTime = HiResDateTime.UtcNow.AddMilliseconds(inst.Settings.AltAzTrackingUpdateInterval);
-                        var raDec = inst.SkyPredictor.GetRaDecAtTime(nextTime);
+                        var steps = mount._steps;
+                        DateTime nextTime = HiResDateTime.UtcNow.AddMilliseconds(mount.Settings.AltAzTrackingUpdateInterval);
+                        var raDec = mount.SkyPredictor.GetRaDecAtTime(nextTime);
                         // get required target position in topo coordinates
-                        var internalRaDec = Transforms.CoordTypeToInternal(raDec[0], raDec[1], settings: inst.Settings);
-                        var skyTarget = Coordinate.RaDec2AltAz(internalRaDec.X, internalRaDec.Y, inst.GetLocalSiderealTime(nextTime), inst.Settings.Latitude);
+                        var internalRaDec = Transforms.CoordTypeToInternal(raDec[0], raDec[1], settings: mount.Settings);
+                        var skyTarget = Coordinate.RaDec2AltAz(internalRaDec.X, internalRaDec.Y, mount.GetLocalSiderealTime(nextTime), mount.Settings.Latitude);
                         Array.Reverse(skyTarget);
                         skyTarget = GetSyncedAxes(skyTarget);
-                        var rawPositions = new[] { inst.ConvertStepsToDegrees(steps[0], 0), inst.ConvertStepsToDegrees(steps[1], 1) };
+                        var rawPositions = new[] { mount.ConvertStepsToDegrees(steps[0], 0), mount.ConvertStepsToDegrees(steps[1], 1) };
                         delta[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
                         delta[1] = Range.Range180((skyTarget[1] - rawPositions[1]));
                         const double milliSecond = 0.001;
-                        inst._skyTrackingRate = new Vector(
-                            delta[0] / (inst.Settings.AltAzTrackingUpdateInterval * milliSecond),
-                            delta[1] / (inst.Settings.AltAzTrackingUpdateInterval * milliSecond)
+                        mount._skyTrackingRate = new Vector(
+                            delta[0] / (mount.Settings.AltAzTrackingUpdateInterval * milliSecond),
+                            delta[1] / (mount.Settings.AltAzTrackingUpdateInterval * milliSecond)
                         );
                         var monitorItem = new MonitorEntry
                         {
@@ -434,19 +434,19 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Positive direction mean go mechanical north
         /// </summary>
         /// <returns></returns>
-        internal static double GetDecRateDirection(double rate, Mount inst)
+        internal static double GetDecRateDirection(double rate, Mount mount)
         {
             bool moveNorth = rate > 0;
-            bool isEast = inst.SideOfPier == PointingState.Normal;
-            bool isWest = inst.SideOfPier == PointingState.ThroughThePole;
+            bool isEast = mount.SideOfPier == PointingState.Normal;
+            bool isWest = mount.SideOfPier == PointingState.ThroughThePole;
             bool invert = false;
             rate = Math.Abs(rate);
 
-            switch (inst.Settings.Mount)
+            switch (mount.Settings.Mount)
             {
                 case MountType.Simulator:
                 case MountType.SkyWatcher:
-                    switch (inst.Settings.AlignmentMode)
+                    switch (mount.Settings.AlignmentMode)
                     {
                         case AlignmentMode.AltAz:
                             // No direction change needed for AltAz
@@ -455,36 +455,36 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.Polar:
                             if (isEast || isWest)
                             {
-                                if (inst.Settings.Mount == MountType.Simulator)
+                                if (mount.Settings.Mount == MountType.Simulator)
                                 {
-                                    if (inst.Settings.Latitude < 0)
+                                    if (mount.Settings.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && !moveNorth) || (isWest && moveNorth);
                                 }
                                 else // SkyWatcher
                                 {
-                                    if (inst.Settings.Latitude < 0)
+                                    if (mount.Settings.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
-                                    if (inst.Settings.PolarMode == PolarMode.Left) invert = !invert;
+                                    if (mount.Settings.PolarMode == PolarMode.Left) invert = !invert;
                                 }
                             }
                             break;
                         case AlignmentMode.GermanPolar:
                             if (isEast || isWest)
                             {
-                                if (inst.Settings.Mount == MountType.Simulator)
+                                if (mount.Settings.Mount == MountType.Simulator)
                                 {
-                                    if (inst.Settings.Latitude < 0)
+                                    if (mount.Settings.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && !moveNorth) || (isWest && moveNorth);
                                 }
                                 else // SkyWatcher
                                 {
-                                    if (inst.Settings.Latitude < 0)
+                                    if (mount.Settings.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
