@@ -22,9 +22,9 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Thread-safe registry for managing multiple telescope device instances.
     /// Implements Phase 4.8 multi-instance support.
     /// </summary>
-    public static class MountInstanceRegistry
+    public static class MountRegistry
     {
-        private static readonly Dictionary<int, MountInstance> _instances = new Dictionary<int, MountInstance>();
+        private static readonly Dictionary<int, Mount> _instances = new Dictionary<int, Mount>();
         private static readonly object _lock = new object();
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <exception cref="ArgumentException">Device number already exists</exception>
         /// <exception cref="ArgumentNullException">Settings or name is null</exception>
         /// <exception cref="ArgumentOutOfRangeException">Device number is negative</exception>
-        public static void CreateInstance(int deviceNumber, SkySettingsInstance settings, string deviceName)
+        public static void CreateInstance(int deviceNumber, SkySettings settings, string deviceName)
         {
             if (deviceNumber < 0)
             {
@@ -60,8 +60,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentException($"Device number {deviceNumber} already exists", nameof(deviceNumber));
                 }
 
-                // Create MountInstance with device name
-                var instance = new MountInstance($"device-{deviceNumber}", settings, deviceName);
+                // Create Mount with device name
+                var instance = new Mount($"device-{deviceNumber}", settings, deviceName);
                 _instances[deviceNumber] = instance;
             }
         }
@@ -70,8 +70,8 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Retrieves a mount instance by device number.
         /// </summary>
         /// <param name="deviceNumber">Device number to look up</param>
-        /// <returns>MountInstance if found, null otherwise</returns>
-        public static MountInstance? GetInstance(int deviceNumber)
+        /// <returns>Mount if found, null otherwise</returns>
+        public static Mount? GetInstance(int deviceNumber)
         {
             lock (_lock)
             {
@@ -114,11 +114,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Gets a read-only snapshot of all registered instances.
         /// </summary>
         /// <returns>Read-only dictionary of device numbers to instances</returns>
-        public static IReadOnlyDictionary<int, MountInstance> GetAllInstances()
+        public static IReadOnlyDictionary<int, Mount> GetAllInstances()
         {
             lock (_lock)
             {
-                return new Dictionary<int, MountInstance>(_instances);
+                return new Dictionary<int, Mount>(_instances);
             }
         }
 

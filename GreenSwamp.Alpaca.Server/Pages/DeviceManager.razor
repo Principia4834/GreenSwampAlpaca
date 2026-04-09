@@ -4,6 +4,7 @@
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.MountControl
 @using GreenSwamp.Alpaca.Server.Services
+@using SkySettings = GreenSwamp.Alpaca.Settings.Models.SkySettings
 @inject IVersionedSettingsService SettingsService
 @implements IDisposable
 
@@ -62,7 +63,7 @@
                         <tbody>
                             @foreach (var device in _devices)
                             {
-                                var instance = MountInstanceRegistry.GetInstance(device.DeviceNumber);
+                                var instance = MountRegistry.GetInstance(device.DeviceNumber);
                                 var connected = instance?.IsConnected == true;
                                 var statusBadge = connected ? "badge bg-success" : "badge bg-secondary";
                                 var statusText = connected ? "Connected" : "Disconnected";
@@ -266,7 +267,7 @@
     {
         try
         {
-            var instance = MountInstanceRegistry.GetInstance(deviceNumber);
+            var instance = MountRegistry.GetInstance(deviceNumber);
             if (instance == null)
             {
                 errorMessage = $"Device {deviceNumber} not found in registry (may be disabled)";
@@ -286,7 +287,7 @@
     {
         try
         {
-            var instance = MountInstanceRegistry.GetInstance(deviceNumber);
+            var instance = MountRegistry.GetInstance(deviceNumber);
             if (instance == null)
             {
                 errorMessage = $"Device {deviceNumber} not found in registry";

@@ -28,7 +28,39 @@ using System.Reflection;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
-    public partial class MountInstance
+    /// <summary>
+    /// Represents a per-device instance of a telescope mount controller, implementing the
+    /// <see cref="IMountController"/> interface for both SkyWatcher hardware and the built-in simulator.
+    /// <para>
+    /// Each <see cref="Mount"/> owns its full lifecycle — serial/UDP connection, hardware command
+    /// queues (<see cref="SkyQueue"/> / <see cref="SimQueue"/>), coordinate pipeline,
+    /// tracking timers, slew controller, and all associated cancellation tokens — so that multiple
+    /// physical devices can operate concurrently without shared state.
+    /// </para>
+    /// <para>
+    /// Key responsibilities:
+    /// <list type="bullet">
+    ///   <item><description>Connects to and disconnects from mount hardware (COM port or UDP/WiFi).</description></item>
+    ///   <item><description>Runs the per-tick update loop (<see cref="OnUpdateServerEvent"/>) that converts
+    ///   raw hardware step counts to topocentric RA/Dec, Alt/Az, and app-axis coordinates.</description></item>
+    ///   <item><description>Manages sidereal, AltAz, and custom tracking modes via
+    ///   <see cref="InstanceApplyTracking"/> and the per-instance AltAz tracking timer.</description></item>
+    ///   <item><description>Executes GoTo slews (coarse + precision pass) for RA/Dec, Alt/Az,
+    ///   Home, and Park targets through <see cref="SlewAsync"/> / <see cref="SlewSync"/>.</description></item>
+    ///   <item><description>Handles pulse guiding (equatorial and AltAz predictor-based) with
+    ///   per-instance cancellation tokens to prevent cross-device interference.</description></item>
+    ///   <item><description>Enforces meridian and horizon axis limits and reacts with configurable
+    ///   stop-tracking or auto-park responses.</description></item>
+    ///   <item><description>Exposes ASCOM-compliant properties and bridge methods consumed by
+    ///   <c>Telescope.cs</c> and the Blazor UI without routing through the static <c>SkyServer</c> façade.</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// This is a partial class; additional members are defined in
+    /// <c>Mount.Tracking.cs</c> and related sibling files.
+    /// </para>
+    /// </summary>
+    public partial class Mount
     {
         #region Tracking and Rate Methods (Phase M1)
 
@@ -76,7 +108,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             rate = SkyGetRate();
                             {
-                                var mq = MountQueueInstance;
+                                var mq = SimQueue;
                                 if (mq == null) return;
                                 if (_rateMoveAxes.X == 0.0)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rate.X);
@@ -87,7 +119,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         case AlignmentMode.Polar:
                         case AlignmentMode.GermanPolar:
                             {
-                                var mq = MountQueueInstance!;
+                                var mq = SimQueue!;
                                 if (_rateMoveAxes.X == 0.0)
                                     _ = new CmdAxisTracking(mq.NewId, mq, Axis.Axis1, rateChange);
                                 var raRate = currentTrackingMode != TrackingMode.Off
@@ -130,7 +162,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     rate = SkyGetRate();
                     {
-                        var sq = SkyQueueInstance;
+                        var sq = SkyQueue;
                         if (sq == null) return;
                         if (_rateMoveAxes.X == 0.0)
                             _ = new SkyAxisSlew(sq.NewId, sq, Axis.Axis1, rate.X);

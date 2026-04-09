@@ -25,24 +25,24 @@ public class QueueMigrationTests
     public void WhenStepsUpdatedThenInstanceEventFires()
     {
         // The callback chain (Q1/Q4d): executor → SetupCallbacks lambda → SkyServer.Steps setter
-        // Full verification requires MountInstance.MountStart() + a running simulator tick.
+        // Full verification requires Mount.MountStart() + a running simulator tick.
         Assert.True(true, "placeholder — run as integration test with live simulator");
     }
 
     // -------------------------------------------------------------------------
-    // Q2 — Queue instances owned by MountInstance
+    // Q2 — Queue instances owned by Mount
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// After Q2: each MountInstance must own a non-null queue reference
+    /// After Q2: each Mount must own a non-null queue reference
     /// after it has been started (simulated path only).
     /// Integration test — requires a runnable simulator environment.
     /// </summary>
-    [Fact(Skip = "Integration test: requires full MountInstance.MountStart() with running simulator")]
+    [Fact(Skip = "Integration test: requires full Mount.MountStart() with running simulator")]
     public void WhenSimulatorMountStartedThenMountInstanceOwnsQueue()
     {
-        // var settings = new SkySettingsInstance { Mount = MountType.Simulator };
-        // var instance = new MountInstance("test-0", settings);
+        // var settings = new SkySettings { Mount = MountType.Simulator };
+        // var instance = new Mount("test-0", settings);
         // instance.MountStart();
         // Assert.NotNull(instance.MountQueueInstance);
         // Assert.True(instance.MountQueueInstance.IsRunning);
@@ -72,7 +72,7 @@ public class QueueMigrationTests
     /// in device 1's queue. Verifies per-device isolation end-to-end.
     /// Integration test — requires two running queue instances.
     /// </summary>
-    [Fact(Skip = "Integration test: requires two running MountInstance queues")]
+    [Fact(Skip = "Integration test: requires two running Mount queues")]
     public void WhenCommandSentToDevice0ThenDevice1QueueUnaffected()
     {
         // Arrange: two independent MountQueueImplementation instances (Q2)

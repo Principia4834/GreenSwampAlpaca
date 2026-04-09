@@ -13,17 +13,17 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         private const int MinSteps = Int32.MinValue;
         private int TripPosition { get; set; }
         private bool HasHomeSensor { get; set; }
-        private readonly SkySettingsInstance SettingsInstance;
+        private readonly SkySettings _settings;
         private readonly ICommandQueue<Actions> _mountQueue;
-        private readonly MountInstance _owner;
+        private readonly MountControl.Mount _owner;
 
         /// <summary>
         /// auto home for the simulator
         /// </summary>
-        /// <param name="settingsInstance"></param>
+        /// <param name="settings"></param>
         /// <param name="mountQueue"></param>
         /// <param name="owner"></param>
-        public AutoHomeSim(SkySettingsInstance settingsInstance, ICommandQueue<Actions> mountQueue, MountInstance owner)
+        public AutoHomeSim(SkySettings settings, ICommandQueue<Actions> mountQueue, MountControl.Mount owner)
         {
             var monitorItem = new MonitorEntry
             {
@@ -36,7 +36,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Message = "Start"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            this.SettingsInstance = settingsInstance;
+            this._settings = settings;
             _mountQueue = mountQueue;
             _owner = owner;
         }
@@ -135,8 +135,8 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             bool? status;
             bool? loopStatus = null;
             _owner._autoHomeProgressBar += 5;
-            Simulator.Settings.AutoHomeAxisX = (int) SettingsInstance.AutoHomeAxisX;
-            Simulator.Settings.AutoHomeAxisY = (int) SettingsInstance.AutoHomeAxisY;
+            Simulator.Settings.AutoHomeAxisX = (int) _settings.AutoHomeAxisX;
+            Simulator.Settings.AutoHomeAxisY = (int) _settings.AutoHomeAxisY;
 
             // slew away from those that start at home position
             var slewResult = SlewAxis(3.3, axis);
@@ -269,7 +269,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
 
             var a = TripPosition / 36000;
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(SettingsInstance);
+            var context = AxesContext.FromSettings(_settings);
             var positions = Axes.MountAxis2Mount(context);
             switch (axis)
             {
@@ -306,14 +306,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(SettingsInstance);
+            var context = AxesContext.FromSettings(_settings);
             var positions = Axes.MountAxis2Mount(context);
 
             switch (axis)
             {
                 case Axis.Axis1:
                     degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
-                    if (SettingsInstance.Latitude < 0) degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
+                    if (_settings.Latitude < 0) degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
                     _owner.SlewSync(new[] { positions[0] + degrees, positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:

@@ -152,9 +152,9 @@ namespace GreenSwamp.Alpaca.Server
             {
                 // Phase 4.2: Create instance with settings service
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
-                return new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(settingsService);
+                return new GreenSwamp.Alpaca.MountControl.SkySettings(settingsService);
             });
-            Logger.LogInformation("Phase 4.2: SkySettingsInstance registered in DI container");
+            Logger.LogInformation("Phase 4.2: SkySettings registered in DI container");
             Logger.LogInformation("Settings services registered: VersionedSettings, Template");
             #endregion Startup and Logging
 
@@ -167,7 +167,7 @@ namespace GreenSwamp.Alpaca.Server
             DeviceManager.LoadConfiguration(new AlpacaConfiguration());
 
             // Phase 4.11: Device registration moved to after app.Build() to use UnifiedDeviceRegistry
-            // This ensures proper synchronization between DeviceManager and MountInstanceRegistry
+            // This ensures proper synchronization between DeviceManager and MountRegistry
             // Reserved slots (0=Simulator, 1=Physical Mount) are initialized first
 
             #region Finish Building and Start server
@@ -314,7 +314,7 @@ namespace GreenSwamp.Alpaca.Server
                     try
                     {
                         // Phase 3 baseline (v1.0.0+): Pass device settings directly to constructor
-                        var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettingsInstance(
+                        var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettings(
                             device,              // Device-specific configuration (all 137 properties)
                             settingsService      // Settings service for persistence
                         );
@@ -357,7 +357,7 @@ namespace GreenSwamp.Alpaca.Server
                 // Per-device initialization -- wire settings listeners for each registered device
                 if (registeredDeviceCount > 0)
                 {
-                    foreach (var kvp in MountInstanceRegistry.GetAllInstances())
+                    foreach (var kvp in MountRegistry.GetAllInstances())
                     {
                         kvp.Value.InitializeSettings();
                         Logger.LogInformation($"Device {kvp.Key}: settings initialized");

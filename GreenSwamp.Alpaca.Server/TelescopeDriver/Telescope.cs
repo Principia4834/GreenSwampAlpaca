@@ -95,11 +95,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         }
 
         /// <summary>
-        /// Phase 4.8: Get the MountInstance for this device number
+        /// Phase 4.8: Get the Mount for this device number
         /// </summary>
-        private MountInstance GetInstance()
+        private Alpaca.MountControl.Mount GetInstance()
         {
-            var instance = MountInstanceRegistry.GetInstance(_deviceNumber);
+            var instance = MountRegistry.GetInstance(_deviceNumber);
             if (instance == null)
             {
                 throw new InvalidOperationException($"Device number {_deviceNumber} not found in registry");

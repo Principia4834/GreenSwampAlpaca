@@ -29,17 +29,17 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
     {
         private int TripPosition { get; set; }
         private bool HasHomeSensor { get; set; }
-        private readonly SkySettingsInstance SettingsInstance;
+        private readonly SkySettings _settings;
         private readonly ICommandQueue<SkyWatcherHardware> _skyQueue;
-        private readonly MountInstance _owner;
+        private readonly MountControl.Mount _owner;
 
         /// <summary>
         /// auto home for skywatcher mounts
         /// </summary>
-        /// <param name="settingsInstance"></param>
+        /// <param name="settings"></param>
         /// <param name="skyQueue"></param>
         /// <param name="owner"></param>
-        public AutoHomeSky(SkySettingsInstance settingsInstance, ICommandQueue<SkyWatcherHardware> skyQueue, MountInstance owner)
+        public AutoHomeSky(SkySettings settings, ICommandQueue<SkyWatcherHardware> skyQueue, MountControl.Mount owner)
         {
             var monitorItem = new MonitorEntry
             {
@@ -52,7 +52,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Message = "Start"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            this.SettingsInstance = settingsInstance;
+            this._settings = settings;
             _skyQueue = skyQueue;
             _owner = owner;
         }
@@ -320,19 +320,19 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             var c = Units.Rad2Deg1(b);
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(SettingsInstance);
+            var context = AxesContext.FromSettings(_settings);
             var positions = Axes.MountAxis2Mount(context);
             switch (axis)
             {
                 case Axis.Axis1:
                     var d = Axes.AxesMountToApp(new[] { c, 0 }, context); // Convert to local
-                    if ((SettingsInstance.AlignmentMode == AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0)) d[0] = d[0] + 180;
+                    if ((_settings.AlignmentMode == AlignmentMode.AltAz) && (_settings.Latitude < 0)) d[0] = d[0] + 180;
 
                     _owner.SlewSync(new[] { d[0], positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
                     var e = Axes.AxesMountToApp(new[] { 0, c }, context); // Convert to local
-                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0)) e[1] = 180 - e[1];
+                    if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0)) e[1] = 180 - e[1];
 
                     _owner.SlewSync(new[] { positions[0], e[1] }, SlewType.SlewMoveAxis);
                     break;
@@ -363,20 +363,20 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
-            var context = AxesContext.FromSettings(SettingsInstance);
+            var context = AxesContext.FromSettings(_settings);
             var positions = Axes.MountAxis2Mount(context);
 
             switch (axis)
             {
                 case Axis.Axis1:
                     degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
-                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0))
+                    if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0))
                         degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
                     _owner.SlewSync(new[] { positions[0] + degrees, positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
                     degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
-                    if ((SettingsInstance.AlignmentMode != AlignmentMode.AltAz) && (SettingsInstance.Latitude < 0))
+                    if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0))
                         degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
                     _owner.SlewSync(new[] { positions[0], positions[1] + degrees }, SlewType.SlewMoveAxis);
                     break;

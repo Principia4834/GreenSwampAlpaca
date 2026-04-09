@@ -166,7 +166,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="direction">GuideDirections</param>
         /// <param name="duration">in milliseconds</param>
         /// /// <param name="altRate">alternate rate to replace the guide rate</param>
-        public static void PulseGuide(GuideDirection direction, int duration, double altRate, MountInstance? instance = null) // J1: instance-aware
+        public static void PulseGuide(GuideDirection direction, int duration, double altRate, Mount? instance = null) // J1: instance-aware
         {
             var inst = instance;
             var settings = instance?.Settings;
@@ -230,7 +230,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         case MountType.Simulator:
                         {
-                            var mq = inst!.MountQueueInstance!; // J1: per-instance
+                            var mq = inst!.SimQueue!; // J1: per-instance
                             switch (settings!.AlignmentMode) // J1: per-instance
                             {
                                 case AlignmentMode.AltAz:
@@ -253,7 +253,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         case MountType.SkyWatcher:
                         {
-                            var sq = inst!.SkyQueueInstance!; // J1: per-instance
+                            var sq = inst!.SkyQueue!; // J1: per-instance
                             switch (settings!.AlignmentMode) // J1: per-instance
                             {
                                 case AlignmentMode.AltAz:
@@ -313,7 +313,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             else
                             {
-                                var mq = inst!.MountQueueInstance!; // J1: per-instance
+                                var mq = inst!.SimQueue!; // J1: per-instance
                                 _ = new CmdAxisPulse(mq.NewId, mq, Axis.Axis1, raGuideRate, duration, inst!._ctsPulseGuideRa.Token);
                             }
 
@@ -325,7 +325,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             else
                             {
-                                var sq = inst!.SkyQueueInstance!; // J1: per-instance
+                                var sq = inst!.SkyQueue!; // J1: per-instance
                                 _ = new SkyAxisPulse(sq.NewId, sq, Axis.Axis1, raGuideRate, duration, 0, inst!._ctsPulseGuideRa.Token);
                             }
                             break;
@@ -346,7 +346,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Calculates the current RA tracking rate for a specific instance (arc seconds per second).
         /// Used by per-instance SkyPredictor to avoid reading from _defaultInstance.
         /// </summary>
-        public static double CurrentTrackingRate(MountInstance inst)
+        public static double CurrentTrackingRate(Mount inst)
         {
             double rate;
             switch (inst.Settings.TrackingRate)
@@ -384,7 +384,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Update AltAz tracking rates including delta for tracking error
         /// </summary>
-        internal static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, MountInstance inst)
+        internal static void SetAltAzTrackingRates(AltAzTrackingType altAzTrackingType, Mount inst)
         {
             switch (altAzTrackingType)
             {
@@ -434,7 +434,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Positive direction mean go mechanical north
         /// </summary>
         /// <returns></returns>
-        internal static double GetDecRateDirection(double rate, MountInstance inst)
+        internal static double GetDecRateDirection(double rate, Mount inst)
         {
             bool moveNorth = rate > 0;
             bool isEast = inst.SideOfPier == PointingState.Normal;
@@ -506,7 +506,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Positive direction mean go mechanical east
         /// </summary>
         /// <returns></returns>
-        internal static double GetRaRateDirection(double rate, SkySettingsInstance settings)
+        internal static double GetRaRateDirection(double rate, SkySettings settings)
         {
             var east = rate > 0;
             rate = Math.Abs(rate);

@@ -154,7 +154,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Signal ASCOM that operation has started (IsSlewing = true)
                 IsSlewing = true;
                 CurrentSlewType = operation.SlewType;
-                operation.MountInstance._slewState = operation.SlewType;
+                operation.Mount._slewState = operation.SlewType;
 
                 // Start background movement task (does NOT block ASCOM caller)
                 _movementTask = Task.Run(
@@ -248,7 +248,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Thread.CurrentThread.ManagedThreadId,
                         Message = $"Timeout waiting for {CurrentSlewType} to cancel, forcing stop"
                     });
-                    await ForceStopAxesAsync(_currentOperation?.MountInstance);
+                    await ForceStopAxesAsync(_currentOperation?.Mount);
                 }
             }
         }
@@ -299,19 +299,19 @@ namespace GreenSwamp.Alpaca.MountControl
 
             ct.ThrowIfCancellationRequested();
 
-            // Validate mount is running (use operation's MountInstance for instance-aware check)
-            if (!operation.MountInstance.IsMountRunning)
+            // Validate mount is running (use operation's Mount for instance-aware check)
+            if (!operation.Mount.IsMountRunning)
             {
                 return SlewResult.Failed("Mount not running");
             }
 
             // Stop any residual motion from previous operation
-            if (operation.MountInstance._slewState != SlewType.SlewNone)
+            if (operation.Mount._slewState != SlewType.SlewNone)
             {
-                var stopped = SkyServer.AxesStopValidate(operation.MountInstance);
+                var stopped = SkyServer.AxesStopValidate(operation.Mount);
                 if (!stopped)
                 {
-                    await ForceStopAxesAsync(operation.MountInstance);
+                    await ForceStopAxesAsync(operation.Mount);
                     return SlewResult.Failed("Could not stop previous motion");
                 }
             }
@@ -408,7 +408,7 @@ namespace GreenSwamp.Alpaca.MountControl
             });
 
             // Stop axes immediately
-            await ForceStopAxesAsync(operation.MountInstance);
+            await ForceStopAxesAsync(operation.Mount);
 
             // Reset state via operation
             operation.HandleCancellation();
@@ -431,7 +431,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Message = $"{operation.SlewType} error: {ex.Message}"
             });
 
-            await ForceStopAxesAsync(operation.MountInstance);
+            await ForceStopAxesAsync(operation.Mount);
 
             // Set error state via operation
             operation.HandleError(ex);
@@ -465,7 +465,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Forces immediate stop of mount axes via hardware command.
         /// Used when cancellation timeout expires or errors occur.
         /// </summary>
-        private async Task ForceStopAxesAsync(MountInstance? instance = null)
+        private async Task ForceStopAxesAsync(Mount? instance = null)
         {
             try
             {
@@ -569,18 +569,18 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // Per-instance offset rates captured at slew creation time.
         // Must NOT read SkyServer.RateRa/Dec — those always delegate to _defaultInstance
-        // and would return the wrong value for any non-default MountInstance.
+        // and would return the wrong value for any non-default Mount.
         public double RateRa { get; }
         public double RateDec { get; }
 
-        internal MountInstance MountInstance;
+        internal Mount Mount;
 
         #endregion
 
         #region Constructor
 
         public SlewOperation(
-            MountInstance mountInstance,
+            Mount mount,
             double[] target,
             SlewType slewType,
             bool trackingAfterSlew,
@@ -595,7 +595,7 @@ namespace GreenSwamp.Alpaca.MountControl
             TrackingAfterSlew = trackingAfterSlew;
             RateRa = rateRa;
             RateDec = rateDec;
-            MountInstance = mountInstance ?? throw new ArgumentNullException(nameof(mountInstance));
+            Mount = mount ?? throw new ArgumentNullException(nameof(mount));
         }
 
         #endregion
@@ -609,20 +609,20 @@ namespace GreenSwamp.Alpaca.MountControl
         public void Prepare()
         {
             // Capture initial state for potential rollback
-            InitialRa = MountInstance.RightAscensionXForm;
-            InitialDec = MountInstance.DeclinationXForm;
-            WasTracking = MountInstance.Tracking;
+            InitialRa = Mount.RightAscensionXForm;
+            InitialDec = Mount.DeclinationXForm;
+            WasTracking = Mount.Tracking;
 
             // Disable tracking during slew (will be restored in completion phase)
-            MountInstance.InstanceApplyTracking(false);
+            Mount.InstanceApplyTracking(false);
 
             // Prepare predictor for Ra/Dec slews.
             // Use Target[] and the per-instance rates captured at construction —
             // SkyServer.TargetRa/Dec and SkyServer.RateRa/Dec always delegate to
-            // _defaultInstance and are wrong for any non-default MountInstance.
+            // _defaultInstance and are wrong for any non-default Mount.
             if (SlewType == SlewType.SlewRaDec)
             {
-                MountInstance.SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
+                Mount.SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
             }
         }
 
@@ -633,7 +633,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public async Task<int> ExecuteMovementAsync(CancellationToken ct)
         {
             // Direct access to SkyServer settings (no reflection needed)
-            var settings = MountInstance.Settings;
+            var settings = Mount.Settings;
 
             if (settings == null)
             {
@@ -643,10 +643,10 @@ namespace GreenSwamp.Alpaca.MountControl
             int returnCode = settings.Mount switch
             {
                 MountType.Simulator => await Task.Run(
-                    () => MountInstance.SimGoTo(Target, TrackingAfterSlew, SlewType, ct),
+                    () => Mount.SimGoTo(Target, TrackingAfterSlew, SlewType, ct),
                     ct),
                 MountType.SkyWatcher => await Task.Run(
-                    () => MountInstance.SkyGoTo(Target, TrackingAfterSlew, SlewType, ct),
+                    () => Mount.SkyGoTo(Target, TrackingAfterSlew, SlewType, ct),
                     ct),
                 _ => throw new InvalidOperationException($"Unknown mount type: {settings.Mount}")
             };
@@ -670,17 +670,17 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 case SlewType.SlewPark:
-                    MountInstance.InstanceCompletePark();
+                    Mount.InstanceCompletePark();
                     break;
 
                 case SlewType.SlewHome:
-                    MountInstance.SkyPredictor.Reset();
+                    Mount.SkyPredictor.Reset();
                     break;
 
                 case SlewType.SlewHandpad:
-                    MountInstance.SkyPredictor.Set(
-                        MountInstance.RightAscensionXForm,
-                        MountInstance.DeclinationXForm
+                    Mount.SkyPredictor.Set(
+                        Mount.RightAscensionXForm,
+                        Mount.DeclinationXForm
                     );
                     break;
 
@@ -700,15 +700,15 @@ namespace GreenSwamp.Alpaca.MountControl
         public void MarkComplete(bool success)
         {
             // Direct access to SlewState property (no reflection needed)
-            MountInstance._slewState = SlewType.SlewNone;
+            Mount._slewState = SlewType.SlewNone;
 
             if (success && SlewType != SlewType.SlewPark)  // ← Add Park check
             {
-                MountInstance.InstanceApplyTracking(TrackingAfterSlew);
+                Mount.InstanceApplyTracking(TrackingAfterSlew);
             }
             else
             {
-                MountInstance.InstanceApplyTracking(false);
+                Mount.InstanceApplyTracking(false);
             }
         }
 
@@ -718,14 +718,14 @@ namespace GreenSwamp.Alpaca.MountControl
         public void HandleCancellation()
         {
             // Reset rates and axis movement
-            MountInstance._rateMoveAxes.Y = 0.0;
-            MountInstance._rateMoveAxes.X = 0.0;
-            MountInstance._moveAxisActive = false;
+            Mount._rateMoveAxes.Y = 0.0;
+            Mount._rateMoveAxes.X = 0.0;
+            Mount._moveAxisActive = false;
 
             // Mark slew as complete (direct access, no reflection needed)
-            MountInstance._slewState = SlewType.SlewNone;
+            Mount._slewState = SlewType.SlewNone;
 
-            MountInstance.InstanceApplyTracking(TrackingAfterSlew);
+            Mount.InstanceApplyTracking(TrackingAfterSlew);
         }
 
         /// <summary>
@@ -734,12 +734,12 @@ namespace GreenSwamp.Alpaca.MountControl
         public void HandleError(Exception ex)
         {
             // Set mount error (direct access, no reflection needed)
-            MountInstance._mountError = new Exception($"Slew Error|{SlewType}|{ex.Message}");
+            Mount._mountError = new Exception($"Slew Error|{SlewType}|{ex.Message}");
 
             // Mark slew as complete (direct access, no reflection needed)
-            MountInstance._slewState = SlewType.SlewNone;
+            Mount._slewState = SlewType.SlewNone;
 
-            MountInstance.InstanceApplyTracking(false);
+            Mount.InstanceApplyTracking(false);
         }
 
         #endregion
@@ -753,7 +753,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private async Task CompleteRaDecSlewAsync(CancellationToken ct)
         {
             // Direct access to SkyServer settings (no reflection needed)
-            var settings = MountInstance.Settings;
+            var settings = Mount.Settings;
 
             if (settings == null || settings.AlignmentMode != AlignmentMode.AltAz)
             {
@@ -763,25 +763,25 @@ namespace GreenSwamp.Alpaca.MountControl
 
             // Alt/Az mount - need tracking settle period
             // Update target if offset rates were used
-            if (MountInstance.SkyPredictor.RatesSet)
+            if (Mount.SkyPredictor.RatesSet)
             {
-                var targetRaDec = MountInstance.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
-                MountInstance.TargetRa = targetRaDec[0];
-                MountInstance.TargetDec = targetRaDec[1];
+                var targetRaDec = Mount.SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                Mount.TargetRa = targetRaDec[0];
+                Mount.TargetDec = targetRaDec[1];
             }
 
             // Enable Alt/Az tracking to complete the slew
             // NOTE: Replicate GoToAsync pattern - don't use Tracking property setter
             // because it resets SkyPredictor (line 301 in TelescopeAPI.cs)
-            MountInstance.SkyPredictor.Set(MountInstance.TargetRa, MountInstance.TargetDec);
+            Mount.SkyPredictor.Set(Mount.TargetRa, Mount.TargetDec);
 
             // Manually set tracking without going through Tracking property
-            MountInstance.InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
+            Mount.InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
 
             // Wait for tracking to settle
             var minSteps = Math.Min(
-                MountInstance._stepsPerRevolution[0],
-                MountInstance._stepsPerRevolution[1]
+                Mount._stepsPerRevolution[0],
+                Mount._stepsPerRevolution[1]
             );
             var highResMount = Conversions.StepPerArcSec(minSteps) > 5;
 

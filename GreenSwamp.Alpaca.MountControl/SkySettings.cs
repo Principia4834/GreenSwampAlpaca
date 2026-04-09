@@ -31,10 +31,10 @@ namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
     /// Instance-based settings - owns all data (no static delegation).
-    /// Multi-telescope ready: each MountInstance has its own SkySettingsInstance.
+    /// Multi-telescope ready: each Mount has its own SkySettings.
     /// Direct JSON persistence via IVersionedSettingsService (no bridge required).
     /// </summary>
-    public class SkySettingsInstance : INotifyPropertyChanged
+    public class SkySettings : INotifyPropertyChanged
     {
         #region Private Fields (134 backing fields)
 
@@ -184,8 +184,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _noSyncPastMeridian = false;
         private int _numMoveAxis = 2;
 
-        // Set by MountInstance constructor so setters can dispatch instance-aware tasks
-        internal MountInstance? _owner;
+        // Set by Mount constructor so setters can dispatch instance-aware tasks
+        internal Mount? _owner;
 
         #endregion
 
@@ -196,7 +196,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         /// <param name="deviceSettings">Complete device configuration (all 137 properties)</param>
         /// <param name="settingsService">Settings service for persistence (DI)</param>
-        public SkySettingsInstance(
+        public SkySettings(
             Settings.Models.SkySettings deviceSettings,
             IVersionedSettingsService settingsService)
         {
@@ -212,7 +212,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Creates instance with auto-load from settings service (backward compatibility)
         /// </summary>
         /// <param name="settingsService">Required: Settings service for JSON persistence</param>
-        public SkySettingsInstance(
+        public SkySettings(
             IVersionedSettingsService settingsService)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
@@ -2158,7 +2158,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Device = MonitorDevice.Server,
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
-                    Method = $"SkySettingsInstance.{method}",
+                    Method = $"SkySettings.{method}",
                     Thread = Thread.CurrentThread.ManagedThreadId,
                     Message = message
                 };

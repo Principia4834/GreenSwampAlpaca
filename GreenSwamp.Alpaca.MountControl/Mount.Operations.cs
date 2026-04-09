@@ -25,13 +25,13 @@ using System.Reflection;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
-    /// <summary>MountInstance partial — core operations (Stop, Abort, Park, Home, Sync, AutoHome). Phase M2.</summary>
-    public partial class MountInstance
+    /// <summary>Mount partial — core operations (Stop, Abort, Park, Home, Sync, AutoHome). Phase M2.</summary>
+    public partial class Mount
     {
-        #region Core Operations (Phase M2)
+        #region Core Operations
 
-        /// <summary>Stop axes in a normal motion — instance version.</summary>
-        public void StopAxes()
+        /// <summary>Stop axes in a normal motion.</summary>
+        private void StopAxes()
         {
             if (!IsMountRunning) return;
             AutoHomeStop = true;
@@ -46,7 +46,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Message = $"{_slewState}"
             };
             MonitorLog.LogToMonitor(monitorItem);
-            InstanceCancelAllAsync();
+            CancelAllAsync();
             _moveAxisActive = false;
             _rateMoveAxes.X = 0.0;
             _rateMoveAxes.Y = 0.0;
@@ -106,7 +106,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 });
                 _slewController.CancelCurrentSlewAsync().Wait();
             }
-            InstanceCancelAllAsync();
+            CancelAllAsync();
             _moveAxisActive = false;
             _rateMoveAxes.X = 0.0;
             _rateMoveAxes.Y = 0.0;
@@ -141,26 +141,8 @@ namespace GreenSwamp.Alpaca.MountControl
             });
         }
 
-        /// <summary>GoTo home slew — synchronous instance version.</summary>
-        public void GoToHomeX()
-        {
-            if (AtHome || _slewState == SlewType.SlewHome) return;
-            InstanceApplyTracking(false);
-            MonitorLog.LogToMonitor(new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Information,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = "Slew to Home (using SlewController)"
-            });
-            SlewSync(new[] { _homeAxes.X, _homeAxes.Y }, SlewType.SlewHome, tracking: false);
-        }
-
         /// <summary>GoTo park slew — synchronous instance version.</summary>
-        public void GoToPark()
+        private void GoToPark()
         {
             InstanceApplyTracking(false);
             var ps = _parkSelected;
@@ -210,13 +192,13 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (_settings.Mount)
                 {
                     case MountType.Simulator:
-                        var autoHomeSim = new AutoHomeSim(_settings, MountQueueInstance!, this);
+                        var autoHomeSim = new AutoHomeSim(_settings, SimQueue!, this);
                         raResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSim.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     case MountType.SkyWatcher:
-                        var autoHomeSky = new AutoHomeSky(_settings, SkyQueueInstance!, this);
+                        var autoHomeSky = new AutoHomeSky(_settings, SkyQueue!, this);
                         raResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis1, degreeLimit));
                         AutoHomeProgressBar = 50;
                         decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
@@ -292,7 +274,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>Reset axes positions — instance version.</summary>
-        public void ReSyncAxes(ParkPosition? parkPosition = null, bool saveParkPosition = true)
+        private void ReSyncAxes(ParkPosition? parkPosition = null, bool saveParkPosition = true)
         {
             if (!IsMountRunning) return;
             InstanceApplyTracking(false);
@@ -319,13 +301,13 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 case MountType.Simulator:
                     SkyServer.SimTasks(MountTaskName.StopAxes, this);
-                    var mq = MountQueueInstance!;
+                    var mq = SimQueue!;
                     _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis1, position[0]);
                     _ = new CmdAxisToDegrees(mq.NewId, mq, Axis.Axis2, position[1]);
                     break;
                 case MountType.SkyWatcher:
                     SkyServer.SkyTasks(MountTaskName.StopAxes, this);
-                    var sq = SkyQueueInstance!;
+                    var sq = SkyQueue!;
                     _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis1, position[0]);
                     _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis2, position[1]);
                     break;
@@ -342,7 +324,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>Get default startup positions — instance version of GetDefaultPositions_Internal.</summary>
-        public double[] GetDefaultPositions()
+        private double[] GetDefaultPositions()
         {
             double[] positions = { 0, 0 };
             var homeAxes = GetHomeAxes(_settings.HomeAxisX, _settings.HomeAxisY);
@@ -395,7 +377,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>Get stored park position from settings — instance version.</summary>
-        public ParkPosition GetStoredParkPosition()
+        private ParkPosition GetStoredParkPosition()
             => new ParkPosition(_settings.ParkName, _settings.ParkAxes[0], _settings.ParkAxes[1]);
 
         /// <summary>Set park axis by coordinates — private instance helper.</summary>

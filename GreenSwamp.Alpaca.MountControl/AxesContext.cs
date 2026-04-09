@@ -119,12 +119,12 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Factory Methods
 
         /// <summary>
-        /// Create context from SkySettingsInstance (preferred for instance-based code)
+        /// Create context from SkySettings (preferred for instance-based code)
         /// </summary>
         /// <param name="settings">Settings instance containing mount configuration</param>
-        /// <param name="sideOfPier">Optional side-of-pier from the calling MountInstance; falls back to SkyServer for device-0 callers</param>
+        /// <param name="sideOfPier">Optional side-of-pier from the calling Mount; falls back to SkyServer for device-0 callers</param>
         /// <returns>Populated AxesContext</returns>
-        public static AxesContext FromSettings(SkySettingsInstance settings, PointingState? sideOfPier = null)
+        public static AxesContext FromSettings(SkySettings settings, PointingState? sideOfPier = null)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -197,7 +197,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>App axis X in degrees</returns>
         public double GetAppAxisX()
         {
-            return AppAxisX ?? MountInstanceRegistry.GetInstance(0)?.AppAxisX ?? 0.0;
+            return AppAxisX ?? MountRegistry.GetInstance(0)?.AppAxisX ?? 0.0;
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <returns>App axis Y in degrees</returns>
         public double GetAppAxisY()
         {
-            return AppAxisY ?? MountInstanceRegistry.GetInstance(0)?.AppAxisY ?? 0.0;
+            return AppAxisY ?? MountRegistry.GetInstance(0)?.AppAxisY ?? 0.0;
         }
 
         /// <summary>

@@ -44,14 +44,14 @@ namespace GreenSwamp.Alpaca.Server.Services
             StateChanged?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
-        /// Builds a state snapshot directly from the per-instance MountInstance.
+        /// Builds a state snapshot directly from the per-instance Mount.
         /// Returns an empty model when the device number is not registered.
         /// </summary>
         public TelescopeStateModel GetCurrentState(int deviceNumber = 0)
         {
             try
             {
-                var inst = MountInstanceRegistry.GetInstance(deviceNumber);
+                var inst = MountRegistry.GetInstance(deviceNumber);
                 if (inst == null) return new TelescopeStateModel();
 
                 return new TelescopeStateModel

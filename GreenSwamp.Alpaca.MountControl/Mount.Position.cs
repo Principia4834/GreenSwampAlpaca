@@ -23,8 +23,8 @@ using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
- /// <summary>MountInstance partial — position, coordinates and limits. Phase M2.</summary>
- public partial class MountInstance
+ /// <summary>Mount partial — position, coordinates and limits. Phase M2.</summary>
+ public partial class Mount
  {
  #region Position, Coordinates and Limits (Phase M2)
 

@@ -5,7 +5,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 {
     internal class CommandStrings
     {
-        public static string ProcessCommand(MountInstance instance, string command, bool raw)
+        public static string ProcessCommand(Alpaca.MountControl.Mount instance, string command, bool raw)
         {
             command = command.Trim();
             CheckIsMountRunning(instance, "NotConnectedException in CommandStrings/ProcessCommand");
@@ -76,7 +76,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
-        private static void CheckIsMountRunning(MountInstance instance, string msg)
+        private static void CheckIsMountRunning(Alpaca.MountControl.Mount instance, string msg)
         {
             if (instance == null || !instance.IsMountRunning)
             {

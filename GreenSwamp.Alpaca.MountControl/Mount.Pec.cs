@@ -23,7 +23,7 @@ using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
-    public partial class MountInstance
+    public partial class Mount
     {
         #region PEC Inner Types
 
@@ -111,8 +111,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         _pPecTrainInProgress = false;
                         return;
                     }
-                    var ppectrain = new SkyIsPPecInTrainingOn(SkyQueueInstance.NewId, SkyQueueInstance);
-                    if (bool.TryParse(Convert.ToString(SkyQueueInstance.GetCommandResult(ppectrain).Result), out bool bTrain))
+                    var ppectrain = new SkyIsPPecInTrainingOn(SkyQueue.NewId, SkyQueue);
+                    if (bool.TryParse(Convert.ToString(SkyQueue.GetCommandResult(ppectrain).Result), out bool bTrain))
                     {
                         _pPecTraining = bTrain;
                         SkyServer.SkyTasks(MountTaskName.PecTraining, this);

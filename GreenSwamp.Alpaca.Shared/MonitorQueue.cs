@@ -35,7 +35,7 @@ namespace GreenSwamp.Alpaca.Shared
         private static int _errIndex;
         private static int _sessionIndex;
         private static int _monitorIndex;
-        private static readonly string InstanceFileName;
+        private static readonly string FileName;
         private static readonly SemaphoreSlim LockFile = new SemaphoreSlim(1);
         private const string Fmt = "0000#";
         #endregion
@@ -132,7 +132,7 @@ namespace GreenSwamp.Alpaca.Shared
 
         static MonitorQueue()
         {
-            InstanceFileName = $"{DateTime.Now:yyyy-MM-dd-HH}.txt";
+            FileName = $"{DateTime.Now:yyyy-MM-dd-HH}.txt";
             DeleteFiles("GSSessionLog", 7, GsFile.GetLogPath());
             DeleteFiles("GSErrorLog", 7, GsFile.GetLogPath());
             DeleteFiles("GSChartingLog", 7, GsFile.GetLogPath());
@@ -356,7 +356,7 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (!Settings.LogSession) return;
                 ++_sessionIndex;
-                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSSessionLog") + InstanceFileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_sessionIndex.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
+                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSSessionLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_sessionIndex.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
             }
             catch (Exception e)
             {
@@ -374,7 +374,7 @@ namespace GreenSwamp.Alpaca.Shared
             try
             {
                 ++_errIndex;
-                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSErrorLog") + InstanceFileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_errIndex.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
+                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSErrorLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_errIndex.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
             }
             catch (Exception e)
             {
@@ -392,7 +392,7 @@ namespace GreenSwamp.Alpaca.Shared
             try
             {
                 if (!Settings.LogMonitor) return;
-                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSMonitorLog") + InstanceFileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{entry.Index.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}"); //YYYY-MM-DD HH:MM:SS.fff
+                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSMonitorLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{entry.Index.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}"); //YYYY-MM-DD HH:MM:SS.fff
             }
             catch (Exception e)
             {

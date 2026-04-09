@@ -12,7 +12,7 @@
 <h3>Telescope Device State</h3>
 
 <div class="device-selector mb-3">
-    @foreach (var kvp in MountInstanceRegistry.GetAllInstances())
+    @foreach (var kvp in MountRegistry.GetAllInstances())
     {
         var dn = kvp.Key;
         var activeClass = dn == DeviceNumber ? "btn btn-primary btn-sm me-1" : "btn btn-outline-secondary btn-sm me-1";

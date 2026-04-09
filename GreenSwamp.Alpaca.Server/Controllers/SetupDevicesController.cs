@@ -23,6 +23,7 @@ using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using SkySettings = GreenSwamp.Alpaca.MountControl.SkySettings;
 
 namespace GreenSwamp.Alpaca.Server.Controllers
 {
@@ -58,7 +59,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
         [ProducesResponseType(typeof(List<DeviceInfoResponse>), StatusCodes.Status200OK)]
         public IActionResult GetDevices()
         {
-            var instances = MountInstanceRegistry.GetAllInstances();
+            var instances = MountRegistry.GetAllInstances();
             var devices = new List<DeviceInfoResponse>();
 
             foreach (var kvp in instances)
@@ -76,9 +77,9 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                     Connected = instance.IsConnected,
                     AlignmentMode = settings.AlignmentMode.ToString(),
                     MountType = settings.Mount.ToString(),
-                    ComPort = null, // TODO: Add to SkySettingsInstance in physical mount phase
-                    BaudRate = null, // TODO: Add to SkySettingsInstance in physical mount phase
-                    SerialProtocol = null // TODO: Add to SkySettingsInstance in physical mount phase
+                    ComPort = null, // TODO: Add to SkySettings in physical mount phase
+                    BaudRate = null, // TODO: Add to SkySettings in physical mount phase
+                    SerialProtocol = null // TODO: Add to SkySettings in physical mount phase
                 });
             }
 
@@ -133,7 +134,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             try
             {
                 // Load default settings for new device
-                var settingsInstance = new SkySettingsInstance(_settingsService);
+                var settingsInstance = new SkySettings(_settingsService);
 
                 _logger.LogInformation(
                     "Using default settings for device {DeviceNumber}",
@@ -184,7 +185,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
         public IActionResult RemoveDevice(int deviceNumber)
         {
             // Check if device exists
-            var instance = MountInstanceRegistry.GetInstance(deviceNumber);
+            var instance = MountRegistry.GetInstance(deviceNumber);
             if (instance == null)
             {
                 return NotFound(new ErrorResponse { Error = $"Device {deviceNumber} not found" });
@@ -202,8 +203,8 @@ namespace GreenSwamp.Alpaca.Server.Controllers
 
                 // Note: DeviceManager doesn't have RemoveTelescope method.
                 // Device will remain in DeviceManager.Telescopes until server restart.
-                // MountInstanceRegistry controls actual device behavior -- removed
-                // devices become non-functional (no MountInstance).
+                // MountRegistry controls actual device behavior -- removed
+                // devices become non-functional (no Mount).
 
                 _logger.LogInformation("Successfully removed device {DeviceNumber} from registry", deviceNumber);
 

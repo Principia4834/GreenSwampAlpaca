@@ -9,7 +9,7 @@
 
     @if (ASCOM.Alpaca.DeviceManager.Telescopes.ContainsKey(InstanceID))
     {
-        var instance = MountInstanceRegistry.GetInstance(InstanceID);
+        var instance = MountRegistry.GetInstance(InstanceID);
         if (instance != null)
         {
             var settings = instance.Settings;
@@ -268,7 +268,7 @@
         {
             <div class="alert alert-danger" role="alert">
                 <h4 class="alert-heading">Device Instance Not Found</h4>
-                <p>Device @InstanceID is registered but has no MountInstance.</p>
+                <p>Device @InstanceID is registered but has no Mount.</p>
                 <p class="mb-0">This may indicate a configuration error.</p>
             </div>
             <a href="/device-manager" class="btn btn-secondary">
