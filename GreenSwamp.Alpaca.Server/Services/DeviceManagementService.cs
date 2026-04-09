@@ -20,7 +20,7 @@ using System.Net.Http.Json;
 namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
-    /// Service for managing telescope devices via REST API (Phase 4.11).
+    /// Service for managing telescope devices via REST API.
     /// Provides Blazor-friendly wrapper around SetupDevicesController endpoints.
     /// </summary>
     public class DeviceManagementService

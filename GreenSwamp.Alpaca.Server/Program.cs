@@ -150,11 +150,11 @@ namespace GreenSwamp.Alpaca.Server
             // Configure Server Settings from configuration
             builder.Services.AddSingleton(sp =>
             {
-                // Phase 4.2: Create instance with settings service
+                // Create instance with settings service
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
                 return new GreenSwamp.Alpaca.MountControl.SkySettings(settingsService);
             });
-            Logger.LogInformation("Phase 4.2: SkySettings registered in DI container");
+            Logger.LogInformation("SkySettings registered in DI container");
             Logger.LogInformation("Settings services registered: VersionedSettings, Template");
             #endregion Startup and Logging
 
@@ -166,7 +166,7 @@ namespace GreenSwamp.Alpaca.Server
             //Load the configuration
             DeviceManager.LoadConfiguration(new AlpacaConfiguration());
 
-            // Phase 4.11: Device registration moved to after app.Build() to use UnifiedDeviceRegistry
+            // Device registration moved to after app.Build() to use UnifiedDeviceRegistry
             // This ensures proper synchronization between DeviceManager and MountRegistry
             // Reserved slots (0=Simulator, 1=Physical Mount) are initialized first
 
@@ -193,7 +193,7 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
             Logger.LogInformation("TelescopeStateService registered for real-time state updates");
 
-            // Register DeviceManagementService with HttpClient for device manager UI (Phase 4.11)
+            // Register DeviceManagementService with HttpClient for device manager UI
             // Uses typed client pattern - HttpClient is automatically injected and lifecycle-managed
             builder.Services.AddHttpClient<GreenSwamp.Alpaca.Server.Services.DeviceManagementService>(client =>
             {
@@ -206,26 +206,7 @@ namespace GreenSwamp.Alpaca.Server
 
             var app = builder.Build();
 
-            // Phase 1: Test new settings system initialization
-            #if DEBUG
-            try
-            {
-                var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
-                var testSettings = settingsService.GetDeviceSettings(0);
-                Logger.LogInformation("Phase 1: New settings system initialized successfully");
-                Logger.LogInformation($"  Settings Version: {settingsService.CurrentVersion}");
-                Logger.LogInformation($"  Mount Type: {testSettings?.Mount}");
-                Logger.LogInformation($"  Serial Port: {testSettings?.Port}");
-                Logger.LogInformation($"  Settings Path: {settingsService.UserSettingsPath}");
-                Logger.LogInformation($"  Alpaca Path: {settingsService.AlpacaSettingsPath}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogInformation($"Phase 1 settings check: {ex.Message}");
-            }
-#endif
-
-            // Phase 2: Initialize settings bridges for bidirectional sync
+            // Initialize settings bridges for bidirectional sync
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
@@ -247,7 +228,7 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogInformation("Monitor filters loaded");
                 Logger.LogInformation($"Monitor log path: {GreenSwamp.Alpaca.Shared.GsFile.GetLogPath()}");
 
-                // Step 9: Validate settings at startup and log results
+                // Validate settings at startup and log results
                 Logger.LogInformation("Validating settings at startup...");
                 var validationResult = settingsService.ValidateDeviceSettings(0);
 
@@ -284,21 +265,21 @@ namespace GreenSwamp.Alpaca.Server
                 // Load all devices from per-device settings files (device-nn.settings.json)
                 var allDevices = settingsService.GetAllDeviceSettings();
 
-                // Trigger first-run creation of observatory.settings.json if not present (Behaviour B4)
+                // Trigger first-run creation of observatory.settings.json if not present
                 settingsService.GetObservatorySettings();
                 Logger.LogInformation("Observatory settings initialised");
                 var enabledDevices = allDevices.Where(d => d.Enabled).ToList();
 
-                if (!enabledDevices.Any())
+                if (enabledDevices.Count > 0)
+                {
+                    Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
+                }
+                else
                 {
                     Logger.LogWarning("No valid enabled devices found in settings");
                     Logger.LogWarning("Application will continue running with no active devices");
                     Logger.LogWarning("Visit /settings-health in the web UI to view and repair configuration errors");
                     // Continue execution without throwing - graceful degradation
-                }
-                else
-                {
-                    Logger.LogInformation($"Found {enabledDevices.Count} enabled device(s) in settings");
                 }
 
                 // Get AlpacaDevices array to obtain correct UniqueIds
@@ -306,14 +287,14 @@ namespace GreenSwamp.Alpaca.Server
                 var alpacaDeviceMap = alpacaDevices.ToDictionary(d => d.DeviceNumber);
 
                 // Track successful registrations for SkyServer initialization
-                int registeredDeviceCount = 0;
+                var registeredDeviceCount = 0;
 
                 // Register each enabled device
                 foreach (var device in enabledDevices)
                 {
                     try
                     {
-                        // Phase 3 baseline (v1.0.0+): Pass device settings directly to constructor
+                        // Pass device settings directly to constructor
                         var deviceSettings = new GreenSwamp.Alpaca.MountControl.SkySettings(
                             device,              // Device-specific configuration (all 137 properties)
                             settingsService      // Settings service for persistence
@@ -337,8 +318,7 @@ namespace GreenSwamp.Alpaca.Server
                             device.DeviceNumber,
                             device.DeviceName,
                             uniqueId,
-                            deviceSettings,
-                            new TelescopeDriver.Telescope(device.DeviceNumber)
+                            deviceSettings
                         );
 
                         Logger.LogInformation($"Device {device.DeviceNumber}: {device.DeviceName} (Mount: {device.Mount})");
@@ -452,7 +432,7 @@ namespace GreenSwamp.Alpaca.Server
         /// <param name="port"></param>
         internal static void StartBrowser(int port)
         {
-            ProcessStartInfo psi = new ProcessStartInfo
+            ProcessStartInfo psi = new()
             {
                 FileName = string.Format("http://localhost:{0}", port),
                 UseShellExecute = true

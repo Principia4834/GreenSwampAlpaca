@@ -20,7 +20,6 @@ namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
     /// Thread-safe registry for managing multiple telescope device instances.
-    /// Implements Phase 4.8 multi-instance support.
     /// </summary>
     public static class MountRegistry
     {

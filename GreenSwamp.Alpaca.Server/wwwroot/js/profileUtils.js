@@ -1,5 +1,5 @@
 // Profile Management Utilities
-// Phase 4.10: JavaScript interop for browser downloads
+// JavaScript interop for browser downloads
 
 /**
  * Download a file to the user's browser

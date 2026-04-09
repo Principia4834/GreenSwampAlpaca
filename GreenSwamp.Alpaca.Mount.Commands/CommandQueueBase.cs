@@ -220,7 +220,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope,
                         Category = MonitorCategory.Mount, Type = MonitorType.Warning,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"{command.Exception.Message}|{command.Exception.StackTrace}"
                     });
                 }
@@ -239,7 +239,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
                         Category = MonitorCategory.Mount, Type = MonitorType.Debug,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"CmdId:{command.Id}|Type:{commandType}|QueueWait:{queueWaitMs:F3}ms|Execution:{executionMs:F3}ms|Total:{(queueWaitMs + executionMs):F3}ms|QueueDepth:{queueDepth}|Success:{command.Successful}|{threadMsg}"
                     });
                 }
@@ -255,7 +255,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                             Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
                             Category = MonitorCategory.Mount, Type = MonitorType.Warning,
                             Method = MethodBase.GetCurrentMethod()?.Name,
-                            Thread = Thread.CurrentThread.ManagedThreadId,
+                            Thread = Environment.CurrentManagedThreadId,
                             Message = $"Queue performance degraded - QueueDepth:{queueDepth}|QueueWait:{queueWaitMs:F3}ms"
                         });
                         break;
@@ -266,7 +266,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                             Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
                             Category = MonitorCategory.Mount, Type = MonitorType.Warning,
                             Method = MethodBase.GetCurrentMethod()?.Name,
-                            Thread = Thread.CurrentThread.ManagedThreadId,
+                            Thread = Environment.CurrentManagedThreadId,
                             Message = $"Queue performance normal - QueueDepth:{queueDepth}|QueueWait:{queueWaitMs:F3}ms"
                         });
                         break;

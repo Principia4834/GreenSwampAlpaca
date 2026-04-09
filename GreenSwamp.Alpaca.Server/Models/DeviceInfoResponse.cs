@@ -17,7 +17,7 @@
 namespace GreenSwamp.Alpaca.Server.Models
 {
     /// <summary>
-    /// Response model for device information in device list (Phase 4.8.1).
+    /// Response model for device information in device list.
     /// </summary>
     public class DeviceInfoResponse
     {

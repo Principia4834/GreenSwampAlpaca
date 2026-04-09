@@ -48,7 +48,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = "Start"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -85,7 +85,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{sensorStatus}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -149,7 +149,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{reset.Successful}|{axis}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -391,7 +391,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{positions[0]}|{positions[1]}|{degrees}|{axis}|{direction}"
             };
             MonitorLog.LogToMonitor(monitorItem);

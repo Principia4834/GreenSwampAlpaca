@@ -1,4 +1,4 @@
-﻿using ASCOM;
+using ASCOM;
 using ASCOM.Common.DeviceInterfaces;
 using ASCOM.Tools;
 using GreenSwamp.Alpaca.Principles;
@@ -23,57 +23,23 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private TrackingRatesSimple _mTrackingRatesSimple;
         private CommandStrings _mCommandStrings;
         private readonly long _objectId;
-
-        // Phase 4.8: Device number for multi-instance support
-        private readonly int _deviceNumber;
+        private readonly Alpaca.MountControl.Mount _mount;
 
         #endregion
-
-        public Telescope()
-        {
-            _deviceNumber = 0; // Default to device 0 for backward compatibility
-
-            try
-            {
-                var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = " Started" };
-                MonitorLog.LogToMonitor(monitorItem);
-
-                _mAxisRates = new AxisRates[3];
-                _mAxisRates[0] = new AxisRates(TelescopeAxis.Primary);
-                _mAxisRates[1] = new AxisRates(TelescopeAxis.Secondary);
-                _mAxisRates[2] = new AxisRates(TelescopeAxis.Tertiary);
-                _mTrackingRates = new TrackingRates();
-                _mTrackingRatesSimple = new TrackingRatesSimple();
-
-                // ToDo - fix driverId
-                //monitorItem = new MonitorEntry
-                //{ Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Instance ID|{_objectId}|Driver ID|{driverId}" };
-                //MonitorLog.LogToMonitor(monitorItem);
-
-            }
-            catch (Exception ex)
-            {
-                var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Error|{ex.Message}|{ex.StackTrace}" };
-                MonitorLog.LogToMonitor(monitorItem);
-
-                throw;
-            }
-        }
 
         /// <summary>
         /// Constructor with device number for multi-instance support
         /// </summary>
         /// <param name="deviceNumber">Device number (0-based)</param>
-        public Telescope(int deviceNumber)
+        /// <param name="mount">Mount instance for this device</param>
+        public Telescope(int deviceNumber, Alpaca.MountControl.Mount mount)
         {
-            _deviceNumber = deviceNumber;
+            _mount = mount ?? throw new ArgumentNullException(nameof(mount));
 
             try
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" Started|DeviceNumber:{deviceNumber}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" Started|DeviceNumber:{deviceNumber}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 _mAxisRates = new AxisRates[3];
@@ -87,24 +53,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             catch (Exception ex)
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Error|DeviceNumber:{deviceNumber}|{ex.Message}|{ex.StackTrace}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Error|DeviceNumber:{deviceNumber}|{ex.Message}|{ex.StackTrace}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Get the Mount for this device number
-        /// </summary>
-        private Alpaca.MountControl.Mount GetInstance()
-        {
-            var instance = MountRegistry.GetInstance(_deviceNumber);
-            if (instance == null)
-            {
-                throw new InvalidOperationException($"Device number {_deviceNumber} not found in registry");
-            }
-            return instance;
         }
 
         #region Public Properties
@@ -112,12 +65,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanAlignMode, "AlignmentMode");
-                var r = inst.Settings.AlignmentMode;
+                CheckCapability(_mount.Settings.CanAlignMode, "AlignmentMode");
+                var r = _mount.Settings.AlignmentMode;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"  {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 switch (r)
@@ -138,12 +90,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanAltAz, "Altitude", false);
-                var r = inst.Altitude;
+                CheckCapability(_mount.Settings.CanAltAz, "Altitude", false);
+                var r = _mount.Altitude;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"  {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -154,12 +105,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanOptics, "ApertureArea", false);
-                var r = inst.Settings.ApertureArea;
+                CheckCapability(_mount.Settings.CanOptics, "ApertureArea", false);
+                var r = _mount.Settings.ApertureArea;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"  {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -170,12 +120,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanOptics, "ApertureDiameter", false);
-                var r = inst.Settings.ApertureDiameter;
+                CheckCapability(_mount.Settings.CanOptics, "ApertureDiameter", false);
+                var r = _mount.Settings.ApertureDiameter;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"  {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -186,11 +135,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.AtHome;
+                var r = _mount.AtHome;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"  {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -201,11 +149,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.AtPark;
+                var r = _mount.Settings.AtPark;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"  {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -216,12 +163,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanAltAz, "Azimuth", false);
-                var r = inst.Azimuth;
+                CheckCapability(_mount.Settings.CanAltAz, "Azimuth", false);
+                var r = _mount.Azimuth;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -232,11 +178,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanFindHome;
+                var r = _mount.Settings.CanFindHome;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -247,11 +192,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanPark;
+                var r = _mount.Settings.CanPark;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -262,11 +206,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanPulseGuide;
+                var r = _mount.Settings.CanPulseGuide;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -277,11 +220,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSetDeclinationRate;
+                var r = _mount.Settings.CanSetDeclinationRate;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -292,11 +234,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSetGuideRates;
+                var r = _mount.Settings.CanSetGuideRates;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -307,11 +248,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSetPark;
+                var r = _mount.Settings.CanSetPark;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -322,11 +262,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSetPierSide;
+                var r = _mount.Settings.CanSetPierSide;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -337,11 +276,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSetRightAscensionRate;
+                var r = _mount.Settings.CanSetRightAscensionRate;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -352,11 +290,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSetTracking;
+                var r = _mount.Settings.CanSetTracking;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -367,11 +304,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSlew;
+                var r = _mount.Settings.CanSlew;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -382,11 +318,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSlewAltAz;
+                var r = _mount.Settings.CanSlewAltAz;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -397,11 +332,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSlewAltAzAsync;
+                var r = _mount.Settings.CanSlewAltAzAsync;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -412,11 +346,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSlewAsync;
+                var r = _mount.Settings.CanSlewAsync;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -427,11 +360,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSync;
+                var r = _mount.Settings.CanSync;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -442,11 +374,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanSyncAltAz;
+                var r = _mount.Settings.CanSyncAltAz;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -457,11 +388,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.CanUnPark;
+                var r = _mount.Settings.CanUnPark;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -475,18 +405,18 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var r = GetInstance().IsConnected;
+                var r = _mount.IsConnected;
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return r;
             }
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {value}|{_objectId}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {value}|{_objectId}" };
                 MonitorLog.LogToMonitor(monitorItem);
-                GetInstance().SetConnected(_objectId, value);
+                _mount.SetConnected(_objectId, value);
             }
         }
 
@@ -497,9 +427,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var r = GetInstance().Connecting;
+                var r = _mount.Connecting;
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return r;
             }
@@ -509,16 +439,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanEquatorial, "Declination", false);
-                var dec = inst.DeclinationXForm;
+                CheckCapability(_mount.Settings.CanEquatorial, "Declination", false);
+                var dec = _mount.DeclinationXForm;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"XForm|{Utilities.DegreesToDMS(dec, "\u00B0 ", ":", "", 2)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"XForm|{Utilities.DegreesToDMS(dec, "\u00B0 ", ":", "", 2)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Internal|{Utilities.DegreesToDMS(inst.Declination, "\u00B0 ", ":", "", 2)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Internal|{Utilities.DegreesToDMS(_mount.Declination, "\u00B0 ", ":", "", 2)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return dec;
@@ -532,11 +461,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = (TrackingRate == DriveRate.Sidereal) ? inst.RateDecOrg : 0.0;
+                var r = (TrackingRate == DriveRate.Sidereal) ? _mount.RateDecOrg : 0.0;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -544,18 +472,17 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSetEquRates, "DeclinationRate", true);
+                CheckCapability(_mount.Settings.CanSetEquRates, "DeclinationRate", true);
                 CheckRate(value);
                 if (TrackingRate != DriveRate.Sidereal)
                 {
                     throw new ASCOM.InvalidOperationException(" DeclinationRate - cannot set rate because TrackingRate is not Sidereal");
                 }
-                inst.RateDecOrg = value;
-                inst.SetRateDec(Conversions.ArcSec2Deg(value));
+                _mount.RateDecOrg = value;
+                _mount.SetRateDec(Conversions.ArcSec2Deg(value));
             }
         }
 
@@ -563,11 +490,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                string r = inst.Settings.InstrumentDescription;
+                string r = _mount.Settings.InstrumentDescription;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -586,20 +512,19 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 {
                     // Create an array list to hold the IStateValue entries
                     var deviceState = new List<StateValue>();
-                    var inst = GetInstance();
 
                     // Add one entry for each operational state, direct access to SkyServer variables, optimise response time to the client <0.1 seconds
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Altitude), inst.Altitude)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.AtHome), inst.AtHome)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.AtPark), inst.AtPark)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Azimuth), inst.Azimuth)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Declination), inst.Declination)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.IsPulseGuiding), inst.IsPulseGuiding)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.RightAscension), inst.RightAscension)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.SideOfPier), inst.SideOfPier)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.SiderealTime), inst.SiderealTime)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Slewing), inst.IsSlewing)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
-                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Tracking), inst.Tracking || inst.SlewState == SlewType.SlewRaDec)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Altitude), _mount.Altitude)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.AtHome), _mount.AtHome)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.AtPark), _mount.AtPark)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Azimuth), _mount.Azimuth)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Declination), _mount.Declination)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.IsPulseGuiding), _mount.IsPulseGuiding)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.RightAscension), _mount.RightAscension)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.SideOfPier), _mount.SideOfPier)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.SiderealTime), _mount.SiderealTime)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Slewing), _mount.IsSlewing)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
+                    try { deviceState.Add(new StateValue(nameof(ITelescopeV4.Tracking), _mount.Tracking || _mount.SlewState == SlewType.SlewRaDec)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
                     try { deviceState.Add(new StateValue(nameof(ITelescopeV4.UTCDate), HiResDateTime.UtcNow)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
                     try { deviceState.Add(new StateValue(DateTime.Now)); } catch (Exception ex) { LogMessage(MonitorType.Warning, "DeviceState", ex.Message); }
 
@@ -612,7 +537,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     }
 
                     var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{msg}" };
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{msg}" };
                     MonitorLog.LogToMonitor(monitorItem);
 
                     return r;
@@ -620,7 +545,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 catch (Exception ex)
                 {
                     var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{msg}, {ex.Message}" };
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{msg}, {ex.Message}" };
                     MonitorLog.LogToMonitor(monitorItem);
                     throw;
                 }
@@ -631,23 +556,21 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.Refraction;
+                var r = _mount.Settings.Refraction;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
             }
             set
             {
-                var inst = GetInstance();
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                inst.Settings.Refraction = value;
+                _mount.Settings.Refraction = value;
             }
         }
 
@@ -659,7 +582,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 var r = asm.FullName;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -674,7 +597,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 var r = asm.GetName().Version.ToString();
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -685,13 +608,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{inst.Settings.EquatorialCoordinateType}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{_mount.Settings.EquatorialCoordinateType}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                return inst.Settings.EquatorialCoordinateType;
+                return _mount.Settings.EquatorialCoordinateType;
             }
         }
 
@@ -699,12 +621,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanOptics, "FocalLength", false);
-                var r = inst.Settings.FocalLength;
+                CheckCapability(_mount.Settings.CanOptics, "FocalLength", false);
+                var r = _mount.Settings.FocalLength;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -715,11 +636,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.GuideRateDec;
+                var r = _mount.GuideRateDec;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -727,12 +647,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
                 CheckRange(value, 0.0, 0.5, "GuideRateDeclination");
-                inst.GuideRateDec = value;
+                _mount.GuideRateDec = value;
             }
         }
 
@@ -740,11 +659,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.GuideRateRa;
+                var r = _mount.GuideRateRa;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -752,12 +670,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
                 CheckRange(value, 0.0, 0.5, "GuideRateRightAscension");
-                inst.GuideRateRa = value;
+                _mount.GuideRateRa = value;
             }
         }
 
@@ -766,7 +683,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "4" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "4" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return 4;
@@ -777,12 +694,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanPulseGuide, "IsPulseGuiding", false);
-                var r = inst.IsPulseGuiding;
+                CheckCapability(_mount.Settings.CanPulseGuide, "IsPulseGuiding", false);
+                var r = _mount.IsPulseGuiding;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -793,11 +709,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                string r = inst.Settings.InstrumentName;
+                string r = _mount.Settings.InstrumentName;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -813,17 +728,16 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanEquatorial, "RightAscension", false);
-                var ra = inst.RightAscensionXForm;
+                CheckCapability(_mount.Settings.CanEquatorial, "RightAscension", false);
+                var ra = _mount.RightAscensionXForm;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"XForm|{Utilities.HoursToHMS(ra, "h ", ":", "", 2)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"XForm|{Utilities.HoursToHMS(ra, "h ", ":", "", 2)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
 
                 monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Internal|{Utilities.HoursToHMS(inst.RightAscension, "h ", ":", "", 2)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Internal|{Utilities.HoursToHMS(_mount.RightAscension, "h ", ":", "", 2)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return ra;
@@ -842,11 +756,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = (TrackingRate == DriveRate.Sidereal) ? inst.RateRaOrg : 0.0;
+                var r = (TrackingRate == DriveRate.Sidereal) ? _mount.RateRaOrg : 0.0;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -855,18 +768,17 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSetEquRates, "RightAscensionRate ", true);
+                CheckCapability(_mount.Settings.CanSetEquRates, "RightAscensionRate ", true);
                 CheckRate(value);
                 if (TrackingRate != DriveRate.Sidereal)
                 {
                     throw new InvalidOperationException(" RightAscensionRate - cannot set rate because TrackingRate is not Sidereal");
                 }
-                inst.RateRaOrg = value;
-                inst.SetRateRa(Conversions.ArcSec2Deg(Conversions.SideSec2ArcSec(value)));
+                _mount.RateRaOrg = value;
+                _mount.SetRateRa(Conversions.ArcSec2Deg(Conversions.SideSec2ArcSec(value)));
             }
         }
 
@@ -874,32 +786,30 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.SideOfPier;
+                var r = _mount.SideOfPier;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
             }
             set
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSetPierSide, "SideOfPier", true);
+                CheckCapability(_mount.Settings.CanSetPierSide, "SideOfPier", true);
                 MonitorEntry monitorItem;
-                if (value == inst.SideOfPier)
+                if (value == _mount.SideOfPier)
                 {
                     monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "No Change Needed" };
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "No Change Needed" };
                     MonitorLog.LogToMonitor(monitorItem);
 
                     return;
                 }
-                inst.SetSideOfPier(value);
+                _mount.SetSideOfPier(value);
 
                 monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
             }
@@ -909,12 +819,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSiderealTime, "SiderealTime", false);
-                var r = inst.SiderealTime;
+                CheckCapability(_mount.Settings.CanSiderealTime, "SiderealTime", false);
+                var r = _mount.SiderealTime;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Utilities.HoursToHMS(r)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.HoursToHMS(r)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -925,12 +834,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanLatLongElev, "SiteElevation", false);
-                var r = inst.Settings.Elevation;
+                CheckCapability(_mount.Settings.CanLatLongElev, "SiteElevation", false);
+                var r = _mount.Settings.Elevation;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -938,13 +846,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanLatLongElev, "SiteElevation", true);
+                CheckCapability(_mount.Settings.CanLatLongElev, "SiteElevation", true);
                 CheckRange(value, -300, 10000, "SiteElevation");
-                inst.Settings.Elevation = value;
+                _mount.Settings.Elevation = value;
             }
         }
 
@@ -952,12 +859,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanLatLongElev, "SiteLatitude", false);
-                var r = inst.Settings.Latitude;
+                CheckCapability(_mount.Settings.CanLatLongElev, "SiteLatitude", false);
+                var r = _mount.Settings.Latitude;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -965,13 +871,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanLatLongElev, "SiteLatitude", true);
+                CheckCapability(_mount.Settings.CanLatLongElev, "SiteLatitude", true);
                 CheckRange(value, -90, 90, "SiteLatitude");
-                inst.Settings.Latitude = value;
+                _mount.Settings.Latitude = value;
             }
         }
 
@@ -979,12 +884,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanLatLongElev, "SiteLongitude", false);
-                var r = inst.Settings.Longitude;
+                CheckCapability(_mount.Settings.CanLatLongElev, "SiteLongitude", false);
+                var r = _mount.Settings.Longitude;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -992,13 +896,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanLatLongElev, "SiteLongitude", true);
+                CheckCapability(_mount.Settings.CanLatLongElev, "SiteLongitude", true);
                 CheckRange(value, -180, 180, "SiteLongitude");
-                inst.Settings.Longitude = value;
+                _mount.Settings.Longitude = value;
             }
         }
 
@@ -1006,11 +909,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.IsSlewing;
+                var r = _mount.IsSlewing;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -1021,11 +923,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = (short)(inst.SlewSettleTime);
+                var r = (short)(_mount.SlewSettleTime);
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -1033,13 +934,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
                 CheckRange(value, 0, 100, "SlewSettleTime");
                 var r = value;
-                inst.SlewSettleTime = r;
+                _mount.SlewSettleTime = r;
             }
         }
 
@@ -1047,13 +947,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSlew, "TargetDeclination", false);
-                CheckRange(inst.TargetDec, -90, 90, "TargetDeclination");
-                var r = inst.TargetDec;
+                CheckCapability(_mount.Settings.CanSlew, "TargetDeclination", false);
+                CheckRange(_mount.TargetDec, -90, 90, "TargetDeclination");
+                var r = _mount.TargetDec;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -1061,14 +960,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Utilities.DegreesToDMS(value, "\u00B0 ", ":", "", 2)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(value, "\u00B0 ", ":", "", 2)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSlew, "TargetDeclination", true);
+                CheckCapability(_mount.Settings.CanSlew, "TargetDeclination", true);
                 CheckRange(value, -90, 90, "TargetDeclination");
 
-                inst.TargetDec = value;
+                _mount.TargetDec = value;
             }
         }
 
@@ -1076,13 +974,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSlew, "TargetRightAscension", false);
-                CheckRange(inst.TargetRa, 0, 24, "TargetRightAscension");
-                var r = inst.TargetRa;
+                CheckCapability(_mount.Settings.CanSlew, "TargetRightAscension", false);
+                CheckRange(_mount.TargetRa, 0, 24, "TargetRightAscension");
+                var r = _mount.TargetRa;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -1090,14 +987,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Utilities.HoursToHMS(value, "h ", ":", "", 2)}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.HoursToHMS(value, "h ", ":", "", 2)}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
-                CheckCapability(inst.Settings.CanSlew, "TargetRightAscension", true);
+                CheckCapability(_mount.Settings.CanSlew, "TargetRightAscension", true);
                 CheckRange(value, 0, 24, "TargetRightAscension");
 
-                inst.TargetRa = value;
+                _mount.TargetRa = value;
             }
         }
 
@@ -1105,25 +1001,23 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Tracking || inst.SlewState == SlewType.SlewRaDec;
+                var r = _mount.Tracking || _mount.SlewState == SlewType.SlewRaDec;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
             }
             set
             {
-                var inst = GetInstance();
-                if (value & inst.AtPark) { CheckParked("Cannot enable tracking at park"); }
+                if (value & _mount.AtPark) { CheckParked("Cannot enable tracking at park"); }
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                inst.ApplyTracking(value);
+                _mount.ApplyTracking(value);
             }
         }
 
@@ -1131,11 +1025,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
-                var r = inst.Settings.TrackingRate;
+                var r = _mount.Settings.TrackingRate;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -1143,12 +1036,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                var inst = GetInstance();
                 CheckTrackingRate("TrackingRate", value);
-                inst.Settings.TrackingRate = value;
+                _mount.Settings.TrackingRate = value;
             }
         }
 
@@ -1156,18 +1048,17 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-                var inst = GetInstance();
                 MonitorEntry monitorItem;
-                if (inst.Settings.CanTrackingRates)
+                if (_mount.Settings.CanTrackingRates)
                 {
                     monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_mTrackingRates}" };
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{_mTrackingRates}" };
                     MonitorLog.LogToMonitor(monitorItem);
 
                     return _mTrackingRates;
                 }
                 monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{_mTrackingRatesSimple}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{_mTrackingRatesSimple}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return _mTrackingRatesSimple;
@@ -1182,7 +1073,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 var r = HiResDateTime.UtcNow;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 return r;
@@ -1195,7 +1086,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 //SkySettings.UTCDateOffset = r;
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 throw new PropertyNotImplementedException(MethodBase.GetCurrentMethod()?.Name);
@@ -1219,7 +1110,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = " Started" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = " Started" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 // ReSharper disable once StringLiteralTypo
@@ -1233,14 +1124,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             try
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{command},{raw}") };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{command},{raw}") };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 if (string.IsNullOrWhiteSpace(command)) { throw new MethodNotImplementedException("CommandString"); }
 
                 if (_mCommandStrings == null) { _mCommandStrings = new CommandStrings(); }
-                var inst = GetInstance();
-                return CommandStrings.ProcessCommand(inst, command, raw);
+                return CommandStrings.ProcessCommand(_mount, command, raw);
             }
             catch (Exception ex)
             {
@@ -1251,7 +1141,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     Category = MonitorCategory.Driver,
                     Type = MonitorType.Warning,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = FormattableString.Invariant($"{ex.Message},{ex.StackTrace}")
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1282,7 +1172,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             Connected = true;
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "true" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "true" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 
@@ -1290,34 +1180,34 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             Connected = false;
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "false" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "false" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 
         public void AbortSlew()
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = " Started" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = " Started" };
             MonitorLog.LogToMonitor(monitorItem);
 
             CheckParked("AbortSlew");
-            GetInstance().AbortSlewAsync(true);
+            _mount.AbortSlewAsync(true);
         }
 
         public IAxisRates AxisRates(TelescopeAxis Axis)
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"   {Axis}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"   {Axis}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             switch (Axis)
             {
                 case TelescopeAxis.Primary:
-                    return new AxisRates(TelescopeAxis.Primary, GetInstance());
+                    return new AxisRates(TelescopeAxis.Primary, _mount);
                 case TelescopeAxis.Secondary:
-                    return new AxisRates(TelescopeAxis.Secondary, GetInstance());
+                    return new AxisRates(TelescopeAxis.Secondary, _mount);
                 case TelescopeAxis.Tertiary:
-                    return new AxisRates(TelescopeAxis.Tertiary, GetInstance());
+                    return new AxisRates(TelescopeAxis.Tertiary, _mount);
                 default:
                     return null;
             }
@@ -1325,10 +1215,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public bool CanMoveAxis(TelescopeAxis Axis)
         {
-            var r = GetInstance().CanMoveAxis(Axis);
+            var r = _mount.CanMoveAxis(Axis);
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $" {r}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             return r;
@@ -1337,14 +1227,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         public PointingState DestinationSideOfPier(double RightAscension, double Declination)
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"RA|{RightAscension}|Dec|{Declination}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"RA|{RightAscension}|Dec|{Declination}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
             CheckRange(raDec.X, 0, 24, "SlewToCoordinatesAsync", "RightAscension");
             CheckRange(raDec.Y, -90, 90, "SlewToCoordinatesAsync", "Declination");
             CheckReachable(raDec.X, raDec.Y, SlewType.SlewRaDec);
-            var r = GetInstance().DetermineSideOfPier(raDec.X, raDec.Y);
+            var r = _mount.DetermineSideOfPier(raDec.X, raDec.Y);
             return r;
         }
 
@@ -1360,7 +1250,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $" ActionName:{actionName}, ActionParameters:'{actionParameters}'"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -1369,16 +1259,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 // ReSharper disable once StringLiteralTypo
                 case string str when str.Equals("telescope:setparkposition", StringComparison.InvariantCultureIgnoreCase):
-                    var inst = GetInstance();
-                    if (inst.IsMountRunning == false) { throw new NotConnectedException("Mount Not Connected"); }
-                    var found = inst.Settings.ParkPositions.Find(x => string.Equals(x.Name, actionParameters, StringComparison.InvariantCultureIgnoreCase));
+                    if (_mount.IsMountRunning == false) { throw new NotConnectedException("Mount Not Connected"); }
+                    var found = _mount.Settings.ParkPositions.Find(x => string.Equals(x.Name, actionParameters, StringComparison.InvariantCultureIgnoreCase));
                     if (found == null)
                     {
-                        var parkPositions = inst.Settings.ParkPositions.OrderBy(parkPosition => parkPosition.Name).ToList();
+                        var parkPositions = _mount.Settings.ParkPositions.OrderBy(parkPosition => parkPosition.Name).ToList();
                         var output = JsonConvert.SerializeObject(parkPositions);
                         throw new Exception($"Param Not Found:'{actionParameters}', {output}");
                     }
-                    inst.ParkSelected = found;
+                    _mount.ParkSelected = found;
                     return found.Name;
                 default:
                     throw new ActionNotImplementedException($"Not Found:'{actionName}'");
@@ -1387,17 +1276,16 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void FindHome()
         {
-            var inst = GetInstance();
-            CheckCapability(inst.Settings.CanFindHome, "FindHome");
+            CheckCapability(_mount.Settings.CanFindHome, "FindHome");
             CheckParked("FindHome");
 
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "Started" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "Started" };
             MonitorLog.LogToMonitor(monitorItem);
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            inst.GoToHome().GetAwaiter().GetResult();
+            _mount.GoToHome().GetAwaiter().GetResult();
         }
 
         public void MoveAxis(TelescopeAxis Axis, double Rate)
@@ -1409,8 +1297,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{Axis}, {Rate}"
+                Thread = Environment.CurrentManagedThreadId,
+                Message = $"{Axis}|{Rate}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1418,14 +1306,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (!CanMoveAxis(Axis)){throw new MethodNotImplementedException("CanMoveAxis " + Enum.GetName(typeof(TelescopeAxis), Axis));}
             CheckParked("MoveAxis");
 
-            var inst = GetInstance();
             switch (Axis)
             {
                 case TelescopeAxis.Primary:
-                    inst.RateMovePrimaryAxis = Rate;
+                    _mount.RateMovePrimaryAxis = Rate;
                     break;
                 case TelescopeAxis.Secondary:
-                    inst.RateMoveSecondaryAxis = Rate;
+                    _mount.RateMoveSecondaryAxis = Rate;
                     break;
                 case TelescopeAxis.Tertiary:
                 default:
@@ -1441,8 +1328,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <exception cref="ASCOM.ParkedException">If the telescope is already parked</exception>
         public void Park()
         {
-            var inst = GetInstance();
-            CheckCapability(inst.Settings.CanPark, "Park");
+            CheckCapability(_mount.Settings.CanPark, "Park");
 
             var monitorItem = new MonitorEntry
             {
@@ -1451,11 +1337,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = "Started"
             };
 
-            if (inst.AtPark)
+            if (_mount.AtPark)
             {
                 monitorItem.Message = "Already Parked";
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1466,7 +1352,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
                 // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
                 // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-                inst.GoToParkAsync().GetAwaiter().GetResult();
+                _mount.GoToParkAsync().GetAwaiter().GetResult();
             }
         }
 
@@ -1474,39 +1360,37 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             try
             {
-                var inst = GetInstance();
-                if (inst.AtPark) { throw new ParkedException(); }
+                if (_mount.AtPark) { throw new ParkedException(); }
 
                 var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{Direction},{Duration}") };
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{Direction},{Duration}") };
                 MonitorLog.LogToMonitor(monitorItem);
 
-                CheckCapability(inst.Settings.CanPulseGuide, "PulseGuide");
+                CheckCapability(_mount.Settings.CanPulseGuide, "PulseGuide");
                 CheckRange(Duration, 0, 30000, "PulseGuide", "Duration");
 
                 switch (Direction)
                 {
                     case GuideDirection.North:
                     case GuideDirection.South:
-                        inst.IsPulseGuidingDec = true;
+                        _mount.IsPulseGuidingDec = true;
                         break;
                     case GuideDirection.East:
                     case GuideDirection.West:
-                        inst.IsPulseGuidingRa = true;
+                        _mount.IsPulseGuidingRa = true;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(Direction), Direction, null);
                 }
 
-                inst.PulseGuide(Direction, Duration, 0);
+                _mount.PulseGuide(Direction, Duration, 0);
             }
             catch (Exception e)
             {
-                var inst = GetInstance();
-                inst.IsPulseGuidingRa = false;
-                inst.IsPulseGuidingDec = false;
+                _mount.IsPulseGuidingRa = false;
+                _mount.IsPulseGuidingDec = false;
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{e.Message}") };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{e.Message}") };
                 MonitorLog.LogToMonitor(monitorItem);
                 throw;
             }
@@ -1514,19 +1398,18 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSlewAltAz, "SlewToAltAz");
+            CheckCapability(_mount.Settings.CanSlewAltAz, "SlewToAltAz");
             CheckParked("SlewToAltAz");
             CheckTracking(false, "SlewToAltAz");
             CheckRange(Azimuth, 0, 360, "SlewToAltAz", "azimuth");
             CheckRange(Altitude, -90, 90, "SlewToAltAz", "Altitude");
-            inst.SlewAltAz(Altitude, Azimuth);
+            _mount.SlewAltAz(Altitude, Azimuth);
             Thread.Sleep(250);
-            while (inst.SlewState == SlewType.SlewAltAz || inst.SlewState == SlewType.SlewSettle)
+            while (_mount.SlewState == SlewType.SlewAltAz || _mount.SlewState == SlewType.SlewSettle)
             {
                 Thread.Sleep(10);
             }
@@ -1535,12 +1418,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSlewAltAzAsync, "SlewToAltAzAsync");
+            CheckCapability(_mount.Settings.CanSlewAltAzAsync, "SlewToAltAzAsync");
             CheckParked("SlewToAltAz");
             CheckTracking(false, "SlewToAltAzAsync");
             CheckRange(Azimuth, 0, 360, "SlewToAltAzAsync", "Azimuth");
@@ -1548,12 +1430,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckReachable(Azimuth, Altitude, SlewType.SlewAltAz);
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            inst.SlewAltAzAsync(Altitude, Azimuth).GetAwaiter().GetResult();
+            _mount.SlewAltAzAsync(Altitude, Azimuth).GetAwaiter().GetResult();
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1561,12 +1442,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSlew, "SlewToCoordinates");
+            CheckCapability(_mount.Settings.CanSlew, "SlewToCoordinates");
             CheckRange(RightAscension, 0, 24, "SlewToCoordinates", "RightAscension");
             CheckRange(Declination, -90, 90, "SlewToCoordinates", "Declination");
             CheckParked("SlewToCoordinates");
@@ -1578,7 +1459,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
 
             // Use SlewController via SlewRaDec (blocks until complete)
-            inst.SlewRaDec(raDec.X, raDec.Y, true);
+            _mount.SlewRaDec(raDec.X, raDec.Y, true);
 
             // Brief delay for position updates
             DelayInterval();
@@ -1586,7 +1467,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1594,12 +1474,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSlewAsync, "SlewToCoordinatesAsync");
+            CheckCapability(_mount.Settings.CanSlewAsync, "SlewToCoordinatesAsync");
             CheckRange(RightAscension, 0, 24, "SlewToCoordinatesAsync", "RightAscension");
             CheckRange(Declination, -90, 90, "SlewToCoordinatesAsync", "Declination");
             CheckParked("SlewToCoordinatesAsync");
@@ -1610,17 +1490,16 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination);
 
             // Enable tracking before starting slew
-            // inst.CycleOnTracking(true);
+            // _mount.CycleOnTracking(true);
             if(!Tracking) Tracking = true;
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            inst.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true).GetAwaiter().GetResult();
+            _mount.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true).GetAwaiter().GetResult();
         }
 
         public void SlewToTarget()
         {
-            var inst = GetInstance();
             var ra = TargetRightAscension;
             var dec = TargetDeclination;
 
@@ -1631,12 +1510,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = FormattableString.Invariant($"{ra}|{dec}")
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSlew, "SlewToTarget");
+            CheckCapability(_mount.Settings.CanSlew, "SlewToTarget");
             CheckRange(ra, 0, 24, "SlewToTarget", "TargetRightAscension");
             CheckRange(dec, -90, 90, "SlewToTarget", "TargetDeclination");
             CheckParked("SlewToTarget");
@@ -1646,7 +1525,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var xy = Transforms.CoordTypeToInternal(ra, dec);
 
             // Use SlewController via SlewRaDec (blocks until complete)
-            inst.SlewRaDec(xy.X, xy.Y, true);
+            _mount.SlewRaDec(xy.X, xy.Y, true);
 
             // Brief delay for position updates
             DelayInterval();
@@ -1654,7 +1533,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToTargetAsync()
         {
-            var inst = GetInstance();
             var ra = TargetRightAscension;
             var dec = TargetDeclination;
 
@@ -1665,12 +1543,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = FormattableString.Invariant($"{ra}|{dec}")
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSlewAsync, "SlewToTargetAsync");
+            CheckCapability(_mount.Settings.CanSlewAsync, "SlewToTargetAsync");
             CheckRange(ra, 0, 24, "SlewToTargetAsync", "TargetRightAscension");
             CheckRange(dec, -90, 90, "SlewToTargetAsync", "TargetDeclination");
             CheckParked("SlewToTargetAsync");
@@ -1683,13 +1561,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            inst.SlewRaDecAsync(xy.X, xy.Y, tracking: true).GetAwaiter().GetResult();
+            _mount.SlewRaDecAsync(xy.X, xy.Y, tracking: true).GetAwaiter().GetResult();
         }
 
         public void Unpark()
         {
-            var inst = GetInstance();
-            CheckCapability(inst.Settings.CanUnPark, "UnPark");
+            CheckCapability(_mount.Settings.CanUnPark, "UnPark");
 
             var monitorItem = new MonitorEntry
             {
@@ -1698,13 +1575,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Unparking - AtPark was: {inst.AtPark}"  // ✅ Log before
+                Thread = Environment.CurrentManagedThreadId,
+                Message = $"Unparking - AtPark was: {_mount.AtPark}"  // âœ… Log before
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            inst.AtPark = false;
-            inst.ApplyTracking(AlignmentMode != AlignmentMode.AltAz);
+            _mount.AtPark = false;
+            _mount.ApplyTracking(AlignmentMode != AlignmentMode.AltAz);
 
             monitorItem = new MonitorEntry
             {
@@ -1713,8 +1590,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"Unparked - AtPark now: {inst.AtPark}"    // ✅ Log after
+                Thread = Environment.CurrentManagedThreadId,
+                Message = $"Unparked - AtPark now: {_mount.AtPark}"    // âœ… Log after
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -1722,35 +1599,32 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         public void SetPark()
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = "Started" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "Started" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            var inst = GetInstance();
-            CheckCapability(inst.Settings.CanSetPark, "SetPark");
-            inst.SetParkAxis("External");
+            CheckCapability(_mount.Settings.CanSetPark, "SetPark");
+            _mount.SetParkAxis("External");
         }
 
         public void SyncToAltAz(double Azimuth, double Altitude)
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSyncAltAz, "SyncToAltAz");
+            CheckCapability(_mount.Settings.CanSyncAltAz, "SyncToAltAz");
             CheckRange(Azimuth, 0, 360, "SyncToAltAz", "Azimuth");
             CheckRange(Altitude, -90, 90, "SyncToAltAz", "Altitude");
             CheckParked("SyncToAltAz");
             CheckTracking(false, "SyncToAltAz");
             CheckAltAzSync(Altitude, Azimuth, "SyncToAltAz");
-            inst.AtPark = false;
-            inst.SyncToAltAzm(Azimuth, Altitude);
-            inst.WaitMountPositionUpdated();
+            _mount.AtPark = false;
+            _mount.SyncToAltAzm(Azimuth, Altitude);
+            _mount.WaitMountPositionUpdated();
         }
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1758,30 +1632,29 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSync, "SyncToCoordinates");
+            CheckCapability(_mount.Settings.CanSync, "SyncToCoordinates");
             CheckRange(RightAscension, 0, 24, "SyncToCoordinates", "RightAscension");
             CheckRange(Declination, -90, 90, "SyncToCoordinates", "Declination");
             CheckParked("SyncToCoordinates");
             CheckTracking(true, "SyncToCoordinates");
 
-            inst.TargetDec = Declination;
-            inst.TargetRa = RightAscension;
+            _mount.TargetDec = Declination;
+            _mount.TargetRa = RightAscension;
             var a = Transforms.CoordTypeToInternal(RightAscension, Declination);
             CheckRaDecSync(a.X, a.Y, "SyncToCoordinates");
 
-            inst.AtPark = false;
-            inst.SyncToTargetRaDec();
-            inst.WaitMountPositionUpdated();
+            _mount.AtPark = false;
+            _mount.SyncToTargetRaDec();
+            _mount.WaitMountPositionUpdated();
         }
 
         public void SyncToTarget()
         {
-            var inst = GetInstance();
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1789,23 +1662,23 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Category = MonitorCategory.Driver,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
-                Message = $"{Utilities.HoursToHMS(inst.TargetRa, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(inst.TargetDec, "\u00B0 ", ":", "", 2)}"
+                Thread = Environment.CurrentManagedThreadId,
+                Message = $"{Utilities.HoursToHMS(_mount.TargetRa, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(_mount.TargetDec, "\u00B0 ", ":", "", 2)}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
-            CheckCapability(inst.Settings.CanSync, "SyncToTarget");
-            CheckRange(inst.TargetRa, 0, 24, "SyncToTarget", "TargetRightAscension");
-            CheckRange(inst.TargetDec, -90, 90, "SyncToTarget", "TargetDeclination");
+            CheckCapability(_mount.Settings.CanSync, "SyncToTarget");
+            CheckRange(_mount.TargetRa, 0, 24, "SyncToTarget", "TargetRightAscension");
+            CheckRange(_mount.TargetDec, -90, 90, "SyncToTarget", "TargetDeclination");
             CheckParked("SyncToTarget");
             CheckTracking(true, "SyncToTarget");
 
-            var a = Transforms.CoordTypeToInternal(inst.TargetRa, inst.TargetDec);  
+            var a = Transforms.CoordTypeToInternal(_mount.TargetRa, _mount.TargetDec);  
             CheckRaDecSync(a.X, a.Y, "SyncToTarget");
 
-            inst.AtPark = false;
-            inst.SyncToTargetRaDec();
-            inst.WaitMountPositionUpdated();
+            _mount.AtPark = false;
+            _mount.SyncToTargetRaDec();
+            _mount.WaitMountPositionUpdated();
         }
 
         #region Private Methods
@@ -1815,7 +1688,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var success = Enum.IsDefined(typeof(DriveRate), enumValue);
             if (success) return;
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{propertyOrMethod}|{enumValue}") };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{propertyOrMethod}|{enumValue}") };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new InvalidValueException("TrackingRate invalid");
@@ -1826,7 +1699,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (double.IsNaN(value))
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}|{valueName}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}|{valueName}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 throw new ValueNotSetException(propertyOrMethod + ":" + valueName);
@@ -1835,7 +1708,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (value < min || value > max)
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}|{valueName}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}|{valueName}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.CurrentCulture),
                     string.Format(CultureInfo.CurrentCulture, "{0}, {1} to {2}", valueName, min, max));
@@ -1847,7 +1720,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (double.IsNaN(value))
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 throw new ValueNotSetException(propertyOrMethod);
@@ -1856,7 +1729,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (value < min || value > max)
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.CurrentCulture),
@@ -1869,7 +1742,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (capability) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{method}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{method}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new MethodNotImplementedException(method);
@@ -1880,7 +1753,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             if (capability) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}|{setNotGet}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{property}|{setNotGet}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new PropertyNotImplementedException(property, setNotGet);
@@ -1888,10 +1761,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         private void CheckParked(string property)
         {
-            if (!GetInstance().AtPark) return;
+            if (!_mount.AtPark) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{property}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{property}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new ParkedException(property + @": Telescope parked");
@@ -1904,10 +1777,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private void CheckRate(double rate)
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{rate}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{rate}" };
             MonitorLog.LogToMonitor(monitorItem);
             var deg = Conversions.ArcSec2Deg(rate);
-            var slewSpeedEight = GetInstance().SlewSpeedEight;
+            var slewSpeedEight = _mount.SlewSpeedEight;
             if (deg > slewSpeedEight || deg < -slewSpeedEight)
             {
                 throw new InvalidValueException($"{rate} is out of limits");
@@ -1922,7 +1795,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private void CheckRate(TelescopeAxis axis, double rate)
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{axis}|{rate}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{axis}|{rate}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             var rates = AxisRates(axis);
@@ -1945,11 +1818,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <param name="method">The method name.</param>
         private void CheckTracking(bool raDecSlew, string method)
         {
-            var tracking = GetInstance().Tracking;
+            var tracking = _mount.Tracking;
             if (raDecSlew == tracking) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{tracking}|{raDecSlew}|{method}") };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{tracking}|{raDecSlew}|{method}") };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new InvalidOperationException($"{method} is not allowed when tracking is {tracking}");
@@ -1963,11 +1836,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <param name="method">The method name</param>
         private void CheckRaDecSync(double ra, double dec, string method)
         {
-            var pass = GetInstance().CheckRaDecSyncLimit(ra, dec);
+            var pass = _mount.CheckRaDecSyncLimit(ra, dec);
             if (pass) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{ra}|{dec}|{method}") };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{ra}|{dec}|{method}") };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new InvalidOperationException($"{method} out of sync limits");
@@ -1981,11 +1854,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <param name="method">The method name</param>
         private void CheckAltAzSync(double alt, double az, string method)
         {
-            var pass = GetInstance().CheckAltAzSyncLimit(alt, az);
+            var pass = _mount.CheckAltAzSyncLimit(alt, az);
             if (pass) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{alt}|{az}|{method}") };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{alt}|{az}|{method}") };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new InvalidOperationException($"{method} out of sync limits");
@@ -2019,12 +1892,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     break;
             }
             // Only check for polar alignment mode
-            var inst = GetInstance();
-            if (inst.Settings.AlignmentMode != AlignmentMode.Polar ||
-                inst.IsTargetReachable(new[] { axisX, axisY }, slewType)) return;
+            if (_mount.Settings.AlignmentMode != AlignmentMode.Polar ||
+                _mount.IsTargetReachable(new[] { axisX, axisY }, slewType)) return;
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = FormattableString.Invariant($"{axisX}|{axisY}|{slewType}") };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{axisX}|{axisY}|{slewType}") };
             MonitorLog.LogToMonitor(monitorItem);
 
             throw new InvalidOperationException($"{method} outside hardware limits");
@@ -2037,16 +1909,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <returns></returns>
         private void DelayInterval(int additional = 0)
         {
-            var inst = GetInstance();
             var delay = additional;
-            switch (inst.Settings.Mount)
+            switch (_mount.Settings.Mount)
             {
                 case MountType.Simulator:
-                    delay += inst.Settings.DisplayInterval;
+                    delay += _mount.Settings.DisplayInterval;
                     break;
                 case MountType.SkyWatcher:
                     delay += 20;  // some go tos have been off .10 to .70 seconds, not sure exactly why
-                    delay += inst.Settings.DisplayInterval;
+                    delay += _mount.Settings.DisplayInterval;
                     break;
             }
             //Thread.Sleep(delay);
@@ -2058,7 +1929,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private static void LogMessage(MonitorType type, string method, string msg)
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = type, Method = $"{method}", Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{msg}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = type, Method = $"{method}", Thread = Environment.CurrentManagedThreadId, Message = $"{msg}" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 

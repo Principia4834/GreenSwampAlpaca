@@ -25,11 +25,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         #region Fields
 
-        // Phase H1: instance field — each Controllers instance has its own CTS
+        // Each Controllers instance has its own CTS
         private CancellationTokenSource _ctsMount;
-        // Phase H5: captured at construction time — avoids last-writer-wins race between two simulator devices
-        internal int AutoHomeAxisX;
-        internal int AutoHomeAxisY;
+        // Captured at construction time — avoids last-writer-wins race between two simulator devices
+        private int AutoHomeAxisX;
+        private int AutoHomeAxisY;
         private const long RevolutionSteps = 12960000;
         private const long WormRevolutionSteps = 64800;
         private const int MaxSteps = Int32.MaxValue;
@@ -112,8 +112,8 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             SlewSpeedEight = 13;
             SnapPort1 = false;
             SnapPort2 = false;
-            _ctsMount = new CancellationTokenSource();       // Phase H1: per-instance CTS
-            AutoHomeAxisX = Settings.AutoHomeAxisX;          // Phase H5: capture before next device overwrites
+            _ctsMount = new CancellationTokenSource();       // Per-instance CTS
+            AutoHomeAxisX = Settings.AutoHomeAxisX;          // Captured at construction time
             AutoHomeAxisY = Settings.AutoHomeAxisY;
         }
 
@@ -714,12 +714,12 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             {
                 case Axis.Axis1:
                     // if (DegreesX > 110 || DegreesX < 70) return;
-                    if (DegreesX > AutoHomeAxisX && _homeSensorX)  // Phase H5: use instance field
+                    if (DegreesX > AutoHomeAxisX && _homeSensorX)
                     {
                         HomeSensorX = AutoHomeAxisX * 36000;
                         _homeSensorX = false;
                     }
-                    if (DegreesX < AutoHomeAxisX && !_homeSensorX)  // Phase H5: use instance field
+                    if (DegreesX < AutoHomeAxisX && !_homeSensorX)
                     {
                         HomeSensorX = AutoHomeAxisX * 36000;
                         _homeSensorX = true;
@@ -727,13 +727,13 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     break;
                 case Axis.Axis2:
                     // if (DegreesY > 110 || DegreesY < 70) return;
-                    if (DegreesY > AutoHomeAxisY && _homeSensorY)  // Phase H5: use instance field
+                    if (DegreesY > AutoHomeAxisY && _homeSensorY)
                     {
                         HomeSensorY = AutoHomeAxisY * 36000;
                         _homeSensorY = false;
                     }
 
-                    if (DegreesY < AutoHomeAxisY && !_homeSensorY)  // Phase H5: use instance field
+                    if (DegreesY < AutoHomeAxisY && !_homeSensorY)
                     {
                         HomeSensorY = AutoHomeAxisY * 36000;
                         _homeSensorY = true;
@@ -762,11 +762,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             switch (axis)
             {
                 case Axis.Axis1:
-                    if (DegreesX > AutoHomeAxisX) HomeSensorX = MinSteps;  // Phase H5: use instance field
+                    if (DegreesX > AutoHomeAxisX) HomeSensorX = MinSteps;
                     if (DegreesX < AutoHomeAxisX) HomeSensorX = MaxSteps;
                     break;
                 case Axis.Axis2:
-                    if (DegreesY > AutoHomeAxisY) HomeSensorY = MinSteps;  // Phase H5: use instance field
+                    if (DegreesY > AutoHomeAxisY) HomeSensorY = MinSteps;
                     if (DegreesY < AutoHomeAxisY) HomeSensorY = MaxSteps;
                     break;
                 default:
@@ -804,7 +804,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <summary>
         /// Shutdown Mount
         /// </summary>
-        private bool Stop()  // Phase H1: non-static — cancels only this instance's loop
+        private bool Stop()  // Cancels only this instance's loop
         {
             _ctsMount?.Cancel();
             _ctsMount?.Dispose();

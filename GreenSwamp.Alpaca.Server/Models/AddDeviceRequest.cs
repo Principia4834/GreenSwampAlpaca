@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 namespace GreenSwamp.Alpaca.Server.Models
 {
     /// <summary>
-    /// Request model for adding a new telescope device dynamically (Phase 4.8.1).
+    /// Request model for adding a new telescope device dynamically.
     /// </summary>
     public class AddDeviceRequest
     {

@@ -28,7 +28,7 @@ using SkySettings = GreenSwamp.Alpaca.MountControl.SkySettings;
 namespace GreenSwamp.Alpaca.Server.Controllers
 {
     /// <summary>
-    /// Controller for dynamic device management (Phase 4.8.1).
+    /// Controller for dynamic device management.
     /// Provides REST API for adding, removing, and listing telescope devices at runtime.
     /// </summary>
     [ServiceFilter(typeof(AuthorizationFilter))]
@@ -146,8 +146,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                     deviceNumber,
                     request.DeviceName,
                     uniqueId,
-                    settingsInstance,
-                    new GreenSwamp.Alpaca.Server.TelescopeDriver.Telescope(deviceNumber)
+                    settingsInstance
                 );
 
                 _logger.LogInformation(
@@ -193,7 +192,6 @@ namespace GreenSwamp.Alpaca.Server.Controllers
 
             try
             {
-                // Phase 4.11: Use UnifiedDeviceRegistry to enforce reserved slot protection
                 bool removed = Services.UnifiedDeviceRegistry.RemoveDevice(deviceNumber);
 
                 if (!removed)

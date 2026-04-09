@@ -182,7 +182,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 Category = MonitorCategory.Mount,
                 Type = MonitorType.Debug,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{axis}|{rate}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -312,7 +312,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             {
                 var datetime = HiResDateTime.UtcNow;
                 var monitorItem = new MonitorEntry // setup to log the pulse
-                { Datetime = datetime, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MonitorLog.GetCurrentMethod(), Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{axis}|{guideRate}|{duration}|{backlashSteps}|{MinPulseDurationRa}|{MinPulseDurationDec}|{DecPulseGoTo}" };
+                { Datetime = datetime, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MonitorLog.GetCurrentMethod(), Thread = Environment.CurrentManagedThreadId, Message = $"{axis}|{guideRate}|{duration}|{backlashSteps}|{MinPulseDurationRa}|{MinPulseDurationDec}|{DecPulseGoTo}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 var pulseEntry = new PulseEntry // setup to graph the pulse
@@ -412,7 +412,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                                 Category = MonitorCategory.Server,
                                 Type = MonitorType.Warning,
                                 Method = MonitorLog.GetCurrentMethod(),
-                                Thread = Thread.CurrentThread.ManagedThreadId,
+                                Thread = Environment.CurrentManagedThreadId,
                                 Message = $"{axis}|Async operation cancelled"
                             };
                             MonitorLog.LogToMonitor(monitorItem);
@@ -507,7 +507,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                                     Category = MonitorCategory.Server,
                                     Type = MonitorType.Warning,
                                     Method = MonitorLog.GetCurrentMethod(),
-                                    Thread = Thread.CurrentThread.ManagedThreadId,
+                                    Thread = Environment.CurrentManagedThreadId,
                                     Message = $"{axis}|Async operation cancelled"
                                 };
                                 MonitorLog.LogToMonitor(monitorItem);
@@ -566,7 +566,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                                     Category = MonitorCategory.Server,
                                     Type = MonitorType.Warning,
                                     Method = MonitorLog.GetCurrentMethod(),
-                                    Thread = Thread.CurrentThread.ManagedThreadId,
+                                    Thread = Environment.CurrentManagedThreadId,
                                     Message = $"{axis}|Async operation cancelled"
                                 };
                                 MonitorLog.LogToMonitor(monitorItem);
@@ -620,7 +620,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal void AxisMoveSteps(Axis axis, long movingSteps)
         {
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{axis}|{movingSteps}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{axis}|{movingSteps}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             if (_commands.SupportAdvancedCommandSet && _commands.AllowAdvancedCommandSet)
@@ -697,7 +697,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal void AxisGoToTarget(Axis axis, double targetPosition) 
         {
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{axis}|{targetPosition}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{axis}|{targetPosition}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             if (_commands.SupportAdvancedCommandSet && _commands.AllowAdvancedCommandSet)
@@ -710,7 +710,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"axis|{axis}|Target|{targetPosition}|curPosition|{curPosition}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -737,7 +737,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"axis|{axis}|Target|{targetPosition}|curPosition|{curPosition}|movingSteps|{movingSteps}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -900,7 +900,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             catch (Exception e)
             {
                 var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{e.Message}" };
+                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{e.Message}" };
                 MonitorLog.LogToMonitor(monitorItem);
             }
         }
@@ -914,7 +914,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             var ret = _commands.GetAxisStringVersions();
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ret[0]}|{ret[1]}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{ret[0]}|{ret[1]}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             return ret;
@@ -929,7 +929,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             var ret = _commands.GetAxisVersions();
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ret[0]}|{ret[1]}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{ret[0]}|{ret[1]}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             return ret;
@@ -1149,7 +1149,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{MountType}|{MountVersion}|{MountNum}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{MountType}|{MountVersion}|{MountNum}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             return MountVersion;
@@ -1396,7 +1396,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             if (result == null || result.Contains("!") || result.Length < 3 || !result.Contains("="))
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{result}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{result}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return;
             }

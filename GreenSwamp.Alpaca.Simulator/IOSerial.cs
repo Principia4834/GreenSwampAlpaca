@@ -37,7 +37,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             var received = _controllers.Command(command.ToLowerInvariant().Trim());
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{command}={received}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{command}={received}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             return received;

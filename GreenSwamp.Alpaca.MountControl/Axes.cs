@@ -158,7 +158,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Debug,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{axes[0]}|{axes[1]}|{a[0]}|{a[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -333,7 +333,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"ENTRY|Input:{azAlt[0]}|{azAlt[1]}|AlignmentMode:{context.AlignmentMode}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -359,7 +359,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterAltAz2HaDec|HA:{axes[0]}hrs|Dec:{axes[1]}deg|Calling:HaDecToAxesXy|skipAlt:{skipAlternatePosition}"
                     };
                     MonitorLog.LogToMonitor(monitorItem2);
@@ -368,7 +368,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterHaDecToAxesXy|X:{axes[0]}|Y:{axes[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem3);
@@ -381,7 +381,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId, Message = $"Range:{axes[0]}|{axes[1]}"
+                Thread = Environment.CurrentManagedThreadId, Message = $"Range:{axes[0]}|{axes[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
             return [axes[0], axes[1]];
@@ -488,7 +488,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"ENTRY|HA:{haDec[0]}hrs|Dec:{haDec[1]}deg|Calling:RaDecToAxesXyCore|skipAlt:{skipAlternatePosition}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -500,7 +500,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"RETURN|X:{result[0]}|Y:{result[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem2);
@@ -528,7 +528,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                 Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"ENTRY|Coords:{coordinates[0]}|{coordinates[1]}|useLst:{useLst}|Mode:{context.AlignmentMode}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -557,7 +557,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"PolarCase|BeforeConversion|X:{axes[0]}|Y:{axes[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem2);
@@ -571,7 +571,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterHAtoDeg|X:{axes[0]}deg|Y:{axes[1]}deg"
                     };
                     MonitorLog.LogToMonitor(monitorItem3);
@@ -584,7 +584,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterHemisphereInv|SH:{context.SouthernHemisphere}|X:{axes[0]}|Y:{axes[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem4);
@@ -600,7 +600,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterThroughPole|X:{axes[0]}|Y:{axes[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem5);
@@ -612,7 +612,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterRangeNormalize|X:{axes[0]}|Y:{axes[1]}|Calling:AxesAppToMount"
                     };
                     MonitorLog.LogToMonitor(monitorItem6);
@@ -624,7 +624,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"AfterAxesAppToMount|X:{axes[0]}|Y:{axes[1]}|CheckingAlternate|skipAlt:{skipAlternatePosition}"
                     };
                     MonitorLog.LogToMonitor(monitorItem7);
@@ -644,7 +644,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"RETURN|AltPos:{(alt != null)}|Skipped:{skipAlternatePosition}|X:{finalAxes[0]}|Y:{finalAxes[1]}"
                     };
                     MonitorLog.LogToMonitor(monitorItem8);

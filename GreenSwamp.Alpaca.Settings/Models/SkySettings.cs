@@ -24,7 +24,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
     /// </summary>
     public class SkySettings
     {
-        // Phase 3: Device identification
+        // Device identification
         public int DeviceNumber { get; set; } = 0;
         public string DeviceName { get; set; } = "Telescope";
         public bool Enabled { get; set; } = true;

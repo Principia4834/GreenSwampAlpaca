@@ -90,7 +90,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"lat:{latitude}|long:{longitude}|Ref:{MountRegistry.GetInstance(0)?.Settings?.Refraction ?? default}|Ele:{elevation}|ra/dec:{rightAscension},{declination}|{r.X},{r.Y}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -146,7 +146,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"lat:{s?.Latitude ?? default}|long:{s?.Longitude ?? default}|Ref:{s?.Refraction ?? default}|Ele:{s?.Elevation ?? default}|ra/dec:{rightAscension},{declination}|{xForm.RATopocentric},{xForm.DECTopocentric}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -212,7 +212,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"lat:{s?.Latitude ?? default}|long:{s?.Longitude ?? default}|Ref:{s?.Refraction ?? default}|Ele:{s?.Elevation ?? default}|ra/dec:{rightAscension},{declination}/{radec.X},{radec.Y}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);

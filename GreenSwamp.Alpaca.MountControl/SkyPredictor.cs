@@ -125,7 +125,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Debug,
                 Method = "P." + MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{ReferenceTime.ToLocalTime():yyyy-MM-dd HH:mm:ss}|{_ra}|{_dec}|{_rateRa}|{_rateDec}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -154,7 +154,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Debug,
                 Method = "P." + MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{ReferenceTime.ToLocalTime():yyyy-MM-dd HH:mm:ss}|{_ra}|{_dec}|{_rateRa}|{_rateDec}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -199,7 +199,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Debug,
                 Method = "P." + MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{ReferenceTime.ToLocalTime():yyyy-MM-dd HH:mm:ss}|{result[0]}|{result[1]}|{_ra}|{_dec}|{_rateRa}|{_rateDec}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -240,7 +240,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Debug,
                 Method = "P." + MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{ReferenceTime.ToLocalTime():yyyy-MM-dd HH:mm:ss}|{_ra}|{_dec}|{_rateRa}|{_rateDec}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -268,7 +268,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Debug,
                 Method = "P." + MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{ReferenceTime.ToLocalTime():yyyy-MM-dd HH:mm:ss}|{_ra}|{_dec}|{_rateRa}|{_rateDec}"
             };
             MonitorLog.LogToMonitor(monitorItem);

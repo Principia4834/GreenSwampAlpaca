@@ -23,10 +23,9 @@ using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
- /// <summary>Mount partial — position, coordinates and limits. Phase M2.</summary>
  public partial class Mount
  {
- #region Position, Coordinates and Limits (Phase M2)
+ #region Position, Coordinates and Limits
 
         /// <summary>Get alternate position based on alignment mode — instance version.</summary>
         public double[] GetAlternatePosition(double[] position)
@@ -80,7 +79,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"flip|{cl}|{_actualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
@@ -105,7 +104,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"flip|{cl}|{_actualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
@@ -135,7 +134,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Category = MonitorCategory.Server,
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"flip|{cl}|{_actualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                     });
                 }

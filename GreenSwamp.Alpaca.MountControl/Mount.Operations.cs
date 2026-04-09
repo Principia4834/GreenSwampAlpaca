@@ -26,7 +26,6 @@ using GreenSwamp.Alpaca.MountControl.AutoHome;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
-    /// <summary>Mount partial — core operations (Stop, Abort, Park, Home, Sync, AutoHome). Phase M2.</summary>
     public partial class Mount
     {
         #region Core Operations
@@ -43,7 +42,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{_slewState}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -87,7 +86,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{_slewState}|{Tracking}"
             });
             abortSlewStarted?.Set();
@@ -102,7 +101,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = "Cancelling SlewController operation"
                 });
                 _slewController.CancelCurrentSlewAsync().Wait();
@@ -137,7 +136,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = "AbortSlew completed"
             });
         }
@@ -158,7 +157,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"Slew to Park: {ps.Name}|{ps.X}|{ps.Y}"
             });
             SlewSync([ps.X, ps.Y], SlewType.SlewPark, tracking: false);
@@ -182,7 +181,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MonitorLog.GetCurrentMethod(),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = "Started"
                 });
                 if (degreeLimit < 20) degreeLimit = 100;
@@ -216,7 +215,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MonitorLog.GetCurrentMethod(),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"Complete: {raResult}|{decResult}"
                 });
                 if (raResult == AutoHomeResult.Success && decResult == AutoHomeResult.Success)
@@ -247,7 +246,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Error,
                     Method = MonitorLog.GetCurrentMethod(),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"{ex.Message}|{ex.StackTrace}"
                 });
                 LastAutoHomeError = ex;
@@ -295,7 +294,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{name}|{position[0]}|{position[1]}"
             });
             switch (Settings.Mount)
@@ -336,7 +335,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"Home|{homeAxes.X}|{homeAxes.Y}|{Settings.HomeAxisX}|{Settings.HomeAxisY}"
             });
             if (AtPark)
@@ -356,7 +355,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"Parked,{Settings.ParkName}|{Settings.ParkAxes[0]}|{Settings.ParkAxes[1]}"
                 });
             }
@@ -371,7 +370,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"Load:{positions[0]}|{positions[1]}"
             });
             return positions;
@@ -393,7 +392,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{name}|{x}|{y}"
             });
         }

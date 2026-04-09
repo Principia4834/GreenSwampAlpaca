@@ -192,9 +192,9 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Constructor
 
         /// <summary>
-        /// Creates instance with explicit device configuration (Phase 3: Multi-device support)
+        /// Creates instance with explicit device configuration
         /// </summary>
-        /// <param name="deviceSettings">Complete device configuration (all 137 properties)</param>
+        /// <param name="deviceSettings">Complete device configuration</param>
         /// <param name="settingsService">Settings service for persistence (DI)</param>
         public SkySettings(
             Settings.Models.SkySettings deviceSettings,
@@ -202,7 +202,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
-            // Phase 3: Apply device-specific settings directly (no auto-load from Device 0)
+            // Apply device-specific settings directly
             ApplySettings(deviceSettings ?? throw new ArgumentNullException(nameof(deviceSettings)));
 
             LogSettings("Initialized", $"Device {deviceSettings.DeviceNumber}: {deviceSettings.DeviceName}|Mount:{_mount}|Port:{_port}");
@@ -1084,7 +1084,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"ParkAxes.Get|Polar mode lazy load: storedAzAlt from JSON = [{storedAzAlt?[0] ?? double.NaN}, {storedAzAlt?[1] ?? double.NaN}]"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1098,7 +1098,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Category = MonitorCategory.Mount,
                         Type = MonitorType.Warning,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = "ParkAxes.Get|Polar mode: storedAzAlt is null or invalid length - returning NaN"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
@@ -1116,7 +1116,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"ParkAxes.Get|Polar mode: Before SH adjustment - Az={az}, Alt={alt}, Latitude={_latitude}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1133,7 +1133,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Category = MonitorCategory.Mount,
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"ParkAxes.Get|Polar mode: After SH adjustment - Az={az} (added 180°)"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
@@ -1150,7 +1150,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"ParkAxes.Get|Polar mode: Calling Axes.AzAltToAxesXy with Az={az}, Alt={alt}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1165,7 +1165,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"ParkAxes.Get|Polar mode: After transformation - X={axes[0]}, Y={axes[1]}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1180,7 +1180,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"ParkAxes.Get|Polar mode: Cached and returning [{axes[0]}, {axes[1]}]"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -1763,7 +1763,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Apply settings from SkySettings model to instance fields
         /// This is the single source of truth for all settings mapping
-        /// Phase 4.9: Made public to support per-device profile loading
         /// </summary>
         /// <param name="settings">Settings model (from profile or JSON)</param>
         public void ApplySettings(Settings.Models.SkySettings settings)
@@ -2159,7 +2158,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,
                     Method = $"SkySettings.{method}",
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = message
                 };
                 MonitorLog.LogToMonitor(monitorItem);

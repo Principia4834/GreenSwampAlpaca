@@ -14,7 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Phase M1: Per-instance tracking and rate methods.
+// Per-instance tracking and rate methods.
 // Replaces SkyServer.SetTracking(this), SetGuideRates(this), CalcCustomTrackingOffset(this),
 // SetSlewRates(rate, this). SkyGetRate() fixes the device-0 AlignmentMode bias.
 
@@ -184,7 +184,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{currentTrackingMode}|{rateChange * 3600}|{_pecBinNow}|{_skyTrackingOffset[0]}|{_skyTrackingOffset[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -207,7 +207,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{change}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -226,7 +226,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{GuideRateRa * 3600}|{GuideRateDec * 3600}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -257,7 +257,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Mount,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{_trackingOffsetRate.X}|{_trackingOffsetRate.Y}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -280,7 +280,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{_slewSpeedOne}|{_slewSpeedTwo}|{_slewSpeedThree}|{_slewSpeedFour}|{_slewSpeedFive}|{_slewSpeedSix}|{_slewSpeedSeven}|{_slewSpeedEight}"
             };
             MonitorLog.LogToMonitor(monitorItem);

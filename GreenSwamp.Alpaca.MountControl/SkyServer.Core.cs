@@ -71,7 +71,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = "Loading SkyServer"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -99,7 +99,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Error,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"{ex.Message}|{ex.StackTrace}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -128,7 +128,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Error,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{ex.Message}|{ex.StackTrace}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -211,7 +211,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Warning,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"{command.Successful}|{command.Exception.Message}|{command.Exception.StackTrace}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -296,7 +296,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{taskName}"
             };
             MonitorLog.LogToMonitor(monitorItem);
@@ -444,7 +444,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{taskName}"
             };
 

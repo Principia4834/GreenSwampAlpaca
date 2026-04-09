@@ -59,17 +59,13 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public static double[] GetAlternatePosition(double[] position, AxesContext context)
         {
-            switch (context.AlignmentMode)
+            return context.AlignmentMode switch
             {
-                case AlignmentMode.AltAz:
-                    return GetAlternatePositionAltAz(position, context);
-                case AlignmentMode.Polar:
-                    return GetAlternatePositionPolar(position, context);
-                case AlignmentMode.GermanPolar:
-                    return GetAlternatePositionGEM(position, context);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(context));
-            }
+                AlignmentMode.AltAz => GetAlternatePositionAltAz(position, context),
+                AlignmentMode.Polar => GetAlternatePositionPolar(position, context),
+                AlignmentMode.GermanPolar => GetAlternatePositionGEM(position, context),
+                _ => throw new ArgumentOutOfRangeException(nameof(context))
+            };
         }
 
         private static string ChooseClosestPosition(double position, IReadOnlyList<double> a, IReadOnlyList<double> b)
@@ -101,7 +97,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                     Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"flip|{cl}|{context.AppAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
@@ -121,7 +117,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                     Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"flip|{cl}|{context.AppAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
@@ -146,7 +142,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server,
                         Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"flip|{cl}|{context.AppAxisX ?? 0.0}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                     });
                 }
@@ -173,7 +169,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (mount == null || !mount.IsMountRunning) { throw new Exception("Mount not running"); }
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{direction}|{duration}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{direction}|{duration}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             var useAltRate = Math.Abs(altRate) > 0;
@@ -348,24 +344,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public static double CurrentTrackingRate(Mount mount)
         {
-            double rate;
-            switch (mount.Settings.TrackingRate)
+            double rate = mount.Settings.TrackingRate switch
             {
-                case DriveRate.Sidereal:
-                    rate = mount.Settings.SiderealRate;
-                    break;
-                case DriveRate.Solar:
-                    rate = mount.Settings.SolarRate;
-                    break;
-                case DriveRate.Lunar:
-                    rate = mount.Settings.LunarRate;
-                    break;
-                case DriveRate.King:
-                    rate = mount.Settings.KingRate;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                DriveRate.Sidereal => mount.Settings.SiderealRate,
+                DriveRate.Solar => mount.Settings.SolarRate,
+                DriveRate.Lunar => mount.Settings.LunarRate,
+                DriveRate.King => mount.Settings.KingRate,
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             if (rate < SiderealRate * 2 & rate != 0)
                 rate += mount._trackingOffsetRate.X;
@@ -376,8 +362,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
             rate /= 3600;
             if (mount.Settings.RaTrackingOffset <= 0) { return rate; }
-            var offsetrate = rate * (Convert.ToDouble(mount.Settings.RaTrackingOffset) / 100000);
-            rate += offsetrate;
+            var offsetRate = rate * (Convert.ToDouble(mount.Settings.RaTrackingOffset) / 100000);
+            rate += offsetRate;
             return rate;
         }
 
@@ -420,7 +406,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             Category = MonitorCategory.Server,
                             Type = MonitorType.Data,
                             Method = MethodBase.GetCurrentMethod()?.Name,
-                            Thread = Thread.CurrentThread.ManagedThreadId,
+                            Thread = Environment.CurrentManagedThreadId,
                             Message = $"Ra:{internalRaDec.X}|Dec:{internalRaDec.Y}|Azimuth delta:{delta[0]}|Altitude delta:{delta[1]}"
                         };
                         MonitorLog.LogToMonitor(monitorItem);

@@ -193,7 +193,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Error,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"{ex.Message}|{ex.StackTrace}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);

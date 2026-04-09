@@ -110,7 +110,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Executes a slew operation asynchronously.
         /// If a slew is already in progress, it will be cancelled first.
-        /// Returns when setup phase completes (< 1 second), with movement continuing in background.
+        /// Returns when setup phase completes (less than 1 second), with movement continuing in background.
         /// </summary>
         /// <param name="operation">The slew operation to execute</param>
         /// <param name="externalCancellationToken">Optional external cancellation token</param>
@@ -173,7 +173,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Warning,
                     Method = nameof(ExecuteSlewAsync),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = "Setup phase exceeded 1 second timeout"
                 });
                 return SlewResult.Failed("Setup phase exceeded 1 second timeout");
@@ -216,7 +216,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = nameof(CancelCurrentSlewAsync),
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"Cancelling {CurrentSlewType}"
             });
 
@@ -245,7 +245,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Category = MonitorCategory.Server,
                         Type = MonitorType.Warning,
                         Method = nameof(CancelCurrentSlewAsync),
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"Timeout waiting for {CurrentSlewType} to cancel, forcing stop"
                     });
                     await ForceStopAxesAsync(_currentOperation?.Mount);
@@ -289,7 +289,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = nameof(SetupPhaseAsync),
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"Starting {operation.SlewType} to [{operation.Target[0]:F4}, {operation.Target[1]:F4}]"
             };
             MonitorLog.LogToMonitor(log);
@@ -373,7 +373,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Information,
                 Method = nameof(MovementPhaseAsync),
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"Executing {operation.SlewType} movement"
             };
             MonitorLog.LogToMonitor(log);
@@ -403,7 +403,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Warning,
                 Method = nameof(HandleCancellationAsync),
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{operation.SlewType} cancelled"
             });
 
@@ -427,7 +427,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Category = MonitorCategory.Server,
                 Type = MonitorType.Error,
                 Method = nameof(HandleErrorAsync),
-                Thread = Thread.CurrentThread.ManagedThreadId,
+                Thread = Environment.CurrentManagedThreadId,
                 Message = $"{operation.SlewType} error: {ex.Message}"
             });
 
@@ -481,7 +481,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Error,
                     Method = nameof(ForceStopAxesAsync),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"Error forcing axes stop: {ex.Message}"
                 });
             }
@@ -534,7 +534,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Warning,
                     Method = nameof(Dispose),
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"Error during disposal: {ex.Message}"
                 });
             }

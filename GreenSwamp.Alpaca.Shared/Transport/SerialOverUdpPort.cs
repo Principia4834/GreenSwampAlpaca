@@ -35,7 +35,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Category = MonitorCategory.Other,
                     Datetime = DateTime.UtcNow,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Device = MonitorDevice.Server,
                     Message = $"{_remoteEndpoint}|{ex.Message}"
                 };
@@ -76,7 +76,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Category = MonitorCategory.Other,
                     Datetime = DateTime.UtcNow,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Device = MonitorDevice.Server,
                     Message = $"|{_remoteEndpoint}|Error|{ex.Message}"
                 };
@@ -104,7 +104,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Category = MonitorCategory.Other,
                     Datetime = DateTime.UtcNow,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Device = MonitorDevice.Server,
                     Message = $"SerialOverUdpPort|{_remoteEndpoint}|Send|{ex.Message}"
                 };
@@ -130,7 +130,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Category = MonitorCategory.Other,
                     Datetime = DateTime.UtcNow,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Device = MonitorDevice.Server,
                     Message = $"SerialOverUdpPort|{_remoteEndpoint}|Receive|{ex.Message}"
                 };

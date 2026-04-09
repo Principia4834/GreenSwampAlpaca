@@ -16,6 +16,7 @@
 
 using ASCOM.Alpaca;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Server.TelescopeDriver;
 using GreenSwamp.Alpaca.Settings.Services;
 
 namespace GreenSwamp.Alpaca.Server.Services
@@ -23,7 +24,6 @@ namespace GreenSwamp.Alpaca.Server.Services
     /// <summary>
     /// Unified device registry facade that manages both ASCOM DeviceManager
     /// and MountRegistry with synchronized operations.
-    /// Phase M7: No reserved slots -- any device number (>= 0) may be freely added or removed.
     /// </summary>
     public static class UnifiedDeviceRegistry
     {
@@ -36,21 +36,23 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// <param name="deviceName">Display name for the device</param>
         /// <param name="uniqueId">ASCOM unique identifier (GUID)</param>
         /// <param name="settings">Settings instance for this device</param>
-        /// <param name="telescopeDriver">Telescope driver instance for ASCOM routing</param>
         public static void RegisterDevice(
             int deviceNumber,
             string deviceName,
             string uniqueId,
-            SkySettings settings,
-            ASCOM.Common.DeviceInterfaces.ITelescopeV4 telescopeDriver)
+            SkySettings settings)
         {
             // 1. Register with MountRegistry (internal control).
             MountRegistry.CreateInstance(deviceNumber, settings, deviceName);
 
-            // 2. Register with DeviceManager (ASCOM routing)
+            // 2. Create Telescope driver now that Mount is registered.
+            var mount = MountRegistry.GetInstance(deviceNumber);
+            var telescope = new Telescope(deviceNumber, mount);
+
+            // 3. Register with DeviceManager (ASCOM routing)
             DeviceManager.LoadTelescope(
                 deviceNumber,
-                telescopeDriver,
+                telescope,
                 deviceName,
                 uniqueId
             );
