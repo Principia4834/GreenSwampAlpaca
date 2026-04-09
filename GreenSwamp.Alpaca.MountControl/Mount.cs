@@ -1068,7 +1068,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Apply full tracking state change including side effects — L: calls Phase K InstanceApplyTracking.</summary>
         public void ApplyTracking(bool value) => InstanceApplyTracking(value);
 
-        /// <summary>Set SideOfPier (triggers pier flip) — L: uses per-instance slews and flip flag.</summary>
+        /// <summary>Set SideOfPier (triggers pier flip).</summary>
         public void SetSideOfPier(PointingState value)
         {
             var axes = new[] { _actualAxisX, _actualAxisY };
@@ -2268,7 +2268,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.LimitPark && _slewState != SlewType.SlewPark)
                 {
                     var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkLimitName);
-                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; InstanceGoToPark(); } // J7: per-instance
+                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; StartGoToParkAsync(); } // J7: per-instance
                 }
             }
             if (horizonLimit)
@@ -2280,7 +2280,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_settings.HzLimitPark && _slewState != SlewType.SlewPark)
                 {
                     var found = _settings.ParkPositions.Find(x => x.Name == _settings.ParkHzLimitName);
-                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; InstanceGoToPark(); } // J7: per-instance
+                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; StartGoToParkAsync(); } // J7: per-instance
                 }
             }
         }
@@ -2313,9 +2313,12 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// J7: Per-instance park — moves this device to its selected park position.
+        /// Start an asynchronous park (slew-to-park) operation using the instance's currently selected park position.
+        /// If no valid park position is set the method returns immediately. Disables tracking, writes the selected
+        /// park coordinates and name into the instance settings, and starts the park slew by invoking SlewAsync(double[], SlewType, bool) 
+        /// with SlewType.SlewPark in a fire-and-forget manner (the returned Task is not awaited).
         /// </summary>
-        private void InstanceGoToPark()
+        private void StartGoToParkAsync()
         {
             var ps = _parkSelected;
             if (ps == null || double.IsNaN(ps.X) || double.IsNaN(ps.Y)) return;
@@ -2348,7 +2351,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Resets SkyPredictor, sets tracking mode, and applies hardware.
         /// Early-exits if already in requested state (mirrors SkyServer.Tracking early-exit).
         /// </summary>
-        internal void InstanceApplyTracking(bool tracking)
+        public void InstanceApplyTracking(bool tracking)
         {
             if (tracking == _tracking) return;
             _tracking = tracking;

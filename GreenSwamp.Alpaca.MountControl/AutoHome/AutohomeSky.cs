@@ -31,15 +31,15 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         private bool HasHomeSensor { get; set; }
         private readonly SkySettings _settings;
         private readonly ICommandQueue<SkyWatcherHardware> _skyQueue;
-        private readonly MountControl.Mount _owner;
+        private readonly MountControl.Mount _mount;
 
         /// <summary>
         /// auto home for skywatcher mounts
         /// </summary>
         /// <param name="settings"></param>
         /// <param name="skyQueue"></param>
-        /// <param name="owner"></param>
-        public AutoHomeSky(SkySettings settings, ICommandQueue<SkyWatcherHardware> skyQueue, MountControl.Mount owner)
+        /// <param name="mount"></param>
+        public AutoHomeSky(SkySettings settings, ICommandQueue<SkyWatcherHardware> skyQueue, MountControl.Mount mount)
         {
             var monitorItem = new MonitorEntry
             {
@@ -54,7 +54,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             MonitorLog.LogToMonitor(monitorItem);
             this._settings = settings;
             _skyQueue = skyQueue;
-            _owner = owner;
+            _mount = mount;
         }
 
         /// <summary>
@@ -167,14 +167,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             HomeSensorCapabilityCheck();
             if (!HasHomeSensor) { return AutoHomeResult.HomeCapabilityCheckFailed; }
             _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
-            if (_owner.Tracking) _owner.InstanceApplyTracking(false);
+            if (_mount.Tracking) _mount.InstanceApplyTracking(false);
             var totalMove = 0.0;
             // ReSharper disable once RedundantAssignment
             var clockwise = false;
             var startOvers = 0;
             bool? status;
             bool? loopStatus = null;
-            _owner._autoHomeProgressBar += 5;
+            _mount._autoHomeProgressBar += 5;
 
             // slew away from those that start at home position
             var slewResult = SlewAxis(3.3, axis);
@@ -184,7 +184,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             // 5 degree loops to look for sensor
             for (var i = 0; i <= (maxMove / 5); i++)
             {
-                if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
+                if (_mount._autoHomeStop) return AutoHomeResult.StopRequested;
                 if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
                 if (startOvers >= 2) return AutoHomeResult.TooManyRestarts;
 
@@ -212,14 +212,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 switch (status)
                 {
                     case null:
-                        return _owner._autoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
+                        return _mount._autoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
                     case true:
                     case false:
                         clockwise = (bool)status;
                         break;
                 }
 
-                _owner._autoHomeProgressBar += 1;
+                _mount._autoHomeProgressBar += 1;
 
                 slewResult = SlewAxis(5.0, axis, clockwise); //slew 5 degrees
                 if (slewResult != AutoHomeResult.Success) return slewResult;
@@ -243,7 +243,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 }
                 break;
             }
-            if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
+            if (_mount._autoHomeStop) return AutoHomeResult.StopRequested;
             if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
             if (startOvers >= 2) return AutoHomeResult.TooManyRestarts;
 
@@ -251,7 +251,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             slewResult = SlewToHome(axis);
             if (slewResult != AutoHomeResult.Success) return slewResult;
 
-            _owner._autoHomeProgressBar += 5;
+            _mount._autoHomeProgressBar += 5;
 
             // 3.7 degree slew away from home for a validation move
             slewResult = SlewAxis(3.7, axis); // slew away from home
@@ -260,14 +260,14 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             switch (status)
             {
                 case null:
-                    return _owner._autoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
+                    return _mount._autoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
                 case true:
                 case false:
                     clockwise = (bool)status;
                     break;
             }
 
-            _owner._autoHomeProgressBar += 5;
+            _mount._autoHomeProgressBar += 5;
 
             // slew back over home to validate home position
             slewResult = SlewAxis(5, axis, clockwise); // slew over home
@@ -283,13 +283,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                     return AutoHomeResult.HomeSensorNotFound; // home not found
             }
 
-            _owner._autoHomeProgressBar += 5;
+            _mount._autoHomeProgressBar += 5;
 
             // slew back to remove backlash
             slewResult = SlewAxis(3, axis, !clockwise); // slew over home
             if (slewResult != AutoHomeResult.Success) return slewResult;
 
-            _owner._autoHomeProgressBar += 5;
+            _mount._autoHomeProgressBar += 5;
 
             // slew to home
             slewResult = SlewToHome(axis);
@@ -311,7 +311,7 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <param name="axis"></param>
         private AutoHomeResult SlewToHome(Axis axis)
         {
-            if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
+            if (_mount._autoHomeStop) return AutoHomeResult.StopRequested;
 
             //convert position to mount degrees 
             var a = TripPosition; // -= 0x00800000;
@@ -328,13 +328,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                     var d = Axes.AxesMountToApp(new[] { c, 0 }, context); // Convert to local
                     if ((_settings.AlignmentMode == AlignmentMode.AltAz) && (_settings.Latitude < 0)) d[0] = d[0] + 180;
 
-                    _owner.SlewSync(new[] { d[0], positions[1] }, SlewType.SlewMoveAxis);
+                    _mount.SlewSync(new[] { d[0], positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
                     var e = Axes.AxesMountToApp(new[] { 0, c }, context); // Convert to local
                     if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0)) e[1] = 180 - e[1];
 
-                    _owner.SlewSync(new[] { positions[0], e[1] }, SlewType.SlewMoveAxis);
+                    _mount.SlewSync(new[] { positions[0], e[1] }, SlewType.SlewMoveAxis);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
@@ -353,13 +353,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
         /// <param name="axis"></param>
         private AutoHomeResult SlewAxis(double degrees, Axis axis, bool direction = false)
         {
-            if (_owner._autoHomeStop) return AutoHomeResult.StopRequested;
+            if (_mount._autoHomeStop) return AutoHomeResult.StopRequested;
 
-            if (_owner.Tracking)
+            if (_mount.Tracking)
             {
                 // ToDo implement if needed
                 // SkyServer.TrackingSpeak = false;
-                _owner.InstanceApplyTracking(false);
+                _mount.InstanceApplyTracking(false);
             }
 
             // ToDo AWW replace with proper context - needs change to autohome signature, may need updates for each invocation
@@ -372,13 +372,13 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                     degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
                     if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0))
                         degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
-                    _owner.SlewSync(new[] { positions[0] + degrees, positions[1] }, SlewType.SlewMoveAxis);
+                    _mount.SlewSync(new[] { positions[0] + degrees, positions[1] }, SlewType.SlewMoveAxis);
                     break;
                 case Axis.Axis2:
                     degrees = direction ? -Math.Abs(degrees) : Math.Abs(degrees);
                     if ((_settings.AlignmentMode != AlignmentMode.AltAz) && (_settings.Latitude < 0))
                         degrees = direction ? Math.Abs(degrees) : -Math.Abs(degrees);
-                    _owner.SlewSync(new[] { positions[0], positions[1] + degrees }, SlewType.SlewMoveAxis);
+                    _mount.SlewSync(new[] { positions[0], positions[1] + degrees }, SlewType.SlewMoveAxis);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(axis), axis, null);

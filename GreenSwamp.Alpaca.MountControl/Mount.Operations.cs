@@ -141,7 +141,7 @@ namespace GreenSwamp.Alpaca.MountControl
             });
         }
 
-        /// <summary>GoTo park slew — synchronous instance version.</summary>
+        /// <summary>GoTo park slew — synchronous version.</summary>
         private void GoToPark()
         {
             InstanceApplyTracking(false);
