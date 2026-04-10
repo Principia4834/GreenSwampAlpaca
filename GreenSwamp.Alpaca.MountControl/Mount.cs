@@ -2757,14 +2757,14 @@ namespace GreenSwamp.Alpaca.MountControl
 
             while (stopwatch.Elapsed.TotalSeconds <= timer)
             {
-                Thread.Sleep(250);
+                token.WaitHandle.WaitOne(250);
                 token.ThrowIfCancellationRequested();
 
                 var statusX = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis1);
                 var x = SkyQueue.GetCommandResult(statusX);
                 var axis1Stopped = Convert.ToBoolean(x.Result);
 
-                Thread.Sleep(250);
+                token.WaitHandle.WaitOne(250);
                 token.ThrowIfCancellationRequested();
 
                 var statusY = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis2);
@@ -2837,7 +2837,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _mountPositionUpdatedEvent.Reset();
                 UpdateSteps();
 
-                if (!_mountPositionUpdatedEvent.Wait(5000))
+                if (!_mountPositionUpdatedEvent.Wait(5000, token))
                 {
                     var errorItem = new MonitorEntry
                     {
@@ -2957,7 +2957,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mountPositionUpdatedEvent.Reset();
                     UpdateSteps();
 
-                    if (!_mountPositionUpdatedEvent.Wait(5000))
+                    if (!_mountPositionUpdatedEvent.Wait(5000, token))
                     {
                         var errorItem = new MonitorEntry
                         {
