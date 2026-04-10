@@ -1055,9 +1055,12 @@ namespace GreenSwamp.Alpaca.MountControl
         public void AbortSlewAsync(bool speak)
         {
             if (!IsMountRunning) return;
+            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A1: AbortSlewAsync ENTRY | slewState:{_slewState} | tracking:{Tracking}");
             var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
             ApplyTracking(false);
+            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A2: before CancelCurrentSlewAsync().Wait()");
             _slewController?.CancelCurrentSlewAsync().Wait();
+            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A3: after CancelCurrentSlewAsync().Wait() — BLOCKING TIME = A3-A2");
             CancelAllAsync();
             _moveAxisActive = false;
             _rateMoveAxes = new Vector(0, 0);
@@ -1069,6 +1072,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case MountType.SkyWatcher:
                     SkyServer.SkyTasks(MountTaskName.StopAxes, this);
+                    Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A4: SkyTasks(StopAxes) dispatched");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1077,6 +1081,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             ApplyTracking(tracking);
             _slewState = SlewType.SlewNone;
+            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A5: AbortSlewAsync COMPLETE — TOTAL = A5-A1");
             LogMount($"AbortSlewAsync|restored tracking:{tracking}");
         }
 
@@ -2758,6 +2763,7 @@ namespace GreenSwamp.Alpaca.MountControl
             while (stopwatch.Elapsed.TotalSeconds <= timer)
             {
                 token.WaitHandle.WaitOne(250);
+                Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] G1: WaitOne-1 returned | cancelled:{token.IsCancellationRequested}");
                 token.ThrowIfCancellationRequested();
 
                 var statusX = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis1);
@@ -2765,6 +2771,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var axis1Stopped = Convert.ToBoolean(x.Result);
 
                 token.WaitHandle.WaitOne(250);
+                Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] G2: WaitOne-2 returned | cancelled:{token.IsCancellationRequested}");
                 token.ThrowIfCancellationRequested();
 
                 var statusY = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis2);

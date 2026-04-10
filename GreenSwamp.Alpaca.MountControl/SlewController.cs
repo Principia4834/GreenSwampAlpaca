@@ -406,9 +406,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{operation.SlewType} cancelled"
             });
+            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] H1: HandleCancellationAsync ENTRY");
 
             // Stop axes immediately
             await ForceStopAxesAsync(operation.Mount);
+            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] H2: ForceStopAxesAsync returned — COST = H2-H1");
 
             // Reset state via operation
             operation.HandleCancellation();
