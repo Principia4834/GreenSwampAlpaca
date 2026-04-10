@@ -254,6 +254,25 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
+        /// Signals cancellation of the current slew without waiting for axes to stop.
+        /// Returns immediately. The background movement task handles deceleration and
+        /// sets <see cref="IsSlewing"/> to <c>false</c> when axes have physically stopped.
+        /// Safe to call when no operation is in progress (no-op).
+        /// Use this for ASCOM-compliant non-blocking abort.
+        /// </summary>
+        public void RequestCancellation()
+        {
+            ThrowIfDisposed();
+
+            CancellationTokenSource? ctsToCancel;
+            lock (_stateLock)
+            {
+                ctsToCancel = _currentOperationCts;
+            }
+            ctsToCancel?.Cancel();
+        }
+
+        /// <summary>
         /// Waits for the current slew operation to complete.
         /// Used for synchronous slew operations (e.g., SlewToCoordinates).
         /// </summary>
