@@ -2953,7 +2953,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     var loopTimer = Stopwatch.StartNew();
 
-                    // Event-based position update waiting (per-instance event — Step 6)
+                    // Event-based position update waiting
                     _mountPositionUpdatedEvent.Reset();
                     UpdateSteps();
 

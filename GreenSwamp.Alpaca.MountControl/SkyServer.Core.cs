@@ -632,22 +632,22 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Slewing & Movement Core
 
         /// <summary>
-        /// Instance-aware AxesStopValidate: routes stop commands and status queries to the given Mount's queues.
+        /// Routes stop commands and status queries to the given Mount's queues.
         /// </summary>
-        internal static bool AxesStopValidate(Mount instance)
+        internal static bool AxesStopValidate(Mount mount)
         {
-            if (!instance.IsMountRunning) { return true; }
+            if (!mount.IsMountRunning) { return true; }
             Stopwatch stopwatch;
-            bool axis2Stopped;
-            bool axis1Stopped;
-            switch (instance.Settings.Mount)
+            bool axis2Stopped = false;
+            bool axis1Stopped = false;
+            switch (mount.Settings.Mount)
             {
                 case MountType.Simulator:
-                    var mq = instance.SimQueue!;
+                    var mq = mount.SimQueue!;
                     stopwatch = Stopwatch.StartNew();
                     while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
                     {
-                        SimTasks(MountTaskName.StopAxes, instance);
+                        SimTasks(MountTaskName.StopAxes, mount);
                         Thread.Sleep(100);
                         var statusX = new CmdAxisStatus(mq.NewId, mq, Axis.Axis1);
                         var axis1Status = (Alpaca.Mount.Simulator.AxisStatus)mq.GetCommandResult(statusX).Result;
@@ -662,18 +662,22 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     return false;
                 case MountType.SkyWatcher:
-                    var sq = instance.SkyQueue!;
+                    var sq = mount.SkyQueue!;
                     stopwatch = Stopwatch.StartNew();
+                    SkyTasks(MountTaskName.StopAxes, mount);
                     while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
                     {
-                        SkyTasks(MountTaskName.StopAxes, instance);
                         Thread.Sleep(100);
-                        var statusx = new SkyIsAxisFullStop(sq.NewId, sq, Axis.Axis1);
-                        axis1Stopped = Convert.ToBoolean(sq.GetCommandResult(statusx).Result);
-
-                        var statusy = new SkyIsAxisFullStop(sq.NewId, sq, Axis.Axis2);
-                        axis2Stopped = Convert.ToBoolean(sq.GetCommandResult(statusy).Result);
-
+                        if (!axis1Stopped)
+                        {
+                            var statusX = new SkyIsAxisFullStop(sq.NewId, sq, Axis.Axis1);
+                            axis1Stopped = Convert.ToBoolean(sq.GetCommandResult(statusX).Result);
+                        }
+                        if (!axis2Stopped)
+                        {
+                            var statusY = new SkyIsAxisFullStop(sq.NewId, sq, Axis.Axis2);
+                            axis2Stopped = Convert.ToBoolean(sq.GetCommandResult(statusY).Result);
+                        }
                         if (!axis1Stopped || !axis2Stopped) { continue; }
                         return true;
                     }
