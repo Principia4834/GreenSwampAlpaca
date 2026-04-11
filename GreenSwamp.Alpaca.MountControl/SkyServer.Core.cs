@@ -637,7 +637,6 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static bool AxesStopValidate(Mount mount)
         {
             if (!mount.IsMountRunning) { return true; }
-            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V1: AxesStopValidate ENTRY | mount:{mount.Id}");
             Stopwatch stopwatch;
             bool axis2Stopped = false;
             bool axis1Stopped = false;
@@ -666,29 +665,22 @@ namespace GreenSwamp.Alpaca.MountControl
                     var sq = mount.SkyQueue!;
                     stopwatch = Stopwatch.StartNew();
                     SkyTasks(MountTaskName.StopAxes, mount);
-                    Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V2: StopAxes command queued | elapsed:{stopwatch.Elapsed.TotalMilliseconds:F0}ms");
-                    var _iter = 0;
                     while (stopwatch.Elapsed.TotalMilliseconds <= 5000)
                     {
-                        Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V3: iter:{++_iter} loop start | elapsed:{stopwatch.Elapsed.TotalMilliseconds:F0}ms");
                         Thread.Sleep(100);
                         if (!axis1Stopped)
                         {
                             var statusX = new SkyIsAxisFullStop(sq.NewId, sq, Axis.Axis1);
                             axis1Stopped = Convert.ToBoolean(sq.GetCommandResult(statusX).Result);
-                            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V4: axis1 query done | stopped:{axis1Stopped} | elapsed:{stopwatch.Elapsed.TotalMilliseconds:F0}ms");
                         }
                         if (!axis2Stopped)
                         {
                             var statusY = new SkyIsAxisFullStop(sq.NewId, sq, Axis.Axis2);
                             axis2Stopped = Convert.ToBoolean(sq.GetCommandResult(statusY).Result);
-                            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V5: axis2 query done | stopped:{axis2Stopped} | elapsed:{stopwatch.Elapsed.TotalMilliseconds:F0}ms");
                         }
                         if (!axis1Stopped || !axis2Stopped) { continue; }
-                        Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V6: AxesStopValidate TRUE | iters:{_iter} | total:{stopwatch.Elapsed.TotalMilliseconds:F0}ms");
                         return true;
                     }
-                    Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] V7: AxesStopValidate TIMEOUT after {stopwatch.Elapsed.TotalMilliseconds:F0}ms");
                     return false;
                 default:
                     throw new ArgumentOutOfRangeException();

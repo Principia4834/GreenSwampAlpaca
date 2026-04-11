@@ -1183,7 +1183,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
 
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $":X|{axis}|0504" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $":X|{axis}|0504" };
             MonitorLog.LogToMonitor(monitorItem);
 
             _axesStatus[(int)axis].SetFullStop();

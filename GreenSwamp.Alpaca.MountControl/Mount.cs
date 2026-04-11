@@ -1055,7 +1055,6 @@ namespace GreenSwamp.Alpaca.MountControl
         public void AbortSlewAsync(bool speak)
         {
             if (!IsMountRunning) return;
-            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A1: AbortSlewAsync ENTRY | slewState:{_slewState} | tracking:{Tracking}");
             var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
             ApplyTracking(false);
             // Signal cancellation — returns immediately per ASCOM non-blocking spec.
@@ -1063,7 +1062,6 @@ namespace GreenSwamp.Alpaca.MountControl
             // and sets SlewController.IsSlewing=false when axes physically stop.
             // Mount.IsSlewing stays true via _slewController?.IsSlewing until that completes.
             _slewController?.RequestCancellation();
-            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A2: RequestCancellation signalled — returning immediately (non-blocking)");
             CancelAllAsync();
             _moveAxisActive = false;
             _rateMoveAxes = new Vector(0, 0);
@@ -1075,7 +1073,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
                 case MountType.SkyWatcher:
                     SkyServer.SkyTasks(MountTaskName.StopAxes, this);
-                    Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A3: SkyTasks(StopAxes) dispatched");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -1084,7 +1081,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             ApplyTracking(tracking);
             _slewState = SlewType.SlewNone;
-            Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] A4: AbortSlewAsync COMPLETE (Slewing={IsSlewing}) — axes stopping in background");
             LogMount($"AbortSlewAsync|restored tracking:{tracking}");
         }
 
@@ -1945,7 +1941,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         ];
                     }
 
-                    // Q2: Create instance-owned queue for SkyWatcher.
+                    // Create queue for SkyWatcher.
                     var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
@@ -2769,7 +2765,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (!axis1Stopped)
                 {
                     token.WaitHandle.WaitOne(250);
-                    Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] G1: WaitOne-1 returned | cancelled:{token.IsCancellationRequested}");
                     token.ThrowIfCancellationRequested();
 
                     var statusX = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis1);
@@ -2780,7 +2775,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (!axis2Stopped)
                 {
                     token.WaitHandle.WaitOne(250);
-                    Debug.WriteLine($"[ABORT|{HiResDateTime.UtcNow:HH:mm:ss.fff}|tid:{Environment.CurrentManagedThreadId}] G2: WaitOne-2 returned | cancelled:{token.IsCancellationRequested}");
                     token.ThrowIfCancellationRequested();
 
                     var statusY = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis2);
