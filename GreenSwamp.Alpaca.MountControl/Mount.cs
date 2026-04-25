@@ -1532,7 +1532,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             lock (_lastUpdateLock)
             {
-                if (IsMountRunning || (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
+                if (IsMountRunning && (_lastUpdateStepsTime.AddMilliseconds(100) < HiResDateTime.UtcNow))
                 {
                     switch (Settings.Mount)
                     {
@@ -2749,7 +2749,7 @@ namespace GreenSwamp.Alpaca.MountControl
             token.ThrowIfCancellationRequested();
 
             var skyTarget = MapSlewTargetToAxes(target, slewType);
-            const int timer = 240;
+            const double timer = 240.0;
             var stopwatch = Stopwatch.StartNew();
 
             SkyServer.SkyTasks(MountTaskName.StopAxes, this);
@@ -2770,6 +2770,20 @@ namespace GreenSwamp.Alpaca.MountControl
                     var statusX = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis1);
                     var x = SkyQueue.GetCommandResult(statusX);
                     axis1Stopped = Convert.ToBoolean(x.Result);
+                    if (axis1Stopped)
+                    {
+                        monitorItem = new MonitorEntry
+                        {
+                            Datetime = HiResDateTime.UtcNow,
+                            Device = MonitorDevice.Server,
+                            Category = MonitorCategory.Server,
+                            Type = MonitorType.Information,
+                            Method = MethodBase.GetCurrentMethod()?.Name,
+                            Thread = Environment.CurrentManagedThreadId,
+                            Message = $"Mount:{_instanceName}|Axis1 stopped|Seconds|{stopwatch.Elapsed.TotalSeconds}"
+                        };
+                        MonitorLog.LogToMonitor(monitorItem);
+                    }
                 }
 
                 if (!axis2Stopped)
@@ -2780,6 +2794,20 @@ namespace GreenSwamp.Alpaca.MountControl
                     var statusY = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis2);
                     var y = SkyQueue.GetCommandResult(statusY);
                     axis2Stopped = Convert.ToBoolean(y.Result);
+                    if (axis2Stopped)
+                    {
+                        monitorItem = new MonitorEntry
+                        {
+                            Datetime = HiResDateTime.UtcNow,
+                            Device = MonitorDevice.Server,
+                            Category = MonitorCategory.Server,
+                            Type = MonitorType.Information,
+                            Method = MethodBase.GetCurrentMethod()?.Name,
+                            Thread = Environment.CurrentManagedThreadId,
+                            Message = $"Mount:{_instanceName}|Axis2 stopped|Seconds|{stopwatch.Elapsed.TotalSeconds}"
+                        };
+                        MonitorLog.LogToMonitor(monitorItem);
+                    }
                 }
 
                 if (!axis1Stopped || !axis2Stopped) { continue; }
@@ -2803,7 +2831,27 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             MonitorLog.LogToMonitor(monitorItem);
             #endregion
-
+            // ********************
+            UpdateSteps();
+            var rawPositions = GetRawDegrees();
+            var deltaDegree = new double[2] { 0.0, 0.0 };
+            deltaDegree[0] = Range.Range180((skyTarget[0] - rawPositions[0]));
+            deltaDegree[1] = Range.Range180(skyTarget[1] - rawPositions[1]);
+            if (Math.Abs(deltaDegree[0]) > 1.0 || Math.Abs(deltaDegree[1]) > 1.0)
+            {
+                monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Warning,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"Mount:{_instanceName}|Large Delta After Slew|Delta|({deltaDegree[0]},{deltaDegree[1]})"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+            }
+            // ********************
             #region Final precision slew
             token.ThrowIfCancellationRequested();
             if (stopwatch.Elapsed.TotalSeconds <= timer)

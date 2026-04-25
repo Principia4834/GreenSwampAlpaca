@@ -1406,8 +1406,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal void AxisSlewTo_Advanced(Axis axis, double targetInRadian, double rateInRadian = 0)
         {
             var targetPad = '0';
-            var itargetInSteps = AngleToStep(axis, targetInRadian);
-            itargetInSteps *= _resolutionFactor[(int)axis];
+            var itargetInSteps = AngleToStep(axis, targetInRadian) * _resolutionFactor[(int)axis];
+            // itargetInSteps *= _resolutionFactor[(int)axis];
             // var itargetInSteps = AngleToStep(axis, targetInRadian * _resolutionFactor[(int)axis]);
             if (itargetInSteps < 0) { targetPad = 'F'; } // F for negative numbers
 
