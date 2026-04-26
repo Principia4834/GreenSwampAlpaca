@@ -161,6 +161,24 @@ namespace GreenSwamp.Alpaca.MountControl
                     // SetTracking posts the hardware command immediately (D1).
                     _mount.RateRa = rc.RateRa;
                     _mount.RateDec = rc.RateDec;
+                    // Seed the predictor with the new rates before SetTracking so that
+                    // SetAltAzTrackingRates -> GetRaDecAtTime projects the correct future
+                    // position on both axes (mirrors ActionRateRaDec for the AltAz path).
+                    if (_mount.Settings.AlignmentMode == ASCOM.Common.DeviceInterfaces.AlignmentMode.AltAz)
+                    {
+                        if (_mount.Tracking)
+                        {
+                            var raDec = _mount.SkyPredictor.GetRaDecAtTime(
+                                GreenSwamp.Alpaca.Principles.HiResDateTime.UtcNow);
+                            _mount.SkyPredictor.Set(raDec[0], raDec[1], rc.RateRa, rc.RateDec);
+                        }
+                        else
+                        {
+                            _mount.SkyPredictor.Set(
+                                _mount.RightAscensionXForm, _mount.DeclinationXForm,
+                                rc.RateRa, rc.RateDec);
+                        }
+                    }
                     _mount.SetTracking();
                     PublishSnapshot();
                     break;
@@ -198,6 +216,18 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mount.Tracking = false;
                     _mount.TrackingMode = TrackingMode.Off;
                     _mount.SetTracking();
+                    PublishSnapshot();
+                    break;
+
+                case ResumeTrackingCommand:
+                    // Post-pulse tracking restore. Bypasses the ApplyTracking early-exit
+                    // guard that fires because Tracking was never set to false during the
+                    // pulse, which on SkyWatcher hardware would leave axes stopped with no
+                    // SkyAxisSlew re-issued. Mirrors the pre-queue direct SetTracking() call.
+                    // SetTracking() already conditionally starts the AltAz timer internally
+                    // (only if not already running), so no explicit timer call is needed here.
+                    if (_mount.IsMountRunning && _mount.Tracking)
+                        _mount.SetTracking();
                     PublishSnapshot();
                     break;
             }

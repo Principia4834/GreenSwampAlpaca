@@ -76,4 +76,15 @@ namespace GreenSwamp.Alpaca.MountControl
     /// predictor reset. Corresponds to abort/stop-axes paths (S9/D6).
     /// </summary>
     internal sealed record StopTrackingCommand : ITrackingCommand;
+
+    /// <summary>
+    /// Unconditionally re-applies the current tracking rates and restarts the
+    /// AltAz timer after a pulse guide completes. Unlike
+    /// <see cref="TrackingStateCommand"/>, this bypasses the
+    /// <c>ApplyTracking</c> early-exit guard (<c>if (tracking == Tracking) return</c>)
+    /// which would suppress the <c>SetTracking()</c> / <c>SkyAxisSlew</c> call
+    /// on SkyWatcher hardware when <c>Tracking</c> was never set to false during
+    /// the pulse. Mirrors the pre-queue <c>this.SetTracking()</c> direct call.
+    /// </summary>
+    internal sealed record ResumeTrackingCommand : ITrackingCommand;
 }

@@ -3008,21 +3008,33 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (maxTries >= 5) { break; }
                     maxTries++;
                     double[] skyTarget = [0.0, 0.0];
+                    double[] skyTargetNow = [0.0, 0.0];
 
                     if (Settings.AlignmentMode == AlignmentMode.AltAz)
                     {
-                        var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
-                        var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
-                        var internalRaDec = Transforms.CoordTypeToInternal(predictorRaDec[0], predictorRaDec[1], settings: Settings);
-                        skyTarget = MapSlewTargetToAxes([internalRaDec.X, internalRaDec.Y], SlewType.SlewRaDec);
+                        // Fix 1: compute two separate targets per iteration, mirroring SimPulseGoto.
+                        // skyTarget      — feed-forward position for the hardware goto command.
+                        // skyTargetNow   — where the mount should be RIGHT NOW, used only for the
+                        //                  convergence check so that a pure Dec pulse does not
+                        //                  produce a spurious Axis1 (Az) goto command.
+                        var now = HiResDateTime.UtcNow;
+                        var predictorRaDecAtTime = SkyPredictor.GetRaDecAtTime(now.AddMilliseconds(deltaTime));
+                        var internalRaDecAtTime = Transforms.CoordTypeToInternal(predictorRaDecAtTime[0], predictorRaDecAtTime[1], settings: Settings);
+                        skyTarget = MapSlewTargetToAxes([internalRaDecAtTime.X, internalRaDecAtTime.Y], SlewType.SlewRaDec);
+
+                        var predictorRaDecNow = SkyPredictor.GetRaDecAtTime(now);
+                        var internalRaDecNow = Transforms.CoordTypeToInternal(predictorRaDecNow[0], predictorRaDecNow[1], settings: Settings);
+                        skyTargetNow = MapSlewTargetToAxes([internalRaDecNow.X, internalRaDecNow.Y], SlewType.SlewRaDec);
                     }
 
                     var rawPositions = GetRawDegrees();
                     if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
                     { break; }
 
-                    deltaDegree[0] = skyTarget[0] - rawPositions[0];
-                    deltaDegree[1] = skyTarget[1] - rawPositions[1];
+                    // Fix 1 (continued): use skyTargetNow for the convergence delta, with Range180
+                    // wrapping, so delta[0] ≈ 0 for a pure Dec pulse and no Axis1 goto is issued.
+                    deltaDegree[0] = Range.Range180(skyTargetNow[0] - rawPositions[0]);
+                    deltaDegree[1] = Range.Range180(skyTargetNow[1] - rawPositions[1]);
 
                     axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;
                     axis2AtTarget = Math.Abs(deltaDegree[1]) < gotoPrecision[1] || axis2AtTarget;
@@ -3034,10 +3046,12 @@ namespace GreenSwamp.Alpaca.MountControl
                         _ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis1, skyTarget[0]);
                     }
 
+                    // Fix 2: remove the _slewState == SlewType.SlewNone early-break which fired
+                    // immediately because pulse guide never sets _slewState, causing SkyPulseGoto
+                    // to return while the hardware goto was still in flight.
                     var axis1Done = axis1AtTarget;
                     while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                     {
-                        if (_slewState == SlewType.SlewNone) { break; }
                         Thread.Sleep(30);
                         token.ThrowIfCancellationRequested();
 
@@ -3058,7 +3072,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     var axis2Done = axis2AtTarget;
                     while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                     {
-                        if (_slewState == SlewType.SlewNone) { break; }
                         Thread.Sleep(30);
                         token.ThrowIfCancellationRequested();
 
@@ -3195,10 +3208,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
                 // execute pulse
                 pulseGoTo(token);
-                // pulse movement finished — re-enable tracking via the processor (D4/D8)
-                // so the consumer restarts the AltAz timer on its own thread.
+                // Pulse movement finished — unconditionally re-apply tracking rates and
+                // restart the AltAz timer via the processor. ResumeTrackingCommand calls
+                // SetTracking() directly, bypassing the ApplyTracking early-exit guard
+                // that suppresses SkyAxisSlew re-issue when Tracking was never set false.
                 if (_trackingProcessor != null)
-                    _trackingProcessor.Post(new TrackingStateCommand(Tracking));
+                    _trackingProcessor.Post(new ResumeTrackingCommand());
                 else
                     this.SetTracking();
                 // wait for pulse duration so completion variable IsPulseGuiding remains true
