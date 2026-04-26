@@ -64,16 +64,19 @@ namespace GreenSwamp.Alpaca.MountControl
     internal sealed record SeedAndEnableCommand(double Ra, double Dec, double RateRa, double RateDec) : ITrackingCommand;
 
     /// <summary>
-    /// Signals a slew boundary (D6/Option A). The consumer stops the timer,
-    /// drains any in-flight tick, then signals the ACK so the slew controller
-    /// can write <c>SkyPredictor</c> directly. <c>IsStart=false</c> is posted
-    /// after the slew completes to re-enable the consumer.
+    /// Signals a slew or pulse-guide boundary (D6/Option A). The consumer stops the
+    /// AltAz timer and signals the ACK, making it safe for the caller to write
+    /// <c>SkyPredictor</c> directly. Post-boundary tracking restore is handled by
+    /// the <see cref="TrackingStateCommand"/> or <see cref="ResumeTrackingCommand"/>
+    /// posted after the boundary work completes.
     /// </summary>
-    internal sealed record SlewBoundaryCommand(bool IsStart, TaskCompletionSource Ack) : ITrackingCommand;
+    internal sealed record SlewBoundaryCommand(TaskCompletionSource Ack) : ITrackingCommand;
 
     /// <summary>
-    /// Requests an immediate, unconditional stop: timer stopped, tracking off,
-    /// predictor reset. Corresponds to abort/stop-axes paths (S9/D6).
+    /// Requests an immediate, unconditional stop: timer stopped, tracking off, predictor
+    /// reset, hardware axes stopped. Used by both AltAz abort paths (<c>AbortSlewAsync</c>
+    /// and <c>AbortSlew</c>) so that any <see cref="RateChangeCommand"/> already in the
+    /// channel cannot re-arm tracking after the abort returns.
     /// </summary>
     internal sealed record StopTrackingCommand : ITrackingCommand;
 

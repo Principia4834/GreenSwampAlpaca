@@ -830,7 +830,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (processor == null) return;
 
             var ack = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            processor.Post(new SlewBoundaryCommand(IsStart: true, ack));
+            processor.Post(new SlewBoundaryCommand(ack));
             // Block until the consumer processes the command (D6/Q1: synchronous contract).
             ack.Task.Wait(500); // 500 ms matches the position-update timeout (D7/Q2)
         }

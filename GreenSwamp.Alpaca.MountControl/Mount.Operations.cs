@@ -91,7 +91,12 @@ namespace GreenSwamp.Alpaca.MountControl
             });
             abortSlewStarted?.Set();
             var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
-            ApplyTracking(false);
+            // AltAz: route stop/restore through the queue so any in-flight RateChangeCommand
+            // cannot re-arm tracking after the abort returns.
+            if (Settings.AlignmentMode == AlignmentMode.AltAz && _trackingProcessor != null)
+                _trackingProcessor.Post(new StopTrackingCommand());
+            else
+                ApplyTracking(false);
             if (_slewController != null)
             {
                 MonitorLog.LogToMonitor(new MonitorEntry
@@ -104,7 +109,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = "Cancelling SlewController operation"
                 });
-                _slewController.CancelCurrentSlewAsync().Wait();
+                // Use RequestCancellation (fire-and-forget signal) rather than
+                // CancelCurrentSlewAsync().Wait() — the latter blocks for up to 5 s waiting
+                // for HandleCancellationAsync/ForceStopAxesAsync to complete. The explicit
+                // SkyTasks(StopAxes) call below already issues the hardware stop directly,
+                // so waiting for the background task's own stop path is redundant.
+                _slewController.RequestCancellation();
             }
             CancelAllAsync();
             _moveAxisActive = false;
@@ -127,8 +137,10 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 AxesRateOfChange.Reset();
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                _trackingProcessor?.Post(new TrackingStateCommand(tracking));
             }
-            ApplyTracking(tracking);
+            else
+                ApplyTracking(tracking);
             MonitorLog.LogToMonitor(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,

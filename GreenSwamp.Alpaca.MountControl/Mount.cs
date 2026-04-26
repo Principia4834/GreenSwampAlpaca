@@ -1071,7 +1071,12 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsMountRunning) return;
             var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
-            ApplyTracking(false);
+            // AltAz: route stop/restore through the queue so any in-flight RateChangeCommand
+            // cannot re-arm tracking after the abort returns.
+            if (Settings.AlignmentMode == AlignmentMode.AltAz && _trackingProcessor != null)
+                _trackingProcessor.Post(new StopTrackingCommand());
+            else
+                ApplyTracking(false);
             // Signal cancellation — returns immediately per ASCOM non-blocking spec.
             // Background task (ExecuteMovementAndCompletionAsync) handles hardware deceleration
             // and sets SlewController.IsSlewing=false when axes physically stop.
@@ -1093,8 +1098,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
             if (Settings.AlignmentMode == AlignmentMode.AltAz)
+            {
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
-            ApplyTracking(tracking);
+                _trackingProcessor?.Post(new TrackingStateCommand(tracking));
+            }
+            else
+                ApplyTracking(tracking);
             _slewState = SlewType.SlewNone;
             LogMount($"AbortSlewAsync|restored tracking:{tracking}");
         }
@@ -2363,21 +2372,25 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// L: Per-instance cancel all async operations.
-        /// Cancels this device's GoTo, pulse guide, and HC pulse guide tasks and waits briefly for them to complete.
+        /// Cancels this device's GoTo, pulse guide, and HC pulse guide tasks.
+        /// A short yield gives background Task.Run lambdas time to observe cancellation
+        /// before StopAxes is issued. The previous 2 s spin-wait could never exit early
+        /// because the CTS fields are only nulled when a new pulse starts, not on completion.
         /// </summary>
         private void CancelAllAsync()
         {
-            if (_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null)
-            {
-                _ctsGoTo?.Cancel();
-                _ctsPulseGuideDec?.Cancel();
-                _ctsPulseGuideRa?.Cancel();
-                _ctsHcPulseGuide?.Cancel();
-                var sw = Stopwatch.StartNew();
-                while ((_ctsGoTo != null || _ctsPulseGuideDec != null || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null)
-                       && sw.ElapsedMilliseconds < 2000)
-                    Thread.Sleep(200);
-            }
+            var anyActive = _ctsGoTo != null || _ctsPulseGuideDec != null
+                            || _ctsPulseGuideRa != null || _ctsHcPulseGuide != null;
+            if (!anyActive) return;
+
+            _ctsGoTo?.Cancel();
+            _ctsPulseGuideDec?.Cancel();
+            _ctsPulseGuideRa?.Cancel();
+            _ctsHcPulseGuide?.Cancel();
+
+            // Brief yield — gives fire-and-forget Task.Run lambdas time to observe
+            // cancellation before the caller issues StopAxes hardware commands.
+            Thread.Sleep(50);
         }
 
         /// <summary>
@@ -2919,7 +2932,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 while (loopTimer.Elapsed.TotalMilliseconds < 3000)
                 {
                     Thread.Sleep(30);
-                    if (token.IsCancellationRequested) { break; }
+                    token.ThrowIfCancellationRequested();
 
                     if (!axis1Done)
                     {
@@ -2929,9 +2942,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (axis1Done) { break; }
                 }
 
+                token.ThrowIfCancellationRequested();
                 if (!axis2AtTarget)
                 {
-                    token.ThrowIfCancellationRequested();
                     _ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis2, skyTarget[1] + 0.1 * deltaDegree[1]);
                 }
 
@@ -3176,7 +3189,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (!_isPulseGuidingDec)
                         {
                             var ackRa = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                            _trackingProcessor?.Post(new SlewBoundaryCommand(IsStart: true, ackRa));
+                            _trackingProcessor?.Post(new SlewBoundaryCommand(ackRa));
                             ackRa.Task.Wait(500); // wait for timer to stop (D7 timeout)
                         }
                         else
@@ -3187,7 +3200,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (!_isPulseGuidingRa)
                         {
                             var ackDec = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                            _trackingProcessor?.Post(new SlewBoundaryCommand(IsStart: true, ackDec));
+                            _trackingProcessor?.Post(new SlewBoundaryCommand(ackDec));
                             ackDec.Task.Wait(500); // wait for timer to stop (D7 timeout)
                         }
                         else
@@ -3208,14 +3221,42 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
                 // execute pulse
                 pulseGoTo(token);
-                // Pulse movement finished — unconditionally re-apply tracking rates and
-                // restart the AltAz timer via the processor. ResumeTrackingCommand calls
-                // SetTracking() directly, bypassing the ApplyTracking early-exit guard
-                // that suppresses SkyAxisSlew re-issue when Tracking was never set false.
-                if (_trackingProcessor != null)
-                    _trackingProcessor.Post(new ResumeTrackingCommand());
-                else
-                    this.SetTracking();
+
+                // Only resume tracking when the pulse completed normally.
+                // On cancellation the abort path (StopTrackingCommand + TrackingStateCommand)
+                // owns the final tracking state; posting ResumeTrackingCommand here would
+                // insert a spurious SetTracking() / SkyAxisSlew between the stop and the
+                // abort's intended restore.
+                if (!token.IsCancellationRequested)
+                {
+                    if (_trackingProcessor != null)
+                        _trackingProcessor.Post(new ResumeTrackingCommand());
+                    else
+                        this.SetTracking();
+                }
+
+                // On cancellation clear the pulse-guiding flags immediately and skip the
+                // remaining duration wait — the pulse is already stopped.
+                if (token.IsCancellationRequested)
+                {
+                    MonitorLog.LogToMonitor(new MonitorEntry
+                    {
+                        Datetime = Principles.HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Warning,
+                        Method = MonitorLog.GetCurrentMethod(),
+                        Thread = Environment.CurrentManagedThreadId,
+                        Message = $"Axis|{axis}|Async operation cancelled"
+                    });
+                    switch (axis)
+                    {
+                        case 0: _isPulseGuidingRa = false; break;
+                        case 1: _isPulseGuidingDec = false; break;
+                    }
+                    return;
+                }
+
                 // wait for pulse duration so completion variable IsPulseGuiding remains true
                 var waitTime = (int)(pulseStartTime.AddMilliseconds(duration) - Principles.HiResDateTime.UtcNow).TotalMilliseconds;
                 var updateInterval = Math.Max(duration / 20, 50);
@@ -3233,29 +3274,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 {
                     MonitorLog.LogToMonitor(pulseEntry);
                 }
-                if (token.IsCancellationRequested)
-                {
-                    var monitorItem = new MonitorEntry
-                    {
-                        Datetime = Principles.HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Server,
-                        Type = MonitorType.Warning,
-                        Method = MonitorLog.GetCurrentMethod(),
-                        Thread = Environment.CurrentManagedThreadId,
-                        Message = $"Axis|{axis}|Async operation cancelled"
-                    };
-                    MonitorLog.LogToMonitor(monitorItem);
-                }
                 // set pulse guiding status
                 switch (axis)
                 {
-                    case 0:
-                        _isPulseGuidingRa = false;
-                        break;
-                    case 1:
-                        _isPulseGuidingDec = false;
-                        break;
+                    case 0: _isPulseGuidingRa = false; break;
+                    case 1: _isPulseGuidingDec = false; break;
                 }
             });
         }

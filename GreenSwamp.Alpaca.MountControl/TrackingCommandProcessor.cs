@@ -157,13 +157,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 case RateChangeCommand rc:
-                    // Both axes applied atomically by the consumer (D2).
+                    // Both axes are already written by the caller (SetRateRa/SetRateDec) before
+                    // posting, so the consumer only needs rc's values for the predictor seed (D2).
                     // SetTracking posts the hardware command immediately (D1).
-                    _mount.RateRa = rc.RateRa;
-                    _mount.RateDec = rc.RateDec;
-                    // Seed the predictor with the new rates before SetTracking so that
-                    // SetAltAzTrackingRates -> GetRaDecAtTime projects the correct future
-                    // position on both axes (mirrors ActionRateRaDec for the AltAz path).
                     if (_mount.Settings.AlignmentMode == ASCOM.Common.DeviceInterfaces.AlignmentMode.AltAz)
                     {
                         if (_mount.Tracking)
@@ -200,18 +196,17 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 case SlewBoundaryCommand sb:
-                    // Stop the timer so SlewController can write SkyPredictor
-                    // directly after the ACK (Option A / D6). IsStart=false is
-                    // an advisory; post-slew tracking restore is handled by the
-                    // TrackingStateCommand emitted by ApplyTracking.
-                    if (sb.IsStart)
-                        _mount.StopAltAzTrackingTimerInternal();
+                    // Stop the timer so the caller can write SkyPredictor directly after
+                    // the ACK (Option A / D6). Post-boundary tracking restore is handled
+                    // by the TrackingStateCommand or ResumeTrackingCommand that follows.
+                    _mount.StopAltAzTrackingTimerInternal();
                     sb.Ack.TrySetResult();
                     break;
 
                 case StopTrackingCommand:
-                    // Abort / stop-axes path (S9 / D6).
-                    _mount.StopAltAzTrackingTimerInternal();
+                    // Abort / stop-axes path. SetTracking() conditionally stops the timer
+                    // internally (Mount.Tracking.cs AltAz branch), so no explicit timer
+                    // stop is needed here before the call.
                     _mount.SkyPredictor.Reset();
                     _mount.Tracking = false;
                     _mount.TrackingMode = TrackingMode.Off;
