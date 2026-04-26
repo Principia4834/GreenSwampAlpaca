@@ -950,7 +950,30 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (Tracking) this.SetTracking();
+
+                // RACE FIX: If tracking in AltAz mode, acquire lock before calling SetTracking
+                if (Tracking && Settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    bool lockAcquired = false;
+                    try
+                    {
+                        while (Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) != 0)
+                        {
+                            Thread.SpinWait(100);
+                        }
+                        lockAcquired = true;
+                        this.SetTracking();
+                    }
+                    finally
+                    {
+                        if (lockAcquired) _altAzTrackingLock = 0;
+                    }
+                }
+                else if (Tracking)
+                {
+                    this.SetTracking();
+                }
+
                 LogMount($"RateMovePrimaryAxis|{_rateMoveAxes.X}|offset:{_skyTrackingOffset[0]}");
             }
         }
@@ -976,7 +999,30 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (Tracking) this.SetTracking();
+
+                // RACE FIX: If tracking in AltAz mode, acquire lock before calling SetTracking
+                if (Tracking && Settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    bool lockAcquired = false;
+                    try
+                    {
+                        while (Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) != 0)
+                        {
+                            Thread.SpinWait(100);
+                        }
+                        lockAcquired = true;
+                        this.SetTracking();
+                    }
+                    finally
+                    {
+                        if (lockAcquired) _altAzTrackingLock = 0;
+                    }
+                }
+                else if (Tracking)
+                {
+                    this.SetTracking();
+                }
+
                 LogMount($"RateMoveSecondaryAxis|{_rateMoveAxes.Y}|offset:{_skyTrackingOffset[1]}");
             }
         }
@@ -1049,6 +1095,80 @@ namespace GreenSwamp.Alpaca.MountControl
             RateRa = degrees;
             ActionRateRaDec();
             LogMount($"SetRateRa|{degrees}|offset:{_skyTrackingOffset[0]}");
+        }
+
+        /// <summary>
+        /// L: Per-instance Ra/Dec rate action — updates this device's predictor and applies hardware tracking rate.
+        /// Mirrors SkyServer.ActionRateRaDec using this device's own fields.
+        /// RACE FIX: Acquires _altAzTrackingLock before stopping timer to prevent timer callback from
+        /// restarting timer while predictor is being updated with new rates.
+        /// </summary>
+        private void ActionRateRaDec()
+        {
+            if (Tracking)
+            {
+                if (Settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    // CRITICAL FIX: Acquire lock BEFORE stopping timer to prevent timer callback interference
+                    // This ensures the timer callback cannot restart the timer while we're updating the predictor
+                    bool lockAcquired = false;
+                    try
+                    {
+                        // Spin-wait to acquire lock - this completes quickly (typically <1ms) because
+                        // the timer callback holds the lock for only ~5-50ms during SetTracking() execution
+                        // No timeout - we MUST apply the new rate (ASCOM requirement: cannot reject rate commands)
+                        while (Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) != 0)
+                        {
+                            Thread.SpinWait(100); // Spin for ~1μs between attempts
+                        }
+                        lockAcquired = true;
+
+                        // Now safe to stop timer - no timer callback can execute while we hold the lock
+                        StopAltAzTrackingTimer();
+
+                        // Update predictor atomically with new RA/Dec rates
+                        // This takes the current predicted position and adds the new offset rates
+                        var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
+                        SkyPredictor.Set(raDec[0], raDec[1], _rateRaDec.X, _rateRaDec.Y);
+                        // SetTracking() will restart the timer (if stopped) and send new tracking rates to hardware immediately
+                        // This typically takes ~10-15ms total:
+                        //   - Lock acquisition: <1ms (timer callback holds lock for max ~50ms)
+                        //   - Timer stop: ~1-2ms
+                        //   - Predictor update: <0.1ms
+                        //   - SetTracking() restart + hardware commands: ~10ms
+                        this.SetTracking();
+
+                        var monitorItem = new MonitorEntry
+                        {
+                            Datetime = HiResDateTime.UtcNow,
+                            Device = MonitorDevice.Server,
+                            Category = MonitorCategory.Server,
+                            Type = MonitorType.Information,
+                            Method = MethodBase.GetCurrentMethod()?.Name,
+                            Thread = Environment.CurrentManagedThreadId,
+                            Message = $"AltAz rate update|RaRate:{_rateRaDec.X * 3600:F3} arcsec/sec|DecRate:{_rateRaDec.Y * 3600:F3} arcsec/sec"
+                        };
+                        MonitorLog.LogToMonitor(monitorItem);
+                    }
+                    finally
+                    {
+                        // Always release lock
+                        if (lockAcquired)
+                        {
+                            _altAzTrackingLock = 0;
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                // Tracking is off - just update predictor rates for when tracking is re-enabled
+                if (Settings.AlignmentMode == AlignmentMode.AltAz)
+                {
+                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _rateRaDec.X, _rateRaDec.Y);
+                }
+            }
         }
 
         /// <summary>Abort any active slew — L: operates on this device's hardware queue.</summary>
@@ -2381,30 +2501,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>
-        /// L: Per-instance Ra/Dec rate action — updates this device's predictor and applies hardware tracking rate.
-        /// Mirrors SkyServer.ActionRateRaDec using this device's own fields.
-        /// </summary>
-        private void ActionRateRaDec()
-        {
-            if (Tracking)
-            {
-                if (Settings.AlignmentMode == AlignmentMode.AltAz)
-                {
-                    var raDec = SkyPredictor.GetRaDecAtTime(HiResDateTime.UtcNow);
-                    SkyPredictor.Set(raDec[0], raDec[1], _rateRaDec.X, _rateRaDec.Y);
-                }
-                this.SetTracking();
-            }
-            else
-            {
-                if (Settings.AlignmentMode == AlignmentMode.AltAz)
-                {
-                    SkyPredictor.Set(RightAscensionXForm, DeclinationXForm, _rateRaDec.X, _rateRaDec.Y);
-                }
-            }
-        }
-
         #endregion
 
         #region AltAz Tracking Timer (J4 — per-instance)
@@ -2412,14 +2508,45 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// J4: Per-instance AltAz tracking timer tick handler.
         /// Replaces static SkyServer.AltAzTrackingTimerEvent for this device.
+        /// RACE FIX: Added double-check of IsRunning and exception handling.
         /// </summary>
         private void AltAzTrackingTimerTick(object sender, EventArgs e)
         {
-            if (_altAzTrackingTimer?.IsRunning == true &&
-                Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) == 0)
+            // Check timer is still running before attempting to acquire lock
+            if (_altAzTrackingTimer?.IsRunning != true)
             {
-                this.SetTracking();
-                _altAzTrackingLock = 0;
+                return;
+            }
+
+            // Try to acquire lock - if external rate update holds it, skip this tick
+            if (Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) == 0)
+            {
+                try
+                {
+                    // Double-check timer is still running after acquiring lock
+                    if (_altAzTrackingTimer?.IsRunning == true)
+                    {
+                        this.SetTracking();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var monitorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Error,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Environment.CurrentManagedThreadId,
+                        Message = $"AltAz timer callback exception: {ex.Message}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
+                finally
+                {
+                    _altAzTrackingLock = 0;
+                }
             }
         }
 

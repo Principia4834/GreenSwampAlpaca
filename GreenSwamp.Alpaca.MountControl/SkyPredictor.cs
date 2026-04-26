@@ -31,6 +31,9 @@ namespace GreenSwamp.Alpaca.MountControl
     /// </summary>
     public class SkyPredictor
     {
+        // RACE FIX: Lock object for thread-safe predictor updates
+        private readonly object _stateLock = new object();
+
         /// <summary>
         /// Initialise Right Ascension, Declination, Rates and ReferenceTime to default values.
         /// trackingRateProvider is required; each Mount passes () => SkyServer.CurrentTrackingRate(this).
@@ -109,14 +112,18 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Set Right Ascension, Declination, Rates and ReferenceTime to default values 
+        /// Thread-safe
         /// </summary>
         public void Reset()
         {
-            Ra = Double.NaN;
-            Dec = Double.NaN;
-            RateRa = 0;
-            RateDec = 0;
-            ReferenceTime = DateTime.MaxValue;
+            lock (_stateLock)
+            {
+                Ra = Double.NaN;
+                Dec = Double.NaN;
+                RateRa = 0;
+                RateDec = 0;
+                ReferenceTime = DateTime.MaxValue;
+            }
 
             var monitorItem = new MonitorEntry
             {
@@ -134,6 +141,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Set Right Ascension, Declination, Rates and ReferenceTime ready for use
+        /// Thread-safe: Multiple threads can call this without corrupting predictor state
         /// </summary>
         /// <param name="ra">Right Ascension</param>
         /// <param name="dec">Declination</param>
@@ -141,11 +149,14 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="decRate">Declination rate</param>
         public void Set(double ra, double dec, double raRate, double decRate)
         {
-            RateRa = raRate;
-            RateDec = decRate;
-            Ra = ra;
-            Dec = dec;
-            ReferenceTime = HiResDateTime.UtcNow;
+            lock (_stateLock)
+            {
+                RateRa = raRate;
+                RateDec = decRate;
+                Ra = ra;
+                Dec = dec;
+                ReferenceTime = HiResDateTime.UtcNow;
+            }
 
             var monitorItem = new MonitorEntry
             {
@@ -174,23 +185,28 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Calculate and return Right Ascension, Declination at given time
         /// Internal values of Right Ascension, Declination and ReferenceTime are not changed
+        /// Thread-safe: Can be called concurrently with Set()
         /// </summary>
         /// <param name="time">Future time</param>
         /// <returns></returns>
         public double[] GetRaDecAtTime(DateTime time)
         {
-            double[] result = [Ra, Dec];
-            if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && (ReferenceTime != DateTime.MaxValue))
-                if (_rateRa == 0 && _rateDec == 0)
-                {
-                    ReferenceTime = HiResDateTime.UtcNow;
-                }
-                else
-                {
-                    var deltaTime = (time - ReferenceTime).TotalSeconds;
-                    result[0] = Range.Range24(Ra + (deltaTime * _rateRa) / 15.0);
-                    result[1] = Dec + deltaTime * _rateDec;
-                }
+            double[] result;
+            lock (_stateLock)
+            {
+                result = [Ra, Dec];
+                if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && (ReferenceTime != DateTime.MaxValue))
+                    if (_rateRa == 0 && _rateDec == 0)
+                    {
+                        ReferenceTime = HiResDateTime.UtcNow;
+                    }
+                    else
+                    {
+                        var deltaTime = (time - ReferenceTime).TotalSeconds;
+                        result[0] = Range.Range24(Ra + (deltaTime * _rateRa) / 15.0);
+                        result[1] = Dec + deltaTime * _rateDec;
+                    }
+            }
 
             var monitorItem = new MonitorEntry
             {
@@ -249,16 +265,20 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Calculate and set Right Ascension and Declination at current time
         /// ReferenceTime is set to time now ready for tracking
+        /// Thread-safe
         /// </summary>
         public void SetRaDecNow()
         {
-            if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && !(ReferenceTime == DateTime.MaxValue))
+            lock (_stateLock)
             {
-                var timeNow = HiResDateTime.UtcNow;
-                var deltaTime = (timeNow - ReferenceTime).TotalSeconds;
-                _ra += deltaTime * _rateRa / 15.0;
-                _dec += deltaTime * _rateDec;
-                ReferenceTime = timeNow;
+                if (!Double.IsNaN(Ra) && !Double.IsNaN(Dec) && !(ReferenceTime == DateTime.MaxValue))
+                {
+                    var timeNow = HiResDateTime.UtcNow;
+                    var deltaTime = (timeNow - ReferenceTime).TotalSeconds;
+                    _ra += deltaTime * _rateRa / 15.0;
+                    _dec += deltaTime * _rateDec;
+                    ReferenceTime = timeNow;
+                }
             }
 
             var monitorItem = new MonitorEntry
