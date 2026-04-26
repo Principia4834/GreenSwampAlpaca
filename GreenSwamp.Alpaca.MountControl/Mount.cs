@@ -47,6 +47,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // State fields
         private MediaTimer? _mediaTimer;
         private MediaTimer? _altAzTrackingTimer;
+        internal TrackingCommandProcessor? _trackingProcessor;
         private Vector _homeAxes;
         private Vector _appAxes;
         private Vector _targetRaDec;
@@ -108,8 +109,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _timerOverruns;
         private AltAzTrackingType _altAzTrackingMode;
         private ParkPosition? _parkSelected;
-        // AltAz tracking lock (Int32 for Interlocked; direct field access required for ref semantics)
-        private Int32 _altAzTrackingLock;
         //Raw step counts from hardware — backing field Steps
         internal double[] _steps = [0.0, 0.0];
 
@@ -218,9 +217,9 @@ namespace GreenSwamp.Alpaca.MountControl
 
 
         // Tracking state properties
-        public bool Tracking { get; private set; }
+        public bool Tracking { get; internal set; }
 
-        private TrackingMode TrackingMode { get; set; } = TrackingMode.Off;
+        internal TrackingMode TrackingMode { get; set; } = TrackingMode.Off;
 
         // SkyWatcher-specific tracking rates (internal access only)
         internal Vector SkyTrackingRate
@@ -244,13 +243,13 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _targetRaDec.Y = value;
         }
 
-        private double RateRa
+        internal double RateRa
         {
             get => _rateRaDec.X;
             set => _rateRaDec.X = value;
         }
 
-        private double RateDec
+        internal double RateDec
         {
             get => _rateRaDec.Y;
             set => _rateRaDec.Y = value;
@@ -1039,7 +1038,15 @@ namespace GreenSwamp.Alpaca.MountControl
         public void SetRateDec(double degrees)
         {
             RateDec = degrees;
-            ActionRateRaDec();
+            if (Settings.AlignmentMode == AlignmentMode.AltAz && _trackingProcessor != null)
+            {
+                // Writer-side merge: carry current RateRa so the consumer applies both axes atomically (D2).
+                _trackingProcessor.Post(new RateChangeCommand(RateRa, degrees));
+            }
+            else
+            {
+                ActionRateRaDec();
+            }
             LogMount($"SetRateDec|{degrees}|offset:{_skyTrackingOffset[1]}");
         }
 
@@ -1047,7 +1054,15 @@ namespace GreenSwamp.Alpaca.MountControl
         public void SetRateRa(double degrees)
         {
             RateRa = degrees;
-            ActionRateRaDec();
+            if (Settings.AlignmentMode == AlignmentMode.AltAz && _trackingProcessor != null)
+            {
+                // Writer-side merge: carry current RateDec so the consumer applies both axes atomically (D2).
+                _trackingProcessor.Post(new RateChangeCommand(degrees, RateDec));
+            }
+            else
+            {
+                ActionRateRaDec();
+            }
             LogMount($"SetRateRa|{degrees}|offset:{_skyTrackingOffset[0]}");
         }
 
@@ -1961,6 +1976,10 @@ namespace GreenSwamp.Alpaca.MountControl
             // Run mount default commands and start the UI updates
             if (MountConnect())
             {
+                // Start the tracking command processor (queue-based AltAz serialisation)
+                _trackingProcessor = new TrackingCommandProcessor(this);
+                _trackingProcessor.Start(CancellationToken.None);
+
                 // start with a stop
                 SkyServer.AxesStopValidate(this);
 
@@ -1994,7 +2013,10 @@ namespace GreenSwamp.Alpaca.MountControl
             _ctsPulseGuideRa?.Cancel();
             _ctsPulseGuideDec?.Cancel();
             _ctsHcPulseGuide?.Cancel();
-            // N6: Stop timers BEFORE AxesStopValidate — prevents timer from re-queuing motion commands
+            // Complete the tracking command processor before stopping the timer
+            _trackingProcessor?.StopAsync().GetAwaiter().GetResult();
+            _trackingProcessor = null;
+            // N6: Stop timers BEFORE AxesStopValidate
             //     after the stop commands, which would leave the motor running after Disconnect.
             if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4 / N6: moved before AxesStopValidate
             _altAzTrackingTimer?.Stop();
@@ -2411,33 +2433,32 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// J4: Per-instance AltAz tracking timer tick handler.
-        /// Replaces static SkyServer.AltAzTrackingTimerEvent for this device.
+        /// Posts a <see cref="TimerTickCommand"/> to the processor and returns
+        /// immediately (D5). Tick de-duplication is handled by the processor.
         /// </summary>
         private void AltAzTrackingTimerTick(object sender, EventArgs e)
         {
-            if (_altAzTrackingTimer?.IsRunning == true &&
-                Interlocked.CompareExchange(ref _altAzTrackingLock, -1, 0) == 0)
-            {
-                this.SetTracking();
-                _altAzTrackingLock = 0;
-            }
+            _trackingProcessor?.PostTick();
         }
 
         /// <summary>
-        /// J4: Start the per-instance AltAz tracking timer using this device's update interval.
+        /// Start the per-instance AltAz tracking timer. Called exclusively from
+        /// the consumer task thread via <see cref="TrackingCommandProcessor"/>.
         /// </summary>
-        private void StartAltAzTrackingTimer()
+        internal void StartAltAzTrackingTimerInternal()
         {
-            StopAltAzTrackingTimer();
+            StopAltAzTrackingTimerInternal();
             _altAzTrackingTimer = new MediaTimer { Period = Settings.AltAzTrackingUpdateInterval };
             _altAzTrackingTimer.Tick += AltAzTrackingTimerTick;
             _altAzTrackingTimer.Start();
         }
 
         /// <summary>
-        /// Stop and dispose the per-instance AltAz tracking timer.
+        /// Stop and dispose the per-instance AltAz tracking timer. Called
+        /// exclusively from the consumer task thread via
+        /// <see cref="TrackingCommandProcessor"/>.
         /// </summary>
-        private void StopAltAzTrackingTimer()
+        internal void StopAltAzTrackingTimerInternal()
         {
             if (_altAzTrackingTimer != null)
             {
@@ -3133,22 +3154,32 @@ namespace GreenSwamp.Alpaca.MountControl
             Task.Run(() =>
             {
                 var pulseStartTime = Principles.HiResDateTime.UtcNow;
-                // stop alt az tracking and set predictor Ra and Dec ready for pulse go to action
+                // Route predictor adjustments through the queue (D4/D8).
+                // Wait for the consumer to stop the timer (SlewBoundaryCommand ACK) before
+                // pulseGoTo starts, so the hardware action cannot race the predictor write.
                 switch (axis)
                 {
                     case 0:
                         if (!_isPulseGuidingDec)
-                            this.StopAltAzTrackingTimer(); // J4: per-instance
+                        {
+                            var ackRa = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                            _trackingProcessor?.Post(new SlewBoundaryCommand(IsStart: true, ackRa));
+                            ackRa.Task.Wait(500); // wait for timer to stop (D7 timeout)
+                        }
                         else
                             _ctsPulseGuideDec?.Cancel();
-                        SkyPredictor.Set(SkyPredictor.Ra - duration * 0.001 * guideRate / 15.0410671786691, SkyPredictor.Dec);
+                        _trackingProcessor?.Post(new PulseGuideCommand(axis, guideRate, duration));
                         break;
                     case 1:
                         if (!_isPulseGuidingRa)
-                            this.StopAltAzTrackingTimer(); // J4: per-instance
+                        {
+                            var ackDec = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                            _trackingProcessor?.Post(new SlewBoundaryCommand(IsStart: true, ackDec));
+                            ackDec.Task.Wait(500); // wait for timer to stop (D7 timeout)
+                        }
                         else
                             _ctsPulseGuideRa?.Cancel();
-                        SkyPredictor.Set(SkyPredictor.Ra, SkyPredictor.Dec + duration * guideRate * 0.001);
+                        _trackingProcessor?.Post(new PulseGuideCommand(axis, guideRate, duration));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
@@ -3164,8 +3195,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
                 // execute pulse
                 pulseGoTo(token);
-                // pulse movement finished or cancelled so resume tracking
-                this.SetTracking();
+                // pulse movement finished — re-enable tracking via the processor (D4/D8)
+                // so the consumer restarts the AltAz timer on its own thread.
+                if (_trackingProcessor != null)
+                    _trackingProcessor.Post(new TrackingStateCommand(Tracking));
+                else
+                    this.SetTracking();
                 // wait for pulse duration so completion variable IsPulseGuiding remains true
                 var waitTime = (int)(pulseStartTime.AddMilliseconds(duration) - Principles.HiResDateTime.UtcNow).TotalMilliseconds;
                 var updateInterval = Math.Max(duration / 20, 50);
@@ -3234,6 +3269,17 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 // Fail silently if logging fails
             }
+        }
+
+        /// <summary>
+        /// Called by <see cref="TrackingCommandProcessor"/> when the consumer loop
+        /// catches an unhandled exception. Logs to the monitor and preserves the
+        /// last error so callers can inspect via <see cref="GetLastError"/>.
+        /// </summary>
+        internal void LogTrackingError(Exception ex)
+        {
+            _mountError = ex;
+            LogMount($"TrackingProcessor|Error|{ex.GetType().Name}|{ex.Message}");
         }
 
         #endregion

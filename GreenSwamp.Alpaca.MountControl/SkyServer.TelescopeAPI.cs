@@ -278,7 +278,23 @@ namespace GreenSwamp.Alpaca.MountControl
                         var evt = mount._mountPositionUpdatedEvent;
                         evt.Reset();
                         mount.UpdateSteps();
-                        if (!evt.Wait(5000)) break;
+                        // D7: 500 ms fixed timeout (Q2). If no position data arrives, apply the
+                        // previous rate unchanged and log a warning rather than blocking indefinitely.
+                        if (!evt.Wait(500))
+                        {
+                            var timeoutItem = new MonitorEntry
+                            {
+                                Datetime = HiResDateTime.UtcNow,
+                                Device = MonitorDevice.Server,
+                                Category = MonitorCategory.Server,
+                                Type = MonitorType.Warning,
+                                Method = nameof(SetAltAzTrackingRates),
+                                Thread = Environment.CurrentManagedThreadId,
+                                Message = "Position update timeout (500 ms) — previous tracking rate retained"
+                            };
+                            MonitorLog.LogToMonitor(timeoutItem);
+                            break;
+                        }
                         var steps = mount._steps;
                         DateTime nextTime = HiResDateTime.UtcNow.AddMilliseconds(mount.Settings.AltAzTrackingUpdateInterval);
                         var raDec = mount.SkyPredictor.GetRaDecAtTime(nextTime);

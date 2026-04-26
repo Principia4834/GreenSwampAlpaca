@@ -639,6 +639,8 @@ namespace GreenSwamp.Alpaca.MountControl
             // _defaultInstance and are wrong for any non-default Mount.
             if (SlewType == SlewType.SlewRaDec)
             {
+                // Option A (D6): stop the timer via ACK before writing SkyPredictor directly.
+                SendSlewBoundaryAck();
                 Mount.SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
             }
         }
@@ -790,6 +792,8 @@ namespace GreenSwamp.Alpaca.MountControl
             // Enable Alt/Az tracking to complete the slew
             // NOTE: Replicate GoToAsync pattern - don't use Tracking property setter
             // because it resets SkyPredictor (line 301 in TelescopeAPI.cs)
+            // Option A (D6): wait for consumer to stop the timer before writing SkyPredictor.
+            SendSlewBoundaryAck();
             Mount.SkyPredictor.Set(Mount.TargetRa, Mount.TargetDec);
 
             // Manually set tracking without going through Tracking property
@@ -812,6 +816,23 @@ namespace GreenSwamp.Alpaca.MountControl
                 ct.ThrowIfCancellationRequested();
                 await Task.Delay(100, ct);
             }
+        }
+
+        /// <summary>
+        /// Option A (D6): Post a <see cref="SlewBoundaryCommand"/> to the tracking processor
+        /// and block until the consumer acknowledges. The consumer stops the AltAz timer on
+        /// receipt, making it safe for the caller to write <c>SkyPredictor</c> directly.
+        /// No-op when the processor is not running (non-AltAz or mount not connected).
+        /// </summary>
+        private void SendSlewBoundaryAck()
+        {
+            var processor = Mount._trackingProcessor;
+            if (processor == null) return;
+
+            var ack = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            processor.Post(new SlewBoundaryCommand(IsStart: true, ack));
+            // Block until the consumer processes the command (D6/Q1: synchronous contract).
+            ack.Task.Wait(500); // 500 ms matches the position-update timeout (D7/Q2)
         }
 
         #endregion

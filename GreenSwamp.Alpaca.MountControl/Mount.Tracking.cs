@@ -99,11 +99,11 @@ namespace GreenSwamp.Alpaca.MountControl
                             if (rateChange != 0)
                             {
                                 SkyServer.SetAltAzTrackingRates(AltAzTrackingType.Predictor, this);
-                                if (_altAzTrackingTimer?.IsRunning != true) StartAltAzTrackingTimer();
+                                if (_altAzTrackingTimer?.IsRunning != true) StartAltAzTrackingTimerInternal();
                             }
                             else
                             {
-                                if (_altAzTrackingTimer?.IsRunning == true) StopAltAzTrackingTimer();
+                                if (_altAzTrackingTimer?.IsRunning == true) StopAltAzTrackingTimerInternal();
                                 _skyTrackingRate = new Vector(0, 0);
                             }
                             rate = SkyGetRate();
@@ -145,11 +145,11 @@ namespace GreenSwamp.Alpaca.MountControl
                             if (rateChange != 0)
                             {
                                 SkyServer.SetAltAzTrackingRates(AltAzTrackingType.Predictor, this);
-                                if (_altAzTrackingTimer?.IsRunning != true) StartAltAzTrackingTimer();
+                                if (_altAzTrackingTimer?.IsRunning != true) StartAltAzTrackingTimerInternal();
                             }
                             else
                             {
-                                if (_altAzTrackingTimer?.IsRunning == true) StopAltAzTrackingTimer();
+                                if (_altAzTrackingTimer?.IsRunning == true) StopAltAzTrackingTimerInternal();
                                 _skyTrackingRate = new Vector(0, 0);
                             }
                             break;
