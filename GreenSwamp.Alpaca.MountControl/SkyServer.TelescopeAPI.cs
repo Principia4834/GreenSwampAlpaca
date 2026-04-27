@@ -365,7 +365,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                     if (mount.Settings.Latitude < 0)
                                         invert = (isEast && moveNorth) || (isWest && !moveNorth);
                                     else
-                                        invert = (isEast && moveNorth) || (isWest && !moveNorth);
+                                        invert = (isEast && !moveNorth) || (isWest && moveNorth);
                                     if (mount.Settings.PolarMode == PolarMode.Left) invert = !invert;
                                 }
                             }

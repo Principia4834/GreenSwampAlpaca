@@ -449,6 +449,108 @@ namespace GreenSwamp.Alpaca.MountControl
             return [altAz[1], altAz[0]];
         }
 
+        #region Polar Park Position Conversion
+
+        /// <summary>
+        /// Converts current axis position to Az/Alt with sign convention for Polar park storage.
+        /// Normal positions: Az ∈ [0..360)
+        /// ThroughPole positions: Az ∈ [-360..0)
+        /// </summary>
+        /// <param name="axisX">Current RA axis position (degrees)</param>
+        /// <param name="axisY">Current Dec axis position (degrees)</param>
+        /// <param name=""></param>
+        /// <returns>double[] { azStorage, altStorage } with sign convention applied</returns>
+        internal static double[] PolarParkToAzAlt(double axisX, double axisY, SkySettings settings)
+        {
+            // Convert app axes to Az/Alt
+            double[] azAlt = AxesXyToAzAlt(new[] { axisX, axisY }, settings);
+            double azLocal = azAlt[0];
+            double altLocal = azAlt[1];
+
+            // Determine if current position is through-pole
+            bool isThroughPole = Math.Abs(axisY) > 90.0;
+
+            // 3. Adjust for NH storage convention (for SH observatories)
+            double azStorage = azLocal;
+            if (settings.Latitude < 0)
+            {
+                azStorage = Range.Range360(azLocal + 180.0);
+            }
+
+            // 4. Apply sign convention
+            if (isThroughPole)
+            {
+                // Ensure range [-360..0)
+                if (azStorage == 0.0 || azStorage == 360.0)
+                {
+                    azStorage = -360.0;  // Special case: 0° through-pole → -360°
+                }
+                else
+                {
+                    azStorage = -azStorage;  // Negate for through-pole
+                }
+            }
+            // else: azStorage ∈ [0..360) for normal (already in this range)
+
+            //var monitorItem = new MonitorEntry
+            //{
+            //    Datetime = HiResDateTime.UtcNow,
+            //    Device = MonitorDevice.Server,
+            //    Category = MonitorCategory.Server,
+            //    Type = MonitorType.Debug,
+            //    Method = MethodBase.GetCurrentMethod()?.Name,
+            //    Thread = Thread.CurrentThread.ManagedThreadId,
+            //    Message = $"AxisToStorage: [{axisX:F2},{axisY:F2}] → Az={azStorage:F2}, Alt={altLocal:F2}, TP={isThroughPole}"
+            //};
+            //MonitorLog.LogToMonitor(monitorItem);
+
+            return new[] { azStorage, altLocal };
+        }
+
+        /// <summary>
+        /// Converts stored Az/Alt with sign convention to axis coordinates for Polar park.
+        /// Respects orientation intent from sign: positive = normal, negative = through-pole.
+        /// </summary>
+        /// <param name="azStorage">Stored azimuth with sign (+ = normal, - = through-pole)</param>
+        /// <param name="altStorage">Stored altitude (degrees)</param>
+        /// <returns>double[] { axisX, axisY } in requested orientation</returns>
+        /// <exception cref="InvalidOperationException">If requested position violates hardware limits</exception>
+        internal static double[] AzAltToPolarPark(double azStorage, double altStorage, SkySettings settings)
+        {
+            double[] axes = new double[2];
+            // Detect orientation from sign
+            bool isThroughPole = azStorage < 0;
+
+            // Get absolute value (Northern Hemisphere convention)
+            double az = Math.Abs(azStorage);
+            double alt = altStorage;
+
+            // Adjust for local hemisphere (reverse storage convention)
+            if (settings.Latitude < 0) az = Range.Range360(az + 180.0);
+
+            // Convert to axis coordinates
+            axes = Coordinate.AltAz2HaDec(alt, az, settings.Latitude);
+
+            // Convert hours to degrees
+            axes[0] = Range.Range360(15.0 * axes[0]);
+            if (settings.Latitude < 0) axes[1] = -axes[1];
+            // Axes[0] is in range [-180,,180], Axes[1] is in range [-90..90] or [-180..-90] U [90..180]
+            axes[0] = Range.Range180(axes[0]);
+            axes[1] = Range.Range270(axes[1]);
+
+            if (isThroughPole) // adjust axes to be through the pole
+            {
+                axes[0] += 180;
+                axes[1] = 180 - axes[1];
+                axes[0] = Range.Range180(axes[0]);
+                axes[1] = Range.Range270(axes[1]);
+            }
+
+            return axes;
+        }
+
+        #endregion
+
         /// <summary>
         /// Conversion of mount axis positions in degrees to Ra and Dec
         /// </summary>

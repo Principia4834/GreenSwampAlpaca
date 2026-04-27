@@ -15,6 +15,7 @@
  */
 
 using ASCOM.Common.DeviceInterfaces;
+using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.MountControl.Pulses;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Settings.Services;
@@ -1063,22 +1064,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 var storedAzAlt = settings.ParkAxes;
 
-                // LOG 1: What's in the JSON file
-                var monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Environment.CurrentManagedThreadId,
-                    Message = $"ParkAxes.Get|Polar mode lazy load: storedAzAlt from JSON = [{storedAzAlt?[0] ?? double.NaN}, {storedAzAlt?[1] ?? double.NaN}]"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-
                 if (storedAzAlt == null || storedAzAlt.Length != 2)
                 {
-                    monitorItem = new MonitorEntry
+                    var monitorItem = new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow,
                         Device = MonitorDevice.Server,
@@ -1095,81 +1083,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 double az = storedAzAlt[0];   // Azimuth from storage (NH convention)
                 double alt = storedAzAlt[1];  // Altitude from storage
 
-                // LOG 2: Before Southern Hemisphere adjustment
-                monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Environment.CurrentManagedThreadId,
-                    Message = $"ParkAxes.Get|Polar mode: Before SH adjustment - Az={az}, Alt={alt}, Latitude={_latitude}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-
-                // Southern Hemisphere: Adjust Az by +180° to convert from NH storage to local coordinates
-                if (_latitude < 0)
-                {
-                    az = Range.Range360(az + 180.0);
-
-                    monitorItem = new MonitorEntry
-                    {
-                        Datetime = HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Mount,
-                        Type = MonitorType.Information,
-                        Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Environment.CurrentManagedThreadId,
-                        Message = $"ParkAxes.Get|Polar mode: After SH adjustment - Az={az} (added 180°)"
-                    };
-                    MonitorLog.LogToMonitor(monitorItem);
-                }
-
-                // Convert Az/Alt → Mount axis positions (skip alternate position selection for park loading)
-
-                // LOG 3: Before coordinate transformation
-                monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Environment.CurrentManagedThreadId,
-                    Message = $"ParkAxes.Get|Polar mode: Calling Axes.AzAltToAxesXy with Az={az}, Alt={alt}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
-
-                double[] axes = Axes.AzAltToAxesXy([az, alt], this, skipAlternatePosition: true);
-
-                // LOG 4: After coordinate transformation
-                monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Environment.CurrentManagedThreadId,
-                    Message = $"ParkAxes.Get|Polar mode: After transformation - X={axes[0]}, Y={axes[1]}"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
+                double[] axes = Axes.AzAltToPolarPark(az, alt, this);
 
                 // Cache axis coordinates for performance
                 _parkAxes = axes;
-
-                monitorItem = new MonitorEntry
-                {
-                    Datetime = HiResDateTime.UtcNow,
-                    Device = MonitorDevice.Server,
-                    Category = MonitorCategory.Mount,
-                    Type = MonitorType.Information,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Environment.CurrentManagedThreadId,
-                    Message = $"ParkAxes.Get|Polar mode: Cached and returning [{axes[0]}, {axes[1]}]"
-                };
-                MonitorLog.LogToMonitor(monitorItem);
 
                 return _parkAxes;
             }
@@ -1204,21 +1121,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     return;
 
                 // Convert axis coordinates to Az/Alt for storage
-                double[] azAlt = Axes.AxesXyToAzAlt([value[0], value[1]], this);
-
-                double az = azAlt[0];   // Azimuth (local coordinates)
-                double alt = azAlt[1];  // Altitude
-
-                // Southern Hemisphere: Adjust Az by -180° to convert from local to NH storage convention
-                if (_latitude < 0)
-                {
-                    az = Range.Range360(az - 180.0);
-                }
+                double[] azAlt = Axes.PolarParkToAzAlt(value[0], value[1], this);
 
                 // Round and update settings
-                az = Math.Round(az, 6);
-                alt = Math.Round(alt, 6);
-                var azAltArray = new[] { az, alt };
+                azAlt[0] = Math.Round(azAlt[0], 6);
+                azAlt[1] = Math.Round(azAlt[1], 6);
+                var azAltArray = new[] { azAlt[0], azAlt[1] };
 
                 var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 settings.ParkAxes = azAltArray;
@@ -1269,14 +1177,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     double az = azAltPos.X;   // Azimuth from storage (NH convention)
                     double alt = azAltPos.Y;  // Altitude from storage
 
-                    // Southern Hemisphere: Adjust Az by +180° to convert from NH storage to local coordinates
-                    if (_latitude < 0)
+                    double[] axes = Axes.AzAltToPolarPark(azAltPos.X, azAltPos.Y, this);
+                    if (Math.Abs(azAltPos.X) < 0.00001 && Math.Abs(azAltPos.Y - Math.Abs(Latitude)) < 0.00001)
                     {
-                        az = Range.Range360(az + 180.0);
+                        axes[0] = 90.0;
+                        axes[1] = 90.0;
                     }
-
-                    // Convert Az/Alt → Mount axis positions
-                    double[] axes = Axes.AzAltToAxesXy([az, alt], this);
 
                     // Create ParkPosition with axis coordinates
                     axisPositions.Add(new ParkPosition(AlignmentMode)
@@ -1314,23 +1220,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 foreach (var axisPos in value)
                 {
                     // Convert Mount axis positions → Az/Alt
-                    double[] azAlt = Axes.AxesXyToAzAlt([axisPos.X, axisPos.Y], this);
-
-                    double az = azAlt[0];   // Azimuth (local coordinates)
-                    double alt = azAlt[1];  // Altitude
-
-                    // Southern Hemisphere: Adjust Az by -180° to convert from local to NH storage convention
-                    if (_latitude < 0)
-                    {
-                        az = Range.Range360(az - 180.0);
-                    }
+                    double[] azAlt = Axes.PolarParkToAzAlt(axisPos.X, axisPos.Y, this);
 
                     // Create ParkPosition with Az/Alt coordinates for storage (NH convention)
                     azAltPositions.Add(new ParkPosition
                     (
                         axisPos.Name,
-                        Math.Round(az, 6),   // Azimuth (NH convention)
-                        Math.Round(alt, 6)   // Altitude (no adjustment)
+                        Math.Round(azAlt[0], 6),   // Azimuth (NH convention)
+                        Math.Round(azAlt[1], 6)   // Altitude (no adjustment)
                     ));
                 }
 
