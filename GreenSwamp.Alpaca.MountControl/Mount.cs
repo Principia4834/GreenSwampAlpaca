@@ -1071,12 +1071,10 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsMountRunning) return;
             var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
-            // AltAz: route stop/restore through the queue so any in-flight RateChangeCommand
-            // cannot re-arm tracking after the abort returns.
-            if (Settings.AlignmentMode == AlignmentMode.AltAz && _trackingProcessor != null)
-                _trackingProcessor.Post(new StopTrackingCommand());
-            else
-                ApplyTracking(false);
+            // Abort path is synchronous for all alignment modes — bypasses the tracking queue
+            // to avoid consumer-dispatch latency during an abort. The queue is still used for
+            // normal rate-change and timer-tick paths.
+            ApplyTracking(false);
             // Signal cancellation — returns immediately per ASCOM non-blocking spec.
             // Background task (ExecuteMovementAndCompletionAsync) handles hardware deceleration
             // and sets SlewController.IsSlewing=false when axes physically stop.
@@ -1098,12 +1096,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
             if (Settings.AlignmentMode == AlignmentMode.AltAz)
-            {
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
-                _trackingProcessor?.Post(new TrackingStateCommand(tracking));
-            }
-            else
-                ApplyTracking(tracking);
+            ApplyTracking(tracking);
             _slewState = SlewType.SlewNone;
             LogMount($"AbortSlewAsync|restored tracking:{tracking}");
         }
