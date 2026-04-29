@@ -1,4 +1,4 @@
-@page "/device-manager"
+﻿@page "/device-manager"
 @page "/devices"
 @using GreenSwamp.Alpaca.Settings.Services
 @using GreenSwamp.Alpaca.Settings.Models
@@ -6,6 +6,7 @@
 @using GreenSwamp.Alpaca.Server.Services
 @using SkySettings = GreenSwamp.Alpaca.Settings.Models.SkySettings
 @inject IVersionedSettingsService SettingsService
+@inject UnifiedDeviceRegistry DeviceRegistry
 @implements IDisposable
 
 <PageTitle>Device Manager</PageTitle>
@@ -356,7 +357,7 @@
         _successMessage = null;
         try
         {
-            UnifiedDeviceRegistry.RemoveDevice(deviceNumber);
+            DeviceRegistry.RemoveDevice(deviceNumber);
             await SettingsService.RemoveAlpacaDeviceAsync(deviceNumber);
             await SettingsService.DeleteDeviceSettingsAsync(deviceNumber);
 

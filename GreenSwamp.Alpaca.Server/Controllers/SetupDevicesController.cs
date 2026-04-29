@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -40,13 +40,16 @@ namespace GreenSwamp.Alpaca.Server.Controllers
     {
         private readonly IVersionedSettingsService _settingsService;
         private readonly ILogger<SetupDevicesController> _logger;
+        private readonly UnifiedDeviceRegistry _deviceRegistry;
 
         public SetupDevicesController(
             IVersionedSettingsService settingsService,
-            ILogger<SetupDevicesController> logger)
+            ILogger<SetupDevicesController> logger,
+            UnifiedDeviceRegistry deviceRegistry)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _deviceRegistry = deviceRegistry ?? throw new ArgumentNullException(nameof(deviceRegistry));
         }
 
         /// <summary>
@@ -113,12 +116,12 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             var deviceNumber = request.DeviceNumber;
             if (deviceNumber == 0)
             {
-                deviceNumber = Services.UnifiedDeviceRegistry.GetNextAvailableDeviceNumber();
+                deviceNumber = _deviceRegistry.GetNextAvailableDeviceNumber();
                 _logger.LogInformation("Auto-assigned device number {DeviceNumber}", deviceNumber);
             }
 
             // Check if device number is already in use (checks BOTH registries)
-            if (!Services.UnifiedDeviceRegistry.IsDeviceNumberAvailable(deviceNumber))
+            if (!_deviceRegistry.IsDeviceNumberAvailable(deviceNumber))
             {
                 return BadRequest(new ErrorResponse { Error = $"Device number {deviceNumber} already exists" });
             }
@@ -142,7 +145,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
                 );
 
                 // Register with BOTH registries atomically using UnifiedDeviceRegistry
-                Services.UnifiedDeviceRegistry.RegisterDevice(
+                _deviceRegistry.RegisterDevice(
                     deviceNumber,
                     request.DeviceName,
                     uniqueId,
@@ -192,7 +195,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
 
             try
             {
-                bool removed = Services.UnifiedDeviceRegistry.RemoveDevice(deviceNumber);
+                bool removed = _deviceRegistry.RemoveDevice(deviceNumber);
 
                 if (!removed)
                 {

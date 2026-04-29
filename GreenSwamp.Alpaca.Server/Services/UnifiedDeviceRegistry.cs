@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -22,10 +22,11 @@ using GreenSwamp.Alpaca.Settings.Services;
 namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
-    /// Unified device registry facade that manages both ASCOM DeviceManager
+    /// Unified device registry that manages both ASCOM DeviceManager
     /// and MountRegistry with synchronized operations.
+    /// Register as a singleton in DI.
     /// </summary>
-    public static class UnifiedDeviceRegistry
+    public class UnifiedDeviceRegistry
     {
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// <param name="deviceName">Display name for the device</param>
         /// <param name="uniqueId">ASCOM unique identifier (GUID)</param>
         /// <param name="settings">Settings instance for this device</param>
-        public static void RegisterDevice(
+        public void RegisterDevice(
             int deviceNumber,
             string deviceName,
             string uniqueId,
@@ -62,7 +63,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// Validates that a device number is available across BOTH registries.
         /// Checks MountRegistry and DeviceManager for conflicts.
         /// </summary>
-        public static bool IsDeviceNumberAvailable(int deviceNumber)
+        public bool IsDeviceNumberAvailable(int deviceNumber)
         {
             // Check MountRegistry
             if (MountRegistry.GetInstance(deviceNumber) != null)
@@ -79,7 +80,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// Gets the next available device number starting from slot 0.
         /// Returns the lowest available slot number.
         /// </summary>
-        public static int GetNextAvailableDeviceNumber()
+        public int GetNextAvailableDeviceNumber()
         {
             for (int i = 0; i < int.MaxValue; i++)
             {
@@ -95,7 +96,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// </summary>
         /// <param name="deviceNumber">Device number to remove</param>
         /// <returns>True if removed, false if not found</returns>
-        public static bool RemoveDevice(int deviceNumber)
+        public bool RemoveDevice(int deviceNumber)
         {
             bool removed = MountRegistry.RemoveInstance(deviceNumber);
 
@@ -110,7 +111,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// <summary>
         /// Gets all devices from the registry.
         /// </summary>
-        public static IReadOnlyDictionary<int, Alpaca.MountControl.Mount> GetAllDevices()
+        public IReadOnlyDictionary<int, Alpaca.MountControl.Mount> GetAllDevices()
         {
             return MountRegistry.GetAllInstances();
         }

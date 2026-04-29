@@ -193,6 +193,9 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
             Logger.LogInformation("TelescopeStateService registered for real-time state updates");
 
+            // Register UnifiedDeviceRegistry as singleton for DI injection
+            builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry>();
+
             // Register DeviceManagementService with HttpClient for device manager UI
             // Uses typed client pattern - HttpClient is automatically injected and lifecycle-managed
             builder.Services.AddHttpClient<GreenSwamp.Alpaca.Server.Services.DeviceManagementService>(client =>
@@ -210,6 +213,7 @@ namespace GreenSwamp.Alpaca.Server
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
+                var deviceRegistry = app.Services.GetRequiredService<GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry>();
 
                 // Initialize Monitor settings system in correct order
                 GreenSwamp.Alpaca.Shared.Settings.Initialize(settingsService);
@@ -314,7 +318,7 @@ namespace GreenSwamp.Alpaca.Server
                             Logger.LogWarning($"AlpacaDevice entry not found for device {device.DeviceNumber}, generated new UniqueId: {uniqueId}");
                         }
 
-                        GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry.RegisterDevice(
+                        deviceRegistry.RegisterDevice(
                             device.DeviceNumber,
                             device.DeviceName,
                             uniqueId,
