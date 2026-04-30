@@ -39,7 +39,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_instanceName}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
+                Message = $"Mount:{_mountId}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -56,7 +56,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 token.ThrowIfCancellationRequested();
                 var loopTimer = Stopwatch.StartNew();
 
-                // Event-based position update waiting (per-instance event — Step 6)
+                // Event-based position update waiting
                 if (!WaitUpdateMountPosition(5000))
                 {
                     var errorItem = new MonitorEntry
@@ -67,10 +67,10 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Error,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Environment.CurrentManagedThreadId,
-                        Message = $"Mount:{_instanceName}|Timeout waiting for position update|Try:{maxTries}"
+                        Message = $"Mount:{_mountId}|Timeout waiting for position update|Try:{maxTries}"
                     };
                     MonitorLog.LogToMonitor(errorItem);
-                    throw new TimeoutException($"Mount position update timeout in precision goto (Mount: {_instanceName})");
+                    throw new TimeoutException($"Mount position update timeout in precision goto (Mount: {_mountId})");
                 }
 
                 if (maxTries >= 5) { break; }
@@ -151,7 +151,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"Mount:{_instanceName}|Delta|{deltaDegree[0]}|{deltaDegree[1]}|Seconds|{loopTimer.Elapsed.TotalSeconds}"
+                    Message = $"Mount:{_mountId}|Delta|{deltaDegree[0]}|{deltaDegree[1]}|Seconds|{loopTimer.Elapsed.TotalSeconds}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -177,7 +177,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     var loopTimer = Stopwatch.StartNew();
 
                     // Event-based position update waiting
-                    if (!WaitUpdateMountPosition(5000)) throw new TimeoutException($"Mount position update timeout in pulse goto (Mount: {_instanceName})");
+                    if (!WaitUpdateMountPosition(5000)) throw new TimeoutException($"Mount position update timeout in pulse goto (Mount: {_mountId})");
 
                     if (maxTries >= 5) { break; }
                     maxTries++;
@@ -268,7 +268,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Ensures the SlewController is initialized for this instance.
+        /// Ensures the SlewController is initialized.
         /// </summary>
         internal void EnsureSlewController()
         {
@@ -297,8 +297,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private async Task<SlewResult> SlewAsync(double[] target, SlewType slewType, bool tracking = false)
         {
             EnsureSlewController();
-            // Capture this instance's offset rates now — SkyServer.RateRa/Dec always
-            // delegate to _defaultInstance and would be wrong for non-default instances.
+            // Capture offset rates now
             var operation = new SlewOperation(this, target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
             return await _slewController!.ExecuteSlewAsync(operation);
         }

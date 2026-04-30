@@ -93,7 +93,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         // Constructor - Internal prevents public creation
         // of instances. Returned by SkyServer.AxisRates.
         //
-        public AxisRates(TelescopeAxis axis, Alpaca.MountControl.Mount? instance = null)
+        public AxisRates(TelescopeAxis axis, Alpaca.MountControl.Mount? mount = null)
         {
             //
             // This collection must hold zero or more Rate objects describing the 
@@ -105,7 +105,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             // to the constructor. Thus we switch() below, and each case should 
             // initialize the array for the rate for the selected axis.
             //
-            var speedEight = instance?.SlewSpeedEight ?? 4.0;
+            var speedEight = mount?.SlewSpeedEight ?? 4.0;
             var maxSlewRate = speedEight > 0 ? speedEight : 4.0;
 
             switch (axis)

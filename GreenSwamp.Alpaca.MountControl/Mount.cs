@@ -42,7 +42,7 @@ namespace GreenSwamp.Alpaca.MountControl
     {
         #region Private backing fields
 
-        private readonly string _instanceName;
+        private readonly string _mountId;
         public readonly SkyPredictor SkyPredictor;
 
         // State fields
@@ -66,7 +66,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _pecBinSteps;
 
 
-        // Mount capabilities (instance-owned)
+        // Mount capabilities
         internal bool _canPPec;
         internal bool _canHomeSensor;
         internal bool _canPolarLed;
@@ -118,7 +118,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private DateTime _lastUpdateStepsTime = DateTime.MinValue;
         private readonly object _lastUpdateLock = new();
 
-        // Queue instances owned by this Mount
+        // Queues owned by this Mount
         internal CommandQueueBase<SkyWatcher> SkyQueue { get; private set; }
         internal CommandQueueBase<Actions> SimQueue { get; private set; }
 
@@ -351,7 +351,7 @@ namespace GreenSwamp.Alpaca.MountControl
             set => Settings.AtPark = value;
         }
 
-        // IsSlewing — mirrors SkyServer.IsSlewing logic using per-instance fields
+        // IsSlewing — mirrors SkyServer.IsSlewing logic
         public bool IsSlewing =>
             (_slewController?.IsSlewing == true) ||
             (Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0 ||
@@ -468,16 +468,16 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Constructor with optional settings file path
         /// Added deviceName parameter for user-visible device identification
         /// </summary>
-        /// <param name="id">Unique instance identifier (e.g., "telescope-0")</param>
-        /// <param name="settings">Settings instance (can be file-based or static)</param>
+        /// <param name="id">Unique identifier (e.g., "telescope-0")</param>
+        /// <param name="settings">Settings (can be file-based or static)</param>
         /// <param name="deviceName">User-provided device name (defaults to id if null)</param>
         public Mount(string id, SkySettings settings, string? deviceName = null)
         {
             Id = id ?? "mount-0";
-            _instanceName = id ?? "default";
+            _mountId = id ?? "default";
             DeviceName = deviceName ?? id ?? "Unnamed Device";
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            // Wire settings back-reference so settings can call instance-aware tasks
+            // Wire settings back-reference
             Settings._owner = this;
             SkyPredictor = new SkyPredictor(() => CurrentTrackingRate());
 
@@ -497,7 +497,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #region IMountController Implementation (Delegation)
 
         /// <summary>
-        /// Gets the unique identifier for this mount instance
+        /// Gets the unique identifier for this mount
         /// </summary>
         public string Id { get; }
 
@@ -517,7 +517,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public bool Connect()
         {
-            LogMount($"Connect() called on instance {Id}");
+            LogMount($"Connect() called on mount {Id}");
 
             // Call the actual connect implementation
             // This will be MountConnect() migrated from static
@@ -531,7 +531,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Disconnect()
         {
-            LogMount($"Disconnect() called on instance {Id}");
+            LogMount($"Disconnect() called on mount {Id}");
 
             // Stop mount operations (timers, tracking, queues, serial)
             MountStop();
@@ -544,7 +544,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Start()
         {
-            LogMount($"Start() called on instance {Id}");
+            LogMount($"Start() called on mount {Id}");
 
             // Call instance method directly
             MountStart();
@@ -556,9 +556,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Stop()
         {
-            LogMount($"Stop() called on instance {Id}");
+            LogMount($"Stop() called on mount {Id}");
 
-            // Call instance method directly
+            // Call method directly
             MountStop();
         }
 
@@ -568,9 +568,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void Reset()
         {
-            LogMount($"Reset() called on instance {Id}");
+            LogMount($"Reset() called on mount {Id}");
 
-            // Call instance method directly
+            // Call method directly
             MountReset();
         }
         /// <summary>
@@ -578,7 +578,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         public void EmergencyStop()
         {
-            LogMount($"EmergencyStop() called on instance {Id}");
+            LogMount($"EmergencyStop() called on mount {Id}");
             AbortSlewAsync(speak: false);
         }
 
@@ -592,7 +592,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Telescope API Bridge Methods (Step 9 — fully migrated per-instance implementations)
+        #region Telescope API Bridge Methods
 
         /// <summary>Rate move on primary axis — L: dispatches to this device's hardware queue.</summary>
         public double RateMovePrimaryAxis
@@ -824,26 +824,26 @@ namespace GreenSwamp.Alpaca.MountControl
             return await SlewAsync(target, SlewType.SlewPark, tracking: false);
         }
 
-        /// <summary>Synchronous Alt/Az slew — dispatches on this instance directly.</summary>
+        /// <summary>Synchronous Alt/Az slew — dispatches directly.</summary>
         public void SlewAltAz(double altitude, double azimuth) =>
             SlewSync([azimuth, altitude], SlewType.SlewAltAz);
 
-        /// <summary>Async Alt/Az slew — dispatches on this instance directly.</summary>
+        /// <summary>Async Alt/Az slew — dispatches directly.</summary>
         public Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth) =>
             SlewAsync([azimuth, altitude], SlewType.SlewAltAz);
 
-        /// <summary>Synchronous RA/Dec slew — dispatches on this instance directly.</summary>
+        /// <summary>Synchronous RA/Dec slew — dispatches directly.</summary>
         public void SlewRaDec(double rightAscension, double declination, bool tracking = false) =>
             SlewSync([rightAscension, declination], SlewType.SlewRaDec, tracking);
 
-        /// <summary>Async RA/Dec slew — dispatches on this instance directly.</summary>
+        /// <summary>Async RA/Dec slew — dispatches directly.</summary>
         public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false) =>
             SlewAsync([rightAscension, declination], SlewType.SlewRaDec, tracking);
 
-        /// <summary>Enable tracking on a slew cycle — delegates to per-instance tracking.</summary>
+        /// <summary>Enable tracking on a slew cycle</summary>
         public void CycleOnTracking(bool silence) => ApplyTracking(true);
 
-        /// <summary>Save current position as a named park position — instance version.</summary>
+        /// <summary>Save current position as a named park position</summary>
         public void SetParkAxis(string name)
         {
             if (string.IsNullOrEmpty(name)) { name = "Empty"; }
@@ -862,7 +862,7 @@ namespace GreenSwamp.Alpaca.MountControl
             SetParkAxis(name, park[0], park[1]);
         }
 
-        /// <summary>Sync to given Alt/Az position — instance version.</summary>
+        /// <summary>Sync to given Alt/Az position</summary>
         public void SyncToAltAzm(double azimuth, double altitude)
         {
             if (!IsMountRunning) { return; }
@@ -898,11 +898,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 var internalAltAz = Transforms.CoordTypeToInternal(azimuth, altitude);
                 var raDec = Coordinate.AltAz2RaDec(internalAltAz.X, internalAltAz.Y, SiderealTime, Settings.Latitude);
                 SkyPredictor.Set(raDec[0], raDec[1]);
-                InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
+                ApplyTrackingDirect(true, TrackingMode.AltAz);
             }
         }
 
-        /// <summary>Sync to current target RA/Dec — instance version.</summary>
+        /// <summary>Sync to current target RA/Dec</summary>
         public void SyncToTargetRaDec()
         {
             if (!IsMountRunning) { return; }
@@ -937,7 +937,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 {
                     SkyPredictor.Set(TargetRa, TargetDec);
-                    InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
+                    ApplyTrackingDirect(true, TrackingMode.AltAz);
                 }
                 else
                 {
@@ -946,7 +946,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>Check if RA/Dec is within sync limits — instance version.</summary>
+        /// <summary>Check if RA/Dec is within sync limits</summary>
         public bool CheckRaDecSyncLimit(double ra, double dec)
         {
             if (!Settings.SyncLimitOn) { return true; }
@@ -971,7 +971,7 @@ namespace GreenSwamp.Alpaca.MountControl
             return false;
         }
 
-        /// <summary>Check if Alt/Az is within sync limits — instance version.</summary>
+        /// <summary>Check if Alt/Az is within sync limits</summary>
         public bool CheckAltAzSyncLimit(double alt, double az)
         {
             if (!Settings.SyncLimitOn) { return true; }
@@ -1003,7 +1003,7 @@ namespace GreenSwamp.Alpaca.MountControl
             return false;
         }
 
-        /// <summary>Check if target is within reachable hardware limits — instance version.</summary>
+        /// <summary>Check if target is within reachable hardware limits</summary>
         public bool IsTargetReachable(double[] target, SlewType slewType)
         {
             if (Settings.AlignmentMode == AlignmentMode.GermanPolar) return true;
@@ -1201,7 +1201,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="waitTime">Maximum time to wait, in milliseconds. Default is 100 ms.</param>
         /// <remarks>
         /// This method implements an event-based update sequence:
-        /// 1. Resets the per-instance `_mountPositionUpdatedEvent`.
+        /// 1. Resets the _mountPositionUpdatedEvent.
         /// 2. Calls `UpdateSteps()` to request an immediate position/step update.
         /// 3. Waits up to <paramref name="waitTime"/> milliseconds for `_mountPositionUpdatedEvent` to be signalled.
         ///
@@ -1210,7 +1210,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </remarks>
         public bool WaitUpdateMountPosition(int waitTime = 100)
         {
-            // Event-based position update waiting (per-instance event — Step 6)
+            // Event-based position update waiting
             _mountPositionUpdatedEvent.Reset();
             UpdateSteps();
             var result = true;
@@ -1224,7 +1224,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Warning,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"Mount:{_instanceName}|Timeout waiting for position update"
+                    Message = $"Mount:{_mountId}|Timeout waiting for position update"
                 };
                 MonitorLog.LogToMonitor(errorItem);
                 result = false;
@@ -1266,8 +1266,6 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <param name="steps">Raw step counts from the mount hardware [axis0, axis1]</param>
         internal void SetSteps(double[] steps)
         {
-            // N7: Pass computed LST directly — avoids SkyServer.SiderealTime which reads _defaultInstance
-            //     (device-00), so device-01 would always see LST=0.0 if device-00 is not running.
             var lst = GetLocalSiderealTime(Settings.Longitude);
 
             // Implement PEC
@@ -1280,7 +1278,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 ConvertStepsToDegrees(steps[1], 1)
             };
 
-            // J5: Per-instance limit status
+            // Limit status
             {
                 const double oneArcSec = 1.0 / 3600;
                 _limitStatus.AtLowerLimitAxisX = rawPositions[0] <= -Settings.AxisLimitX - oneArcSec;
@@ -1325,7 +1323,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Called by queue callbacks when the hardware delivers new step counts.
-        /// Runs the full position pipeline, signals the per-instance position event,
+        /// Runs the full position pipeline, signals the position event,
         /// and notifies static observers (Blazor UI) for backward compatibility.
         /// </summary>
         internal void ReceiveSteps(double[] steps)
@@ -1353,19 +1351,19 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                var angleOffset = Settings.Latitude < 0 ? 180.0 : 0.0; // J2: use per-instance settings
+                var angleOffset = Settings.Latitude < 0 ? 180.0 : 0.0;
                 home[0] -= angleOffset;
                 home = Axes.AzAltToAxesXy(home, Settings);
             }
             return new Vector(home[0], home[1]);
         }
 
-        #region AltAz Tracking Timer (J4 — per-instance)
+        #region AltAz Tracking Timer
 
         /// <summary>
-        /// J4: Per-instance AltAz tracking timer tick handler.
+        /// AltAz tracking timer tick handler.
         /// Posts a <see cref="TimerTickCommand"/> to the processor and returns
-        /// immediately (D5). Tick de-duplication is handled by the processor.
+        /// immediately. Tick de-duplication is handled by the processor.
         /// </summary>
         private void AltAzTrackingTimerTick(object sender, EventArgs e)
         {
@@ -1373,7 +1371,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Start the per-instance AltAz tracking timer. Called exclusively from
+        /// Start the AltAz tracking timer. Called exclusively from
         /// the consumer task thread via <see cref="TrackingCommandProcessor"/>.
         /// </summary>
         internal void StartAltAzTrackingTimerInternal()
@@ -1385,7 +1383,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Stop and dispose the per-instance AltAz tracking timer. Called
+        /// Stop and dispose the AltAz tracking timer. Called
         /// exclusively from the consumer task thread via
         /// <see cref="TrackingCommandProcessor"/>.
         /// </summary>
@@ -1402,7 +1400,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Mount Operations (Instance Methods)
+        #region Mount Operations
 
         /// <summary>
         /// Simulator GOTO slew operation
@@ -1418,7 +1416,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_instanceName}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
+                Message = $"Mount:{_mountId}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1466,7 +1464,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_instanceName}|GoToSeconds|{stopwatch.Elapsed.TotalSeconds}|Target|{simTarget[0]}|{simTarget[1]}"
+                Message = $"Mount:{_mountId}|GoToSeconds|{stopwatch.Elapsed.TotalSeconds}|Target|{simTarget[0]}|{simTarget[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
             #endregion
@@ -1494,7 +1492,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_instanceName}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
+                Message = $"Mount:{_mountId}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
             };
             MonitorLog.LogToMonitor(monitorItem);
 
@@ -1582,7 +1580,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"Mount:{_instanceName}|Delta|({deltaDegree[0]},{deltaDegree[1]})|Seconds|{loopTimer.Elapsed.TotalSeconds}"
+                    Message = $"Mount:{_mountId}|Delta|({deltaDegree[0]},{deltaDegree[1]})|Seconds|{loopTimer.Elapsed.TotalSeconds}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -1695,7 +1693,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_instanceName}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
+                Message = $"Mount:{_mountId}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
             };
             MonitorLog.LogToMonitor(monitorItem);
             token.ThrowIfCancellationRequested();
@@ -1751,7 +1749,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_instanceName}|Seconds|{stopwatch.Elapsed.TotalSeconds}|Target|{target[0]}|{target[1]}"
+                Message = $"Mount:{_mountId}|Seconds|{stopwatch.Elapsed.TotalSeconds}|Target|{target[0]}|{target[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
             #endregion
@@ -1777,14 +1775,14 @@ namespace GreenSwamp.Alpaca.MountControl
         #region AltAz Pulse Guide
 
         /// <summary>
-        /// Execute single axis pulse guide for AltAz using this instance's SkyPredictor.
+        /// Execute single axis pulse guide for AltAz using SkyPredictor.
         /// </summary>
         internal void PulseGuideAltAz(int axis, double guideRate, int duration, Action<CancellationToken> pulseGoTo, CancellationToken token)
         {
             Task.Run(() =>
             {
                 var pulseStartTime = Principles.HiResDateTime.UtcNow;
-                // Route predictor adjustments through the queue (D4/D8).
+                // Route predictor adjustments through the queue.
                 // Wait for the consumer to stop the timer (SlewBoundaryCommand ACK) before
                 // pulseGoTo starts, so the hardware action cannot race the predictor write.
                 switch (axis)
@@ -1794,7 +1792,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             var ackRa = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                             _trackingProcessor?.Post(new SlewBoundaryCommand(ackRa));
-                            ackRa.Task.Wait(500); // wait for timer to stop (D7 timeout)
+                            ackRa.Task.Wait(500); // wait for timer to stop
                         }
                         else
                             _ctsPulseGuideDec?.Cancel();
@@ -1805,7 +1803,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             var ackDec = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                             _trackingProcessor?.Post(new SlewBoundaryCommand(ackDec));
-                            ackDec.Task.Wait(500); // wait for timer to stop (D7 timeout)
+                            ackDec.Task.Wait(500); // wait for timer to stop
                         }
                         else
                             _ctsPulseGuideRa?.Cancel();

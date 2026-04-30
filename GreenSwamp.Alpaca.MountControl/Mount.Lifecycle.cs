@@ -24,13 +24,13 @@ namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
     /// Mount lifecycle management: tracking state, park/home transitions, axis limits, and async operation cancellation.
-    /// Handles per-instance state transitions during mount operation.
+    /// Handles state transitions during mount operation.
     /// </summary>
     public partial class Mount
     {
         /// <summary>
         /// Per Axis-limit check — replaces static SkyServer.CheckAxisLimits().
-        /// Reads per-instance _limitStatus instead of static SkyServer.LimitStatus.
+        /// Reads _limitStatus.
         /// J7: calls StopAxes/GoToPark to halt the correct physical device.
         /// </summary>
         private void CheckAxisLimits()
@@ -138,7 +138,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Start an asynchronous park (slew-to-park) operation using the instance's currently selected park position.
         /// If no valid park position is set the method returns immediately. Disables tracking, writes the selected
-        /// park coordinates and name into the instance settings, and starts the park slew by invoking SlewAsync(double[], SlewType, bool) 
+        /// park coordinates and name into settings, and starts the park slew by invoking SlewAsync(double[], SlewType, bool) 
         /// with SlewType.SlewPark in a fire-and-forget manner (the returned Task is not awaited).
         /// </summary>
         private void StartGoToParkAsync()
@@ -153,7 +153,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// K: Per-instance equivalent of SkyServer.SetTrackingMode.
         /// Sets _trackingMode from this device alignment and hemisphere settings.
         /// </summary>
         private void InstanceSetTrackingMode()
@@ -171,7 +170,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// K: Per-instance equivalent of SkyServer.Tracking setter.
         /// Resets SkyPredictor, sets tracking mode, and applies hardware.
         /// Early-exits if already in requested state (mirrors SkyServer.Tracking early-exit).
         /// </summary>
@@ -202,10 +200,9 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// K: Per-instance equivalent of SkyServer.SetTrackingDirect.
         /// Sets tracking state and mode without resetting SkyPredictor.
         /// </summary>
-        internal void InstanceApplyTrackingDirect(bool tracking, TrackingMode mode)
+        internal void ApplyTrackingDirect(bool tracking, TrackingMode mode)
         {
             Tracking = tracking;
             TrackingMode = mode;
@@ -213,7 +210,6 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// K: Per-instance park completion. Replaces SkyServer.CompletePark().
         /// Sets AtPark, disables tracking, and resets predictor for this device.
         /// </summary>
         internal void InstanceCompletePark()
@@ -226,7 +222,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// L: Per-instance cancel all async operations.
+        /// Cancel all async operations.
         /// Cancels this device's GoTo, pulse guide, and HC pulse guide tasks.
         /// A short yield gives background Task.Run lambdas time to observe cancellation
         /// before StopAxes is issued. The previous 2 s spin-wait could never exit early
@@ -249,7 +245,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// L: Per-instance set/reset tracking and slewing state while MoveAxis is active.
+        /// Sets/reset tracking and slewing state while MoveAxis is active.
         /// Mirrors SkyServer.SetRateMoveSlewState using this device's own fields.
         /// </summary>
         private void SetRateMoveSlewState()
@@ -270,7 +266,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// L: Per-instance Ra/Dec rate action — updates this device's predictor and applies hardware tracking rate.
+        ///Ra/Dec rate action — updates this device's predictor and applies hardware tracking rate.
         /// Mirrors SkyServer.ActionRateRaDec using this device's own fields.
         /// </summary>
         private void ActionRateRaDec()

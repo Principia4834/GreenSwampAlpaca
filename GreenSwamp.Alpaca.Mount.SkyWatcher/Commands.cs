@@ -92,7 +92,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         public Commands() { }
 
         /// <summary>
-        /// Provide the serial port instance; called by SkyWatcher.Initialize after queue creation.
+        /// Provide the serial port; called by SkyWatcher. Initialize after queue creation.
         /// </summary>
         internal void Initialize(ISerialPort serial)
         {

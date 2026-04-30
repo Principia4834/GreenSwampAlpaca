@@ -482,12 +482,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Forces immediate stop of mount axes via hardware command.
         /// Used when cancellation timeout expires or errors occur.
         /// </summary>
-        private async Task ForceStopAxesAsync(Mount? instance = null)
+        private async Task ForceStopAxesAsync(Mount? mount = null)
         {
             try
             {
                 // Call public SkyServer stop method
-                await Task.Run(() => { instance?.InstanceStopAxes(); });
+                await Task.Run(() => { mount?.InstanceStopAxes(); });
             }
             catch (Exception ex)
             {
@@ -584,9 +584,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public double InitialDec { get; private set; }
         public bool WasTracking { get; private set; }
 
-        // Per-instance offset rates captured at slew creation time.
-        // Must NOT read SkyServer.RateRa/Dec — those always delegate to _defaultInstance
-        // and would return the wrong value for any non-default Mount.
+        // Offset rates captured at slew creation time.
         public double RateRa { get; }
         public double RateDec { get; }
 
@@ -634,12 +632,10 @@ namespace GreenSwamp.Alpaca.MountControl
             Mount.ApplyTracking(false);
 
             // Prepare predictor for Ra/Dec slews.
-            // Use Target[] and the per-instance rates captured at construction —
-            // SkyServer.TargetRa/Dec and SkyServer.RateRa/Dec always delegate to
-            // _defaultInstance and are wrong for any non-default Mount.
+            // Use Target[] and rates captured at construction
             if (SlewType == SlewType.SlewRaDec)
             {
-                // Option A (D6): stop the timer via ACK before writing SkyPredictor directly.
+                // Stop the timer via ACK before writing SkyPredictor directly.
                 SendSlewBoundaryAck();
                 Mount.SkyPredictor.Set(Target[0], Target[1], RateRa, RateDec);
             }
@@ -797,7 +793,7 @@ namespace GreenSwamp.Alpaca.MountControl
             Mount.SkyPredictor.Set(Mount.TargetRa, Mount.TargetDec);
 
             // Manually set tracking without going through Tracking property
-            Mount.InstanceApplyTrackingDirect(true, TrackingMode.AltAz);
+            Mount.ApplyTrackingDirect(true, TrackingMode.AltAz);
 
             // Wait for tracking to settle
             var minSteps = Math.Min(

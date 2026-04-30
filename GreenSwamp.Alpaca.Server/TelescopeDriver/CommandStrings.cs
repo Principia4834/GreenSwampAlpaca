@@ -5,10 +5,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 {
     internal class CommandStrings
     {
-        public static string ProcessCommand(Alpaca.MountControl.Mount instance, string command, bool raw)
+        public static string ProcessCommand(Alpaca.MountControl.Mount mount, string command, bool raw)
         {
             command = command.Trim();
-            CheckIsMountRunning(instance, "NotConnectedException in CommandStrings/ProcessCommand");
+            CheckIsMountRunning(mount, "NotConnectedException in CommandStrings/ProcessCommand");
             //if (raw) { throw new DriverException("Raw param error"); }
             if (command.Length < 2) { throw new DriverException("Command length error"); }
             if (!command.Contains(":")) { throw new DriverException("Command colon error"); }
@@ -24,50 +24,50 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                             switch (command.Substring(3, 1))
                             {
                                 case "0": // Off
-                                    instance.SnapPort1 = false;
+                                    mount.SnapPort1 = false;
                                     break;
                                 case "1": // On
-                                    instance.SnapPort1 = true;
+                                    mount.SnapPort1 = true;
                                     break;
                                 default:
                                     throw new DriverException("Param error");
                             }
-                            switch (instance.Settings.Mount)
+                            switch (mount.Settings.Mount)
                             {
                                 case MountType.Simulator:
-                                    instance.SimTasks(MountTaskName.SetSnapPort1);
+                                    mount.SimTasks(MountTaskName.SetSnapPort1);
                                     break;
                                 case MountType.SkyWatcher:
-                                    instance.SkyTasks(MountTaskName.SetSnapPort1);
+                                    mount.SkyTasks(MountTaskName.SetSnapPort1);
                                     break;
                                 default:
                                     throw new DriverException("Mount type error");
                             }
-                            return instance.SnapPort1Result ? "1" : "0";
+                            return mount.SnapPort1Result ? "1" : "0";
                         case "2"://Port 2
                             switch (command.Substring(3, 1))
                             {
                                 case "0": // Off
-                                    instance.SnapPort2 = false;
+                                    mount.SnapPort2 = false;
                                     break;
                                 case "1": // On
-                                    instance.SnapPort2 = true;
+                                    mount.SnapPort2 = true;
                                     break;
                                 default:
                                     throw new DriverException("Param 2 error");
                             }
-                            switch (instance.Settings.Mount)
+                            switch (mount.Settings.Mount)
                             {
                                 case MountType.Simulator:
-                                    instance.SimTasks(MountTaskName.SetSnapPort2);
+                                    mount.SimTasks(MountTaskName.SetSnapPort2);
                                     break;
                                 case MountType.SkyWatcher:
-                                    instance.SkyTasks(MountTaskName.SetSnapPort2);
+                                    mount.SkyTasks(MountTaskName.SetSnapPort2);
                                     break;
                                 default:
                                     throw new DriverException("Mount type error");
                             }
-                            return instance.SnapPort2Result ? "1" : "0";
+                            return mount.SnapPort2Result ? "1" : "0";
                         default:
                             throw new DriverException("Param Port error");
                     }
@@ -76,9 +76,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
-        private static void CheckIsMountRunning(Alpaca.MountControl.Mount instance, string msg)
+        private static void CheckIsMountRunning(Alpaca.MountControl.Mount mount, string msg)
         {
-            if (instance == null || !instance.IsMountRunning)
+            if (mount == null || !mount.IsMountRunning)
             {
                 throw new NotConnectedException(msg);
             }

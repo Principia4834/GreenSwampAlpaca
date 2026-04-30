@@ -1878,7 +1878,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
                 settings.DeviceNumber = _deviceNumber;
 
-                // Map instance fields → JSON model (93 writable properties)
+                // Map fields to JSON model
                 settings.Mount = _mount.ToString();
                 settings.Port = _port;
                 settings.BaudRate = (int)_baudRate;

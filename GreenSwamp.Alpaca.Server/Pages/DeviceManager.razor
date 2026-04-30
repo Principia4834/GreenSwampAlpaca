@@ -267,14 +267,14 @@
     {
         try
         {
-            var instance = MountRegistry.GetInstance(deviceNumber);
-            if (instance == null)
+            var mount = MountRegistry.GetInstance(deviceNumber);
+            if (mount == null)
             {
                 errorMessage = $"Device {deviceNumber} not found in registry (may be disabled)";
                 return;
             }
 
-            instance.SetConnected(_clientId, true);
+            mount.SetConnected(_clientId, true);
             StateHasChanged();
         }
         catch (Exception ex)

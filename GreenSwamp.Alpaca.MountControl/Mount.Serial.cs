@@ -31,7 +31,7 @@ using System.Reflection;
 namespace GreenSwamp.Alpaca.MountControl
 {
     /// <summary>
-    /// Serial/UDP connection management for Mount instances.
+    /// Serial/UDP connection management for Mount.
     /// Handles port opening/closing, queue initialization, and connection lifecycle.
     /// </summary>
     public partial class Mount

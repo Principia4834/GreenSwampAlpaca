@@ -14,7 +14,7 @@
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
  
-// Phase M2: Per-instance position, coordinate and limit methods.
+// Position, coordinate and limit methods.
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
@@ -27,7 +27,7 @@ namespace GreenSwamp.Alpaca.MountControl
  {
  #region Position, Coordinates and Limits
 
-        /// <summary>Get alternate position based on alignment mode — instance version.</summary>
+        /// <summary>Get alternate position based on alignment mode.</summary>
         public double[] GetAlternatePosition(double[] position)
         {
             switch (Settings.AlignmentMode)
@@ -61,7 +61,7 @@ namespace GreenSwamp.Alpaca.MountControl
             return val1 < val2 ? "a" : "b";
         }
 
-        /// <summary>GEM: within meridian limits check for closest slew — instance version.</summary>
+        /// <summary>GEM: within meridian limits check for closest slew.</summary>
         private double[] GetAlternatePositionGEM(double[] position)
         {
             if (!IsWithinFlipLimits(position)) { return null; }
@@ -86,7 +86,7 @@ namespace GreenSwamp.Alpaca.MountControl
             return alt;
         }
 
-        /// <summary>AltAz: within hardware limits get alternate position — instance version.</summary>
+        /// <summary>AltAz: within hardware limits get alternate position.</summary>
         private double[] GetAlternatePositionAltAz(double[] position)
         {
             if (!IsWithinFlipLimits(position)) { return null; }
@@ -110,7 +110,7 @@ namespace GreenSwamp.Alpaca.MountControl
             return alt;
         }
 
-        /// <summary>Polar: within hardware limits and flip angle get alternate position — instance version.</summary>
+        /// <summary>Polar: within hardware limits and flip angle get alternate position.</summary>
         private double[] GetAlternatePositionPolar(double[] position)
         {
             var alt = Axes.GetAltAxisPosition(position, Settings);
@@ -141,25 +141,25 @@ namespace GreenSwamp.Alpaca.MountControl
             return alt;
         }
 
-        /// <summary>Get current local sidereal time — instance version.</summary>
+        /// <summary>Get current local sidereal time.</summary>
         internal double GetLocalSiderealTime()
             => GetLocalSiderealTime(HiResDateTime.UtcNow);
 
-        /// <summary>Get local sidereal time for specific UTC time — instance version.</summary>
+        /// <summary>Get local sidereal time for specific UTC time.</summary>
         internal double GetLocalSiderealTime(DateTime utcNow)
         {
             var gsjd = JDate.Ole2Jd(utcNow);
             return Time.Lst(JDate.Epoch2000Days(), gsjd, false, Settings.Longitude);
         }
 
-        /// <summary>Get local sidereal time for an explicit longitude — instance version.</summary>
+        /// <summary>Get local sidereal time for an explicit longitude.</summary>
         internal double GetLocalSiderealTime(double longitude)
         {
             var gsjd = JDate.Ole2Jd(HiResDateTime.UtcNow);
             return Time.Lst(JDate.Epoch2000Days(), gsjd, false, longitude);
         }
 
-        /// <summary>Calculates if axis position is within the defined flip angle — instance version.</summary>
+        /// <summary>Calculates if axis position is within the defined flip angle.</summary>
         public bool IsWithinFlipLimits(IReadOnlyList<double> position)
         {
             var absPos0 = Math.Abs(position[0]);
@@ -177,7 +177,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>Checks if the target is within the defined limits — instance version.</summary>
+        /// <summary>Checks if the target is within the defined limits.</summary>
         private bool IsTargetWithinLimits(double[] target)
         {
             const double oneArcSec = 1.0 / 3600;

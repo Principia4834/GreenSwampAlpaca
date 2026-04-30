@@ -50,7 +50,7 @@ namespace GreenSwamp.Alpaca.MountControl
     ///   <item><description>Executes GoTo slews (coarse + precision pass) for RA/Dec, Alt/Az,
     ///   Home, and Park targets through <see cref="SlewAsync"/> / <see cref="SlewSync"/>.</description></item>
     ///   <item><description>Handles pulse guiding (equatorial and AltAz predictor-based) with
-    ///   per-instance cancellation tokens to prevent cross-device interference.</description></item>
+    ///   cancellation tokens to prevent cross-device interference.</description></item>
     ///   <item><description>Enforces meridian and horizon axis limits and reacts with configurable
     ///   stop-tracking or auto-park responses.</description></item>
     ///   <item><description>Exposes ASCOM-compliant properties and bridge methods consumed by
