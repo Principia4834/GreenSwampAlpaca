@@ -7,6 +7,14 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;8632;86301</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;8632;86301</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Remove="appsettings.json" />
     <Content Remove="appsettings.schema.json" />

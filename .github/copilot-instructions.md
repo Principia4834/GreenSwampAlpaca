@@ -1,4 +1,4 @@
-# GitHub Copilot Workspace Instructions
+﻿# GitHub Copilot Workspace Instructions
 # GreenSwamp Alpaca Solution
 
 ## General instructions
@@ -20,6 +20,7 @@ Rules (must follow)
 1. Prefer PowerShell syntax
    - Assume `powershell.exe` as the target shell for all generated terminal commands.
    - Use PowerShell cmdlets and parameter names (e.g., `-Path`, `-Pattern`, `-Recurse`, `-Include`, `-Exclude`, `-Filter`, `-CaseSensitive`).
+   - Never use bash commands for actions on this Windows-based project unless the user explicitly requests a different shell (e.g., `bash`, `sh`, `zsh`).
 2. Do NOT use Unix-style flags with PowerShell cmdlets
    - Never generate `-r` (or other short Unix flags) with PowerShell cmdlets (e.g., `Select-String -r` is invalid).
    - Replace recursive `-r` usage with PowerShell equivalents such as `-Recurse` or `Get-ChildItem -Recurse` where appropriate.
@@ -80,7 +81,7 @@ Add mapping hints (for Copilot model / prompts)
    $change = $linesAfter - $linesBefore
    Write-Host "Line change: $change (expected: -1 for delete, +10 for add, etc.)"
    
-   # Step 2: If change is > �10 from expected ? STOP AND REVERT
+   # Step 2: If change is > ±10 from expected ? STOP AND REVERT
    if ([Math]::Abs($change - $expectedChange) > 10) {
        Write-Host "ERROR: Unexpected line count change! REVERTING..."
        # Ask user to revert

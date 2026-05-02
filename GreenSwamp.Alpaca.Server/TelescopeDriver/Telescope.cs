@@ -1,4 +1,5 @@
 ﻿using ASCOM;
+using ASCOM.Alpaca;
 using ASCOM.Common.DeviceInterfaces;
 using ASCOM.Tools;
 using GreenSwamp.Alpaca.Principles;
@@ -22,7 +23,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private TrackingRates _mTrackingRates;
         private TrackingRatesSimple _mTrackingRatesSimple;
         private CommandStrings _mCommandStrings;
-        private readonly long _objectId;
         private readonly Alpaca.MountControl.Mount _mount;
 
         #endregion
@@ -416,9 +416,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {value}|{_objectId}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {value}|legacy" };
                 MonitorLog.LogToMonitor(monitorItem);
-                _mount.SetConnected(_objectId, value);
+                // Use real ClientID if available, fall back to legacy key 0
+                long clientKey = (long)AlpacaRequestContext.ClientId.Value; // 0 when not set by REST layer
+                _mount.SetConnected(clientKey, value);
             }
         }
 
@@ -1177,17 +1179,19 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void Connect()
         {
-            Connected = true;
+            long clientKey = (long)AlpacaRequestContext.ClientId.Value;
+            _mount.SetConnected(clientKey, true);
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "true" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"true|clientKey:{clientKey}" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 
         public void Disconnect()
         {
-            Connected = false;
+            long clientKey = (long)AlpacaRequestContext.ClientId.Value;
+            _mount.SetConnected(clientKey, false);
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "false" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"false|clientKey:{clientKey}" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 

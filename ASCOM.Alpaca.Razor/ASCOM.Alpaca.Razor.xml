@@ -4,6 +4,19 @@
         <name>ASCOM.Alpaca.Razor</name>
     </assembly>
     <members>
+        <member name="T:ASCOM.Alpaca.AlpacaRequestContext">
+            <summary>
+            Carries the Alpaca ClientID across the interface boundary into the device driver.
+            Set by AlpacaController before invoking Connect() or Disconnect() so that the
+            driver can forward a stable per-client key to the mount's counted connection store.
+            </summary>
+        </member>
+        <member name="F:ASCOM.Alpaca.AlpacaRequestContext.ClientId">
+            <summary>
+            The Alpaca ClientID from the current REST request.
+            Defaults to 0 (legacy anonymous slot) when not explicitly set.
+            </summary>
+        </member>
         <member name="T:ASCOM.Alpaca.AlpacaController">
             <summary>
             A Custom REST MVC controller with additions to help handle Alpaca responses and error responses.

@@ -1157,7 +1157,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <remarks>
         /// This method implements an event-based update sequence:
         /// 1. Resets the _mountPositionUpdatedEvent.
-        /// 2. Calls `UpdateSteps()` to request an immediate position/step update.
+        /// 2. Calls UpdateSteps() to request an immediate position/step update.
         /// 3. Waits up to <paramref name="waitTime"/> milliseconds for `_mountPositionUpdatedEvent` to be signalled.
         ///
         /// On timeout the method does not throw; instead it logs a warning to the monitor using

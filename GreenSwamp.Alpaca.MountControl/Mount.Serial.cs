@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -625,6 +625,26 @@ namespace GreenSwamp.Alpaca.MountControl
             // Run mount default commands and start the UI updates
             if (MountConnect())
             {
+                // Guard: client may have disconnected while MountConnect() was executing in the background.
+                // If _connectStates is now empty, MountStop() has already nulled _mediaTimer.
+                // Creating a new timer here would orphan it — stop cleanly instead.
+                if (_connectStates.IsEmpty)
+                {
+                    var abortItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Mount,
+                        Type = MonitorType.Warning,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Environment.CurrentManagedThreadId,
+                        Message = "MountStart aborted: disconnected during MountConnect() — stopping to avoid orphaned timer"
+                    };
+                    MonitorLog.LogToMonitor(abortItem);
+                    MountStop();
+                    return;
+                }
+
                 // Start the tracking command processor (queue-based AltAz serialisation)
                 _trackingProcessor = new TrackingCommandProcessor(this);
                 _trackingProcessor.Start(CancellationToken.None);
@@ -671,10 +691,19 @@ namespace GreenSwamp.Alpaca.MountControl
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
             _altAzTrackingTimer = null;  // N6: null the field — was missing, causing IsRunning check on disposed timer after reconnect
-            if (_mediaTimer != null) { _mediaTimer.Tick -= OnUpdateServerEvent; }
-            _mediaTimer?.Stop();
-            _mediaTimer?.Dispose();
-            AxesStopValidate(); // N6: now safe — no timer can race and re-queue motion
+            if (_mediaTimer != null)
+            {
+                _mediaTimer.Tick -= OnUpdateServerEvent;  // No more subscriptions
+                _mediaTimer?.Stop();                       // Stop generating ticks
+                _mediaTimer?.Dispose();                    // Dispose resources
+
+                // Acquire lock to ensure any pending OnUpdateServerEvent completes
+                lock (_timerLock)
+                {
+                    _mediaTimer = null;  // Safe to null now
+                }
+            }
+            AxesStopValidate(); // Now safe — no timer can race and re-queue motion
 
             if (SimQueue?.IsRunning == true) { SimQueue.Stop(); }
 
