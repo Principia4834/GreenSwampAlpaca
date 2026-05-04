@@ -1,4 +1,4 @@
-﻿/* Copyright(C) 2019-2026 Rob  Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2026 Rob  Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -535,18 +535,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             skyWatcher.UpdateSteps();
         }
-    }
-
-    /// <summary>
-    /// No-op fence command. When GetCommandResult returns on this command, all previously
-    /// enqueued commands have already been executed by the SkyWatcher queue thread.
-    /// Used by SetTracking(Axis) to guarantee tracking-restore completion before returning.
-    /// </summary>
-    public class SkyFence : SkyActionCommand
-    {
-        public SkyFence(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
-        protected override void ExecuteAction(SkyWatcher skyWatcher) { }
     }
 
     // Query Commands (return results)
