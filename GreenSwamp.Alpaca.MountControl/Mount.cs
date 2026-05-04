@@ -570,7 +570,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (Tracking) this.SetTracking();
+                if (Tracking)
+                {
+                    if (value == 0.0) this.SetTracking(Axis.Axis1);
+                    else this.SetTracking();
+                }
                 LogMount($"RateMovePrimaryAxis|{_rateMoveAxes.X}|offset:{_skyTrackingOffset[0]}");
             }
         }
@@ -596,7 +600,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (Tracking) this.SetTracking();
+                if (Tracking)
+                {
+                    if (value == 0.0) this.SetTracking(Axis.Axis2);
+                    else this.SetTracking();
+                }
                 LogMount($"RateMoveSecondaryAxis|{_rateMoveAxes.Y}|offset:{_skyTrackingOffset[1]}");
             }
         }

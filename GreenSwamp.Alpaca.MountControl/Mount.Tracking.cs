@@ -192,6 +192,44 @@ namespace GreenSwamp.Alpaca.MountControl
             MonitorLog.LogToMonitor(monitorItem);
         }
 
+        /// <summary>
+        /// Targeted overload used exclusively by the zero-rate MoveAxis path.
+        /// Calls <see cref="SetTracking()"/> to enqueue the tracking-restore command(s),
+        /// then enqueues a lightweight fence command on the same hardware queue and blocks
+        /// until the fence is dequeued. Because the queue is strict FIFO this guarantees that
+        /// the restore command has been delivered to the mount before this method returns,
+        /// eliminating the race condition where a rapid follow-up MoveAxis command would
+        /// overtake the restore. Expected blocking latency: 10–60 ms (within accepted budget).
+        /// All other callers of <see cref="SetTracking()"/> are unaffected.
+        /// </summary>
+        /// <param name="axis">The axis whose tracking-restore must complete before returning.</param>
+        internal void SetTracking(Axis axis)
+        {
+            SetTracking();
+
+            switch (Settings.Mount)
+            {
+                case MountType.SkyWatcher:
+                {
+                    var sq = SkyQueue;
+                    if (sq == null) return;
+                    var fence = new SkyFence(sq.NewId, sq);
+                    sq.GetCommandResult(fence);
+                    break;
+                }
+                case MountType.Simulator:
+                {
+                    var mq = SimQueue;
+                    if (mq == null) return;
+                    var fence = new SimFence(mq.NewId, mq);
+                    mq.GetCommandResult(fence);
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         private Vector SkyGetRate()
         {
             var change = new Vector();
