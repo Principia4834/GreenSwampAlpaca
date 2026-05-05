@@ -230,7 +230,7 @@ fieldset legend {
     table-layout: fixed; /* enforce column widths */
 }
 .ts-table th {
-    width: 40%;
+    width: 50%;
     color: var(--gs-text-secondary);
     font-size: 13px;
     font-weight: 500;
@@ -239,7 +239,7 @@ fieldset legend {
     vertical-align: top;
 }
 .ts-table td {
-    width: 60%;
+    width: 50%;
     color: var(--gs-text-primary);
     padding: 6px 12px;
     text-align: left;
