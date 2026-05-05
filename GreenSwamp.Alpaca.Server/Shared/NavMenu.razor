@@ -1,150 +1,73 @@
-﻿<div class="gs-nav-header top-row">
-    <a class="gs-brand" href="">
-        <span class="gs-brand-prefix">GS</span><span class="gs-brand-suffix">Alpaca</span>
-    </a>
-    <button title="Navigation menu" class="gs-nav-toggler" @onclick="ToggleNavMenu">
-        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
-    </button>
-</div>
+﻿<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">home</span> Home
-            </NavLink>
-        </div>
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.Cameras)
-        {
-            string path = $"/setup/v1/Camera/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">photo_camera</span> Camera - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.CoverCalibrators)
-        {
-            string path = $"/setup/v1/covercalibrator/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">contrast</span> CoverCalibrator - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.Domes)
-        {
-            string path = $"/setup/v1/dome/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">lens</span> Dome - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.FilterWheels)
-        {
-            string path = $"/setup/v1/filterwheel/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">filter_center_focus</span> Filter Wheel - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.Focusers)
-        {
-            string path = $"/setup/v1/focuser/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">adjust</span> Focuser - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.ObservingConditions)
-        {
-            string path = $"/setup/v1/ObservingConditions/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">cloud</span> ObservingConditions - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.Rotators)
-        {
-            string path = $"/setup/v1/rotator/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">rotate_right</span> Rotator - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.SafetyMonitors)
-        {
-            string path = $"/setup/v1/SafetyMonitor/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">shield</span> SafetyMonitor - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.Switches)
-        {
-            string path = $"/setup/v1/switch/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">toggle_on</span> Switch - @device.Key
-                </NavLink>
-            </div>
-        }
-        @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes)
-        {
-            string path = $"/setup/v1/telescope/{device.Key}/setup";
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@path" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">travel_explore</span> Telescope - @device.Key
-                </NavLink>
-            </div>
-        }
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/setup" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">settings</span> Server Settings
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/device-manager" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">device_hub</span> Device Manager
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/mountsettings" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">tune</span> Mount Settings
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/settings-health" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">monitor_heart</span> Settings Health
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/monitorsettings" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">list_alt</span> Monitor Settings
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/telescope-state" Match="NavLinkMatch.All">
-                <span class="material-symbols-outlined" aria-hidden="true">display_settings</span> Telescope State
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
-@code {
-    #nullable enable
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Cameras)
     {
-        collapseNavMenu = !collapseNavMenu;
+        <MudNavLink Href="@($"/setup/v1/Camera/{device.Key}/setup")" Icon="@Icons.Material.Filled.PhotoCamera">
+            Camera @device.Key
+        </MudNavLink>
     }
-}
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.CoverCalibrators)
+    {
+        <MudNavLink Href="@($"/setup/v1/covercalibrator/{device.Key}/setup")" Icon="@Icons.Material.Filled.Contrast">
+            CoverCalibrator @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Domes)
+    {
+        <MudNavLink Href="@($"/setup/v1/dome/{device.Key}/setup")" Icon="@Icons.Material.Filled.Circle">
+            Dome @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.FilterWheels)
+    {
+        <MudNavLink Href="@($"/setup/v1/filterwheel/{device.Key}/setup")" Icon="@Icons.Material.Filled.FilterCenterFocus">
+            Filter Wheel @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Focusers)
+    {
+        <MudNavLink Href="@($"/setup/v1/focuser/{device.Key}/setup")" Icon="@Icons.Material.Filled.Adjust">
+            Focuser @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.ObservingConditions)
+    {
+        <MudNavLink Href="@($"/setup/v1/ObservingConditions/{device.Key}/setup")" Icon="@Icons.Material.Filled.Cloud">
+            ObservingConditions @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Rotators)
+    {
+        <MudNavLink Href="@($"/setup/v1/rotator/{device.Key}/setup")" Icon="@Icons.Material.Filled.RotateRight">
+            Rotator @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.SafetyMonitors)
+    {
+        <MudNavLink Href="@($"/setup/v1/SafetyMonitor/{device.Key}/setup")" Icon="@Icons.Material.Filled.Shield">
+            SafetyMonitor @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Switches)
+    {
+        <MudNavLink Href="@($"/setup/v1/switch/{device.Key}/setup")" Icon="@Icons.Material.Filled.ToggleOn">
+            Switch @device.Key
+        </MudNavLink>
+    }
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes)
+    {
+        <MudNavLink Href="@($"/setup/v1/telescope/{device.Key}/setup")" Icon="@Icons.Material.Filled.TravelExplore">
+            Telescope @device.Key
+        </MudNavLink>
+    }
+
+    <MudDivider Class="my-2" />
+
+    <MudNavLink Href="/setup" Icon="@Icons.Material.Filled.Settings">Server Settings</MudNavLink>
+    <MudNavLink Href="/device-manager" Icon="@Icons.Material.Filled.DeviceHub">Device Manager</MudNavLink>
+    <MudNavLink Href="/mountsettings" Icon="@Icons.Material.Filled.Tune">Mount Settings</MudNavLink>
+    <MudNavLink Href="/settings-health" Icon="@Icons.Material.Filled.MonitorHeart">Settings Health</MudNavLink>
+    <MudNavLink Href="/monitorsettings" Icon="@Icons.Material.Filled.ListAlt">Monitor Settings</MudNavLink>
+    <MudNavLink Href="/telescope-state" Icon="@Icons.Material.Filled.DisplaySettings">Telescope State</MudNavLink>
+</MudNavMenu>

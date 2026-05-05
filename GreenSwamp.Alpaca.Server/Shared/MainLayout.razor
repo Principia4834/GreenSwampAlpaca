@@ -1,19 +1,37 @@
 ﻿@inherits LayoutComponentBase
 
-<PageTitle>GS Alpaca</PageTitle>
+<MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-<div class="page">
-    <div class="sidebar">
+<MudLayout>
+    <MudAppBar Elevation="0" Dense="true"
+               Style="background-color:var(--gs-bg-sidebar); border-bottom:1px solid var(--gs-divider);">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
+                       Edge="Edge.Start" OnClick="ToggleDrawer" />
+        <MudText Typo="Typo.h6" Style="font-weight:300; letter-spacing:0.01em;">
+            <span style="font-weight:700; color:var(--gs-accent-500);">GS</span>Alpaca
+        </MudText>
+        <MudSpacer />
+        <MudLink Href="https://greenswamp.org/" Target="_blank" Color="Color.Inherit"
+                 Typo="Typo.caption" Style="opacity:0.6;">About</MudLink>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive"
+               ClipMode="DrawerClipMode.Always"
+               Style="background-color:var(--gs-bg-sidebar); border-right:1px solid rgba(var(--gs-accent-500-rgb),0.2);">
         <NavMenu />
-    </div>
+    </MudDrawer>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://greenswamp.org/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+}
