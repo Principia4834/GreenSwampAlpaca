@@ -4,7 +4,7 @@
 
 <PageTitle>Telescope Setup - Device @InstanceID</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Telescope Setup: Device @InstanceID</MudText>
+@* Removed the redundant page subheading — main page title is handled elsewhere *@
 
 @if (ASCOM.Alpaca.DeviceManager.Telescopes.ContainsKey(InstanceID))
 {
@@ -41,6 +41,40 @@
                                         </tr>
                                     </tbody>
                                 </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            @* ── Mount Settings (RA/Dec Backlash, Min Pulse) ─────────── *@
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.Tune" />
+                                <MudText Typo="Typo.h6">Mount Settings</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent Style="padding-top:6px;">
+                        <MudGrid>
+                            <MudItem xs="12" md="4">
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>RA Backlash</th><td>@settings.RaBacklash</td></tr>
+                                        <tr><th>Dec Backlash</th><td>@settings.DecBacklash</td></tr>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>Min Pulse RA</th><td>@settings.MinPulseRa ms</td></tr>
+                                        <tr><th>Min Pulse Dec</th><td>@settings.MinPulseDec ms</td></tr>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </MudItem>
+                        </MudGrid>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
