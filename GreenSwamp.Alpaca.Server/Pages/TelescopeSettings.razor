@@ -1,0 +1,49 @@
+﻿@page "/telescope-settings"
+@using System.Linq
+@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Server.Pages.Devices
+
+<PageTitle>Telescope Settings</PageTitle>
+
+<MudText Typo="Typo.h5" GutterBottom="true">Telescope Settings</MudText>
+
+@if (ASCOM.Alpaca.DeviceManager.Telescopes.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">No telescope devices registered.</MudAlert>
+}
+else
+{
+    <MudTabs Rounded="true" Elevation="1">
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes.Keys.OrderBy(k => k))
+        {
+            <MudTabPanel Text="@($"Device {device}")">
+                @* Inline: reuse TelescopeSetup component/page UI for read-only view *@
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudCard Class="mb-2">
+                            <MudCardContent>
+                                <TelescopeSetup InstanceID="@device" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditDevice(device)">
+                                    Edit Settings
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+        }
+    </MudTabs>
+}
+
+@code {
+    void EditDevice(int deviceNumber)
+    {
+        // Navigate to the mountsettings page for this device
+        NavManager.NavigateTo($"/mountsettings/{deviceNumber}");
+    }
+
+    [Inject]
+    NavigationManager NavManager { get; set; } = default!;
+}
