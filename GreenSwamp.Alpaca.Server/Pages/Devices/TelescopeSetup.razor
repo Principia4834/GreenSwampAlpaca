@@ -1,293 +1,213 @@
-@page "/setup/v1/Telescope/{InstanceID:int}/setup"
+﻿@page "/setup/v1/Telescope/{InstanceID:int}/setup"
 @using GreenSwamp.Alpaca.MountControl
 @using GreenSwamp.Alpaca.Shared
 
 <PageTitle>Telescope Setup - Device @InstanceID</PageTitle>
 
-<div class="container-fluid mt-4">
-    <h3>Telescope Setup: Device @InstanceID</h3>
+<MudText Typo="Typo.h5" GutterBottom="true">Telescope Setup: Device @InstanceID</MudText>
 
-    @if (ASCOM.Alpaca.DeviceManager.Telescopes.ContainsKey(InstanceID))
+@if (ASCOM.Alpaca.DeviceManager.Telescopes.ContainsKey(InstanceID))
+{
+    var instance = MountRegistry.GetInstance(InstanceID);
+    if (instance != null)
     {
-        var instance = MountRegistry.GetInstance(InstanceID);
-        if (instance != null)
-        {
-            var settings = instance.Settings;
-            
-            <!-- Phase 4.9 Verification: Display Loaded Profile Settings -->
-            <div class="row">
-                <!-- Device Information Card -->
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">
-                                <span class="oi oi-info" aria-hidden="true"></span> Device Information
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 40%;">Device Number:</th>
-                                        <td><span class="badge bg-secondary">@InstanceID</span></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Device Name:</th>
-                                        <td><strong>@instance.DeviceName</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Mount Type:</th>
-                                        <td>@settings.Mount</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Alignment Mode:</th>
-                                        <td>
-                                            <span class="badge bg-info">@settings.AlignmentMode</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Connection Status:</th>
-                                        <td>
-                                            @if (instance.IsConnected)
-                                            {
-                                                <span class="badge bg-success">
-                                                    <span class="oi oi-check" aria-hidden="true"></span> Connected
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">Disconnected</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+        var settings = instance.Settings;
 
-                <!-- Location Settings Card -->
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0">
-                                <span class="oi oi-map-marker" aria-hidden="true"></span> Location Settings
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 40%;">Latitude:</th>
-                                        <td>@settings.Latitude.ToString("F6")°</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Longitude:</th>
-                                        <td>@settings.Longitude.ToString("F6")°</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Elevation:</th>
-                                        <td>@settings.Elevation m</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <MudGrid Spacing="3" Class="mb-4">
 
-            <div class="row">
-                <!-- Serial Port Settings Card -->
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0">
-                                <span class="oi oi-aperture" aria-hidden="true"></span> Serial Port Settings
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 40%;">Port:</th>
-                                        <td><code>@settings.Port</code></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Baud Rate:</th>
-                                        <td>@settings.BaudRate</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Data Bits:</th>
-                                        <td>@settings.DataBits</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Read Timeout:</th>
-                                        <td>@settings.ReadTimeout ms</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            @* ── Device Information ───────────────────────────────────── *@
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6">Device Information</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSimpleTable Dense="true" Hover="true">
+                            <tbody>
+                                <tr><th>Device Number</th><td><MudChip T="string" Size="Size.Small" Color="Color.Default">@InstanceID</MudChip></td></tr>
+                                <tr><th>Device Name</th><td><strong>@instance.DeviceName</strong></td></tr>
+                                <tr><th>Mount Type</th><td>@settings.Mount</td></tr>
+                                <tr><th>Alignment Mode</th><td><MudChip T="string" Size="Size.Small" Color="Color.Info">@settings.AlignmentMode</MudChip></td></tr>
+                                <tr>
+                                    <th>Connection Status</th>
+                                    <td>
+                                        @if (instance.IsConnected)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.Check">Connected</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Default">Disconnected</MudChip>
+                                        }
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
 
-                <!-- Tracking Settings Card -->
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">
-                                <span class="oi oi-target" aria-hidden="true"></span> Tracking Settings
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 40%;">Auto Track:</th>
-                                        <td>
-                                            @if (settings.AutoTrack)
-                                            {
-                                                <span class="badge bg-success">Enabled</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">Disabled</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Tracking Rate:</th>
-                                        <td>@settings.TrackingRate</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Sidereal Rate:</th>
-                                        <td>@settings.SiderealRate.ToString("F7")°/sec</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Refraction:</th>
-                                        <td>
-                                            @if (settings.Refraction)
-                                            {
-                                                <span class="badge bg-success">Enabled</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">Disabled</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @* ── Location Settings ────────────────────────────────────── *@
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Success" />
+                                <MudText Typo="Typo.h6">Location Settings</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSimpleTable Dense="true" Hover="true">
+                            <tbody>
+                                <tr><th>Latitude</th><td>@settings.Latitude.ToString("F6")°</td></tr>
+                                <tr><th>Longitude</th><td>@settings.Longitude.ToString("F6")°</td></tr>
+                                <tr><th>Elevation</th><td>@settings.Elevation m</td></tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
 
-            <!-- Telescope Specifications Card -->
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-dark text-white">
-                            <h5 class="mb-0">
-                                <span class="oi oi-eye" aria-hidden="true"></span> Telescope Specifications
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <table class="table table-sm">
-                                        <tbody>
-                                            <tr>
-                                                <th>Aperture Diameter:</th>
-                                                <td>@settings.ApertureDiameter m</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Aperture Area:</th>
-                                                <td>@settings.ApertureArea m²</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Focal Length:</th>
-                                                <td>@settings.FocalLength m</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="col-md-4">
-                                    <table class="table table-sm">
-                                        <tbody>
-                                            <tr>
-                                                <th>RA Backlash:</th>
-                                                <td>@settings.RaBacklash</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Dec Backlash:</th>
-                                                <td>@settings.DecBacklash</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="col-md-4">
-                                    <table class="table table-sm">
-                                        <tbody>
-                                            <tr>
-                                                <th>Min Pulse RA:</th>
-                                                <td>@settings.MinPulseRa ms</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Min Pulse Dec:</th>
-                                                <td>@settings.MinPulseDec ms</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @* ── Serial Port Settings ─────────────────────────────────── *@
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.SettingsInputHdmi" Color="Color.Warning" />
+                                <MudText Typo="Typo.h6">Serial Port Settings</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSimpleTable Dense="true" Hover="true">
+                            <tbody>
+                                <tr><th>Port</th><td><code>@settings.Port</code></td></tr>
+                                <tr><th>Baud Rate</th><td>@settings.BaudRate</td></tr>
+                                <tr><th>Data Bits</th><td>@settings.DataBits</td></tr>
+                                <tr><th>Read Timeout</th><td>@settings.ReadTimeout ms</td></tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
 
-            <!-- Phase 4.9 Success Message -->
-            <div class="alert alert-success" role="alert">
-                <h5 class="alert-heading">
-                    <span class="oi oi-check" aria-hidden="true"></span> ✅ Phase 4.9: Profile Loaded Successfully
-                </h5>
-                <p class="mb-0">
-                    This device is configured with a profile-based settings system. 
-                    Each device can have its own unique alignment mode and configuration.
-                    <strong>Alignment Mode for this device: @settings.AlignmentMode</strong>
-                </p>
-            </div>
+            @* ── Tracking Settings ────────────────────────────────────── *@
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Color="Color.Info" />
+                                <MudText Typo="Typo.h6">Tracking Settings</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudSimpleTable Dense="true" Hover="true">
+                            <tbody>
+                                <tr>
+                                    <th>Auto Track</th>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@(settings.AutoTrack ? Color.Success : Color.Default)">
+                                            @(settings.AutoTrack ? "Enabled" : "Disabled")
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                                <tr><th>Tracking Rate</th><td>@settings.TrackingRate</td></tr>
+                                <tr><th>Sidereal Rate</th><td>@settings.SiderealRate.ToString("F7")°/sec</td></tr>
+                                <tr>
+                                    <th>Refraction</th>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@(settings.Refraction ? Color.Success : Color.Default)">
+                                            @(settings.Refraction ? "Enabled" : "Disabled")
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
 
-            <!-- Action Buttons -->
-            <div class="mb-3">
-                <a href="/device-manager" class="btn btn-primary">
-                    <span class="oi oi-arrow-left" aria-hidden="true"></span> Back to Device Manager
-                </a>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-danger" role="alert">
-                <h4 class="alert-heading">Device Instance Not Found</h4>
-                <p>Device @InstanceID is registered but has no Mount.</p>
-                <p class="mb-0">This may indicate a configuration error.</p>
-            </div>
-            <a href="/device-manager" class="btn btn-secondary">
-                <span class="oi oi-arrow-left" aria-hidden="true"></span> Back to Device Manager
-            </a>
-        }
+            @* ── Telescope Specifications ─────────────────────────────── *@
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.Visibility" />
+                                <MudText Typo="Typo.h6">Telescope Specifications</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="4">
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>Aperture Diameter</th><td>@settings.ApertureDiameter m</td></tr>
+                                        <tr><th>Aperture Area</th><td>@settings.ApertureArea m²</td></tr>
+                                        <tr><th>Focal Length</th><td>@settings.FocalLength m</td></tr>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>RA Backlash</th><td>@settings.RaBacklash</td></tr>
+                                        <tr><th>Dec Backlash</th><td>@settings.DecBacklash</td></tr>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>Min Pulse RA</th><td>@settings.MinPulseRa ms</td></tr>
+                                        <tr><th>Min Pulse Dec</th><td>@settings.MinPulseDec ms</td></tr>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <MudAlert Severity="Severity.Success" Class="mb-3">
+            Profile loaded successfully. Each device has its own alignment mode and configuration.
+            <strong>Alignment Mode: @settings.AlignmentMode</strong>
+        </MudAlert>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Href="/device-manager">Back to Device Manager</MudButton>
     }
     else
     {
-        <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">Device Not Found</h4>
-            <p>Device @InstanceID does not exist in the system.</p>
-            <p class="mb-0">Please return to the Device Manager to see available devices.</p>
-        </div>
-        <a href="/device-manager" class="btn btn-secondary">
-            <span class="oi oi-arrow-left" aria-hidden="true"></span> Back to Device Manager
-        </a>
+        <MudAlert Severity="Severity.Error" Class="mb-3">
+            <MudText Typo="Typo.h6">Device Instance Not Found</MudText>
+            Device @InstanceID is registered but has no Mount instance. This may indicate a configuration error.
+        </MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Href="/device-manager">Back to Device Manager</MudButton>
     }
-</div>
+}
+else
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-3">
+        <MudText Typo="Typo.h6">Device Not Found</MudText>
+        Device @InstanceID does not exist in the system. Please return to the Device Manager to see available devices.
+    </MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.ArrowBack"
+               Href="/device-manager">Back to Device Manager</MudButton>
+}
 
 @code {
     [Parameter]

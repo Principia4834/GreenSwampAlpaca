@@ -11,198 +11,186 @@
 
 <PageTitle>Device Manager</PageTitle>
 
-<h3>Connected Devices</h3>
+<MudText Typo="Typo.h5" GutterBottom="true">Connected Devices</MudText>
 
-<div class="container-fluid mt-4">
-    @if (errorMessage != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="@(() => errorMessage = null)"></button>
-        </div>
-    }
-
-    <!-- Device List Section -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">All Devices (Phase 3)</h5>
-            <button class="btn btn-primary btn-sm" @onclick="RefreshDevices">
-                <span class="oi oi-reload" aria-hidden="true"></span> Refresh
-            </button>
-        </div>
-        <div class="card-body">
-            @if (loading)
-            {
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            }
-            else if (_devices == null || !_devices.Any())
-            {
-                <div class="alert alert-warning" role="alert">
-                    <strong>No devices configured.</strong>
-                    <p class="mb-0">Use the Add Device form below to register the first device.</p>
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Device #</th>
-                                <th>Name</th>
-                                <th>Mount</th>
-                                <th>Port</th>
-                                <th>Enabled</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var device in _devices)
-                            {
-                                var instance = MountRegistry.GetInstance(device.DeviceNumber);
-                                var connected = instance?.IsConnected == true;
-                                var statusBadge = connected ? "badge bg-success" : "badge bg-secondary";
-                                var statusText = connected ? "Connected" : "Disconnected";
-                                var enabledBadge = device.Enabled ? "badge bg-info" : "badge bg-warning";
-
-                                <tr class="@(device.Enabled ? "" : "table-secondary")">
-                                    <td>@device.DeviceNumber</td>
-                                    <td>@device.DeviceName</td>
-                                    <td>@device.Mount</td>
-                                    <td>@device.Port</td>
-                                    <td>
-                                        <span class="@enabledBadge">@(device.Enabled ? "Enabled" : "Disabled")</span>
-                                    </td>
-                                    <td>
-                                        @if (device.Enabled)
-                                        {
-                                            <span class="@statusBadge">@statusText</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Not Loaded</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (device.Enabled)
-                                        {
-                                            @if (connected)
-                                            {
-                                                <button class="btn btn-danger btn-sm me-1" @onclick="() => Disconnect(device.DeviceNumber)" title="Disconnect this device">
-                                                    <span class="oi oi-power-standby" aria-hidden="true"></span> Disconnect
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-primary btn-sm me-1" @onclick="() => Connect(device.DeviceNumber)" title="Connect this device">
-                                                    <span class="oi oi-power-standby" aria-hidden="true"></span> Connect
-                                                </button>
-                                            }
-                                            <a href="/setup/v1/telescope/@device.DeviceNumber/setup" class="btn btn-info btn-sm me-1" target="_blank" title="Open ASCOM device setup page">
-                                                <span class="oi oi-cog" aria-hidden="true"></span> Setup
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn btn-secondary btn-sm me-1" disabled title="Device disabled in settings">
-                                                <span class="oi oi-power-standby" aria-hidden="true"></span> Disabled
-                                            </button>
-                                        }
-                                        <a href="/mountsettings/@device.DeviceNumber" class="btn btn-outline-secondary btn-sm me-1" title="Edit mount settings for device @device.DeviceNumber">
-                                            <span class="oi oi-list" aria-hidden="true"></span> Settings
-                                        </a>
-                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => RemoveDevice(device.DeviceNumber)" title="Remove device @device.DeviceNumber">
-                                            <span class="oi oi-trash" aria-hidden="true"></span> Remove
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="alert alert-info mt-3" role="alert">
-                    <strong>Device Management:</strong>
-                    <ul class="mb-0">
-                        <li>Each device has a dedicated <code>device-nn.settings.json</code> settings file</li>
-                        <li>Devices with <code>Enabled: false</code> are not loaded at startup</li>
-                        <li>Use the Add Device form below to register new devices (restart required to activate)</li>
-                        <li>Connect/Disconnect controls mount hardware connection per device</li>
-                    </ul>
-                </div>
-            }
-        </div>
-    </div>
-</div>
+@if (errorMessage != null)
+{
+    <MudAlert Severity="Severity.Error" ShowCloseIcon="true" CloseIconClicked="@(() => errorMessage = null)" Class="mb-3">
+        @errorMessage
+    </MudAlert>
+}
 
 @if (_successMessage != null)
 {
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+    <MudAlert Severity="Severity.Success" ShowCloseIcon="true" CloseIconClicked="@(() => _successMessage = null)" Class="mb-3">
         @_successMessage
-        <button type="button" class="btn-close" @onclick="@(() => _successMessage = null)"></button>
-    </div>
+    </MudAlert>
 }
 
-<div class="card mt-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Add Device</h5>
-        <button class="btn btn-outline-primary btn-sm" @onclick="@(() => _showAddForm = !_showAddForm)">
-            @(_showAddForm ? "Cancel" : "Add New Device")
-        </button>
-    </div>
+@* ── Device List ──────────────────────────────────────────────────────────── *@
+<MudCard Class="mb-4">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">All Devices</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Refresh" OnClick="RefreshDevices">
+                Refresh
+            </MudButton>
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (loading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+        }
+        else if (_devices == null || !_devices.Any())
+        {
+            <MudAlert Severity="Severity.Warning">
+                <strong>No devices configured.</strong> Use the Add Device form below to register the first device.
+            </MudAlert>
+        }
+        else
+        {
+            <MudTable Items="_devices" Hover="true" Dense="true" Striped="true">
+                <HeaderContent>
+                    <MudTh>Device #</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Mount</MudTh>
+                    <MudTh>Port</MudTh>
+                    <MudTh>Enabled</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    @{
+                        var instance = MountRegistry.GetInstance(context.DeviceNumber);
+                        var connected = instance?.IsConnected == true;
+                    }
+                    <MudTd>@context.DeviceNumber</MudTd>
+                    <MudTd>@context.DeviceName</MudTd>
+                    <MudTd>@context.Mount</MudTd>
+                    <MudTd>@context.Port</MudTd>
+                    <MudTd>
+                        <MudChip T="string" Color="@(context.Enabled ? Color.Info : Color.Warning)" Size="Size.Small">
+                            @(context.Enabled ? "Enabled" : "Disabled")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd>
+                        @if (context.Enabled)
+                        {
+                            <MudChip T="string" Color="@(connected ? Color.Success : Color.Default)" Size="Size.Small">
+                                @(connected ? "Connected" : "Disconnected")
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Not Loaded</MudChip>
+                        }
+                    </MudTd>
+                    <MudTd>
+                        <MudStack Row="true" Spacing="1">
+                            @if (context.Enabled)
+                            {
+                                @if (connected)
+                                {
+                                    <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.PowerSettingsNew"
+                                               OnClick="() => Disconnect(context.DeviceNumber)">Disconnect</MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.PowerSettingsNew"
+                                               OnClick="() => Connect(context.DeviceNumber)">Connect</MudButton>
+                                }
+                                <MudButton Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Settings"
+                                           Href="@($"/setup/v1/telescope/{context.DeviceNumber}/setup")" Target="_blank">Setup</MudButton>
+                            }
+                            else
+                            {
+                                <MudButton Variant="Variant.Filled" Disabled="true" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.PowerSettingsNew">Disabled</MudButton>
+                            }
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.List"
+                                       Href="@($"/mountsettings/{context.DeviceNumber}")">Settings</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       OnClick="() => RemoveDevice(context.DeviceNumber)">Remove</MudButton>
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudAlert Severity="Severity.Info" Class="mt-3">
+                <strong>Device Management:</strong>
+                Each device has a dedicated <code>device-nn.settings.json</code> file.
+                Devices with <em>Enabled: false</em> are not loaded at startup.
+                Connect/Disconnect controls hardware connection per device.
+            </MudAlert>
+        }
+    </MudCardContent>
+</MudCard>
+
+@* ── Add Device ───────────────────────────────────────────────────────────── *@
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add Device</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                       OnClick="@(() => _showAddForm = !_showAddForm)">
+                @(_showAddForm ? "Cancel" : "Add New Device")
+            </MudButton>
+        </CardHeaderActions>
+    </MudCardHeader>
     @if (_showAddForm)
     {
-        <div class="card-body">
+        <MudCardContent>
             <EditForm Model="_newDevice" OnValidSubmit="AddDevice">
                 <DataAnnotationsValidator />
-                <div class="row g-3">
-                    <div class="col-md-2">
-                        <label class="form-label">Device Number</label>
-                        <InputNumber @bind-Value="_newDevice.DeviceNumber" class="form-control" />
-                        <small class="form-text text-muted">0–99</small>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Device Name</label>
-                        <InputText @bind-Value="_newDevice.DeviceName" class="form-control" placeholder="e.g. SkyWatcher EQ6-R" />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Mount Type</label>
-                        <InputSelect @bind-Value="_newDevice.Mount" class="form-select">
-                            <option value="Simulator">Simulator</option>
-                            <option value="SkyWatcher">SkyWatcher</option>
-                        </InputSelect>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Serial Port</label>
-                        <InputText @bind-Value="_newDevice.Port" class="form-control" placeholder="COM1" />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Alignment Mode</label>
-                        <InputSelect @bind-Value="_newDevice.AlignmentMode" class="form-select">
-                            <option value="GermanPolar">German Polar</option>
-                            <option value="Polar">Polar</option>
-                            <option value="AltAz">Alt-Az</option>
-                        </InputSelect>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary" disabled="@_adding">
-                        @if (_adding) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="2">
+                        <MudNumericField T="int" @bind-Value="_newDevice.DeviceNumber" Label="Device Number" HelperText="0–99" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="_newDevice.DeviceName" Label="Device Name" Placeholder="e.g. SkyWatcher EQ6-R" />
+                    </MudItem>
+                    <MudItem xs="12" sm="2">
+                        <MudSelect @bind-Value="_newDevice.Mount" Label="Mount Type">
+                            <MudSelectItem Value="@("Simulator")">Simulator</MudSelectItem>
+                            <MudSelectItem Value="@("SkyWatcher")">SkyWatcher</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="2">
+                        <MudTextField @bind-Value="_newDevice.Port" Label="Serial Port" Placeholder="COM1" />
+                    </MudItem>
+                    <MudItem xs="12" sm="2">
+                        <MudSelect @bind-Value="_newDevice.AlignmentMode" Label="Alignment Mode">
+                            <MudSelectItem Value="@("GermanPolar")">German Polar</MudSelectItem>
+                            <MudSelectItem Value="@("Polar")">Polar</MudSelectItem>
+                            <MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+                <MudStack Row="true" Class="mt-3" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                               Disabled="_adding" StartIcon="@Icons.Material.Filled.Add">
+                        @if (_adding) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" /> }
                         Add Device
-                    </button>
-                </div>
-                <p class="text-muted mt-2 mb-0">
-                    <small>The device settings file is created immediately. Restart the application to activate the device at runtime.</small>
-                </p>
+                    </MudButton>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        The device settings file is created immediately. Restart the application to activate the device at runtime.
+                    </MudText>
+                </MudStack>
             </EditForm>
-        </div>
+        </MudCardContent>
     }
-</div>
+</MudCard>
 
 @code {
     private List<SkySettings> _devices = new();

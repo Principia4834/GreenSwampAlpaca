@@ -10,632 +10,295 @@
 
 <PageTitle>Mount Settings</PageTitle>
 
-<h3>Mount Settings - Device @DeviceNumber - Version @SettingsService.CurrentVersion</h3>
+<MudText Typo="Typo.h5" GutterBottom="true">
+	Mount Settings — Device @DeviceNumber
+	<MudChip T="string" Size="Size.Small" Color="Color.Default" Class="ms-2">v@SettingsService.CurrentVersion</MudChip>
+</MudText>
 
 @if (_message != null)
 {
-    <div class="alert alert-@(_isError ? "danger" : "success") alert-dismissible fade show">
-        @_message
-        <button type="button" class="btn-close" @onclick="@(() => _message = null)"></button>
-    </div>
+	<MudAlert Severity="@(_isError ? Severity.Error : Severity.Success)" ShowCloseIcon="true"
+			  CloseIconClicked="@(() => _message = null)" Class="mb-3">
+		@_message
+	</MudAlert>
 }
 
 <EditForm Model="_settings" OnValidSubmit="SaveSettings">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "connection" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "connection")">
-                Connection
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "location" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "location")">
-                Location
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "mount" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "mount")">
-                Mount Config
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "park" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "park")">
-                Park & Positions
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "optics" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "optics")">
-                Optics
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "tracking" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "tracking")">
-                Tracking
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "guiding" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "guiding")">
-                Guiding
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "limits" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "limits")">
-                Limits
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(_activeTab == "advanced" ? "active" : "")" type="button" @onclick="@(() => _activeTab = "advanced")">
-                Advanced
-            </button>
-        </li>
-    </ul>
-
-    <div class="tab-content">
-        @if (_activeTab == "connection")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Connection Settings</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Mount Type</label>
-                        <InputSelect @bind-Value="_settings.Mount" class="form-select">
-                            <option value="Simulator">Simulator</option>
-                            <option value="SkyWatcher">SkyWatcher</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Serial Port</label>
-                        <InputText @bind-Value="_settings.Port" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Baud Rate</label>
-                        <InputSelect @bind-Value="_settings.BaudRate" class="form-select">
-                            <option value="4800">4800</option>
-                            <option value="9600">9600</option>
-                            <option value="19200">19200</option>
-                            <option value="38400">38400</option>
-                            <option value="57600">57600</option>
-                            <option value="115200">115200</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Data Bits</label>
-                        <InputSelect @bind-Value="_settings.DataBits" class="form-select">
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                        </InputSelect>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Serial Settings</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Handshake</label>
-                        <InputSelect @bind-Value="_settings.Handshake" class="form-select">
-                            <option value="None">None</option>
-                            <option value="XOnXOff">XOn/XOff</option>
-                            <option value="RequestToSend">RTS</option>
-                            <option value="RequestToSendXOnXOff">RTS + XOn/XOff</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Read Timeout (ms)</label>
-                        <InputNumber @bind-Value="_settings.ReadTimeout" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.DTREnable" class="form-check-input" id="dtrEnable" />
-                        <label class="form-check-label" for="dtrEnable">Enable DTR</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.RTSEnable" class="form-check-input" id="rtsEnable" />
-                        <label class="form-check-label" for="rtsEnable">Enable RTS</label>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "location")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Observer Location</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Latitude (°)</label>
-                        <InputNumber @bind-Value="_settings.Latitude" class="form-control" />
-                        <small class="form-text text-muted">Range: -90 to 90 (North positive)</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Longitude (°)</label>
-                        <InputNumber @bind-Value="_settings.Longitude" class="form-control" />
-                        <small class="form-text text-muted">Range: -180 to 180 (East positive)</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Elevation (m)</label>
-                        <InputNumber @bind-Value="_settings.Elevation" class="form-control" />
-                        <small class="form-text text-muted">Meters above sea level</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">UTC Offset (hh:mm:ss)</label>
-                        <InputText @bind-Value="_utcOffsetString" class="form-control" @onchange="ParseUtcOffset" />
-                        <small class="form-text text-muted">e.g., -05:00:00 for EST</small>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Environmental</h4>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.Refraction" class="form-check-input" id="refraction" />
-                        <label class="form-check-label" for="refraction">Apply Refraction Correction</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Temperature (°C)</label>
-                        <InputNumber @bind-Value="_settings.Temperature" class="form-control" />
-                        <small class="form-text text-muted">For refraction calculation</small>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "mount")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Mount Configuration</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Alignment Mode</label>
-                        <InputSelect @bind-Value="_settings.AlignmentMode" class="form-select">
-                            <option value="">Not Set</option>
-                            <option value="AltAz">Alt-Az</option>
-                            <option value="Polar">Polar</option>
-                            <option value="GermanPolar">German Equatorial</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Coordinate Type</label>
-                        <InputSelect @bind-Value="_settings.EquatorialCoordinateType" class="form-select">
-                            <option value="Other">Other</option>
-                            <option value="Topocentric">Topocentric</option>
-                            <option value="J2000">J2000</option>
-                            <option value="J2050">J2050</option>
-                            <option value="B1950">B1950</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.AutoTrack" class="form-check-input" id="autoTrack" />
-                        <label class="form-check-label" for="autoTrack">Auto Track on Connect</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Home Position X (RA/Az)</label>
-                        <InputNumber @bind-Value="_settings.HomeAxisX" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Home Position Y (Dec/Alt)</label>
-                        <InputNumber @bind-Value="_settings.HomeAxisY" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Model Settings</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Polar Mode</label>
-                        <InputSelect @bind-Value="_settings.PolarMode" class="form-select">
-                            <option value="">Not Set</option>
-                            <option value="Left">Left</option>
-                            <option value="Right">Right</option>
-                        </InputSelect>
-                    </div>
-
-                </div>
-            </div>
-        }
-        else if (_activeTab == "park")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Park Settings</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Park Name</label>
-                        <InputText @bind-Value="_settings.ParkName" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Park Limit Name</label>
-                        <InputText @bind-Value="_settings.ParkLimitName" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Park Horizon Limit Name</label>
-                        <InputText @bind-Value="_settings.ParkHzLimitName" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Park Axes (JSON)</label>
-                        <InputTextArea @bind-Value="_parkAxesJson" class="form-control" rows="2" />
-                        <small class="form-text text-muted">JSON format: [90, 90]</small>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Park Positions (JSON)</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Park Positions</label>
-                        <InputTextArea @bind-Value="_parkPositionsJson" class="form-control" rows="8" />
-                        <small class="form-text text-muted">
-                            JSON format:<br/>
-                            [<br/>
-                            &nbsp;&nbsp;{"Name":"Default","X":90.0,"Y":90.0},<br/>
-                            &nbsp;&nbsp;{"Name":"Home","X":90.0,"Y":90.0}<br/>
-                            ]
-                        </small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Hand Controller Pulse Guides (JSON)</label>
-                        <InputTextArea @bind-Value="_hcPulseGuidesJson" class="form-control" rows="8" />
-                        <small class="form-text text-muted">
-                            JSON format: Array of objects with Speed, Duration, Interval, Rate
-                        </small>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "optics")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Telescope Optics</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Aperture Diameter (m)</label>
-                        <InputNumber @bind-Value="_settings.ApertureDiameter" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Aperture Area (m²)</label>
-                        <InputNumber @bind-Value="_settings.ApertureArea" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Focal Length (m)</label>
-                        <InputNumber @bind-Value="_settings.FocalLength" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Imaging</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Eyepiece Field Stop (mm)</label>
-                        <InputNumber @bind-Value="_settings.EyepieceFS" class="form-control" />
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "tracking")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Tracking Settings</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Tracking Rate</label>
-                        <InputSelect @bind-Value="_settings.TrackingRate" class="form-select">
-                            <option value="Sidereal">Sidereal</option>
-                            <option value="Lunar">Lunar</option>
-                            <option value="Solar">Solar</option>
-                            <option value="King">King</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Sidereal Rate (arcsec/sec)</label>
-                        <InputNumber @bind-Value="_settings.SiderealRate" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Lunar Rate (arcsec/sec)</label>
-                        <InputNumber @bind-Value="_settings.LunarRate" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Solar Rate (arcsec/sec)</label>
-                        <InputNumber @bind-Value="_settings.SolarRate" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">King Rate (arcsec/sec)</label>
-                        <InputNumber @bind-Value="_settings.KingRate" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Custom Gearing</h4>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.CustomGearing" class="form-check-input" id="customGearing" />
-                        <label class="form-check-label" for="customGearing">Use Custom Gearing</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">RA 360° Steps</label>
-                        <InputNumber @bind-Value="_settings.CustomRa360Steps" class="form-control" disabled="@(!_settings.CustomGearing)" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">RA Worm Teeth</label>
-                        <InputNumber @bind-Value="_settings.CustomRaWormTeeth" class="form-control" disabled="@(!_settings.CustomGearing)" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Dec 360° Steps</label>
-                        <InputNumber @bind-Value="_settings.CustomDec360Steps" class="form-control" disabled="@(!_settings.CustomGearing)" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Dec Worm Teeth</label>
-                        <InputNumber @bind-Value="_settings.CustomDecWormTeeth" class="form-control" disabled="@(!_settings.CustomGearing)" />
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "guiding")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Pulse Guiding</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Min Pulse Duration RA (ms)</label>
-                        <InputNumber @bind-Value="_settings.MinPulseRa" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Min Pulse Duration Dec (ms)</label>
-                        <InputNumber @bind-Value="_settings.MinPulseDec" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.DecPulseToGoTo" class="form-check-input" id="decPulseGoto" />
-                        <label class="form-check-label" for="decPulseGoto">Dec Pulse uses GOTO</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">ST4 Guide Rate</label>
-                        <InputSelect @bind-Value="_settings.St4Guiderate" class="form-select">
-                            <option value="1">1 - Slowest</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8 - Fastest</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Guide Rate Offset X</label>
-                        <InputNumber @bind-Value="_settings.GuideRateOffsetX" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Guide Rate Offset Y</label>
-                        <InputNumber @bind-Value="_settings.GuideRateOffsetY" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Backlash & PEC</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">RA Backlash (steps)</label>
-                        <InputNumber @bind-Value="_settings.RaBacklash" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Dec Backlash (steps)</label>
-                        <InputNumber @bind-Value="_settings.DecBacklash" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.PecOn" class="form-check-input" id="pecOn" />
-                        <label class="form-check-label" for="pecOn">Enable PEC</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.PpecOn" class="form-check-input" id="ppecOn" />
-                        <label class="form-check-label" for="ppecOn">Enable PPEC</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.AlternatingPPEC" class="form-check-input" id="altPpec" />
-                        <label class="form-check-label" for="altPpec">Alternating PPEC</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">PEC Mode</label>
-                        <InputSelect @bind-Value="_settings.PecMode" class="form-select">
-                            <option value="PecWorm">PEC Worm</option>
-                            <option value="Pec360">PEC 360</option>
-                        </InputSelect>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "limits")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Axis Limits</h4>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.LimitTracking" class="form-check-input" id="limitTracking" />
-                        <label class="form-check-label" for="limitTracking">Enable Tracking Limits</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Hour Angle Limit (hours)</label>
-                        <InputNumber @bind-Value="_settings.HourAngleLimit" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Axis Limit X (degrees)</label>
-                        <InputNumber @bind-Value="_settings.AxisLimitX" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Axis Upper Limit Y (degrees)</label>
-                        <InputNumber @bind-Value="_settings.AxisUpperLimitY" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Axis Lower Limit Y (degrees)</label>
-                        <InputNumber @bind-Value="_settings.AxisLowerLimitY" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Sync & Safety</h4>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.SyncLimitOn" class="form-check-input" id="syncLimit" />
-                        <label class="form-check-label" for="syncLimit">Enable Sync Limit</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Sync Limit (degrees)</label>
-                        <InputNumber @bind-Value="_settings.SyncLimit" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.NoSyncPastMeridian" class="form-check-input" id="noSyncMeridian" />
-                        <label class="form-check-label" for="noSyncMeridian">No Sync Past Meridian</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.LimitPark" class="form-check-input" id="limitPark" />
-                        <label class="form-check-label" for="limitPark">Enable Park Limit</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.HzLimitTracking" class="form-check-input" id="hzLimitTrack" />
-                        <label class="form-check-label" for="hzLimitTrack">Enable Horizon Limit Tracking</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.EncodersOn" class="form-check-input" id="encoders" />
-                        <label class="form-check-label" for="encoders">Enable Encoders</label>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (_activeTab == "advanced")
-        {
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Advanced Settings</h4>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.AllowAdvancedCommandSet" class="form-check-input" id="advCommands" />
-                        <label class="form-check-label" for="advCommands">Allow Advanced Commands</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Maximum Slew Rate (°/sec)</label>
-                        <InputNumber @bind-Value="_settings.MaximumSlewRate" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">GOTO Precision (degrees)</label>
-                        <InputNumber @bind-Value="_settings.GotoPrecision" class="form-control" />
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.FullCurrent" class="form-check-input" id="fullCurrent" />
-                        <label class="form-check-label" for="fullCurrent">Full Current Mode</label>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <InputCheckbox @bind-Value="_settings.TraceLogger" class="form-check-input" id="traceLogger" />
-                        <label class="form-check-label" for="traceLogger">Enable Trace Logging</label>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Display Interval (ms)</label>
-                        <InputNumber @bind-Value="_settings.DisplayInterval" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h4>Instrument Info</h4>
-
-                    <div class="mb-3">
-                        <label class="form-label">Instrument Name</label>
-                        <InputText @bind-Value="_settings.InstrumentName" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Instrument Description</label>
-                        <InputText @bind-Value="_settings.InstrumentDescription" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Alt-Az Update Interval (ms)</label>
-                        <InputNumber @bind-Value="_settings.AltAzTrackingUpdateInterval" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Polar LED Level</label>
-                        <InputNumber @bind-Value="_settings.PolarLedLevel" class="form-control" />
-                        <small class="form-text text-muted">-1 to disable, 0-255 for brightness</small>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div class="mt-3 border-top pt-3">
-        <button type="submit" class="btn btn-primary" disabled="@_saving">
-            @if (_saving)
-            {
-                <span class="spinner-border spinner-border-sm me-2"></span>
-            }
-            Save Settings
-        </button>
-
-        <button type="button" class="btn btn-info" @onclick="ReloadSettings">
-            Reload
-        </button>
-    </div>
+	<DataAnnotationsValidator />
+
+	<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="mb-4">
+
+		@* ── Connection ───────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Connection" Icon="@Icons.Material.Filled.Cable">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Connection Settings</MudText>
+					<MudSelect @bind-Value="_settings.Mount" Label="Mount Type" Class="mb-3">
+						<MudSelectItem Value="@("Simulator")">Simulator</MudSelectItem>
+						<MudSelectItem Value="@("SkyWatcher")">SkyWatcher</MudSelectItem>
+					</MudSelect>
+					<MudTextField @bind-Value="_settings.Port" Label="Serial Port" Class="mb-3" />
+					<MudSelect T="int" @bind-Value="_settings.BaudRate" Label="Baud Rate" Class="mb-3">
+						<MudSelectItem Value="4800">4800</MudSelectItem>
+						<MudSelectItem Value="9600">9600</MudSelectItem>
+						<MudSelectItem Value="19200">19200</MudSelectItem>
+						<MudSelectItem Value="38400">38400</MudSelectItem>
+						<MudSelectItem Value="57600">57600</MudSelectItem>
+						<MudSelectItem Value="115200">115200</MudSelectItem>
+					</MudSelect>
+					<MudSelect T="int" @bind-Value="_settings.DataBits" Label="Data Bits" Class="mb-3">
+						<MudSelectItem Value="7">7</MudSelectItem>
+						<MudSelectItem Value="8">8</MudSelectItem>
+					</MudSelect>
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Serial Settings</MudText>
+					<MudSelect @bind-Value="_settings.Handshake" Label="Handshake" Class="mb-3">
+						<MudSelectItem Value="@("None")">None</MudSelectItem>
+						<MudSelectItem Value="@("XOnXOff")">XOn/XOff</MudSelectItem>
+						<MudSelectItem Value="@("RequestToSend")">RTS</MudSelectItem>
+						<MudSelectItem Value="@("RequestToSendXOnXOff")">RTS + XOn/XOff</MudSelectItem>
+					</MudSelect>
+					<MudNumericField T="int" @bind-Value="_settings.ReadTimeout" Label="Read Timeout (ms)" Class="mb-3" />
+					<MudCheckBox @bind-Value="_settings.DTREnable" Label="Enable DTR" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.RTSEnable" Label="Enable RTS" Color="Color.Primary" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Location ─────────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Location" Icon="@Icons.Material.Filled.LocationOn">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Observer Location</MudText>
+					<MudNumericField T="double" @bind-Value="_settings.Latitude" Label="Latitude (°)"
+									 HelperText="Range: -90 to 90 (North positive)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.Longitude" Label="Longitude (°)"
+									 HelperText="Range: -180 to 180 (East positive)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.Elevation" Label="Elevation (m)"
+									 HelperText="Metres above sea level" Class="mb-3" />
+					<MudTextField @bind-Value="_utcOffsetString" Label="UTC Offset (hh:mm:ss)"
+							  HelperText="e.g. -05:00:00 for EST" Class="mb-3"
+							  OnBlur="@((FocusEventArgs _) => ParseUtcOffset())" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Environmental</MudText>
+					<MudCheckBox @bind-Value="_settings.Refraction" Label="Apply Refraction Correction"
+								 Color="Color.Primary" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.Temperature" Label="Temperature (°C)"
+									 HelperText="For refraction calculation" Class="mb-3" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Mount Config ─────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Mount Config" Icon="@Icons.Material.Filled.Tune">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Mount Configuration</MudText>
+					<MudSelect @bind-Value="_settings.AlignmentMode" Label="Alignment Mode" Class="mb-3">
+						<MudSelectItem Value="@("")">Not Set</MudSelectItem>
+						<MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
+						<MudSelectItem Value="@("Polar")">Polar</MudSelectItem>
+						<MudSelectItem Value="@("GermanPolar")">German Equatorial</MudSelectItem>
+					</MudSelect>
+					<MudSelect @bind-Value="_settings.EquatorialCoordinateType" Label="Coordinate Type" Class="mb-3">
+						<MudSelectItem Value="@("Other")">Other</MudSelectItem>
+						<MudSelectItem Value="@("Topocentric")">Topocentric</MudSelectItem>
+						<MudSelectItem Value="@("J2000")">J2000</MudSelectItem>
+						<MudSelectItem Value="@("J2050")">J2050</MudSelectItem>
+						<MudSelectItem Value="@("B1950")">B1950</MudSelectItem>
+					</MudSelect>
+					<MudCheckBox @bind-Value="_settings.AutoTrack" Label="Auto Track on Connect"
+								 Color="Color.Primary" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.HomeAxisX" Label="Home Position X (RA/Az)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.HomeAxisY" Label="Home Position Y (Dec/Alt)" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Model Settings</MudText>
+					<MudSelect @bind-Value="_settings.PolarMode" Label="Polar Mode" Class="mb-3">
+						<MudSelectItem Value="@("")">Not Set</MudSelectItem>
+						<MudSelectItem Value="@("Left")">Left</MudSelectItem>
+						<MudSelectItem Value="@("Right")">Right</MudSelectItem>
+					</MudSelect>
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Park & Positions ─────────────────────────────────────────────── *@
+		<MudTabPanel Text="Park &amp; Positions" Icon="@Icons.Material.Filled.FlagCircle">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Park Settings</MudText>
+					<MudTextField @bind-Value="_settings.ParkName" Label="Park Name" Class="mb-3" />
+					<MudTextField @bind-Value="_settings.ParkLimitName" Label="Park Limit Name" Class="mb-3" />
+					<MudTextField @bind-Value="_settings.ParkHzLimitName" Label="Park Horizon Limit Name" Class="mb-3" />
+					<MudTextField @bind-Value="_parkAxesJson" Label="Park Axes (JSON)"
+								  HelperText="JSON format: [90, 90]" Lines="2" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Park Positions &amp; HC Guides (JSON)</MudText>
+					<MudTextField @bind-Value="_parkPositionsJson" Label="Park Positions"
+								  HelperText='JSON array: [{"Name":"Default","X":90.0,"Y":90.0}]'
+								  Lines="6" Class="mb-3" />
+					<MudTextField @bind-Value="_hcPulseGuidesJson" Label="Hand Controller Pulse Guides"
+								  HelperText="JSON array of objects with Speed, Duration, Interval, Rate"
+								  Lines="6" Class="mb-3" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Optics ───────────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Optics" Icon="@Icons.Material.Filled.Visibility">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Telescope Optics</MudText>
+					<MudNumericField T="double" @bind-Value="_settings.ApertureDiameter" Label="Aperture Diameter (m)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.ApertureArea" Label="Aperture Area (m²)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.FocalLength" Label="Focal Length (m)" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Imaging</MudText>
+					<MudNumericField T="double" @bind-Value="_settings.EyepieceFS" Label="Eyepiece Field Stop (mm)" Class="mb-3" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Tracking ─────────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Tracking" Icon="@Icons.Material.Filled.TrackChanges">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Tracking Settings</MudText>
+					<MudSelect @bind-Value="_settings.TrackingRate" Label="Tracking Rate" Class="mb-3">
+						<MudSelectItem Value="@("Sidereal")">Sidereal</MudSelectItem>
+						<MudSelectItem Value="@("Lunar")">Lunar</MudSelectItem>
+						<MudSelectItem Value="@("Solar")">Solar</MudSelectItem>
+						<MudSelectItem Value="@("King")">King</MudSelectItem>
+					</MudSelect>
+					<MudNumericField T="double" @bind-Value="_settings.SiderealRate" Label="Sidereal Rate (arcsec/sec)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.LunarRate" Label="Lunar Rate (arcsec/sec)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.SolarRate" Label="Solar Rate (arcsec/sec)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.KingRate" Label="King Rate (arcsec/sec)" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Custom Gearing</MudText>
+					<MudCheckBox @bind-Value="_settings.CustomGearing" Label="Use Custom Gearing"
+								 Color="Color.Primary" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.CustomRa360Steps" Label="RA 360° Steps"
+									 Disabled="@(!_settings.CustomGearing)" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.CustomRaWormTeeth" Label="RA Worm Teeth"
+									 Disabled="@(!_settings.CustomGearing)" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.CustomDec360Steps" Label="Dec 360° Steps"
+									 Disabled="@(!_settings.CustomGearing)" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.CustomDecWormTeeth" Label="Dec Worm Teeth"
+									 Disabled="@(!_settings.CustomGearing)" Class="mb-3" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Guiding ──────────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Guiding" Icon="@Icons.Material.Filled.MyLocation">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Pulse Guiding</MudText>
+					<MudNumericField T="int" @bind-Value="_settings.MinPulseRa" Label="Min Pulse Duration RA (ms)" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.MinPulseDec" Label="Min Pulse Duration Dec (ms)" Class="mb-3" />
+					<MudCheckBox @bind-Value="_settings.DecPulseToGoTo" Label="Dec Pulse uses GOTO"
+								 Color="Color.Primary" Class="mb-3" />
+					<MudSelect T="int" @bind-Value="_settings.St4Guiderate" Label="ST4 Guide Rate" Class="mb-3">
+						<MudSelectItem Value="1">1 — Slowest</MudSelectItem>
+						<MudSelectItem Value="2">2</MudSelectItem>
+						<MudSelectItem Value="3">3</MudSelectItem>
+						<MudSelectItem Value="4">4</MudSelectItem>
+						<MudSelectItem Value="5">5</MudSelectItem>
+						<MudSelectItem Value="6">6</MudSelectItem>
+						<MudSelectItem Value="7">7</MudSelectItem>
+						<MudSelectItem Value="8">8 — Fastest</MudSelectItem>
+					</MudSelect>
+					<MudNumericField T="double" @bind-Value="_settings.GuideRateOffsetX" Label="Guide Rate Offset X" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.GuideRateOffsetY" Label="Guide Rate Offset Y" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Backlash &amp; PEC</MudText>
+					<MudNumericField T="int" @bind-Value="_settings.RaBacklash" Label="RA Backlash (steps)" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.DecBacklash" Label="Dec Backlash (steps)" Class="mb-3" />
+					<MudCheckBox @bind-Value="_settings.PecOn" Label="Enable PEC" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.PpecOn" Label="Enable PPEC" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.AlternatingPPEC" Label="Alternating PPEC" Color="Color.Primary" Class="mb-3" />
+					<MudSelect @bind-Value="_settings.PecMode" Label="PEC Mode" Class="mb-3">
+						<MudSelectItem Value="@("PecWorm")">PEC Worm</MudSelectItem>
+						<MudSelectItem Value="@("Pec360")">PEC 360</MudSelectItem>
+					</MudSelect>
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Limits ───────────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Limits" Icon="@Icons.Material.Filled.Block">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Axis Limits</MudText>
+					<MudCheckBox @bind-Value="_settings.LimitTracking" Label="Enable Tracking Limits"
+								 Color="Color.Primary" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.HourAngleLimit" Label="Hour Angle Limit (hours)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.AxisLimitX" Label="Axis Limit X (degrees)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.AxisUpperLimitY" Label="Axis Upper Limit Y (degrees)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.AxisLowerLimitY" Label="Axis Lower Limit Y (degrees)" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Sync &amp; Safety</MudText>
+					<MudCheckBox @bind-Value="_settings.SyncLimitOn" Label="Enable Sync Limit" Color="Color.Primary" Class="mb-2" />
+					<MudNumericField T="int" @bind-Value="_settings.SyncLimit" Label="Sync Limit (degrees)" Class="mb-3" />
+					<MudCheckBox @bind-Value="_settings.NoSyncPastMeridian" Label="No Sync Past Meridian" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.LimitPark" Label="Enable Park Limit" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.HzLimitTracking" Label="Enable Horizon Limit Tracking" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.EncodersOn" Label="Enable Encoders" Color="Color.Primary" Class="mb-2" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+		@* ── Advanced ─────────────────────────────────────────────────────── *@
+		<MudTabPanel Text="Advanced" Icon="@Icons.Material.Filled.Settings">
+			<MudGrid Spacing="3" Class="pa-4">
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Advanced Settings</MudText>
+					<MudCheckBox @bind-Value="_settings.AllowAdvancedCommandSet" Label="Allow Advanced Commands"
+								 Color="Color.Primary" Class="mb-2" />
+					<MudNumericField T="double" @bind-Value="_settings.MaximumSlewRate" Label="Maximum Slew Rate (°/sec)" Class="mb-3" />
+					<MudNumericField T="double" @bind-Value="_settings.GotoPrecision" Label="GOTO Precision (degrees)" Class="mb-3" />
+					<MudCheckBox @bind-Value="_settings.FullCurrent" Label="Full Current Mode" Color="Color.Primary" Class="mb-2" />
+					<MudCheckBox @bind-Value="_settings.TraceLogger" Label="Enable Trace Logging" Color="Color.Primary" Class="mb-2" />
+					<MudNumericField T="int" @bind-Value="_settings.DisplayInterval" Label="Display Interval (ms)" Class="mb-3" />
+				</MudItem>
+				<MudItem xs="12" md="6">
+					<MudText Typo="Typo.h6" Class="mb-3">Instrument Info</MudText>
+					<MudTextField @bind-Value="_settings.InstrumentName" Label="Instrument Name" Class="mb-3" />
+					<MudTextField @bind-Value="_settings.InstrumentDescription" Label="Instrument Description" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.AltAzTrackingUpdateInterval" Label="Alt-Az Update Interval (ms)" Class="mb-3" />
+					<MudNumericField T="int" @bind-Value="_settings.PolarLedLevel" Label="Polar LED Level"
+									 HelperText="-1 to disable, 0–255 for brightness" Class="mb-3" />
+				</MudItem>
+			</MudGrid>
+		</MudTabPanel>
+
+	</MudTabs>
+
+	<MudDivider Class="my-3" />
+	<MudStack Row="true" Spacing="2" Class="pb-3" AlignItems="AlignItems.Center">
+		<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+				   Disabled="_saving" StartIcon="@Icons.Material.Filled.Save">
+			@if (_saving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" /> }
+			Save Settings
+		</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.Sync"
+				   OnClick="ReloadSettings">
+			Reload
+		</MudButton>
+		<MudText Typo="Typo.caption" Color="Color.Secondary" Class="ms-auto">
+			@SettingsService.GetDeviceSettingsPath(DeviceNumber)
+		</MudText>
+	</MudStack>
 </EditForm>
-
-<div class="mt-3">
-    <small class="text-muted">
-        Settings path: @SettingsService.GetDeviceSettingsPath(DeviceNumber)
-    </small>
-</div>
 
 @code {
     [Parameter] public int DeviceNumber { get; set; } = 0;

@@ -1,4 +1,4 @@
-@page "/monitorsettings"
+﻿@page "/monitorsettings"
 
 @inject NavigationManager NavManager
 
@@ -8,419 +8,301 @@
 
 <PageTitle>Monitor Settings</PageTitle>
 
-<div class="container-fluid">
-    <div class="row mb-3">
-        <div class="col">
-            <h3>Monitor Settings Configuration</h3>
-            <p class="text-muted">
-                Configure logging filters and behavior. Settings are saved to: <code>@SettingsService.MonitorSettingsPath</code>
-            </p>
-        </div>
-    </div>
+<MudText Typo="Typo.h5" GutterBottom="true">Monitor Settings Configuration</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+	Configure logging filters and behaviour. Settings are saved to: <code>@SettingsService.MonitorSettingsPath</code>
+</MudText>
 
-    @if (_message != null)
-    {
-        <div class="alert alert-@(_isError ? "danger" : "success") alert-dismissible fade show">
-            <strong>@(_isError ? "Error!" : "Success!")</strong> @_message
-            <button type="button" class="btn-close" @onclick="@(() => _message = null)"></button>
-        </div>
-    }
+@if (_message != null)
+{
+	<MudAlert Severity="@(_isError ? Severity.Error : Severity.Success)" ShowCloseIcon="true"
+			  CloseIconClicked="@(() => _message = null)" Class="mb-3">
+		@_message
+	</MudAlert>
+}
 
-    <!-- Configuration Presets -->
-    <div class="card mb-3 bg-light">
-        <div class="card-header">
-            <h5 class="card-title mb-0">
-                <span class="material-symbols-outlined me-2" aria-hidden="true">layers</span>Configuration Presets
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <button class="btn btn-outline-success w-100" @onclick="ApplyDevelopmentPreset">
-                        <span class="material-symbols-outlined me-1">build</span> Development
-                        <small class="d-block text-muted">Maximum logging</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-primary w-100" @onclick="ApplyProductionPreset">
-                        <span class="material-symbols-outlined me-1">check</span> Production
-                        <small class="d-block text-muted">Minimal logging</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-warning w-100" @onclick="ApplyTroubleshootingPreset">
-                        <span class="material-symbols-outlined me-1">bug_report</span> Troubleshooting
-                        <small class="d-block text-muted">Mount + Driver</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-info w-100" @onclick="ApplyProfileDebugPreset">
-                        <span class="material-symbols-outlined me-1">description</span> Profile Debug
-                        <small class="d-block text-muted">Settings loading</small>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+<MudCard Class="mb-4">
+	<MudCardHeader>
+		<CardHeaderContent>
+			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+				<MudIcon Icon="@Icons.Material.Filled.Layers" />
+				<MudText Typo="Typo.h6">Configuration Presets</MudText>
+			</MudStack>
+		</CardHeaderContent>
+	</MudCardHeader>
+	<MudCardContent>
+		<MudGrid Spacing="2">
+			<MudItem xs="12" sm="6" md="3">
+				<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Success"
+						   StartIcon="@Icons.Material.Filled.Build" OnClick="ApplyDevelopmentPreset">
+					Development
+				</MudButton>
+			</MudItem>
+			<MudItem xs="12" sm="6" md="3">
+				<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Primary"
+						   StartIcon="@Icons.Material.Filled.Check" OnClick="ApplyProductionPreset">
+					Production
+				</MudButton>
+			</MudItem>
+			<MudItem xs="12" sm="6" md="3">
+				<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Warning"
+						   StartIcon="@Icons.Material.Filled.BugReport" OnClick="ApplyTroubleshootingPreset">
+					Troubleshooting
+				</MudButton>
+			</MudItem>
+			<MudItem xs="12" sm="6" md="3">
+				<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Info"
+						   StartIcon="@Icons.Material.Filled.Description" OnClick="ApplyProfileDebugPreset">
+					Profile Debug
+				</MudButton>
+			</MudItem>
+		</MudGrid>
+	</MudCardContent>
+</MudCard>
 
-    <EditForm Model="_settings" OnValidSubmit="SaveSettings">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<EditForm Model="_settings" OnValidSubmit="SaveSettings">
+	<DataAnnotationsValidator />
 
-        <div class="row">
-            <!-- Left Column -->
-            <div class="col-md-6">
-                <!-- Device Filters Section -->
-                <div class="card mb-3">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">storage</span>Device Filters
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted small">Select which devices to monitor</p>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.ServerDevice" class="form-check-input" id="deviceServer" />
-                                    <label class="form-check-label" for="deviceServer" title="Core server operations">
-                                        Server <span class="badge bg-secondary">Core</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Telescope" class="form-check-input" id="deviceTelescope" />
-                                    <label class="form-check-label" for="deviceTelescope" title="Telescope/ASCOM API">
-                                        Telescope <span class="badge bg-secondary">API</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Ui" class="form-check-input" id="deviceUi" />
-                                    <label class="form-check-label" for="deviceUi" title="UI interactions (high volume)">
-                                        UI <span class="badge bg-warning">High Vol</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+	<MudGrid Spacing="3">
+		<MudItem xs="12" md="6">
 
-                <!-- Category Filters Section -->
-                <div class="card mb-3">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">label</span>Category Filters
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted small">Select which categories to monitor</p>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Other" class="form-check-input" id="catOther" />
-                                    <label class="form-check-label" for="catOther" title="Support/shared projects">Other</label>
-                                </div>
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Driver" class="form-check-input" id="catDriver" />
-                                    <label class="form-check-label" for="catDriver" title="Mount driver communications">
-                                        Driver <span class="badge bg-primary">Mount</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Interface" class="form-check-input" id="catInterface" />
-                                    <label class="form-check-label" for="catInterface" title="Interface operations">Interface</label>
-                                </div>
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Server" class="form-check-input" id="catServer" />
-                                    <label class="form-check-label" for="catServer" title="Core server processes">
-                                        Server <span class="badge bg-secondary">Core</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Mount" class="form-check-input" id="catMount" />
-                                    <label class="form-check-label" for="catMount" title="Mount commands and operations">
-                                        Mount <span class="badge bg-primary">Essential</span>
-                                    </label>
-                                </div>
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Alignment" class="form-check-input" id="catAlignment" />
-                                    <label class="form-check-label" for="catAlignment" title="Alignment model operations">Alignment</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Storage" Color="Color.Primary" />
+							<MudText Typo="Typo.h6">Device Filters</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Select which devices to monitor</MudText>
+					<MudGrid>
+						<MudItem xs="4">
+							<MudCheckBox @bind-Value="_settings.ServerDevice" Label="Server" Color="Color.Primary" />
+						</MudItem>
+						<MudItem xs="4">
+							<MudCheckBox @bind-Value="_settings.Telescope" Label="Telescope" Color="Color.Primary" />
+						</MudItem>
+						<MudItem xs="4">
+							<MudCheckBox @bind-Value="_settings.Ui" Label="UI" Color="Color.Warning" />
+						</MudItem>
+					</MudGrid>
+				</MudCardContent>
+			</MudCard>
 
-                <!-- Type Filters Section -->
-                <div class="card mb-3">
-                    <div class="card-header bg-warning">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">task</span>Type Filters (Log Levels)
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted small">Select which message types to monitor</p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Information" class="form-check-input" id="typeInfo" />
-                                    <label class="form-check-label" for="typeInfo" title="Informational messages">
-                                        Information <span class="badge bg-info">Session</span>
-                                    </label>
-                                </div>
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Data" class="form-check-input" id="typeData" />
-                                    <label class="form-check-label" for="typeData" title="Detailed data (high volume)">
-                                        Data <span class="badge bg-warning">High Vol</span>
-                                    </label>
-                                </div>
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Warning" class="form-check-input" id="typeWarning" />
-                                    <label class="form-check-label" for="typeWarning" title="Warning messages">
-                                        Warning <span class="badge bg-warning">Session</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Error" class="form-check-input" id="typeError" />
-                                    <label class="form-check-label" for="typeError" title="Error messages (always recommended)">
-                                        Error <span class="badge bg-danger">Essential</span>
-                                    </label>
-                                </div>
-                                <div class="mb-2 form-check">
-                                    <InputCheckbox @bind-Value="_settings.Debug" class="form-check-input" id="typeDebug" />
-                                    <label class="form-check-label" for="typeDebug" title="Debug messages (very high volume)">
-                                        Debug <span class="badge bg-danger">Very High</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Info" />
+							<MudText Typo="Typo.h6">Category Filters</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Select which categories to monitor</MudText>
+					<MudGrid>
+						<MudItem xs="4">
+							<MudCheckBox @bind-Value="_settings.Other" Label="Other" Color="Color.Primary" />
+							<MudCheckBox @bind-Value="_settings.Driver" Label="Driver" Color="Color.Primary" />
+						</MudItem>
+						<MudItem xs="4">
+							<MudCheckBox @bind-Value="_settings.Interface" Label="Interface" Color="Color.Primary" />
+							<MudCheckBox @bind-Value="_settings.Server" Label="Server" Color="Color.Primary" />
+						</MudItem>
+						<MudItem xs="4">
+							<MudCheckBox @bind-Value="_settings.Mount" Label="Mount" Color="Color.Primary" />
+							<MudCheckBox @bind-Value="_settings.Alignment" Label="Alignment" Color="Color.Primary" />
+						</MudItem>
+					</MudGrid>
+				</MudCardContent>
+			</MudCard>
 
-            <!-- Right Column -->
-            <div class="col-md-6">
-                <!-- Logging Options Section -->
-                <div class="card mb-3">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">description</span>Logging Options
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted small">Configure logging behavior and file output</p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3 form-check">
-                                    <InputCheckbox @bind-Value="_settings.StartMonitor" class="form-check-input" id="startMonitor" />
-                                    <label class="form-check-label fw-bold" for="startMonitor" title="REQUIRED for any logging">
-                                        Start Monitor <span class="badge bg-danger">REQUIRED</span>
-                                    </label>
-                                    <small class="form-text text-muted d-block">Must be ON for file logging</small>
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <InputCheckbox @bind-Value="_settings.LogMonitor" class="form-check-input" id="logMonitor" />
-                                    <label class="form-check-label" for="logMonitor" title="Write to GSMonitorLog file">
-                                        Log Monitor
-                                    </label>
-                                    <small class="form-text text-muted d-block">GSMonitorLog*.txt</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3 form-check">
-                                    <InputCheckbox @bind-Value="_settings.LogSession" class="form-check-input" id="logSession" />
-                                    <label class="form-check-label" for="logSession" title="Write to GSSessionLog file">
-                                        Log Session
-                                    </label>
-                                    <small class="form-text text-muted d-block">GSSessionLog*.txt</small>
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <InputCheckbox @bind-Value="_settings.LogCharting" class="form-check-input" id="logCharting" />
-                                    <label class="form-check-label" for="logCharting" title="Write charting data">
-                                        Log Charting
-                                    </label>
-                                    <small class="form-text text-muted d-block">GSChartingLog*.txt</small>
-                                </div>
-                            </div>
-                        </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Task" Color="Color.Warning" />
+							<MudText Typo="Typo.h6">Type Filters (Log Levels)</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Select which message types to monitor</MudText>
+					<MudGrid>
+						<MudItem xs="6">
+							<MudCheckBox @bind-Value="_settings.Information" Label="Information" Color="Color.Info" />
+							<MudCheckBox @bind-Value="_settings.Data" Label="Data" Color="Color.Warning" />
+							<MudCheckBox @bind-Value="_settings.Warning" Label="Warning" Color="Color.Warning" />
+						</MudItem>
+						<MudItem xs="6">
+							<MudCheckBox @bind-Value="_settings.Error" Label="Error" Color="Color.Error" />
+							<MudCheckBox @bind-Value="_settings.Debug" Label="Debug" Color="Color.Error" />
+						</MudItem>
+					</MudGrid>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
 
-                        @if (!_settings.StartMonitor)
-                        {
-                            <div class="alert alert-danger mt-2">
-                                <strong><span class="material-symbols-outlined me-1">warning</span> Warning!</strong> StartMonitor is OFF. No logs will be written to files!
-                            </div>
-                        }
-                    </div>
-                </div>
+		<MudItem xs="12" md="6">
 
-                <!-- Preview Section -->
-                <div class="card mb-3 border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">visibility</span>What Will Be Logged?
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @if (GetEnabledCount() == 0)
-                        {
-                            <div class="alert alert-warning">
-                                <strong><span class="material-symbols-outlined me-1">block</span> Nothing!</strong> All filters are disabled.
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="mb-2">
-                                <strong>Log Files:</strong>
-                                <ul class="mb-0">
-                                    @if (_settings.LogSession)
-                                    {
-                                        <li>âœ… GSSessionLog*.txt (Information, Warning, Error)</li>
-                                    }
-                                    @if (_settings.LogMonitor && _settings.StartMonitor)
-                                    {
-                                        <li>âœ… GSMonitorLog*.txt (All enabled filters)</li>
-                                    }
-                                    else if (_settings.LogMonitor && !_settings.StartMonitor)
-                                    {
-                                        <li>âŒ GSMonitorLog*.txt (StartMonitor is OFF)</li>
-                                    }
-                                    @if (_settings.LogCharting)
-                                    {
-                                        <li>âœ… GSChartingLog*.txt (Charting data)</li>
-                                    }
-                                    <li>âœ… GSErrorLog*.txt (Always enabled)</li>
-                                </ul>
-                            </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Success" />
+							<MudText Typo="Typo.h6">Logging Options</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudGrid>
+						<MudItem xs="6">
+							<MudCheckBox @bind-Value="_settings.StartMonitor" Label="Start Monitor" Color="Color.Error" />
+							<MudText Typo="Typo.caption" Color="Color.Secondary">Must be ON for file logging</MudText>
+							<MudCheckBox @bind-Value="_settings.LogMonitor" Label="Log Monitor" Color="Color.Primary" Class="mt-2" />
+							<MudText Typo="Typo.caption" Color="Color.Secondary">GSMonitorLog*.txt</MudText>
+						</MudItem>
+						<MudItem xs="6">
+							<MudCheckBox @bind-Value="_settings.LogSession" Label="Log Session" Color="Color.Primary" />
+							<MudText Typo="Typo.caption" Color="Color.Secondary">GSSessionLog*.txt</MudText>
+							<MudCheckBox @bind-Value="_settings.LogCharting" Label="Log Charting" Color="Color.Primary" Class="mt-2" />
+							<MudText Typo="Typo.caption" Color="Color.Secondary">GSChartingLog*.txt</MudText>
+						</MudItem>
+					</MudGrid>
+					@if (!_settings.StartMonitor)
+					{
+						<MudAlert Severity="Severity.Warning" Class="mt-3">
+							<strong>StartMonitor is OFF.</strong> No logs will be written to files.
+						</MudAlert>
+					}
+				</MudCardContent>
+			</MudCard>
 
-                            <div class="mb-2">
-                                <strong>Active Filters:</strong>
-                                <div class="mt-1">
-                                    <span class="badge bg-primary me-1">@GetDeviceCount() Devices</span>
-                                    <span class="badge bg-info me-1">@GetCategoryCount() Categories</span>
-                                    <span class="badge bg-warning me-1">@GetTypeCount() Types</span>
-                                </div>
-                            </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" />
+							<MudText Typo="Typo.h6">What Will Be Logged?</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					@if (GetEnabledCount() == 0)
+					{
+						<MudAlert Severity="Severity.Warning">All filters are disabled — nothing will be logged.</MudAlert>
+					}
+					else
+					{
+						<MudText Typo="Typo.subtitle2" Class="mb-1">Log Files</MudText>
+						<MudList T="string" Dense="true">
+							@if (_settings.LogSession)
+							{
+								<MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">GSSessionLog*.txt</MudListItem>
+							}
+							@if (_settings.LogMonitor && _settings.StartMonitor)
+							{
+								<MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">GSMonitorLog*.txt</MudListItem>
+							}
+							else if (_settings.LogMonitor && !_settings.StartMonitor)
+							{
+								<MudListItem T="string" Icon="@Icons.Material.Filled.Cancel" IconColor="Color.Error">GSMonitorLog*.txt (StartMonitor OFF)</MudListItem>
+							}
+							@if (_settings.LogCharting)
+							{
+								<MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">GSChartingLog*.txt</MudListItem>
+							}
+							<MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">GSErrorLog*.txt (always)</MudListItem>
+						</MudList>
+						<MudDivider Class="my-2" />
+						<MudStack Row="true" Spacing="1">
+							<MudChip T="string" Color="Color.Primary" Size="Size.Small">@GetDeviceCount() Devices</MudChip>
+							<MudChip T="string" Color="Color.Info" Size="Size.Small">@GetCategoryCount() Categories</MudChip>
+							<MudChip T="string" Color="Color.Warning" Size="Size.Small">@GetTypeCount() Types</MudChip>
+						</MudStack>
+						<MudAlert Severity="Severity.Info" Class="mt-2" Dense="true">
+							Logged if <strong>Device AND Category AND Type</strong> are all enabled.
+						</MudAlert>
+					}
+				</MudCardContent>
+			</MudCard>
 
-                            <div class="alert alert-info mt-2 mb-0">
-                                <small>
-                                    <strong>Formula:</strong> An entry is logged if:
-                                    <code>Device AND Category AND Type</code> are all enabled
-                                </small>
-                            </div>
-                        }
-                    </div>
-                </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Build" />
+							<MudText Typo="Typo.h6">Miscellaneous</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudSelect @bind-Value="_settings.Language" Label="Language" HelperText="UI language preference" Class="mb-3">
+						<MudSelectItem Value="@("en-US")">English (US)</MudSelectItem>
+						<MudSelectItem Value="@("en-GB")">English (GB)</MudSelectItem>
+						<MudSelectItem Value="@("de-DE")">German</MudSelectItem>
+						<MudSelectItem Value="@("fr-FR")">French</MudSelectItem>
+						<MudSelectItem Value="@("es-ES")">Spanish</MudSelectItem>
+					</MudSelect>
+					<MudTextField @bind-Value="_settings.LogPath" Label="Log Path"
+								  HelperText="0 = default (%USERPROFILE%\Documents\GSServer)" Class="mb-3" />
+					<MudTextField @bind-Value="_settings.Version" Label="Version"
+								  HelperText="Settings version (read-only)" ReadOnly="true" />
+				</MudCardContent>
+			</MudCard>
 
-                <!-- Miscellaneous Section -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">build</span>Miscellaneous
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Language</label>
-                            <InputSelect @bind-Value="_settings.Language" class="form-select">
-                                <option value="en-US">English (US)</option>
-                                <option value="en-GB">English (GB)</option>
-                                <option value="de-DE">German</option>
-                                <option value="fr-FR">French</option>
-                                <option value="es-ES">Spanish</option>
-                            </InputSelect>
-                            <small class="form-text text-muted">UI language preference</small>
-                        </div>
+			<MudCard Class="mb-4">
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+							<MudIcon Icon="@Icons.Material.Filled.Bolt" />
+							<MudText Typo="Typo.h6">Quick Actions</MudText>
+						</MudStack>
+					</CardHeaderContent>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudGrid Spacing="2">
+						<MudItem xs="6">
+							<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+									   StartIcon="@Icons.Material.Filled.SelectAll" OnClick="SelectAllDevices">All Devices</MudButton>
+						</MudItem>
+						<MudItem xs="6">
+							<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+									   StartIcon="@Icons.Material.Filled.SelectAll" OnClick="SelectAllCategories">All Categories</MudButton>
+						</MudItem>
+						<MudItem xs="6">
+							<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+									   StartIcon="@Icons.Material.Filled.SelectAll" OnClick="SelectAllTypes">All Types</MudButton>
+						</MudItem>
+						<MudItem xs="6">
+							<MudButton FullWidth="true" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+									   StartIcon="@Icons.Material.Filled.Close" OnClick="ClearAllFilters">Clear All</MudButton>
+						</MudItem>
+					</MudGrid>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
+	</MudGrid>
 
-                        <div class="mb-3">
-                            <label class="form-label">Log Path</label>
-                            <InputText @bind-Value="_settings.LogPath" class="form-control" placeholder="" />
-                            <small class="form-text text-muted">
-                                <code>0</code> = default location (<code>%USERPROFILE%\Documents\GSServer</code>)
-                            </small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Version</label>
-                            <InputText @bind-Value="_settings.Version" class="form-control" readonly />
-                            <small class="form-text text-muted">Settings version (read-only)</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions Section -->
-                <div class="card mb-3 bg-light">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <span class="material-symbols-outlined me-2" aria-hidden="true">bolt</span>Quick Actions
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100" @onclick="SelectAllDevices">
-                                    <span class="material-symbols-outlined me-1">select_all</span> All Devices
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100" @onclick="SelectAllCategories">
-                                    <span class="material-symbols-outlined me-1">select_all</span> All Categories
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100" @onclick="SelectAllTypes">
-                                    <span class="material-symbols-outlined me-1">select_all</span> All Types
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-danger btn-sm w-100" @onclick="ClearAllFilters">
-                                    <span class="material-symbols-outlined me-1">close</span> Clear All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="mt-4 border-top pt-3 pb-3">
-            <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary btn-lg" disabled="@_saving">
-                    @if (_saving)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2"></span>
-                    }
-                    else
-                    {
-                        <span class="material-symbols-outlined me-2">save</span>
-                    }
-                    Save Changes
-                </button>
-
-                <button type="button" class="btn btn-secondary btn-lg" @onclick="ResetToDefaults" disabled="@_saving">
-                    <span class="material-symbols-outlined me-2">restart_alt</span> Reset to Defaults
-                </button>
-
-                <button type="button" class="btn btn-info btn-lg" @onclick="ReloadSettings">
-                    <span class="material-symbols-outlined me-2">sync</span> Reload from File
-                </button>
-
-                <a href="/MONITOR_SETTINGS_GUIDE.md" class="btn btn-outline-info btn-lg ms-auto" target="_blank">
-                    <span class="material-symbols-outlined me-2">menu_book</span> Documentation
-                </a>
-            </div>
-        </div>
-    </EditForm>
-</div>
+	<MudDivider Class="my-3" />
+	<MudStack Row="true" Spacing="2" Class="pb-4" AlignItems="AlignItems.Center">
+		<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+				   Disabled="_saving" StartIcon="@Icons.Material.Filled.Save">
+			@if (_saving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" /> }
+			Save Changes
+		</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large"
+				   StartIcon="@Icons.Material.Filled.RestartAlt" Disabled="_saving" OnClick="ResetToDefaults">
+			Reset to Defaults
+		</MudButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Large"
+				   StartIcon="@Icons.Material.Filled.Sync" OnClick="ReloadSettings">
+			Reload from File
+		</MudButton>
+	</MudStack>
+</EditForm>
 
 @code {
     private GreenSwamp.Alpaca.Settings.Models.MonitorSettings _settings = new();
