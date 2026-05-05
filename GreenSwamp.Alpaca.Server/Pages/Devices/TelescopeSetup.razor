@@ -27,27 +27,20 @@
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudSimpleTable Dense="true" Hover="true">
-                            <tbody>
-                                <tr><th>Device Number</th><td><MudChip T="string" Size="Size.Small" Color="Color.Default">@InstanceID</MudChip></td></tr>
-                                <tr><th>Device Name</th><td><strong>@instance.DeviceName</strong></td></tr>
-                                <tr><th>Mount Type</th><td>@settings.Mount</td></tr>
-                                <tr><th>Alignment Mode</th><td><MudChip T="string" Size="Size.Small" Color="Color.Info">@settings.AlignmentMode</MudChip></td></tr>
-                                <tr>
-                                    <th>Connection Status</th>
-                                    <td>
-                                        @if (instance.IsConnected)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.Check">Connected</MudChip>
-                                        }
-                                        else
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Default">Disconnected</MudChip>
-                                        }
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>Device Number</th><td><MudText>@InstanceID</MudText></td></tr>
+                                        <tr><th>Device Name</th><td>@instance.DeviceName</td></tr>
+                                        <tr><th>Mount Type</th><td>@settings.Mount</td></tr>
+                                        <tr><th>Alignment Mode</th><td>@settings.AlignmentMode</td></tr>
+                                        <tr>
+                                            <th>Connection Status</th>
+                                            <td>
+                                                <MudText Color="@(instance.IsConnected ? Color.Success : Color.Default)">@(instance.IsConnected ? "Connected" : "Disconnected")</MudText>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </MudSimpleTable>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
@@ -87,14 +80,14 @@
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudSimpleTable Dense="true" Hover="true">
-                            <tbody>
-                                <tr><th>Port</th><td><code>@settings.Port</code></td></tr>
-                                <tr><th>Baud Rate</th><td>@settings.BaudRate</td></tr>
-                                <tr><th>Data Bits</th><td>@settings.DataBits</td></tr>
-                                <tr><th>Read Timeout</th><td>@settings.ReadTimeout ms</td></tr>
-                            </tbody>
-                        </MudSimpleTable>
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr><th>Port</th><td>@settings.Port</td></tr>
+                                        <tr><th>Baud Rate</th><td>@settings.BaudRate</td></tr>
+                                        <tr><th>Data Bits</th><td>@settings.DataBits</td></tr>
+                                        <tr><th>Read Timeout</th><td>@settings.ReadTimeout ms</td></tr>
+                                    </tbody>
+                                </MudSimpleTable>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
@@ -111,28 +104,38 @@
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent>
-                        <MudSimpleTable Dense="true" Hover="true">
-                            <tbody>
-                                <tr>
-                                    <th>Auto Track</th>
-                                    <td>
-                                        <MudChip T="string" Size="Size.Small" Color="@(settings.AutoTrack ? Color.Success : Color.Default)">
-                                            @(settings.AutoTrack ? "Enabled" : "Disabled")
-                                        </MudChip>
-                                    </td>
-                                </tr>
-                                <tr><th>Tracking Rate</th><td>@settings.TrackingRate</td></tr>
-                                <tr><th>Sidereal Rate</th><td>@settings.SiderealRate.ToString("F7")°/sec</td></tr>
-                                <tr>
-                                    <th>Refraction</th>
-                                    <td>
-                                        <MudChip T="string" Size="Size.Small" Color="@(settings.Refraction ? Color.Success : Color.Default)">
-                                            @(settings.Refraction ? "Enabled" : "Disabled")
-                                        </MudChip>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
+                                <MudSimpleTable Dense="true" Hover="true">
+                                    <tbody>
+                                        <tr>
+                                            <th>Auto Track</th>
+                                            <td>
+                                                @if (settings.AutoTrack)
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" />
+                                                }
+                                                else
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Default" />
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr><th>Tracking Rate</th><td>@settings.TrackingRate</td></tr>
+                                        <tr><th>Sidereal Rate</th><td>@settings.SiderealRate.ToString("F7")°/sec</td></tr>
+                                        <tr>
+                                            <th>Refraction</th>
+                                            <td>
+                                                @if (settings.Refraction)
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" />
+                                                }
+                                                else
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Default" />
+                                                }
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </MudSimpleTable>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
@@ -181,13 +184,7 @@
             </MudItem>
         </MudGrid>
 
-        <MudAlert Severity="Severity.Success" Class="mb-3">
-            Profile loaded successfully. Each device has its own alignment mode and configuration.
-            <strong>Alignment Mode: @settings.AlignmentMode</strong>
-        </MudAlert>
-
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack"
-                   Href="/device-manager">Back to Device Manager</MudButton>
+        @* Profile message and Back button removed per UI cleanup request *@
     }
     else
     {
