@@ -18,7 +18,7 @@
             @* ── Device Information ───────────────────────────────────── *@
             <MudItem xs="12" md="6">
                 <MudCard>
-                    <MudCardHeader Style="padding-bottom:var(--gs-space-1); margin-bottom:calc(var(--gs-space-2) * 1.5);">
+                    <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
@@ -26,7 +26,7 @@
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
-                    <MudCardContent>
+                    <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true">
                                     <tbody>
                                         <tr><th>Device Number</th><td><MudText>@InstanceID</MudText></td></tr>
@@ -48,7 +48,7 @@
             @* ── Location Settings ────────────────────────────────────── *@
             <MudItem xs="12" md="6">
                 <MudCard>
-                    <MudCardHeader Style="padding-bottom:var(--gs-space-1); margin-bottom:calc(var(--gs-space-2) * 1.5);">
+                    <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Success" />
@@ -56,7 +56,7 @@
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
-                    <MudCardContent>
+                    <MudCardContent Style="padding-top:6px;">
                         <MudSimpleTable Dense="true" Hover="true">
                             <tbody>
                                 <tr><th>Latitude</th><td>@settings.Latitude.ToString("F6")°</td></tr>
@@ -71,7 +71,7 @@
             @* ── Serial Port Settings ─────────────────────────────────── *@
             <MudItem xs="12" md="6">
                 <MudCard>
-                    <MudCardHeader Style="padding-bottom:var(--gs-space-1); margin-bottom:calc(var(--gs-space-2) * 1.5);">
+                    <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.SettingsInputHdmi" Color="Color.Warning" />
@@ -79,7 +79,7 @@
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
-                    <MudCardContent>
+                    <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true">
                                     <tbody>
                                         <tr><th>Port</th><td>@settings.Port</td></tr>
@@ -95,7 +95,7 @@
             @* ── Tracking Settings ────────────────────────────────────── *@
             <MudItem xs="12" md="6">
                 <MudCard>
-                    <MudCardHeader Style="padding-bottom:var(--gs-space-1); margin-bottom:calc(var(--gs-space-2) * 1.5);">
+                    <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Color="Color.Info" />
@@ -103,7 +103,7 @@
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
-                    <MudCardContent>
+                    <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true">
                                     <tbody>
                                         <tr>
@@ -143,7 +143,7 @@
             @* ── Telescope Specifications ─────────────────────────────── *@
             <MudItem xs="12">
                 <MudCard>
-                    <MudCardHeader Style="padding-bottom:var(--gs-space-1); margin-bottom:calc(var(--gs-space-2) * 1.5);">
+                    <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.Visibility" />
@@ -151,7 +151,7 @@
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
-                    <MudCardContent>
+                    <MudCardContent Style="padding-top:6px;">
                         <MudGrid>
                             <MudItem xs="12" md="4">
                                 <MudSimpleTable Dense="true" Hover="true">
