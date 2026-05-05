@@ -223,6 +223,29 @@ fieldset legend {
     font-size:       14px;
 }
 
+/* --- TelescopeSetup tables: align labels and values consistently --- */
+.ts-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* enforce column widths */
+}
+.ts-table th {
+    width: 40%;
+    color: var(--gs-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+.ts-table td {
+    width: 60%;
+    color: var(--gs-text-primary);
+    padding: 6px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
 .gs-table th {
     color:          var(--gs-text-secondary);
     font-size:      12px;
