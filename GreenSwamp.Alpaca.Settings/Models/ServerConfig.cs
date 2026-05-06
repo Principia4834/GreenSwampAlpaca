@@ -76,14 +76,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// </summary>
         public string Password { get; set; } = string.Empty;
 
-        // ── Logging ───────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Minimum logging level as a string so the model stays free of ASCOM types.
-        /// Valid values: Verbose, Debug, Information, Warning, Error, Fatal.
-        /// </summary>
-        public string LoggingLevel { get; set; } = "Information";
-
         // ── Bootstrap helper ──────────────────────────────────────────────────
 
         private static readonly JsonSerializerOptions _readOptions =

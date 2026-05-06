@@ -9,163 +9,241 @@
 <PageTitle>Server Settings</PageTitle>
 
 <MudText Typo="Typo.h5" GutterBottom="true">Server Settings</MudText>
+<MudText Typo="Typo.caption" Class="mb-3">Version: @Program.ServerVersion</MudText>
 
 @if (!string.IsNullOrEmpty(_feedback))
 {
-    <MudAlert Severity="_feedbackSeverity" Dense="true" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="() => _feedback = string.Empty">
+    <MudAlert Severity="_feedbackSeverity" Dense="true" Class="mb-3" ShowCloseIcon="true" CloseIconClicked="() => _feedback = string.Empty">
         @_feedback
     </MudAlert>
 }
 
-<MudStack Spacing="4">
+<MudGrid Spacing="3">
 
-    @* ── Server ───────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Server</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.caption" Class="mb-2">Version: @Program.ServerVersion</MudText>
-            <MudTextField @bind-Value="Location" Label="Server Location" Style="max-width:320px;" Class="mb-3" />
-            <MudCheckBox @bind-Value="RemoteAccess" Label="Allow Remote Access" Class="mb-2" />
-            <MudNumericField T="UInt16" @bind-Value="ServerPort" Label="Server (Alpaca) Port" Min="1" Max="65535" Style="max-width:200px;" Class="mb-3" />
-            <MudCheckBox @bind-Value="StartBrowser" Label="Open Browser on Start" Class="mb-2" />
-            <MudCheckBox @bind-Value="StrictAPIMode" Label="Require Strict API Compliance" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveServerSettings">Save</MudButton>
-        </MudCardActions>
-    </MudCard>
+    @* ── Network ─────────────────────────────────────────────────────────── *@
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="1" Style="height:100%">
+            <MudCardHeader>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.Lan" Size="Size.Small" Color="Color.Success" />
+                    <MudText Typo="Typo.subtitle2">Network</MudText>
+                </MudStack>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" md="8">
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudTextField @bind-Value="Location" Label="Server Location"
+                                              Variant="Variant.Filled" Margin="Margin.Dense" Style="flex:1" />
+                                <MudTooltip Text="Describes where this server is physically located — shown in the Alpaca discovery response." Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                                </MudTooltip>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudNumericField T="UInt16" @bind-Value="ServerPort" Label="Alpaca Port"
+                                                 Min="1" Max="65535" Variant="Variant.Filled" Margin="Margin.Dense" Style="max-width:180px;" />
+                                <MudTooltip Text="TCP port the Alpaca server listens on. Requires server restart to take effect." Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                                </MudTooltip>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudCheckBox @bind-Value="RemoteAccess" Label="Allow Remote Access" Dense="true" />
+                                <MudTooltip Text="When off, the server binds to localhost only and is not reachable from other machines on the network." Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                                </MudTooltip>
+                            </MudStack>
 
-    @* ── Bound Addresses ─────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Bound Addresses</MudText></MudCardHeader>
-        <MudCardContent>
-            @if (_config.AllowRemoteAccess)
-            {
-                try
-                {
-                    @foreach (var address in ASCOM.Alpaca.DiscoveryManager.AdapterAddress)
-                    {
-                        <MudText>@address</MudText>
-                    }
-                }
-                catch { }
-            }
-            else
-            {
-                <MudText>localhost</MudText>
-            }
-        </MudCardContent>
-    </MudCard>
+                            @* Discovery controls moved into Network card as requested *@
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudCheckBox @bind-Value="Discovery" Label="Allow Discovery" Dense="true" />
+                                <MudTooltip Text="Enables Alpaca UDP discovery so ASCOM clients can find this server automatically." Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                                </MudTooltip>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudCheckBox @bind-Value="LocalHostOnlyOnHost" Label="Respond to localhost on loopback only" Dense="true" />
+                                <MudTooltip Text="Limits discovery responses to clients on the same machine only." Placement="Placement.Right" Arrow="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                                </MudTooltip>
+                            </MudStack>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudPaper Class="pa-4" Style="height:100%; display:flex; align-items:flex-start;">
+                            <div style="width:100%">
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Server Addresses</MudText>
+                                @if (_config.AllowRemoteAccess)
+                                {
+                                    <MudStack Spacing="0">
+                                        @try
+                                        {
+                                            @foreach (var address in ASCOM.Alpaca.DiscoveryManager.AdapterAddress)
+                                            {
+                                                <MudText Typo="Typo.caption">@address</MudText>
+                                            }
+                                        }
+                                        catch { }
+                                    </MudStack>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption">localhost</MudText>
+                                }
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
 
-    @* ── Driver ───────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Driver Settings</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudCheckBox @bind-Value="PreventRemoteDisconnects" Label="Prevent Disconnects" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveDriverSettings">Save</MudButton>
-        </MudCardActions>
-    </MudCard>
+    @* ── Discovery / Runtime Configuration (merged) ────────────────────────── *@
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="1" Style="height:100%">
+            <MudCardHeader>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" Color="Color.Success" />
+                    <MudText Typo="Typo.subtitle2">Runtime Configuration</MudText>
+                </MudStack>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Spacing="2">
+                    @* Behaviour settings moved here *@
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudCheckBox @bind-Value="StartBrowser" Label="Open Browser on Start" Dense="true" />
+                        <MudTooltip Text="Automatically opens the management UI in the default browser when the server starts." Placement="Placement.Right" Arrow="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                        </MudTooltip>
+                    </MudStack>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudCheckBox @bind-Value="StrictAPIMode" Label="Strict API Compliance" Dense="true" />
+                        <MudTooltip Text="Enforces all required Alpaca response fields; recommended for production use." Placement="Placement.Right" Arrow="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                        </MudTooltip>
+                    </MudStack>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudCheckBox @bind-Value="PreventRemoteDisconnects" Label="Prevent Remote Disconnects" Dense="true" />
+                        <MudTooltip Text="Ignores Disconnect commands sent by remote clients; protects a running session." Placement="Placement.Right" Arrow="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                        </MudTooltip>
+                    </MudStack>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudCheckBox @bind-Value="RunSwagger" Label="Run OpenAPI / Swagger" Dense="true" />
+                        <MudTooltip Text="Hosts interactive API documentation at /swagger. Takes effect on next startup." Placement="Placement.Right" Arrow="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                        </MudTooltip>
+                    </MudStack>
 
-    @* ── Discovery ────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Alpaca Discovery Settings</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudCheckBox @bind-Value="Discovery" Label="Allow Discovery" Class="mb-2" />
-            <MudCheckBox @bind-Value="LocalHostOnlyOnHost" Label="Respond to localhost on loopback only" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveDiscovery">Save</MudButton>
-        </MudCardActions>
-    </MudCard>
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+
 
     @* ── Security ─────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Security Settings</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudCheckBox @bind-Value="RequireAuthorization" Label="Require Authorization" Class="mb-3" />
-            <MudTextField @bind-Value="UserName" Label="User Name" Disabled="@DisableAuth" Style="max-width:280px;" Class="mb-3" />
-            <MudTextField @bind-Value="Password" Label="Password" InputType="InputType.Password" Disabled="@DisableAuth" Style="max-width:280px;" Class="mb-3" />
-            <MudTextField @bind-Value="Password2" Label="Repeat Password" InputType="InputType.Password" Disabled="@DisableAuth" Style="max-width:280px;" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveSecuritySettings">Save</MudButton>
-        </MudCardActions>
-    </MudCard>
+    <MudItem xs="12">
+        <MudCard Elevation="1">
+            <MudCardHeader><MudText Typo="Typo.subtitle2">Security</MudText></MudCardHeader>
+            <MudCardContent>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudCheckBox @bind-Value="RequireAuthorization" Label="Require Authorization" Dense="true" />
+                            <MudTooltip Text="Enables HTTP Basic authentication. All API clients must supply the credentials below." Placement="Placement.Right" Arrow="true">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                            </MudTooltip>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField @bind-Value="UserName" Label="User Name" Disabled="@DisableAuth" Variant="Variant.Filled" Margin="Margin.Dense" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField @bind-Value="Password" Label="Password" InputType="InputType.Password" Disabled="@DisableAuth" Variant="Variant.Filled" Margin="Margin.Dense" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField @bind-Value="Password2" Label="Repeat Password" InputType="InputType.Password" Disabled="@DisableAuth" Variant="Variant.Filled" Margin="Margin.Dense" FullWidth="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
 
-    @* ── Log Level ────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Log Settings</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.body2" Class="mb-3">The logging system will log at or above the specified level.</MudText>
-            <MudSelect @bind-Value="LoggingLevel" Label="Log Level" Style="max-width:220px;">
-                <MudSelectItem Value="@LogLevel.Verbose">Verbose</MudSelectItem>
-                <MudSelectItem Value="@LogLevel.Debug">Debug</MudSelectItem>
-                <MudSelectItem Value="@LogLevel.Information">Information</MudSelectItem>
-                <MudSelectItem Value="@LogLevel.Warning">Warning</MudSelectItem>
-                <MudSelectItem Value="@LogLevel.Error">Error</MudSelectItem>
-                <MudSelectItem Value="@LogLevel.Fatal">Fatal</MudSelectItem>
-            </MudSelect>
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLogSettings">Save</MudButton>
-        </MudCardActions>
-    </MudCard>
+</MudGrid>
 
-    @* ── OpenAPI ──────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">OpenAPI / Swagger</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.body2" Class="mb-3">
-                The OpenAPI / Swagger integration allows the Alpaca API documentation to be shown by this server
-                and enables direct browser calls. Takes effect on next startup.
-            </MudText>
-            <MudCheckBox @bind-Value="RunSwagger" Label="Run OpenAPI" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveSwaggerSettings">Save</MudButton>
-        </MudCardActions>
-    </MudCard>
-
-    @* ── Shutdown ─────────────────────────────────────────────────────────── *@
-    <MudCard>
-        <MudCardHeader><MudText Typo="Typo.subtitle1">Shutdown Driver</MudText></MudCardHeader>
-        <MudCardContent>
-            <MudCheckBox @bind-Value="EnableShutdown" Label="Confirm shutdown" />
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Error" Disabled="@AllowShutdown" OnClick="Shutdown">
-                Shutdown
-            </MudButton>
-        </MudCardActions>
-    </MudCard>
-
+@* ── Footer action bar ────────────────────────────────────────────────────── *@
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-4" Spacing="3">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_isDirty)" OnClick="SaveAllSettingsAsync">
+        Save
+    </MudButton>
+    <MudSpacer />
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+        <MudCheckBox @bind-Value="EnableShutdown" Label="Confirm shutdown" Dense="true" />
+        <MudTooltip Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected." Placement="Placement.Left" Arrow="true">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+        </MudTooltip>
+    </MudStack>
+    <MudButton Variant="Variant.Filled" Color="Color.Error" Disabled="@AllowShutdown" OnClick="Shutdown">
+        Shutdown
+    </MudButton>
 </MudStack>
 
 @code {
 
+    // ── Snapshot record for dirty-state tracking ──────────────────────────────
+
+    private record SettingsSnapshot(
+        string   Location,
+        UInt16   ServerPort,
+        bool     RemoteAccess,
+        bool     Discovery,
+        bool     LocalHostOnlyOnHost,
+        bool     StartBrowser,
+        bool     StrictAPIMode,
+        bool     PreventRemoteDisconnects,
+        bool     RunSwagger,
+        bool     RequireAuthorization,
+        string   UserName
+    );
+
     private GreenSwamp.Alpaca.Settings.Models.ServerConfig _config = new();
+    private SettingsSnapshot _snapshot = new(string.Empty, 0, false, false, false, false, false, false, false, false, string.Empty);
 
     // ── Form-bound properties ─────────────────────────────────────────────────
 
-    bool Discovery { get; set; }
-    bool StrictAPIMode { get; set; }
-    bool LocalHostOnlyOnHost { get; set; }
-    bool RemoteAccess { get; set; }
-    UInt16 ServerPort { get; set; }
-    bool StartBrowser { get; set; }
-    bool EnableShutdown { get; set; } = false;
-    string Location { get; set; } = string.Empty;
-    bool AllowShutdown => !EnableShutdown;
+    bool Discovery              { get; set; }
+    bool StrictAPIMode          { get; set; }
+    bool LocalHostOnlyOnHost    { get; set; }
+    bool RemoteAccess           { get; set; }
+    UInt16 ServerPort            { get; set; }
+    bool StartBrowser           { get; set; }
+    bool EnableShutdown         { get; set; } = false;
+    string Location             { get; set; } = string.Empty;
+    bool AllowShutdown          => !EnableShutdown;
     bool PreventRemoteDisconnects { get; set; }
-    bool RequireAuthorization { get; set; }
-    bool DisableAuth => !RequireAuthorization;
-    string UserName { get; set; } = string.Empty;
-    LogLevel LoggingLevel { get; set; }
-    string Password { get; set; } = string.Empty;
-    string Password2 { get; set; } = string.Empty;
-    bool RunSwagger { get; set; }
+    bool RequireAuthorization   { get; set; }
+    bool DisableAuth            => !RequireAuthorization;
+    string UserName             { get; set; } = string.Empty;
+    string Password             { get; set; } = string.Empty;
+    string Password2            { get; set; } = string.Empty;
+    bool RunSwagger             { get; set; }
+
+    // ── Dirty-state ───────────────────────────────────────────────────────────
+
+    private bool _isDirty =>
+        Location              != _snapshot.Location              ||
+        ServerPort            != _snapshot.ServerPort            ||
+        RemoteAccess          != _snapshot.RemoteAccess          ||
+        Discovery             != _snapshot.Discovery             ||
+        LocalHostOnlyOnHost   != _snapshot.LocalHostOnlyOnHost   ||
+        StartBrowser          != _snapshot.StartBrowser          ||
+        StrictAPIMode         != _snapshot.StrictAPIMode         ||
+        PreventRemoteDisconnects != _snapshot.PreventRemoteDisconnects ||
+        RunSwagger            != _snapshot.RunSwagger            ||
+        RequireAuthorization  != _snapshot.RequireAuthorization  ||
+        UserName              != _snapshot.UserName              ||
+        !string.IsNullOrEmpty(Password);
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -177,151 +255,71 @@
 
     private void LoadFormFromConfig()
     {
-        Discovery           = _config.AllowDiscovery;
-        StrictAPIMode       = _config.RunInStrictAlpacaMode;
-        LocalHostOnlyOnHost = _config.LocalRespondOnlyToLocalHost;
-        RemoteAccess        = _config.AllowRemoteAccess;
-        ServerPort          = _config.ServerPort;
-        StartBrowser        = _config.AutoStartBrowser;
-        Location            = _config.Location;
+        Discovery                = _config.AllowDiscovery;
+        StrictAPIMode            = _config.RunInStrictAlpacaMode;
+        LocalHostOnlyOnHost      = _config.LocalRespondOnlyToLocalHost;
+        RemoteAccess             = _config.AllowRemoteAccess;
+        ServerPort               = _config.ServerPort;
+        StartBrowser             = _config.AutoStartBrowser;
+        Location                 = _config.Location;
         PreventRemoteDisconnects = _config.PreventRemoteDisconnects;
-        RequireAuthorization = _config.UseAuth;
-        UserName            = _config.UserName;
-        RunSwagger          = _config.RunSwagger;
+        RequireAuthorization     = _config.UseAuth;
+        UserName                 = _config.UserName;
+        RunSwagger               = _config.RunSwagger;
 
-        if (Enum.TryParse<LogLevel>(_config.LoggingLevel, out var level))
-            LoggingLevel = level;
-        else
-            LoggingLevel = LogLevel.Information;
+        CaptureSnapshot();
     }
 
-    // ── Save helpers ─────────────────────────────────────────────────────────
+    private void CaptureSnapshot() =>
+        _snapshot = new SettingsSnapshot(
+            Location, ServerPort, RemoteAccess, Discovery, LocalHostOnlyOnHost,
+            StartBrowser, StrictAPIMode, PreventRemoteDisconnects,
+            RunSwagger, RequireAuthorization, UserName
+        );
 
-    private async Task ApplyAndSaveAsync()
-    {
-        _config.AllowDiscovery             = Discovery;
-        _config.RunInStrictAlpacaMode      = StrictAPIMode;
-        _config.LocalRespondOnlyToLocalHost = LocalHostOnlyOnHost;
-        _config.AllowRemoteAccess          = RemoteAccess;
-        _config.ServerPort                 = ServerPort;
-        _config.AutoStartBrowser           = StartBrowser;
-        _config.Location                   = Location;
-        _config.PreventRemoteDisconnects   = PreventRemoteDisconnects;
-        _config.UseAuth                    = RequireAuthorization;
-        _config.UserName                   = UserName;
-        _config.RunSwagger                 = RunSwagger;
-        _config.LoggingLevel               = LoggingLevel.ToString();
+    // ── Unified save ─────────────────────────────────────────────────────────
 
-        await SettingsService.SaveServerConfigAsync(_config);
-    }
-
-    // ── Event handlers ────────────────────────────────────────────────────────
-
-    async Task SaveDiscovery()
+    async Task SaveAllSettingsAsync()
     {
         try
         {
-            await ApplyAndSaveAsync();
-            DisplaySuccess("Discovery Settings Saved");
-        }
-        catch (Exception ex)
-        {
-            DisplayError(ex.Message);
-        }
-    }
-
-    async Task SaveServerSettings()
-    {
-        try
-        {
-            await ApplyAndSaveAsync();
-            DisplaySuccess("Server Settings Saved \u2014 restart the server to apply port/access changes.");
-        }
-        catch (Exception ex)
-        {
-            DisplayError(ex.Message);
-        }
-    }
-
-    async Task SaveDriverSettings()
-    {
-        try
-        {
-            await ApplyAndSaveAsync();
-            DisplaySuccess("Driver Settings Saved");
-        }
-        catch (Exception ex)
-        {
-            DisplayError(ex.Message);
-        }
-    }
-
-    async Task SaveLogSettings()
-    {
-        try
-        {
-            _config.LoggingLevel = LoggingLevel.ToString();
-            await SettingsService.SaveServerConfigAsync(_config);
-            DisplaySuccess("Logging Settings Saved");
-        }
-        catch (Exception ex)
-        {
-            DisplayError(ex.Message);
-        }
-    }
-
-    async Task SaveSecuritySettings()
-    {
-        try
-        {
+            // Security validation
             if (RequireAuthorization)
             {
-                if (string.IsNullOrEmpty(UserName))
-                {
-                    DisplayWarning("You must set a User Name");
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(Password))
-                {
-                    DisplayWarning("You must set a Password");
-                    return;
-                }
-
-                if (Password != Password2)
-                {
-                    DisplayWarning("Passwords do not match");
-                    return;
-                }
+                if (string.IsNullOrEmpty(UserName))   { DisplayWarning("You must set a User Name"); return; }
+                if (string.IsNullOrEmpty(Password))   { DisplayWarning("You must set a Password"); return; }
+                if (Password != Password2)             { DisplayWarning("Passwords do not match"); return; }
 
                 _config.UserName = UserName;
                 _config.Password = Hash.GetStoragePassword(Password);
-                _config.UseAuth  = true;
-
-                await SettingsService.SaveServerConfigAsync(_config);
-                NavManager.NavigateTo("/");
-            }
-            else
-            {
-                _config.UseAuth = false;
-                await SettingsService.SaveServerConfigAsync(_config);
             }
 
-            DisplaySuccess("Security Saved!");
-        }
-        catch (Exception ex)
-        {
-            DisplayError(ex.Message);
-        }
-    }
+            _config.AllowDiscovery              = Discovery;
+            _config.RunInStrictAlpacaMode       = StrictAPIMode;
+            _config.LocalRespondOnlyToLocalHost = LocalHostOnlyOnHost;
+            _config.AllowRemoteAccess           = RemoteAccess;
+            _config.ServerPort                  = ServerPort;
+            _config.AutoStartBrowser            = StartBrowser;
+            _config.Location                    = Location;
+            _config.PreventRemoteDisconnects    = PreventRemoteDisconnects;
+            _config.UseAuth                     = RequireAuthorization;
+            _config.UserName                    = UserName;
+            _config.RunSwagger                  = RunSwagger;
 
-    async Task SaveSwaggerSettings()
-    {
-        try
-        {
-            _config.RunSwagger = RunSwagger;
             await SettingsService.SaveServerConfigAsync(_config);
-            DisplaySuccess("Open API Settings saved!");
+
+            Password  = string.Empty;
+            Password2 = string.Empty;
+            CaptureSnapshot();
+
+            var msg = "Settings saved.";
+            if (RemoteAccess != _snapshot.RemoteAccess || ServerPort != _snapshot.ServerPort)
+                msg += " Restart the server to apply network changes.";
+
+            DisplaySuccess(msg);
+
+            if (RequireAuthorization && !string.IsNullOrEmpty(_config.UserName))
+                NavManager.NavigateTo("/");
         }
         catch (Exception ex)
         {
