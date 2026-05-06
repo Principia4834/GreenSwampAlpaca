@@ -24,45 +24,84 @@
                     </MudStack>
                 </CardHeaderContent>
             </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.subtitle2" GutterBottom="true">What is validated?</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>File-level checks:</strong> File existence, read permissions, JSON syntax, required structure</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Device validation:</strong> DeviceNumber uniqueness, DeviceName required, AlignmentMode valid, Mount type valid</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Synchronization:</strong> Devices and AlpacaDevices arrays must be in sync</MudListItem>
-                </MudList>
+            <MudCardContent Class="pa-0">
+                <MudExpansionPanels MultiExpansion="true" Elevation="0">
 
-                <MudText Typo="Typo.subtitle2" Class="mt-3" GutterBottom="true">Automatic Repair Actions</MudText>
-                <MudText Class="mb-1">The repair function can automatically fix:</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing or corrupted Devices array (regenerates from defaults)</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing device names (generates "Telescope X" names)</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Invalid AlignmentMode values (resets to GermanPolar)</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing Mount values (sets to Simulator)</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Out-of-sync AlpacaDevices array (regenerates from Devices)</MudListItem>
-                </MudList>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.FactCheck" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2">What is validated?</MudText>
+                            </MudStack>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudList T="string" Dense="true">
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>File-level checks:</strong> File existence, read permissions, JSON syntax, required structure</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Device validation:</strong> DeviceNumber uniqueness, DeviceName required, AlignmentMode valid, Mount type valid</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Synchronization:</strong> Devices and AlpacaDevices arrays must be in sync</MudListItem>
+                            </MudList>
+                        </ChildContent>
+                    </MudExpansionPanel>
 
-                <MudText Typo="Typo.subtitle2" Class="mt-3" GutterBottom="true">Safety Features</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Automatic backup:</strong> A timestamped backup is created before any changes</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Validation after repair:</strong> Changes are validated before saving</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Restore on failure:</strong> Settings are restored from backup if repair fails</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Quarantine:</strong> Invalid devices are excluded from the active device list</MudListItem>
-                </MudList>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.BuildCircle" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2">Automatic Repair Actions</MudText>
+                            </MudStack>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Class="mb-1">The repair function can automatically fix:</MudText>
+                            <MudList T="string" Dense="true">
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing or corrupted Devices array (regenerates from defaults)</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing device names (generates "Telescope X" names)</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Invalid AlignmentMode values (resets to GermanPolar)</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing Mount values (sets to Simulator)</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Out-of-sync AlpacaDevices array (regenerates from Devices)</MudListItem>
+                            </MudList>
+                        </ChildContent>
+                    </MudExpansionPanel>
 
-                <MudText Typo="Typo.subtitle2" Class="mt-3" GutterBottom="true">Manual Repair</MudText>
-                <MudText Class="mb-1">For issues that cannot be automatically fixed:</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Use the <strong>Open Settings Folder</strong> button above</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Edit <code>appsettings.user.json</code> in a text editor</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Restart the application</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">If needed, delete the file to regenerate default settings</MudListItem>
-                </MudList>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.Shield" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2">Safety Features</MudText>
+                            </MudStack>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudList T="string" Dense="true">
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Automatic backup:</strong> A timestamped backup is created before any changes</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Validation after repair:</strong> Changes are validated before saving</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Restore on failure:</strong> Settings are restored from backup if repair fails</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Quarantine:</strong> Invalid devices are excluded from the active device list</MudListItem>
+                            </MudList>
+                        </ChildContent>
+                    </MudExpansionPanel>
 
-                <MudAlert Severity="Severity.Info" Class="mt-3">
-                    <strong>Note:</strong> This validation runs automatically during application startup.
-                    Invalid devices are quarantined and not advertised to ASCOM clients.
-                </MudAlert>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2">Manual Repair</MudText>
+                            </MudStack>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Class="mb-1">For issues that cannot be automatically fixed:</MudText>
+                            <MudList T="string" Dense="true">
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Use the <strong>Open Settings Folder</strong> button above</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Edit <code>appsettings.user.json</code> in a text editor</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Restart the application</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">If needed, delete the file to regenerate default settings</MudListItem>
+                            </MudList>
+                            <MudAlert Severity="Severity.Info" Class="mt-3">
+                                <strong>Note:</strong> This validation runs automatically during application startup.
+                                Invalid devices are quarantined and not advertised to ASCOM clients.
+                            </MudAlert>
+                        </ChildContent>
+                    </MudExpansionPanel>
+
+                </MudExpansionPanels>
             </MudCardContent>
         </MudCard>
     </MudItem>

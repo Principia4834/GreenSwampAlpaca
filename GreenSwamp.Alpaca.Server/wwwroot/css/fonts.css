@@ -69,3 +69,12 @@
     -webkit-font-feature-settings:  'liga';
     -webkit-font-smoothing:         antialiased;
 }
+
+/* Swamp Witch – decorative display font */
+@font-face {
+    font-family: 'Swamp Witch';
+    font-style:  normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/SwampWitch.ttf') format('truetype');
+}
