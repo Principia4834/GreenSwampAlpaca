@@ -1,17 +1,155 @@
 ﻿@page "/settings-health"
-@using GreenSwamp.Alpaca.Server.Components
+@using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Settings.Models
+@using System.Net
+@inject IVersionedSettingsService SettingsService
+@inject IHttpContextAccessor HttpContextAccessor
 
 <PageTitle>Settings Health Check</PageTitle>
 
 <MudText Typo="Typo.h5" GutterBottom="true">Settings Health Check</MudText>
-<MudText Class="mb-4" Color="Color.Secondary">
+<MudText Class="mb-4">
     Validate and repair your settings configuration. This tool checks the integrity of your settings file
     and can automatically fix common configuration issues.
 </MudText>
 
 <MudGrid>
     <MudItem xs="12" lg="10" xl="8">
-        <SettingsHealthStatus />
+        <MudGrid Spacing="4">
+
+            @* Column 1 : Health status *@
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h6" Class="mb-3">Settings Health Status</MudText>
+
+                @if (_loading)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        <MudText>Validating settings...</MudText>
+                    </MudStack>
+                }
+                else if (_validationResult != null)
+                {
+                    @if (_validationResult.IsValid)
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mb-3">
+                            <strong>All settings are valid.</strong>
+                            @if (_validationResult.HasWarnings)
+                            {
+                                <span> (@_validationResult.Warnings.Count warning(s))</span>
+                            }
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3">
+                            <strong>Settings validation failed.</strong> @_validationResult.Errors.Count error(s) found.
+                        </MudAlert>
+                    }
+
+                    @if (_validationResult.HasErrors)
+                    {
+                        <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">
+                            Errors (@_validationResult.Errors.Count)
+                        </MudText>
+                        @foreach (var error in _validationResult.Errors)
+                        {
+                            <MudPaper Outlined="true" Class="mb-2 pa-3" Style="border-color: var(--mud-palette-error)">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-1">
+                                    <MudStack Row="true" Spacing="1">
+                                        <MudChip T="string" Color="Color.Error" Size="Size.Small">@error.ErrorCode</MudChip>
+                                        @if (error.DeviceNumber.HasValue)
+                                        {
+                                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Device @error.DeviceNumber</MudChip>
+                                        }
+                                    </MudStack>
+                                    @if (error.IsAutoRepairable)
+                                    {
+                                        <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
+                                    }
+                                </MudStack>
+                                <MudText>@error.Message</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @error.Resolution</MudText>
+                            </MudPaper>
+                        }
+                    }
+
+                    @if (_validationResult.HasWarnings)
+                    {
+                        <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2 mt-3">
+                            Warnings (@_validationResult.Warnings.Count)
+                        </MudText>
+                        @foreach (var warning in _validationResult.Warnings)
+                        {
+                            <MudPaper Outlined="true" Class="mb-2 pa-3" Style="border-color: var(--mud-palette-warning)">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-1">
+                                    <MudStack Row="true" Spacing="1">
+                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">@warning.ErrorCode</MudChip>
+                                        @if (warning.DeviceNumber.HasValue)
+                                        {
+                                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Device @warning.DeviceNumber</MudChip>
+                                        }
+                                    </MudStack>
+                                    @if (warning.IsAutoRepairable)
+                                    {
+                                        <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
+                                    }
+                                </MudStack>
+                                <MudText>@warning.Message</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @warning.Resolution</MudText>
+                            </MudPaper>
+                        }
+                    }
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mb-3">
+                        Unable to validate settings. Click <strong>Re-validate</strong> to try again.
+                    </MudAlert>
+                }
+
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="ValidateSettings" Disabled="_loading"
+                           Class="mt-2">
+                    Re-validate
+                </MudButton>
+            </MudItem>
+
+            @* Column 2 : Settings files *@
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h6" Class="mb-1">Settings Files</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">
+                    <code>@_settingsFolder</code>
+                </MudText>
+
+                @if (_jsonFiles.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">No JSON files found in settings folder.</MudText>
+                }
+                else
+                {
+                    <MudList T="string" Dense="true" Class="mb-3">
+                        @foreach (var file in _jsonFiles)
+                        {
+                            <MudListItem Icon="@Icons.Material.Filled.Description" IconSize="Size.Small">
+                                <MudText Typo="Typo.body2">@file</MudText>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
+
+                <MudTooltip Text="@(_isLocalRequest ? string.Empty : "Only available when browsing from the server machine")">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.FolderOpen"
+                               OnClick="OpenSettingsFolder"
+                               Disabled="!_isLocalRequest">
+                        Open Settings Folder
+                    </MudButton>
+                </MudTooltip>
+            </MudItem>
+
+        </MudGrid>
     </MudItem>
 
     <MudItem xs="12" lg="10" xl="8">
@@ -106,3 +244,97 @@
         </MudCard>
     </MudItem>
 </MudGrid>
+
+@code {
+    private ValidationResult? _validationResult;
+    private bool _loading = true;
+    private string _settingsFolder = string.Empty;
+    private List<string> _jsonFiles = [];
+    private bool _isLocalRequest;
+
+    protected override void OnInitialized()
+    {
+        var connection = HttpContextAccessor.HttpContext?.Connection;
+        _isLocalRequest = connection?.RemoteIpAddress is { } remote
+            && (IPAddress.IsLoopback(remote) || remote.Equals(connection.LocalIpAddress));
+
+        LoadSettingsFolder();
+        ValidateSettings();
+    }
+
+    private void LoadSettingsFolder()
+    {
+        var path = SettingsService.MonitorSettingsPath;
+        _settingsFolder = System.IO.Path.GetDirectoryName(path) ?? path;
+        RefreshFileList();
+    }
+
+    private void RefreshFileList()
+    {
+        if (System.IO.Directory.Exists(_settingsFolder))
+        {
+            _jsonFiles = System.IO.Directory.GetFiles(_settingsFolder, "*.json")
+                .Select(System.IO.Path.GetFileName)
+                .Where(f => f is not null)
+                .Select(f => f!)
+                .OrderBy(f => f)
+                .ToList();
+        }
+        else
+        {
+            _jsonFiles = [];
+        }
+    }
+
+    private void ValidateSettings()
+    {
+        _loading = true;
+        StateHasChanged();
+
+        try
+        {
+            _validationResult = SettingsService.ValidateDeviceSettings(0);
+        }
+        catch (Exception ex)
+        {
+            _validationResult = new ValidationResult
+            {
+                IsValid = false,
+                ErrorMessage = $"Validation error: {ex.Message}"
+            };
+            _validationResult.Errors.Add(new ValidationError
+            {
+                ErrorCode    = "VALIDATION_EXCEPTION",
+                Severity     = "error",
+                Message      = $"An unexpected error occurred during validation: {ex.Message}",
+                Resolution   = "Check application logs for details.",
+                IsAutoRepairable = false
+            });
+        }
+        finally
+        {
+            _loading = false;
+            RefreshFileList();
+            StateHasChanged();
+        }
+    }
+
+    private void OpenSettingsFolder()
+    {
+        if (!System.IO.Directory.Exists(_settingsFolder)) return;
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName       = _settingsFolder,
+                UseShellExecute = true,
+                Verb           = "open"
+            });
+        }
+        catch
+        {
+                    // Non-critical UI operation — silently ignore
+                    }
+                }
+            }

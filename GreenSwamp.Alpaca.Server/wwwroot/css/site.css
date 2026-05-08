@@ -54,6 +54,14 @@
     --gs-font-mono: 'Roboto Mono', 'Courier New', monospace;
 }
 
+/* --- Telescope State — panel group heading ------------------ */
+.gs-panel-heading {
+    color:          var(--gs-text-secondary);
+    letter-spacing: 0.08em;
+    font-size:      0.70rem;
+    text-transform: uppercase;
+}
+
 /* --- Base --------------------------------------------------- */
 html, body {
     font-family:      var(--gs-font-sans) !important;

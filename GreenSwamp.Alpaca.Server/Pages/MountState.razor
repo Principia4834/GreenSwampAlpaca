@@ -1,0 +1,230 @@
+﻿@page "/mount-state"
+@page "/mount-state/{DeviceNumber:int}"
+@using GreenSwamp.Alpaca.Server.Services
+@using GreenSwamp.Alpaca.Server.Models
+@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Settings.Models
+@using ASCOM.Common.DeviceInterfaces
+@using System.Globalization
+@inject TelescopeStateService StateService
+@inject IVersionedSettingsService SettingsService
+@implements IDisposable
+
+<PageTitle>Mount State</PageTitle>
+
+<MudText Typo="Typo.h5" GutterBottom="true">Mount State</MudText>
+
+<MudTabs Rounded="true" Elevation="1" @bind-ActivePanelIndex="ActiveTabIndex" Class="mb-4">
+    @foreach (var dn in MountRegistry.GetAllInstances().Select(kvp => kvp.Key).OrderBy(k => k))
+    {
+        <MudTabPanel Text="@TabLabel(dn)">
+            @{
+                var s = StateService.GetCurrentState(dn);
+            }
+
+            <MudGrid Spacing="3" Class="mt-1">
+
+                @* -- Row 1: Position | Status --------------------------- *@
+
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Class="pa-3">
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Position</MudText>
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <tbody>
+                                <tr>
+                                    <td style="width:80px"><MudText Typo="Typo.caption" Color="Color.Primary">RA</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Dec</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Alt</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Az</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">LHA</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Pier</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.SideOfPier</MudText></td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Class="pa-3">
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Status</MudText>
+                        <MudStack Spacing="1">
+                            @StatusRow("Mount Running", s.IsMountRunning, Color.Success)
+                            @StatusRow("Slewing",       s.Slewing,        Color.Warning)
+                            @StatusRow("Tracking",      s.Tracking,       Color.Success)
+                            @StatusRow("At Park",       s.AtPark,         Color.Info)
+                            @StatusRow("At Home",       s.AtHome,         Color.Info)
+                            @StatusRow("Pulse Guiding", s.IsPulseGuidingRa || s.IsPulseGuidingDec, Color.Warning)
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                @* -- Row 2: Axis Positions | Tracking & Guiding --------- *@
+
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Class="pa-3">
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Positions</MudText>
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <tbody>
+                                <tr>
+                                    <td style="width:90px"><MudText Typo="Typo.caption" Color="Color.Primary">Actual X</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.ActualAxisX)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Actual Y</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.ActualAxisY)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">App X</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.AppAxisX)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">App Y</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.AppAxisY)</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Steps X</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.Axis1Steps.ToString("N0")</MudText></td>
+                                </tr>
+                                <tr>
+                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Steps Y</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.Axis2Steps.ToString("N0")</MudText></td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Class="pa-3">
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Tracking &amp; Guiding</MudText>
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <tbody>
+                                <tr>
+                                    <td style="width:120px"><MudText Typo="Typo.caption" Color="Color.Primary">Tracking Rate</MudText></td>
+                                    <td><MudText Typo="Typo.body2">@s.TrackingRate</MudText></td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                        <MudStack Spacing="1" Class="mt-2">
+                            @StatusRow("Pulse Guide RA",  s.IsPulseGuidingRa,  Color.Warning)
+                            @StatusRow("Pulse Guide Dec", s.IsPulseGuidingDec, Color.Warning)
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                @* -- Row 2c: Date / Time -------------------------------- *@
+
+                <MudItem xs="12" md="4">
+                    <MudPaper Elevation="0" Class="pa-3">
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Date / Time</MudText>
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <tbody>
+                                <tr>
+                                    <td style="width:90px"><MudText Typo="Typo.caption" Color="Color.Primary">Local Date</MudText></td>
+                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.LocalDate.ToString("dd MMM yyyy  HH:mm:ss.ff", CultureInfo.CurrentCulture)</MudText></td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudPaper>
+                </MudItem>
+
+                    </MudGrid>
+                </MudTabPanel>
+    }
+</MudTabs>
+
+@code {
+    [Parameter] public int DeviceNumber { get; set; }
+
+    private int ActiveTabIndex { get; set; }
+    private List<AlpacaDevice> _alpacaDevices = [];
+
+    protected override void OnInitialized()
+    {
+        _alpacaDevices = SettingsService.GetAlpacaDevices();
+        StateService.StateChanged += OnStateChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var keys = MountRegistry.GetAllInstances().Select(kvp => kvp.Key).OrderBy(k => k).ToList();
+        var idx = keys.IndexOf(DeviceNumber);
+        ActiveTabIndex = idx >= 0 ? idx : 0;
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    public void Dispose() =>
+        StateService.StateChanged -= OnStateChanged;
+
+    private string TabLabel(int deviceNumber)
+    {
+        var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
+        return string.IsNullOrWhiteSpace(device?.DeviceName)
+            ? $"Device {deviceNumber}"
+            : device.DeviceName;
+    }
+
+    private RenderFragment BoolIcon(bool value, Color trueColor) => __builder =>
+    {
+        <MudIcon Icon="@(value ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                 Color="@(value ? trueColor : Color.Default)"
+                 Size="Size.Small" />;
+    };
+
+    private RenderFragment StatusRow(string label, bool value, Color trueColor) => __builder =>
+    {
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+            @BoolIcon(value, trueColor)
+            <MudText Typo="Typo.body2">@label</MudText>
+        </MudStack>;
+    };
+
+    private string FormatHMS(double hours)
+    {
+        if (double.IsNaN(hours) || double.IsInfinity(hours)) return "N/A";
+        var sign = hours < 0 ? "-" : "+";
+        hours = Math.Abs(hours);
+        var h = (int)hours;
+        var m = (int)((hours - h) * 60);
+        var s = ((hours - h) * 60 - m) * 60;
+        return $"{sign}{h:00}h {m:00}m {s:00.00}s";
+    }
+
+    private string FormatDMS(double degrees)
+    {
+        if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
+        var sign = degrees < 0 ? "-" : "+";
+        degrees = Math.Abs(degrees);
+        var d = (int)degrees;
+        var m = (int)((degrees - d) * 60);
+        var s = ((degrees - d) * 60 - m) * 60;
+        return $"{sign}{d:00}° {m:00}' {s:00.00}\"";
+    }
+
+    private string FormatDegrees(double degrees)
+    {
+        if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
+        return $"{degrees:F4}°";
+    }
+}
+

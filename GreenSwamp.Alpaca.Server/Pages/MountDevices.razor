@@ -1,0 +1,67 @@
+﻿@page "/mount-devices"
+@using System.Linq
+@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Server.Pages.Devices
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Settings.Services
+@inject IVersionedSettingsService SettingsService
+
+<PageTitle>Mount Settings</PageTitle>
+
+<MudText Typo="Typo.h5" GutterBottom="true">Mount Settings</MudText>
+
+@if (ASCOM.Alpaca.DeviceManager.Telescopes.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">No mount devices registered.</MudAlert>
+}
+else
+{
+    <MudTabs Rounded="true" Elevation="1">
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes.Keys.OrderBy(k => k))
+        {
+            <MudTabPanel Text="@TabLabel(device)">
+                @* Inline: reuse TelescopeSetup component/page UI for read-only view *@
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudCard Class="mb-2">
+                            <MudCardContent>
+                                <TelescopeSetup InstanceID="@device" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditDevice(device)">
+                                    Edit Settings
+                                </MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+        }
+    </MudTabs>
+}
+
+@code {
+    private List<AlpacaDevice> _alpacaDevices = [];
+
+    protected override void OnInitialized()
+    {
+        _alpacaDevices = SettingsService.GetAlpacaDevices();
+    }
+
+    private string TabLabel(int deviceNumber)
+    {
+        var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
+        return string.IsNullOrWhiteSpace(device?.DeviceName)
+            ? $"Device {deviceNumber}"
+            : device.DeviceName;
+    }
+
+    void EditDevice(int deviceNumber)
+    {
+        // Navigate to the mountsettings page for this device
+        NavManager.NavigateTo($"/mountsettings/{deviceNumber}");
+    }
+
+    [Inject]
+    NavigationManager NavManager { get; set; } = default!;
+}

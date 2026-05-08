@@ -95,7 +95,7 @@
 		<MudTabPanel Text="Mount Config" Icon="@Icons.Material.Filled.Tune">
 			<MudGrid Spacing="3" Class="pa-4">
 				<MudItem xs="12" md="6">
-					<MudText Typo="Typo.h6" Class="mb-3">Mount Configuration</MudText>
+					<MudText Typo="Typo.h6" Class="mb-3">Mount Motion Settings</MudText>
 					<MudSelect @bind-Value="_settings.AlignmentMode" Label="Alignment Mode" Class="mb-3">
 						<MudSelectItem Value="@("")">Not Set</MudSelectItem>
 						<MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
@@ -311,7 +311,7 @@
     private string _utcOffsetString = "00:00:00";
     private int _loadedDeviceNumber = -1;
 
-    // JSON string properties for complex types
+    // JSON string properties
     private string _parkAxesJson = string.Empty;
     private string _parkPositionsJson = string.Empty;
     private string _hcPulseGuidesJson = string.Empty;

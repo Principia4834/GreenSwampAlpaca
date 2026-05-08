@@ -195,6 +195,7 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
+            builder.Services.AddHttpContextAccessor();
 
             //Load any xml comments for this program, this helps with swagger
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
