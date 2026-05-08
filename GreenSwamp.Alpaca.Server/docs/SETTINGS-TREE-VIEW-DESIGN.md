@@ -1,6 +1,6 @@
 ﻿# Settings Explorer — UI Design Document
 
-**2026-05-08 09:06**
+**2026-05-08 09:48**
 
 ---
 
@@ -301,28 +301,157 @@ All questions were resolved by Andy on 2026-05-08. Implementation should treat t
 | Q9 | Page title / nav label | **"Settings Explorer"** |
 | Q10 | Capability flags | **Not shown.** The design rule is: any tree section where all settings have `Display = No` is hidden from the explorer. Capability flags are `Display = No` throughout, so they never appear. |
 | New | Tooltip / hover text on tree nodes | **Yes — required.** Every tree node (branch and leaf) must show a `MudTooltip` using the `Description` field from the Settings Reference. Field-level tooltips also required. `SettingsNode.Description` property added to the view-model. |
+| Q11 | Show hidden settings | **"Show hidden settings" toggle** — a `MudSwitch` in the page header. When off (default), all `Display = No` fields are hidden from their editors and `Display = No` leaf groups are removed from the tree entirely. When on, hidden fields reappear (visually distinguished) and hidden-leaf tree nodes are restored. See §13. |
 
 ---
 
 ## 12. Implementation Checklist
 
-- [ ] Create `SettingsNode` view-model class with `Description` property
-- [ ] Create `Pages/SettingsExplorer.razor` and `Pages/SettingsExplorer.razor.cs`
-- [ ] Implement `BuildTree()` — constructs full node hierarchy; populates `Description` from static lookup
-- [ ] Add `/settings-explorer` route to `NavMenu.razor` (between Mount Settings and Server Settings)
-- [ ] Implement dirty detection (JSON-serialisation comparison) and dirty badge on leaf nodes
-- [ ] Implement `SaveGroupAsync()` — saves entire backing object; updates original snapshot
-- [ ] Implement `ResetGroup()` — copies original snapshot back to working copy
-- [ ] Implement unsaved-changes guard dialog (Q4) — fires on leaf-switch and on navigation away
-- [ ] Implement mount-type-specific group visibility (Q5) — hide inapplicable groups from the tree
-- [ ] Create `Components/SettingsGroups/` folder; implement one sub-component per leaf group
+- [x] Create `SettingsNode` view-model class with `Description` property
+- [x] Create `Pages/SettingsExplorer.razor` and `Pages/SettingsExplorer.razor.cs`
+- [x] Implement `BuildTree()` — constructs full node hierarchy; populates `Description` from static lookup
+- [x] Add `/settings-explorer` route to `NavMenu.razor` (between Mount Settings and Server Settings)
+- [x] Implement dirty detection (JSON-serialisation comparison) and dirty badge on leaf nodes
+- [x] Implement `SaveGroupAsync()` — saves entire backing object; updates original snapshot
+- [x] Implement `ResetGroup()` — copies original snapshot back to working copy
+- [x] Implement unsaved-changes guard dialog (Q4) — fires on leaf-switch and on navigation away
+- [x] Implement mount-type-specific group visibility (Q5) — hide inapplicable groups from the tree
+- [x] Create `Components/SettingsGroups/` folder; implement one sub-component per leaf group
 - [ ] Implement `ParkPositions` / `HcPulseGuides` row add/edit/delete dialog (Q6)
-- [ ] Implement Observatory → device location propagation prompt (Q7)
-- [ ] Add `MudTooltip` to every tree node using `SettingsNode.Description` (new requirement)
-- [ ] Add `MudTooltip` to every settings field using per-field description text
+- [x] Implement Observatory → device location propagation prompt (Q7)
+- [x] Add `MudTooltip` to every tree node using `SettingsNode.Description` (new requirement)
+- [x] Add `MudTooltip` to every settings field using per-field description text
+- [ ] **Enforce `Display = No` visibility rules in all editors and in `BuildTree()`** ← see §13
+- [ ] **Add `ShowHidden` toggle to page header** ← see §13
 - [ ] Smoke test with GEM, Polar, and AltAz device profiles
 - [ ] Verify dirty badge clears correctly after save
-- [ ] Verify sections with all `Display = No` settings are absent from the tree
+- [ ] Verify sections with all `Display = No` settings are absent from the tree (Q10)
+
+---
+
+## 13. Display=No Compliance Audit & "Show Hidden Settings" Design
+
+### 13.1 Current compliance gaps
+
+A full audit of every editor component against `SETTINGS-REFERENCE.md` reveals the following violations — settings currently shown that have `Display = No`:
+
+#### Groups that are entirely `Display = No` (must be absent from tree unless `ShowHidden = true`)
+
+| Tree Group | Reason hidden by default |
+|---|---|
+| **Optics** | All 4 settings (`ApertureDiameter`, `ApertureArea`, `FocalLength`, `EyepieceFS`) are `Display = No`. |
+| **PEC / PPEC** | All 8 settings are `Display = No`. |
+| **Hand Controller** | All 7 settings are `Display = No`. |
+| **GPS** | Both settings (`GpsPort`, `GpsBaudRate`) are `Display = No`. |
+
+> Per the Q10 rule: *any tree section where all settings have `Display = No` is hidden from the explorer.* These four groups must not appear in `BuildDeviceNodes()` unless `ShowHidden = true`.
+
+#### Individual fields within otherwise-visible groups that are `Display = No`
+
+| Group | Hidden fields (Display = No) |
+|---|---|
+| **Observatory** | `UTCOffset` |
+| **Alpaca Behaviour** | `AllowImageBytesDownload` |
+| **Serial Connection** | `DataBits`, `Handshake`, `ReadTimeout`, `DTREnable`, `RTSEnable` |
+| **Tracking** | `RATrackingOffset`, `AltAzTrackingUpdateInterval` |
+| **Performance & Display** | `GotoPrecision` |
+| **Pier Side** | `CanSetPierSide` (capability flag — `Display = No`) |
+
+> Note: The **Serial Connection** group retains two `Display = Yes` settings (`Mount` and `Port`) so it remains in the tree. It just hides the five `Display = No` fields by default.
+
+### 13.2 "Show hidden settings" feature design
+
+#### Overview
+
+A `MudSwitch` labelled **"Show hidden settings"** is added to the page header toolbar. Its state is held in a page-local `bool _showHidden` field (default `false`). When toggled it triggers `BuildTree()` (to add/remove whole-group nodes) and a `StateHasChanged()` call (to show/hide individual fields inside currently-open editors).
+
+#### Page header change
+
+Current header row:
+```
+[AccountTree icon]  Settings Explorer  [spacer]  [Unsaved chip]  [Expand All]  [Collapse All]
+```
+
+Updated header row:
+```
+[AccountTree icon]  Settings Explorer  [spacer]  [Unsaved chip]  [Show hidden settings ⚙️ switch]  [Expand All]  [Collapse All]
+```
+
+The switch uses `MudSwitch<bool>` with `@bind-Value="_showHidden" @bind-Value:after="OnShowHiddenChanged"`.
+
+`OnShowHiddenChanged` must:
+1. Rebuild the tree (`BuildTree()`) to add or remove whole-hidden-group leaf nodes.
+2. Call `StateHasChanged()` to re-render the detail panel (so hidden fields appear/disappear).
+3. If the currently selected node is one that would be removed (e.g. user was editing Optics and then toggled `ShowHidden` off), clear `_selectedNode` and `_treeSelectedValue`.
+
+#### Tree visibility rules for leaf group nodes
+
+`BuildDeviceNodes()` uses a helper `bool IsGroupVisible(string groupKey)`:
+
+```csharp
+private bool IsGroupVisible(string groupKey) => _showHidden || !_allHiddenGroups.Contains(groupKey);
+
+private static readonly HashSet<string> _allHiddenGroups = new()
+{
+    "Optics",
+    "PEC / PPEC",
+    "Hand Controller",
+    "GPS"
+};
+```
+
+Each `DeviceLeaf(...)` call inside `BuildDeviceNodes()` is guarded:
+```csharp
+if (IsGroupVisible("Optics"))
+    deviceLeaves.Add(DeviceLeaf(deviceNumber, "Optics", ...));
+```
+
+#### Field visibility inside editor components
+
+Each editor sub-component receives a `bool ShowHidden` parameter:
+```csharp
+[Parameter] public bool ShowHidden { get; set; }
+```
+
+`DynamicGroupEditor` receives the value from the page and forwards it to each editor it instantiates. Fields that are `Display = No` are wrapped in:
+```razor
+@if (ShowHidden)
+{
+    <MudTooltip ...>
+        <MudTextField ... />   @* or MudCheckBox, MudNumericField, etc. *@
+    </MudTooltip>
+}
+```
+
+When `ShowHidden = true` the hidden fields are rendered with a visual cue to distinguish them from always-visible fields:
+- A small `MudChip` label reading **"Hidden setting"** in `Color.Warning` / `Variant.Outlined` placed as a suffix adornment or as an adjacent inline chip.
+- Alternatively a `MudAlert Severity="Info" Dense="true"` banner at the top of the editor when `ShowHidden` is true, reading: *"Hidden settings are shown. These are advanced or read-only-like values not normally needed."*
+
+The recommended approach is the **banner** (single placement, low visual noise) plus the `@if (ShowHidden)` guard on each hidden field.
+
+#### `SettingsNode.IsAllHidden` property (optional, for styling)
+
+Optionally, `SettingsNode` can gain a computed or set property `IsAllHidden` that is set to `true` for the four all-hidden groups. When `ShowHidden = true` and a node has `IsAllHidden = true`, the tree item renders its label in `Color.Secondary` (muted) and adds a small `MudChip` suffix `"hidden"` to signal to Andy that this group is normally invisible.
+
+#### Summary of changes required
+
+| File | Change |
+|---|---|
+| `Pages/SettingsExplorer.razor` | Add `MudSwitch` to header; pass `ShowHidden` to `DynamicGroupEditor`; call `OnShowHiddenChanged` on toggle |
+| `Pages/SettingsExplorer.razor.cs` | Add `_showHidden` field; add `_allHiddenGroups` set; add `IsGroupVisible()` helper; guard four all-hidden groups in `BuildDeviceNodes()`; add `OnShowHiddenChanged()` method |
+| `Components/SettingsGroups/DynamicGroupEditor.razor` | Add `ShowHidden` parameter; forward to every leaf editor |
+| `Components/SettingsGroups/ObservatoryEditor.razor` | Guard `UTCOffset` with `@if (ShowHidden)` |
+| `Components/SettingsGroups/AlpacaBehaviourEditor.razor` | Guard `AllowImageBytesDownload` with `@if (ShowHidden)` |
+| `Components/SettingsGroups/SerialConnectionEditor.razor` | Guard `DataBits`, `Handshake`, `ReadTimeout`, `DTREnable`, `RTSEnable` with `@if (ShowHidden)` |
+| `Components/SettingsGroups/TrackingEditor.razor` | Guard `RATrackingOffset`, `AltAzTrackingUpdateInterval` with `@if (ShowHidden)` |
+| `Components/SettingsGroups/PerformanceDisplayEditor.razor` | Guard `GotoPrecision` with `@if (ShowHidden)` |
+| `Components/SettingsGroups/PierSideEditor.razor` | Guard `CanSetPierSide` with `@if (ShowHidden)` |
+| `Components/SettingsGroups/OpticsEditor.razor` | Entire component content guarded (group is hidden by default; shown only when `ShowHidden = true` brings the node back) |
+| `Components/SettingsGroups/PecPpecEditor.razor` | Same as Optics |
+| `Components/SettingsGroups/HandControllerEditor.razor` | Same as Optics |
+| `Components/SettingsGroups/GpsEditor.razor` | Same as Optics |
+
+> The all-hidden-group editors (Optics, PEC/PPEC, Hand Controller, GPS) do not need per-field `@if` guards because the entire group node is absent from the tree when `ShowHidden = false`. However adding the parameter is still required so they compile when `DynamicGroupEditor` always forwards it.
 
 ---
 
