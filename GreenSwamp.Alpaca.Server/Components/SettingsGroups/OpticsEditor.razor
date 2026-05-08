@@ -1,0 +1,27 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Aperture diameter in metres." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.ApertureDiameter" @bind-Value:after="NotifyChanged"
+                         Label="Aperture Diameter (m)" Format="F4" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Effective aperture area in square metres." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.ApertureArea" @bind-Value:after="NotifyChanged"
+                         Label="Aperture Area (m²)" Format="F6" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Focal length in metres." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.FocalLength" @bind-Value:after="NotifyChanged"
+                         Label="Focal Length (m)" Format="F4" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Eyepiece field of view in arcminutes." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.EyepieceFS" @bind-Value:after="NotifyChanged"
+                         Label="Eyepiece FS (arcmin)" Format="F2" Min="0" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

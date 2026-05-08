@@ -1,0 +1,19 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Equatorial coordinate type returned by the mount (J2000 or JNow)." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.EquatorialCoordinateType" @bind-Value:after="NotifyChanged"
+                      Label="Equatorial Coordinate Type" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Start tracking automatically when the mount is connected." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.AutoTrack" @bind-Value:after="NotifyChanged"
+                     Label="Auto Track on Connect" Color="Color.Primary" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

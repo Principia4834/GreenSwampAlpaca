@@ -1,0 +1,142 @@
+﻿@using GreenSwamp.Alpaca.Server.Models
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Server.Components.SettingsGroups
+
+@* Dispatches to the correct leaf-group editor component based on Node.GroupKey. *@
+
+@if (Node is null)
+{
+    return;
+}
+
+@switch (Node.GroupKey)
+{
+    // ── Server Configuration ───────────────────────────────────────────────
+    case "Network":
+        <NetworkEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
+        break;
+    case "Alpaca Behaviour":
+        <AlpacaBehaviourEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
+        break;
+    case "Identity & UI":
+        <IdentityUiEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
+        break;
+    case "Authentication":
+        <AuthenticationEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
+        break;
+
+    // ── Observatory ────────────────────────────────────────────────────────
+    case "Observatory Settings":
+        <ObservatoryEditor Settings="Observatory" OnChanged="OnSettingChanged" />
+        break;
+
+    // ── Monitor / Logging ──────────────────────────────────────────────────
+    case "Device Filters":
+        <DeviceFiltersEditor Settings="Monitor" OnChanged="OnSettingChanged" />
+        break;
+    case "Category Filters":
+        <CategoryFiltersEditor Settings="Monitor" OnChanged="OnSettingChanged" />
+        break;
+    case "Message Type Filters":
+        <MessageTypeFiltersEditor Settings="Monitor" OnChanged="OnSettingChanged" />
+        break;
+    case "Logging Options":
+        <LoggingOptionsEditor Settings="Monitor" OnChanged="OnSettingChanged" />
+        break;
+
+    // ── Telescope Device groups ────────────────────────────────────────────
+    default:
+        @if (Node.Source == SettingsNodeSource.Device
+             && DeviceSettings is not null
+             && DeviceSettings.TryGetValue(Node.DeviceNumber, out var device))
+        {
+            @switch (Node.GroupKey)
+            {
+                case "Device Identity":
+                    <DeviceIdentityEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Serial Connection":
+                    <SerialConnectionEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Location":
+                    <LocationEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Optics":
+                    <OpticsEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Environmental":
+                    <EnvironmentalEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Coordinate System":
+                    <CoordinateSystemEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Tracking":
+                    <TrackingEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Custom Gearing":
+                    <CustomGearingEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Backlash":
+                    <BacklashEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Pulse Guiding":
+                    <PulseGuidingEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Sync Limits":
+                    <SyncLimitsEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "PEC / PPEC":
+                    <PecPpecEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Encoders":
+                    <EncodersEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Hand Controller":
+                    <HandControllerEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "GPS":
+                    <GpsEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Performance & Display":
+                    <PerformanceDisplayEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Home Position":
+                    <HomePositionEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Park Positions":
+                    <ParkPositionsEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Axis / Slew Limits":
+                    <AxisSlewLimitsEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Meridian / Hour Angle Limit":
+                    <MeridianHourAngleLimitEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Horizontal Axis Limit":
+                    <HorizontalAxisLimitEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Pier Side":
+                    <PierSideEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                default:
+                    <MudAlert Severity="Severity.Warning">No editor defined for group "@Node.GroupKey".</MudAlert>
+                    break;
+            }
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Warning">No editor defined for group "@Node.GroupKey".</MudAlert>
+        }
+        break;
+}
+
+@code {
+    [Parameter] public SettingsNode? Node { get; set; }
+    [Parameter] public ObservatorySettings? Observatory { get; set; }
+    [Parameter] public ServerConfig? ServerConfig { get; set; }
+    [Parameter] public MonitorSettings? Monitor { get; set; }
+    [Parameter] public Dictionary<int, SkySettings>? DeviceSettings { get; set; }
+    [Parameter] public EventCallback OnSettingChanged { get; set; }
+
+    private async Task OnChanged() => await OnSettingChanged.InvokeAsync();
+}

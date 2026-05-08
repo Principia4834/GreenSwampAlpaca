@@ -1,0 +1,25 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Hand controller slew speed setting." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.HcSpeed" @bind-Value:after="NotifyChanged"
+                      Label="HC Speed" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Hand controller mode." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.HcMode" @bind-Value:after="NotifyChanged"
+                      Label="HC Mode" Immediate="true" />
+    </MudTooltip>
+    <MudCheckBox @bind-Value="Device!.HcAntiRa"  @bind-Value:after="NotifyChanged" Label="Anti-backlash RA"  Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcAntiDec" @bind-Value:after="NotifyChanged" Label="Anti-backlash Dec" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcFlipEW"  @bind-Value:after="NotifyChanged" Label="Flip E/W"          Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcFlipNS"  @bind-Value:after="NotifyChanged" Label="Flip N/S"          Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.DisableKeysOnGoTo" @bind-Value:after="NotifyChanged"
+                 Label="Disable Keys on GoTo" Color="Color.Primary" />
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

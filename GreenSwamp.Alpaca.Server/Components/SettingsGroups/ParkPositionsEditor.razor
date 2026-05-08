@@ -1,0 +1,48 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Name of the active park position." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.ParkName" @bind-Value:after="NotifyChanged"
+                      Label="Active Park Position" Immediate="true" />
+    </MudTooltip>
+    <MudCheckBox @bind-Value="Device!.LimitPark" @bind-Value:after="NotifyChanged"
+                 Label="Park at Limit" Color="Color.Primary" />
+    <MudTooltip Text="Name of the park position used when a limit is reached." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.ParkLimitName" @bind-Value:after="NotifyChanged"
+                      Label="Park Limit Position Name" Immediate="true"
+                      Disabled="@(!Device!.LimitPark)" />
+    </MudTooltip>
+    @if (Device?.ParkPositions is { Count: > 0 })
+    {
+        <MudText Typo="Typo.subtitle2" Class="mt-2">Defined Park Positions</MudText>
+        <MudSimpleTable Dense="true" Hover="true">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Axis X</th>
+                    <th>Axis Y</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Device.ParkPositions)
+                {
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@p.X.ToString("F2")</td>
+                        <td>@p.Y.ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+        <MudAlert Severity="Severity.Info" Dense="true">
+            To add or remove park positions, use the mount settings page.
+        </MudAlert>
+    }
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

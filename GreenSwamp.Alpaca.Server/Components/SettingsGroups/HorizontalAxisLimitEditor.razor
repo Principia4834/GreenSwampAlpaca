@@ -1,0 +1,27 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Enable tracking limit on the horizontal (altitude) axis for AltAz mounts." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.HzLimitTracking" @bind-Value:after="NotifyChanged"
+                     Label="Horizontal Axis Limit Tracking" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Axis altitude angle at which tracking stops." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.AxisHzTrackingLimit" @bind-Value:after="NotifyChanged"
+                         Label="Hz Tracking Limit (°)" Format="F2" Immediate="true"
+                         Disabled="@(!Device!.HzLimitTracking)" />
+    </MudTooltip>
+    <MudCheckBox @bind-Value="Device!.HzLimitPark" @bind-Value:after="NotifyChanged"
+                 Label="Park at Hz Limit" Color="Color.Primary" />
+    <MudTooltip Text="Name of the park position used when the horizontal limit is reached." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.ParkHzLimitName" @bind-Value:after="NotifyChanged"
+                      Label="Park Hz Limit Position" Immediate="true"
+                      Disabled="@(!Device!.HzLimitPark)" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

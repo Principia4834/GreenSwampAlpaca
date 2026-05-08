@@ -1,0 +1,43 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Default tracking rate (Sidereal, Lunar, Solar, King)." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.TrackingRate" @bind-Value:after="NotifyChanged"
+                      Label="Tracking Rate" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Sidereal tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.SiderealRate" @bind-Value:after="NotifyChanged"
+                         Label="Sidereal Rate (arcsec/s)" Format="F6" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Lunar tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.LunarRate" @bind-Value:after="NotifyChanged"
+                         Label="Lunar Rate (arcsec/s)" Format="F6" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Solar tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.SolarRate" @bind-Value:after="NotifyChanged"
+                         Label="Solar Rate (arcsec/s)" Format="F6" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="King tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.KingRate" @bind-Value:after="NotifyChanged"
+                         Label="King Rate (arcsec/s)" Format="F6" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="RA axis tracking offset in motor steps." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.RATrackingOffset" @bind-Value:after="NotifyChanged"
+                         Label="RA Tracking Offset (steps)" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Limit tracking to prevent mount damage." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.LimitTracking" @bind-Value:after="NotifyChanged"
+                     Label="Limit Tracking" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="AltAz tracking update interval in milliseconds." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.AltAzTrackingUpdateInterval" @bind-Value:after="NotifyChanged"
+                         Label="AltAz Update Interval (ms)" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

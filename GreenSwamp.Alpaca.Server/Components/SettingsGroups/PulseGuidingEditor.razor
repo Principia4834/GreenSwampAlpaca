@@ -1,0 +1,35 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Minimum RA pulse duration in milliseconds." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.MinPulseRa" @bind-Value:after="NotifyChanged"
+                         Label="Min Pulse RA (ms)" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Minimum Dec pulse duration in milliseconds." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.MinPulseDec" @bind-Value:after="NotifyChanged"
+                         Label="Min Pulse Dec (ms)" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Route Dec pulse commands via GoTo instead of pulse guiding." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.DecPulseToGoTo" @bind-Value:after="NotifyChanged"
+                     Label="Dec Pulse → GoTo" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="ST4 guide rate divisor (e.g. 0=full, 1=0.75x, 2=0.5x, etc.)." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.St4Guiderate" @bind-Value:after="NotifyChanged"
+                         Label="ST4 Guide Rate" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="RA guide rate offset relative to sidereal." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.GuideRateOffsetX" @bind-Value:after="NotifyChanged"
+                         Label="Guide Rate Offset X" Format="F4" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Dec guide rate offset." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.GuideRateOffsetY" @bind-Value:after="NotifyChanged"
+                         Label="Guide Rate Offset Y" Format="F4" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

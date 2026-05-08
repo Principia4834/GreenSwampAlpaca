@@ -1,0 +1,46 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Geographic latitude of the observatory in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Settings.Latitude"
+                         @bind-Value:after="NotifyChanged"
+                         Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Geographic longitude of the observatory in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Settings.Longitude"
+                         @bind-Value:after="NotifyChanged"
+                         Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Settings.Elevation"
+                         @bind-Value:after="NotifyChanged"
+                         Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="UTC offset for the observatory site (hours). Use negative values for west." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="_utcOffsetHours"
+                         @bind-Value:after="OnUtcOffsetChanged"
+                         Label="UTC Offset (h)" Format="F1" Min="-14" Max="14" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public ObservatorySettings? Settings { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private double _utcOffsetHours;
+
+    protected override void OnParametersSet()
+    {
+        if (Settings is not null)
+            _utcOffsetHours = Settings.UTCOffset.TotalHours;
+    }
+
+    private async Task OnUtcOffsetChanged()
+    {
+        if (Settings is not null)
+            Settings.UTCOffset = TimeSpan.FromHours(_utcOffsetHours);
+        await NotifyChanged();
+    }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

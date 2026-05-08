@@ -1,0 +1,148 @@
+﻿@page "/settings-explorer"
+@using GreenSwamp.Alpaca.Server.Models
+@using GreenSwamp.Alpaca.Server.Components
+@using GreenSwamp.Alpaca.Server.Components.SettingsGroups
+@using GreenSwamp.Alpaca.Settings.Services
+@using MonitorSettingsModel = GreenSwamp.Alpaca.Settings.Models.MonitorSettings
+@using ServerConfig = GreenSwamp.Alpaca.Settings.Models.ServerConfig
+@using ObservatorySettings = GreenSwamp.Alpaca.Settings.Models.ObservatorySettings
+@using SkySettings = GreenSwamp.Alpaca.Settings.Models.SkySettings
+@inject IVersionedSettingsService SettingsService
+@inject IDialogService DialogService
+
+<PageTitle>Settings Explorer</PageTitle>
+
+<MudStack Spacing="2" Class="mb-3">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+        <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Primary" />
+        <MudText Typo="Typo.h5">Settings Explorer</MudText>
+        <MudSpacer />
+        @if (_anyDirty)
+        {
+            <MudChip T="string" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small"
+                     Icon="@Icons.Material.Filled.Edit">Unsaved changes</MudChip>
+        }
+        <MudTooltip Text="Expand all sections">
+            <MudIconButton Icon="@Icons.Material.Filled.UnfoldMore" Size="Size.Small"
+                           OnClick="ExpandAll" />
+        </MudTooltip>
+        <MudTooltip Text="Collapse all sections">
+            <MudIconButton Icon="@Icons.Material.Filled.UnfoldLess" Size="Size.Small"
+                           OnClick="CollapseAll" />
+        </MudTooltip>
+    </MudStack>
+
+    @if (!string.IsNullOrEmpty(_feedback))
+    {
+        <MudAlert Severity="_feedbackSeverity" Dense="true" ShowCloseIcon="true"
+                  CloseIconClicked="() => _feedback = string.Empty">@_feedback</MudAlert>
+    }
+</MudStack>
+
+<MudGrid Spacing="3">
+
+    @* ── Left panel: tree ──────────────────────────────────────────── *@
+    <MudItem xs="12" md="4">
+        <MudPaper Elevation="1" Class="pa-2">
+            <MudTextField @bind-Value="_searchText"
+                          @bind-Value:after="StateHasChanged"
+                          Placeholder="Search settings…"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          Clearable="true" Dense="true" Class="mb-2" />
+
+            <MudTreeView T="SettingsNode" Dense="true" Hover="true" ExpandOnClick="true"
+                         @ref="_treeView"
+                         Items="@_treeItems"
+                         SelectionMode="SelectionMode.SingleSelection"
+                         SelectedValue="_treeSelectedValue"
+                         SelectedValueChanged="OnTreeNodeSelected">
+                <ItemTemplate>
+                    @{
+                        var item = context as SettingsTreeItemData;
+                    }
+                    @if (item is not null && MatchesSearch(item.Node))
+                    {
+                        <MudTreeViewItem @bind-Expanded="@context.Expanded"
+                                         Items="@context.Children"
+                                         Value="@context.Value"
+                                         Icon="@item.Node.Icon">
+                            <BodyContent Context="bodyCtx">
+                                <MudTooltip Text="@item.Node.Description" Placement="Placement.Right"
+                                            Arrow="true" Delay="600">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudText Typo="Typo.body2">@item.Node.Label</MudText>
+                                        @if (item.Node.Level == SettingsNodeLevel.Group && item.Node.IsDirty)
+                                        {
+                                            <MudBadge Dot="true" Color="Color.Warning" Overlap="true">
+                                                <span style="width:8px" />
+                                            </MudBadge>
+                                        }
+                                    </MudStack>
+                                </MudTooltip>
+                            </BodyContent>
+                        </MudTreeViewItem>
+                    }
+                </ItemTemplate>
+            </MudTreeView>
+        </MudPaper>
+    </MudItem>
+
+    @* ── Right panel: group editor ─────────────────────────────────── *@
+    <MudItem xs="12" md="8">
+        @if (_selectedNode is null)
+        {
+            <MudAlert Severity="Severity.Info">
+                Select a settings group from the tree on the left to begin editing.
+            </MudAlert>
+        }
+        else
+        {
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudIcon Icon="@_selectedNode.Icon" Color="Color.Primary" />
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@_selectedNode.Label</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@_selectedNode.Description</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        @if (_selectedNode.IsDirty)
+                        {
+                            <MudChip T="string" Color="Color.Warning" Size="Size.Small"
+                                     Icon="@Icons.Material.Filled.Edit">Unsaved</MudChip>
+                        }
+                    </CardHeaderActions>
+                </MudCardHeader>
+
+                <MudCardContent>
+                    <DynamicGroupEditor Node="_selectedNode"
+                                        Observatory="_observatoryWork"
+                                        ServerConfig="_serverConfigWork"
+                                        Monitor="_monitorWork"
+                                        DeviceSettings="_deviceWork"
+                                        OnSettingChanged="HandleSettingChanged" />
+                </MudCardContent>
+
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="@(!_selectedNode.IsDirty || _saving)"
+                               OnClick="SaveSelectedGroupAsync">
+                        @if (_saving)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                        }
+                        Save
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.RestartAlt"
+                               Disabled="@(!_selectedNode.IsDirty)"
+                               OnClick="ResetSelectedGroup">
+                        Reset
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        }
+    </MudItem>
+</MudGrid>

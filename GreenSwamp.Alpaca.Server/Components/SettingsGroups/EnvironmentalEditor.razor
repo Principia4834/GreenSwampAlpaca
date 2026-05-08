@@ -1,0 +1,19 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Apply atmospheric refraction correction to pointing calculations." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.Refraction" @bind-Value:after="NotifyChanged"
+                     Label="Enable Refraction" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Ambient temperature in degrees Celsius, used for refraction correction." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="double" @bind-Value="Device!.Temperature" @bind-Value:after="NotifyChanged"
+                         Label="Temperature (°C)" Format="F1" Min="-50" Max="60" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

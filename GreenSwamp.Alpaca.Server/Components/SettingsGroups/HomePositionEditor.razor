@@ -1,0 +1,21 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudText Typo="Typo.subtitle2">Home Position (axis steps)</MudText>
+    <MudNumericField T="double" @bind-Value="Device!.HomeAxisX" @bind-Value:after="NotifyChanged"
+                     Label="Home Axis X" Format="F2" Immediate="true" />
+    <MudNumericField T="double" @bind-Value="Device!.HomeAxisY" @bind-Value:after="NotifyChanged"
+                     Label="Home Axis Y" Format="F2" Immediate="true" />
+    <MudText Typo="Typo.subtitle2" Class="mt-2">Auto-Home Position</MudText>
+    <MudNumericField T="double" @bind-Value="Device!.AutoHomeAxisX" @bind-Value:after="NotifyChanged"
+                     Label="Auto-Home Axis X" Format="F2" Immediate="true" />
+    <MudNumericField T="double" @bind-Value="Device!.AutoHomeAxisY" @bind-Value:after="NotifyChanged"
+                     Label="Auto-Home Axis Y" Format="F2" Immediate="true" />
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

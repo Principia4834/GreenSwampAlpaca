@@ -1,0 +1,27 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudCheckBox @bind-Value="Device!.CustomGearing" @bind-Value:after="NotifyChanged"
+                 Label="Enable Custom Gearing" Color="Color.Primary" />
+    <MudText Typo="Typo.subtitle2" Class="mt-2">RA Axis</MudText>
+    <MudNumericField T="int" @bind-Value="Device!.CustomRa360Steps" @bind-Value:after="NotifyChanged"
+                     Label="RA 360° Steps" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+    <MudNumericField T="int" @bind-Value="Device!.CustomRaWormTeeth" @bind-Value:after="NotifyChanged"
+                     Label="RA Worm Teeth" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+    <MudNumericField T="int" @bind-Value="Device!.CustomRaTrackingOffset" @bind-Value:after="NotifyChanged"
+                     Label="RA Tracking Offset" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+    <MudText Typo="Typo.subtitle2" Class="mt-2">Dec Axis</MudText>
+    <MudNumericField T="int" @bind-Value="Device!.CustomDec360Steps" @bind-Value:after="NotifyChanged"
+                     Label="Dec 360° Steps" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+    <MudNumericField T="int" @bind-Value="Device!.CustomDecWormTeeth" @bind-Value:after="NotifyChanged"
+                     Label="Dec Worm Teeth" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+    <MudNumericField T="int" @bind-Value="Device!.CustomDecTrackingOffset" @bind-Value:after="NotifyChanged"
+                     Label="Dec Tracking Offset" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

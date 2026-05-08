@@ -1,0 +1,19 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"
+                         Label="RA Backlash (steps)" Min="0" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.DecBacklash" @bind-Value:after="NotifyChanged"
+                         Label="Dec Backlash (steps)" Min="0" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

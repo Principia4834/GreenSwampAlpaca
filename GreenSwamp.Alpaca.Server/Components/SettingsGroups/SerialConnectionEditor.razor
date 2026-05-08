@@ -1,0 +1,35 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Serial port name, e.g. COM3." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
+                      Label="Port" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
+                         Label="Baud Rate" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Number of data bits." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.DataBits" @bind-Value:after="NotifyChanged"
+                         Label="Data Bits" Min="5" Max="8" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Handshake protocol (None, XOnXOff, RequestToSend, etc.)." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.Handshake" @bind-Value:after="NotifyChanged"
+                      Label="Handshake" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.ReadTimeout" @bind-Value:after="NotifyChanged"
+                         Label="Read Timeout (ms)" Immediate="true" />
+    </MudTooltip>
+    <MudCheckBox @bind-Value="Device!.DTREnable" @bind-Value:after="NotifyChanged"
+                 Label="DTR Enable" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.RTSEnable" @bind-Value:after="NotifyChanged"
+                 Label="RTS Enable" Color="Color.Primary" />
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

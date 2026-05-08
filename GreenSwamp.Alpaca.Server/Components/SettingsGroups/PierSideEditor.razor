@@ -1,0 +1,19 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Polar mode for GEM mounts (e.g. EQ1, EQ2, EQ3, EQ6, EQ8)." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.PolarMode" @bind-Value:after="NotifyChanged"
+                      Label="Polar Mode" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Enable pier-side reporting for GEM mounts." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.CanSetPierSide" @bind-Value:after="NotifyChanged"
+                     Label="Can Set Pier Side" Color="Color.Primary" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

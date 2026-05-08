@@ -1,0 +1,27 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudText Typo="Typo.subtitle2">PEC</MudText>
+    <MudCheckBox @bind-Value="Device!.PecOn" @bind-Value:after="NotifyChanged"
+                 Label="PEC Enabled" Color="Color.Primary" />
+    <MudTooltip Text="PEC mode (e.g. Off, Playback, Record)." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Device!.PecMode" @bind-Value:after="NotifyChanged"
+                      Label="PEC Mode" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Offset in worm steps for PEC playback start." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.PecOffSet" @bind-Value:after="NotifyChanged"
+                         Label="PEC Offset (steps)" Immediate="true" />
+    </MudTooltip>
+    <MudText Typo="Typo.subtitle2" Class="mt-2">PPEC</MudText>
+    <MudCheckBox @bind-Value="Device!.PpecOn" @bind-Value:after="NotifyChanged"
+                 Label="PPEC Enabled" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.AlternatingPPEC" @bind-Value:after="NotifyChanged"
+                 Label="Alternating PPEC" Color="Color.Primary" />
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

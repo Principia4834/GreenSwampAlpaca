@@ -1,0 +1,26 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Reject non-compliant Alpaca requests when enabled." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.RunInStrictAlpacaMode"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Run in Strict Alpaca Mode" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Prevent remote clients from disconnecting devices." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.PreventRemoteDisconnects"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Prevent Remote Disconnects" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Allow the image-bytes binary download endpoint." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.AllowImageBytesDownload"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Allow ImageBytes Download" Color="Color.Primary" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public ServerConfig Config { get; set; } = default!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

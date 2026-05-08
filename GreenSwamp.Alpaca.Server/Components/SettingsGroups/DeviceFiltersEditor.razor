@@ -1,0 +1,20 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudText Typo="Typo.subtitle2" Class="mt-1">Device Filters</MudText>
+    <MudCheckBox @bind-Value="Settings!.ServerDevice" @bind-Value:after="NotifyChanged"
+                 Label="Server Device" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Settings!.Telescope" @bind-Value:after="NotifyChanged"
+                 Label="Telescope" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Settings!.Ui" @bind-Value:after="NotifyChanged"
+                 Label="UI" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Settings!.Other" @bind-Value:after="NotifyChanged"
+                 Label="Other" Color="Color.Primary" />
+</MudStack>
+
+@code {
+    [Parameter] public MonitorSettings? Settings { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

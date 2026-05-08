@@ -1,0 +1,24 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Enable sync angle limit — reject syncs that would move the model by more than this angle." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.SyncLimitOn" @bind-Value:after="NotifyChanged"
+                     Label="Enable Sync Limit" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Maximum angle in degrees by which a sync may shift the pointing model." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int" @bind-Value="Device!.SyncLimit" @bind-Value:after="NotifyChanged"
+                         Label="Sync Limit (°)" Min="0" Max="180" Immediate="true"
+                         Disabled="@(!Device!.SyncLimitOn)" />
+    </MudTooltip>
+    <MudTooltip Text="Reject sync requests when the scope is past the meridian (GEM/Polar)." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Device!.NoSyncPastMeridian" @bind-Value:after="NotifyChanged"
+                     Label="No Sync Past Meridian" Color="Color.Primary" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

@@ -1,0 +1,23 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudCheckBox @bind-Value="Settings!.LogMonitor"   @bind-Value:after="NotifyChanged" Label="Log Monitor Messages"  Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Settings!.LogSession"   @bind-Value:after="NotifyChanged" Label="Log Session"           Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Settings!.LogCharting"  @bind-Value:after="NotifyChanged" Label="Log Charting"          Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Settings!.StartMonitor" @bind-Value:after="NotifyChanged" Label="Auto-start Monitor"    Color="Color.Primary" />
+    <MudTooltip Text="UI language code, e.g. en-US." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Settings!.Language" @bind-Value:after="NotifyChanged"
+                      Label="Language" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Directory path where log files are written. Leave empty for the default location." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Settings!.LogPath" @bind-Value:after="NotifyChanged"
+                      Label="Log Path" Immediate="true" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public MonitorSettings? Settings { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

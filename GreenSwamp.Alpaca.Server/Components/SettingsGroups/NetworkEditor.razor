@@ -1,0 +1,32 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="TCP port the Alpaca server listens on." Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="ushort" @bind-Value="Config.ServerPort"
+                         @bind-Value:after="NotifyChanged"
+                         Label="Server Port"
+                         Min="1" Max="65535" Class="mb-1" Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Text="Bind to all network interfaces when enabled; localhost-only when disabled." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.AllowRemoteAccess"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Allow Remote Access" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Respond to localhost-sourced Alpaca discovery on the loopback adapter only." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.LocalRespondOnlyToLocalHost"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Respond Locally to Localhost Only" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Advertise this server via Alpaca UDP discovery." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.AllowDiscovery"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Allow Alpaca Discovery" Color="Color.Primary" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public ServerConfig Config { get; set; } = default!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

@@ -1,0 +1,24 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudTooltip Text="Require HTTP Basic authentication for all requests." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.UseAuth"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Enable Authentication" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Text="Login user name used when authentication is enabled." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Config.UserName"
+                      @bind-Value:after="NotifyChanged"
+                      Label="User Name" Disabled="@(!Config.UseAuth)" Immediate="true" />
+    </MudTooltip>
+    <MudAlert Severity="Severity.Info" Dense="true">
+        To change the password, use the <MudLink Href="/setup">Server Settings</MudLink> page.
+    </MudAlert>
+</MudStack>
+
+@code {
+    [Parameter] public ServerConfig Config { get; set; } = default!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}
