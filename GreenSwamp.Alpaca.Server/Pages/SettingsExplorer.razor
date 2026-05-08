@@ -30,6 +30,10 @@
             <MudIconButton Icon="@Icons.Material.Filled.UnfoldLess" Size="Size.Small"
                            OnClick="CollapseAll" />
         </MudTooltip>
+        <MudTooltip Text="Show settings that are normally hidden" Placement="Placement.Left" Arrow="true">
+            <MudSwitch T="bool" Value="_showHidden" ValueChanged="OnShowHiddenChanged"
+                       Label="Show hidden" Color="Color.Warning" Size="Size.Small" />
+        </MudTooltip>
     </MudStack>
 
     @if (!string.IsNullOrEmpty(_feedback))
@@ -116,11 +120,18 @@
                 </MudCardHeader>
 
                 <MudCardContent>
+                    @if (_showHidden)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                            Hidden settings are shown. These are advanced values not normally needed.
+                        </MudAlert>
+                    }
                     <DynamicGroupEditor Node="_selectedNode"
                                         Observatory="_observatoryWork"
                                         ServerConfig="_serverConfigWork"
                                         Monitor="_monitorWork"
                                         DeviceSettings="_deviceWork"
+                                        ShowHidden="_showHidden"
                                         OnSettingChanged="HandleSettingChanged" />
                 </MudCardContent>
 

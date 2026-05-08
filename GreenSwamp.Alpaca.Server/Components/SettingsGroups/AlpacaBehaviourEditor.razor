@@ -12,14 +12,18 @@
                      Label="Prevent Remote Disconnects" Color="Color.Primary" />
     </MudTooltip>
     <MudTooltip Text="Allow the image-bytes binary download endpoint." Placement="Placement.Right" Arrow="true">
-        <MudCheckBox @bind-Value="Config.AllowImageBytesDownload"
-                     @bind-Value:after="NotifyChanged"
-                     Label="Allow ImageBytes Download" Color="Color.Primary" />
+        @if (ShowHidden)
+        {
+            <MudCheckBox @bind-Value="Config.AllowImageBytesDownload"
+                         @bind-Value:after="NotifyChanged"
+                         Label="Allow ImageBytes Download" Color="Color.Primary" />
+        }
     </MudTooltip>
 </MudStack>
 
 @code {
     [Parameter] public ServerConfig Config { get; set; } = default!;
+    [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();

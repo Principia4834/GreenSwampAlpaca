@@ -6,13 +6,17 @@
                       Label="Polar Mode" Immediate="true" />
     </MudTooltip>
     <MudTooltip Text="Enable pier-side reporting for GEM mounts." Placement="Placement.Right" Arrow="true">
-        <MudCheckBox @bind-Value="Device!.CanSetPierSide" @bind-Value:after="NotifyChanged"
-                     Label="Can Set Pier Side" Color="Color.Primary" />
+        @if (ShowHidden)
+        {
+            <MudCheckBox @bind-Value="Device!.CanSetPierSide" @bind-Value:after="NotifyChanged"
+                         Label="Can Set Pier Side" Color="Color.Primary" />
+        }
     </MudTooltip>
 </MudStack>
 
 @code {
     [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();

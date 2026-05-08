@@ -10,8 +10,11 @@
                          Label="Max Slew Rate (°/s)" Format="F2" Min="0" Immediate="true" />
     </MudTooltip>
     <MudTooltip Text="GoTo precision in arcseconds." Placement="Placement.Right" Arrow="true">
-        <MudNumericField T="double" @bind-Value="Device!.GotoPrecision" @bind-Value:after="NotifyChanged"
-                         Label="GoTo Precision (arcsec)" Format="F2" Min="0" Immediate="true" />
+        @if (ShowHidden)
+        {
+            <MudNumericField T="double" @bind-Value="Device!.GotoPrecision" @bind-Value:after="NotifyChanged"
+                             Label="GoTo Precision (arcsec)" Format="F2" Min="0" Immediate="true" />
+        }
     </MudTooltip>
     <MudTooltip Text="Enable trace/debug logging to a file for this device." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Device!.TraceLogger" @bind-Value:after="NotifyChanged"
@@ -29,6 +32,7 @@
 
 @code {
     [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();

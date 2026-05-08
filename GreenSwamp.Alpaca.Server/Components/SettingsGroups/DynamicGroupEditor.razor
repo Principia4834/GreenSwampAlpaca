@@ -16,7 +16,7 @@
         <NetworkEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
     case "Alpaca Behaviour":
-        <AlpacaBehaviourEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
+        <AlpacaBehaviourEditor Config="ServerConfig" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
         break;
     case "Identity & UI":
         <IdentityUiEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
@@ -27,7 +27,7 @@
 
     // ── Observatory ────────────────────────────────────────────────────────
     case "Observatory Settings":
-        <ObservatoryEditor Settings="Observatory" OnChanged="OnSettingChanged" />
+        <ObservatoryEditor Settings="Observatory" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
         break;
 
     // ── Monitor / Logging ──────────────────────────────────────────────────
@@ -56,13 +56,13 @@
                     <DeviceIdentityEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Serial Connection":
-                    <SerialConnectionEditor Device="device" OnChanged="OnSettingChanged" />
+                    <SerialConnectionEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Location":
                     <LocationEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Optics":
-                    <OpticsEditor Device="device" OnChanged="OnSettingChanged" />
+                    <OpticsEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Environmental":
                     <EnvironmentalEditor Device="device" OnChanged="OnSettingChanged" />
@@ -71,7 +71,7 @@
                     <CoordinateSystemEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Tracking":
-                    <TrackingEditor Device="device" OnChanged="OnSettingChanged" />
+                    <TrackingEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Custom Gearing":
                     <CustomGearingEditor Device="device" OnChanged="OnSettingChanged" />
@@ -86,19 +86,19 @@
                     <SyncLimitsEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "PEC / PPEC":
-                    <PecPpecEditor Device="device" OnChanged="OnSettingChanged" />
+                    <PecPpecEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Encoders":
                     <EncodersEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Hand Controller":
-                    <HandControllerEditor Device="device" OnChanged="OnSettingChanged" />
+                    <HandControllerEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "GPS":
-                    <GpsEditor Device="device" OnChanged="OnSettingChanged" />
+                    <GpsEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Performance & Display":
-                    <PerformanceDisplayEditor Device="device" OnChanged="OnSettingChanged" />
+                    <PerformanceDisplayEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Home Position":
                     <HomePositionEditor Device="device" OnChanged="OnSettingChanged" />
@@ -116,7 +116,7 @@
                     <HorizontalAxisLimitEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Pier Side":
-                    <PierSideEditor Device="device" OnChanged="OnSettingChanged" />
+                    <PierSideEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 default:
                     <MudAlert Severity="Severity.Warning">No editor defined for group "@Node.GroupKey".</MudAlert>
@@ -136,6 +136,7 @@
     [Parameter] public ServerConfig? ServerConfig { get; set; }
     [Parameter] public MonitorSettings? Monitor { get; set; }
     [Parameter] public Dictionary<int, SkySettings>? DeviceSettings { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnSettingChanged { get; set; }
 
     private async Task OnChanged() => await OnSettingChanged.InvokeAsync();

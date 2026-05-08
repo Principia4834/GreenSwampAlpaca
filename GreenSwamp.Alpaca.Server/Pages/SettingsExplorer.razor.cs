@@ -52,9 +52,27 @@ public partial class SettingsExplorer : IDisposable
 
     // ── UI state ────────────────────────────────────────────────────────────
     private bool    _saving;
+    private bool    _showHidden      = false;
     private string  _feedback        = string.Empty;
     private Severity _feedbackSeverity = Severity.Info;
     private bool    _anyDirty        => Flatten(_treeItems).Any(n => n.IsDirty);
+
+    // ── Hidden-group definitions ────────────────────────────────────────────
+    private static readonly HashSet<string> _allHiddenGroups = new(StringComparer.Ordinal)
+    {
+        "Optics",
+        "PEC / PPEC",
+        "Hand Controller",
+        "GPS"
+    };
+
+    private bool IsGroupVisible(string groupKey) => _showHidden || !_allHiddenGroups.Contains(groupKey);
+
+    private void OnShowHiddenChanged(bool value)
+    {
+        _showHidden = value;
+        BuildTree();
+    }
 
     private static readonly JsonSerializerOptions _jsonOpts = new() { WriteIndented = false };
 
@@ -222,23 +240,33 @@ public partial class SettingsExplorer : IDisposable
                 DeviceLeaf(deviceNumber, "Device Identity",    Icons.Material.Filled.Badge,           "Device Identity"),
                 DeviceLeaf(deviceNumber, "Serial Connection",  Icons.Material.Filled.Cable,           "Serial Connection"),
                 DeviceLeaf(deviceNumber, "Location",           Icons.Material.Filled.MyLocation,       "Location"),
-                DeviceLeaf(deviceNumber, "Optics",             Icons.Material.Filled.PhotoCamera,      "Optics"),
+            };
+
+            if (IsGroupVisible("Optics"))
+                deviceLeaves.Add(DeviceLeaf(deviceNumber, "Optics", Icons.Material.Filled.PhotoCamera, "Optics"));
+
+            deviceLeaves.AddRange(new[]
+            {
                 DeviceLeaf(deviceNumber, "Environmental",      Icons.Material.Filled.Air,              "Environmental"),
                 DeviceLeaf(deviceNumber, "Coordinate System",  Icons.Material.Filled.Explore,          "Coordinate System"),
                 DeviceLeaf(deviceNumber, "Tracking",           Icons.Material.Filled.Speed,            "Tracking"),
                 DeviceLeaf(deviceNumber, "Custom Gearing",     Icons.Material.Filled.Settings,         "Custom Gearing"),
                 DeviceLeaf(deviceNumber, "Backlash",           Icons.Material.Filled.Compress,         "Backlash"),
                 DeviceLeaf(deviceNumber, "Pulse Guiding",      Icons.Material.Filled.NearMe,           "Pulse Guiding"),
-                DeviceLeaf(deviceNumber, "Sync Limits",        Icons.Material.Filled.SyncAlt,          "Sync Limits"),
-                DeviceLeaf(deviceNumber, "PEC / PPEC",         Icons.Material.Filled.Loop,             "PEC / PPEC"),
-                DeviceLeaf(deviceNumber, "Encoders",           Icons.Material.Filled.Numbers,          "Encoders"),
-                DeviceLeaf(deviceNumber, "Hand Controller",    Icons.Material.Filled.VideogameAsset,   "Hand Controller"),
-                DeviceLeaf(deviceNumber, "GPS",                Icons.Material.Filled.GpsFixed,         "GPS"),
+                DeviceLeaf(deviceNumber, "Sync Limits",           Icons.Material.Filled.SyncAlt,          "Sync Limits"),
+                DeviceLeaf(deviceNumber, "Encoders",              Icons.Material.Filled.Numbers,          "Encoders"),
                 DeviceLeaf(deviceNumber, "Performance & Display", Icons.Material.Filled.DisplaySettings, "Performance & Display"),
-                DeviceLeaf(deviceNumber, "Home Position",      Icons.Material.Filled.Home,             "Home Position"),
-                DeviceLeaf(deviceNumber, "Park Positions",     Icons.Material.Filled.LocalParking,     "Park Positions"),
-                DeviceLeaf(deviceNumber, "Axis / Slew Limits", Icons.Material.Filled.Block,            "Axis / Slew Limits"),
-            };
+                DeviceLeaf(deviceNumber, "Home Position",         Icons.Material.Filled.Home,             "Home Position"),
+                DeviceLeaf(deviceNumber, "Park Positions",        Icons.Material.Filled.LocalParking,     "Park Positions"),
+                DeviceLeaf(deviceNumber, "Axis / Slew Limits",    Icons.Material.Filled.Block,            "Axis / Slew Limits"),
+            });
+
+            if (IsGroupVisible("PEC / PPEC"))
+                deviceLeaves.Add(DeviceLeaf(deviceNumber, "PEC / PPEC", Icons.Material.Filled.Loop, "PEC / PPEC"));
+            if (IsGroupVisible("Hand Controller"))
+                deviceLeaves.Add(DeviceLeaf(deviceNumber, "Hand Controller", Icons.Material.Filled.VideogameAsset, "Hand Controller"));
+            if (IsGroupVisible("GPS"))
+                deviceLeaves.Add(DeviceLeaf(deviceNumber, "GPS", Icons.Material.Filled.GpsFixed, "GPS"));
 
             // Mount-type conditional leaves (Q5)
             if (isGem)

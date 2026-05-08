@@ -21,6 +21,7 @@
 
 @code {
     [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();
