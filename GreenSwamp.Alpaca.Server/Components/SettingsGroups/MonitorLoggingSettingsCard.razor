@@ -87,11 +87,17 @@
     <MudCardActions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Save"
+                   Disabled="@(!IsDirty || IsLoading)"
                    OnClick="@(() => OnSave.InvokeAsync())">
-            Save Changes
+            @if (IsLoading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+            }
+            Save
         </MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
                    StartIcon="@Icons.Material.Filled.RestartAlt"
+                   Disabled="@(!IsDirty)"
                    OnClick="@(() => OnReset.InvokeAsync())">
             Reset
         </MudButton>
@@ -99,6 +105,18 @@
 </MudCard>
 
 @code {
+    /// <summary>
+    /// Whether the Monitor / Logging section is dirty (has unsaved changes).
+    /// </summary>
+    [Parameter]
+    public bool IsDirty { get; set; }
+
+    /// <summary>
+    /// Whether a save operation is in progress.
+    /// </summary>
+    [Parameter]
+    public bool IsLoading { get; set; }
+
     /// <summary>
     /// Callback invoked when a preset button is clicked.
     /// The callback receives the selected preset's MonitorSettings configuration.
@@ -114,7 +132,7 @@
     public EventCallback<string> OnQuickActionTriggered { get; set; }
 
     /// <summary>
-    /// Callback invoked when the "Save Changes" button is clicked.
+    /// Callback invoked when the "Save" button is clicked.
     /// </summary>
     [Parameter]
     public EventCallback OnSave { get; set; }

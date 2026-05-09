@@ -108,7 +108,9 @@
         }
         else if (IsMonitorLoggingSectionNode(_selectedNode))
         {
-            <MonitorLoggingSettingsCard OnPresetSelected="ApplyMonitorPresetAsync" 
+            <MonitorLoggingSettingsCard IsDirty="@_selectedNode.IsDirty"
+                                       IsLoading="@_saving"
+                                       OnPresetSelected="ApplyMonitorPresetAsync" 
                                        OnQuickActionTriggered="HandleMonitorQuickActionAsync" 
                                        OnSave="SaveMonitorSettingsAsync" 
                                        OnReset="ResetMonitorSettingsAsync" />

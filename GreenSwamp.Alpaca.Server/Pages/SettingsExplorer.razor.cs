@@ -451,7 +451,11 @@ public partial class SettingsExplorer : IDisposable
     {
         _monitorWork = preset;
 
-        // Mark only the Monitor section node as dirty (not individual leaf nodes)
+        // Mark all affected leaf nodes as dirty (presets affect all three filter categories + logging options)
+        var affectedGroupKeys = new[] { "Device Filters", "Category Filters", "Message Type Filters", "Logging Options" };
+        MarkMonitorLeafNodesDirty(affectedGroupKeys);
+
+        // Also mark the section node as dirty
         var monitorSectionNode = Flatten(_treeItems).FirstOrDefault(n => 
             n.Source == SettingsNodeSource.Monitor && 
             n.Level == SettingsNodeLevel.Section);
@@ -468,10 +472,40 @@ public partial class SettingsExplorer : IDisposable
     }
 
     /// <summary>
+    /// Marks Monitor leaf nodes as dirty based on group keys.
+    /// Used to track which filter categories have changed.
+    /// </summary>
+    private void MarkMonitorLeafNodesDirty(string[] affectedGroupKeys)
+    {
+        foreach (var groupKey in affectedGroupKeys)
+        {
+            var leafNode = Flatten(_treeItems).FirstOrDefault(n => 
+                n.Source == SettingsNodeSource.Monitor && 
+                n.Level == SettingsNodeLevel.Group &&
+                n.GroupKey == groupKey);
+
+            if (leafNode is not null)
+            {
+                leafNode.IsDirty = IsNodeDirty(leafNode);
+            }
+        }
+    }
+
+    /// <summary>
     /// Handles quick action button clicks from the Monitor/Logging settings card.
     /// </summary>
     private async Task HandleMonitorQuickActionAsync(string actionName)
     {
+        // Determine which leaf nodes are affected by this action
+        var affectedGroupKeys = actionName switch
+        {
+            "SelectAllDevices" => new[] { "Device Filters" },
+            "SelectAllCategories" => new[] { "Category Filters" },
+            "SelectAllTypes" => new[] { "Message Type Filters" },
+            "ClearAllFilters" => new[] { "Device Filters", "Category Filters", "Message Type Filters" },
+            _ => Array.Empty<string>()
+        };
+
         switch (actionName)
         {
             case "SelectAllDevices":
@@ -519,7 +553,9 @@ public partial class SettingsExplorer : IDisposable
                 break;
         }
 
-        // Mark only the Monitor section node as dirty (not individual leaf nodes)
+        // Mark affected leaf nodes and the section node as dirty
+        MarkMonitorLeafNodesDirty(affectedGroupKeys);
+
         var monitorSectionNode = Flatten(_treeItems).FirstOrDefault(n => 
             n.Source == SettingsNodeSource.Monitor && 
             n.Level == SettingsNodeLevel.Section);
