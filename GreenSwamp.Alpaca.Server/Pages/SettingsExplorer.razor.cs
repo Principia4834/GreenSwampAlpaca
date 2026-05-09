@@ -589,14 +589,10 @@ public partial class SettingsExplorer : IDisposable
             await SettingsService.SaveMonitorSettingsAsync(_monitorWork);
             _monitorOrigJson = Serialize(_monitorWork);
 
-            // Clear dirty flag on Monitor section
-            var monitorSectionNode = Flatten(_treeItems).FirstOrDefault(n => 
-                n.Source == SettingsNodeSource.Monitor && 
-                n.Level == SettingsNodeLevel.Section);
-
-            if (monitorSectionNode is not null)
+            // Clear dirty flag on all Monitor nodes (section + all leaves)
+            foreach (var n in Flatten(_treeItems).Where(n => n.Source == SettingsNodeSource.Monitor))
             {
-                monitorSectionNode.IsDirty = false;
+                n.IsDirty = false;
             }
 
             ShowSuccess("Monitor / Logging settings saved successfully.");
@@ -613,19 +609,16 @@ public partial class SettingsExplorer : IDisposable
 
     /// <summary>
     /// Resets the Monitor / Logging settings from the card's Reset button.
+    /// Follows the same pattern as ResetGroup - clears dirty flags on all Monitor nodes.
     /// </summary>
     private async Task ResetMonitorSettingsAsync()
     {
         _monitorWork = DeserializeOrDefault<MonitorSettingsModel>(_monitorOrigJson);
 
-        // Clear dirty flag on Monitor section
-        var monitorSectionNode = Flatten(_treeItems).FirstOrDefault(n => 
-            n.Source == SettingsNodeSource.Monitor && 
-            n.Level == SettingsNodeLevel.Section);
-
-        if (monitorSectionNode is not null)
+        // Clear dirty flag on all Monitor nodes (section + all leaves)
+        foreach (var n in Flatten(_treeItems).Where(n => n.Source == SettingsNodeSource.Monitor))
         {
-            monitorSectionNode.IsDirty = false;
+            n.IsDirty = false;
         }
 
         StateHasChanged();

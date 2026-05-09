@@ -17,11 +17,6 @@
         <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Primary" />
         <MudText Typo="Typo.h5">Settings Explorer</MudText>
         <MudSpacer />
-        @if (_anyDirty)
-        {
-            <MudChip T="string" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small"
-                     Icon="@Icons.Material.Filled.Edit">Unsaved changes</MudChip>
-        }
         <MudTooltip Text="Expand all sections">
             <MudIconButton Icon="@Icons.Material.Filled.UnfoldMore" Size="Size.Small"
                            OnClick="ExpandAll" />

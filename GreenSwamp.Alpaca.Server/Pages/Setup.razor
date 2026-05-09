@@ -48,7 +48,7 @@
                                 </MudTooltip>
                             </MudStack>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                <MudCheckBox @bind-Value="RemoteAccess" Label="Allow Remote Access" Dense="true" />
+                                <MudCheckBox @bind-Value="RemoteAccess" Label="Allow Remote Access" Dense="true" Color="Color.Primary" />
                                 <MudTooltip Text="When off, the server binds to localhost only and is not reachable from other machines on the network." Placement="Placement.Right" Arrow="true">
                                     <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                                 </MudTooltip>
@@ -56,13 +56,13 @@
 
                             @* Discovery controls moved into Network card as requested *@
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                <MudCheckBox @bind-Value="Discovery" Label="Allow Discovery" Dense="true" />
+                                <MudCheckBox @bind-Value="Discovery" Label="Allow Discovery" Dense="true" Color="Color.Primary" />
                                 <MudTooltip Text="Enables Alpaca UDP discovery so ASCOM clients can find this server automatically." Placement="Placement.Right" Arrow="true">
                                     <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                                 </MudTooltip>
                             </MudStack>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                <MudCheckBox @bind-Value="LocalHostOnlyOnHost" Label="Respond to localhost on loopback only" Dense="true" />
+                                <MudCheckBox @bind-Value="LocalHostOnlyOnHost" Label="Respond to localhost on loopback only" Dense="true" Color="Color.Primary" />
                                 <MudTooltip Text="Limits discovery responses to clients on the same machine only." Placement="Placement.Right" Arrow="true">
                                     <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                                 </MudTooltip>
@@ -111,25 +111,25 @@
                 <MudStack Spacing="2">
                     @* Behaviour settings moved here *@
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudCheckBox @bind-Value="StartBrowser" Label="Open Browser on Start" Dense="true" />
+                        <MudCheckBox @bind-Value="StartBrowser" Label="Open Browser on Start" Dense="true" Color="Color.Primary" />
                         <MudTooltip Text="Automatically opens the management UI in the default browser when the server starts." Placement="Placement.Right" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                         </MudTooltip>
                     </MudStack>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudCheckBox @bind-Value="StrictAPIMode" Label="Strict API Compliance" Dense="true" />
+                        <MudCheckBox @bind-Value="StrictAPIMode" Label="Strict API Compliance" Dense="true" Color="Color.Primary" />
                         <MudTooltip Text="Enforces all required Alpaca response fields; recommended for production use." Placement="Placement.Right" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                         </MudTooltip>
                     </MudStack>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudCheckBox @bind-Value="PreventRemoteDisconnects" Label="Prevent Remote Disconnects" Dense="true" />
+                        <MudCheckBox @bind-Value="PreventRemoteDisconnects" Label="Prevent Remote Disconnects" Dense="true" Color="Color.Primary" />
                         <MudTooltip Text="Ignores Disconnect commands sent by remote clients; protects a running session." Placement="Placement.Right" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                         </MudTooltip>
                     </MudStack>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MudCheckBox @bind-Value="RunSwagger" Label="Run OpenAPI / Swagger" Dense="true" />
+                        <MudCheckBox @bind-Value="RunSwagger" Label="Run OpenAPI / Swagger" Dense="true" Color="Color.Primary" />
                         <MudTooltip Text="Hosts interactive API documentation at /swagger. Takes effect on next startup." Placement="Placement.Right" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                         </MudTooltip>
@@ -150,7 +150,7 @@
                 <MudGrid Spacing="2">
                     <MudItem xs="12" sm="3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudCheckBox @bind-Value="RequireAuthorization" Label="Require Authorization" Dense="true" />
+                            <MudCheckBox @bind-Value="RequireAuthorization" Label="Require Authorization" Dense="true" Color="Color.Primary" />
                             <MudTooltip Text="Enables HTTP Basic authentication. All API clients must supply the credentials below." Placement="Placement.Right" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
                             </MudTooltip>
@@ -174,13 +174,13 @@
 
 @* ── Footer action bar ────────────────────────────────────────────────────── *@
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-4" Spacing="3">
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_isDirty)" OnClick="SaveAllSettingsAsync">
-        Save
-    </MudButton>
-    <MudSpacer />
-    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-        <MudCheckBox @bind-Value="EnableShutdown" Label="Confirm shutdown" Dense="true" />
-        <MudTooltip Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected." Placement="Placement.Left" Arrow="true">
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_isDirty)" OnClick="SaveAllSettingsAsync">
+    Save
+</MudButton>
+<MudSpacer />
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+    <MudCheckBox @bind-Value="EnableShutdown" Label="Confirm shutdown" Dense="true" Color="Color.Primary" />
+    <MudTooltip Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected." Placement="Placement.Left" Arrow="true">
             <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
         </MudTooltip>
     </MudStack>
