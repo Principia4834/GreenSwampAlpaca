@@ -52,11 +52,8 @@
         {
             @switch (Node.GroupKey)
             {
-                case "Device Identity":
-                    <DeviceIdentityEditor Device="device" OnChanged="OnSettingChanged" />
-                    break;
-                case "Serial Connection":
-                    <SerialConnectionEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
+                case "Mount Configuration":
+                    <MountConfigurationEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Location":
                     <LocationEditor Device="device" OnChanged="OnSettingChanged" />
@@ -73,23 +70,11 @@
                 case "Tracking":
                     <TrackingEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
-                case "Custom Gearing":
-                    <CustomGearingEditor Device="device" OnChanged="OnSettingChanged" />
-                    break;
-                case "Backlash":
-                    <BacklashEditor Device="device" OnChanged="OnSettingChanged" />
-                    break;
                 case "Pulse Guiding":
                     <PulseGuidingEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
-                case "Sync Limits":
-                    <SyncLimitsEditor Device="device" OnChanged="OnSettingChanged" />
-                    break;
                 case "PEC / PPEC":
                     <PecPpecEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
-                    break;
-                case "Encoders":
-                    <EncodersEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Hand Controller":
                     <HandControllerEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
@@ -100,20 +85,14 @@
                 case "Performance & Display":
                     <PerformanceDisplayEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
-                case "Home Position":
-                    <HomePositionEditor Device="device" OnChanged="OnSettingChanged" />
+                case "Home and Park":
+                    <HomeAndParkEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
-                case "Park Positions":
-                    <ParkPositionsEditor Device="device" OnChanged="OnSettingChanged" />
-                    break;
-                case "Axis / Slew Limits":
-                    <AxisSlewLimitsEditor Device="device" OnChanged="OnSettingChanged" />
+                case "Limits":
+                    <LimitsEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Meridian / Hour Angle Limit":
                     <MeridianHourAngleLimitEditor Device="device" OnChanged="OnSettingChanged" />
-                    break;
-                case "Horizontal Axis Limit":
-                    <HorizontalAxisLimitEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Pier Side":
                     <PierSideEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />

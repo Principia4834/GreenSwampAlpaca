@@ -1,0 +1,119 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+@* Combined editor: Device Identity + Serial Connection + Backlash + Encoders + Custom Gearing *@
+
+<MudExpansionPanels MultiExpansion="true" Elevation="0">
+
+    <MudExpansionPanel Text="Device Identity" Icon="@Icons.Material.Filled.Badge" IsInitiallyExpanded="true">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Human-readable name for this telescope device." Placement="Placement.Right" Arrow="true">
+                <MudTextField @bind-Value="Device!.InstrumentName" @bind-Value:after="NotifyChanged"
+                              Label="Instrument Name" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Description of the instrument shown in Alpaca setup." Placement="Placement.Right" Arrow="true">
+                <MudTextField @bind-Value="Device!.InstrumentDescription" @bind-Value:after="NotifyChanged"
+                              Label="Instrument Description" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Enable this device so it is accessible via Alpaca." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.Enabled" @bind-Value:after="NotifyChanged"
+                             Label="Enabled" Color="Color.Primary" />
+            </MudTooltip>
+            <MudTooltip Text="Mount driver to use for this device." Placement="Placement.Right" Arrow="true">
+                <MudTextField @bind-Value="Device!.Mount" @bind-Value:after="NotifyChanged"
+                              Label="Mount" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Alignment mode: AltAz, GermanPolar, or Polar." Placement="Placement.Right" Arrow="true">
+                <MudSelect @bind-Value="Device!.AlignmentMode" @bind-Value:after="NotifyChanged"
+                           Label="Alignment Mode">
+                    <MudSelectItem Value="@("GermanPolar")">German Equatorial (GEM)</MudSelectItem>
+                    <MudSelectItem Value="@("Polar")">Polar / Fork</MudSelectItem>
+                    <MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
+                </MudSelect>
+            </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Serial Connection" Icon="@Icons.Material.Filled.Cable" IsInitiallyExpanded="true">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Serial port name, e.g. COM3." Placement="Placement.Right" Arrow="true">
+                <MudTextField @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
+                              Label="Port" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
+                                 Label="Baud Rate" Immediate="true" />
+            </MudTooltip>
+            @if (ShowHidden)
+            {
+                <MudTooltip Text="Number of data bits." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="int" @bind-Value="Device!.DataBits" @bind-Value:after="NotifyChanged"
+                                     Label="Data Bits" Min="5" Max="8" Immediate="true" />
+                </MudTooltip>
+                <MudTooltip Text="Handshake protocol (None, XOnXOff, RequestToSend, etc.)." Placement="Placement.Right" Arrow="true">
+                    <MudTextField @bind-Value="Device!.Handshake" @bind-Value:after="NotifyChanged"
+                                  Label="Handshake" Immediate="true" />
+                </MudTooltip>
+                <MudTooltip Text="Read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="int" @bind-Value="Device!.ReadTimeout" @bind-Value:after="NotifyChanged"
+                                     Label="Read Timeout (ms)" Immediate="true" />
+                </MudTooltip>
+                <MudCheckBox @bind-Value="Device!.DTREnable" @bind-Value:after="NotifyChanged"
+                             Label="DTR Enable" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="Device!.RTSEnable" @bind-Value:after="NotifyChanged"
+                             Label="RTS Enable" Color="Color.Primary" />
+            }
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Backlash" Icon="@Icons.Material.Filled.Compress">
+        <MudStack Spacing="3">
+            <MudTooltip Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"
+                                 Label="RA Backlash (steps)" Min="0" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="Device!.DecBacklash" @bind-Value:after="NotifyChanged"
+                                 Label="Dec Backlash (steps)" Min="0" Immediate="true" />
+            </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Encoders" Icon="@Icons.Material.Filled.Numbers">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.EncodersOn" @bind-Value:after="NotifyChanged"
+                             Label="Encoders Enabled" Color="Color.Primary" />
+            </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Custom Gearing" Icon="@Icons.Material.Filled.Settings">
+        <MudStack Spacing="3">
+            <MudCheckBox @bind-Value="Device!.CustomGearing" @bind-Value:after="NotifyChanged"
+                         Label="Enable Custom Gearing" Color="Color.Primary" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2">RA Axis</MudText>
+            <MudNumericField T="int" @bind-Value="Device!.CustomRa360Steps" @bind-Value:after="NotifyChanged"
+                             Label="RA 360° Steps" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+            <MudNumericField T="int" @bind-Value="Device!.CustomRaWormTeeth" @bind-Value:after="NotifyChanged"
+                             Label="RA Worm Teeth" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+            <MudNumericField T="int" @bind-Value="Device!.CustomRaTrackingOffset" @bind-Value:after="NotifyChanged"
+                             Label="RA Tracking Offset" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2">Dec Axis</MudText>
+            <MudNumericField T="int" @bind-Value="Device!.CustomDec360Steps" @bind-Value:after="NotifyChanged"
+                             Label="Dec 360° Steps" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+            <MudNumericField T="int" @bind-Value="Device!.CustomDecWormTeeth" @bind-Value:after="NotifyChanged"
+                             Label="Dec Worm Teeth" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+            <MudNumericField T="int" @bind-Value="Device!.CustomDecTrackingOffset" @bind-Value:after="NotifyChanged"
+                             Label="Dec Tracking Offset" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+        </MudStack>
+    </MudExpansionPanel>
+
+</MudExpansionPanels>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

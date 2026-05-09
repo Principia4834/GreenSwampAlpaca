@@ -103,6 +103,9 @@ public partial class SettingsExplorer : IDisposable
         // Device leaf groups
         ["Device Identity"]      = "Device number, name and enabled state.",
         ["Serial Connection"]    = "Serial port, baud rate, handshake and timeout settings.",
+        ["Mount Configuration"]  = "Device identity, serial connection, backlash, encoders and custom gearing.",
+        ["Home and Park"]        = "Stored home and park axis positions.",
+        ["Limits"]               = "Axis / slew limits, sync limits and horizontal axis limit (AltAz).",
         ["Location"]             = "Latitude, longitude, elevation and UTC offset for this device.",
         ["Optics"]               = "Aperture diameter, aperture area and focal length.",
         ["Environmental"]        = "Atmospheric refraction correction and temperature.",
@@ -162,6 +165,18 @@ public partial class SettingsExplorer : IDisposable
     {
         var root = new List<SettingsNode>();
 
+        // Telescope Devices (first)
+        var deviceSection = new SettingsNode
+        {
+            Label    = "Telescope Devices",
+            Icon     = Icons.Material.Filled.TravelExplore,
+            Description = NodeDescriptions["Telescope Devices"],
+            Level    = SettingsNodeLevel.Section,
+            Source   = SettingsNodeSource.Device,
+            Children = BuildDeviceNodes()
+        };
+        root.Add(deviceSection);
+
         // Observatory
         root.Add(new SettingsNode
         {
@@ -174,23 +189,6 @@ public partial class SettingsExplorer : IDisposable
             [
                 Leaf("Observatory Settings", Icons.Material.Filled.Terrain,
                      SettingsNodeSource.Observatory, "Observatory Settings"),
-            ]
-        });
-
-        // Server Configuration
-        root.Add(new SettingsNode
-        {
-            Label    = "Server Configuration",
-            Icon     = Icons.Material.Filled.Dns,
-            Description = NodeDescriptions["Server Configuration"],
-            Level    = SettingsNodeLevel.Section,
-            Source   = SettingsNodeSource.ServerConfig,
-            Children =
-            [
-                Leaf("Network",          Icons.Material.Filled.NetworkCheck,   SettingsNodeSource.ServerConfig, "Network"),
-                Leaf("Alpaca Behaviour", Icons.Material.Filled.Tune,           SettingsNodeSource.ServerConfig, "Alpaca Behaviour"),
-                Leaf("Identity & UI",    Icons.Material.Filled.Person,         SettingsNodeSource.ServerConfig, "Identity & UI"),
-                Leaf("Authentication",   Icons.Material.Filled.Lock,           SettingsNodeSource.ServerConfig, "Authentication"),
             ]
         });
 
@@ -211,17 +209,22 @@ public partial class SettingsExplorer : IDisposable
             ]
         });
 
-        // Telescope Devices
-        var deviceSection = new SettingsNode
+        // Server Configuration
+        root.Add(new SettingsNode
         {
-            Label    = "Telescope Devices",
-            Icon     = Icons.Material.Filled.TravelExplore,
-            Description = NodeDescriptions["Telescope Devices"],
+            Label    = "Server Configuration",
+            Icon     = Icons.Material.Filled.Dns,
+            Description = NodeDescriptions["Server Configuration"],
             Level    = SettingsNodeLevel.Section,
-            Source   = SettingsNodeSource.Device,
-            Children = BuildDeviceNodes()
-        };
-        root.Add(deviceSection);
+            Source   = SettingsNodeSource.ServerConfig,
+            Children =
+            [
+                Leaf("Network",          Icons.Material.Filled.NetworkCheck,   SettingsNodeSource.ServerConfig, "Network"),
+                Leaf("Alpaca Behaviour", Icons.Material.Filled.Tune,           SettingsNodeSource.ServerConfig, "Alpaca Behaviour"),
+                Leaf("Identity & UI",    Icons.Material.Filled.Person,         SettingsNodeSource.ServerConfig, "Identity & UI"),
+                Leaf("Authentication",   Icons.Material.Filled.Lock,           SettingsNodeSource.ServerConfig, "Authentication"),
+            ]
+        });
 
         _treeItems = root.Select(n => (ITreeItemData<SettingsNode>)new SettingsTreeItemData(n)).ToList();
     }
@@ -237,9 +240,8 @@ public partial class SettingsExplorer : IDisposable
 
             var deviceLeaves = new List<SettingsNode>
             {
-                DeviceLeaf(deviceNumber, "Device Identity",    Icons.Material.Filled.Badge,           "Device Identity"),
-                DeviceLeaf(deviceNumber, "Serial Connection",  Icons.Material.Filled.Cable,           "Serial Connection"),
-                DeviceLeaf(deviceNumber, "Location",           Icons.Material.Filled.MyLocation,       "Location"),
+                DeviceLeaf(deviceNumber, "Mount Configuration", Icons.Material.Filled.Build,          "Mount Configuration"),
+                DeviceLeaf(deviceNumber, "Location",            Icons.Material.Filled.MyLocation,      "Location"),
             };
 
             if (IsGroupVisible("Optics"))
@@ -250,15 +252,11 @@ public partial class SettingsExplorer : IDisposable
                 DeviceLeaf(deviceNumber, "Environmental",      Icons.Material.Filled.Air,              "Environmental"),
                 DeviceLeaf(deviceNumber, "Coordinate System",  Icons.Material.Filled.Explore,          "Coordinate System"),
                 DeviceLeaf(deviceNumber, "Tracking",           Icons.Material.Filled.Speed,            "Tracking"),
-                DeviceLeaf(deviceNumber, "Custom Gearing",     Icons.Material.Filled.Settings,         "Custom Gearing"),
-                DeviceLeaf(deviceNumber, "Backlash",           Icons.Material.Filled.Compress,         "Backlash"),
                 DeviceLeaf(deviceNumber, "Pulse Guiding",      Icons.Material.Filled.NearMe,           "Pulse Guiding"),
-                DeviceLeaf(deviceNumber, "Sync Limits",           Icons.Material.Filled.SyncAlt,          "Sync Limits"),
-                DeviceLeaf(deviceNumber, "Encoders",              Icons.Material.Filled.Numbers,          "Encoders"),
+                DeviceLeaf(deviceNumber, "Encoders",           Icons.Material.Filled.Numbers,          "Encoders"),
                 DeviceLeaf(deviceNumber, "Performance & Display", Icons.Material.Filled.DisplaySettings, "Performance & Display"),
-                DeviceLeaf(deviceNumber, "Home Position",         Icons.Material.Filled.Home,             "Home Position"),
-                DeviceLeaf(deviceNumber, "Park Positions",        Icons.Material.Filled.LocalParking,     "Park Positions"),
-                DeviceLeaf(deviceNumber, "Axis / Slew Limits",    Icons.Material.Filled.Block,            "Axis / Slew Limits"),
+                DeviceLeaf(deviceNumber, "Home and Park",      Icons.Material.Filled.Home,             "Home and Park"),
+                DeviceLeaf(deviceNumber, "Limits",             Icons.Material.Filled.Block,            "Limits"),
             });
 
             if (IsGroupVisible("PEC / PPEC"))
@@ -275,11 +273,6 @@ public partial class SettingsExplorer : IDisposable
                     Icons.Material.Filled.Straighten, "Meridian / Hour Angle Limit"));
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "Pier Side",
                     Icons.Material.Filled.SwapHoriz, "Pier Side"));
-            }
-            if (isAltAz)
-            {
-                deviceLeaves.Add(DeviceLeaf(deviceNumber, "Horizontal Axis Limit",
-                    Icons.Material.Filled.Straighten, "Horizontal Axis Limit"));
             }
 
             nodes.Add(new SettingsNode

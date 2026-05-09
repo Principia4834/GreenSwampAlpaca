@@ -1,0 +1,83 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+@* Combined editor: Axis / Slew Limits + Sync Limits + Horizontal Axis Limit (AltAz only) *@
+
+<MudExpansionPanels MultiExpansion="true" Elevation="0">
+
+    <MudExpansionPanel Text="Axis / Slew Limits" Icon="@Icons.Material.Filled.Block" IsInitiallyExpanded="true">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Upper Dec/Alt axis limit in degrees (prevents mount from going too far north/zenith)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.AxisUpperLimitY" @bind-Value:after="NotifyChanged"
+                                 Label="Upper Dec/Alt Axis Limit (°)" Format="F2" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Lower Dec/Alt axis limit in degrees." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.AxisLowerLimitY" @bind-Value:after="NotifyChanged"
+                                 Label="Lower Dec/Alt Axis Limit (°)" Format="F2" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="RA/Az axis limit in degrees." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.AxisLimitX" @bind-Value:after="NotifyChanged"
+                                 Label="RA/Az Axis Limit (°)" Format="F2" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Maximum slew rate in degrees per second." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.MaximumSlewRate" @bind-Value:after="NotifyChanged"
+                                 Label="Max Slew Rate (°/s)" Format="F2" Min="0" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Axis tracking limit in degrees for the RA/Az axis." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.AxisTrackingLimit" @bind-Value:after="NotifyChanged"
+                                 Label="Axis Tracking Limit (°)" Format="F2" Immediate="true" />
+            </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Sync Limits" Icon="@Icons.Material.Filled.SyncAlt" IsInitiallyExpanded="true">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Enable sync angle limit — reject syncs that would move the model by more than this angle." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.SyncLimitOn" @bind-Value:after="NotifyChanged"
+                             Label="Enable Sync Limit" Color="Color.Primary" />
+            </MudTooltip>
+            <MudTooltip Text="Maximum angle in degrees by which a sync may shift the pointing model." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="Device!.SyncLimit" @bind-Value:after="NotifyChanged"
+                                 Label="Sync Limit (°)" Min="0" Max="180" Immediate="true"
+                                 Disabled="@(!Device!.SyncLimitOn)" />
+            </MudTooltip>
+            <MudTooltip Text="Reject sync requests when the scope is past the meridian (GEM/Polar)." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.NoSyncPastMeridian" @bind-Value:after="NotifyChanged"
+                             Label="No Sync Past Meridian" Color="Color.Primary" />
+            </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    @if (IsAltAz)
+    {
+        <MudExpansionPanel Text="Horizontal Axis Limit" Icon="@Icons.Material.Filled.Straighten" IsInitiallyExpanded="true">
+            <MudStack Spacing="3">
+                <MudTooltip Text="Enable tracking limit on the horizontal (altitude) axis for AltAz mounts." Placement="Placement.Right" Arrow="true">
+                    <MudCheckBox @bind-Value="Device!.HzLimitTracking" @bind-Value:after="NotifyChanged"
+                                 Label="Horizontal Axis Limit Tracking" Color="Color.Primary" />
+                </MudTooltip>
+                <MudTooltip Text="Axis altitude angle at which tracking stops." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="double" @bind-Value="Device!.AxisHzTrackingLimit" @bind-Value:after="NotifyChanged"
+                                     Label="Hz Tracking Limit (°)" Format="F2" Immediate="true"
+                                     Disabled="@(!Device!.HzLimitTracking)" />
+                </MudTooltip>
+                <MudCheckBox @bind-Value="Device!.HzLimitPark" @bind-Value:after="NotifyChanged"
+                             Label="Park at Hz Limit" Color="Color.Primary" />
+                <MudTooltip Text="Name of the park position used when the horizontal limit is reached." Placement="Placement.Right" Arrow="true">
+                    <MudTextField @bind-Value="Device!.ParkHzLimitName" @bind-Value:after="NotifyChanged"
+                                  Label="Park Hz Limit Position" Immediate="true"
+                                  Disabled="@(!Device!.HzLimitPark)" />
+                </MudTooltip>
+            </MudStack>
+        </MudExpansionPanel>
+    }
+
+</MudExpansionPanels>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private bool IsAltAz => Device?.AlignmentMode?.Equals("AltAz", StringComparison.OrdinalIgnoreCase) ?? false;
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}
