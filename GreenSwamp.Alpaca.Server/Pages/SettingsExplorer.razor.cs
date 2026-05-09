@@ -62,8 +62,7 @@ public partial class SettingsExplorer : IDisposable
     {
         "Optics",
         "PEC / PPEC",
-        "Hand Controller",
-        "GPS"
+        "Hand Controller"
     };
 
     private bool IsGroupVisible(string groupKey) => _showHidden || !_allHiddenGroups.Contains(groupKey);
@@ -103,13 +102,12 @@ public partial class SettingsExplorer : IDisposable
         // Device leaf groups
         ["Device Identity"]      = "Device number, name and enabled state.",
         ["Serial Connection"]    = "Serial port, baud rate, handshake and timeout settings.",
-        ["Mount Configuration"]  = "Device identity, serial connection, equatorial coordinates, backlash, encoders, motor settings and custom gearing.",
-        ["Home and Park"]        = "Stored home and park axis positions.",
-        ["Limits"]               = "Axis / slew limits, sync limits and horizontal axis limit (AltAz).",
-        ["Tracking & Guiding"]   = "Tracking rates and pulse guiding settings.",
-        ["Location"]             = "Latitude, longitude, elevation and UTC offset for this device.",
-        ["Optics"]               = "Aperture diameter, aperture area and focal length.",
-        ["Environmental"]        = "Atmospheric refraction correction and temperature.",
+        ["Mount Configuration"]      = "Device identity, serial connection, equatorial coordinates, mount hardware (motor settings, encoders, backlash) and custom gearing.",
+        ["Home and Park"]            = "Stored home and park axis positions.",
+        ["Limits"]                   = "Axis / slew limits, sync limits and horizontal axis limit (AltAz).",
+        ["Tracking & Guiding"]       = "Tracking rates and pulse guiding settings.",
+        ["Observatory Configuration"] = "Latitude, longitude, elevation, UTC offset, environmental conditions and GPS.",
+        ["Optics"]                   = "Aperture diameter, aperture area and focal length.",
         ["Coordinate System"]    = "Equatorial coordinate type (J2000 / JNow).",
         ["Tracking"]             = "Tracking rates (sidereal, lunar, solar, king) and RA tracking offset.",
         ["Custom Gearing"]       = "Custom motor gearing step counts and worm-wheel tooth counts.",
@@ -241,8 +239,8 @@ public partial class SettingsExplorer : IDisposable
 
             var deviceLeaves = new List<SettingsNode>
             {
-                DeviceLeaf(deviceNumber, "Mount Configuration", Icons.Material.Filled.Build,          "Mount Configuration"),
-                DeviceLeaf(deviceNumber, "Location",            Icons.Material.Filled.MyLocation,      "Location"),
+                DeviceLeaf(deviceNumber, "Mount Configuration",       Icons.Material.Filled.Build,          "Mount Configuration"),
+                DeviceLeaf(deviceNumber, "Observatory Configuration", Icons.Material.Filled.MyLocation,     "Observatory Configuration"),
             };
 
             if (IsGroupVisible("Optics"))
@@ -250,7 +248,6 @@ public partial class SettingsExplorer : IDisposable
 
             deviceLeaves.AddRange(new[]
             {
-                DeviceLeaf(deviceNumber, "Environmental",         Icons.Material.Filled.Air,              "Environmental"),
                 DeviceLeaf(deviceNumber, "Tracking & Guiding",   Icons.Material.Filled.Speed,            "Tracking & Guiding"),
                 DeviceLeaf(deviceNumber, "Performance & Display", Icons.Material.Filled.DisplaySettings, "Performance & Display"),
                 DeviceLeaf(deviceNumber, "Home and Park",        Icons.Material.Filled.Home,             "Home and Park"),
@@ -261,8 +258,6 @@ public partial class SettingsExplorer : IDisposable
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "PEC / PPEC", Icons.Material.Filled.Loop, "PEC / PPEC"));
             if (IsGroupVisible("Hand Controller"))
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "Hand Controller", Icons.Material.Filled.VideogameAsset, "Hand Controller"));
-            if (IsGroupVisible("GPS"))
-                deviceLeaves.Add(DeviceLeaf(deviceNumber, "GPS", Icons.Material.Filled.GpsFixed, "GPS"));
 
             // Mount-type conditional leaves (Q5)
             if (isGem)

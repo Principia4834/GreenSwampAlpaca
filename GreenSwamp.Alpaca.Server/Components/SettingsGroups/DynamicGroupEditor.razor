@@ -55,14 +55,11 @@
                 case "Mount Configuration":
                     <MountConfigurationEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
-                case "Location":
-                    <LocationEditor Device="device" OnChanged="OnSettingChanged" />
+                case "Observatory Configuration":
+                    <ObservatoryConfigurationEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Optics":
                     <OpticsEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
-                    break;
-                case "Environmental":
-                    <EnvironmentalEditor Device="device" OnChanged="OnSettingChanged" />
                     break;
                 case "Tracking & Guiding":
                     <TrackingAndGuidingEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
@@ -72,9 +69,6 @@
                     break;
                 case "Hand Controller":
                     <HandControllerEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
-                    break;
-                case "GPS":
-                    <GpsEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 case "Performance & Display":
                     <PerformanceDisplayEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />

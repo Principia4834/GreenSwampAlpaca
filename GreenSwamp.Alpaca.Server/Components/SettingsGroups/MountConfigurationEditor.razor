@@ -75,29 +75,7 @@
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Backlash" Icon="@Icons.Material.Filled.Compress">
-        <MudStack Spacing="3">
-            <MudTooltip Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"
-                                 Label="RA Backlash (steps)" Min="0" Immediate="true" />
-            </MudTooltip>
-            <MudTooltip Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="int" @bind-Value="Device!.DecBacklash" @bind-Value:after="NotifyChanged"
-                                 Label="Dec Backlash (steps)" Min="0" Immediate="true" />
-            </MudTooltip>
-        </MudStack>
-    </MudExpansionPanel>
-
-    <MudExpansionPanel Text="Encoders" Icon="@Icons.Material.Filled.Numbers">
-        <MudStack Spacing="3">
-            <MudTooltip Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
-                <MudCheckBox @bind-Value="Device!.EncodersOn" @bind-Value:after="NotifyChanged"
-                             Label="Encoders Enabled" Color="Color.Primary" />
-            </MudTooltip>
-        </MudStack>
-    </MudExpansionPanel>
-
-    <MudExpansionPanel Text="Motor Settings" Icon="@Icons.Material.Filled.Bolt">
+    <MudExpansionPanel Text="Mount Hardware" Icon="@Icons.Material.Filled.Bolt">
         <MudStack Spacing="3">
             <MudTooltip Text="Maximum slew rate in degrees per second." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.MaximumSlewRate" @bind-Value:after="NotifyChanged"
@@ -110,6 +88,18 @@
             <MudTooltip Text="Polar scope LED brightness level (0–255)." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.PolarLedLevel" @bind-Value:after="NotifyChanged"
                                  Label="Polar LED Level" Min="0" Max="255" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.EncodersOn" @bind-Value:after="NotifyChanged"
+                             Label="Encoders Enabled" Color="Color.Primary" />
+            </MudTooltip>
+            <MudTooltip Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"
+                                 Label="RA Backlash (steps)" Min="0" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="Device!.DecBacklash" @bind-Value:after="NotifyChanged"
+                                 Label="Dec Backlash (steps)" Min="0" Immediate="true" />
             </MudTooltip>
         </MudStack>
     </MudExpansionPanel>

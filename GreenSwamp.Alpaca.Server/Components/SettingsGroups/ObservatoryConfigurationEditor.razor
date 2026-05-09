@@ -1,0 +1,83 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+@* Combined editor: Location + Environmental + GPS *@
+
+<MudExpansionPanels MultiExpansion="true" Elevation="0">
+
+    <MudExpansionPanel Text="Location" Icon="@Icons.Material.Filled.MyLocation" IsInitiallyExpanded="true">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Geographic latitude of the device site in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.Latitude" @bind-Value:after="NotifyChanged"
+                                 Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Geographic longitude of the device site in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.Longitude" @bind-Value:after="NotifyChanged"
+                                 Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
+            </MudTooltip>
+            <MudTooltip Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.Elevation" @bind-Value:after="NotifyChanged"
+                                 Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
+            </MudTooltip>
+            @if (ShowHidden)
+            {
+                <MudTooltip Text="UTC offset for this device site (hours)." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="double" @bind-Value="_utcHours" @bind-Value:after="OnUtcChanged"
+                                     Label="UTC Offset (h)" Format="F2" Min="-14" Max="14" Immediate="true" />
+                </MudTooltip>
+            }
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Environmental" Icon="@Icons.Material.Filled.Air">
+        <MudStack Spacing="3">
+            <MudTooltip Text="Apply atmospheric refraction correction to pointing calculations." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.Refraction" @bind-Value:after="NotifyChanged"
+                             Label="Enable Refraction" Color="Color.Primary" />
+            </MudTooltip>
+            <MudTooltip Text="Ambient temperature in degrees Celsius, used for refraction correction." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Device!.Temperature" @bind-Value:after="NotifyChanged"
+                                 Label="Temperature (°C)" Format="F1" Min="-50" Max="60" Immediate="true" />
+            </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    @if (ShowHidden)
+    {
+        <MudExpansionPanel Text="GPS" Icon="@Icons.Material.Filled.GpsFixed">
+            <MudStack Spacing="3">
+                <MudTooltip Text="Serial port number for the GPS receiver." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="int" @bind-Value="Device!.GpsPort" @bind-Value:after="NotifyChanged"
+                                     Label="GPS Port Number" Min="0" Immediate="true" />
+                </MudTooltip>
+                <MudTooltip Text="GPS receiver baud rate." Placement="Placement.Right" Arrow="true">
+                    <MudTextField @bind-Value="Device!.GpsBaudRate" @bind-Value:after="NotifyChanged"
+                                  Label="GPS Baud Rate" Immediate="true" />
+                </MudTooltip>
+            </MudStack>
+        </MudExpansionPanel>
+    }
+
+</MudExpansionPanels>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private double _utcHours;
+
+    protected override void OnParametersSet()
+    {
+        if (Device is not null)
+            _utcHours = Device.UTCOffset.TotalHours;
+    }
+
+    private async Task OnUtcChanged()
+    {
+        if (Device is not null)
+            Device.UTCOffset = TimeSpan.FromHours(_utcHours);
+        await NotifyChanged();
+    }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}
