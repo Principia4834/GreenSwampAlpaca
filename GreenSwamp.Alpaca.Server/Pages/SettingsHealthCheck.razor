@@ -139,7 +139,7 @@
                     </MudList>
                 }
 
-                <MudTooltip Text="@(_isLocalRequest ? string.Empty : "Only available when browsing from the server machine")">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@(_isLocalRequest ? string.Empty : "Only available when browsing from the server machine")">
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.FolderOpen"
                                OnClick="OpenSettingsFolder"

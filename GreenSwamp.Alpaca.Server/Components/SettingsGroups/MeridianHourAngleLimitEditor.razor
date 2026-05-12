@@ -1,11 +1,11 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Hour angle at which tracking stops to prevent over-rotation (GEM/Polar)." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Hour angle at which tracking stops to prevent over-rotation (GEM/Polar)." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Device!.HourAngleLimit" @bind-Value:after="NotifyChanged"
                          Label="Hour Angle Limit (h)" Format="F2" Min="0" Max="12" />
     </MudTooltip>
-    <MudTooltip Text="Reject sync requests when the scope is past the meridian." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Reject sync requests when the scope is past the meridian." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Device!.NoSyncPastMeridian" @bind-Value:after="NotifyChanged"
                      Label="No Sync Past Meridian" Color="Color.Primary" />
     </MudTooltip>

@@ -2,22 +2,22 @@
 @inject MudBlazor.ISnackbar Snackbar
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Geographic latitude of the observatory in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic latitude of the observatory in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Settings.Latitude"
                          @bind-Value:after="NotifyChanged"
                          Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Geographic longitude of the observatory in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic longitude of the observatory in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Settings.Longitude"
                          @bind-Value:after="NotifyChanged"
                          Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Settings.Elevation"
                          @bind-Value:after="NotifyChanged"
                          Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="UTC offset for the observatory site (hours). Use negative values for west." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="UTC offset for the observatory site (hours). Use negative values for west." Placement="Placement.Right" Arrow="true">
         @if (ShowHidden)
         {
             <MudNumericField T="double" @bind-Value="_utcOffsetHours"
@@ -27,7 +27,7 @@
     </MudTooltip>
     @if (DeviceSettings is { Count: > 0 })
     {
-        <MudTooltip Text="Copy Latitude, Longitude and Elevation from Observatory Settings to all telescope devices." Placement="Placement.Right" Arrow="true">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Copy Latitude, Longitude and Elevation from Observatory Settings to all telescope devices." Placement="Placement.Right" Arrow="true">
             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.CopyAll"
                        OnClick="CopyToAllDevices">

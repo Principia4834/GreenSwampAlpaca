@@ -1,12 +1,12 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Require HTTP Basic authentication for all requests." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Require HTTP Basic authentication for all requests." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.UseAuth"
                      @bind-Value:after="NotifyChanged"
                      Label="Enable Authentication" Color="Color.Primary" />
     </MudTooltip>
-    <MudTooltip Text="Login user name used when authentication is enabled." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Login user name used when authentication is enabled." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Config.UserName"
                       @bind-Value:after="NotifyChanged"
                       Label="User Name" Disabled="@(!Config.UseAuth)" Immediate="true" />

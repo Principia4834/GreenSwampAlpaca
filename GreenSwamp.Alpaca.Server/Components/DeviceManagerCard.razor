@@ -1,4 +1,4 @@
-@using GreenSwamp.Alpaca.Settings.Models
+﻿@using GreenSwamp.Alpaca.Settings.Models
 @using MudBlazor
 
 @* Displayed in the right panel when "Telescope Devices" section is selected in the tree. *@
@@ -40,7 +40,7 @@
                                     @FriendlyAlignment(device.AlignmentMode) &nbsp;-&nbsp; @device.Mount
                                 </MudText>
                             </MudStack>
-                            <MudTooltip Text="Permanently delete this device and all its settings"
+                            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Permanently delete this device and all its settings"
                                         Placement="Placement.Left" Arrow="true">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteForever"
                                                Color="Color.Error"

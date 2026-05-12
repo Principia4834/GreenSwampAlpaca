@@ -4,11 +4,11 @@
     <MudText Typo="Typo.subtitle2">PEC</MudText>
     <MudCheckBox @bind-Value="Device!.PecOn" @bind-Value:after="NotifyChanged"
                  Label="PEC Enabled" Color="Color.Primary" />
-    <MudTooltip Text="PEC mode (e.g. Off, Playback, Record)." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="PEC mode (e.g. Off, Playback, Record)." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Device!.PecMode" @bind-Value:after="NotifyChanged"
                       Label="PEC Mode" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Offset in worm steps for PEC playback start." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Offset in worm steps for PEC playback start." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="int" @bind-Value="Device!.PecOffSet" @bind-Value:after="NotifyChanged"
                          Label="PEC Offset (steps)" Immediate="true" />
     </MudTooltip>

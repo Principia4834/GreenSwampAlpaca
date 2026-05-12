@@ -7,7 +7,7 @@
     <MudTooltip Text="Writes monitor output to GSMonitorLog*.txt. Mutually exclusive with Fast Monitor." Placement="Placement.Right" Arrow="true" Inline="false">
         <MudCheckBox @bind-Value="Settings!.LogMonitor" @bind-Value:after="NotifyChanged" Label="Log Monitor Messages" Color="Color.Primary" />
     </MudTooltip>
-    <MudTooltip Text="1000-record ring buffer — lower overhead than Log Monitor. Mutually exclusive with Log Monitor. Use 'Write Buffer to File' to persist." Placement="Placement.Right" Arrow="true" Inline="false">
+    <MudTooltip Text="1000-record ring buffer — lower overhead than Log Monitor. Mutually exclusive with Log Monitor." Placement="Placement.Right" Arrow="true" Inline="false">
         <MudCheckBox @bind-Value="Settings!.FastMonitor" @bind-Value:after="NotifyChanged" Label="Fast Monitor (Buffer)" Color="Color.Primary" />
     </MudTooltip>
     <MudTooltip Text="Writes session data to GSSessionLog*.txt." Placement="Placement.Right" Arrow="true" Inline="false">
@@ -18,11 +18,11 @@
     </MudTooltip>
     @if (ShowHidden)
     {
-        <MudTooltip Text="UI language code, e.g. en-US." Placement="Placement.Right" Arrow="true">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="UI language code, e.g. en-US." Placement="Placement.Right" Arrow="true">
             <MudTextField @bind-Value="Settings!.Language" @bind-Value:after="NotifyChanged"
                           Label="Language" Immediate="true" />
         </MudTooltip>
-        <MudTooltip Text="Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GSServer)." Placement="Placement.Right" Arrow="true">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GSServer)." Placement="Placement.Right" Arrow="true">
             <MudTextField @bind-Value="Settings!.LogPath" @bind-Value:after="NotifyChanged"
                           Label="Log Path" Immediate="true" />
         </MudTooltip>

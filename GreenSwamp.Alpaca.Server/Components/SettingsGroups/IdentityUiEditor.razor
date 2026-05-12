@@ -1,17 +1,17 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Human-readable location shown in Alpaca discovery and the setup page." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Human-readable location shown in Alpaca discovery and the setup page." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Config.Location"
                       @bind-Value:after="NotifyChanged"
                       Label="Location" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Open the default browser automatically when the server starts." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Open the default browser automatically when the server starts." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.AutoStartBrowser"
                      @bind-Value:after="NotifyChanged"
                      Label="Auto-start Browser" Color="Color.Primary" />
     </MudTooltip>
-    <MudTooltip Text="Expose the OpenAPI / Swagger UI at /swagger." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Expose the OpenAPI / Swagger UI at /swagger." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.RunSwagger"
                      @bind-Value:after="NotifyChanged"
                      Label="Enable Swagger UI" Color="Color.Primary" />

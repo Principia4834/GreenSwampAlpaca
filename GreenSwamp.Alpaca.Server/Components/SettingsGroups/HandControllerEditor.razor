@@ -1,11 +1,11 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Hand controller slew speed setting." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Hand controller slew speed setting." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Device!.HcSpeed" @bind-Value:after="NotifyChanged"
                       Label="HC Speed" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Hand controller mode." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Hand controller mode." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Device!.HcMode" @bind-Value:after="NotifyChanged"
                       Label="HC Mode" Immediate="true" />
     </MudTooltip>

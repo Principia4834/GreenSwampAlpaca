@@ -17,15 +17,15 @@
         <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Primary" />
         <MudText Typo="Typo.h5">Settings Explorer</MudText>
         <MudSpacer />
-        <MudTooltip Text="Expand all sections">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Expand all sections">
             <MudIconButton Icon="@Icons.Material.Filled.UnfoldMore" Size="Size.Small"
                            OnClick="ExpandAll" />
         </MudTooltip>
-        <MudTooltip Text="Collapse all sections">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Collapse all sections">
             <MudIconButton Icon="@Icons.Material.Filled.UnfoldLess" Size="Size.Small"
                            OnClick="CollapseAll" />
         </MudTooltip>
-        <MudTooltip Text="Show settings that are normally hidden" Placement="Placement.Left" Arrow="true">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Show settings that are normally hidden" Placement="Placement.Left" Arrow="true">
             <MudSwitch T="bool" Value="_showHidden" ValueChanged="OnShowHiddenChanged"
                        Label="Show hidden" Color="Color.Warning" Size="Size.Small" />
         </MudTooltip>
@@ -66,7 +66,7 @@
                                          Value="@context.Value"
                                          Icon="@item.Node.Icon">
                             <BodyContent Context="bodyCtx">
-                                <MudTooltip Text="@item.Node.Description" Placement="Placement.Right"
+                                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@item.Node.Description" Placement="Placement.Right"
                                             Arrow="true" Delay="600">
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                         <MudText Typo="Typo.body2">@item.Node.Label</MudText>

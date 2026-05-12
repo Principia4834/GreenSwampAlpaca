@@ -6,23 +6,23 @@
 
     <MudExpansionPanel Text="Device Identity" Icon="@Icons.Material.Filled.Badge" IsInitiallyExpanded="true">
         <MudStack Spacing="3">
-            <MudTooltip Text="Human-readable name for this telescope device." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Human-readable name for this telescope device." Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.InstrumentName" @bind-Value:after="NotifyChanged"
                               Label="Instrument Name" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Description of the instrument shown in Alpaca setup." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Description of the instrument shown in Alpaca setup." Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.InstrumentDescription" @bind-Value:after="NotifyChanged"
                               Label="Instrument Description" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Enable this device so it is accessible via Alpaca." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable this device so it is accessible via Alpaca." Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.Enabled" @bind-Value:after="NotifyChanged"
                              Label="Enabled" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Text="Mount driver to use for this device." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Mount driver to use for this device." Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.Mount" @bind-Value:after="NotifyChanged"
                               Label="Mount" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Alignment mode: AltAz, GermanPolar, or Polar." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Alignment mode: AltAz, GermanPolar, or Polar." Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.AlignmentMode" @bind-Value:after="NotifyChanged"
                            Label="Alignment Mode">
                     <MudSelectItem Value="@("GermanPolar")">German Equatorial (GEM)</MudSelectItem>
@@ -30,7 +30,7 @@
                     <MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
-            <MudTooltip Text="Equatorial coordinate type returned by the mount (J2000 or JNow)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Equatorial coordinate type returned by the mount (J2000 or JNow)." Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.EquatorialCoordinateType" @bind-Value:after="NotifyChanged"
                            Label="Equatorial Coordinate Type">
                     <MudSelectItem Value="@("Other")">Other</MudSelectItem>
@@ -45,25 +45,25 @@
 
     <MudExpansionPanel Text="Serial Connection" Icon="@Icons.Material.Filled.Cable" IsInitiallyExpanded="true">
         <MudStack Spacing="3">
-            <MudTooltip Text="Serial port name, e.g. COM3." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Serial port name, e.g. COM3." Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
                               Label="Port" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
                                  Label="Baud Rate" Immediate="true" />
             </MudTooltip>
             @if (ShowHidden)
             {
-                <MudTooltip Text="Number of data bits." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Number of data bits." Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.DataBits" @bind-Value:after="NotifyChanged"
                                      Label="Data Bits" Min="5" Max="8" Immediate="true" />
                 </MudTooltip>
-                <MudTooltip Text="Handshake protocol (None, XOnXOff, RequestToSend, etc.)." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Handshake protocol (None, XOnXOff, RequestToSend, etc.)." Placement="Placement.Right" Arrow="true">
                     <MudTextField @bind-Value="Device!.Handshake" @bind-Value:after="NotifyChanged"
                                   Label="Handshake" Immediate="true" />
                 </MudTooltip>
-                <MudTooltip Text="Read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.ReadTimeout" @bind-Value:after="NotifyChanged"
                                      Label="Read Timeout (ms)" Immediate="true" />
                 </MudTooltip>
@@ -77,27 +77,27 @@
 
     <MudExpansionPanel Text="Mount Hardware" Icon="@Icons.Material.Filled.Bolt">
         <MudStack Spacing="3">
-            <MudTooltip Text="Maximum slew rate in degrees per second." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Maximum slew rate in degrees per second." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.MaximumSlewRate" @bind-Value:after="NotifyChanged"
                                  Label="Max Slew Rate (°/s)" Format="F2" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Enable full current mode on the motor drivers." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable full current mode on the motor drivers." Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.FullCurrent" @bind-Value:after="NotifyChanged"
                              Label="Full Current" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Text="Polar scope LED brightness level (0–255)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Polar scope LED brightness level (0–255)." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.PolarLedLevel" @bind-Value:after="NotifyChanged"
                                  Label="Polar LED Level" Min="0" Max="255" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.EncodersOn" @bind-Value:after="NotifyChanged"
                              Label="Encoders Enabled" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"
                                  Label="RA Backlash (steps)" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.DecBacklash" @bind-Value:after="NotifyChanged"
                                  Label="Dec Backlash (steps)" Min="0" Immediate="true" />
             </MudTooltip>

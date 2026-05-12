@@ -1,19 +1,19 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Aperture diameter in metres." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Aperture diameter in metres." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Device!.ApertureDiameter" @bind-Value:after="NotifyChanged"
                          Label="Aperture Diameter (m)" Format="F4" Min="0" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Effective aperture area in square metres." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Effective aperture area in square metres." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Device!.ApertureArea" @bind-Value:after="NotifyChanged"
                          Label="Aperture Area (m²)" Format="F6" Min="0" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Focal length in metres." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Focal length in metres." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Device!.FocalLength" @bind-Value:after="NotifyChanged"
                          Label="Focal Length (m)" Format="F4" Min="0" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Eyepiece field of view in arcminutes." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Eyepiece field of view in arcminutes." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="double" @bind-Value="Device!.EyepieceFS" @bind-Value:after="NotifyChanged"
                          Label="Eyepiece FS (arcmin)" Format="F2" Min="0" Immediate="true" />
     </MudTooltip>

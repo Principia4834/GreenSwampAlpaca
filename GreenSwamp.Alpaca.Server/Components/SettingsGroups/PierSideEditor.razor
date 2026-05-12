@@ -1,11 +1,11 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Text="Polar mode for GEM mounts (e.g. EQ1, EQ2, EQ3, EQ6, EQ8)." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Polar mode for GEM mounts (e.g. EQ1, EQ2, EQ3, EQ6, EQ8)." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Device!.PolarMode" @bind-Value:after="NotifyChanged"
                       Label="Polar Mode" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Text="Enable pier-side reporting for GEM mounts." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable pier-side reporting for GEM mounts." Placement="Placement.Right" Arrow="true">
         @if (ShowHidden)
         {
             <MudCheckBox @bind-Value="Device!.CanSetPierSide" @bind-Value:after="NotifyChanged"
