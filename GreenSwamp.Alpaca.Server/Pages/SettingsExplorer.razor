@@ -119,10 +119,6 @@
                     </CardHeaderAvatar>
                     <CardHeaderContent>
                         <MudText Typo="Typo.h6">@_selectedNode.Label</MudText>
-                        @if (_selectedNode.Source != SettingsNodeSource.ServerConfig)
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@_selectedNode.Description</MudText>
-                        }
                     </CardHeaderContent>
                     <CardHeaderActions>
                         @if (_selectedNode.IsDirty)

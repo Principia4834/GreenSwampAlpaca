@@ -5,13 +5,11 @@
         <MudCheckBox @bind-Value="Settings!.StartMonitor" @bind-Value:after="NotifyChanged" Label="Auto-start Monitor" Color="Color.Primary" />
     </MudTooltip>
     <MudTooltip Text="Writes monitor output to GSMonitorLog*.txt. Mutually exclusive with Fast Monitor." Placement="Placement.Right" Arrow="true">
-        <MudCheckBox Value="Settings!.LogMonitor"
-                     ValueChanged="@((bool v) => { Settings!.LogMonitor = v; if (v) Settings!.FastMonitor = false; _ = NotifyChanged(); })"
+        <MudCheckBox @bind-Value="Settings!.LogMonitor" @bind-Value:after="NotifyChanged"
                      Label="Log Monitor Messages" Color="Color.Primary" />
     </MudTooltip>
     <MudTooltip Text="1000-record ring buffer — lower overhead than Log Monitor. Mutually exclusive with Log Monitor. Use 'Write Buffer to File' to persist." Placement="Placement.Right" Arrow="true">
-        <MudCheckBox Value="Settings!.FastMonitor"
-                     ValueChanged="@((bool v) => { Settings!.FastMonitor = v; if (v) Settings!.LogMonitor = false; _ = NotifyChanged(); })"
+        <MudCheckBox @bind-Value="Settings!.FastMonitor" @bind-Value:after="NotifyChanged"
                      Label="Fast Monitor (Buffer)" Color="Color.Info" />
     </MudTooltip>
     <MudTooltip Text="Writes session data to GSSessionLog*.txt." Placement="Placement.Right" Arrow="true">
