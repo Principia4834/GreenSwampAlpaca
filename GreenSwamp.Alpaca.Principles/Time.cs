@@ -17,6 +17,7 @@ using ASCOM.Tools;
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace GreenSwamp.Alpaca.Principles
 {
@@ -324,12 +325,16 @@ namespace GreenSwamp.Alpaca.Principles
         }
 
         /// <summary>
-        /// Change System Time,  expects time in UTC
+        /// Change System Time,  expects time in UTC.
+        /// On non-Windows platforms this is a no-op; system time sync should be handled by NTP (chronyd/ntpd).
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
+        [SupportedOSPlatform("windows")]
         public static string SetSystemUtcTime(DateTime dt)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "Setting system time is not supported on this platform. Use NTP (chronyd/ntpd) for time synchronisation.";
             var sysTime = new SystemTime(dt);
             var ret = NativeMethods.SetLocalTime(ref sysTime);
             if (ret) return string.Empty;

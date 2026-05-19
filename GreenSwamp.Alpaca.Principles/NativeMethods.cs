@@ -37,6 +37,7 @@ namespace GreenSwamp.Alpaca.Principles
         [DllImport("winmm.dll", EntryPoint = "timeKillEvent")]
         internal static extern int TimeKillEvent(int id);
 
+        [SupportedOSPlatform("windows")]
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern bool SetLocalTime(ref Time.SystemTime time);
 
@@ -44,6 +45,7 @@ namespace GreenSwamp.Alpaca.Principles
 
         #region Time
 
+        [SupportedOSPlatform("windows")]
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         internal static extern void GetSystemTimePreciseAsFileTime(out long filetime);
 

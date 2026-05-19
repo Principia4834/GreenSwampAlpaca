@@ -15,6 +15,7 @@
  */
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace GreenSwamp.Alpaca.Principles
@@ -69,12 +70,20 @@ namespace GreenSwamp.Alpaca.Principles
         /// </summary>
         static HiResDateTime()
         {
+            // GetSystemTimePreciseAsFileTime is Windows-only; skip the probe on other platforms
+            // to avoid DllNotFoundException from the JIT on Linux/ARM.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                IsPrecise = false;
+                return;
+            }
+
             try
             {
                 NativeMethods.GetSystemTimePreciseAsFileTime(out _);
                 IsPrecise = true;
             }
-            catch (EntryPointNotFoundException)
+            catch (Exception ex) when (ex is EntryPointNotFoundException || ex is DllNotFoundException)
             {
                 IsPrecise = false;
             }
