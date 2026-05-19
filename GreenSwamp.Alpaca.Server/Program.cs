@@ -22,7 +22,7 @@ namespace GreenSwamp.Alpaca.Server
         //Change this to a unique value
         //You should offer a way for the end user to customize this via the command line so it can be changed in the case of a collision.
         //This supports --urls=http://*:port by default.
-        internal const int DefaultPort = 31426;
+        internal const int DefaultPort = 31416;
 
         //Driver information
         internal const string Manufacturer = "Green Swamp Software";
@@ -58,7 +58,33 @@ namespace GreenSwamp.Alpaca.Server
                 "GreenSwampAlpaca",
                 ServerConfig.GetVersion(),
                 "appsettings.server.user.json");
-            BootstrapConfig = ServerConfig.LoadBootstrap(bootstrapConfigPath);
+
+            if (!File.Exists(bootstrapConfigPath))
+            {
+                // First run: the DI container hasn't run yet so VersionedSettingsService hasn't
+                // seeded the file. Read the factory defaults from appsettings.json now so the
+                // --urls binding uses the same port that the service will later persist.
+                // Without this the server binds to the ServerConfig C# default (11111) while
+                // the browser and service both expect the appsettings.json value (31416),
+                // causing "page not found" on first run only.
+                var seedConfig = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false)
+                    .Build();
+
+                BootstrapConfig = new ServerConfig();
+                seedConfig.GetSection("ServerConfig").Bind(BootstrapConfig);
+
+                // Write the file so VersionedSettingsService finds it ready on startup
+                // and both sides stay in sync.
+                Directory.CreateDirectory(Path.GetDirectoryName(bootstrapConfigPath)!);
+                ServerConfig.SaveBootstrap(bootstrapConfigPath, BootstrapConfig);
+                Logger.LogInformation($"First run — seeded {bootstrapConfigPath} from appsettings.json.");
+            }
+            else
+            {
+                BootstrapConfig = ServerConfig.LoadBootstrap(bootstrapConfigPath);
+            }
             Logger.LogInformation($"Bootstrap server config loaded from: {bootstrapConfigPath}");
 
             //This region contains startup and logging features, most of the time you shouldn't need to customize this
