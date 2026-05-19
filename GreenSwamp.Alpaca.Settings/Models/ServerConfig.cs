@@ -29,7 +29,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         // ── Network ───────────────────────────────────────────────────────────
 
         /// <summary>TCP port the Alpaca server listens on.</summary>
-        public ushort ServerPort { get; set; } = 11111;
+        public ushort ServerPort { get; set; } = 31416;
 
         /// <summary>Bind to all network interfaces when true; localhost-only when false.</summary>
         public bool AllowRemoteAccess { get; set; } = true;
