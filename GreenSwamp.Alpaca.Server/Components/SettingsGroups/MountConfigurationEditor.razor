@@ -1,4 +1,5 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Shared
 
 @* Combined editor: Device Identity + Serial Connection + Backlash + Encoders + Custom Gearing *@
 
@@ -52,9 +53,27 @@
 
     <MudExpansionPanel Text="Serial Connection" Icon="@Icons.Material.Filled.Cable" Expanded="true">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Serial port name, e.g. COM3." Placement="Placement.Right" Arrow="true">
-                <MudTextField @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
-                              Label="Port" Immediate="true" />
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Select or type a serial port name (e.g. COM3 or /dev/ttyUSB0)." Placement="Placement.Right" Arrow="true">
+                @if (_availablePorts.Length > 0)
+                {
+                    <MudSelect @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
+                               Label="Port" AnchorOrigin="Origin.BottomLeft">
+                        @foreach (var port in _availablePorts)
+                        {
+                            <MudSelectItem Value="@port">@port</MudSelectItem>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Device!.Port) && !_availablePorts.Contains(Device!.Port, StringComparer.OrdinalIgnoreCase))
+                        {
+                            <MudSelectItem Value="@Device!.Port">@Device!.Port (manual)</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                else
+                {
+                    <MudTextField @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
+                                  Label="Port" Immediate="true"
+                                  HelperText="No ports detected — type the port name manually." />
+                }
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
@@ -142,6 +161,13 @@
     [Parameter] public SkySettings? Device { get; set; }
     [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
+
+    private string[] _availablePorts = [];
+
+    protected override void OnInitialized()
+    {
+        _availablePorts = SerialPortDiscovery.GetPortNames();
+    }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();
 }

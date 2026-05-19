@@ -429,7 +429,7 @@ namespace GreenSwamp.Alpaca.Server
 
             // Re-read server config post-build so any first-run seed is reflected
             var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
-            if (startupConfig.AutoStartBrowser)
+            if (startupConfig.AutoStartBrowser && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 try
                 {
@@ -457,8 +457,10 @@ namespace GreenSwamp.Alpaca.Server
 
         /// <summary>
         /// Starts the system default handler (normally a browser) for local host and the current port.
+        /// Only called on Windows; on Linux/Raspberry Pi the UI is accessed via a network browser.
         /// </summary>
         /// <param name="port"></param>
+        [System.Runtime.Versioning.SupportedOSPlatform("windows")]
         internal static void StartBrowser(int port)
         {
             ProcessStartInfo psi = new()

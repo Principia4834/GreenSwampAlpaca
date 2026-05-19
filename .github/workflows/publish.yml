@@ -1,0 +1,67 @@
+﻿name: Cross-Platform Publish
+
+on:
+  push:
+    branches: [ master ]
+    tags:     [ 'v*' ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish (${{ matrix.rid }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [ win-x64, win-x86, linux-x64, linux-arm64, linux-arm ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ASCOM.snk files ARE committed to the repo (confirmed 2026-05-19).
+      # All seven signed projects carry identical copies in their Resources\ folder.
+      # If that policy changes and the files are removed from git, store the
+      # base64-encoded key as repo secret ASCOM_SNK_B64 and uncomment below.
+      #
+      # - name: Restore signing keys
+      #   shell: bash
+      #   run: |
+      #     for dir in GreenSwamp.Alpaca.Principles \
+      #                GreenSwamp.Alpaca.MountControl \
+      #                GreenSwamp.Alpaca.Mount.SkyWatcher \
+      #                GreenSwamp.Alpaca.Mount.Commands \
+      #                GreenSwamp.Alpaca.Shared \
+      #                GreenSwamp.Alpaca.Settings \
+      #                GreenSwamp.Alpaca.Simulator \
+      #                GreenSwamp.Alpaca.Server; do
+      #       echo "${{ secrets.ASCOM_SNK_B64 }}" | base64 -d > "$dir/Resources/ASCOM.snk"
+      #     done
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore GreenSwampAlpaca.sln
+
+      - name: Publish ${{ matrix.rid }}
+        run: >
+          dotnet publish GreenSwamp.Alpaca.Server/GreenSwamp.Alpaca.Server.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:PublishTrimmed=false
+          -o publish/${{ matrix.rid }}
+
+      - name: Upload artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: greenswamp-alpaca-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}/**
+          retention-days: 30
