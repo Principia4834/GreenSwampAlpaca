@@ -19,8 +19,14 @@
 	<InstallerPlatform Condition="'$(Platform)' == 'win-x64'">x64</InstallerPlatform>
 	<InstallerPlatform Condition="'$(Platform)' == 'win-x86'">x86</InstallerPlatform>
 
-	<!-- PublishDir: CI passes via -p:PublishDir=...; local default resolves relative to this project -->
-	<PublishDir Condition="'$(PublishDir)' == ''">..\..\publish\$(Platform)\</PublishDir>
+	<!-- PublishDir: CI passes via -p:PublishDir=...; local default is anchored to the project file
+		 location via $(MSBuildProjectDirectory) so it resolves correctly regardless of the
+		 working directory from which dotnet build / msbuild is invoked. -->
+	<PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\..\publish\$(Platform)\</PublishDir>
+
+	<!-- ICE validation requires an elevated process (Windows Installer service).
+		 Suppress locally so non-elevated dev builds succeed; CI runners are already elevated. -->
+	<SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation>
 
 	<!-- Pass MSBuild properties to WiX as preprocessor variables ($(Variable) syntax in .wxs files).
 		 This is the documented WiX v5 MSBuild mechanism — see https://wixtoolset.org/docs/tools/msbuild/ -->
