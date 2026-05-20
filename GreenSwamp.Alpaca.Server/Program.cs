@@ -70,9 +70,14 @@ namespace GreenSwamp.Alpaca.Server
             Logger.LogInformation($"Running on: {RuntimeInformation.OSDescription}.");
 
             //If already running start browser
+            // When running as a Windows service, SCM guarantees a single instance and there is
+            // no desktop session to launch a browser into, so skip duplicate detection entirely.
+            var isWindowsService = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                && Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService();
+
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!isWindowsService && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     //Already running, start the browser, detects based on port in use
                     if (IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections().Any(con => con.LocalEndPoint.Port == BootstrapConfig.ServerPort && (con.State == TcpState.Listen || con.State == TcpState.Established)))
@@ -82,7 +87,7 @@ namespace GreenSwamp.Alpaca.Server
                         return;
                     }
                 }
-                else
+                else if (!isWindowsService)
                 {
                     // Environment.ProcessPath works correctly for single-file published executables;
                     // Assembly.Location returns "" in that scenario, causing false-positive detection.
@@ -161,6 +166,16 @@ namespace GreenSwamp.Alpaca.Server
             }
 
             var builder = WebApplication.CreateBuilder(args ?? []);
+
+            // When running as a Windows SCM service, use the Windows service lifetime so the host
+            // responds correctly to Start/Stop/Pause commands from the service control manager.
+            // UseWindowsService() is a no-op when the process is NOT started by SCM (interactive run)
+            // and must only be called on Windows — calling it on Linux throws PlatformNotSupportedException.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                builder.Host.UseWindowsService(options =>
+                    options.ServiceName = "GreenSwampAlpacaServer");
+            }
 
             // Apply the same timestamp format to the host's console logger.
             builder.Logging.AddSimpleConsole(o => { o.TimestampFormat = "yyyy-MM-dd HH:mm:ss "; o.SingleLine = true; });
@@ -428,7 +443,7 @@ namespace GreenSwamp.Alpaca.Server
 
             // Re-read server config post-build so any first-run seed is reflected
             var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
-            if (startupConfig.AutoStartBrowser && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (startupConfig.AutoStartBrowser && RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !isWindowsService)
             {
                 try
                 {

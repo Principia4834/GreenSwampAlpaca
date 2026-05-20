@@ -29,6 +29,8 @@
   <ItemGroup>
     <PackageReference Include="ASCOM.AstrometryTools" Version="3.1.0" />
     <PackageReference Include="MudBlazor" Version="9.4.0" />
+    <!-- Windows Service host lifetime support — no-op on Linux/RPi at runtime -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
   </ItemGroup>
 
   <ItemGroup>

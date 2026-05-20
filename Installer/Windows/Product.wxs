@@ -5,8 +5,7 @@
   so that CI can override them with -p:UpgradeCode=... -p:PublishDir=... etc.
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-	 xmlns:fw="http://wixtoolset.org/schemas/v4/wxs/firewall"
-	 xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+	 xmlns:fw="http://wixtoolset.org/schemas/v4/wxs/firewall">
 
   <Package Name="GreenSwamp Alpaca Server"
 		   Manufacturer="Principia4834"
@@ -58,13 +57,6 @@
 	<!-- Windows Service registration -->
 	<!-- Explicit GUID required: no file KeyPath (WIX0230) -->
 	<Component Id="ServiceComponent" Directory="INSTALLDIR" Guid="818DF99D-267F-4FFA-B3A7-E5F578372A8A">
-	  <util:ServiceConfig
-		ServiceName="GreenSwampAlpacaServer"
-		FirstFailureActionType="restart"
-		SecondFailureActionType="restart"
-		ThirdFailureActionType="none"
-		ResetPeriodInDays="1"
-		RestartServiceDelayInSeconds="5" />
 	  <ServiceInstall
 		Id="GreenSwampAlpacaService"
 		Name="GreenSwampAlpacaServer"
