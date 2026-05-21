@@ -199,10 +199,12 @@
 
         try
         {
-            var psi = OperatingSystem.IsWindows()
-                ? new System.Diagnostics.ProcessStartInfo("explorer.exe", $"\"{directory}\"")
-                : new System.Diagnostics.ProcessStartInfo { FileName = directory, UseShellExecute = true };
-            System.Diagnostics.Process.Start(psi);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = directory,
+                UseShellExecute = true,
+                Verb            = "open"
+            });
         }
         catch
         {

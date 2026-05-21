@@ -140,14 +140,11 @@
                     </MudList>
                 }
 
-                <MudTooltip Inline="false" RootStyle="max-width:260px"
-                            Text="@(!_isLocalRequest ? "Only available when browsing from the server machine"
-                                  : SettingsPathResolver.IsService ? "Cannot open Explorer when running as a service"
-                                  : string.Empty)">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@(_isLocalRequest ? string.Empty : "Only available when browsing from the server machine")">
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.FolderOpen"
                                OnClick="OpenSettingsFolder"
-                               Disabled="@(!_isLocalRequest || SettingsPathResolver.IsService)">
+                               Disabled="!_isLocalRequest">
                         Open Settings Folder
                     </MudButton>
                 </MudTooltip>
@@ -329,10 +326,12 @@
 
         try
         {
-            var psi = OperatingSystem.IsWindows()
-                ? new System.Diagnostics.ProcessStartInfo("explorer.exe", $"\"{_settingsFolder}\"")
-                : new System.Diagnostics.ProcessStartInfo { FileName = _settingsFolder, UseShellExecute = true };
-            System.Diagnostics.Process.Start(psi);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = _settingsFolder,
+                UseShellExecute = true,
+                Verb            = "open"
+            });
         }
         catch
         {
