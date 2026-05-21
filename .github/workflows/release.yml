@@ -143,11 +143,12 @@ jobs:
           wix extension add WixToolset.UI.wixext/7.0.0
           wix extension add WixToolset.Firewall.wixext/7.0.0
           wix extension add WixToolset.Util.wixext/7.0.0
-          wix eula accept wix7
+        env:
+          # WiX v7 EULA acceptance is required to use the CLI in CI
+          WIX_EULA_ACCEPTANCE: "Yes"
 
       - name: Build MSI
         run: >
-          msbuild -t:AcceptEula -p:EulaId=wix7
           dotnet build Installer/Windows/GreenSwamp.Alpaca.Installer.wixproj
           -c Release
           -p:Platform=${{ matrix.rid }}
