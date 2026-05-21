@@ -31,6 +31,8 @@
     <PackageReference Include="MudBlazor" Version="9.4.0" />
     <!-- Windows Service host lifetime support — no-op on Linux/RPi at runtime -->
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.8" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <!-- Linux systemd service lifetime support — no-op on Windows/RPi at runtime -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>

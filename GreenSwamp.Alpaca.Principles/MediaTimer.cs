@@ -504,16 +504,6 @@ namespace GreenSwamp.Alpaca.Principles
         {
         }
 
-        public TimerStartException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
-        // Without this constructor, deserialization will fail
-        protected TimerStartException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 
 

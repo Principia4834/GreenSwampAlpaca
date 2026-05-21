@@ -15,7 +15,7 @@
  */
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace GreenSwamp.Alpaca.Principles
@@ -30,38 +30,34 @@ namespace GreenSwamp.Alpaca.Principles
         private static readonly ThreadLocal<DateTime> StartTime = new ThreadLocal<DateTime>(() => DateTime.UtcNow, false);
         private static readonly ThreadLocal<double> StartTimestamp = new ThreadLocal<double>(() => Stopwatch.GetTimestamp(), false);
 
-        /// <summary>
-        /// High resolution supported
-        /// Returns True on Windows 8 and Server 2012 and higher.
-        /// </summary>
-        private static bool IsPrecise { get; }
+        private static readonly Func<DateTime> UtcNowProvider;
 
         /// <summary>
         /// Gets the datetime in UTC.
         /// </summary>
-        public static DateTime UtcNow
-        {
-            get
-            {
-                if (IsPrecise)
-                {
-                    NativeMethods.GetSystemTimePreciseAsFileTime(out var preciseTime);
-                    return DateTime.FromFileTimeUtc(preciseTime);
-                }
+        public static DateTime UtcNow => UtcNowProvider();
 
-                try
-                {
-                    double endTimestamp = Stopwatch.GetTimestamp();
-                    var durationInTicks = (endTimestamp - StartTimestamp.Value) / Stopwatch.Frequency * TicksMultiplier;
-                    if (!(durationInTicks >= MaxIdle)) return StartTime.Value.AddTicks((long)durationInTicks);
-                    StartTimestamp.Value = Stopwatch.GetTimestamp();
-                    StartTime.Value = DateTime.UtcNow;
-                    return StartTime.Value;
-                }
-                catch (ObjectDisposedException)
-                {
-                    return DateTime.UtcNow;
-                }
+        [SupportedOSPlatform("windows")]
+        private static DateTime GetPreciseUtcNowWindows()
+        {
+            NativeMethods.GetSystemTimePreciseAsFileTime(out var preciseTime);
+            return DateTime.FromFileTimeUtc(preciseTime);
+        }
+
+        private static DateTime GetStopwatchUtcNow()
+        {
+            try
+            {
+                double endTimestamp = Stopwatch.GetTimestamp();
+                var durationInTicks = (endTimestamp - StartTimestamp.Value) / Stopwatch.Frequency * TicksMultiplier;
+                if (!(durationInTicks >= MaxIdle)) return StartTime.Value.AddTicks((long)durationInTicks);
+                StartTimestamp.Value = Stopwatch.GetTimestamp();
+                StartTime.Value = DateTime.UtcNow;
+                return StartTime.Value;
+            }
+            catch (ObjectDisposedException)
+            {
+                return DateTime.UtcNow;
             }
         }
 
@@ -70,23 +66,23 @@ namespace GreenSwamp.Alpaca.Principles
         /// </summary>
         static HiResDateTime()
         {
-            // GetSystemTimePreciseAsFileTime is Windows-only; skip the probe on other platforms
-            // to avoid DllNotFoundException from the JIT on Linux/ARM.
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
-                IsPrecise = false;
-                return;
+                try
+                {
+                    NativeMethods.GetSystemTimePreciseAsFileTime(out _);
+                    UtcNowProvider = GetPreciseUtcNowWindows;
+                    return;
+                }
+                catch (EntryPointNotFoundException)
+                {
+                }
+                catch (DllNotFoundException)
+                {
+                }
             }
 
-            try
-            {
-                NativeMethods.GetSystemTimePreciseAsFileTime(out _);
-                IsPrecise = true;
-            }
-            catch (Exception ex) when (ex is EntryPointNotFoundException || ex is DllNotFoundException)
-            {
-                IsPrecise = false;
-            }
+            UtcNowProvider = GetStopwatchUtcNow;
         }
     }
 }

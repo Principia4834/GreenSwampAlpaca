@@ -43,21 +43,5 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             ErrorCode = err;
         }
 
-        // Constructor should be protected for unsealed classes, private for sealed classes.
-        // (The Serializer invokes this constructor through reflection, so it can be private)
-        protected MountException(SerializationInfo info, StreamingContext context)
-        {
-            Enum.TryParse("err", out ErrorCode err);
-            ErrorCode = err;
-        }
-
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-            info.AddValue("err", ErrorCode.ToString());
-        }
     }
 }

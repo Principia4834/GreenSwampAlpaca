@@ -28,12 +28,12 @@ namespace GreenSwamp.Alpaca.Mount.Commands
     /// <typeparam name="TExecutor">The type of executor that will process commands</typeparam>
     public abstract class CommandQueueBase<TExecutor> : ICommandQueue<TExecutor>
     {
-        private BlockingCollection<ICommand<TExecutor>> _commandBlockingCollection;
-        private Task _processingTask;
-        private ManualResetEventSlim _taskReadySignal;
+        private BlockingCollection<ICommand<TExecutor>>? _commandBlockingCollection;
+        private Task? _processingTask;
+        private ManualResetEventSlim? _taskReadySignal;
         private bool _isInWarningState;
         protected TExecutor _executor;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource? _cts;
         private long _id;
 
         public bool IsRunning { get; private set; }

@@ -13,6 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+using GreenSwamp.Alpaca.Settings.Services;
 namespace GreenSwamp.Alpaca.Shared
 {
     public static class GsFile
@@ -65,7 +66,7 @@ namespace GreenSwamp.Alpaca.Shared
         /// <param name="path"></param>
         public static void SaveLogPath(string path)
         {
-            Settings.LogPath = Directory.Exists(path) ? path : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GSServer");
+            Settings.LogPath = Directory.Exists(path) ? path : SettingsPathResolver.GetLogsRoot();
         }
         /// <summary>
         /// Get the logging path or a default path from settings
@@ -74,7 +75,7 @@ namespace GreenSwamp.Alpaca.Shared
         public static string GetLogPath()
         {
             var path = Settings.LogPath;
-            return Directory.Exists(path) ? path : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"GSServer");
+            return Directory.Exists(path) ? path : SettingsPathResolver.GetLogsRoot();
         }
         /// <summary>
         /// Send entries to a file async

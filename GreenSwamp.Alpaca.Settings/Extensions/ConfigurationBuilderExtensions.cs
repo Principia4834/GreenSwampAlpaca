@@ -14,8 +14,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.Extensions.Configuration;
-using System.Reflection;
 using System.Text.Json;
 
 namespace GreenSwamp.Alpaca.Settings.Extensions
@@ -37,32 +37,11 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
         {
             // Get app version if not provided
             if (string.IsNullOrEmpty(appVersion))
-            {
-                var assembly = Assembly.GetEntryAssembly() 
-                    ?? Assembly.GetExecutingAssembly();
-                
-                var infoVersionAttr = assembly
-                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
-                    .FirstOrDefault() as AssemblyInformationalVersionAttribute;
-                
-                appVersion = infoVersionAttr?.InformationalVersion
-                    ?? assembly.GetName().Version?.ToString()
-                    ?? "1.0.0";
-                
-                // Remove build metadata
-                var plusIndex = appVersion.IndexOf('+');
-                if (plusIndex > 0)
-                {
-                    appVersion = appVersion.Substring(0, plusIndex);
-                }
-            }
+                appVersion = SettingsPathResolver.GetAssemblyVersion();
 
-            // Build path to versioned settings
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            // Build path to versioned settings using the central resolver
             var userSettingsPath = Path.Combine(
-                appData, 
-                "GreenSwampAlpaca", 
-                appVersion, 
+                SettingsPathResolver.GetVersionedPath(appVersion),
                 "monitor.settings.user.json");
 
             // Issue 5.1 Fix: Validate JSON file before loading

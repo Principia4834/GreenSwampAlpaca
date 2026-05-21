@@ -47,12 +47,19 @@ namespace GreenSwamp.Alpaca.Server
                  .SetMinimumLevel(LogLevel.Debug));
             Logger = bootstrapLoggerFactory.CreateLogger<Program>();
 
+            // Detect service mode before any path is resolved — covers both Windows SCM and Linux systemd.
+            // Detection is done here (not in SettingsPathResolver) to avoid pulling platform packages into the Settings project.
+            var isWindowsService = OperatingSystem.IsWindows()
+                && Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService();
+            var isLinuxSystemd = OperatingSystem.IsLinux()
+                && Microsoft.Extensions.Hosting.Systemd.SystemdHelpers.IsSystemdService();
+            var isService = isWindowsService || isLinuxSystemd;
+            SettingsPathResolver.ApplyCommandLineArgs(args ?? [], isService);
+
             // Bootstrap: read ServerConfig from disk before the DI container exists.
             // Used for port-collision detection and --urls binding below.
             var bootstrapConfigPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "GreenSwampAlpaca",
-                ServerConfig.GetVersion(),
+                SettingsPathResolver.GetVersionedPath(ServerConfig.GetVersion()),
                 "appsettings.server.user.json");
 
             // LoadBootstrap returns new ServerConfig() when the file is absent (first run).
@@ -70,14 +77,12 @@ namespace GreenSwamp.Alpaca.Server
             Logger.LogInformation($"Running on: {RuntimeInformation.OSDescription}.");
 
             //If already running start browser
-            // When running as a Windows service, SCM guarantees a single instance and there is
-            // no desktop session to launch a browser into, so skip duplicate detection entirely.
-            var isWindowsService = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                && Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService();
-
+            // When running as a managed service (Windows SCM or Linux systemd), the process manager
+            // guarantees a single instance and there is no desktop to launch a browser into,
+            // so skip duplicate-instance detection entirely.
             try
             {
-                if (!isWindowsService && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!isService && OperatingSystem.IsWindows())
                 {
                     //Already running, start the browser, detects based on port in use
                     if (IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections().Any(con => con.LocalEndPoint.Port == BootstrapConfig.ServerPort && (con.State == TcpState.Listen || con.State == TcpState.Established)))
@@ -87,7 +92,7 @@ namespace GreenSwamp.Alpaca.Server
                         return;
                     }
                 }
-                else if (!isWindowsService)
+                else if (!isService)
                 {
                     // Environment.ProcessPath works correctly for single-file published executables;
                     // Assembly.Location returns "" in that scenario, causing false-positive detection.
@@ -96,8 +101,7 @@ namespace GreenSwamp.Alpaca.Server
                     if (!string.IsNullOrWhiteSpace(processName) &&
                         Process.GetProcessesByName(processName).Length > 1)
                     {
-                        Logger.LogInformation("Detected driver already running, starting web browser on IP and Port");
-                        StartBrowser(BootstrapConfig.ServerPort);
+                        Logger.LogInformation("Detected driver already running. Open http://localhost:{Port} manually.", BootstrapConfig.ServerPort);
                         return;
                     }
                 }
@@ -167,14 +171,16 @@ namespace GreenSwamp.Alpaca.Server
 
             var builder = WebApplication.CreateBuilder(args ?? []);
 
-            // When running as a Windows SCM service, use the Windows service lifetime so the host
-            // responds correctly to Start/Stop/Pause commands from the service control manager.
-            // UseWindowsService() is a no-op when the process is NOT started by SCM (interactive run)
-            // and must only be called on Windows — calling it on Linux throws PlatformNotSupportedException.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // Register the appropriate managed-service lifetime for Windows SCM and Linux systemd.
+            // Both calls are no-ops when the process is not started by the respective service manager.
+            if (OperatingSystem.IsWindows())
             {
                 builder.Host.UseWindowsService(options =>
                     options.ServiceName = "GreenSwampAlpacaServer");
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                builder.Host.UseSystemd();
             }
 
             // Apply the same timestamp format to the host's console logger.
@@ -443,7 +449,7 @@ namespace GreenSwamp.Alpaca.Server
 
             // Re-read server config post-build so any first-run seed is reflected
             var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
-            if (startupConfig.AutoStartBrowser && RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !isWindowsService)
+            if (startupConfig.AutoStartBrowser && OperatingSystem.IsWindows() && !isWindowsService)
             {
                 try
                 {
@@ -471,12 +477,16 @@ namespace GreenSwamp.Alpaca.Server
 
         /// <summary>
         /// Starts the system default handler (normally a browser) for local host and the current port.
-        /// Only called on Windows; on Linux/Raspberry Pi the UI is accessed via a network browser.
+        /// On Linux/Raspberry Pi the UI is accessed via a network browser, so this is a no-op.
         /// </summary>
         /// <param name="port"></param>
-        [System.Runtime.Versioning.SupportedOSPlatform("windows")]
         internal static void StartBrowser(int port)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
             ProcessStartInfo psi = new()
             {
                 FileName = $"http://localhost:{port}",

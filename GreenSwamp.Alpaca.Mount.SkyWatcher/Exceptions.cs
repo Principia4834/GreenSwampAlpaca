@@ -52,14 +52,5 @@ namespace GS.Server.SkyTelescope
             ErrorCode = err;
         }
 
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
-            info.AddValue("err", ErrorCode.ToString());
-            // MUST call through to the base class to let it save its own state
-        }
     }
 }

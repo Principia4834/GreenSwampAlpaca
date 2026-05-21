@@ -137,12 +137,12 @@ jobs:
           name: greenswamp-alpaca-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}
 
-      - name: Install WiX v5 and extensions
+      - name: Install WiX v7 and extensions
         run: |
-          dotnet tool install --global wix --version 5.0.0
-          wix extension add WixToolset.UI.wixext/5.0.0
-          wix extension add WixToolset.Firewall.wixext/5.0.0
-          wix extension add WixToolset.Util.wixext/5.0.0
+          dotnet tool install --global wix --version 7.0.0
+          wix extension add WixToolset.UI.wixext/7.0.0
+          wix extension add WixToolset.Firewall.wixext/7.0.0
+          wix extension add WixToolset.Util.wixext/7.0.0
 
       - name: Build MSI
         run: >
@@ -152,26 +152,26 @@ jobs:
           -p:UpgradeCode=${{ matrix.upgrade_code }}
           "-p:PublishDir=${{ github.workspace }}/publish/${{ matrix.rid }}/"
 
-      - name: Restore signing certificate
-        shell: pwsh
-        run: |
-          $bytes = [Convert]::FromBase64String("${{ secrets.CODESIGN_PFX_B64 }}")
-          [IO.File]::WriteAllBytes("sign.pfx", $bytes)
+      # - name: Restore signing certificate
+      #   shell: pwsh
+      #   run: |
+      #     $bytes = [Convert]::FromBase64String("${{ secrets.CODESIGN_PFX_B64 }}")
+      #     [IO.File]::WriteAllBytes("sign.pfx", $bytes)
 
-      - name: Sign MSI with self-signed certificate
-        shell: pwsh
-        run: |
-          $pwd = ConvertTo-SecureString "${{ secrets.CODESIGN_PFX_PASSWORD }}" -Force -AsPlainText
-          Import-PfxCertificate -FilePath sign.pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pwd | Out-Null
-          $thumb = (Get-PfxCertificate sign.pfx).Thumbprint
-          $msi = Get-ChildItem -Recurse -Filter "*.msi" | Select-Object -First 1 -ExpandProperty FullName
-          signtool sign /fd SHA256 /sha1 $thumb /tr http://timestamp.digicert.com /td SHA256 $msi
-          Write-Host "Signed: $msi"
+      # - name: Sign MSI with self-signed certificate
+      #   shell: pwsh
+      #   run: |
+      #     $pwd = ConvertTo-SecureString "${{ secrets.CODESIGN_PFX_PASSWORD }}" -Force -AsPlainText
+      #     Import-PfxCertificate -FilePath sign.pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pwd | Out-Null
+      #     $thumb = (Get-PfxCertificate sign.pfx).Thumbprint
+      #     $msi = Get-ChildItem -Recurse -Filter "*.msi" | Select-Object -First 1 -ExpandProperty FullName
+      #     signtool sign /fd SHA256 /sha1 $thumb /tr http://timestamp.digicert.com /td SHA256 $msi
+      #     Write-Host "Signed: $msi"
 
-      - name: Clean up certificate file
-        if: always()
-        shell: pwsh
-        run: Remove-Item sign.pfx -ErrorAction SilentlyContinue
+      # - name: Clean up certificate file
+      #   if: always()
+      #   shell: pwsh
+      #   run: Remove-Item sign.pfx -ErrorAction SilentlyContinue
 
       - uses: actions/upload-artifact@v4
         with:

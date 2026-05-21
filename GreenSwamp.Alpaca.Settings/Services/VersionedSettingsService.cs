@@ -59,11 +59,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            CurrentVersion = GetAssemblyVersion();
+            CurrentVersion = SettingsPathResolver.GetAssemblyVersion();
 
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _appDataRoot = Path.Combine(appData, "GreenSwampAlpaca");
-            _currentVersionPath = Path.Combine(_appDataRoot, CurrentVersion);
+            _appDataRoot = SettingsPathResolver.GetSettingsRoot();
+            _currentVersionPath = SettingsPathResolver.GetVersionedPath(CurrentVersion);
 
             Directory.CreateDirectory(_currentVersionPath);
 
@@ -880,26 +879,6 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
         }
 
-        private string GetAssemblyVersion()
-        {
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-
-            var infoVersionAttr = assembly
-                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
-                .FirstOrDefault() as AssemblyInformationalVersionAttribute;
-
-            var informationalVersion = infoVersionAttr?.InformationalVersion;
-
-            if (!string.IsNullOrEmpty(informationalVersion))
-            {
-                var plusIndex = informationalVersion.IndexOf('+');
-                if (plusIndex > 0)
-                    informationalVersion = informationalVersion.Substring(0, plusIndex);
-                return informationalVersion;
-            }
-
-            return assembly.GetName().Version?.ToString() ?? "1.0.0";
-        }
 
         private void LogSafe(string level, string message)
         {
