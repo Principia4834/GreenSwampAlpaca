@@ -25,8 +25,8 @@
 	<WixVariable Id="WixUILicenseRtf" Value="Resources\License.rtf" />
 	<WixVariable Id="WixUIBannerBmp"  Value="Resources\banner.bmp" />
 	<WixVariable Id="WixUIDialogBmp"  Value="Resources\dialog.bmp" />
-	<Icon Id="greenswamp2.ico" SourceFile="Resources\greenswamp2.ico"/>
-	<Property Id="ARPPRODUCTICON" Value="greenswamp2.ico" />	
+	<Icon Id="greenswamp.ico" SourceFile="Resources\greenswamp.ico"/>
+	<Property Id="ARPPRODUCTICON" Value="greenswamp.ico" />	
 	
 	<?if $(sys.BUILDARCH) = x64 ?>
 	<UIRef Id="WixUI_Minimal_X64" />
@@ -90,7 +90,7 @@
 	  <fw:FirewallException
 		Id="AlpacaServerFirewall"
 		Name="GreenSwamp Alpaca Server"
-		Port="31426"
+		Port="31416"
 		Protocol="tcp"
 		Scope="any"
 		IgnoreFailure="yes" />

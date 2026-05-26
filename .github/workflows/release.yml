@@ -147,7 +147,7 @@ jobs:
 
       - name: Build MSI
         run: >
-          dotnet build Installer/Windows/GreenSwamp.Alpaca.Installer.wixproj
+          dotnet build GreenSwamp.Alpaca.Installer/GreenSwamp.Alpaca.Installer.wixproj
           -c Release
           -p:Platform=${{ matrix.rid }}
           -p:UpgradeCode=${{ matrix.upgrade_code }}

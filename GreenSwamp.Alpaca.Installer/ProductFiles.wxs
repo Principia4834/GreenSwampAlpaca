@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?define ComponentRules="OneToOne"?>
+  <!-- SourceDir instructs IsWiX the location of the directory that contains files for this wix library -->
+  <?define SourceDir="..\publish\win-x64"?>
+  <Fragment>
+    <ComponentGroup Id="GreenSwampAlpacaServerFiles">
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\appsettings.Development.json" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\ASCOM.Alpaca.Razor.xml" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\ASCOM.Common.xml" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\cio_ra.bin" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\dotnet-tools.json" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\GreenSwamp.Alpaca.Server.staticwebassets.endpoints.json" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\GreenSwamp.Alpaca.Server.xml" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\JPLEPH" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\libnovas.dll" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\libsofa.dll" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR">
+        <File Source="$(var.SourceDir)\web.config" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\ASCOM.Alpaca.Razor">
+        <File Source="$(var.SourceDir)\wwwroot\_content\ASCOM.Alpaca.Razor\background.png" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\MudBlazor">
+        <File Source="$(var.SourceDir)\wwwroot\_content\MudBlazor\MudBlazor.min.css.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\MudBlazor">
+        <File Source="$(var.SourceDir)\wwwroot\_content\MudBlazor\MudBlazor.min.js.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\MudBlazor">
+        <File Source="$(var.SourceDir)\wwwroot\_content\MudBlazor\MudBlazor.min.js.map.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\_framework">
+        <File Source="$(var.SourceDir)\wwwroot\_framework\blazor.server.js.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\_framework">
+        <File Source="$(var.SourceDir)\wwwroot\_framework\blazor.web.js.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\css">
+        <File Source="$(var.SourceDir)\wwwroot\css\fonts.css.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\css">
+        <File Source="$(var.SourceDir)\wwwroot\css\site.css.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot">
+        <File Source="$(var.SourceDir)\wwwroot\favicon.ico.gz" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\MaterialSymbolsOutlined.woff2" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\Roboto-Bold.woff2" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\Roboto-Light.woff2" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\Roboto-Medium.woff2" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\Roboto-Regular.woff2" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\RobotoMono-Regular.woff2" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
+        <File Source="$(var.SourceDir)\wwwroot\fonts\SwampWitch.ttf" KeyPath="yes" />
+      </Component>
+      <Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+        <File Source="$(var.SourceDir)\wwwroot\js\profileUtils.js.gz" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    <Feature Id="UserApp" />
+  </Fragment>
+</Wix>

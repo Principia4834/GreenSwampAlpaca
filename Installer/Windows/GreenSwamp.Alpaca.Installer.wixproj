@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="WixToolset.Sdk/7.0.0">
   <PropertyGroup>
-	<AcceptEula>wix7</AcceptEula>
+    <AcceptEula>wix7</AcceptEula>
     <!-- Version is inherited from MinVer via Directory.Build.props for the whole solution.
 		 MinVer is excluded from this project directly (see Directory.Build.props condition)
 		 but the Version property it computed is still available here.
@@ -12,18 +12,18 @@
     <!-- UpgradeCode must be a stable GUID per platform family; CI passes it via -p:UpgradeCode=...
 		 The local default is the win-x64 GUID for developer convenience. -->
     <UpgradeCode Condition="'$(UpgradeCode)' == ''">0BFB5E9F-4475-4BFA-A8A5-1F26CD982B1C</UpgradeCode>
-	<!-- Platform is injected by CI: win-x64 or win-x86 -->
-	<Platform Condition="'$(Platform)' == ''">win-x64</Platform>
-	<OutputName>GreenSwamp.Alpaca.Server_$(Version)_$(Platform)</OutputName>
-	<InstallerPlatform Condition="'$(Platform)' == 'win-x64' or '$(Platform)' == 'x64'">x64</InstallerPlatform>
-	<InstallerPlatform Condition="'$(Platform)' == 'win-x86' or '$(Platform)' == 'x86'">x86</InstallerPlatform>
-	<PublishRid Condition="'$(Platform)' == 'x64'">win-x64</PublishRid>
-	<PublishRid Condition="'$(Platform)' == 'x86'">win-x86</PublishRid>
-	<PublishRid Condition="'$(PublishRid)' == ''">$(Platform)</PublishRid>
-	<!-- PublishDir: CI passes via -p:PublishDir=...; local default is anchored to the project file
+    <!-- Platform is injected by CI: win-x64 or win-x86 -->
+    <Platform Condition="'$(Platform)' == ''">win-x64</Platform>
+    <OutputName>GreenSwamp.Alpaca.Server_$(Version)_$(Platform)</OutputName>
+    <InstallerPlatform Condition="'$(Platform)' == 'win-x64' or '$(Platform)' == 'x64'">x64</InstallerPlatform>
+    <InstallerPlatform Condition="'$(Platform)' == 'win-x86' or '$(Platform)' == 'x86'">x86</InstallerPlatform>
+    <PublishRid Condition="'$(Platform)' == 'x64'">win-x64</PublishRid>
+    <PublishRid Condition="'$(Platform)' == 'x86'">win-x86</PublishRid>
+    <PublishRid Condition="'$(PublishRid)' == ''">$(Platform)</PublishRid>
+    <!-- PublishDir: CI passes via -p:PublishDir=...; local default is anchored to the project file
 		 location via $(MSBuildProjectDirectory) so it resolves correctly regardless of the
 		 working directory from which dotnet build / msbuild is invoked. -->
-	<PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\..\publish\$(PublishRid)\</PublishDir>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\..\publish\$(PublishRid)\</PublishDir>
     <!-- ICE validation requires an elevated process (Windows Installer service).
 		 Suppress locally so non-elevated dev builds succeed; CI runners are already elevated. -->
     <SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation>
@@ -35,5 +35,6 @@
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
     <PackageReference Include="WixToolset.Firewall.wixext" Version="7.0.0" />
+    <PackageReference Include="WixToolset.Versioning" Version="7.0.0" />
   </ItemGroup>
 </Project>

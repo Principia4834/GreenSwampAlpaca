@@ -1,0 +1,77 @@
+﻿<Project Sdk="WixToolset.Sdk/7.0.0">
+	<PropertyGroup>
+		<AcceptEula>wix7</AcceptEula>
+		<UsingMicrosoftNETSdk>true</UsingMicrosoftNETSdk>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- MinVer sets $(Version) directly via UsingMicrosoftNETSdk=true.
+         MSI requires clean Major.Minor.Patch — strip any pre-release suffix. -->
+		<MsiVersion>$([System.Text.RegularExpressions.Regex]::Match($(Version), '\d+\.\d+\.\d+').Value)</MsiVersion>
+		<MsiVersion Condition="'$(MsiVersion)' == ''">0.0.0</MsiVersion>
+
+		<!-- UpgradeCode: stable GUID per platform. CI passes via -p:UpgradeCode=... -->
+		<UpgradeCode Condition="'$(UpgradeCode)' == ''">0BFB5E9F-4475-4BFA-A8A5-1F26CD982B1C</UpgradeCode>
+
+		<!-- Platform: CI injects win-x64 or win-x86 -->
+		<Platform Condition="'$(Platform)' == ''">win-x64</Platform>
+		<InstallerPlatform Condition="'$(Platform)' == 'win-x64' or '$(Platform)' == 'x64'">x64</InstallerPlatform>
+		<InstallerPlatform Condition="'$(Platform)' == 'win-x86' or '$(Platform)' == 'x86'">x86</InstallerPlatform>
+		<PublishRid Condition="'$(Platform)' == 'x64'">win-x64</PublishRid>
+		<PublishRid Condition="'$(Platform)' == 'x86'">win-x86</PublishRid>
+		<PublishRid Condition="'$(Platform)' == 'win-x64'">win-x64</PublishRid>
+		<PublishRid Condition="'$(Platform)' == 'win-x86'">win-x86</PublishRid>
+		<PublishRid Condition="'$(PublishRid)' == ''">$(Platform)</PublishRid>
+
+		<!-- PublishDir: CI passes via -p:PublishDir=...; local default relative to project -->
+		<PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\publish\$(PublishRid)\</PublishDir>
+
+		<!-- ICE validation requires elevation; suppress for local dev builds -->
+		<SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation>
+
+		<OutputName>GreenSwamp.Alpaca.Server_$(MsiVersion)_$(Platform)</OutputName>
+		<OutputType>Package</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+		<SuppressIces>ICE64</SuppressIces>
+		<DefineConstants>Debug</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+		<SuppressIces>ICE64</SuppressIces>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+		<SuppressIces>ICE64</SuppressIces>
+		<DefineConstants>Debug</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+		<SuppressIces>ICE64</SuppressIces>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM64' ">
+		<DefineConstants>Debug</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|ARM64' ">
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+	</PropertyGroup>
+
+	<!-- Append shared WiX preprocessor variables after all configuration-specific DefineConstants are set -->
+	<PropertyGroup>
+		<DefineConstants>$(DefineConstants);Version=$(MsiVersion);UpgradeCode=$(UpgradeCode);PublishDir=$(PublishDir)</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Resources\Banner.jpg" />
+		<Content Include="Resources\Dialog.jpg" />
+		<Content Include="Resources\Icon.ico" />
+		<Content Include="Resources\EULA.rtf" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="WixToolset.Firewall.wixext" Version="7.0.0" />
+		<PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
+	</ItemGroup>
+</Project>
