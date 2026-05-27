@@ -140,8 +140,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var maxTries = 0;
             double[] deltaDegree = [0.0, 0.0];
             double[] gotoPrecision = [ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1)];
-            const double milliSeconds = 0.001;
-            var deltaTime = 75 * milliSeconds; // 75mS for simulator slew
+            double deltaTime = 75.0; // ms — initial seed for first-iteration drift estimate
 
             while (true)
             {
@@ -175,8 +174,17 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (axis1AtTarget && axis2AtTarget) { break; }
 
                 token.ThrowIfCancellationRequested();
+                // Algorithm A: sidereal drift feedforward for GEM and Polar RaDec slews.
+                // Commands Axis1 to where the sky will be when the axis settles (deltaTime ms from now),
+                // eliminating drift catch-up iterations. Sign: +1 NH, -1 SH (hemisphere-only, not pier-side-dependent).
+                var raFeedforward = 0.0;
+                if (slewType == SlewType.SlewRaDec && Settings.AlignmentMode != AlignmentMode.AltAz)
+                {
+                    var driftSign = Settings.Latitude >= 0 ? +1.0 : -1.0;
+                    raFeedforward = driftSign * (Settings.SiderealRate / 3_600_000.0) * deltaTime;
+                }
                 if (!axis1AtTarget)
-                    _ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis1, simTarget[0] + 0.125 * deltaDegree[0]);
+                    _ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis1, simTarget[0] + raFeedforward + 0.125 * deltaDegree[0]);
                 token.ThrowIfCancellationRequested();
                 if (!axis2AtTarget)
                     _ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis2, simTarget[1] + 0.05 * deltaDegree[1]);
@@ -221,7 +229,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (axis1Stopped && axis2Stopped) { break; }
                 }
                 loopTimer.Stop();
-                deltaTime = loopTimer.Elapsed.Milliseconds;
+                // EMA smoothing (α=0.4): reduces noise while adapting quickly to iteration time changes
+                deltaTime = 0.4 * loopTimer.Elapsed.TotalMilliseconds + 0.6 * deltaTime;
 
                 monitorItem = new MonitorEntry
                 {
@@ -231,7 +240,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"Mount:{_mountId}|Delta|({deltaDegree[0]},{deltaDegree[1]})|Seconds|{loopTimer.Elapsed.TotalSeconds}"
+                    Message = $"Mount:{_mountId}|Delta|({deltaDegree[0]},{deltaDegree[1]})|RaFwd|{raFeedforward:F6}|Seconds|{loopTimer.Elapsed.TotalSeconds}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
             }
@@ -332,7 +341,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         if (axis1Stopped && axis2Stopped) { break; }
                     }
                     stopwatch1.Stop();
-                    deltaTime = stopwatch1.Elapsed.Milliseconds;
+                    deltaTime = (long)stopwatch1.Elapsed.TotalMilliseconds;
                     deltaTime += deltaTime / 10; // add 10% feed forward
                 }
             }
