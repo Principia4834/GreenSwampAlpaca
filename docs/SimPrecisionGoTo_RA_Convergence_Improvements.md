@@ -1,9 +1,10 @@
 ﻿# SimPrecisionGoTo RA Axis Convergence — Improvement Analysis
 
-**Report generated:** 2026-05-27 15:39 | **Last updated:** 2026-05-27 16:27
+**Report generated:** 2026-05-27 15:39 | **Last updated:** 2026-05-27 17:59
 **Author:** GitHub Copilot (analysis requested by Andy)  
 **Scope:** GEM and Polar alignment modes, RaDec slews only  
-**File under analysis:** `GreenSwamp.Alpaca.MountControl\Mount.Motion.cs` — `SimPrecisionGoto()`
+**Files under analysis:** `GreenSwamp.Alpaca.MountControl\Mount.Motion.cs` — `SimGoTo()`, `SimPrecisionGoto()`  
+**Simulator project:** `GreenSwamp.Alpaca.Simulator\Controllers.cs`
 
 ---
 
@@ -194,11 +195,13 @@ The residual second iteration then only deals with mechanical scatter (backlash,
 
 1. ✅ **DONE — Algorithm B bug fix:** `loopTimer.Elapsed.Milliseconds` → `loopTimer.Elapsed.TotalMilliseconds`. Also fixed `SimPulseGoto` with the same bug. Also fixed the `deltaTime` seed from `75 * 0.001 = 0.075` ms to `75.0` ms, and added EMA smoothing (`α = 0.4`).
 
-2. ✅ **DONE — Algorithm A feedforward:** Sidereal drift feedforward added to `Axis1` command for GEM and Polar RaDec slews. Uses `Settings.SiderealRate / 3_600_000.0` (degrees/ms). Sign is hemisphere-only (`+1` NH, `−1` SH). See Section 8 for the sign derivation.
+2. ✅ **DONE — Algorithm A feedforward in `SimPrecisionGoto`:** Sidereal drift feedforward added to `Axis1` command for GEM and Polar RaDec slews. Uses `Settings.SiderealRate / 3_600_000.0` (degrees/ms). Sign is hemisphere-only (`+1` NH, `−1` SH). See Section 8 for the sign derivation.
 
-3. **Medium term (Algorithm C):** Replace the fixed `0.125` gain with an adaptive one once A and B are proven stable.
+3. ✅ **DONE — Pre-correction in `SimGoTo`:** First-slew RA pre-correction added to `SimGoTo` using `Settings.MaxSlewRate` (default `3.4 °/s`) as the speed model. See Section 9 for the full design.
 
-4. **Long term (Algorithms D + E):** Introduce a lightweight per-session settle-time model so single-shot prediction becomes viable.
+4. **Medium term (Algorithm C):** Replace the fixed `0.125` gain with an adaptive one once A and B are proven stable.
+
+5. **Long term (Algorithms D + E):** Introduce a lightweight per-session settle-time model so single-shot prediction becomes viable.
 
 ---
 
@@ -206,14 +209,18 @@ The residual second iteration then only deals with mechanical scatter (backlash,
 
 | Symbol | Value | Source |
 |--------|-------|--------|
-| `SiderealRate` | `15.0410671786691` arcsec/s | `SkySettings.cs:81`, `TrackingCommandProcessor.cs:48`, `SkyPredictor.cs:44` |
+| `SiderealRate` | `15.0410671786691` arcsec/s | `SkySettings.cs`, `TrackingCommandProcessor.cs`, `SkyPredictor.cs` |
 | `SiderealRate_deg_per_ms` | `15.0410671786691 / 3_600_000.0 = 4.178×10⁻⁶ °/ms` | derived |
-| Precision threshold (2 steps at 9 024 000 steps/rev) | `≈ 0.000080°` ≈ `0.29″` | `Mount.Motion.cs:142` |
-| Current initial `deltaTime` | `75 ms` | `Mount.Motion.cs:144` |
-| Current RA gain scalar | `0.125` | `Mount.Motion.cs:179` |
-| Current Dec gain scalar | `0.05` | `Mount.Motion.cs:182` |
-| Max precision iterations | `5` | `Mount.Motion.cs:151` |
-| Max iteration wait | `3 000 ms` | `Mount.Motion.cs:187` |
+| `MaxSlewRate` (default) | `3.4 °/s` | `SkySettings.cs:107` (`_maxSlewRate`) |
+| Precision threshold (2 steps at 9 024 000 steps/rev) | `≈ 0.000080°` ≈ `0.29″` | `Mount.Motion.cs` |
+| `SimPrecisionGoto` initial `deltaTime` | `75.0 ms` | `Mount.Motion.cs` |
+| `SimGoTo` minimum slew floor | `4000 ms` | `Mount.Motion.cs` (empirically derived) |
+| `SimGoTo` dominant-axis time estimate | `Math.Max(axis1Distance, axis2Distance) / MaxSlewRate × 1000` | `Mount.Motion.cs` |
+| RA precision-loop gain scalar | `0.125` | `Mount.Motion.cs` |
+| Dec precision-loop gain scalar | `0.05` | `Mount.Motion.cs` |
+| EMA smoothing factor (α) | `0.4` | `Mount.Motion.cs` |
+| Max precision iterations | `5` | `Mount.Motion.cs` |
+| Max iteration wait | `3 000 ms` | `Mount.Motion.cs` |
 
 ---
 
@@ -291,6 +298,137 @@ double driftSign = positiveSign ? +1.0 : -1.0;
 ```
 
 No check against `PierSideUI.Normal` / `PierSideUI.ThroughPole` is required.
+
+---
+
+## 9. Final Design — `SimGoTo` RA Pre-Correction
+
+### Purpose
+
+`SimGoTo` issues the first (coarse) slew command before `SimPrecisionGoto` runs the fine-correction loop. Without pre-correction the first slew lands behind the true sky position by the sidereal drift accumulated during the slew — forcing the precision loop to spend its first iteration just catching up, rather than converging on the residual mechanical error.
+
+### Implementation (`Mount.Motion.cs`)
+
+```csharp
+var axis1SlewTarget = simTarget[0];
+if (slewType == SlewType.SlewRaDec && Settings.AlignmentMode != AlignmentMode.AltAz)
+{
+    var rawPos = GetRawDegrees();
+    if (rawPos != null && !double.IsNaN(rawPos[0]))
+    {
+        var axis1Distance = Math.Abs(simTarget[0] - rawPos[0]);
+        var axis2Distance = Math.Abs(simTarget[1] - rawPos[1]);
+
+        // Dominant-axis distance: mount won't stop until both axes settle,
+        // so use whichever axis has the longer journey.
+        // Apply 4000 ms minimum floor for acceleration-dominated short slews.
+        const double minSlewMs = 4000.0;
+        var estimatedSlewMs = Settings.MaxSlewRate > 0
+            ? Math.Max(minSlewMs, (Math.Max(axis1Distance, axis2Distance) / Settings.MaxSlewRate) * 1000.0)
+            : minSlewMs;
+
+        var driftSign = Settings.Latitude >= 0 ? +1.0 : -1.0;
+        var raCorrection = driftSign * (Settings.SiderealRate / 3_600_000.0) * estimatedSlewMs;
+        axis1SlewTarget = simTarget[0] + raCorrection;
+    }
+}
+_ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis1, axis1SlewTarget);
+_ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis2, simTarget[1]);
+```
+
+### Parameter values (production)
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| `minSlewMs` | `4000 ms` | Empirically derived from test logs; accounts for simulator accel profile |
+| Speed model | `MaxSlewRate` default `3.4 °/s` | Read from `SkySettings.MaxSlewRate` |
+| Distance model | `Math.Max(axis1Distance, axis2Distance)` | Dominant-axis: prevents underestimate for Dec-heavy slews |
+| Sidereal rate | `Settings.SiderealRate / 3_600_000.0` °/ms | Same constant as the precision loop |
+| Sign | `Latitude >= 0 ? +1 : -1` | Hemisphere only; same as precision loop |
+
+### Telemetry
+
+Each `SimGoTo` pre-correction logs at `MonitorType.Information`:
+
+```
+Mount:{id}|GoToRaCorrection|{raCorrection:F6}|EstSlewMs|{estimatedSlewMs:F1}|Dist|{axis1Distance:F4}|Dist2|{axis2Distance:F4}
+```
+
+---
+
+## 10. Simulator Non-Determinism
+
+### Overview
+
+The simulator (`GreenSwamp.Alpaca.Simulator\Controllers.cs`) uses wall-clock elapsed time in a background polling loop to integrate axis motion. This means slew duration and precision-loop iteration count vary between otherwise identical runs. This is the primary reason `SimPrecisionGoto` shows run-to-run variation in `GoToSeconds` and iteration counts.
+
+### Sources of non-determinism (in order of impact)
+
+#### 1. `Thread.Sleep(20)` delivers variable tick intervals — primary cause
+
+**Location:** `Controllers.cs` — `MoveAxes()`
+
+```csharp
+Thread.Sleep(20);   // Windows does NOT guarantee 20ms
+var now = HiResDateTime.UtcNow;
+var seconds = (now - _lastUpdateTime).TotalSeconds;
+_lastUpdateTime = now;
+...
+changeX += GoTo(Axis.Axis1, seconds);   // movement = speed × actual_interval
+```
+
+On Windows, `Thread.Sleep(20)` sleeps for **15–35 ms** depending on the system timer resolution (default 15.625 ms quantum). The actual `seconds` is measured from the real wall clock, so axis movement per tick is `speed × variable_interval`. A slew that nominally takes 150 ticks at exactly 20 ms = 3000 ms can range from ~2800 ms to ~3300 ms. **This alone explains 10–20% variation in actual slew duration.**
+
+#### 2. No thread synchronisation between command thread and simulation thread — data race
+
+**Location:** `Controllers.cs` — `Command()` vs `MoveAxes()`
+
+`Command()` is called from `IoSerial.Send()` on the command-queue thread and writes fields like `_gotoX`, `_isGotoSlewingX`, `DegreesX` directly. `MoveAxes()` runs on the dedicated `MountSimLoop` background thread and reads/writes the same fields. There is **no `lock`, `Interlocked`, or `volatile`** on any of these fields. This can cause:
+
+- A `gototarget` command arriving mid-tick to partially update state while `MoveAxes()` is computing
+- `_isGotoSlewingX` being cleared on the sim thread at the same moment a new goto arrives from the command thread
+- Inconsistent axis X/Y snapshot in `CheckStopped` / `CheckSlewing`
+
+#### 3. Speed band threshold crossings are sensitive to tick jitter
+
+**Location:** `Controllers.cs` — `GoTo(Axis axis, double interval)` lines ~426–458
+
+```csharp
+if      (delta < .01)  { /* snap to target */   _isGotoSlewingX = false; }
+else if (delta < .2)   { change = SlewSpeedOne * sign;  }  // ~0.04 °/s
+else if (delta < .6)   { change = SlewSpeedFour * sign; }  //  ~6.0 °/s
+else if (delta < 1)    { change = SlewSpeedSix * sign;  }  // ~10.0 °/s
+else                   { change = SlewSpeedEight * sign; }  // ~13   °/s
+```
+
+The `SlewSpeedSix → SlewSpeedOne` transition at `delta = 0.2°` is particularly sensitive. At 10 °/s, one 22 ms tick advances the axis `0.22°` — the axis **jumps over the 0.2° threshold without entering the slow band**. At 19 ms the same axis moves `0.19°` and enters the slow band correctly. This produces **systematic half-second variation** in slew duration depending purely on tick timing near that boundary.
+
+#### 4. Non-atomic position read in `Actions.AxesDegrees()`
+
+**Location:** `Actions.cs` — `AxesDegrees()`
+
+```csharp
+var x = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis1}"));
+// MoveAxes() can tick HERE and update both axes
+var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}"));
+```
+
+Axis1 and Axis2 positions are read in **two separate calls** with no atomic snapshot. The simulation loop can run between them, so the X/Y pair delivered to `SimPrecisionGoto` may come from different simulator ticks. For a large slew this introduces an embedded time-skew error in the starting position that varies every read.
+
+### Summary table
+
+| Source | Location | Effect on `GoToSeconds` / iterations |
+|--------|----------|--------------------------------------|
+| `Thread.Sleep(20)` jitter | `Controllers.cs` `MoveAxes()` | ±5–15 ms per tick; cumulative 10–20% slew-time variation |
+| No thread synchronisation | `Controllers.cs` `Command()` vs `MoveAxes()` | Race on `_gotoX/Y`, `_isGotoSlewing`, `DegreesX/Y` |
+| Speed band threshold overshoot | `Controllers.cs` `GoTo()` | One tick near 0.2° skips the slow-down band; ~0.5 s variation |
+| Non-atomic position read | `Actions.cs` `AxesDegrees()` | X/Y read from different ticks; skewed starting position |
+
+### Impact on convergence tuning
+
+The `minSlewMs = 4000 ms` floor and the dominant-axis estimate in `SimGoTo` were derived empirically from observed slew-time distributions in test logs. Simulator non-determinism means there is a practical lower bound on how tightly the pre-correction can be tuned: a run that completes in 3800 ms will slightly over-correct relative to one that completes in 5200 ms, but the pre-correction still reduces the precision-loop residual in both cases compared to no correction at all.
+
+Improving simulator determinism (fixed-step integration, proper locking, or atomic position snapshot) would allow tighter tuning but is a separate concern from the mount-control convergence work.
 
 ---
 

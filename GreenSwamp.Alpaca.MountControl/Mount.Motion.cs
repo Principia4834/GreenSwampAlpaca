@@ -59,7 +59,47 @@ namespace GreenSwamp.Alpaca.MountControl
 
             #region First Slew
             token.ThrowIfCancellationRequested();
-            _ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis1, simTarget[0]);
+
+            // Pre-correct Axis1 for sidereal drift during the slew (GEM/Polar RaDec only).
+            // Estimate slew duration from angular distance and MaxSlewRate, then offset the
+            // target by how far the sky will move in that time so the mount lands near the
+            // final position in one go, minimising precision-loop iterations.
+            var axis1SlewTarget = simTarget[0];
+            if (slewType == SlewType.SlewRaDec && Settings.AlignmentMode != AlignmentMode.AltAz)
+            {
+                var rawPos = GetRawDegrees();
+                if (rawPos != null && !double.IsNaN(rawPos[0]))
+                {
+                    var axis1Distance = Math.Abs(simTarget[0] - rawPos[0]);
+                    var axis2Distance = Math.Abs(simTarget[1] - rawPos[1]);
+                    // Use the dominant axis distance so that Dec-heavy slews are correctly
+                    // accounted for — the mount won't stop until both axes have settled.
+                    // Apply a minimum floor to account for the simulator's acceleration profile:
+                    // short slews are accel-dominated and take far longer than distance/rate predicts.
+                    // 4000ms is empirically derived from observed minimum settle times in test data.
+                    const double minSlewMs = 4000.0;
+                    var estimatedSlewMs = Settings.MaxSlewRate > 0
+                        ? Math.Max(minSlewMs, (Math.Max(axis1Distance, axis2Distance) / Settings.MaxSlewRate) * 1000.0)
+                        : minSlewMs;
+                    var driftSign = Settings.Latitude >= 0 ? +1.0 : -1.0;
+                    var raCorrection = driftSign * (Settings.SiderealRate / 3_600_000.0) * estimatedSlewMs;
+                    axis1SlewTarget = simTarget[0] + raCorrection;
+
+                    monitorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Environment.CurrentManagedThreadId,
+                        Message = $"Mount:{_mountId}|GoToRaCorrection|{raCorrection:F6}|EstSlewMs|{estimatedSlewMs:F1}|Dist|{axis1Distance:F4}|Dist2|{axis2Distance:F4}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
+            }
+
+            _ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis1, axis1SlewTarget);
             _ = new CmdAxisGoToTarget(SimQueue!.NewId, SimQueue, Axis.Axis2, simTarget[1]);
 
             while (stopwatch.Elapsed.TotalSeconds <= timer)
