@@ -6,10 +6,11 @@
 - Always use my name "Andy" when referring to the "user"
 - Always include and refresh a time and date stamp in any markdown document you create or update using the format "YYYY-MM-DD HH:MM"
 - Always refresh the date and time stamp by querying the current system time - do not hardcode or reuse old timestamps
-- After any PowerShell bulk write to a markdown file, always normalise line endings to CR/LF before finishing and set thecorrect BOM for UTF-8 encoding
+- After any PowerShell bulk write to a markdown file, always normalise line endings to CR/LF before finishing and set the correct BOM for UTF-8 encoding
 - Never use the edit_file tool to make edits in files over 1500 lines, instead use surgical edits with get_file_with_lines to capture context and verify line numbers before editing
 - When using the edit_file tool always confirm the context is unique and the line numbers are correct by first using get_file_with_lines to read the exact lines you plan to edit, and verifying the content matches what you expect to change
 - After each phase of edits, always commit the changes with a one line message such as "feat: add new feature X" or "fix: resolve issue Y", do not add detailed descriptions in the commit message, instead save detailed explanations for the final commit message when the entire task is complete and verified
+- Prefer strictly evidence-based analysis and do not make speculative assertions without direct support from code/logs.
 
 ## Shell & CLI guidance for Copilot suggestions
 
@@ -47,21 +48,13 @@ Add mapping hints (for Copilot model / prompts)
 
 ### Before Making ANY Changes:
 
-1. **VERIFY BUILD STATE FIRST**
-   ```
-   run_build
-   ```
-   - **If build fails:** STOP. Report the issue. Do NOT proceed with changes.
+1. **VERIFY BUILD STATE FIRST**run_build   - **If build fails:** STOP. Report the issue. Do NOT proceed with changes.
    - **If build succeeds:** Document this baseline state before proceeding.
    - **Record the baseline**: "Build SUCCESS - 0 errors"
 
-2. **CAPTURE FILE STATE (MANDATORY)**
-   ```powershell
-   # Before ANY edit, capture:
-   $linesBefore = (Get-Content "path/to/file.cs").Count
-   Write-Host "File has $linesBefore lines before edit"
-   ```
-
+2. **CAPTURE FILE STATE (MANDATORY)**# Before ANY edit, capture:
+$linesBefore = (Get-Content "path/to/file.cs").Count
+Write-Host "File has $linesBefore lines before edit"
 3. **UNDERSTAND THE FILE STRUCTURE**
    - This solution uses **partial classes extensively**
    - NEVER assume a method/field is missing without verification
@@ -74,29 +67,25 @@ Add mapping hints (for Copilot model / prompts)
    - Use precise line ranges when possible
    - **For files >2000 lines: Use get_file_with_lines for context, edit ONLY the specific section**
 
-5. **VERIFY IMMEDIATELY AFTER EACH EDIT (MANDATORY)**
-   ```powershell
-   # After EVERY edit_file call:
-   
-   # Step 1: Check line count
-   $linesAfter = (Get-Content "path/to/file.cs").Count
-   $change = $linesAfter - $linesBefore
-   Write-Host "Line change: $change (expected: -1 for delete, +10 for add, etc.)"
-   
-   # Step 2: If change is > ±10 from expected ? STOP AND REVERT
-   if ([Math]::Abs($change - $expectedChange) > 10) {
-       Write-Host "ERROR: Unexpected line count change! REVERTING..."
-       # Ask user to revert
-   }
-   
-   # Step 3: Check git diff
-   git diff --stat path/to/file.cs
-   # Should match expected change (e.g., "1 insertion(+), 1 deletion(-)")
-   
-   # Step 4: Build
-   run_build
-   ```
+5. **VERIFY IMMEDIATELY AFTER EACH EDIT (MANDATORY)**# After EVERY edit_file call:
 
+# Step 1: Check line count
+$linesAfter = (Get-Content "path/to/file.cs").Count
+$change = $linesAfter - $linesBefore
+Write-Host "Line change: $change (expected: -1 for delete, +10 for add, etc.)"
+
+# Step 2: If change is > ±10 from expected? STOP AND REVERT
+if ([Math]::Abs($change - $expectedChange) > 10) {
+    Write-Host "ERROR: Unexpected line count change! REVERTING..."
+    # Ask user to revert
+}
+
+# Step 3: Check git diff
+git diff --stat path/to/file.cs
+# Should match expected change (e.g., "1 insertion(+), 1 deletion(-)")
+
+# Step 4: Build
+   run_build
 6. **COMPARE BUILD RESULTS**
    - Baseline: X errors
    - After edit: Y errors
@@ -116,16 +105,12 @@ Add mapping hints (for Copilot model / prompts)
    - The edit_file tool can corrupt large structures
    - Edit ONLY the specific case/method/block you need to change
 
-2. **Use targeted edits with context:**
-   ```csharp
-   // ? CORRECT - Minimal context
-   case SomeCase:
-       // ...existing code...
-       newCode(); // Change here
-       // ...existing code...
-       break;
-   ```
-
+2. **Use targeted edits with context:**// ? CORRECT - Minimal context
+case SomeCase:
+    // ...existing code...
+    newCode(); // Change here
+    // ...existing code...
+    break;
 3. **For settings file copying in MountConnect():**
    - **Target ONLY the try-catch block** (lines ~318-335)
    - Do NOT include surrounding switch cases
@@ -139,14 +124,8 @@ Add mapping hints (for Copilot model / prompts)
 
 ### Example: Replacing Settings Code Block
 
-**WRONG (too much context):**
-```csharp
-// Including entire switch case and surrounding code
-```
-
-**CORRECT (minimal context):**
-```csharp
-            try
+**WRONG (too much context):**// Including entire switch case and surrounding code
+**CORRECT (minimal context):**            try
             {
                 // Get path to current version's appsettings.user.json file
                 var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -156,8 +135,6 @@ Add mapping hints (for Copilot model / prompts)
             {
                 // ...error handling...
             }
-```
-
 ---
 
 ## ?? Solution Architecture
@@ -197,8 +174,6 @@ The following classes use partial class pattern:
 2. **Other partial classes** - Always verify before editing
 
 ### Before Claiming "Method Not Found":
-
-```bash
 # Step 1: Find ALL partial files for the class
 file_search "SkyServer" 0
 
@@ -207,8 +182,6 @@ code_search "SkyTasks" "CalcCustomTrackingOffset"
 
 # Step 3: Verify in context
 get_file "path/to/found/file.cs"
-```
-
 ### When Editing Partial Classes:
 
 - ? **DO:** Make surgical edits to specific methods
@@ -222,17 +195,13 @@ get_file "path/to/found/file.cs"
 
 ## ?? Settings System (IMPORTANT)
 
-2. **Use modern settings service:**
-   ```csharp
-   // ? CORRECT
+2. **Use modern settings service:**// ? CORRECT
    IVersionedSettingsService settingsService
    var settings = settingsService.GetSettings();
    
    // ? WRONG
    ConfigurationManager.OpenExeConfiguration(...)
    Properties.Settings.Default.Port
-   ```
-
 3. **Settings file locations:**
    - Default settings: `appsettings.json`
    - User settings: `%AppData%/GreenSwampAlpaca/{version}/appsettings.user.json`
@@ -242,38 +211,26 @@ get_file "path/to/found/file.cs"
 ## ??? Common Operations Guide
 
 ### Adding a New Feature
-
-```bash
 1. run_build                           # Baseline
 2. file_search "related_class" 0       # Find relevant files
 3. code_search "related_method"        # Find existing implementations
 4. get_file "path/to/file.cs"         # Review context
 5. edit_file                           # Make minimal changes
 6. run_build                           # Verify immediately
-```
-
 ### Fixing a Bug
-
-```bash
 1. run_build                           # Confirm bug exists
 2. code_search "error_method_name"     # Locate all occurrences
 3. file_search "partial_class" 0       # Find all partial files
 4. get_file "path/to/file.cs"         # Review full context
 5. edit_file                           # Surgical fix
 6. run_build                           # Verify fix
-```
-
 ### Refactoring Code
-
-```bash
 1. run_build                           # CRITICAL: Establish baseline
 2. get_files_in_project "project.csproj" # Map dependencies
 3. code_search "method_to_refactor"    # Find all usages
 4. Edit ONE file at a time
 5. run_build after EACH edit           # Incremental verification
 6. If build breaks: REVERT immediately
-```
-
 ---
 
 ## ?? ANTI-PATTERNS (NEVER DO THIS)
@@ -288,17 +245,12 @@ get_file "path/to/found/file.cs"
 
 ### ? Large Block Replacements
 
-**WRONG:**
-```csharp
-// Replace entire method body
+**WRONG:**// Replace entire method body
 private static bool MountConnect()
 {
     // ...entire new implementation...
 }
-```
-
 **CORRECT:**
-```csharp
 // Target specific lines
 try
 {
@@ -309,27 +261,16 @@ try
     
     // ...existing code...
 }
-```
-
 ### ? Skipping Build Verification
 
-**WRONG:**
-```bash
-edit_file ? edit_file ? edit_file ? run_build
-```
-
+**WRONG:**edit_file ? edit_file ? edit_file ? run_build
 **CORRECT:**
-```bash
 run_build ? edit_file ? run_build ? edit_file ? run_build
-```
-
 ---
 
 ## ?? Commit Message Guidelines
 
 When suggesting commits, use this format:
-
-```
 <type>: <short description>
 
 <detailed description>
@@ -342,8 +283,6 @@ Verification:
 - Build status: ? Success
 - Tests run: Yes/No
 - Manual testing: Description
-```
-
 Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
 ---
@@ -359,16 +298,8 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
    - What errors are NEW?
    - What files are affected?
 
-3. **Check partial files:**
-   ```bash
-   file_search "affected_class" 0
-   ```
-
-4. **Review your changes:**
-   ```bash
-   get_file_with_lines "edited_file.cs" [{"start": X, "end": Y}]
-   ```
-
+3. **Check partial files:**file_search "affected_class" 0
+4. **Review your changes:**get_file_with_lines "edited_file.cs" [{"start": X, "end": Y}]
 5. **Fix or revert:**
    - If quick fix: Apply and verify
    - If uncertain: Revert and restart with smaller scope
@@ -431,8 +362,6 @@ Before claiming a task is complete:
 ## ?? Emergency Recovery
 
 If you break the build:
-
-```bash
 # 1. Acknowledge immediately
 "I broke the build with my last edit. Reverting changes..."
 
@@ -441,8 +370,6 @@ If you break the build:
 
 # 3. Suggest recovery action
 "Please revert the commit or I can attempt a surgical fix by..."
-```
-
 ---
 
 ## ?? Remember

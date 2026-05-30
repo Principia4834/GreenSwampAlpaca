@@ -24,6 +24,7 @@ using GreenSwamp.Alpaca.Server.MountControl;
 using GreenSwamp.Alpaca.Shared;
 using System.Diagnostics;
 using System.Reflection;
+using System.Xml;
 using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
@@ -420,50 +421,90 @@ namespace GreenSwamp.Alpaca.MountControl
             token.ThrowIfCancellationRequested();
             _ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis1, skyTarget[0]);
             _ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis2, skyTarget[1]);
+
             var axis1Stopped = false;
             var axis2Stopped = false;
+            var firstSlewCompleted = false;
+            var abortReason = string.Empty;
+
             while (stopwatch.Elapsed.TotalSeconds <= timer)
             {
+                // Poll Axis1 if not yet confirmed stopped
                 if (!axis1Stopped)
                 {
-                    token.WaitHandle.WaitOne(250);
+                    token.WaitHandle.WaitOne(125);
                     token.ThrowIfCancellationRequested();
 
                     try
                     {
                         var statusX = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis1);
                         var x = SkyQueue.GetCommandResult(statusX);
-                        if (!x.Successful) break;
+                        if (!x.Successful)
+                        {
+                            abortReason = "Axis1 status query unsuccessful";
+                            break;
+                        }
                         axis1Stopped = Convert.ToBoolean(x.Result);
                     }
-                    catch (InvalidOperationException) { break; }
+                    catch (InvalidOperationException ex)
+                    {
+                        abortReason = $"Axis1 InvalidOperationException: {ex.Message}";
+                        break;
+                    }
                 }
 
+                // Poll Axis2 if not yet confirmed stopped — always, every iteration
                 if (!axis2Stopped)
                 {
-                    // When Axis 1 is already done its WaitOne(250) is skipped; add a small
-                    // delay so we do not read Axis 2 status with no preamble, which risks
-                    // catching a transient FullStop during the advanced-command deceleration ramp.
-                    if (axis1Stopped) Thread.Sleep(50);
-                    token.WaitHandle.WaitOne(250);
+                    token.WaitHandle.WaitOne(125);
                     token.ThrowIfCancellationRequested();
 
                     try
                     {
-                        var statusY = new SkyIsAxisFullStop(SkyQueue.NewId, SkyQueue, Axis.Axis2);
+                        var id = SkyQueue.NewId;
+                        var statusY = new SkyIsAxisFullStop(id, SkyQueue, Axis.Axis2);
                         var y = SkyQueue.GetCommandResult(statusY);
-                        if (!y.Successful) break;
+                        if (!y.Successful)
+                        {
+                            abortReason = "Axis2 status query unsuccessful";
+                            break;
+                        }
                         axis2Stopped = Convert.ToBoolean(y.Result);
+
+                        if (axis2Stopped)
+                        {
+                            var statusZ = new SkyCmdToMount(SkyQueue.NewId, SkyQueue, 2, "X", "0001", "true" );
+                            var z = SkyQueue.GetCommandResult(statusZ);
+                            var result = z.Result;
+                            {
+                                monitorItem = new MonitorEntry
+                                {
+                                    Datetime = HiResDateTime.UtcNow,
+                                    Device = MonitorDevice.Server,
+                                    Category = MonitorCategory.Server,
+                                    Type = MonitorType.Information,
+                                    Method = MethodBase.GetCurrentMethod()?.Name,
+                                    Thread = Environment.CurrentManagedThreadId,
+                                    Message = $"Mount:{_mountId}|Check diagnostic|{result}|{id}"
+                                };
+                                MonitorLog.LogToMonitor(monitorItem);
+                            }
+                        }
                     }
-                    catch (InvalidOperationException) { break; }
+                    catch (InvalidOperationException ex)
+                    {
+                        abortReason = $"Axis2 InvalidOperationException: {ex.Message}";
+                        break;
+                    }
                 }
 
-                if (!axis1Stopped || !axis2Stopped) { continue; }
+                // Only exit when both axes are confirmed stopped
+                if (!axis1Stopped || !axis2Stopped) continue;
 
-                if (_slewSettleTime > 0)
-                    Thread.Sleep((int)TimeSpan.FromSeconds(_slewSettleTime).TotalMilliseconds);
+                firstSlewCompleted = true;
                 break;
             }
+
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
             stopwatch.Stop();
 
@@ -475,21 +516,40 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Mount:{_mountId}|Seconds|{elapsedSeconds}|Target|{target[0]}|{target[1]}"
+                Message = $"Mount:{_mountId}|Seconds|{elapsedSeconds:F3}|A1Stopped|{axis1Stopped}|A2Stopped|{axis2Stopped}|Completed|{firstSlewCompleted}|Abort|{abortReason}|Target|{target[0]}|{target[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
+
+            if (!firstSlewCompleted && !string.IsNullOrEmpty(abortReason))
+            {
+                var warnItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Warning,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"Mount:{_mountId}|FirstSlewAborted|{abortReason}|PrecisionGoto skipped"
+                };
+                MonitorLog.LogToMonitor(warnItem);
+            }
             #endregion
 
-            #region Final precision slew
+            #region Final precision slew — only when both axes confirmed stopped
             token.ThrowIfCancellationRequested();
-            if (elapsedSeconds <= timer)
+            if (firstSlewCompleted)
                 SkyPrecisionGoto(target, slewType, token);
             #endregion
 
             SkyTasks(MountTaskName.StopAxes);
+
+            if (_slewSettleTime > 0)
+                Thread.Sleep((int)TimeSpan.FromSeconds(_slewSettleTime).TotalMilliseconds);
+
             return success;
         }
-
+        
         /// <summary>
         /// Performs a high-precision goto operation by iteratively correcting mount position until target coordinates
         /// are reached within the configured precision tolerance.
@@ -569,8 +629,19 @@ namespace GreenSwamp.Alpaca.MountControl
                 deltaDegree[1] = Range.Range180(skyTarget[1] - rawPositions[1]);
                 if (Math.Abs(deltaDegree[0]) > 5.0 || Math.Abs(deltaDegree[1]) > 5.0)
                 {
+                    var errorItem = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server,
+                        Type = MonitorType.Error,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Environment.CurrentManagedThreadId,
+                        Message = $"Mount:{_mountId}|Delta {deltaDegree[0]:F2},{deltaDegree[1]:F2}|Try:{maxTries}"
+                    };
+                    MonitorLog.LogToMonitor(errorItem);
                     // Snapshot log file for large error
-                    MonitorQueue.WriteBuffer();
+                    // MonitorQueue.WriteBuffer();
                 }
 
                 axis1AtTarget = Math.Abs(deltaDegree[0]) < gotoPrecision[0] || axis1AtTarget;

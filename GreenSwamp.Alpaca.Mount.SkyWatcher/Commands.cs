@@ -559,6 +559,19 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 response = CmdToMount(axis, 'X', "0001");
                 var val = String32ToInt(response, true, 1);
 
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Information,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"{axis}=>{val}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
+
+
                 if (IsBitSet(val, 0))
                 {
                     _axesStatus[(int)axis].FullStop = false;
@@ -1183,7 +1196,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
 
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $":X|{axis}|0504" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $":X|{axis}|0504" };
             MonitorLog.LogToMonitor(monitorItem);
 
             _axesStatus[(int)axis].SetFullStop();

@@ -1173,6 +1173,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Waits for a single, event-driven mount position update to complete.
         /// </summary>
         /// <param name="waitTime">Maximum time to wait, in milliseconds. Default is 100 ms.</param>
+        /// <param name="caller">Optional caller name for logging purposes.</param>
         /// <remarks>
         /// This method implements an event-based update sequence:
         /// 1. Resets the _mountPositionUpdatedEvent.
@@ -1182,7 +1183,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// On timeout the method does not throw; instead it logs a warning to the monitor using
         /// `MonitorLog.LogToMonitor(...)`.
         /// </remarks>
-        public bool WaitUpdateMountPosition(int waitTime = 100)
+        public bool WaitUpdateMountPosition(int waitTime = 100, [System.Runtime.CompilerServices.CallerMemberName] string caller = "")
         {
             // Event-based position update waiting
             _mountPositionUpdatedEvent.Reset();
@@ -1196,7 +1197,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Device = MonitorDevice.Server,
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Warning,
-                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Method = MethodBase.GetCurrentMethod()?.Name + "_" + caller,
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"Mount:{_mountId}|Timeout waiting for position update"
                 };

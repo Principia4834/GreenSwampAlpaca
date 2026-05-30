@@ -31,11 +31,12 @@ namespace GreenSwamp.Alpaca.Shared
         #region Fields
 
         /// <summary>Maximum number of entries held in the ring buffer.</summary>
-        public const int Capacity = 1000;
+        public const int Capacity = 2000;
 
         private static readonly MonitorEntry[] _buffer = new MonitorEntry[Capacity];
-        private static int _writeIndex;                         // next write slot (0-based, wraps at Capacity)
-        private static int _count;                              // number of valid entries (capped at Capacity)
+        private static int _ringIndex;    // next write slot (0-based, wraps at Capacity)
+        private static int _recordIndex;  // global record index (monotonically increasing, not reset or wrapped)                      
+        private static int _count;        // number of valid entries (capped at Capacity)
         private static readonly object _lock = new object();
         private static readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
         private const string Fmt = "0000#";
@@ -52,9 +53,10 @@ namespace GreenSwamp.Alpaca.Shared
         {
             lock (_lock)
             {
-                _buffer[_writeIndex] = entry;
-                _writeIndex = (_writeIndex + 1) % Capacity;
+                _buffer[_ringIndex] = entry;
+                _ringIndex = (_ringIndex + 1) % Capacity;
                 if (_count < Capacity) _count++;
+                _recordIndex++;
             }
         }
 
@@ -79,7 +81,7 @@ namespace GreenSwamp.Alpaca.Shared
                     Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException());
 
                 using var sw = new StreamWriter(filePath, append: false, Encoding.UTF8);
-                int idx = 0;
+                int idx = _recordIndex - snapshot.Length;
                 foreach (var entry in snapshot)
                 {
                     idx++;
@@ -108,8 +110,8 @@ namespace GreenSwamp.Alpaca.Shared
             lock (_lock)
             {
                 var snapshot = new MonitorEntry[_count];
-                // When not yet full start from index 0; when full start from _writeIndex (oldest slot)
-                int startIndex = (_count < Capacity) ? 0 : _writeIndex;
+                // When not yet full start from index 0; when full start from _ringIndex (oldest slot)
+                int startIndex = (_count < Capacity) ? 0 : _ringIndex;
                 for (int i = 0; i < _count; i++)
                     snapshot[i] = _buffer[(startIndex + i) % Capacity];
                 return snapshot;

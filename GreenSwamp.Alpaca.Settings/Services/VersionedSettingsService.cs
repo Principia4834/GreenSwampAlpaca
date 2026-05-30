@@ -217,6 +217,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
 
             DeviceSettingsChanged?.Invoke(this, settings);
+
+            await SyncAlpacaDeviceNameAsync(deviceNumber, settings.DeviceName);
         }
 
         public async Task DeleteDeviceSettingsAsync(int deviceNumber)
@@ -240,6 +242,33 @@ namespace GreenSwamp.Alpaca.Settings.Services
             finally
             {
                 deviceLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Propagates a DeviceName change from device-nn.settings.json to the matching entry in
+        /// devices.alpaca.user.json. No-op if the entry does not exist or the name is unchanged.
+        /// </summary>
+        private async Task SyncAlpacaDeviceNameAsync(int deviceNumber, string newName)
+        {
+            if (!await _alpacaFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException($"Timeout acquiring Alpaca file lock while syncing name for device {deviceNumber}.");
+
+            try
+            {
+                var devices = ReadAlpacaDevicesUnlocked();
+                var entry = devices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
+
+                if (entry == null || entry.DeviceName == newName)
+                    return;
+
+                entry.DeviceName = newName;
+                await WriteAlpacaDevicesUnlockedAsync(devices);
+                LogSafe("INFO", $"Synced DeviceName for device-{deviceNumber:D2} to devices.alpaca.user.json: '{newName}'");
+            }
+            finally
+            {
+                _alpacaFileLock.Release();
             }
         }
 

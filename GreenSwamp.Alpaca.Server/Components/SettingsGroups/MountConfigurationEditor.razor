@@ -105,7 +105,7 @@
         <MudStack Spacing="3">
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable advanced commands for mount control." Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.AllowAdvancedCommandSet" @bind-Value:after="NotifyChanged"
-                             Label="Aloow Advanced Commands" Color="Color.Primary" />
+                             Label="Allow Advanced Commands" Color="Color.Primary" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.EncodersOn" @bind-Value:after="NotifyChanged"

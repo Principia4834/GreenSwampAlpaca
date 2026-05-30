@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob  Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob  Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -13,7 +13,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+using System.Diagnostics;
 using GreenSwamp.Alpaca.Mount.Commands;
+using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Shared;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 {
@@ -950,14 +956,41 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     public class SkyIsAxisFullStop : SkyQueryCommand
     {
         private readonly Axis _axis;
+        private string _axisStr;
 
-        public SkyIsAxisFullStop(long id, ICommandQueue<SkyWatcher> queue, Axis axis) : base(id, queue)
+        public SkyIsAxisFullStop(long id, ICommandQueue<SkyWatcher> queue, Axis axis, 
+            [System.Runtime.CompilerServices.CallerMemberName] string caller = "",
+            [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0) : base(id, queue)
         {
             _axis = axis;
+            _axisStr = axis == Axis.Axis1 ? "RA" : "DEC";
+            //var monitorItem = new MonitorEntry
+            //{
+            //    Datetime = HiResDateTime.UtcNow,
+            //    Device = MonitorDevice.Server,
+            //    Category = MonitorCategory.Server,
+            //    Type = MonitorType.Information,
+            //    Method = "SkyIsAxisFullStop-Enqueue",
+            //    Thread = Environment.CurrentManagedThreadId,
+            //    Message = $"{Id}|{_axis}|{caller}|{sourceLineNumber}"
+            //};
+            //MonitorLog.LogToMonitor(monitorItem);
         }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
+            //var monitorItem = new MonitorEntry
+            //{
+            //    Datetime = HiResDateTime.UtcNow,
+            //    Device = MonitorDevice.Server,
+            //    Category = MonitorCategory.Server,
+            //    Type = MonitorType.Information,
+            //    Method = "SkyIsAxisFullStop-Execute",
+            //    Thread = Environment.CurrentManagedThreadId,
+            //    Message = $"{Id}|{_axis}|"
+            //};
+            //MonitorLog.LogToMonitor(monitorItem);
+            Debug.Assert( _axisStr == (_axis == Axis.Axis1 ? "RA" : "DEC"));
             return skyWatcher.GetAxisStatus(_axis).FullStop;
         }
     }
