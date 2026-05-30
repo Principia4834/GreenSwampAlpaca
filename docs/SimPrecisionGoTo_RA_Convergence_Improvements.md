@@ -1,9 +1,9 @@
 ﻿# SimPrecisionGoTo RA Axis Convergence — Improvement Analysis
 
-**Report generated:** 2026-05-27 15:39 | **Last updated:** 2026-05-27 17:59
+**Report generated:** 2026-05-27 15:39 | **Last updated:** 2026-05-30 19:00
 **Author:** GitHub Copilot (analysis requested by Andy)  
 **Scope:** GEM and Polar alignment modes, RaDec slews only  
-**Files under analysis:** `GreenSwamp.Alpaca.MountControl\Mount.Motion.cs` — `SimGoTo()`, `SimPrecisionGoto()`  
+**Files under analysis:** `GreenSwamp.Alpaca.MountControl\Mount.Motion.cs` — `SimGoTo()`, `SimPrecisionGoto()`, `SkyGoTo()`, `SkyPrecisionGoto()`  
 **Simulator project:** `GreenSwamp.Alpaca.Simulator\Controllers.cs`
 
 ---
@@ -429,6 +429,186 @@ Axis1 and Axis2 positions are read in **two separate calls** with no atomic snap
 The `minSlewMs = 4000 ms` floor and the dominant-axis estimate in `SimGoTo` were derived empirically from observed slew-time distributions in test logs. Simulator non-determinism means there is a practical lower bound on how tightly the pre-correction can be tuned: a run that completes in 3800 ms will slightly over-correct relative to one that completes in 5200 ms, but the pre-correction still reduces the precision-loop residual in both cases compared to no correction at all.
 
 Improving simulator determinism (fixed-step integration, proper locking, or atomic position snapshot) would allow tighter tuning but is a separate concern from the mount-control convergence work.
+
+---
+
+## 11. SkyWatcher Path — Current State Assessment (`SkyGoTo` / `SkyPrecisionGoto`)
+
+### 11.1 Architecture differences vs the Simulator path
+
+| Aspect | Simulator path | SkyWatcher path |
+|--------|---------------|-----------------|
+| **First-slew command** | `CmdAxisGoToTarget` via `SimQueue` | `SkyAxisGoToTarget` via `SkyQueue` |
+| **Settle detection** | Poll `CmdAxisStatus.Stopped` (50 ms intervals) | Poll `SkyIsAxisFullStop` (125 ms `WaitHandle` intervals) |
+| **Position feedback source** | `GetRawDegrees()` → `IoSerial` → `Controllers.DegreesX/Y` | Event-based `WaitUpdateMountPosition()` — waits for `_mountPositionUpdatedEvent` set by `ReceiveSteps()` |
+| **Position update rate** | Controlled by simulator loop (~20 ms) | Driven by SkyWatcher hardware step-count polling; update arrives asynchronously |
+| **Precision threshold** | `ConvertStepsToDegrees(2, 0/1)` ≈ `0.000080°` (2 encoder steps) | `Settings.GotoPrecision` = `0.001°` (configurable; default ≈ 3.6″) |
+| **Iteration wait budget** | 3 000 ms per axis (poll loop) | 3 000 ms shared between both axes per iteration |
+| **Initial `deltaTime`** | `75.0 ms` (seeded), then EMA α=0.4 | `800 ms` (seeded); no EMA — raw `loopTimer.ElapsedMilliseconds` |
+| **RA gain (Axis1)** | `0.125` | `0.25` for RaDec slew |
+| **Dec gain (Axis2)** | `0.05` | `0.0` for GEM/Polar RaDec (no correction applied); `0.1` for AltAz |
+| **Max iterations** | `5` | `5` |
+
+### 11.2 Known bugs in the SkyWatcher path
+
+#### Bug 1 — `ElapsedMilliseconds` truncation in `SkyPrecisionGoto` (line 689)
+
+```csharp
+loopTimer.Stop();
+deltaTime = loopTimer.ElapsedMilliseconds;   // BUG: integer ms, not TotalMilliseconds
+```
+
+`Stopwatch.ElapsedMilliseconds` is a `long` returning the integer millisecond count and is **correct** for durations under 1000 ms. However, when a precision iteration takes more than 1 second (which is normal — the 3000 ms budget is the ceiling), it returns the full count correctly. **This is not the same truncation bug as `Elapsed.Milliseconds`**, but the variable is typed `long` and used as a `long` in the AltAz prediction path only. For GEM/Polar the feedforward computation has not been implemented yet, so this value is currently unused in those modes. It will matter when the feedforward is added.
+
+#### Bug 2 — `ElapsedMilliseconds` truncation in `SkyPulseGoto` (line 818)
+
+```csharp
+loopTimer.Stop();
+deltaTime = loopTimer.ElapsedMilliseconds;   // same pattern as above
+```
+
+Same situation in `SkyPulseGoto` — the AltAz path uses `deltaTime` to predict the next position; GEM/Polar does not yet use it. Should be consistent with the simulator path fix when feedforward is introduced.
+
+#### Bug 3 — No sidereal feedforward in `SkyPrecisionGoto` for GEM/Polar
+
+`SkyPrecisionGoto` handles GEM/Polar and AltAz differently:
+
+```csharp
+// AltAz: uses SkyPredictor to project target forward by deltaTime ✅
+if (Settings.AlignmentMode == AlignmentMode.AltAz && slewType == SlewType.SlewRaDec)
+{
+    var nextTime = HiResDateTime.UtcNow.AddMilliseconds(deltaTime);
+    var predictorRaDec = SkyPredictor.GetRaDecAtTime(nextTime);
+    ...
+}
+
+// GEM/Polar Axis1 correction (line 632–638):
+var predictor = (slewType != SlewType.SlewRaDec)
+    ? 0
+    : 0.25;   // 0.25 × delta for RaDec, 0 for axis slew
+_ = new SkyAxisGoToTarget(..., skyTarget[0] + predictor * deltaDegree[0]);
+
+// GEM/Polar Axis2 correction (line 660–666):
+var predictor = (slewType == SlewType.SlewRaDec && Settings.AlignmentMode != AlignmentMode.AltAz)
+    ? 0       // ← No Dec correction at all for GEM/Polar RaDec ← by design
+    : 0.1;
+```
+
+There is **no sidereal drift feedforward** for GEM/Polar RaDec, equivalent to the pre-Algorithm A state of `SimPrecisionGoto`. Each iteration commands `skyTarget[0] + 0.25 × deltaDegree[0]` — a proportional step toward the *current measured* error — without advancing the target for how far the sky will move during the next settling period.
+
+#### Bug 4 — No pre-correction in `SkyGoTo` for GEM/Polar
+
+```csharp
+// SkyGoTo first slew (lines 422–423):
+_ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis1, skyTarget[0]);  // no RA correction
+_ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis2, skyTarget[1]);
+```
+
+There is no equivalent of the `SimGoTo` RA pre-correction. The first slew always targets the sky position at the moment the command is issued, so the precision loop must absorb the full sidereal drift accumulated during the (typically 5–15 second) first slew.
+
+### 11.3 Comparison with the Simulator path after changes
+
+| Feature | Sim path (current) | Sky path (current) | Gap |
+|---------|--------------------|--------------------|-----|
+| `TotalMilliseconds` (not `Milliseconds`) in precision loop | ✅ Fixed | ⚠️ `ElapsedMilliseconds` (correct for `long`, but inconsistent) | Minor |
+| EMA smoothing of `deltaTime` | ✅ α = 0.4 | ❌ None | Yes |
+| Sidereal feedforward in precision loop (GEM/Polar) | ✅ `RaFwd` | ❌ None | **Yes** |
+| Pre-correction in first slew | ✅ `SimGoTo` correction | ❌ None | **Yes** |
+| Dominant-axis time estimate | ✅ `Math.Max(axis1, axis2)` | N/A (not implemented) | N/A |
+| Minimum slew floor | ✅ 4000 ms | N/A | N/A |
+
+### 11.4 Key differences that affect algorithm design for the SkyWatcher path
+
+**1. Real hardware latency is higher and more variable than the simulator.**  
+The SkyWatcher mount communicates over serial at typically 9600 baud. Each `SkyAxisGoToTarget` command round-trip is ~20–100 ms. `SkyIsAxisFullStop` polling uses 125 ms `WaitHandle` intervals. The iteration duration for real hardware is therefore dominated by mount mechanics and serial latency, not thread scheduling — it will be larger and more stable than the simulator.
+
+**2. Position feedback uses an event-driven model.**  
+`WaitUpdateMountPosition(5000)` blocks until `ReceiveSteps()` fires the event. This is more reliable than the simulator's two-call `AxesDegrees()` read but still introduces an unknown lag between the physical axis stopping and the event being received.
+
+**3. The existing `deltaTime = 800 ms` seed is likely already better calibrated for hardware.**  
+For a real mount with ~500–1000 ms serial + settling overhead, 800 ms is a reasonable first guess. The simulator seed of 75 ms was far too small for that platform. The optimal floor for hardware may differ from the simulator's 4000 ms.
+
+**4. The Dec (Axis2) correction is explicitly suppressed for GEM/Polar RaDec.**  
+`predictor = 0` for Dec in GEM/Polar mode is correct — Dec does not drift siderally. The RA feedforward is the only addition needed for this mode.
+
+**5. `Settings.GotoPrecision` default (`0.001°` ≈ 3.6″) is coarser than the simulator threshold (`0.000080°` ≈ 0.29″).**  
+This means `SkyPrecisionGoto` will exit earlier in each iteration. The sidereal feedforward must still be within the 3.6″ precision window to avoid adding iterations rather than removing them.
+
+### 11.5 Proposed changes for the SkyWatcher path
+
+#### Change S1 — Sidereal feedforward in `SkyPrecisionGoto` (equivalent to Algorithm A)
+
+Apply a sidereal drift correction to the Axis1 command in exactly the same way as `SimPrecisionGoto`, using `deltaTime` (the EMA-smoothed previous iteration duration) as the prediction horizon.
+
+```csharp
+// Proposed code sketch (GEM/Polar, RaDec only):
+if (!axis1AtTarget && slewType == SlewType.SlewRaDec
+    && Settings.AlignmentMode != AlignmentMode.AltAz)
+{
+    var driftSign = Settings.Latitude >= 0 ? +1.0 : -1.0;
+    var raFeedforward = driftSign * (Settings.SiderealRate / 3_600_000.0) * deltaTime;
+    _ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis1,
+        skyTarget[0] + 0.25 * deltaDegree[0] + raFeedforward);
+}
+```
+
+**Risk:** Real hardware iteration times are more variable than the simulator's. If `deltaTime` overshoots, the feedforward may over-correct. EMA smoothing (Change S2) mitigates this.
+
+#### Change S2 — EMA smoothing of `deltaTime` in `SkyPrecisionGoto` and `SkyPulseGoto` (equivalent to Algorithm B)
+
+Replace the raw assignment with EMA smoothing using the same `α = 0.4`:
+
+```csharp
+// Current (line 689):
+deltaTime = loopTimer.ElapsedMilliseconds;
+
+// Proposed:
+deltaTime = (long)(0.4 * loopTimer.Elapsed.TotalMilliseconds + 0.6 * deltaTime);
+```
+
+Note: `deltaTime` is currently `long` in the Sky path; it should remain `long` (or be changed to `double` consistently) when this is implemented.
+
+#### Change S3 — RA pre-correction in `SkyGoTo` (equivalent to `SimGoTo` pre-correction)
+
+Apply a first-slew RA correction using `MaxSlewRate` and dominant-axis distance, identical in structure to the simulator version:
+
+```csharp
+// Proposed addition in SkyGoTo, before the first SkyAxisGoToTarget pair:
+var axis1SlewTarget = skyTarget[0];
+if (slewType == SlewType.SlewRaDec && Settings.AlignmentMode != AlignmentMode.AltAz)
+{
+    var rawPos = GetRawDegrees();
+    if (rawPos != null && !double.IsNaN(rawPos[0]))
+    {
+        var axis1Distance = Math.Abs(skyTarget[0] - rawPos[0]);
+        var axis2Distance = Math.Abs(skyTarget[1] - rawPos[1]);
+        const double minSlewMs = 4000.0;  // needs validation against real hardware
+        var estimatedSlewMs = Settings.MaxSlewRate > 0
+            ? Math.Max(minSlewMs, (Math.Max(axis1Distance, axis2Distance) / Settings.MaxSlewRate) * 1000.0)
+            : minSlewMs;
+        var driftSign = Settings.Latitude >= 0 ? +1.0 : -1.0;
+        axis1SlewTarget = skyTarget[0] + driftSign * (Settings.SiderealRate / 3_600_000.0) * estimatedSlewMs;
+    }
+}
+_ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis1, axis1SlewTarget);
+_ = new SkyAxisGoToTarget(SkyQueue!.NewId, SkyQueue, Axis.Axis2, skyTarget[1]);
+```
+
+**Important caveat for `minSlewMs`:** The simulator floor of `4000 ms` was empirically derived from simulator test data. For real SkyWatcher hardware the slew profile is different (hardware acceleration ramps, different serial latency). The minimum floor **must be validated against real hardware logs** before being hardened. A safe starting point would be the same `4000 ms`, but this may need adjustment.
+
+### 11.6 Implementation risk assessment
+
+| Change | Risk level | Notes |
+|--------|-----------|-------|
+| **S2 — EMA smoothing** | Low | No behavioural change if hardware iterations are consistent; only smooths noise |
+| **S1 — Sidereal feedforward in precision loop** | Medium | Depends on `deltaTime` quality; EMA (S2) should be done first. If `deltaTime` estimate is poor, can add iterations. **Needs real hardware test log to validate.** |
+| **S3 — Pre-correction in `SkyGoTo`** | Medium–High | `minSlewMs` floor value is simulator-derived and unvalidated for hardware. Real hardware slew times are longer and more consistent than the simulator, so the floor may be less critical — but the `MaxSlewRate` speed model needs verification. **Do not implement before S1 + S2 are validated on hardware.** |
+
+### 11.7 Recommended implementation order for SkyWatcher path
+
+1. **S2 first** — EMA smoothing of `deltaTime` in `SkyPrecisionGoto` and `SkyPulseGoto`. Low risk, enables S1.
+2. **S1 second** — Sidereal feedforward in `SkyPrecisionGoto`. Validate with real hardware log before S3.
+3. **S3 last** — `SkyGoTo` pre-correction. Requires hardware log evidence that the precision loop still requires multiple iterations after S1 + S2.
 
 ---
 
