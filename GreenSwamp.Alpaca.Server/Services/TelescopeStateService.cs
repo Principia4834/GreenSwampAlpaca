@@ -85,7 +85,9 @@ namespace GreenSwamp.Alpaca.Server.Services
                     SlewState = mount.SlewState,
                     LoopCounter = mount.LoopCounter,
                     TimerOverruns = mount.TimerOverruns,
-                    LastUpdate = DateTime.UtcNow
+                    LastUpdate = DateTime.UtcNow,
+                    ControllerVoltage = mount.ControllerVoltage,
+                    LowVoltageEvent = mount.LowVoltageEvent
                 };
             }
             catch (Exception)

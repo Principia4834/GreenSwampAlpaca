@@ -20,8 +20,11 @@
                               Label="Description" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Mount driver to use for this device." Placement="Placement.Right" Arrow="true">
-                <MudTextField @bind-Value="Device!.Mount" @bind-Value:after="NotifyChanged"
-                              Label="Mount Type" Immediate="true" />
+                <MudSelect @bind-Value="Device!.Mount" @bind-Value:after="NotifyChanged"
+                           Label="Mount Type">
+                    <MudSelectItem Value="@("Simulator")">Simulator</MudSelectItem>
+                    <MudSelectItem Value="@("SkyWatcher")">SkyWatcher</MudSelectItem>
+                </MudSelect>
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Alignment mode: AltAz, GermanPolar, or Polar." Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.AlignmentMode" @bind-Value:after="NotifyChanged"
@@ -31,13 +34,16 @@
                     <MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="The primary side of the pier for polar-aligned GEM mounts." Placement="Placement.Right" Arrow="true">
-                <MudSelect @bind-Value="Device!.PolarMode" @bind-Value:after="NotifyChanged"
-                           Label="Polar Primary Side">
-                    <MudSelectItem Value="@("Left")">Left</MudSelectItem>
-                    <MudSelectItem Value="@("Right")">Right</MudSelectItem>
-                </MudSelect>
-            </MudTooltip>
+            @if (Device?.AlignmentMode == "Polar")
+            {
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="The primary side of the pier for polar-aligned GEM mounts." Placement="Placement.Right" Arrow="true">
+                    <MudSelect @bind-Value="Device!.PolarMode" @bind-Value:after="NotifyChanged"
+                               Label="Polar Primary Side">
+                        <MudSelectItem Value="@("Left")">Left</MudSelectItem>
+                        <MudSelectItem Value="@("Right")">Right</MudSelectItem>
+                    </MudSelect>
+                </MudTooltip>
+            }
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Equatorial coordinate type returned by the mount (J2000 or JNow)." Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.EquatorialCoordinateType" @bind-Value:after="NotifyChanged"
                            Label="Equatorial Coordinate Type">
@@ -76,8 +82,15 @@
                 }
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
-                                 Label="Baud Rate" Immediate="true" />
+                <MudSelect T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
+                           Label="Baud Rate">
+                    <MudSelectItem Value="9600">9600</MudSelectItem>
+                    <MudSelectItem Value="19200">19200</MudSelectItem>
+                    <MudSelectItem Value="38400">38400</MudSelectItem>
+                    <MudSelectItem Value="57600">57600</MudSelectItem>
+                    <MudSelectItem Value="115200">115200</MudSelectItem>
+                    <MudSelectItem Value="230400">230400</MudSelectItem>
+                </MudSelect>
             </MudTooltip>
             @if (ShowHidden)
             {

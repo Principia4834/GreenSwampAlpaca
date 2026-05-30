@@ -80,6 +80,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _actualAxisX;
         private double _actualAxisY;
         private bool _lowVoltageEventState;
+        private double _controllerVoltage = double.NaN;
         internal bool _monitorPulse;
         private double _slewSettleTime;
 
@@ -468,6 +469,16 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool SnapPort2 { get => _snapPort2; set => _snapPort2 = value; }
         public bool SnapPort1Result => _snapPort1Result;
         public bool SnapPort2Result => _snapPort2Result;
+
+        /// <summary>
+        /// Voltage reported by the mount controller at connection time (SkyWatcher only; NaN if unavailable).
+        /// </summary>
+        public double ControllerVoltage { get => _controllerVoltage; internal set => _controllerVoltage = value; }
+
+        /// <summary>
+        /// True when a low-voltage power event has been detected since the mount was connected.
+        /// </summary>
+        public bool LowVoltageEvent => _lowVoltageEventState;
         #endregion
         /// <summary>
         /// Constructor with optional settings file path

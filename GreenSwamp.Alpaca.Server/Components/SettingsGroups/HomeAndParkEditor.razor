@@ -4,22 +4,34 @@
 
 <MudExpansionPanels MultiExpansion="true" Elevation="0">
 
-    <MudExpansionPanel Text="Home Position" Icon="@Icons.Material.Filled.Home" Expanded="false">
+    <MudExpansionPanel Text="Home" Icon="@Icons.Material.Filled.Home" Expanded="false">
         <MudStack Spacing="3">
-            <MudText Typo="Typo.subtitle2">Home Position (axis steps)</MudText>
-            <MudNumericField T="double" @bind-Value="Device!.HomeAxisX" @bind-Value:after="NotifyChanged"
-                             Label="Home Axis X" Format="F2" Immediate="true" />
-            <MudNumericField T="double" @bind-Value="Device!.HomeAxisY" @bind-Value:after="NotifyChanged"
-                             Label="Home Axis Y" Format="F2" Immediate="true" />
-            <MudText Typo="Typo.subtitle2" Class="mt-2">Auto-Home Position</MudText>
-            <MudNumericField T="double" @bind-Value="Device!.AutoHomeAxisX" @bind-Value:after="NotifyChanged"
-                             Label="Auto-Home Axis X" Format="F2" Immediate="true" />
-            <MudNumericField T="double" @bind-Value="Device!.AutoHomeAxisY" @bind-Value:after="NotifyChanged"
-                             Label="Auto-Home Axis Y" Format="F2" Immediate="true" />
+            <MudText Typo="Typo.subtitle2">Home Positions</MudText>
+            <MudSimpleTable Dense="true" Hover="true">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>RA/Az Axis</th>
+                        <th>Dec/Alt Axis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Home</td>
+                        <td>@Device?.HomeAxisX.ToString("F2")</td>
+                        <td>@Device?.HomeAxisY.ToString("F2")</td>
+                    </tr>
+                    <tr>
+                        <td>Auto-Home</td>
+                        <td>@Device?.AutoHomeAxisX.ToString("F2")</td>
+                        <td>@Device?.AutoHomeAxisY.ToString("F2")</td>
+                    </tr>
+                </tbody>
+            </MudSimpleTable>
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Park Positions" Icon="@Icons.Material.Filled.LocalParking" Expanded="false">
+    <MudExpansionPanel Text="Park" Icon="@Icons.Material.Filled.LocalParking" Expanded="false">
         <MudStack Spacing="3">
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Name of the active park position." Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.ParkName" @bind-Value:after="NotifyChanged"

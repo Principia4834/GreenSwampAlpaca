@@ -75,6 +75,10 @@ namespace GreenSwamp.Alpaca.Server.Models
         
         // Timestamp
         public DateTime LastUpdate { get; set; }
+
+        // SkyWatcher-specific
+        public double ControllerVoltage { get; set; }
+        public bool LowVoltageEvent { get; set; }
         
         /// <summary>
         /// Constructor initializes with default/invalid values
@@ -109,6 +113,8 @@ namespace GreenSwamp.Alpaca.Server.Models
             LoopCounter = 0;
             TimerOverruns = 0;
             LastUpdate = DateTime.UtcNow;
+            ControllerVoltage = double.NaN;
+            LowVoltageEvent = false;
         }
     }
 }

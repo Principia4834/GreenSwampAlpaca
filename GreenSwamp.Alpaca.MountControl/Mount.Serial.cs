@@ -336,6 +336,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                     }
                     catch { }
+                    ControllerVoltage = controllerVoltage;
                     monitorItem = new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow,

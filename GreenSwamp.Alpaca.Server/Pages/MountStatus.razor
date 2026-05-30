@@ -22,6 +22,7 @@
         <MudTabPanel Text="@TabLabel(dn)">
             @{
                 var s = StateService.GetCurrentState(dn);
+                var mountSettings = _deviceSettings.GetValueOrDefault(dn);
             }
 
             <MudGrid Spacing="3" Class="mt-1">
@@ -66,7 +67,9 @@
                     <MudPaper Elevation="0" Class="pa-3">
                         <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Status</MudText>
                         <MudStack Spacing="1">
-                            @StatusRowWithDetail("Mount Connected", s.IsMountRunning, s.ComPort, Color.Success)
+                            @StatusRowWithDetail("Mount Connected", s.IsMountRunning,
+                                mountSettings?.Mount == "SkyWatcher" ? (s.ComPort ?? string.Empty) : string.Empty,
+                                Color.Success)
                             @ActiveClientsRow(s.ConnectedClientCount)
                             @StatusRow("Slewing",           s.Slewing,           Color.Warning)
                             @StatusRow("Pulse Guiding", s.IsPulseGuidingRa || s.IsPulseGuidingDec, Color.Warning)
@@ -115,9 +118,6 @@
                     </MudPaper>
                 </MudItem>
 
-                @{
-                    var mountSettings = _deviceSettings.GetValueOrDefault(dn);
-                }
                 <MudItem xs="12" md="6">
                     <MudPaper Elevation="0" Class="pa-3">
                         <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount</MudText>
@@ -135,6 +135,17 @@
                                     <td><MudText Typo="Typo.caption" Color="Color.Primary">Local Date</MudText></td>
                                     <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.LocalDate.ToString("dd MMM yyyy  HH:mm:ss.ff", CultureInfo.CurrentCulture)</MudText></td>
                                 </tr>
+                                @if (mountSettings?.Mount == "SkyWatcher")
+                                {
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Voltage</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@(double.IsNaN(s.ControllerVoltage) ? "—" : $"{s.ControllerVoltage:F2} V")</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Power Event</MudText></td>
+                                        <td>@BoolIcon(s.LowVoltageEvent, Color.Error)</td>
+                                    </tr>
+                                }
                             </tbody>
                         </MudSimpleTable>
                     </MudPaper>
