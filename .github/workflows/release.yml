@@ -57,12 +57,17 @@ jobs:
           -p:PublishTrimmed=false
           -o publish/${{ matrix.rid }}
 
-      # Ask MSBuild what version MinVer resolved — works reliably on .NET 8 SDK
+      # minver-cli runs MinVer directly against the git repo — unlike
+      # `dotnet msbuild -getProperty:Version` it actually executes the MinVer
+      # target rather than reading the Version property statically (which would
+      # always return the SDK default of 1.0.0 instead of the tag-derived version).
+      - name: Install MinVer CLI
+        run: dotnet tool install --global minver-cli
+
       - name: Read version from MinVer
         id: minver
         run: |
-          VER=$(dotnet msbuild GreenSwamp.Alpaca.Server/GreenSwamp.Alpaca.Server.csproj \
-            -getProperty:Version --nologo -v:q 2>/dev/null | tr -d '[:space:]')
+          VER=$(minver --tag-prefix v 2>/dev/null)
           VER="${VER:-0.0.0-dev}"
           echo "app_version=$VER" >> $GITHUB_OUTPUT
           echo "MinVer resolved version: $VER"
@@ -171,6 +176,7 @@ jobs:
           -p:Platform=${{ matrix.platform }}
           -p:UpgradeCode=${{ matrix.upgrade_code }}
           "-p:PublishDir=${{ github.workspace }}/publish/${{ matrix.rid }}/"
+          -p:Version=${{ needs.publish.outputs.app_version }}
 
       # - name: Restore signing certificate
       #   shell: pwsh
