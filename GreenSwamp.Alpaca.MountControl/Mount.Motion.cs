@@ -222,7 +222,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var raFeedforward = 0.0;
                 if (slewType == SlewType.SlewRaDec && Settings.AlignmentMode != AlignmentMode.AltAz)
                 {
-                    var driftSign = Settings.Latitude >= 0 ? +1.0 : -1.0;
+                    var driftSign = Settings.Latitude >= 0  ? +1.0 : -1.0;
                     raFeedforward = driftSign * (Settings.SiderealRate / 3600.0 / 1000.0) * deltaTime;
                 }
 
