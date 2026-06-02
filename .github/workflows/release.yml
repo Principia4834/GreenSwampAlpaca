@@ -69,8 +69,11 @@ jobs:
         run: |
           VER=$(minver --tag-prefix v 2>/dev/null)
           VER="${VER:-0.0.0-dev}"
+          MSI_VER="${VER%%[-+]*}"   # 0.1.2-beta+sha -> 0.1.2
           echo "app_version=$VER" >> $GITHUB_OUTPUT
+          echo "msi_version=$MSI_VER" >> $GITHUB_OUTPUT
           echo "MinVer resolved version: $VER"
+          echo "MSI-safe version: $MSI_VER"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -80,6 +83,8 @@ jobs:
 
     outputs:
       app_version: ${{ steps.minver.outputs.app_version }}
+      msi_version: ${{ steps.minver.outputs.msi_version }}
+
 
   # ─────────────────────────────────────────────────────────────────────
   # Build .deb packages for Linux x64 and Raspberry Pi (arm64 + armhf)
@@ -176,7 +181,7 @@ jobs:
           -p:Platform=${{ matrix.platform }}
           -p:UpgradeCode=${{ matrix.upgrade_code }}
           "-p:PublishDir=${{ github.workspace }}/publish/${{ matrix.rid }}/"
-          -p:AppVersion=${{ needs.publish.outputs.app_version }}
+          -p:AppVersion=${{ needs.publish.outputs.msi_version }}
 
       # - name: Restore signing certificate
       #   shell: pwsh
