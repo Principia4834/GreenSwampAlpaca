@@ -52,7 +52,7 @@ jobs:
           dotnet publish GreenSwamp.Alpaca.Server/GreenSwamp.Alpaca.Server.csproj
           -c Release
           -r ${{ matrix.rid }}
-          --self-contained false
+          --self-contained true
           -p:PublishSingleFile=true
           -p:PublishTrimmed=false
           -o publish/${{ matrix.rid }}
