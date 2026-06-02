@@ -5,6 +5,7 @@ using GreenSwamp.Alpaca.Settings.Extensions;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using System.Diagnostics;
@@ -18,17 +19,14 @@ namespace GreenSwamp.Alpaca.Server
 {
     public class Program
     {
-        //Driver name
+        // Driver name
         internal const string DriverID = "GreenSwamp.Alpaca";
 
-        //Change this to a unique value
-        //You should offer a way for the end user to customize this via the command line so it can be changed in the case of a collision.
-        //This supports --urls=http://*:port by default.
+        // This supports --urls=http://*:port by default.
         internal const int DefaultPort = 31416;
 
-        //Driver information
+        // Driver information
         internal const string Manufacturer = "Green Swamp Software";
-
         internal const string ServerName = "Green Swamp Alpaca Server";
         internal const string ServerVersion = "1.0";
 
@@ -65,20 +63,19 @@ namespace GreenSwamp.Alpaca.Server
                 "appsettings.server.user.json");
 
             // LoadBootstrap returns new ServerConfig() when the file is absent (first run).
-            // ServerConfig defaults now match appsettings.json, so --urls binding is always correct
+            // ServerConfig defaults match appsettings.json, so --urls binding is always correct
             // on first run without needing to read appsettings.json before the host is built.
             // VersionedSettingsService seeds the file on its first GetServerConfig() call.
             BootstrapConfig = ServerConfig.LoadBootstrap(bootstrapConfigPath);
             Logger.LogInformation($"Bootstrap server config loaded from: {bootstrapConfigPath}");
 
-            //This region contains startup and logging features, most of the time you shouldn't need to customize this
-            //You can add custom Command Line arguments here
+            // Add custom Command Line arguments here
             #region Startup and Logging
 
             Logger.LogInformation($"{ServerName} version {ServerVersion}");
             Logger.LogInformation($"Running on: {RuntimeInformation.OSDescription}.");
 
-            //If already running start browser
+            // If already running start browser
             // When running as a managed service (Windows SCM or Linux systemd), the process manager
             // guarantees a single instance and there is no desktop to launch a browser into,
             // so skip duplicate-instance detection entirely.
@@ -114,7 +111,7 @@ namespace GreenSwamp.Alpaca.Server
                 return;
             }
 
-            //Reset all stored settings if requested
+            // Reset all stored settings if requested
             if (args?.Any(str => str.Contains("--reset")) ?? false)
             {
                 Logger.LogInformation("Resetting Settings");
@@ -126,7 +123,7 @@ namespace GreenSwamp.Alpaca.Server
                 return;
             }
 
-            //Turn off Authentication. Once off the user can change the password and re-enable authentication
+            // Turn off Authentication. Once off the user can change the password and re-enable authentication
             if (args?.Any(str => str.Contains("--reset-auth")) ?? false)
             {
                 Logger.LogInformation("Turning off Authentication to allow password reset.");
@@ -173,6 +170,7 @@ namespace GreenSwamp.Alpaca.Server
 
             var builder = WebApplication.CreateBuilder(args ?? []);
 
+            // Configure response compression with Brotli and Gzip providers, enabling for HTTPS
             builder.Services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;
@@ -215,10 +213,6 @@ namespace GreenSwamp.Alpaca.Server
             //Load the configuration — pass BootstrapConfig so AlpacaConfiguration has no ASCOM XMLProfile dependency
             DeviceManager.LoadConfiguration(new AlpacaConfiguration(BootstrapConfig));
 
-            // Device registration moved to after app.Build() to use UnifiedDeviceRegistry
-            // This ensures proper synchronization between DeviceManager and MountRegistry
-            // Reserved slots (0=Simulator, 1=Physical Mount) are initialized first
-
             #region Finish Building and Start server
 
             // Add services to the container.
@@ -231,13 +225,13 @@ namespace GreenSwamp.Alpaca.Server
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
-            //Add Swagger for the APIs
+            // Add Swagger for the APIs
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureSwagger(builder.Services, xmlPath);
-            //Set default behaviors for Alpaca APIs
+            // Set default behaviors for Alpaca APIs
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureAlpacaAPIBehavoir(builder.Services);
-            //Use Authentication
+            // Use Authentication
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureAuthentication(builder.Services);
-            //Add User Service
+            // Add User Service
             builder.Services.AddScoped<IUserService, Data.UserService>();
             
             // Register TelescopeStateService for real-time state updates
@@ -252,14 +246,82 @@ namespace GreenSwamp.Alpaca.Server
 
             var app = builder.Build();
 
+            // Enable response compression middleware to serve pre-compressed static files (.gz, .br) when supported by the client
             app.UseResponseCompression();
+
+            var webRootPath = app.Environment.WebRootPath;
+            var contentTypeProvider = new FileExtensionContentTypeProvider();
+
+            app.Use(async (context, next) =>
+            {
+                if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                {
+                    // Check if the request is for a static file that can be served pre-compressed
+                    var requestPath = context.Request.Path.Value;
+                    if (!string.IsNullOrEmpty(requestPath) &&
+                        !string.IsNullOrEmpty(webRootPath) &&
+                        !requestPath.EndsWith('/') &&
+                        !requestPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) &&
+                        !requestPath.EndsWith(".br", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var relativePath = requestPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                        var physicalPath = Path.Combine(webRootPath, relativePath);
+
+                        // If the exact file doesn't exist, check for pre-compressed versions (.gz, .br) and serve if available
+                        if (!File.Exists(physicalPath))
+                        {
+                            var acceptEncoding = context.Request.Headers.AcceptEncoding.ToString();
+                            var compressedPath = string.Empty;
+                            var encoding = string.Empty;
+
+                            if (acceptEncoding.Contains("br", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var brPath = physicalPath + ".br";
+                                if (File.Exists(brPath))
+                                {
+                                    compressedPath = brPath;
+                                    encoding = "br";
+                                }
+                            }
+
+                            if (string.IsNullOrEmpty(compressedPath) && acceptEncoding.Contains("gzip", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var gzPath = physicalPath + ".gz";
+                                if (File.Exists(gzPath))
+                                {
+                                    compressedPath = gzPath;
+                                    encoding = "gzip";
+                                }
+                            }
+
+                            // If a pre-compressed file is found, serve it with the appropriate Content-Encoding and Content-Type headers
+                            if (!string.IsNullOrEmpty(compressedPath))
+                            {
+                                if (!contentTypeProvider.TryGetContentType(physicalPath, out var contentType))
+                                {
+                                    contentType = "application/octet-stream";
+                                }
+
+                                context.Response.Headers.ContentEncoding = encoding;
+                                context.Response.Headers.Vary = "Accept-Encoding";
+                                context.Response.ContentType = contentType;
+
+                                await context.Response.SendFileAsync(compressedPath, context.RequestAborted);
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                await next();
+            });
 
             // Replace bootstrap logger with the DI-resolved logger so the host's configured
             // log levels (from appsettings.json "Logging" section) take effect from this point.
             Logger = app.Services.GetRequiredService<ILogger<Program>>();
             ASCOM.Alpaca.Logging.AttachLogger(Logger);
 
-            // Initialize settings bridges for bidirectional sync
+            // Initialize settings service for bidirectional sync
             try
             {
                 var settingsService = app.Services.GetRequiredService<IVersionedSettingsService>();
@@ -281,6 +343,7 @@ namespace GreenSwamp.Alpaca.Server
                 GreenSwamp.Alpaca.Shared.Settings.Load();
                 Logger.LogInformation("Settings.Load() completed");
 
+#pragma warning disable CS4014
                 // Fire-and-forget environment log — written once at startup, never blocks the server
                 GreenSwamp.Alpaca.Shared.EnvironmentLog.EnvironmentHelper.LogToDefaultLocationAsync()
                     .ContinueWith(t =>
@@ -290,6 +353,7 @@ namespace GreenSwamp.Alpaca.Server
                         else
                             Logger.LogInformation("Environment log written to: {Path}", t.Result ?? "(unknown)");
                     }, System.Threading.Tasks.TaskContinuationOptions.ExecuteSynchronously);
+#pragma warning restore CS4014
 
                 // Populate filter checklists (now that Settings properties have values)
                 GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
@@ -449,13 +513,13 @@ namespace GreenSwamp.Alpaca.Server
                 app.UseExceptionHandler("/Error");
             }
 
-            //Start Swagger on the Swagger endpoints if enabled.
+            // Start Swagger on the Swagger endpoints if enabled.
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureSwagger(app);
 
-            //Configure Discovery
+            // Configure Discovery
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureDiscovery(app);
 
-            //Allow authentication, either Cookie or Basic HTTP Auth
+            // Allow authentication, either Cookie or Basic HTTP Auth
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureAuthentication(app);
 
             app.UseStaticFiles();

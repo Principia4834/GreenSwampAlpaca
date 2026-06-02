@@ -1,0 +1,138 @@
+﻿using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace GreenSwamp.Alpaca.Server
+{
+    /// <summary>
+    /// A custom CircuitHandler implementation to track the number of active circuits (connections) to the Blazor Server application. 
+    /// This is used to determine when to shut down the application if all connections are closed.
+    /// </summary>
+    public class CircuitHandlerService : CircuitHandler
+    {
+        private readonly IHostApplicationLifetime lifetime = null; // This is required if theStopApplication method is used.
+        private readonly ILogger<CircuitHandlerService> logger;
+        private readonly object connectionsLockObject = new();
+
+        private readonly List<string> connections;
+        /// <summary>
+        /// Constructor for the CircuitHandlerService class. Initializes the connections list and sets up the application lifetime and logger.
+        /// </summary>
+        /// <param name="lifetime"></param>
+        /// <param name="logger"></param>
+        public CircuitHandlerService(IHostApplicationLifetime lifetime, ILogger<CircuitHandlerService> logger)
+        {
+            this.lifetime = lifetime; // This is required if the StopApplication method is used.
+            this.logger = logger;
+
+            // Create a new connections object if required
+            if (connections is null)
+            {
+                lock (connectionsLockObject)
+                {
+                    connections = new();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Override of the OnConnectionUpAsync method to log when a new circuit connection is established. 
+        /// This method is called when a new client connects to the Blazor Server application.
+        /// </summary>
+        /// <param name="circuit"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
+        {
+            logger.LogInformation("***** OnConnectionUpAsync - Circuit {circuit.Id} is up. Connection count: {connections.Count} *****", circuit.Id, connections.Count);
+            return Task.CompletedTask;
+        }
+
+        public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken)
+        {
+            logger.LogInformation("***** OnConnectionDownAsync - Circuit {circuit.Id} is down Connection count: {connections.Count} *****", circuit.Id, connections.Count);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Override of the OnCircuitOpenedAsync method to track when a new circuit is opened. 
+        /// This method adds the circuit ID to the connections list and logs the event.
+        /// </summary>
+        /// <param name="circuit"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
+        {
+            lock (connectionsLockObject)
+            {
+                try
+                {
+                    // Add the circuit to the list of circuits if not already in the list (it shouldn't be!)
+                    if (!connections.Contains(circuit.Id))
+                    {
+                        logger.LogInformation("***** OnCircuitOpenedAsync - Adding connection {circuit.Id} Connection count: {connections.Count} *****", circuit.Id, connections.Count);
+                        connections.Add(circuit.Id);
+                        logger.LogInformation("***** OnCircuitOpenedAsync - Added connection {circuit.Id} Connection count: {connections.Count} *****", circuit.Id, connections.Count);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation("***** OnCircuitOpenedAsync {circuit.Id} *****\r\n {ex}", circuit.Id, ex);
+                }
+
+                return Task.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Override of the OnCircuitClosedAsync method to track when a circuit is closed.
+        /// </summary>
+        /// <param name="circuit"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override async Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Include a short delay to allow any new circuits to establish themselves before checking whether the application should close down
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation during shutdown delay is expected - continue with cleanup
+            }
+
+            lock (connectionsLockObject)
+            {
+                try
+                {
+                    // Remove the circuit from the circuit list if present (it should be!)
+                    if (connections.Contains(circuit.Id))
+                    {
+                        logger.LogInformation("***** OnCircuitClosedAsync - Removing connection {circuit.Id} Connection count: {connections.Count} *****", circuit.Id, connections.Count);
+                        bool success = connections.Remove(circuit.Id);
+                        logger.LogInformation("***** OnCircuitClosedAsync - Removed connection {circuit.Id} Connection count: {connections.Count}, Success: {success} *****", circuit.Id, connections.Count, success);
+                    }
+
+                    logger.LogInformation("***** OnCircuitClosedAsync - Before testing connection count: {connections.Count} *****", connections.Count);
+                    // End the application if all circuits are closed
+                    if (connections.Count == 0)
+                    {
+                        logger.LogInformation("***** OnCircuitClosedAsync - Calling StopApplication - {circuit.Id} Connection count: {connections.Count} *****", circuit.Id, connections.Count);
+                        lifetime.StopApplication();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation("***** OnCircuitClosedAsync {circuit.Id} *****\r\n {ex}", circuit.Id, ex);
+                }
+                logger.LogInformation("***** OnCircuitClosedAsync - OnCircuitClosedAsync. Connection count: {connections.Count} *****", connections.Count);
+            }
+        }
+    }
+
+}
