@@ -25,6 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenSwamp.Alpaca.MountCont
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{28A731CF-B6F6-481C-887B-7A194515D449}"
 	ProjectSection(SolutionItems) = preProject
+		BuildRelease.ps1 = BuildRelease.ps1
 		Directory.Build.props = Directory.Build.props
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
@@ -204,7 +205,6 @@ Global
 		{86052546-7933-42B0-9F47-13D9A8423411}.Release|x86.ActiveCfg = Release|Any CPU
 		{86052546-7933-42B0-9F47-13D9A8423411}.Release|x86.Build.0 = Release|Any CPU
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|Any CPU.Build.0 = Debug|x64
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|ARM64.Build.0 = Debug|ARM64
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|x64.ActiveCfg = Debug|x64
@@ -212,7 +212,6 @@ Global
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|x86.ActiveCfg = Debug|x86
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Debug|x86.Build.0 = Debug|x86
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Release|Any CPU.ActiveCfg = Release|x64
-		{36AA575E-712F-450B-9CFF-C7F677E08392}.Release|Any CPU.Build.0 = Release|x64
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Release|ARM64.ActiveCfg = Release|ARM64
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Release|ARM64.Build.0 = Release|ARM64
 		{36AA575E-712F-450B-9CFF-C7F677E08392}.Release|x64.ActiveCfg = Release|x64

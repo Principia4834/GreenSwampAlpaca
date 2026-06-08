@@ -1,71 +1,82 @@
 ﻿<Project Sdk="WixToolset.Sdk/7.0.0">
-  <PropertyGroup>
-    <AcceptEula>wix7</AcceptEula>
-  </PropertyGroup>
-  <PropertyGroup>
-    <UsingMicrosoftNETSdk>true</UsingMicrosoftNETSdk>
-  </PropertyGroup>
-  <PropertyGroup>
-    <!-- UpgradeCode: stable GUID per platform. CI passes via -p:UpgradeCode=... -->
-    <UpgradeCode Condition="'$(UpgradeCode)' == ''">0BFB5E9F-4475-4BFA-A8A5-1F26CD982B1C</UpgradeCode>
-    <!-- Platform: CI injects win-x64 or win-x86 -->
-    <Platform Condition="'$(Platform)' == ''">win-x64</Platform>
-    <InstallerPlatform Condition="'$(Platform)' == 'win-x64' or '$(Platform)' == 'x64'">x64</InstallerPlatform>
-    <InstallerPlatform Condition="'$(Platform)' == 'win-x86' or '$(Platform)' == 'x86'">x86</InstallerPlatform>
-    <PublishRid Condition="'$(Platform)' == 'x64'">win-x64</PublishRid>
-    <PublishRid Condition="'$(Platform)' == 'x86'">win-x86</PublishRid>
-    <PublishRid Condition="'$(Platform)' == 'win-x64'">win-x64</PublishRid>
-    <PublishRid Condition="'$(Platform)' == 'win-x86'">win-x86</PublishRid>
-    <PublishRid Condition="'$(PublishRid)' == ''">$(Platform)</PublishRid>
-    <!-- PublishDir: CI passes via -p:PublishDir=...; local default relative to project -->
-    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\publish\$(PublishRid)\</PublishDir>
-    <!-- ICE validation requires elevation; suppress for local dev builds -->
-    <SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation>
-    <OutputName>GreenSwamp.Alpaca.Server</OutputName>
-    <OutputType>Package</OutputType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <SuppressIces>ICE64</SuppressIces>
-    <DefineConstants>Debug</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <SuppressIces>ICE64</SuppressIces>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <SuppressIces>ICE64</SuppressIces>
-    <DefineConstants>Debug</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <SuppressIces>ICE64</SuppressIces>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM64' ">
-    <DefineConstants>Debug</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|ARM64' ">
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
-  </PropertyGroup>
-  <!-- WiX preprocessor variables ($(var.X)) are resolved at parse time from DefineConstants,
+	<PropertyGroup>
+		<AcceptEula>wix7</AcceptEula>
+		<Configurations>Debug;Release</Configurations>
+	</PropertyGroup>
+	<PropertyGroup>
+		<UsingMicrosoftNETSdk>true</UsingMicrosoftNETSdk>
+	</PropertyGroup>
+	<PropertyGroup>
+		<Manufacturer Condition="'$(Manufacturer)' == ''">Principia4834</Manufacturer>
+		<!-- UpgradeCode: stable GUID per platform. CI passes via -p:UpgradeCode=... -->
+		<UpgradeCode Condition="'$(UpgradeCode)' == ''">0BFB5E9F-4475-4BFA-A8A5-1F26CD982B1C</UpgradeCode>
+		<!-- Platform: WiX MSBuild token (x64/x86/ARM64). dotnet build and VS both use this form.
+			 CI can override with -p:Platform=x64. Use -p:PublishRid=win-x64 to control the RID separately. -->
+		<Platform Condition="'$(Platform)' == ''">x64</Platform>
+		<InstallerPlatform Condition="'$(Platform)' == 'win-x64' or '$(Platform)' == 'x64'">x64</InstallerPlatform>
+		<InstallerPlatform Condition="'$(Platform)' == 'win-x86' or '$(Platform)' == 'x86'">x86</InstallerPlatform>
+		<PublishRid Condition="'$(Platform)' == 'x64'">win-x64</PublishRid>
+		<PublishRid Condition="'$(Platform)' == 'x86'">win-x86</PublishRid>
+		<PublishRid Condition="'$(Platform)' == 'win-x64'">win-x64</PublishRid>
+		<PublishRid Condition="'$(Platform)' == 'win-x86'">win-x86</PublishRid>
+		<PublishRid Condition="'$(PublishRid)' == ''">$(Platform)</PublishRid>
+		<!-- PublishDir: CI passes via -p:PublishDir=...; local default relative to project -->
+		<PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\publish\$(PublishRid)\</PublishDir>
+		<!-- ICE validation requires elevation; suppress for local dev builds -->
+		<SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation>
+		<SuppressIces>ICE60</SuppressIces>
+		<OutputName>GreenSwamp.Alpaca.Server_$(Platform)</OutputName>
+		<OutputType>Package</OutputType>
+	</PropertyGroup>
+	<!-- WixVariables: custom UI resources, identical for all platforms and configurations -->
+	<PropertyGroup>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\License.rtf</WixVariables>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<DefineConstants>Debug</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<DefineConstants>Release</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+		<SuppressIces>ICE64</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Platform)' == 'x64' ">
+		<SuppressIces>ICE64</SuppressIces>
+	</PropertyGroup>
+	<!-- WiX preprocessor variables ($(var.X)) are resolved at parse time from DefineConstants,
        so all three must be static. CI passes -p:AppVersion=<x.y.z> to override the local default.
        MSI version must be 3-part (Major.Minor.Patch). -->
-  <PropertyGroup>
-    <AppVersion Condition="'$(AppVersion)' == ''">1.0.0</AppVersion>
-    <DefineConstants>$(DefineConstants);Version=$(AppVersion);UpgradeCode=$(UpgradeCode);PublishDir=$(PublishDir)</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Include="Resources\Banner.jpg" />
-    <Content Include="Resources\Dialog.jpg" />
-    <Content Include="Resources\greenswamp1.ico" />
-    <Content Include="Resources\greenswamp2.ico" />
-    <Content Include="Resources\License.rtf" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="WixToolset.Firewall.wixext" Version="7.0.0" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
-    <PackageReference Include="WixToolset.Util.wixext" Version="7.0.0" />
-  </ItemGroup>
+	<PropertyGroup>
+		<AppVersion Condition="'$(AppVersion)' == ''">1.0.0</AppVersion>
+		<DefineConstants>$(DefineConstants);MinVerPatch=$(MinVerPatch);Version=$(AppVersion);UpgradeCode=$(UpgradeCode);PublishDir=$(PublishDir);Manufacturer=$(Manufacturer);</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Content Include="Resources\Banner.jpg" />
+		<Content Include="Resources\Dialog.jpg" />
+		<Content Include="Resources\greenswamp1.ico" />
+		<Content Include="Resources\greenswamp2.ico" />
+		<Content Include="Resources\License.rtf" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="WixToolset.Firewall.wixext" Version="7.0.0" />
+		<PackageReference Include="WixToolset.UI.wixext" Version="7.0.0" />
+		<PackageReference Include="WixToolset.Util.wixext" Version="7.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\GreenSwamp.Alpaca.Server\GreenSwamp.Alpaca.Server.csproj" />
+	</ItemGroup>
+	<!-- Publish GreenSwamp.Alpaca.Server for the target RID before WiX compiles the .wxs files.
+		 $(PublishRid) is derived from $(Platform): x64 → win-x64, x86 → win-x86.
+		 This matches the publish profile names in Properties/PublishProfiles/.
+		 Pass -p:SkipPublish=true to skip this step when the publish output is already
+		 prepared externally (e.g. a CI pipeline publishes then calls dotnet build on this project). -->
+	<Target Name="_PublishServerBeforeWix"
+			BeforeTargets="CoreCompile"
+			Condition="'$(SkipPublish)' != 'true'">
+		<MSBuild Projects="$(MSBuildProjectDirectory)\..\GreenSwamp.Alpaca.Server\GreenSwamp.Alpaca.Server.csproj"
+				 Targets="Restore;Publish"
+				 BuildInParallel="false"
+				 Properties="PublishProfile=$(PublishRid);Configuration=$(Configuration);Platform=AnyCPU" />
+	</Target>
 </Project>

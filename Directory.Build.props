@@ -6,30 +6,21 @@
 	- Tag v1.2.0 on current commit  → Version = 1.2.0
 	- 4 commits after tag v1.2.0    → Version = 1.2.0-dev.4
 	- No tags yet                   → Version = 0.0.0-dev.N
-
-  CI does NOT need -p:Version=... — just push the tag.
   Each job must use: fetch-depth: 0  so MinVer can walk back to the tag.
-
-  WiX projects opt out of MinVer (their SDK doesn't behave like normal .NET projects)
-  but inherit the Version property computed by MinVer in other projects.
 -->
 <Project>
-  <PropertyGroup>
-	<!-- Tag prefix: git tag v1.2.0 → MinVer strips the leading 'v' -->
-	<MinVerTagPrefix>v</MinVerTagPrefix>
-	<!-- Pre-release label used when no tag exists or there are commits ahead of the tag -->
-	<MinVerDefaultPreReleaseIdentifiers>dev</MinVerDefaultPreReleaseIdentifiers>
-	<!-- Skip MinVer on non-Release builds so that hot reload is not blocked by
-		 assembly version changes between incremental rebuilds. CI and publish
-		 builds use -c Release and therefore still get the correct version. -->
-	<MinVerSkip Condition="'$(Configuration)' != 'Release'">true</MinVerSkip>
-  </PropertyGroup>
-  <ItemGroup>
-	<!-- PrivateAssets=All: build-only tool, not a runtime or transitive dependency -->
-	<!-- Exclude the WiX installer project: its custom SDK is incompatible with MinVer (MINVER0001).
-		 The Version property computed by MinVer is still available to the WiX project via MSBuild
-		 because Directory.Build.props runs before the WiX SDK target evaluation. -->
-	  <PackageReference Include="MinVer" Version="7.*" PrivateAssets="All"
-						Condition="'$(MSBuildProjectName)' != 'GreenSwamp.Alpaca.Installer' And '$(MSBuildProjectName)' != 'ServerInstall'" />
-  </ItemGroup>
+	<PropertyGroup>
+		<CopyRight>Copyright © Andy Watson and Rob Morgan 2026</CopyRight>
+		<!-- Tag prefix: git tag v1.2.0 → MinVer strips the leading 'v' -->
+		<MinVerTagPrefix>v</MinVerTagPrefix>
+		<!-- Ignore commit height -->
+		<MinVerIgnoreHeight>true</MinVerIgnoreHeight>
+		<!-- Pre-release label used when no tag exists or there are commits ahead of the tag -->
+		<MinVerDefaultPreReleaseIdentifiers>dev</MinVerDefaultPreReleaseIdentifiers>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- PrivateAssets=All: build-only tool, not a runtime or transitive dependency -->
+		<PackageReference Include="MinVer" Version="7.*" PrivateAssets="All" />
+	</ItemGroup>
 </Project>

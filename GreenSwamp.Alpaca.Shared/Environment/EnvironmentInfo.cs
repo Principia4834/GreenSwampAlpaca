@@ -311,12 +311,17 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
                 {
                     try
                     {
-                        writer.WriteLine($"  {nic.Name} [{nic.NetworkInterfaceType}]");
-                        writer.WriteLine($"    MAC:   {ObscureMac(nic.GetPhysicalAddress())}");
+                        var obscuredMac = ObscureMac(nic.GetPhysicalAddress());
+                        // Only log interfaces with a valid MAC address (skip virtual adapters without one)
+                        if (obscuredMac.Length > 0)
+                        {
+                            writer.WriteLine($"  {nic.Name} [{nic.NetworkInterfaceType}]");
+                            writer.WriteLine($"    MAC:   {obscuredMac}");
 
-                        var props = nic.GetIPProperties();
-                        foreach (var addr in props.UnicastAddresses)
-                            writer.WriteLine($"    IP:    {addr.Address}");
+                            var props = nic.GetIPProperties();
+                            foreach (var addr in props.UnicastAddresses)
+                                writer.WriteLine($"    IP:    {addr.Address}");
+                        }
                     }
                     catch (Exception ex)
                     {

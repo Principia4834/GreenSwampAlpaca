@@ -69,56 +69,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             Directory.CreateDirectory(_currentVersionPath);
 
-            // Migrate legacy file names from earlier versions of the application.
-            // Must run before any file read operations.
-            MigrateLegacyFileNames();
-
             // Ensure the default device file exists before anything else (e.g. discovery, DeviceManager)
             // can attempt to read it. This is a no-op if device files already exist.
             RunFirstRunDeviceInit();
         }
-
-        // Renames pre-rename-era files to the new canonical names on first startup
-        // after an upgrade. Safe to call on every startup — no-ops when already migrated.
-        private void MigrateLegacyFileNames()
-        {
-            MigrateFile(
-                oldName: "appsettings.user.json",
-                newPath: MonitorSettingsPath,
-                label: "monitor settings");
-
-            MigrateFile(
-                oldName: "appsettings.alpaca.user.json",
-                newPath: AlpacaDevicesSettingsPath,
-                label: "Alpaca devices");
-        }
-
-        private void MigrateFile(string oldName, string newPath, string label)
-        {
-            var oldPath = Path.Combine(_currentVersionPath, oldName);
-
-            if (!File.Exists(oldPath))
-                return; // Nothing to migrate.
-
-            if (File.Exists(newPath))
-            {
-                // Both files exist — the new name takes precedence; leave old file in place for safety.
-                LogSafe("WARN", $"Legacy {label} file '{oldName}' found alongside new '{Path.GetFileName(newPath)}'. " +
-                                $"Using new file; legacy file left in place.");
-                return;
-            }
-
-            try
-            {
-                File.Move(oldPath, newPath);
-                LogSafe("INFO", $"Migrated {label} file: '{oldName}' → '{Path.GetFileName(newPath)}'.");
-            }
-            catch (Exception ex)
-            {
-                LogSafe("ERROR", $"Failed to migrate {label} file '{oldName}': {ex.Message}");
-            }
-        }
-
+        
         // ── Path helpers ──────────────────────────────────────────────────────
 
         public string GetDeviceSettingsPath(int deviceNumber)

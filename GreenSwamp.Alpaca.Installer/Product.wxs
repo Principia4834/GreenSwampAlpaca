@@ -11,9 +11,9 @@
   -->
 <Package Name="GreenSwamp Alpaca Server" 
 		 Language="1033" 
-		 Version="$(var.Version)" 
+		 Version="$(var.InstallerVersion)" 
 		 Manufacturer="Principia4834" 
-		 UpgradeCode="1795b59d-e9b5-460c-a4db-db0b1f8f6237">
+		 UpgradeCode="$(var.UpgradeCode)">
 	<MediaTemplate EmbedCab="yes" />
 	<!-- Major Upgrade Rule to disallow downgrades -->
 	<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -64,45 +64,14 @@
 		</Directory>
 	</StandardDirectory>
 
-	<!-- Service registration: two components conditioned on SERVICESTART.
-		 SERVICESTART="auto"   → automatic start, service started on install.
-		 SERVICESTART="demand" → manual start, service not started automatically.
-		 The EXE file KeyPath lives only in ServiceAutoComponent; ServiceManualComponent
-		 references the same installed file via a companion component that carries only
-		 the ServiceInstall/ServiceControl elements. The Condition child element is valid
-		 on Component in WiX v4 and gates the whole component at install time. -->
-	<Component Id="ServiceAutoComponent" Directory="INSTALLDIR" Guid="818DF99D-267F-4FFA-B3A7-E5F578372A8A"
-			   Condition="SERVICESTART = &quot;auto&quot; OR NOT SERVICESTART">
+	<!-- Service registration -->
+	<Component Id="ServiceComponent" Directory="INSTALLDIR" Guid="9A1EF00E-368A-50AB-C4B8-F6A689483B9B">
 		<File Id="ServiceExe"
 			  Name="GreenSwamp.Alpaca.Server.exe"
 			  Source="$(PublishDir)GreenSwamp.Alpaca.Server.exe"
 			  KeyPath="yes" />
 		<ServiceInstall
-			Id="GreenSwampAlpacaServiceAuto"
-			Name="GreenSwampAlpacaServer"
-			DisplayName="GreenSwamp Alpaca Server"
-			Description="ASCOM Alpaca telescope mount control server"
-			Type="ownProcess"
-			Start="auto"
-			ErrorControl="normal"
-			Account="LocalSystem" />
-		<ServiceControl
-			Id="ControlServiceAuto"
-			Name="GreenSwampAlpacaServer"
-			Start="install"
-			Stop="both"
-			Remove="uninstall"
-			Wait="yes" />
-	</Component>
-
-	<Component Id="ServiceManualComponent" Directory="INSTALLDIR" Guid="9A1EF00E-368A-50AB-C4B8-F6A689483B9B"
-			   Condition="SERVICESTART = &quot;demand&quot;">
-		<File Id="ServiceExeManual"
-			  Name="GreenSwamp.Alpaca.Server.exe"
-			  Source="$(PublishDir)GreenSwamp.Alpaca.Server.exe"
-			  KeyPath="yes" />
-		<ServiceInstall
-			Id="GreenSwampAlpacaServiceManual"
+			Id="GreenSwampAlpacaService"
 			Name="GreenSwampAlpacaServer"
 			DisplayName="GreenSwamp Alpaca Server"
 			Description="ASCOM Alpaca telescope mount control server"
@@ -111,12 +80,17 @@
 			ErrorControl="normal"
 			Account="LocalSystem" />
 		<ServiceControl
-			Id="ControlServiceManual"
+			Id="ControlService"
 			Name="GreenSwampAlpacaServer"
 			Stop="both"
 			Remove="uninstall"
 			Wait="yes" />
-	</Component>
+	</Component >
+	
+	<!-- Registry entry to start the service automatically -->
+	<!-- Component Id="ServiceRegistryComponent" Directory="INSTALLDIR" Guid="D4E5F6A7-B8C9-4012-ABCD-012345678903">
+		<RegistryValue Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\GreenSwampAlpacaServer" Name="Start" Type="integer" Value="2" KeyPath="yes" />
+	</Component -->
 
 	<!-- Firewall exception for the Alpaca server port -->
 	<!-- Explicit GUID required: no file KeyPath (WIX0230) -->
@@ -124,6 +98,8 @@
 		<fw:FirewallException
 			Id="AlpacaServerFirewall"
 			Name="GreenSwamp Alpaca Server"
+			Program="[INSTALLDIR]GreenSwamp.Alpaca.Server.exe"
+			Service="GreenSwampAlpacaServer"
 			Port="31416"
 			Protocol="tcp"
 			Scope="any"
@@ -132,8 +108,8 @@
 
 	<Feature Id="GreenSwampAlpacaServer" Title="GreenSwamp Alpaca Server" Description="Installs all the files needed for GreenSwamp Alpaca Server" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLDIR">
 	  <ComponentGroupRef Id="GreenSwampAlpacaServerFiles"/>
-	  <ComponentRef Id="ServiceAutoComponent"/>
-	  <ComponentRef Id="ServiceManualComponent"/>
+	  <ComponentRef Id="ServiceComponent"/>
+	  <!-- ComponentRef Id="ServiceRegistryComponent"/ -->
 	  <ComponentRef Id="FirewallComponent"/>
 	  <ComponentRef Id="StartMenuFolderCleanup"/>
 	  <ComponentRef Id="AppShortcutComponent"/>

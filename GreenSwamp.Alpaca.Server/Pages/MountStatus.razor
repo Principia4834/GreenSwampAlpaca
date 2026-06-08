@@ -230,7 +230,7 @@
             <MudText Typo="Typo.body2">@label</MudText>
             @if (!string.IsNullOrWhiteSpace(detail))
             {
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="gs-font-mono">@detail</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Success" Class="gs-font-mono">@detail</MudText>
             }
         </MudStack>;
     };
@@ -242,7 +242,7 @@
                      Color="@(count > 0 ? Color.Success : Color.Default)"
                      Size="Size.Small" />
             <MudText Typo="Typo.body2">Active clients</MudText>
-            <MudText Typo="Typo.body2" Class="gs-font-mono">@count</MudText>
+            <MudText Typo="Typo.body2" Class="gs-font-mono" Color="Color.Success">@count</MudText>
         </MudStack>;
     };
 

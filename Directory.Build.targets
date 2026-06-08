@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <!--
+    Inject MinVer version properties into WiX DefineConstants.
+    This must be a Target (not a PropertyGroup in .props) because MinVer hasn't run yet at static property evaluation time.
+    AfterTargets="_CreateProjectDefineConstants" ensures WiX SDK has already set up its constants list before we append ours.
+    DependsOnTargets="MinVer" forces the MinVer task to execute first so that $(MinVerMajor/Minor/Patch) are populated before 
+    we read them. Without this, MinVer fires BeforeTargets="BeforeCompile" which is AFTER _CreateProjectDefineConstants in 
+    the WiX build pipeline.
+  -->
+  <Target Name="_SetWixVersionFromMinVer"
+          AfterTargets="_CreateProjectDefineConstants"
+          DependsOnTargets="MinVer"
+          Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
+          
+    <PropertyGroup>
+    <!-- MSI Package Version must be purely numeric — no pre-release suffix.
+        Use the three-part version from MinVer's individual properties.   -->
+        <InstallerVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</InstallerVersion>
+
+    <!-- Optional: indicate if this is a pre-release build -->
+        <InstallerIsPreRelease Condition="'$(MinVerPreRelease)' != ''">true</InstallerIsPreRelease>
+        <InstallerIsPreRelease Condition="'$(MinVerPreRelease)' == ''">false</InstallerIsPreRelease>
+
+        <DefineConstants>$(DefineConstants);
+            InstallerVersion=$(InstallerVersion);
+            InstallerMajor=$(MinVerMajor);
+            InstallerMinor=$(MinVerMinor);
+            InstallerPatch=$(MinVerPatch);
+            InstallerPreRelease=$(MinVerPreRelease);
+            InstallerFullVersion=$(MinVerVersion);
+        </DefineConstants>
+    </PropertyGroup>
+    
+  </Target>
+
+</Project>

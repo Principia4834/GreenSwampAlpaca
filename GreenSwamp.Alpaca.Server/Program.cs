@@ -1,5 +1,6 @@
 ﻿using ASCOM.Alpaca;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Server.Middleware;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Extensions;
 using GreenSwamp.Alpaca.Settings.Models;
@@ -80,7 +81,7 @@ namespace GreenSwamp.Alpaca.Server
             // guarantees a single instance and there is no desktop to launch a browser into,
             // so skip duplicate-instance detection entirely.
             try
-            {
+             {
                 if (!isService && OperatingSystem.IsWindows())
                 {
                     //Already running, start the browser, detects based on port in use
@@ -249,72 +250,7 @@ namespace GreenSwamp.Alpaca.Server
             // Enable response compression middleware to serve pre-compressed static files (.gz, .br) when supported by the client
             app.UseResponseCompression();
 
-            var webRootPath = app.Environment.WebRootPath;
-            var contentTypeProvider = new FileExtensionContentTypeProvider();
-
-            app.Use(async (context, next) =>
-            {
-                if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
-                {
-                    // Check if the request is for a static file that can be served pre-compressed
-                    var requestPath = context.Request.Path.Value;
-                    if (!string.IsNullOrEmpty(requestPath) &&
-                        !string.IsNullOrEmpty(webRootPath) &&
-                        !requestPath.EndsWith('/') &&
-                        !requestPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) &&
-                        !requestPath.EndsWith(".br", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var relativePath = requestPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-                        var physicalPath = Path.Combine(webRootPath, relativePath);
-
-                        // If the exact file doesn't exist, check for pre-compressed versions (.gz, .br) and serve if available
-                        if (!File.Exists(physicalPath))
-                        {
-                            var acceptEncoding = context.Request.Headers.AcceptEncoding.ToString();
-                            var compressedPath = string.Empty;
-                            var encoding = string.Empty;
-
-                            if (acceptEncoding.Contains("br", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var brPath = physicalPath + ".br";
-                                if (File.Exists(brPath))
-                                {
-                                    compressedPath = brPath;
-                                    encoding = "br";
-                                }
-                            }
-
-                            if (string.IsNullOrEmpty(compressedPath) && acceptEncoding.Contains("gzip", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var gzPath = physicalPath + ".gz";
-                                if (File.Exists(gzPath))
-                                {
-                                    compressedPath = gzPath;
-                                    encoding = "gzip";
-                                }
-                            }
-
-                            // If a pre-compressed file is found, serve it with the appropriate Content-Encoding and Content-Type headers
-                            if (!string.IsNullOrEmpty(compressedPath))
-                            {
-                                if (!contentTypeProvider.TryGetContentType(physicalPath, out var contentType))
-                                {
-                                    contentType = "application/octet-stream";
-                                }
-
-                                context.Response.Headers.ContentEncoding = encoding;
-                                context.Response.Headers.Vary = "Accept-Encoding";
-                                context.Response.ContentType = contentType;
-
-                                await context.Response.SendFileAsync(compressedPath, context.RequestAborted);
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                await next();
-            });
+            app.UsePreCompressedStaticFiles();
 
             // Replace bootstrap logger with the DI-resolved logger so the host's configured
             // log levels (from appsettings.json "Logging" section) take effect from this point.

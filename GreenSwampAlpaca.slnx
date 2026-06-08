@@ -1,0 +1,29 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".github/workflows/release.yml" />
+    <File Path="BuildRelease.ps1" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+  </Folder>
+  <Project Path="ASCOM.Alpaca.Razor/ASCOM.Alpaca.Razor.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Installer/GreenSwamp.Alpaca.Installer.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0">
+    <Platform Solution="Debug|Any CPU" Project="x64" />
+    <Platform Solution="Release|Any CPU" Project="x86" />
+    <Build Solution="*|Any CPU" Project="false" />
+  </Project>
+  <Project Path="GreenSwamp.Alpaca.Mount.Commands/GreenSwamp.Alpaca.Mount.Commands.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Mount.SkyWatcher/GreenSwamp.Alpaca.Mount.SkyWatcher.csproj" />
+  <Project Path="GreenSwamp.Alpaca.MountControl.Tests/GreenSwamp.Alpaca.MountControl.Tests.csproj" />
+  <Project Path="GreenSwamp.Alpaca.MountControl/GreenSwamp.Alpaca.MountControl.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Principles/GreenSwamp.Alpaca.Principles.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Server/GreenSwamp.Alpaca.Server.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Settings/GreenSwamp.Alpaca.Settings.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Shared/GreenSwamp.Alpaca.Shared.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Simulator/GreenSwamp.Alpaca.Mount.Simulator.csproj" />
+</Solution>
