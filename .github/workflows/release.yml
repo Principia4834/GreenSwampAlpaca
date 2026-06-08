@@ -125,8 +125,11 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────────────
   # Build .msi packages for Windows x64 and x86
-  # MinVer is invoked again here during dotnet build of the WiX project;
-  # fetch-depth: 0 ensures it resolves the same tag as the publish job.
+  # The publish artifacts are downloaded from the publish job so the installer
+  # project does not need to rebuild or re-publish the server.
+  # MinVer runs automatically during dotnet build via Directory.Build.targets
+  # (_SetWixVersionFromMinVer) to populate $(var.InstallerVersion) in the .wxs.
+  # fetch-depth: 0 ensures MinVer resolves the same tag as the publish job.
   # ─────────────────────────────────────────────────────────────────────
   build-msi:
     name: Build MSI (${{ matrix.rid }})
@@ -166,22 +169,22 @@ jobs:
           name: greenswamp-alpaca-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}
 
-      - name: Install WiX v7 and extensions
-        run: |
-          dotnet tool install --global wix --version 7.0.0
-          wix eula accept wix7
-          wix extension add WixToolset.UI.wixext/7.0.0
-          wix extension add WixToolset.Firewall.wixext/7.0.0
-          wix extension add WixToolset.Util.wixext/7.0.0
-
       - name: Build MSI
+        # SkipPublish=true          — artifacts already downloaded from the publish job;
+        #                             suppresses _PublishServerBeforeWix in the wixproj.
+        # BuildProjectReferences=false — Server project output is not used by WiX
+        #                             (all files come from PublishDir); avoids restoring
+        #                             the Server's full NuGet dependency tree on this runner.
+        # AppVersion is omitted      — $(var.InstallerVersion) in the .wxs is now set
+        #                             automatically by MinVer via Directory.Build.targets.
         run: >
           dotnet build GreenSwamp.Alpaca.Installer/GreenSwamp.Alpaca.Installer.wixproj
           -c Release
           -p:Platform=${{ matrix.platform }}
           -p:UpgradeCode=${{ matrix.upgrade_code }}
           "-p:PublishDir=${{ github.workspace }}/publish/${{ matrix.rid }}/"
-          -p:AppVersion=${{ needs.publish.outputs.msi_version }}
+          -p:SkipPublish=true
+          -p:BuildProjectReferences=false
 
       # - name: Restore signing certificate
       #   shell: pwsh
