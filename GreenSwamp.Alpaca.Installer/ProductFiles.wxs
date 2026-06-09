@@ -4,10 +4,13 @@
   <!-- SourceDir is set from the PublishDir preprocessor variable passed by the wixproj/CI -->
   <Fragment>
     <ComponentGroup Id="GreenSwampAlpacaServerFiles">
-      <Component Directory="INSTALLDIR">
-        <File Source="$(var.PublishDir)\appsettings.Development.json" KeyPath="yes" />
-      </Component>
-      <Component Directory="INSTALLDIR">
+		<Component Directory="INSTALLDIR">
+			<File Source="$(var.PublishDir)\appsettings.Development.json" KeyPath="yes" />
+		</Component>
+		<Component Directory="INSTALLDIR">
+			<File Source="$(var.PublishDir)\appsettings.json" KeyPath="yes" />
+		</Component>
+		<Component Directory="INSTALLDIR">
         <File Source="$(var.PublishDir)\ASCOM.Alpaca.Razor.xml" KeyPath="yes" />
       </Component>
       <Component Directory="INSTALLDIR">

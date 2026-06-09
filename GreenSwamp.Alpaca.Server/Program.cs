@@ -492,6 +492,21 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogInformation($"{ServerName} Stopping");
             });
 
+#if WINDOWS
+            // Placeholder for Windows-specific code that minimises the console window when not in service mode.
+            [LibraryImport("kernel32.dll")]
+            internal static partial IntPtr GetConsoleWindow();
+
+            [LibraryImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+            private const int SW_SHOWMINIMIZED = 2;
+
+            // Minimise the console window
+            ShowWindow(GetConsoleWindow(), SW_SHOWMINIMIZED);
+#endif
+
             //Start the Alpaca Server
             app.Run();
         }

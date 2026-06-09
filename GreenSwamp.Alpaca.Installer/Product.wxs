@@ -80,15 +80,12 @@
 
 	<!-- Service registration: two components conditioned on SERVICESTART.
 		 SERVICESTART="auto"   → automatic start, service started on install.
-		 SERVICESTART="demand" → manual start, service not started automatically.
-		 The EXE file KeyPath lives only in ServiceAutoComponent; ServiceManualComponent
-		 references the same installed file via a companion component that carries only
-		 the ServiceInstall/ServiceControl elements. The Condition child element is valid
-		 on Component in WiX v4 and gates the whole component at install time. -->
+		 SERVICESTART="demand" → manual start, service not started automatically. -->
 	<Component Id="ServiceAutoComponent" Directory="INSTALLDIR" Guid="818DF99D-267F-4FFA-B3A7-E5F578372A8A"
 			   Condition="SERVICESTART = &quot;auto&quot; OR NOT SERVICESTART">
 		<File Id="ServiceExe"
 			  Name="GreenSwamp.Alpaca.Server.exe"
+			  ShortName ="5rid-rmq.exe"
 			  Source="$(PublishDir)GreenSwamp.Alpaca.Server.exe"
 			  KeyPath="yes" />
 		<ServiceInstall
@@ -113,6 +110,7 @@
 			   Condition="SERVICESTART = &quot;demand&quot;">
 		<File Id="ServiceExeManual"
 			  Name="GreenSwamp.Alpaca.Server.exe"
+			  ShortName ="6rid-rmq.exe"
 			  Source="$(PublishDir)GreenSwamp.Alpaca.Server.exe"
 			  KeyPath="yes" />
 		<ServiceInstall

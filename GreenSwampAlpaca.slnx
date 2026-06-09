@@ -13,8 +13,7 @@
   </Folder>
   <Project Path="ASCOM.Alpaca.Razor/ASCOM.Alpaca.Razor.csproj" />
   <Project Path="GreenSwamp.Alpaca.Installer/GreenSwamp.Alpaca.Installer.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0">
-    <Platform Solution="Debug|Any CPU" Project="x64" />
-    <Platform Solution="Release|Any CPU" Project="x86" />
+    <Platform Solution="*|Any CPU" Project="x64" />
     <Build Solution="*|Any CPU" Project="false" />
   </Project>
   <Project Path="GreenSwamp.Alpaca.Mount.Commands/GreenSwamp.Alpaca.Mount.Commands.csproj" />
