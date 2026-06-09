@@ -14,7 +14,7 @@
 		 Version="$(var.InstallerVersion)" 
 		 Manufacturer="Principia4834" 
 		 UpgradeCode="$(var.UpgradeCode)">
-	<MediaTemplate EmbedCab="yes" />
+	<MediaTemplate EmbedCab="yes" MaximumUncompressedMediaSize="500" />
 	<!-- Major Upgrade Rule to disallow downgrades -->
 	<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 	<Icon Id="InstallerIcon.ico" SourceFile="Resources\greenswamp2.ico"/>
