@@ -28,16 +28,16 @@ jobs:
       matrix:
         rid: [ win-x64, win-x86, linux-x64, linux-arm64, linux-arm ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.0
         with:
           fetch-depth: 0   # MinVer needs full history to find the nearest tag
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4.3.0
         with:
           dotnet-version: '10.0.x'
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v4.3.0
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.wixproj') }}
@@ -75,7 +75,7 @@ jobs:
           echo "MinVer resolved version: $VER"
           echo "MSI-safe version: $MSI_VER"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4.3.0
         with:
           name: greenswamp-alpaca-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}/**
@@ -98,11 +98,11 @@ jobs:
       matrix:
         rid: [ linux-x64, linux-arm64, linux-arm ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.0
         with:
           fetch-depth: 0
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4.3.0
         with:
           name: greenswamp-alpaca-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}
@@ -117,7 +117,7 @@ jobs:
             ${{ matrix.rid }} \
             ${{ needs.publish.outputs.app_version }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4.3.0
         with:
           name: deb-${{ matrix.rid }}
           path: "*.deb"
@@ -148,23 +148,23 @@ jobs:
             platform: x86
             upgrade_code: "D910192D-77C9-499E-80E9-10428B7FB80F"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.0
         with:
           fetch-depth: 0   # MinVer needs full history
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4.3.0
         with:
           dotnet-version: '10.0.x'
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v4.3.0
         with:
           path: ~\AppData\Local\NuGet\Cache
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.wixproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4.3.0
         with:
           name: greenswamp-alpaca-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}
@@ -207,7 +207,7 @@ jobs:
       #   shell: pwsh
       #   run: Remove-Item sign.pfx -ErrorAction SilentlyContinue
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4.3.0
         with:
           name: msi-${{ matrix.rid }}
           path: "**/*.msi"
