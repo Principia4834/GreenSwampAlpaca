@@ -9,7 +9,7 @@
 - After any PowerShell bulk write to a markdown file, always normalise line endings to CR/LF before finishing and set the correct BOM for UTF-8 encoding
 - Never use the edit_file tool to make edits in files over 1500 lines, instead use surgical edits with get_file_with_lines to capture context and verify line numbers before editing
 - When using the edit_file tool always confirm the context is unique and the line numbers are correct by first using get_file_with_lines to read the exact lines you plan to edit, and verifying the content matches what you expect to change
-- After each phase of edits, always commit the changes with a one line message such as "feat: add new feature X" or "fix: resolve issue Y", do not add detailed descriptions in the commit message, instead save detailed explanations for the final commit message when the entire task is complete and verified
+- After each phase of edits, always commit the changes with a one-line message such as "feat: add new feature X" or "fix: resolve issue Y". This includes committing changes after each edit phase.
 - Prefer strictly evidence-based analysis and do not make speculative assertions without direct support from code/logs.
 
 ## Shell & CLI guidance for Copilot suggestions

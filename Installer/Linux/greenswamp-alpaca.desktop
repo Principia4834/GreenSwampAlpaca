@@ -7,5 +7,5 @@ Exec=xdg-open http://localhost:31416
 Icon=greenswamp-alpaca
 Terminal=false
 StartupNotify=true
-Categories=Utility;Science;Astronomy;
+Categories=Other;Utility;Science;Astronomy;
 Keywords=alpaca;ascom;telescope;astronomy;
