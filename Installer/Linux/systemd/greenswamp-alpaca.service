@@ -1,4 +1,4 @@
-﻿[Unit]
+[Unit]
 Description=GreenSwamp Alpaca Server
 Documentation=https://github.com/Principia4834/GreenSwampAlpaca
 After=network.target

@@ -1,4 +1,4 @@
-﻿Package: greenswamp-alpaca-server
+Package: greenswamp-alpaca-server
 Version: @@VERSION@@
 Architecture: @@ARCH@@
 Installed-Size: @@INSTALLED_SIZE@@

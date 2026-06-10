@@ -1,8 +1,13 @@
-# Shell scripts must always use LF, never CRLF
+﻿# Shell scripts must always use LF, never CRLF
 *.sh text eol=lf
 Installer/Linux/**/*.sh text eol=lf
 Installer/Linux/debian/* text eol=lf
 Installer/Linux/systemd/* text eol=lf
+
+# Linux installer metadata and unit files must remain LF for CI/deb tooling
+Installer/Linux/*.desktop text eol=lf
+Installer/Linux/debian/control.template text eol=lf
+Installer/Linux/systemd/*.service text eol=lf
 
 # Debian maintainer scripts
 Installer/Linux/debian/postinst text eol=lf
