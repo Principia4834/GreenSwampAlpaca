@@ -28,8 +28,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
     ///   2. <c>GREENSWAMP_SETTINGS_PATH</c> environment variable
     ///   3. Windows SCM service  → <c>CommonDocuments\GreenSwampServer</c>
     ///                             (e.g. <c>C:\Users\Public\Documents\GreenSwampServer</c>)
-    ///   4. Linux systemd service → <c>{UserProfile}/GreenSwampServer</c>
-    ///                             (e.g. <c>/home/greenswamp/GreenSwampServer</c>)
+    ///   4. Linux systemd service → <c>STATE_DIRECTORY</c> (systemd-managed, e.g. <c>/var/lib/greenswamp-alpaca</c>),
+    ///                             then <c>{UserProfile}/GreenSwampServer</c> for manual installs with a real home dir,
+    ///                             then <c>/var/lib/greenswamp-alpaca</c> as a hardcoded fallback
     ///   5. Interactive user default → <c>%AppData%\GreenSwampAlpaca</c> (Windows)
     ///                                  or <c>~/.config/GreenSwampAlpaca</c> (Linux)
     ///
@@ -92,7 +93,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         ///   <item>CLI override            → the supplied path</item>
         ///   <item>Env var override        → the env-var value</item>
         ///   <item>Windows SCM service     → <c>CommonDocuments\GreenSwampServer</c></item>
-        ///   <item>Linux systemd service   → <c>{UserProfile}/GreenSwampServer</c></item>
+        ///   <item>Linux systemd service   → <c>STATE_DIRECTORY</c> (systemd-managed), then <c>{UserProfile}/GreenSwampServer</c>, then <c>/var/lib/greenswamp-alpaca</c></item>
         ///   <item>Interactive user mode   → <c>%AppData%\GreenSwampAlpaca</c> / <c>~/.config/GreenSwampAlpaca</c></item>
         /// </list>
         /// </summary>
@@ -118,12 +119,21 @@ namespace GreenSwamp.Alpaca.Settings.Services
                         ServiceFolderName);
                 }
 
-                // Linux/macOS: use the service account's home directory.
-                // When running as user 'greenswamp' this resolves to
-                // /home/greenswamp/GreenSwampServer
-                return Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ServiceFolderName);
+                // Linux/macOS: prefer the systemd STATE_DIRECTORY env var, which is
+                // set automatically when StateDirectory= is declared in the unit file.
+                // Fall back to UserProfile for manual installs with a real home dir.
+                // If both are absent (Debian system user with home=/nonexistent and
+                // no StateDirectory=), use the conventional Linux state location so
+                // the path never silently resolves relative to the working directory.
+                var stateDir = Environment.GetEnvironmentVariable("STATE_DIRECTORY");
+                if (!string.IsNullOrWhiteSpace(stateDir))
+                    return stateDir.Split(':')[0];
+
+                var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                if (!string.IsNullOrWhiteSpace(home))
+                    return Path.Combine(home, ServiceFolderName);
+
+                return "/var/lib/greenswamp-alpaca";
             }
 
             // 5. Interactive user default

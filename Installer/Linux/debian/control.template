@@ -1,4 +1,4 @@
-Package: greenswamp-alpaca-server
+﻿Package: greenswamp-alpaca-server
 Version: @@VERSION@@
 Architecture: @@ARCH@@
 Installed-Size: @@INSTALLED_SIZE@@
@@ -10,8 +10,8 @@ Priority: optional
 Homepage: https://github.com/Principia4834/GreenSwampAlpaca
 Description: GreenSwamp Alpaca Server
  Self-contained ASCOM Alpaca server for SkyWatcher mount control.
- Provides a Blazor web management interface on port 31426.
+ Provides a Blazor web management interface on port 31416.
  .
  Supported mounts: SkyWatcher EQ series (AZ-EQ5, AZ-EQ6, EQ6-R, etc.)
- Access the management UI at http://<host>:31426 from any browser on the
+ Access the management UI at http://<host>:31416 from any browser on the
  local network.

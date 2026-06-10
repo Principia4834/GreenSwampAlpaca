@@ -5,11 +5,31 @@ set -e
 adduser --system --no-create-home --group greenswamp 2>/dev/null || true
 usermod -aG dialout greenswamp 2>/dev/null || true
 
+# Pre-create the settings state directory with correct ownership.
+# On hosts with systemd StateDirectory= support this is a no-op (systemd creates it),
+# but it is required on older systemd versions and manual installs.
+mkdir -p /var/lib/greenswamp-alpaca
+chown greenswamp:greenswamp /var/lib/greenswamp-alpaca
+chmod 750 /var/lib/greenswamp-alpaca
+
 # Enable the service so it starts automatically on next boot.
 # Do NOT start it immediately — the service will start on next reboot.
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload
     systemctl enable greenswamp-alpaca.service
+fi
+
+# Refresh desktop/menu/icon caches when available.
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -q /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+
+if command -v update-menus >/dev/null 2>&1; then
+    update-menus >/dev/null 2>&1 || true
 fi
 
 echo ""

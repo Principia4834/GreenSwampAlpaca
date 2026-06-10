@@ -142,7 +142,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 _connectType = ConnectType.None;
 
                 var readTimeout = TimeSpan.FromMilliseconds(Settings.ReadTimeout);
-                if (Settings.Port.Contains("COM"))
+                if (Settings.Port.StartsWith("COM") ||              // Windows
+                    Settings.Port.StartsWith("/dev/ttyUSB") ||      // Linux USB serial
+                    Settings.Port.StartsWith("/dev/ttyS"))          // Linux serial
                 {
                     var options = SerialOptions.DiscardNull
                         | (Settings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)

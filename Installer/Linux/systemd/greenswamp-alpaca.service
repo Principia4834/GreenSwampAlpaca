@@ -10,6 +10,7 @@ User=greenswamp
 Group=greenswamp
 ExecStart=/opt/greenswamp/alpaca-server/GreenSwamp.Alpaca.Server
 WorkingDirectory=/opt/greenswamp/alpaca-server
+StateDirectory=greenswamp-alpaca
 Restart=on-failure
 RestartSec=5s
 TimeoutStopSec=10s
@@ -18,5 +19,4 @@ StandardError=journal
 SyslogIdentifier=greenswamp-alpaca
 
 [Install]
-WantedBy=multi-user.target
 WantedBy=multi-user.target
