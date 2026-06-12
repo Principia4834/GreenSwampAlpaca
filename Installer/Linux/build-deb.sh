@@ -31,13 +31,14 @@ PKG_ROOT="${PKG_NAME}"
 INSTALL_DIR="${PKG_ROOT}/opt/greenswamp/alpaca-server"
 DEBIAN_DIR="${PKG_ROOT}/DEBIAN"
 SYSTEMD_DIR="${PKG_ROOT}/lib/systemd/system"
+DIRECTORIES_DIR="${PKG_ROOT}/usr/share/desktop-directories"
 APPLICATIONS_DIR="${PKG_ROOT}/usr/share/applications"
 ICONS_DIR="${PKG_ROOT}/usr/share/icons/hicolor/256x256/apps"
 
 echo "==> Building ${PKG_NAME}.deb ..."
 rm -rf "${PKG_ROOT}"
 
-mkdir -p "${INSTALL_DIR}" "${DEBIAN_DIR}" "${SYSTEMD_DIR}" "${APPLICATIONS_DIR}" "${ICONS_DIR}"
+mkdir -p "${INSTALL_DIR}" "${DEBIAN_DIR}" "${SYSTEMD_DIR}" "${DIRECTORIES_DIR}"  "${APPLICATIONS_DIR}" "${ICONS_DIR}"
 
 # Stage publish output
 cp -r "publish/${RID}/." "${INSTALL_DIR}/"
@@ -48,6 +49,9 @@ cp "${SCRIPT_DIR}/systemd/greenswamp-alpaca.service" "${SYSTEMD_DIR}/"
 
 # Stage XDG desktop entry (browser-launch menu item)
 cp "${SCRIPT_DIR}/greenswamp-alpaca.desktop" "${APPLICATIONS_DIR}/"
+
+# Stage desktop directory file (for application menu organization)
+cp "${SCRIPT_DIR}/greenswamp.directory" "${DIRECTORIES_DIR}/"
 
 # Stage application icon for desktop environments
 cp "${SCRIPT_DIR}/greenswamp1.png" "${ICONS_DIR}/greenswamp-alpaca.png"

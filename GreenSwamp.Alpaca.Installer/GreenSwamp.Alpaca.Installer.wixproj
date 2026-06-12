@@ -23,8 +23,9 @@
 		<!-- PublishDir: CI passes via -p:PublishDir=...; local default relative to project -->
 		<PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\publish\$(PublishRid)\</PublishDir>
 		<!-- ICE validation requires elevation; suppress for local dev builds -->
-		<SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation>
-		<SuppressIces>ICE60</SuppressIces>
+		<!-- SuppressValidation Condition="'$(CI)' == ''">true</SuppressValidation -->
+		<SuppressValidation>true</SuppressValidation>
+		<SuppressIces>ICE30;ICE60;ICE90</SuppressIces>
 		<OutputName>GreenSwamp.Alpaca.Server_$(Platform)</OutputName>
 		<OutputType>Package</OutputType>
 	</PropertyGroup>

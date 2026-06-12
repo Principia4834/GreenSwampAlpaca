@@ -29,7 +29,7 @@
             <MudTextField @bind-Value="Settings!.Language" @bind-Value:after="NotifyChanged"
                           Label="Language" Immediate="true" />
         </MudTooltip>
-        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GSServer)." Placement="Placement.Right" Arrow="true">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GreenSwamp\Server)." Placement="Placement.Right" Arrow="true">
             <MudTextField @bind-Value="Settings!.LogPath" @bind-Value:after="NotifyChanged"
                           Label="Log Path" Immediate="true" />
         </MudTooltip>

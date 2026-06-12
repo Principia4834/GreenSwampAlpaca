@@ -3,6 +3,7 @@
 @using GreenSwamp.Alpaca.Server.Components
 @using GreenSwamp.Alpaca.Server.Components.SettingsGroups
 @using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Server.Services
 @using MonitorSettingsModel = GreenSwamp.Alpaca.Settings.Models.MonitorSettings
 @using ServerConfig = GreenSwamp.Alpaca.Settings.Models.ServerConfig
 @using ObservatorySettings = GreenSwamp.Alpaca.Settings.Models.ObservatorySettings
@@ -10,6 +11,7 @@
 @inject IVersionedSettingsService SettingsService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject UnifiedDeviceRegistry DeviceRegistry
 
 <PageTitle>Settings Explorer</PageTitle>
 
@@ -94,8 +96,10 @@
         {
             <DeviceManagerCard Devices="_deviceWork"
                                IsBusy="_deviceManagerBusy"
+                               HasPendingChanges="_hasPendingDeviceReload"
                                OnAdd="AddDeviceAsync"
-                               OnDelete="DeleteDeviceAsync" />
+                               OnDelete="DeleteDeviceAsync"
+                               OnHotReload="HotReloadDevicesAsync" />
         }
         else if (IsMonitorLoggingSectionNode(_selectedNode))
         {

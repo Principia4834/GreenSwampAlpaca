@@ -1,4 +1,4 @@
-using ASCOM.Alpaca.Discovery;
+﻿using ASCOM.Alpaca.Discovery;
 using ASCOM.Alpaca.Razor;
 using ASCOM.Common.DeviceInterfaces;
 using ASCOM.Tools;
@@ -203,6 +203,17 @@ namespace ASCOM.Alpaca
 
             AlpacaDevices.Remove(AlpacaDevices.FirstOrDefault(a => a.UniqueID == UniqueID));
             AlpacaDevices.Add(new AlpacaConfiguredDevice(AlpacaName, "Telescope", DeviceID, UniqueID));
+        }
+
+        /// <summary>
+        /// Removes a telescope device from all runtime registries.
+        /// Called by UnifiedDeviceRegistry.RemoveDevice and ReloadAllDevicesAsync.
+        /// </summary>
+        public static void UnloadTelescope(int DeviceID)
+        {
+            Telescopes.Remove(DeviceID);
+            DeviceDrivers.Remove(("telescope", DeviceID));
+            AlpacaDevices.RemoveAll(a => a.DeviceNumber == DeviceID);
         }
 #endif
 

@@ -36,7 +36,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
     ///
     /// The versioned settings path appends the assembly version to the root.
     /// Log files go to <c>&lt;root&gt;\Logs</c> in service / overridden mode,
-    /// or to the legacy <c>%MyDocuments%\GSServer</c> / <c>~/GSServer</c> in interactive mode.
+    /// or to the legacy <c>%MyDocuments%\GreenSwamp\Server</c> / <c>~/GreenSwamp/Server </c> in interactive mode.
     /// </summary>
     public static class SettingsPathResolver
     {
@@ -156,8 +156,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// Returns the logs directory.
         /// <list type="bullet">
         ///   <item>Service mode / overridden → <c>&lt;SettingsRoot&gt;/Logs</c></item>
-        ///   <item>Interactive user mode     → <c>%MyDocuments%\GSServer</c> (Windows)
-        ///                                     or <c>~/GSServer</c> (Linux)</item>
+        ///   <item>Interactive user mode     → <c>%MyDocuments%\GreenSwamp\Server</c> (Windows)
+        ///                                     or <c>~/GreenSwamp/Server</c> (Linux)</item>
         /// </list>
         /// </summary>
         public static string GetLogsRoot()
@@ -173,12 +173,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
             // NOTE: Use UserProfile (= $HOME) rather than MyDocuments on Linux.
             // In .NET 8+, MyDocuments on Linux resolves to $HOME/Documents (XDG),
             // not $HOME, which is a breaking change. UserProfile reliably returns
-            // $HOME on all Unix platforms so ~/GSServer is created as intended.
+            // $HOME on all Unix platforms so ~/GreenSwamp/Server is created as intended.
             var baseFolder = OperatingSystem.IsWindows()
                 ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
                 : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            var logsRoot = Path.Combine(baseFolder, "GSServer");
+            var logsRoot = Path.Combine(baseFolder, "GreenSwamp", "Server");
 
             // Eagerly create the directory so it is visible even before the first
             // log entry is written (e.g. before logging flags are enabled).

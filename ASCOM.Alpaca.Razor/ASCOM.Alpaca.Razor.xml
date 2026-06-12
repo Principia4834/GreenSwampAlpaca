@@ -1544,6 +1544,12 @@
             A server wide Transaction ID Counter
             </summary>
         </member>
+        <member name="M:ASCOM.Alpaca.DeviceManager.UnloadTelescope(System.Int32)">
+            <summary>
+            Removes a telescope device from all runtime registries.
+            Called by UnifiedDeviceRegistry.RemoveDevice and ReloadAllDevicesAsync.
+            </summary>
+        </member>
         <member name="P:ASCOM.Alpaca.Logging.Log">
             <summary>
             Returns an ASCOM ILogger adapter wrapping the current MEL logger.

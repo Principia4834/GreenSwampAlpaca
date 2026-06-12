@@ -101,15 +101,15 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             try
             {
                 var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-                var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+                var fvi = FileVersionInfo.GetVersionInfo(Environment.ProcessPath);
 
                 writer.WriteLine($"Name:            {assembly.GetName().Name}");
                 writer.WriteLine($"Version:         {assembly.GetName().Version}");
                 writer.WriteLine($"File Version:    {fvi.FileVersion}");
                 writer.WriteLine($"Product Version: {fvi.ProductVersion}");
                 writer.WriteLine($"Copyright:       {fvi.LegalCopyright}");
-                writer.WriteLine($"Build Date:      {File.GetLastWriteTime(assembly.Location):yyyy-MM-dd HH:mm:ss}");
-                writer.WriteLine($"Location:        {ObscurePath(assembly.Location)}");
+                writer.WriteLine($"Build Date:      {File.GetLastWriteTime(Environment.ProcessPath):yyyy-MM-dd HH:mm:ss}");
+                writer.WriteLine($"Location:        {ObscurePath(Environment.ProcessPath)}");
             }
             catch (Exception ex)
             {
@@ -126,17 +126,17 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             {
                 writer.WriteLine($"Description:    {RuntimeInformation.OSDescription}");
                 writer.WriteLine($"Architecture:   {RuntimeInformation.OSArchitecture}");
-                writer.WriteLine($"Version:        {System.Environment.OSVersion.Version}");
-                writer.WriteLine($"Platform:       {System.Environment.OSVersion.Platform}");
-                writer.WriteLine($"64-bit OS:      {System.Environment.Is64BitOperatingSystem}");
-                writer.WriteLine($"Machine Name:   {ObscureText(System.Environment.MachineName)}");
-                writer.WriteLine($"User Name:      {ObscureText(System.Environment.UserName)}");
+                writer.WriteLine($"Version:        {Environment.OSVersion.Version}");
+                writer.WriteLine($"Platform:       {Environment.OSVersion.Platform}");
+                writer.WriteLine($"64-bit OS:      {Environment.Is64BitOperatingSystem}");
+                writer.WriteLine($"Machine Name:   {ObscureText(Environment.MachineName)}");
+                writer.WriteLine($"User Name:      {ObscureText(Environment.UserName)}");
 
                 if (OperatingSystem.IsWindows())
-                    writer.WriteLine($"User Domain:    {ObscureText(System.Environment.UserDomainName)}");
+                    writer.WriteLine($"User Domain:    {ObscureText(Environment.UserDomainName)}");
 
-                writer.WriteLine($"System Dir:     {System.Environment.SystemDirectory}");
-                writer.WriteLine($"Uptime:         {TimeSpan.FromMilliseconds(System.Environment.TickCount64):dd\\:hh\\:mm\\:ss}");
+                writer.WriteLine($"System Dir:     {Environment.SystemDirectory}");
+                writer.WriteLine($"Uptime:         {TimeSpan.FromMilliseconds(Environment.TickCount64):dd\\:hh\\:mm\\:ss}");
 
                 // Richer OS description from platform files
                 if (OperatingSystem.IsLinux())

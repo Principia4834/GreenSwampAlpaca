@@ -1,0 +1,60 @@
+﻿@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning" />
+            <MudText Typo="Typo.h6">Apply Device Changes</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2">
+            @if (ConnectedDevices.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.LinkOff">
+                    <MudText Typo="Typo.body1">
+                        <strong>@ConnectedDevices.Count connected device(s) will be forcibly disconnected.</strong>
+                    </MudText>
+                    <MudStack Spacing="0" Class="mt-1">
+                        @foreach (var name in ConnectedDevices)
+                        {
+                            <MudText Typo="Typo.body2">&bull;&nbsp;@name</MudText>
+                        }
+                    </MudStack>
+                </MudAlert>
+            }
+
+            <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
+                <MudText Typo="Typo.body2">
+                    All active device sessions will be stopped and the device registry will be
+                    rebuilt from the current settings files. Any Alpaca client connected during
+                    this operation must reconnect afterwards.
+                </MudText>
+            </MudAlert>
+
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                This applies all pending device additions and deletions without restarting the server.
+            </MudText>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">
+            Cancel
+        </MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="Confirm">
+            Apply Hot Reload
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Names of devices that are currently connected, shown in the warning list.</summary>
+    [Parameter] public List<string> ConnectedDevices { get; set; } = [];
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel()  => MudDialog.Cancel();
+}

@@ -1,4 +1,5 @@
-﻿using GreenSwamp.Alpaca.Server.Components;
+﻿using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Server.Components;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
@@ -67,6 +68,7 @@ public partial class SettingsExplorer : IDisposable
     // ── UI state ────────────────────────────────────────────────────────────
     private bool    _saving;
     private bool    _deviceManagerBusy = false;
+    private bool    _hasPendingDeviceReload = false;
     private bool    _showHidden      = false;
     private bool    _anyDirty        => Flatten(_treeItems).Any(n => n.IsDirty);
 
@@ -425,6 +427,7 @@ public partial class SettingsExplorer : IDisposable
 
             await LoadSettingsAsync();
             SelectDeviceManagerNode();
+            _hasPendingDeviceReload = true;
             ShowSuccess($"Added device {nextDeviceNumber}: {deviceName}.");
         }
         catch (Exception ex)
@@ -468,6 +471,7 @@ public partial class SettingsExplorer : IDisposable
 
             await LoadSettingsAsync();
             SelectDeviceManagerNode();
+            _hasPendingDeviceReload = true;
             ShowSuccess($"Deleted device {deviceNumber}: {device.DeviceName}.");
         }
         catch (Exception ex)
@@ -489,6 +493,53 @@ public partial class SettingsExplorer : IDisposable
         _selectedNode = managerNode;
         _treeSelectedValue = managerNode;
         StateHasChanged();
+    }
+
+    private async Task HotReloadDevicesAsync()
+    {
+        var connectedDevices = MountRegistry.GetAllInstances()
+            .Where(kvp => kvp.Value.IsConnected)
+            .Select(kvp => $"Device {kvp.Key} \u2014 {kvp.Value.DeviceName}")
+            .ToList();
+
+        var parameters = new DialogParameters<HotReloadDevicesDialog>
+        {
+            { d => d.ConnectedDevices, connectedDevices }
+        };
+
+        var dialog = await DialogService.ShowAsync<HotReloadDevicesDialog>(
+            "Apply Device Changes",
+            parameters,
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result.Canceled)
+            return;
+
+        _deviceManagerBusy = true;
+        try
+        {
+            var reloadResult = await DeviceRegistry.ReloadAllDevicesAsync();
+            if (reloadResult.Success)
+            {
+                _hasPendingDeviceReload = false;
+                await LoadSettingsAsync();
+                SelectDeviceManagerNode();
+                ShowSuccess($"Device registry reloaded \u2014 {reloadResult.ReloadedCount} device(s) active.");
+            }
+            else
+            {
+                ShowError($"Hot reload failed: {reloadResult.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Hot reload error: {ex.Message}");
+        }
+        finally
+        {
+            _deviceManagerBusy = false;
+        }
     }
 
     // ── Dirty detection ────────────────────────────────────────────────────

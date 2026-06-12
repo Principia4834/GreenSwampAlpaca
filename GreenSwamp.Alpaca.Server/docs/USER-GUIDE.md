@@ -735,7 +735,7 @@ extension, so a new file is created each day.
 #### Interactive user — Windows
 
 ```
-%USERPROFILE%\Documents\GSServer\
+%USERPROFILE%\Documents\GreenSwamp\Server\
   GSSessionLog_YYYY-MM-DD.txt
   GSErrorLog_YYYY-MM-DD.txt
   GSMonitorLog_YYYY-MM-DD.txt
@@ -743,13 +743,13 @@ extension, so a new file is created each day.
 
 Typical resolved path:
 ```
-C:\Users\{YourName}\Documents\GSServer\
+C:\Users\{YourName}\Documents\GreenSwamp\Server\
 ```
 
 #### Interactive user — Linux
 
 ```
-~/GSServer/
+~/GreenSwamp/Server/
   GSSessionLog_YYYY-MM-DD.txt
   GSErrorLog_YYYY-MM-DD.txt
   GSMonitorLog_YYYY-MM-DD.txt

@@ -59,6 +59,20 @@
 
     <MudCardActions>
         <MudSpacer />
+        @if (HasPendingChanges)
+        {
+            <MudTooltip Inline="false" RootStyle="max-width:300px"
+                        Text="Apply all device additions and deletions without restarting the server"
+                        Placement="Placement.Top" Arrow="true">
+                <MudButton Variant="Variant.Filled" Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           Class="me-2"
+                           Disabled="IsBusy"
+                           OnClick="RequestHotReload">
+                    Apply Changes
+                </MudButton>
+            </MudTooltip>
+        }
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
                    Disabled="IsBusy"
@@ -81,6 +95,12 @@
     /// <summary>When true, action buttons are disabled (parent is executing an operation).</summary>
     [Parameter] public bool IsBusy { get; set; }
 
+    /// <summary>When true, the Apply Changes button is shown.</summary>
+    [Parameter] public bool HasPendingChanges { get; set; }
+
+    /// <summary>Called when the user clicks Apply Changes to trigger a hot reload.</summary>
+    [Parameter] public EventCallback OnHotReload { get; set; }
+
     private async Task RequestAdd()
     {
         if (OnAdd.HasDelegate)
@@ -91,6 +111,12 @@
     {
         if (OnDelete.HasDelegate)
             await OnDelete.InvokeAsync(deviceNumber);
+    }
+
+    private async Task RequestHotReload()
+    {
+        if (OnHotReload.HasDelegate)
+            await OnHotReload.InvokeAsync();
     }
 
     private static string FriendlyAlignment(string? mode) => mode?.ToLowerInvariant() switch
