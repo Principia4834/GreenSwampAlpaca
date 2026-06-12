@@ -161,9 +161,11 @@
                             <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
                                        Disabled="@(!IsUiClientConnected(dn) || s.AtPark || !(MountRegistry.GetInstance(dn)?.Settings.CanFindHome ?? false))"
                                        OnClick="@(() => OnHomeAsync(dn))">Home</MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                       Disabled="@(!IsUiClientConnected(dn) || s.AtPark || !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false))"
-                                       OnClick="@(() => OnParkAsync(dn))">Park</MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="@(s.AtPark ? Color.Warning : Color.Primary)"
+                                       Size="Size.Small"
+                                       Disabled="@(!IsUiClientConnected(dn) || (s.AtPark ? !(MountRegistry.GetInstance(dn)?.Settings.CanUnPark ?? false) : !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false)))"
+                                       OnClick="@(() => OnParkToggleAsync(dn))">@(s.AtPark ? "Unpark" : "Park")</MudButton>
                             <MudButton Variant="Variant.Outlined"
                                        Color="@(s.Tracking ? Color.Success : Color.Default)"
                                        Size="Size.Small"
@@ -272,16 +274,19 @@
         }
     }
 
-    private async Task OnParkAsync(int dn)
+    private async Task OnParkToggleAsync(int dn)
     {
         try
         {
             var telescope = DeviceManager.GetTelescope((uint)dn);
-            await Task.Run(() => telescope.Park());
+            if (telescope.AtPark)
+                await Task.Run(() => telescope.Unpark());
+            else
+                await Task.Run(() => telescope.Park());
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Park failed: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Park/Unpark failed: {ex.Message}", Severity.Error);
         }
     }
 
