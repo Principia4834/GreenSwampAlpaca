@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -67,6 +67,12 @@ namespace GreenSwamp.Alpaca.MountControl.Interfaces
         /// Perform emergency stop - halt all mount motion immediately
         /// </summary>
         void EmergencyStop();
+
+        /// <summary>
+        /// Forcibly clears all ASCOM client connection IDs and stops the mount.
+        /// Used when a breaking settings change requires all clients to reconnect.
+        /// </summary>
+        void ClearAllConnections();
 
         /// <summary>
         /// Get the current error state of the mount

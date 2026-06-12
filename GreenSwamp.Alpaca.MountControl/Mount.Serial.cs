@@ -721,6 +721,28 @@ namespace GreenSwamp.Alpaca.MountControl
 
         }
 
+        /// <summary>
+        /// Forcibly clears all ASCOM client connections and stops the mount.
+        /// Called when a breaking settings change (Port, BaudRate, AlignmentMode, Mount type)
+        /// is applied while clients are connected. Clients must reconnect after this.
+        /// </summary>
+        public void ClearAllConnections()
+        {
+            var count = _connectStates.Count;
+            MonitorLog.LogToMonitor(new MonitorEntry
+            {
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Warning,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Environment.CurrentManagedThreadId,
+                Message = $"Forced disconnect of {count} client(s) for breaking settings change | Mount:{Id}"
+            });
+            _connectStates.Clear();
+            MountStop();
+        }
+
         #endregion
 
         /// <summary>
