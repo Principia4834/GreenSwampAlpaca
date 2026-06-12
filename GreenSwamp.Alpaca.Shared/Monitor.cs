@@ -44,26 +44,28 @@ namespace GreenSwamp.Alpaca.Shared
 
         public static void Load_Settings()
         {
-            //MonitorDevice
-            if (Settings.ServerDevice){DevicesToMonitor(MonitorDevice.Server, Settings.ServerDevice);}
-            if (Settings.Telescope){DevicesToMonitor(MonitorDevice.Telescope, Settings.Telescope);}
-            if (Settings.Ui){DevicesToMonitor(MonitorDevice.Ui, Settings.Ui);}
-            //MonitorCategory
-            if (Settings.Other){CategoriesToMonitor(MonitorCategory.Other, Settings.Other);}
-            if (Settings.Driver){CategoriesToMonitor(MonitorCategory.Driver, Settings.Driver);}
-            if (Settings.Interface){CategoriesToMonitor(MonitorCategory.Interface, Settings.Interface);}
-            if (Settings.Server){CategoriesToMonitor(MonitorCategory.Server, Settings.Server);}
-            if (Settings.Mount){CategoriesToMonitor(MonitorCategory.Mount, Settings.Mount);}
-            if (Settings.Alignment){CategoriesToMonitor(MonitorCategory.Alignment, Settings.Alignment);}
-            //MonitorType
-            if (Settings.Information){TypesToMonitor(MonitorType.Information, Settings.Information);}
-            if (Settings.Data){TypesToMonitor(MonitorType.Data, Settings.Data);}
-            if (Settings.Warning){TypesToMonitor(MonitorType.Warning, Settings.Warning);}
-            if (Settings.Error){TypesToMonitor(MonitorType.Error, Settings.Error);}
-            if (Settings.Debug){TypesToMonitor(MonitorType.Debug, Settings.Debug);}
+            // Clear all checklists first so disabled items are removed and duplicates cannot accumulate
+            ClearDevicesToMonitor();
+            ClearCategoriesToMonitor();
+            ClearTypesToMonitor();
 
-            // Settings are loaded from Settings.cs which reads from JSON configuration
-            // All monitor filters are configured via MonitorSettings section in appsettings.json
+            //MonitorDevice
+            DevicesToMonitor(MonitorDevice.Server, Settings.ServerDevice);
+            DevicesToMonitor(MonitorDevice.Telescope, Settings.Telescope);
+            DevicesToMonitor(MonitorDevice.Ui, Settings.Ui);
+            //MonitorCategory
+            CategoriesToMonitor(MonitorCategory.Other, Settings.Other);
+            CategoriesToMonitor(MonitorCategory.Driver, Settings.Driver);
+            CategoriesToMonitor(MonitorCategory.Interface, Settings.Interface);
+            CategoriesToMonitor(MonitorCategory.Server, Settings.Server);
+            CategoriesToMonitor(MonitorCategory.Mount, Settings.Mount);
+            CategoriesToMonitor(MonitorCategory.Alignment, Settings.Alignment);
+            //MonitorType
+            TypesToMonitor(MonitorType.Information, Settings.Information);
+            TypesToMonitor(MonitorType.Data, Settings.Data);
+            TypesToMonitor(MonitorType.Warning, Settings.Warning);
+            TypesToMonitor(MonitorType.Error, Settings.Error);
+            TypesToMonitor(MonitorType.Debug, Settings.Debug);
         }
 
         private static void Save_MonitorDevice(MonitorDevice monitorDevice, bool value)

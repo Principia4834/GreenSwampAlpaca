@@ -1,0 +1,64 @@
+﻿@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" />
+            <MudText Typo="Typo.h6">Breaking Settings Change</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2">
+            @if (ClientCount > 0)
+            {
+                <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.LinkOff">
+                    <MudText Typo="Typo.body1">
+                        <strong>@ClientCount connected ASCOM/Alpaca client(s) will be forcibly disconnected from @DeviceName.</strong>
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">
+                        All clients must reconnect after this change is applied.
+                    </MudText>
+                </MudAlert>
+            }
+
+            <MudAlert Severity="Severity.Normal" Icon="@Icons.Material.Filled.RestartAlt">
+                <MudText Typo="Typo.body2">
+                    The following setting(s) require the device to stop and restart:
+                </MudText>
+                <MudStack Spacing="0" Class="mt-1">
+                    @foreach (var change in ChangedFields)
+                    {
+                        <MudText Typo="Typo.body2">&bull;&nbsp;@change</MudText>
+                    }
+                </MudStack>
+            </MudAlert>
+
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">
+            Cancel
+        </MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.RestartAlt"
+                   OnClick="Confirm">
+            Disconnect &amp; Restart
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Number of currently connected ASCOM/Alpaca clients for this device.</summary>
+    [Parameter] public int ClientCount { get; set; }
+
+    /// <summary>Display name of the device being restarted.</summary>
+    [Parameter] public string DeviceName { get; set; } = string.Empty;
+
+    /// <summary>Human-readable descriptions of each breaking field that changed, e.g. "COM Port: COM3 → COM5".</summary>
+    [Parameter] public List<string> ChangedFields { get; set; } = [];
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel()  => MudDialog.Cancel();
+}

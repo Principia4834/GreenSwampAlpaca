@@ -182,6 +182,8 @@
 	private void ReloadSettings()
 	{
 		LoadSettings();
+		GreenSwamp.Alpaca.Shared.Settings.Load();
+		GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
 		Snackbar.Add("Settings reloaded from file", MudBlazor.Severity.Info);
 	}
 

@@ -184,6 +184,7 @@
         _deviceSettings = SettingsService.GetAllDeviceSettings()
             .ToDictionary(d => d.DeviceNumber);
         StateService.StateChanged += OnStateChanged;
+        SettingsService.DeviceSettingsChanged += OnDeviceSettingsChanged;
     }
 
     protected override void OnParametersSet()
@@ -197,8 +198,17 @@
     private void OnStateChanged(object? sender, EventArgs e) =>
         InvokeAsync(StateHasChanged);
 
-    public void Dispose() =>
+    private void OnDeviceSettingsChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.SkySettings updated)
+    {
+        _deviceSettings[updated.DeviceNumber] = updated;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
         StateService.StateChanged -= OnStateChanged;
+        SettingsService.DeviceSettingsChanged -= OnDeviceSettingsChanged;
+    }
 
     private string TabLabel(int deviceNumber)
     {
