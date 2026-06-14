@@ -7,8 +7,13 @@
     <MudExpansionPanel Text="Tracking" Icon="@Icons.Material.Filled.Speed" Expanded="false">
         <MudStack Spacing="3">
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Default tracking rate (Sidereal, Lunar, Solar, King)." Placement="Placement.Right" Arrow="true">
-                <MudTextField @bind-Value="Device!.TrackingRate" @bind-Value:after="NotifyChanged"
-                              Label="Tracking Rate" Immediate="true" />
+                <MudSelect T="string" @bind-Value="Device!.TrackingRate" @bind-Value:after="NotifyChanged"
+                           Label="Tracking Rate">
+                    <MudSelectItem Value="@("Sidereal")">Sidereal</MudSelectItem>
+                    <MudSelectItem Value="@("Lunar")">Lunar</MudSelectItem>
+                    <MudSelectItem Value="@("Solar")">Solar</MudSelectItem>
+                    <MudSelectItem Value="@("King")">King</MudSelectItem>
+                </MudSelect>
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Sidereal tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.SiderealRate" @bind-Value:after="NotifyChanged"
@@ -51,11 +56,11 @@
         <MudStack Spacing="3">
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Minimum RA pulse duration in milliseconds." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.MinPulseRa" @bind-Value:after="NotifyChanged"
-                                 Label="Min Pulse RA (ms)" Min="0" Immediate="true" />
+                                 Label="Min Pulse RA (ms)" Min="5" Max="50" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Minimum Dec pulse duration in milliseconds." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.MinPulseDec" @bind-Value:after="NotifyChanged"
-                                 Label="Min Pulse Dec (ms)" Min="0" Immediate="true" />
+                                 Label="Min Pulse Dec (ms)" Min="5" Max="50" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Route Dec pulse commands via GoTo instead of pulse guiding." Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.DecPulseToGoTo" @bind-Value:after="NotifyChanged"
@@ -83,5 +88,25 @@
     [Parameter] public bool ShowHidden { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
-    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+    private bool _initialized;
+    private bool _parametersChanging;
+
+    protected override void OnParametersSet()
+    {
+        _parametersChanging = true;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _initialized = true;
+        _parametersChanging = false;
+    }
+
+    // Guard against MudNumericField firing ValueChanged during initial render or
+    // parameter-change re-render (Min/Max coercion causing a false IsDirty on reset).
+    private async Task NotifyChanged()
+    {
+        if (!_initialized || _parametersChanging) return;
+        await OnChanged.InvokeAsync();
+    }
 }
