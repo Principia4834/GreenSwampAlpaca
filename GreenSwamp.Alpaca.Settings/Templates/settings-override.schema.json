@@ -85,7 +85,7 @@
         },
         "HourAngleLimit": {
           "type": "number",
-          "description": "Hour angle limit in hours (typically 0 for AltAz)"
+          "description": "Hour angle limit in degrees (typically 0 for AltAz)"
         },
         "AxisUpperLimitY": {
           "type": "number",
@@ -110,6 +110,10 @@
         "LimitTracking": {
           "type": "boolean",
           "description": "Enable tracking limits"
+        },
+        "LimitsOn": {
+          "type": "boolean",
+          "description": "Enable tracking-limit checking and actions"
         },
         "LimitPark": {
           "type": "boolean",

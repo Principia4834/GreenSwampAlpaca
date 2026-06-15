@@ -1,27 +1,87 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
-@* Combined editor: Axis / Slew Limits + Sync Limits + Horizontal Axis Limit (AltAz only) *@
+@* Unified panel: hardware limit values + tracking-limit actions + sync limits *@
 
 <MudExpansionPanels MultiExpansion="true" Elevation="0">
 
-    <MudExpansionPanel Text="Axis / Slew Limits" Icon="@Icons.Material.Filled.Block" Expanded="false">
+    <MudExpansionPanel Text="Hardware Limit Values (always enforced for slew safety)" Icon="@Icons.Material.Filled.Block" Expanded="false">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Upper Dec/Alt axis limit in degrees (prevents mount from going too far north/zenith)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Upper Dec/Alt hardware limit in degrees." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.AxisUpperLimitY" @bind-Value:after="NotifyChanged"
-                                 Label="Upper Dec/Alt Axis Limit (°)" Format="F2" Immediate="true" />
+                                 Label="Upper Dec/Alt Hardware Limit (°)" Format="F2" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Lower Dec/Alt axis limit in degrees." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Lower Dec/Alt hardware limit in degrees." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.AxisLowerLimitY" @bind-Value:after="NotifyChanged"
-                                 Label="Lower Dec/Alt Axis Limit (°)" Format="F2" Immediate="true" />
+                                 Label="Lower Dec/Alt Hardware Limit (°)" Format="F2" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA/Az axis limit in degrees." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA/Az hardware limit in degrees." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.AxisLimitX" @bind-Value:after="NotifyChanged"
-                                 Label="RA/Az Axis Limit (°)" Format="F2" Immediate="true" />
+                                 Label="RA/Az Hardware Limit (°)" Format="F2" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Axis tracking limit in degrees for the RA/Az axis." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="double" @bind-Value="Device!.AxisTrackingLimit" @bind-Value:after="NotifyChanged"
-                                 Label="Axis Tracking Limit (°)" Format="F2" Immediate="true" />
+            @if (IsGem)
+            {
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GEM meridian safety limit in degrees." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="double" @bind-Value="Device!.HourAngleLimit" @bind-Value:after="NotifyChanged"
+                                     Label="Hour Angle Limit (°)" Format="F2" Min="0" Max="180" Immediate="true" />
+                </MudTooltip>
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Additional GEM meridian tracking allowance in degrees." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="double" @bind-Value="Device!.AxisTrackingLimit" @bind-Value:after="NotifyChanged"
+                                     Label="Axis Tracking Limit (°)" Format="F2" Min="0" Max="180" Immediate="true" />
+                </MudTooltip>
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GEM horizon tracking trigger angle in degrees." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="double" @bind-Value="Device!.AxisHzTrackingLimit" @bind-Value:after="NotifyChanged"
+                                     Label="Horizon Trigger Limit (°)" Format="F2" Immediate="true" />
+                </MudTooltip>
+            }
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Tracking-Limit Actions (controlled by Limits On)" Icon="@Icons.Material.Filled.WarningAmber" Expanded="false">
+        <MudStack Spacing="3">
+            <MudCheckBox @bind-Value="Device!.LimitsOn" @bind-Value:after="NotifyChanged"
+                         Label="Limits On" Color="Color.Primary" />
+
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@PrimaryActionHelpText" Placement="Placement.Right" Arrow="true">
+                <MudSelect T="string" Value="@PrimaryAction" ValueChanged="OnPrimaryActionChanged" Label="@PrimaryActionLabel">
+                    <MudSelectItem Value="@ActionWarningOnly">Warning Only</MudSelectItem>
+                    <MudSelectItem Value="@ActionStopTracking">Stop Tracking</MudSelectItem>
+                    <MudSelectItem Value="@ActionPark">Park</MudSelectItem>
+                </MudSelect>
             </MudTooltip>
+
+            <MudSelect T="string"
+                       Value="@Device!.ParkLimitName"
+                       ValueChanged="OnPrimaryParkPositionChanged"
+                       Label="Primary Action Park Position"
+                       Disabled="@(PrimaryAction != ActionPark)">
+                @foreach (var name in ParkPositionNames)
+                {
+                    <MudSelectItem Value="@name">@name</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (IsGem)
+            {
+                <MudDivider />
+                <MudText Typo="Typo.subtitle2">GEM Horizon Action</MudText>
+
+                <MudSelect T="string" Value="@HorizonAction" ValueChanged="OnHorizonActionChanged" Label="Horizon Trigger Action">
+                    <MudSelectItem Value="@ActionWarningOnly">Warning Only</MudSelectItem>
+                    <MudSelectItem Value="@ActionStopTracking">Stop Tracking</MudSelectItem>
+                    <MudSelectItem Value="@ActionPark">Park</MudSelectItem>
+                </MudSelect>
+
+                <MudSelect T="string"
+                           Value="@Device!.ParkHzLimitName"
+                           ValueChanged="OnHorizonParkPositionChanged"
+                           Label="Horizon Action Park Position"
+                           Disabled="@(HorizonAction != ActionPark)">
+                    @foreach (var name in ParkPositionNames)
+                    {
+                        <MudSelectItem Value="@name">@name</MudSelectItem>
+                    }
+                </MudSelect>
+            }
         </MudStack>
     </MudExpansionPanel>
 
@@ -43,49 +103,41 @@
         </MudStack>
     </MudExpansionPanel>
 
-    @if (!IsAltAz)
-    {
-        <MudExpansionPanel Text="Meridian / Hour Angle Limit" Icon="@Icons.Material.Filled.Straighten" Expanded="false">
-            <MudStack Spacing="3">
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Hour angle at which tracking stops to prevent over-rotation (GEM/Polar)." Placement="Placement.Right" Arrow="true">
-                    <MudNumericField T="double" @bind-Value="Device!.HourAngleLimit" @bind-Value:after="NotifyChanged"
-                                     Label="Hour Angle Limit (h)" Format="F2" Min="0" Max="12" Immediate="true" />
-                </MudTooltip>
-            </MudStack>
-        </MudExpansionPanel>
-    }
-
-    @if (IsAltAz)
-    {
-        <MudExpansionPanel Text="Horizontal Axis Limit" Icon="@Icons.Material.Filled.Straighten" Expanded="false">
-            <MudStack Spacing="3">
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable tracking limit on the horizontal (altitude) axis for AltAz mounts." Placement="Placement.Right" Arrow="true">
-                    <MudCheckBox @bind-Value="Device!.HzLimitTracking" @bind-Value:after="NotifyChanged"
-                                 Label="Horizontal Axis Limit Tracking" Color="Color.Primary" />
-                </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Axis altitude angle at which tracking stops." Placement="Placement.Right" Arrow="true">
-                    <MudNumericField T="double" @bind-Value="Device!.AxisHzTrackingLimit" @bind-Value:after="NotifyChanged"
-                                     Label="Hz Tracking Limit (°)" Format="F2" Immediate="true"
-                                     Disabled="@(!Device!.HzLimitTracking)" />
-                </MudTooltip>
-                <MudCheckBox @bind-Value="Device!.HzLimitPark" @bind-Value:after="NotifyChanged"
-                             Label="Park at Hz Limit" Color="Color.Primary" />
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Name of the park position used when the horizontal limit is reached." Placement="Placement.Right" Arrow="true">
-                    <MudTextField @bind-Value="Device!.ParkHzLimitName" @bind-Value:after="NotifyChanged"
-                                  Label="Park Hz Limit Position" Immediate="true"
-                                  Disabled="@(!Device!.HzLimitPark)" />
-                </MudTooltip>
-            </MudStack>
-        </MudExpansionPanel>
-    }
-
 </MudExpansionPanels>
 
 @code {
     [Parameter] public SkySettings? Device { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
-    private bool IsAltAz => Device?.AlignmentMode?.Equals("AltAz", StringComparison.OrdinalIgnoreCase) ?? false;
+    private const string ActionWarningOnly = "WarningOnly";
+    private const string ActionStopTracking = "StopTracking";
+    private const string ActionPark = "Park";
+
+    private bool IsGem => Device?.AlignmentMode?.Equals("GermanPolar", StringComparison.OrdinalIgnoreCase) ?? false;
+
+    private string PrimaryActionLabel => IsGem
+        ? "Primary Trigger Action (GEM Meridian)"
+        : "Primary Trigger Action (Hardware Limits)";
+
+    private string PrimaryActionHelpText => IsGem
+        ? "Action to take when GEM meridian limit is reached."
+        : "Action to take when hardware limits are reached while tracking.";
+
+    private IReadOnlyList<string> ParkPositionNames =>
+        Device?.ParkPositions?.Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().OrderBy(n => n).ToList()
+        ?? [];
+
+    private string PrimaryAction =>
+        Device is null ? ActionWarningOnly
+        : Device.LimitPark ? ActionPark
+        : Device.LimitTracking ? ActionStopTracking
+        : ActionWarningOnly;
+
+    private string HorizonAction =>
+        Device is null ? ActionWarningOnly
+        : Device.HzLimitPark ? ActionPark
+        : Device.HzLimitTracking ? ActionStopTracking
+        : ActionWarningOnly;
 
     private bool _initialized;
 
@@ -94,7 +146,36 @@
         if (firstRender) _initialized = true;
     }
 
-    // Guard against MudNumericField firing ValueChanged during initial render (Min/Max coercion).
+    private async Task OnPrimaryActionChanged(string value)
+    {
+        if (Device is null) return;
+        Device.LimitTracking = value == ActionStopTracking;
+        Device.LimitPark = value == ActionPark;
+        await NotifyChanged();
+    }
+
+    private async Task OnHorizonActionChanged(string value)
+    {
+        if (Device is null) return;
+        Device.HzLimitTracking = value == ActionStopTracking;
+        Device.HzLimitPark = value == ActionPark;
+        await NotifyChanged();
+    }
+
+    private async Task OnPrimaryParkPositionChanged(string value)
+    {
+        if (Device is null) return;
+        Device.ParkLimitName = value ?? string.Empty;
+        await NotifyChanged();
+    }
+
+    private async Task OnHorizonParkPositionChanged(string value)
+    {
+        if (Device is null) return;
+        Device.ParkHzLimitName = value ?? string.Empty;
+        await NotifyChanged();
+    }
+
     private async Task NotifyChanged()
     {
         if (!_initialized) return;

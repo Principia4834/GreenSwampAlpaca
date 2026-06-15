@@ -81,6 +81,10 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // AltAz limit status
         private LimitStatusType _limitStatus;
+        private bool _limitWarningActive;
+        private string _limitWarningMessage = string.Empty;
+        private long _limitWarningSequence;
+        private bool _limitTriggerSuppressed;
 
         // Backing fields
         private bool _isPulseGuidingRa;
@@ -414,6 +418,14 @@ namespace GreenSwamp.Alpaca.MountControl
         public ulong LoopCounter { get => _loopCounter; internal set => _loopCounter = value; }
         public int TimerOverruns { get => _timerOverruns; internal set => _timerOverruns = value; }
         public AltAzTrackingType AltAzTrackingMode { get => _altAzTrackingMode; set => _altAzTrackingMode = value; }
+        public bool LimitWarningActive => _limitWarningActive;
+        public string LimitWarningMessage => _limitWarningMessage;
+        public long LimitWarningSequence => _limitWarningSequence;
+        public bool LimitsOn
+        {
+            get => Settings.LimitsOn;
+            set => Settings.LimitsOn = value;
+        }
 
         // Blazor UI: axis and step positions
         public double ActualAxisX => _actualAxisX;

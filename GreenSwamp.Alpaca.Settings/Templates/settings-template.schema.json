@@ -219,7 +219,7 @@
         },
         "HourAngleLimit": {
           "type": "number",
-          "description": "Hour angle limit in hours"
+          "description": "Hour angle limit in degrees"
         },
         "HzLimitPark": {
           "type": "boolean",
@@ -246,6 +246,10 @@
         "LimitTracking": {
           "type": "boolean",
           "description": "Enable tracking limits"
+        },
+        "LimitsOn": {
+          "type": "boolean",
+          "description": "Enable tracking-limit checking and actions"
         },
         "Longitude": {
           "type": "number",

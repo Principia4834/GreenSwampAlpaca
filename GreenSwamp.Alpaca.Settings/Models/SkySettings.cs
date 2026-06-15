@@ -167,6 +167,8 @@ namespace GreenSwamp.Alpaca.Settings.Models
 
         // Limit Settings
         [UniqueSetting]
+        public bool LimitsOn { get; set; }
+        [UniqueSetting]
         public bool LimitTracking { get; set; }
         [UniqueSetting]
         public double HourAngleLimit { get; set; }

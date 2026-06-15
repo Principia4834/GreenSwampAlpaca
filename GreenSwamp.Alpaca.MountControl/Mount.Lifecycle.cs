@@ -35,77 +35,124 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private void CheckAxisLimits()
         {
-            var meridianLimit = false;
-            var horizonLimit = false;
-            var monitorItem = new MonitorEntry
+            if (!Settings.LimitsOn)
             {
-                Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server, Type = MonitorType.Warning,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Environment.CurrentManagedThreadId, Message = string.Empty
-            };
-            var totLimit = Settings.HourAngleLimit + Settings.AxisTrackingLimit;
+                ClearLimitWarningState();
+                return;
+            }
+
+            bool hardwareLimit = false;
+            bool meridianLimit = false;
+            bool horizonLimit = false;
+
             switch (Settings.AlignmentMode)
             {
                 case AlignmentMode.AltAz:
-                    meridianLimit = _limitStatus.AtLowerLimitAxisY || _limitStatus.AtUpperLimitAxisY; // J5: per-instance
-                    break;
                 case AlignmentMode.Polar:
+                    hardwareLimit = _limitStatus.AtLowerLimitAxisX
+                                    || _limitStatus.AtUpperLimitAxisX
+                                    || _limitStatus.AtLowerLimitAxisY
+                                    || _limitStatus.AtUpperLimitAxisY;
                     break;
                 case AlignmentMode.GermanPolar:
+                {
+                    var totalMeridianLimit = Settings.HourAngleLimit + Settings.AxisTrackingLimit;
                     bool sh = Settings.Latitude < 0;
                     if (sh)
                     {
-                        if (_appAxes.X >= Settings.HourAngleLimit || _appAxes.X <= -Settings.HourAngleLimit - 180) meridianLimit = true;
+                        meridianLimit = _appAxes.X >= totalMeridianLimit
+                                        || _appAxes.X <= -totalMeridianLimit - 180;
                     }
                     else
                     {
-                        if (_appAxes.X >= Settings.HourAngleLimit + 180 || _appAxes.X <= -Settings.HourAngleLimit) meridianLimit = true;
+                        meridianLimit = _appAxes.X >= totalMeridianLimit + 180
+                                        || _appAxes.X <= -totalMeridianLimit;
                     }
+
+                    horizonLimit = SideOfPier == PointingState.Normal
+                                   && _altAzm.Y <= Settings.AxisHzTrackingLimit;
                     break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            if (Settings.HzLimitPark || Settings.HzLimitTracking)
+
+            bool primaryLimit = Settings.AlignmentMode == AlignmentMode.GermanPolar ? meridianLimit : hardwareLimit;
+            bool activeLimit = primaryLimit || horizonLimit;
+            if (!activeLimit)
             {
-                switch (Settings.AlignmentMode)
+                ClearLimitWarningState();
+                return;
+            }
+
+            if (_limitTriggerSuppressed)
+            {
+                return;
+            }
+
+            _limitTriggerSuppressed = true;
+
+            if (primaryLimit)
+            {
+                var source = Settings.AlignmentMode == AlignmentMode.GermanPolar ? "Meridian Limit" : "Hardware Limit";
+                HandleLimitAction(source, Settings.LimitTracking, Settings.LimitPark, Settings.ParkLimitName);
+                return;
+            }
+
+            HandleLimitAction("Horizon Limit", Settings.HzLimitTracking, Settings.HzLimitPark, Settings.ParkHzLimitName);
+        }
+
+        private void ClearLimitWarningState()
+        {
+            _limitWarningActive = false;
+            _limitWarningMessage = string.Empty;
+            _limitTriggerSuppressed = false;
+        }
+
+        private void HandleLimitAction(string source, bool stopTracking, bool parkAtLimit, string parkPositionName)
+        {
+            var action = "Warning only";
+            var warningStaysOn = true;
+
+            if (stopTracking && TrackingMode != TrackingMode.Off)
+            {
+                TrackingMode = TrackingMode.Off;
+                Tracking = false;
+                action = "Stopped tracking";
+            }
+
+            if (parkAtLimit && _slewState != SlewType.SlewPark)
+            {
+                var found = Settings.ParkPositions.Find(x => x.Name == parkPositionName);
+                if (found == null)
                 {
-                    case AlignmentMode.AltAz:
-                        if ((_altAzm.Y <= Settings.AxisHzTrackingLimit || _altAzm.Y <= Settings.AxisLowerLimitY || _altAzm.Y >= Settings.AxisUpperLimitY) && TrackingMode != TrackingMode.Off)
-                        { horizonLimit = true; }
-                        break;
-                    case AlignmentMode.Polar:
-                        break;
-                    case AlignmentMode.GermanPolar:
-                        if (this.SideOfPier == PointingState.Normal && _altAzm.Y <= Settings.AxisHzTrackingLimit && TrackingMode != TrackingMode.Off)
-                        { horizonLimit = true; }
-                        break;
+                    action = $"Park target '{parkPositionName}' not found; stopped axes";
+                    InstanceStopAxes();
+                }
+                else
+                {
+                    action = $"Started park '{found.Name}'";
+                    _parkSelected = found;
+                    StartGoToParkAsync();
+                    warningStaysOn = false;
                 }
             }
-            if (meridianLimit)
+
+            var message = $"{source}: {action}";
+            MonitorLog.LogToMonitor(new MonitorEntry
             {
-                monitorItem.Message = $"Meridian Limit Alarm: Park: {Settings.LimitPark} | Position: {Settings.ParkLimitName} | Stop Tracking: {Settings.LimitTracking}";
-                MonitorLog.LogToMonitor(monitorItem);
-                if (TrackingMode != TrackingMode.Off && Settings.LimitTracking)
-                { TrackingMode = TrackingMode.Off; Tracking = false; }
-                if (Settings.LimitPark && _slewState != SlewType.SlewPark)
-                {
-                    var found = Settings.ParkPositions.Find(x => x.Name == Settings.ParkLimitName);
-                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; StartGoToParkAsync(); } // J7: per-instance
-                }
-            }
-            if (horizonLimit)
-            {
-                monitorItem.Message = $"Horizon Limit Alarm: Park: {Settings.HzLimitPark} | Position:{Settings.ParkHzLimitName} | Stop Tracking:{Settings.HzLimitTracking}";
-                MonitorLog.LogToMonitor(monitorItem);
-                if (TrackingMode != TrackingMode.Off && Settings.HzLimitTracking)
-                { TrackingMode = TrackingMode.Off; Tracking = false; }
-                if (Settings.HzLimitPark && _slewState != SlewType.SlewPark)
-                {
-                    var found = Settings.ParkPositions.Find(x => x.Name == Settings.ParkHzLimitName);
-                    if (found == null) InstanceStopAxes(); else { _parkSelected = found; StartGoToParkAsync(); } // J7: per-instance
-                }
-            }
+                Datetime = HiResDateTime.UtcNow,
+                Device = MonitorDevice.Server,
+                Category = MonitorCategory.Server,
+                Type = MonitorType.Warning,
+                Method = MethodBase.GetCurrentMethod()?.Name,
+                Thread = Environment.CurrentManagedThreadId,
+                Message = message
+            });
+
+            _limitWarningMessage = message;
+            _limitWarningActive = warningStaysOn;
+            _limitWarningSequence++;
         }
 
         /// <summary>

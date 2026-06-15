@@ -37,13 +37,6 @@
                 <MudTextField @bind-Value="Device!.ParkName" @bind-Value:after="NotifyChanged"
                               Label="Active Park Position" Immediate="true" />
             </MudTooltip>
-            <MudCheckBox @bind-Value="Device!.LimitPark" @bind-Value:after="NotifyChanged"
-                         Label="Park at Limit" Color="Color.Primary" />
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Name of the park position used when a limit is reached." Placement="Placement.Right" Arrow="true">
-                <MudTextField @bind-Value="Device!.ParkLimitName" @bind-Value:after="NotifyChanged"
-                              Label="Park Limit Position Name" Immediate="true"
-                              Disabled="@(!Device!.LimitPark)" />
-            </MudTooltip>
             @if (Device?.ParkPositions is { Count: > 0 })
             {
                 <MudText Typo="Typo.subtitle2" Class="mt-2">Defined Park Positions</MudText>

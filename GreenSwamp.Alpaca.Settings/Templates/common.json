@@ -104,6 +104,7 @@
                      "DeviceDescription":  "Green Swamp Alpaca Sky Telescope",
                      "KingRate":  15.0369,
                      "Latitude":  56.76,
+                     "LimitsOn":  false,
                      "LimitPark":  false,
                      "LimitTracking":  false,
                      "Longitude":  -5.85,

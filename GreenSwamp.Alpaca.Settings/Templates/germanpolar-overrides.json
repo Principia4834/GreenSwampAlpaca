@@ -18,6 +18,7 @@
     "HourAngleLimit": 15.0,
     "HzLimitPark": false,
     "HzLimitTracking": false,
+    "LimitsOn": false,
     "LimitPark": false,
     "LimitTracking": false,
     "NoSyncPastMeridian": false,

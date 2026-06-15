@@ -121,11 +121,12 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _limitPark = false;
         private string _parkLimitName = string.Empty;
 
-        // Limits (9 fields)
+        // Limits (10 fields)
         private double _hourAngleLimit = 15.0;
         private double _axisLimitX = 180.0;
         private double _axisUpperLimitY = 90.0;
         private double _axisLowerLimitY = -90.0;
+        private bool _limitsOn = false;
         private bool _limitTracking = false;
         private bool _syncLimitOn = false;
         private bool _hzLimitTracking = false;
@@ -1155,9 +1156,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 foreach (var azAltPos in storedAzAlt)
                 {
-                    double az = azAltPos.X;   // Azimuth from storage (NH convention)
-                    double alt = azAltPos.Y;  // Altitude from storage
-
                     double[] axes = Axes.AzAltToPolarPark(azAltPos.X, azAltPos.Y, this);
                     if (Math.Abs(azAltPos.X) < 0.00001 && Math.Abs(azAltPos.Y - Math.Abs(Latitude)) < 0.00001)
                     {
@@ -1184,12 +1182,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 // AltAz and German Polar: Store axis coordinates directly
                 if (_alignmentMode != AlignmentMode.Polar)
                 {
-                    _parkPositions = value.OrderBy(p => p.Name).ToList();
+                    _parkPositions = [.. value.OrderBy(p => p.Name)];
 
                     // Update settings service
                     var currentSettings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
-                    currentSettings.ParkPositions = _parkPositions.Select(p =>
-                        new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
+                    currentSettings.ParkPositions = [.. _parkPositions.Select(p =>
+                        new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y })];
 
                     OnPropertyChanged();
                     return;
@@ -1215,11 +1213,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Update settings service with Az/Alt (ordered by name)
                 var orderedList = azAltPositions.OrderBy(p => p.Name).ToList();
                 var settings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
-                settings.ParkPositions = orderedList.Select(p =>
-                    new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
+                settings.ParkPositions = [.. orderedList.Select(p =>
+                    new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y })];
 
                 // Cache axis coordinates in memory for performance
-                _parkPositions = value.OrderBy(p => p.Name).ToList();
+                _parkPositions = [.. value.OrderBy(p => p.Name)];
 
                 OnPropertyChanged();
             }
@@ -1253,7 +1251,20 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Batch 8: Limits (10 properties)
+        #region Batch 8: Limits (11 properties)
+
+        public bool LimitsOn
+        {
+            get => _limitsOn;
+            set
+            {
+                if (_limitsOn != value)
+                {
+                    _limitsOn = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public double HourAngleLimit
         {
@@ -1683,6 +1694,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _parkLimitName = settings.ParkLimitName ?? string.Empty;
 
                 // Batch 8: Limits
+                _limitsOn = settings.LimitsOn;
                 _hourAngleLimit = settings.HourAngleLimit;
                 _axisLimitX = settings.AxisLimitX;
                 _axisUpperLimitY = settings.AxisUpperLimitY;
@@ -1753,13 +1765,13 @@ namespace GreenSwamp.Alpaca.MountControl
                     // Copy ParkPositions from profile to settings service
                     if (settings.ParkPositions != null && settings.ParkPositions.Count > 0)
                     {
-                        currentSettings.ParkPositions = settings.ParkPositions.Select(p =>
+                        currentSettings.ParkPositions = [.. settings.ParkPositions.Select(p =>
                             new Settings.Models.SkySettings.ParkPosition
                             {
                                 Name = p.Name,
                                 X = p.X,
                                 Y = p.Y
-                            }).ToList();
+                            })];
                     }
                     _settingsService.SaveDeviceSettingsAsync(_deviceNumber, currentSettings).GetAwaiter().GetResult();
                     LogSettings("InitializedPolarParkValues", $"ParkAxes:[{settings.ParkAxes[0]},{settings.ParkAxes[1]}]|ParkPositions:{settings.ParkPositions?.Count ?? 0}");
@@ -1871,14 +1883,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_alignmentMode != AlignmentMode.Polar)
                 {
                     // AltAz/GermanPolar: Store axis coordinates directly
-                    settings.ParkPositions = _parkPositions.Select(p =>
-                        new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y }).ToList();
+                    settings.ParkPositions = [.. _parkPositions.Select(p =>
+                        new Settings.Models.SkySettings.ParkPosition { Name = p.Name, X = p.X, Y = p.Y })];
                 }
                 // For Polar mode, settings.ParkPositions already has correct Az/Alt from property setter, don't overwrite
 
                 settings.LimitPark = _limitPark;
                 settings.ParkLimitName = _parkLimitName;
 
+                settings.LimitsOn = _limitsOn;
                 settings.HourAngleLimit = _hourAngleLimit;
                 settings.AxisLimitX = _axisLimitX;
                 settings.AxisUpperLimitY = _axisUpperLimitY;

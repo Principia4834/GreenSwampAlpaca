@@ -41,6 +41,10 @@ namespace GreenSwamp.Alpaca.Server.Models
         // Mount state
         public bool Slewing { get; set; }
         public bool Tracking { get; set; }
+        public bool LimitsOn { get; set; }
+        public bool LimitWarningActive { get; set; }
+        public string LimitWarningMessage { get; set; } = string.Empty;
+        public long LimitWarningSequence { get; set; }
         public bool AtPark { get; set; }
         public bool AtHome { get; set; }
         public bool IsMountRunning { get; set; }
@@ -101,6 +105,10 @@ namespace GreenSwamp.Alpaca.Server.Models
             LocalDate = DateTime.MinValue;
             Slewing = false;
             Tracking = false;
+            LimitsOn = false;
+            LimitWarningActive = false;
+            LimitWarningMessage = string.Empty;
+            LimitWarningSequence = 0;
             AtPark = false;
             AtHome = false;
             IsMountRunning = false;

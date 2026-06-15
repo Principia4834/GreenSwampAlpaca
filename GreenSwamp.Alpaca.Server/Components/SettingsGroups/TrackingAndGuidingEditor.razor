@@ -38,10 +38,6 @@
                                      Label="RA Tracking Offset (steps)" Immediate="true" />
                 </MudTooltip>
             }
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Limit tracking to prevent mount damage." Placement="Placement.Right" Arrow="true">
-                <MudCheckBox @bind-Value="Device!.LimitTracking" @bind-Value:after="NotifyChanged"
-                             Label="Limit Tracking" Color="Color.Primary" />
-            </MudTooltip>
             @if (ShowHidden)
             {
                 <MudTooltip Inline="false" RootStyle="max-width:260px" Text="AltAz tracking update interval in milliseconds." Placement="Placement.Right" Arrow="true">

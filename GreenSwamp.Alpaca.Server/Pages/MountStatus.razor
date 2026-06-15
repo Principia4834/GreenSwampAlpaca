@@ -82,6 +82,8 @@ else
                             @StatusRow("Pulse Guide RA", s.IsPulseGuidingRa, Color.Warning)
                             @StatusRow("Pulse Guide Dec",   s.IsPulseGuidingDec, Color.Warning)
                             @StatusRowWithDetail("Tracking", s.Tracking, s.TrackingRate.ToString(), Color.Success)
+                            @StatusRow("Limits On",        s.LimitsOn,          Color.Success)
+                            @StatusRow("Limit Warning",    s.LimitWarningActive, Color.Warning)
                             @StatusRow("At Park",           s.AtPark,            Color.Info)
                             @StatusRow("At Home",           s.AtHome,            Color.Info)
                         </MudStack>
@@ -197,6 +199,11 @@ else
                                        Size="Size.Small"
                                        Disabled="@(!IsUiClientConnected(dn))"
                                        OnClick="@(() => OnTrackingToggleAsync(dn))">@(s.Tracking ? "Tracking Off" : "Tracking On")</MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="@(s.LimitsOn ? Color.Success : Color.Default)"
+                                       Size="Size.Small"
+                                       Disabled="@(!IsUiClientConnected(dn))"
+                                       OnClick="@(() => OnLimitsToggleAsync(dn))">@(s.LimitsOn ? "Limits Off" : "Limits On")</MudButton>
                             <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
                                        Disabled="@(!CanEmergencyStop(dn, s))"
                                        OnClick="@(() => OnStopAsync(dn))">Stop</MudButton>
@@ -235,6 +242,7 @@ else
     private int ActiveTabIndex { get; set; }
     private List<AlpacaDevice> _alpacaDevices = [];
     private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
+    private readonly Dictionary<int, long> _lastLimitWarningSequence = new();
 
     protected override void OnInitialized()
     {
@@ -254,8 +262,23 @@ else
         ActiveTabIndex = idx >= 0 ? idx : 0;
     }
 
-    private void OnStateChanged(object? sender, EventArgs e) =>
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        foreach (var dn in GetConfiguredDeviceNumbers())
+        {
+            var state = StateService.GetCurrentState(dn);
+            var seen = _lastLimitWarningSequence.GetValueOrDefault(dn);
+            if (state.LimitWarningSequence <= seen) continue;
+
+            _lastLimitWarningSequence[dn] = state.LimitWarningSequence;
+            if (!string.IsNullOrWhiteSpace(state.LimitWarningMessage))
+            {
+                Snackbar.Add(state.LimitWarningMessage, Severity.Warning);
+            }
+        }
+
         InvokeAsync(StateHasChanged);
+    }
 
     private void OnDeviceSettingsChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.SkySettings updated)
     {
@@ -383,6 +406,25 @@ else
         }
     }
 
+    private async Task OnLimitsToggleAsync(int dn)
+    {
+        try
+        {
+            var mount = MountRegistry.GetInstance(dn);
+            if (mount == null)
+            {
+                Snackbar.Add($"Mount device {dn} not found", Severity.Error);
+                return;
+            }
+
+            await Task.Run(() => mount.LimitsOn = !mount.LimitsOn);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Limits toggle failed: {ex.Message}", Severity.Error);
+        }
+    }
+
     private List<int> GetConfiguredDeviceNumbers() =>
         _alpacaDevices
             .Select(d => d.DeviceNumber)
@@ -464,4 +506,3 @@ else
         return $"{degrees:F4}°";
     }
 }
-
