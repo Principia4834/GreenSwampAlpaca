@@ -1,5 +1,4 @@
-﻿@using GreenSwamp.Alpaca.Settings.Services
-@using System.Net.Http.Json
+@using GreenSwamp.Alpaca.Settings.Services
 @using MudBlazor
 @namespace GreenSwamp.Alpaca.Server.Components
 
@@ -96,7 +95,7 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Inject]
-    private HttpClient HttpClient { get; set; } = null!;
+    private ISettingsBackupService BackupService { get; set; } = null!;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = null!;
@@ -123,7 +122,7 @@
     {
         try
         {
-            _backupInfo = await HttpClient.GetFromJsonAsync<BackupInfo>("api/backup/info");
+            _backupInfo = await BackupService.GetBackupInfoAsync();
         }
         catch (Exception ex)
         {
@@ -139,26 +138,12 @@
 
         try
         {
-            var response = await HttpClient.GetAsync("api/backup/download");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _errorMessage = $"Failed to create backup: {response.StatusCode}";
-                _state = BackupState.Error;
-                return;
-            }
-
-            _progress = 90;
-
-            // Get filename from Content-Disposition header
-            var contentDisposition = response.Content.Headers.ContentDisposition;
-            var fileName = contentDisposition?.FileNameStar ?? contentDisposition?.FileName ?? "GreenSwamp_backup.zip";
-
-            // Remove quotes if present
-            fileName = fileName.Trim('"');
-
-            // Read the ZIP file bytes
-            var blob = await response.Content.ReadAsByteArrayAsync();
+            using var blob = await BackupService.GenerateBackupZipAsync(
+                progress =>
+                {
+                    _progress = progress;
+                    _ = InvokeAsync(StateHasChanged);
+                });
 
             _progress = 100;
             _state = BackupState.Success;
@@ -166,7 +151,9 @@
             // Trigger browser download using JavaScript
             await using var module = await JSRuntime.InvokeAsync<IJSObjectReference>(
                 "import", "./js/file-download.js");
-            await module.InvokeVoidAsync("downloadFile", fileName, blob);
+            var fileName = $"GreenSwamp_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.zip";
+            var bytes = blob.ToArray();
+            await module.InvokeVoidAsync("downloadFile", fileName, bytes);
 
             // Auto-close dialog after a brief delay
             await Task.Delay(1500);
