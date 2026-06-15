@@ -1,16 +1,16 @@
-@using GreenSwamp.Alpaca.Settings.Services
+﻿@using GreenSwamp.Alpaca.Settings.Services
 @using MudBlazor
 @namespace GreenSwamp.Alpaca.Server.Components
 
 <MudDialog>
     <DialogContent>
         <MudStack Spacing="3">
-            <MudText Typo="Typo.h6">Download Settings Backup</MudText>
+            <MudText Typo="Typo.h6">Download Settings & Logs Backup</MudText>
 
             @if (_state == BackupState.Initial)
             {
                 <MudText Typo="Typo.body2" Color="Color.Default">
-                    Preparing backup of all settings and user documents...
+                    Preparing backup of all settings and user logs...
                 </MudText>
 
                 @if (_backupInfo != null)
@@ -36,7 +36,7 @@
                     Max="100"
                     Color="Color.Primary"
                     Striped="true"
-                    Size="Size.Small"
+                    Size="Size.Medium"
                     Class="my-2" />
 
                 <MudText Typo="Typo.caption" Align="Align.Center">
