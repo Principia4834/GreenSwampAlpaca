@@ -229,8 +229,6 @@ namespace GreenSwamp.Alpaca.MountControl
             var positions = this.GetDefaultPositions();
             double[]? rawPositions = null;
             var counter = 0;
-            int raWormTeeth;
-            int decWormTeeth;
             bool positionsSet = false;
             MonitorEntry monitorItem;
             string msg;
@@ -263,11 +261,6 @@ namespace GreenSwamp.Alpaca.MountControl
                                   $"CanPPec:{_canPPec}|MountName:{_mountName}"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
-
-                    raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
-                    decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
-                    _wormTeethCount = [raWormTeeth, decWormTeeth];
-                    _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
 
                     // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
                     while (rawPositions == null)
@@ -400,11 +393,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     //CanHomeSensor = true; //test auto home
 
-                    raWormTeeth = (int)(_stepsPerRevolution[0] / _stepsWormPerRevolution[0]);
-                    decWormTeeth = (int)(_stepsPerRevolution[1] / _stepsWormPerRevolution[1]);
-                    _wormTeethCount = [raWormTeeth, decWormTeeth];
-                    _pecBinSteps = _stepsPerRevolution[0] / (_wormTeethCount[0] * 1.0) / PecBinCount;
-
                     this.CalcCustomTrackingOffset();
 
                     // Initialize slew speeds
@@ -480,24 +468,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
             monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"StepsPerRevolution|{_stepsPerRevolution[0]}|{_stepsPerRevolution[1]}" };
-            MonitorLog.LogToMonitor(monitorItem);
-
-            //Load Pec Files
-            var pecmsg = string.Empty;
-            if (File.Exists(Settings.PecWormFile))
-            {
-                LoadPecFile(Settings.PecWormFile);
-                pecmsg += Settings.PecWormFile;
-            }
-
-            if (File.Exists(Settings.Pec360File))
-            {
-                LoadPecFile(Settings.Pec360File);
-                pecmsg += ", " + Settings.Pec360File;
-            }
-
-            monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Pec: {pecmsg}" };
             MonitorLog.LogToMonitor(monitorItem);
 
             try

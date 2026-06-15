@@ -61,11 +61,6 @@ namespace GreenSwamp.Alpaca.MountControl
         internal long[] _stepsTimeFreq = [0, 0];
         internal double[] _stepsWormPerRevolution = new double[2];
 
-        // PEC fields
-        private int[] _wormTeethCount = new int[2];
-        private double _pecBinSteps;
-
-
         // Mount capabilities
         internal bool _canPPec;
         internal bool _canHomeSensor;
@@ -1344,9 +1339,6 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void SetSteps(double[] steps)
         {
             var lst = GetLocalSiderealTime(Settings.Longitude);
-
-            // Implement PEC
-            PecCheck();
 
             // Convert raw steps to degrees
             var rawPositions = new[]

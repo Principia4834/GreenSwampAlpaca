@@ -1,0 +1,17 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+<MudStack Spacing="3">
+    <MudText Typo="Typo.subtitle2">PPEC</MudText>
+    <MudCheckBox @bind-Value="Device!.PpecOn" @bind-Value:after="NotifyChanged"
+                 Label="PPEC Enabled" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.AlternatingPPEC" @bind-Value:after="NotifyChanged"
+                 Label="Alternating PPEC" Color="Color.Primary" />
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

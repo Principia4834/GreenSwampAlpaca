@@ -89,7 +89,7 @@ public partial class SettingsExplorer : IDisposable
     private static readonly HashSet<string> _allHiddenGroups = new(StringComparer.Ordinal)
     {
         "Optics",
-        "PEC / PPEC",
+        "PPEC",
         "Performance & Tuning",
         "Hand Controller"
     };
@@ -144,7 +144,7 @@ public partial class SettingsExplorer : IDisposable
         ["Backlash"]             = "RA and Dec backlash compensation in motor steps.",
         ["Pulse Guiding"]        = "Minimum pulse durations, ST4 guide rate and guide rate offsets.",
         ["Sync Limits"]          = "Sync angle limit and no-sync-past-meridian flag.",
-        ["PEC / PPEC"]           = "Periodic error correction and predictive PEC settings.",
+        ["PPEC"]                 = "Predictive PEC settings.",
         ["Encoders"]             = "Enable or disable absolute encoder feedback.",
         ["Hand Controller"]      = "Hand controller speed, mode, flip and anti-backlash settings.",
         ["GPS"]                  = "GPS serial port and baud rate for time/location synchronisation.",
@@ -334,8 +334,8 @@ public partial class SettingsExplorer : IDisposable
 
             if (IsGroupVisible("Performance & Tuning"))
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "Performance & Tuning", Icons.Material.Filled.Loop, "Performance & Tuning"));
-            if (IsGroupVisible("PEC / PPEC"))
-                deviceLeaves.Add(DeviceLeaf(deviceNumber, "PEC / PPEC", Icons.Material.Filled.Loop, "PEC / PPEC"));
+            if (IsGroupVisible("PPEC"))
+                deviceLeaves.Add(DeviceLeaf(deviceNumber, "PPEC", Icons.Material.Filled.Loop, "PPEC"));
             if (IsGroupVisible("Hand Controller"))
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "Hand Controller", Icons.Material.Filled.VideogameAsset, "Hand Controller"));
 

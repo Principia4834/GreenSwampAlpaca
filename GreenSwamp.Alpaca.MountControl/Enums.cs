@@ -131,19 +131,6 @@ namespace GreenSwamp.Alpaca.MountControl
         Dec
     }
 
-    public enum PecMode
-    {
-        PecWorm = 0,
-        Pec360 = 1
-    }
-
-    public enum PecFileType
-    {
-        GsPecWorm = 0,
-        GsPec360 = 1,
-        GsPecDebug = 2
-    }
-
     public enum ReSyncMode
     {
         Home = 0,

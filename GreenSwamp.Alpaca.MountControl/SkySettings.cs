@@ -61,7 +61,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private SerialSpeed _gpsBaudRate = SerialSpeed.ps9600;
         private SlewSpeed _hcSpeed = SlewSpeed.Eight;
         private HcMode _hcMode = HcMode.Guiding;
-        private PecMode _pecMode = PecMode.PecWorm;
         private PolarMode _polarMode = PolarMode.Left;
 
         // Location & Custom Gearing (11 fields)
@@ -134,12 +133,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private string _parkHzLimitName = string.Empty;
         private int _syncLimit = 5;
 
-        // PEC (6 fields)
-        private bool _pecOn = false;
+        // PPEC
         private bool _pPecOn = false;
-        private int _pecOffSet = 0;
-        private string _pecWormFile = string.Empty;
-        private string _pec360File = string.Empty;
         private int _polarLedLevel = 0;
 
         // Hand Controller (6 fields)
@@ -405,19 +400,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_hcMode != value)
                 {
                     _hcMode = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public PecMode PecMode
-        {
-            get => _pecMode;
-            set
-            {
-                if (_pecMode != value)
-                {
-                    _pecMode = value;
                     OnPropertyChanged();
                 }
             }
@@ -1394,20 +1376,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Batch 9: PEC (6 properties)
-
-        public bool PecOn
-        {
-            get => _pecOn;
-            set
-            {
-                if (_pecOn != value)
-                {
-                    _pecOn = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        #region Batch 9: PPEC
 
         public bool PPecOn
         {
@@ -1417,45 +1386,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_pPecOn != value)
                 {
                     _pPecOn = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public int PecOffSet
-        {
-            get => _pecOffSet;
-            set
-            {
-                if (_pecOffSet != value)
-                {
-                    _pecOffSet = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string PecWormFile
-        {
-            get => _pecWormFile;
-            set
-            {
-                if (_pecWormFile != value)
-                {
-                    _pecWormFile = value ?? string.Empty;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string Pec360File
-        {
-            get => _pec360File;
-            set
-            {
-                if (_pec360File != value)
-                {
-                    _pec360File = value ?? string.Empty;
                     OnPropertyChanged();
                 }
             }
@@ -1671,8 +1601,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     _hcSpeed = hcSpd;
                 if (Enum.TryParse<HcMode>(settings.HcMode, true, out var hcMd))
                     _hcMode = hcMd;
-                if (Enum.TryParse<PecMode>(settings.PecMode, true, out var pecMd))
-                    _pecMode = pecMd;
                 if (Enum.TryParse<PolarMode>(settings.PolarMode, true, out var polMd))
                     _polarMode = polMd;
 
@@ -1766,12 +1694,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 _parkHzLimitName = settings.ParkHzLimitName ?? string.Empty;
                 _syncLimit = settings.SyncLimit;
 
-                // Batch 9: PEC
-                _pecOn = settings.PecOn;
+                // Batch 9: PPEC
                 _pPecOn = settings.PpecOn;
-                _pecOffSet = settings.PecOffSet;
-                _pecWormFile = settings.PecWormFile ?? string.Empty;
-                _pec360File = settings.Pec360File ?? string.Empty;
                 _polarLedLevel = settings.PolarLedLevel;
 
                 // Batch 10: Hand Controller
@@ -1886,7 +1810,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.GpsBaudRate = (int)_gpsBaudRate;
                 settings.HcSpeed = _hcSpeed.ToString();
                 settings.HcMode = _hcMode.ToString();
-                settings.PecMode = _pecMode.ToString();
                 settings.PolarMode = _polarMode.ToString();
 
                 settings.Latitude = _latitude;
@@ -1966,11 +1889,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.HzLimitPark = _hzLimitPark;
                 settings.ParkHzLimitName = _parkHzLimitName;
 
-                settings.PecOn = _pecOn;
                 settings.PpecOn = _pPecOn;
-                settings.PecOffSet = _pecOffSet;
-                settings.PecWormFile = _pecWormFile;
-                settings.Pec360File = _pec360File;
                 settings.PolarLedLevel = _polarLedLevel;
 
                 settings.HcAntiRa = _hcAntiRa;

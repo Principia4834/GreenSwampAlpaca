@@ -193,21 +193,11 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public double AxisLimitX { get; set; }
         
-        // PEC/PPEC Settings
-        [CommonSetting]
-        public bool PecOn { get; set; }
+        // PPEC Settings
         [CommonSetting]
         public bool PpecOn { get; set; }
         [CommonSetting]
         public bool AlternatingPPEC { get; set; }
-        [CommonSetting]
-        public int PecOffSet { get; set; }
-        [CommonSetting]
-        public string PecWormFile { get; set; } = null!;
-        [CommonSetting]
-        public string Pec360File { get; set; } = null!;
-        [CommonSetting]
-        public string PecMode { get; set; } = null!;
 
         // Encoders
         [CommonSetting]

@@ -234,8 +234,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (Settings.PecOn) return;
-
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -244,7 +242,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"{currentTrackingMode}|{rateChange * 3600}|{_pecBinNow}|{_skyTrackingOffset[0]}|{_skyTrackingOffset[1]}"
+                Message = $"{currentTrackingMode}|{rateChange * 3600}|{_skyTrackingOffset[0]}|{_skyTrackingOffset[1]}"
             };
             MonitorLog.LogToMonitor(monitorItem);
         }
@@ -363,10 +361,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
             if (rate < SiderealRate * 2 & rate != 0)
                 rate += _trackingOffsetRate.X;
-
-            if (Settings.PecOn && Tracking && _pecBinNow != null && !double.IsNaN(_pecBinNow.Item2))
-                if (Math.Abs(_pecBinNow.Item2 - 1) < .04)
-                    rate *= _pecBinNow.Item2;
 
             rate /= 3600;
             if (Settings.RaTrackingOffset <= 0) { return rate; }
