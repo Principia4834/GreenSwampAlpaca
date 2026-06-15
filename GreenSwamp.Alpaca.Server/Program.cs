@@ -196,7 +196,7 @@ namespace GreenSwamp.Alpaca.Server
 
             // Load versioned user settings support
             builder.Configuration.AddVersionedUserSettings();
-            
+
             // Register all settings services (VersionedSettings, Template, Profile)
             builder.Services.AddVersionedSettings(builder.Configuration);
 
@@ -207,6 +207,10 @@ namespace GreenSwamp.Alpaca.Server
                 var settingsService = sp.GetRequiredService<IVersionedSettingsService>();
                 return new GreenSwamp.Alpaca.MountControl.SkySettings(settingsService);
             });
+
+            // Register Settings Backup Service
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Settings.Services.ISettingsBackupService, 
+                GreenSwamp.Alpaca.Settings.Services.SettingsBackupService>();
             Logger.LogInformation("SkySettings registered in DI container");
             Logger.LogInformation("Settings services registered: VersionedSettings, Template");
             #endregion Startup and Logging

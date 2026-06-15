@@ -10,11 +10,22 @@
 @inject TelescopeStateService StateService
 @inject IVersionedSettingsService SettingsService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @implements IDisposable
 
 <PageTitle>Mount Status</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Mount Status</MudText>
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h5">Mount Status</MudText>
+    <MudButton 
+        Color="Color.Default" 
+        Variant="Variant.Outlined" 
+        Size="Size.Small"
+        StartIcon="@Icons.Material.Filled.Download"
+        OnClick="OpenBackupDialog">
+        Backup Settings
+    </MudButton>
+</MudStack>
 
 @if (_alpacaDevices.Count == 0)
 {
@@ -423,6 +434,14 @@ else
         {
             Snackbar.Add($"Limits toggle failed: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task OpenBackupDialog()
+    {
+        var parameters = new DialogParameters();
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        await DialogService.ShowAsync<SettingsBackupDialog>("", parameters, options);
     }
 
     private List<int> GetConfiguredDeviceNumbers() =>

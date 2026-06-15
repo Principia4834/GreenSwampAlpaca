@@ -178,7 +178,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
                 : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            var logsRoot = Path.Combine(baseFolder, "GreenSwamp", "Server");
+            var logsRoot = Path.Combine(baseFolder, "GreenSwamp", "AlpacaServer");
 
             // Eagerly create the directory so it is visible even before the first
             // log entry is written (e.g. before logging flags are enabled).

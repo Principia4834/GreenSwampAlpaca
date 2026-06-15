@@ -1,0 +1,192 @@
+﻿@using GreenSwamp.Alpaca.Settings.Services
+@using System.Net.Http.Json
+@using MudBlazor
+@namespace GreenSwamp.Alpaca.Server.Components
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.h6">Download Settings Backup</MudText>
+
+            @if (_state == BackupState.Initial)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Default">
+                    Preparing backup of all settings and user documents...
+                </MudText>
+
+                @if (_backupInfo != null)
+                {
+                    <MudStack Spacing="1" Class="mud-paper pa-3" Style="background-color: rgba(63, 81, 181, 0.1);">
+                        <MudText Typo="Typo.caption">
+                            <strong>Files:</strong> @_backupInfo.FileCount
+                        </MudText>
+                        <MudText Typo="Typo.caption">
+                            <strong>Estimated size:</strong> @_backupInfo.EstimatedSizeFormatted
+                        </MudText>
+                    </MudStack>
+                }
+            }
+            else if (_state == BackupState.InProgress)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Default">
+                    Creating backup file...
+                </MudText>
+
+                <MudProgressLinear
+                    Value="@_progress"
+                    Max="100"
+                    Color="Color.Primary"
+                    Striped="true"
+                    Size="Size.Small"
+                    Class="my-2" />
+
+                <MudText Typo="Typo.caption" Align="Align.Center">
+                    @_progress%
+                </MudText>
+            }
+            else if (_state == BackupState.Success)
+            {
+                <MudAlert Severity="Severity.Success" Class="my-2">
+                    Backup created successfully! Download started.
+                </MudAlert>
+
+                <MudText Typo="Typo.body2" Color="Color.Default">
+                    Your backup file contains all settings JSON files and user documents.
+                </MudText>
+            }
+            else if (_state == BackupState.Error)
+            {
+                <MudAlert Severity="Severity.Error" Class="my-2">
+                    @_errorMessage
+                </MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        @if (_state == BackupState.Initial)
+        {
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" OnClick="CreateBackup" Variant="Variant.Filled">
+                Create Backup
+            </MudButton>
+        }
+        else if (_state == BackupState.InProgress)
+        {
+            <MudButton OnClick="Cancel" Disabled="true">Cancel</MudButton>
+        }
+        else if (_state == BackupState.Success)
+        {
+            <MudButton Color="Color.Primary" OnClick="Cancel" Variant="Variant.Filled">
+                Close
+            </MudButton>
+        }
+        else if (_state == BackupState.Error)
+        {
+            <MudButton OnClick="Cancel">Close</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Retry" Variant="Variant.Filled">
+                Retry
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Inject]
+    private HttpClient HttpClient { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = null!;
+
+    private enum BackupState
+    {
+        Initial,
+        InProgress,
+        Success,
+        Error
+    }
+
+    private BackupState _state = BackupState.Initial;
+    private int _progress = 0;
+    private string _errorMessage = string.Empty;
+    private BackupInfo? _backupInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBackupInfo();
+    }
+
+    private async Task LoadBackupInfo()
+    {
+        try
+        {
+            _backupInfo = await HttpClient.GetFromJsonAsync<BackupInfo>("api/backup/info");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to load backup information: {ex.Message}";
+            _state = BackupState.Error;
+        }
+    }
+
+    private async Task CreateBackup()
+    {
+        _state = BackupState.InProgress;
+        _progress = 0;
+
+        try
+        {
+            var response = await HttpClient.GetAsync("api/backup/download");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = $"Failed to create backup: {response.StatusCode}";
+                _state = BackupState.Error;
+                return;
+            }
+
+            _progress = 90;
+
+            // Get filename from Content-Disposition header
+            var contentDisposition = response.Content.Headers.ContentDisposition;
+            var fileName = contentDisposition?.FileNameStar ?? contentDisposition?.FileName ?? "GreenSwamp_backup.zip";
+
+            // Remove quotes if present
+            fileName = fileName.Trim('"');
+
+            // Read the ZIP file bytes
+            var blob = await response.Content.ReadAsByteArrayAsync();
+
+            _progress = 100;
+            _state = BackupState.Success;
+
+            // Trigger browser download using JavaScript
+            await using var module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./js/file-download.js");
+            await module.InvokeVoidAsync("downloadFile", fileName, blob);
+
+            // Auto-close dialog after a brief delay
+            await Task.Delay(1500);
+            MudDialog.Close();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error creating backup: {ex.Message}";
+            _state = BackupState.Error;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Retry()
+    {
+        await LoadBackupInfo();
+        _state = BackupState.Initial;
+    }
+}
