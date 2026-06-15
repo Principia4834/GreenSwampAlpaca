@@ -4,8 +4,6 @@
     <MudText Typo="Typo.subtitle2">PPEC</MudText>
     <MudCheckBox @bind-Value="Device!.PpecOn" @bind-Value:after="NotifyChanged"
                  Label="PPEC Enabled" Color="Color.Primary" />
-    <MudCheckBox @bind-Value="Device!.AlternatingPPEC" @bind-Value:after="NotifyChanged"
-                 Label="Alternating PPEC" Color="Color.Primary" />
 </MudStack>
 
 @code {

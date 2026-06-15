@@ -62,6 +62,8 @@
                 <MudCheckBox @bind-Value="Device!.DecPulseToGoTo" @bind-Value:after="NotifyChanged"
                              Label="Dec Pulse → GoTo" Color="Color.Primary" />
             </MudTooltip>
+            <MudCheckBox @bind-Value="Device!.AlternatingPPEC" @bind-Value:after="NotifyChanged"
+                         Label="Alternating PPEC" Color="Color.Primary" />
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="ST4 guide rate divisor (e.g. 0=full, 1=0.75x, 2=0.5x, etc.)." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.St4Guiderate" @bind-Value:after="NotifyChanged"
                                  Label="ST4 Guide Rate" Min="0" Immediate="true" />
