@@ -80,79 +80,74 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             try
             {
-                using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true);
-
-                // Set maximum compression
-                var compressionLevel = CompressionLevel.Optimal;
-
-                // Collect all files to backup
-                var filesToBackup = new List<(string filePath, string entryPath)>();
-                var totalFiles = 0;
-                var processedFiles = 0;
-
-                // 1. Add versioned settings JSON files
-                // Get the versioned settings directory from one of the known paths
-                var versionedSettingsPath = Path.GetDirectoryName(_settingsService.MonitorSettingsPath);
-                if (!string.IsNullOrWhiteSpace(versionedSettingsPath) && Directory.Exists(versionedSettingsPath))
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
                 {
-                    var jsonFiles = Directory.GetFiles(versionedSettingsPath, "*.json", SearchOption.TopDirectoryOnly);
-                    foreach (var file in jsonFiles)
+                    var compressionLevel = CompressionLevel.Optimal;
+                    var filesToBackup = new List<(string filePath, string entryPath)>();
+                    var totalFiles = 0;
+                    var processedFiles = 0;
+
+                    // 1. Add versioned settings JSON files
+                    var versionedSettingsPath = Path.GetDirectoryName(_settingsService.MonitorSettingsPath);
+                    if (!string.IsNullOrWhiteSpace(versionedSettingsPath) && Directory.Exists(versionedSettingsPath))
                     {
-                        var fileName = Path.GetFileName(file);
-                        filesToBackup.Add((file, $"settings/{fileName}"));
-                    }
-                }
-
-                // 2. Add user documents from GreenSwamp folder
-                var documentsPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    "GreenSwamp");
-
-                if (Directory.Exists(documentsPath))
-                {
-                    var allFiles = Directory.GetFiles(documentsPath, "*", SearchOption.AllDirectories);
-                    foreach (var file in allFiles)
-                    {
-                        var relativePath = Path.GetRelativePath(documentsPath, file);
-                        filesToBackup.Add((file, $"documents/{relativePath}"));
-                    }
-                }
-
-                totalFiles = filesToBackup.Count;
-                if (totalFiles == 0)
-                {
-                    memoryStream.Position = 0;
-                    return memoryStream;
-                }
-
-                // Add files to archive
-                foreach (var (filePath, entryPath) in filesToBackup)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        using var fileStream = new FileStream(
-                            filePath,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.Read);
-
-                        var entry = archive.CreateEntry(entryPath, compressionLevel);
-                        using var entryStream = entry.Open();
-                        await fileStream.CopyToAsync(entryStream, cancellationToken);
-                    }
-                    catch (IOException)
-                    {
-                        // File might be locked or deleted, skip it
-                        continue;
+                        var jsonFiles = Directory.GetFiles(versionedSettingsPath, "*.json", SearchOption.TopDirectoryOnly);
+                        foreach (var file in jsonFiles)
+                        {
+                            var fileName = Path.GetFileName(file);
+                            filesToBackup.Add((file, $"settings/{fileName}"));
+                        }
                     }
 
-                    processedFiles++;
-                    var progress = (int)((processedFiles / (double)totalFiles) * 100);
-                    progressCallback?.Invoke(progress);
-                }
+                    // 2. Add user documents from GreenSwamp folder
+                    var documentsPath = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        "GreenSwamp");
 
+                    if (Directory.Exists(documentsPath))
+                    {
+                        var allFiles = Directory.GetFiles(documentsPath, "*", SearchOption.AllDirectories);
+                        foreach (var file in allFiles)
+                        {
+                            var relativePath = Path.GetRelativePath(documentsPath, file);
+                            var zipEntryPath = relativePath.Replace('\\', '/');
+                            filesToBackup.Add((file, $"GreenSwamp/{zipEntryPath}"));
+                        }
+                    }
+
+                    totalFiles = filesToBackup.Count;
+
+                    foreach (var (filePath, entryPath) in filesToBackup)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        try
+                        {
+                            using var fileStream = new FileStream(
+                                filePath,
+                                FileMode.Open,
+                                FileAccess.Read,
+                                FileShare.Read);
+
+                            var entry = archive.CreateEntry(entryPath, compressionLevel);
+                            using (var entryStream = entry.Open())
+                            {
+                                await fileStream.CopyToAsync(entryStream, 65536, cancellationToken);
+                            }
+                        }
+                        catch (IOException)
+                        {
+                            continue;
+                        }
+
+                        processedFiles++;
+                        var progress = (int)((processedFiles / (double)totalFiles) * 100);
+                        progressCallback?.Invoke(progress);
+                    }
+
+                } // ← archive.Dispose() fires HERE: Central Directory written at correct END position
+
+                // Position reset AFTER archive is fully finalized
                 memoryStream.Position = 0;
                 return memoryStream;
             }
