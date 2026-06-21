@@ -1,13 +1,26 @@
 ﻿@page "/mount-settings"
 @page "/mount-settings/{DeviceNumber:int}"
 @using System.Linq
+@using GreenSwamp.Alpaca.Server.Components
 @using GreenSwamp.Alpaca.Server.Pages.Devices
 @using GreenSwamp.Alpaca.Settings.Services
 @inject IVersionedSettingsService SettingsService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
 
 <PageTitle>Mount Settings</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Mount Settings</MudText>
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h5">Mount Settings</MudText>
+    <MudButton Color="Color.Default"
+               Variant="Variant.Outlined"
+               Size="Size.Small"
+               StartIcon="@Icons.Material.Filled.Download" 
+               OnClick="OpenExportDialog">
+        Export Settings & Logs
+    </MudButton>
+</MudStack>
 
 @if (_alpacaDevices.Count == 0)
 {
@@ -15,21 +28,21 @@
 }
 else
 {
-    <MudTabs Rounded="true" Elevation="1" Class="gs-tabs-no-transform"
+    <MudTabs Rounded="true" Elevation="1" Class="mb-4 gs-tabs-no-transform"
              ActivePanelIndex="@_activeDeviceTabIndex"
              ActivePanelIndexChanged="OnDeviceTabChanged">
-    @foreach (var device in GetConfiguredDeviceNumbers())
+    @foreach (var dn in GetConfiguredDeviceNumbers())
         {
-            <MudTabPanel Text="@TabLabel(device)">
+            <MudTabPanel Text="@TabLabel(dn)" Class="@GetTabClass(dn)">
                 @* Inline: reuse TelescopeSetup component/page UI for read-only view *@
-                <MudGrid>
+                <MudGrid Spacing="3" Class="mt-1">
                     <MudItem xs="12">
                         <MudCard Class="mb-2">
                             <MudCardContent>
-                                <TelescopeSetup InstanceID="@device" />
+                                <TelescopeSetup InstanceID="@dn" />
                             </MudCardContent>
                             <MudCardActions>
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditDevice(device)"
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditDevice(dn)"
                                            StartIcon="@Icons.Material.Filled.AccountTree">
                                     Edit in Settings Explorer
                                 </MudButton>
@@ -47,10 +60,13 @@ else
 
     private int _activeDeviceTabIndex;
     private List<AlpacaDevice> _alpacaDevices = [];
+    private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
 
     protected override void OnInitialized()
     {
         _alpacaDevices = SettingsService.GetAlpacaDevices();
+        _deviceSettings = SettingsService.GetAllDeviceSettings()
+            .ToDictionary(d => d.DeviceNumber);
     }
 
     protected override void OnParametersSet()
@@ -74,12 +90,26 @@ else
             .OrderBy(d => d)
             .ToList();
 
+    private async Task OpenExportDialog()
+    {
+        var parameters = new DialogParameters();
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        await DialogService.ShowAsync<SettingsExportDialog>("", parameters, options);
+    }
+
     private string TabLabel(int deviceNumber)
     {
         var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
         return string.IsNullOrWhiteSpace(device?.DeviceName)
             ? $"Device {deviceNumber}"
             : device.DeviceName;
+    }
+
+    private string GetTabClass(int deviceNumber)
+    {
+        var mountSettings = _deviceSettings.GetValueOrDefault(deviceNumber);
+        return mountSettings?.Mount == "Simulator" ? "gs-tab-simulator" : string.Empty;
     }
 
     void EditDevice(int deviceNumber)

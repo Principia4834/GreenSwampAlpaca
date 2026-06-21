@@ -136,7 +136,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // PPEC
         private bool _pPecOn = false;
-        private int _polarLedLevel = 0;
+        private int _polarLedLevel = -1;
 
         // Hand Controller (6 fields)
         private bool _hcAntiRa = false;

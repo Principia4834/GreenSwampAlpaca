@@ -11,6 +11,7 @@
 @inject IVersionedSettingsService SettingsService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject BrowserTtsService Tts
 @implements IDisposable
 
 <PageTitle>Mount Status</PageTitle>
@@ -36,7 +37,7 @@ else
 <MudTabs Rounded="true" Elevation="1" @bind-ActivePanelIndex="ActiveTabIndex" Class="mb-4 gs-tabs-no-transform">
     @foreach (var dn in GetConfiguredDeviceNumbers())
     {
-        <MudTabPanel Text="@TabLabel(dn)">
+        <MudTabPanel Text="@TabLabel(dn)" Class="@GetTabClass(dn)">
             @{
                 var s = StateService.GetCurrentState(dn);
                 var mountSettings = _deviceSettings.GetValueOrDefault(dn);
@@ -254,12 +255,27 @@ else
     private List<AlpacaDevice> _alpacaDevices = [];
     private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
     private readonly Dictionary<int, long> _lastLimitWarningSequence = new();
+    private readonly Dictionary<int, bool> _lastAtParkState = new();
+    private readonly Dictionary<int, bool> _lastSlewingState = new();
+    private readonly Dictionary<int, bool> _lastHomeState = new();
+    private readonly Dictionary<int, bool> _lastConnectedState = new();
+    private readonly Dictionary<int, bool> _lastTrackingState = new();
 
     protected override void OnInitialized()
     {
         _alpacaDevices = SettingsService.GetAlpacaDevices();
         _deviceSettings = SettingsService.GetAllDeviceSettings()
             .ToDictionary(d => d.DeviceNumber);
+
+        foreach (var dn in GetConfiguredDeviceNumbers())
+        {
+            _lastAtParkState[dn] = StateService.GetCurrentState(dn).AtPark;
+            _lastSlewingState[dn] = StateService.GetCurrentState(dn).Slewing;
+            _lastHomeState[dn] = StateService.GetCurrentState(dn).AtHome;
+            _lastConnectedState[dn] = IsUiClientConnected(dn);
+            _lastTrackingState[dn] = StateService.GetCurrentState(dn).Tracking;
+        }
+
         StateService.StateChanged += OnStateChanged;
         SettingsService.DeviceSettingsChanged += OnDeviceSettingsChanged;
     }
@@ -278,6 +294,47 @@ else
         foreach (var dn in GetConfiguredDeviceNumbers())
         {
             var state = StateService.GetCurrentState(dn);
+
+            var wasAtPark = _lastAtParkState.GetValueOrDefault(dn);
+            if (!wasAtPark && state.AtPark)
+            {
+                _ = InvokeAsync(() => Tts.SpeakAsync("Parked"));
+            }
+
+            var wasSlewing = _lastSlewingState.GetValueOrDefault(dn);
+            if (!wasSlewing && state.Slewing)
+            {
+                _ = InvokeAsync(() => Tts.SpeakAsync("Slewing"));
+            }
+
+            var wasHome = _lastHomeState.GetValueOrDefault(dn);
+            if (!wasHome && state.AtHome)
+            {
+                _ = InvokeAsync(() => Tts.SpeakAsync("At Home"));
+            }
+
+            var wasConnected = _lastConnectedState.GetValueOrDefault(dn);
+            if (!wasConnected && IsUiClientConnected(dn))
+            {
+                _ = InvokeAsync(() => Tts.SpeakAsync("Mount Connected"));
+            }
+
+            var wasTracking = _lastTrackingState.GetValueOrDefault(dn);
+            if (!wasTracking && state.Tracking)
+            {
+                _ = InvokeAsync(() => Tts.SpeakAsync("Tracking On"));
+            }
+            else if (wasTracking && !state.Tracking)
+            {
+                _ = InvokeAsync(() => Tts.SpeakAsync("Tracking Off"));
+            }
+
+            _lastAtParkState[dn] = state.AtPark;
+            _lastSlewingState[dn] = state.Slewing;
+            _lastHomeState[dn] = state.AtHome;
+            _lastConnectedState[dn] = IsUiClientConnected(dn);
+            _lastTrackingState[dn] = state.Tracking;
+
             var seen = _lastLimitWarningSequence.GetValueOrDefault(dn);
             if (state.LimitWarningSequence <= seen) continue;
 
@@ -456,6 +513,12 @@ else
         return string.IsNullOrWhiteSpace(device?.DeviceName)
             ? $"Device {deviceNumber}"
             : device.DeviceName;
+    }
+
+    private string GetTabClass(int deviceNumber)
+    {
+        var mountSettings = _deviceSettings.GetValueOrDefault(deviceNumber);
+        return mountSettings?.Mount == "Simulator" ? "gs-tab-simulator" : string.Empty;
     }
 
     private RenderFragment BoolIcon(bool value, Color trueColor) => __builder =>

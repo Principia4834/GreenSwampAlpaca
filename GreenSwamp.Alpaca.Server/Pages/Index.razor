@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using GreenSwamp.Alpaca.Settings.Models
+@inject GreenSwamp.Alpaca.Server.Services.BrowserTtsService Tts
 
 <PageTitle>Home – Green Swamp Alpaca Server</PageTitle>
 
@@ -12,7 +13,7 @@
             Welcome to <span>Green Swamp Alpaca</span> Server <small>(v@(ServerConfig.GetVersion()))</small>
         </h1>
 
-        <ul class="gs-home-bullets">
+            <ul class="gs-home-bullets">
             <li>ASCOM Alpaca-compliant mount driver server for SkyWatcher and compatible mounts</li>
             <li>Supports German Equatorial (GEM), Polar / Fork Equatorial and Alt-Az mounts</li>
             <li>Provides simulator for all mount types for testing and development</li>

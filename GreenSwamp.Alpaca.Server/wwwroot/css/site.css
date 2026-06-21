@@ -114,6 +114,11 @@ a:hover {
     text-transform: none;
 }
 
+/* --- MudTabs: simulator tab border (active only) ------------ */
+.gs-tab-simulator.mud-tab-active {
+    border: dotted;
+}
+
 /* --- Monospace / telemetry ---------------------------------- */
 .gs-monospace {
     font-family:    var(--gs-font-mono);

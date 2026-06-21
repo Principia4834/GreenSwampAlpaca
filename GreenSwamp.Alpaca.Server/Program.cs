@@ -2,6 +2,7 @@
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Middleware;
 using GreenSwamp.Alpaca.Server.Models;
+using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Extensions;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
@@ -222,6 +223,9 @@ namespace GreenSwamp.Alpaca.Server
             DeviceManager.LoadConfiguration(new AlpacaConfiguration(BootstrapConfig));
 
             #region Finish Building and Start server
+
+            // Add Text To Speech browser service
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserTtsService>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();
@@ -515,7 +519,6 @@ namespace GreenSwamp.Alpaca.Server
             // Minimise the console window
             ShowWindow(GetConsoleWindow(), SW_SHOWMINIMIZED);
 #endif
-
             //Start the Alpaca Server
             app.Run();
         }
