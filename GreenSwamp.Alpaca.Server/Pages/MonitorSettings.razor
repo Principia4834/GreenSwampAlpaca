@@ -207,9 +207,8 @@
 
 	private void ResetToDefaults()
 	{
-		_settings = new GreenSwamp.Alpaca.Settings.Models.MonitorSettings();
-		_isDirty = true;
-		Snackbar.Add("Settings reset to defaults (not saved yet)", MudBlazor.Severity.Warning);
+		LoadSettings();
+		Snackbar.Add("Settings reset to last saved state.", MudBlazor.Severity.Info);
 	}
 
 	private void ReloadSettings()
