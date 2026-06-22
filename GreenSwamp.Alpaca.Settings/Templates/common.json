@@ -186,6 +186,9 @@
                      "NumMoveAxis":  2,
                      "PolarLedLevel":  -1,
                      "PolarMode":  "Right",
-                     "TraceLogger":  false
+                     "TraceLogger":  false,
+                     "VoiceActive":  false,
+                     "VoiceName":  "",
+                     "VoiceVolume":  100
                  }
 }

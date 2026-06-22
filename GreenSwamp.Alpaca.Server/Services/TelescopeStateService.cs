@@ -94,7 +94,11 @@ namespace GreenSwamp.Alpaca.Server.Services
                     TimerOverruns = mount.TimerOverruns,
                     LastUpdate = DateTime.UtcNow,
                     ControllerVoltage = mount.ControllerVoltage,
-                    LowVoltageEvent = mount.LowVoltageEvent
+                    LowVoltageEvent = mount.LowVoltageEvent,
+                    EnableVoice = mount.EnableVoice,
+                    VoiceActive = mount.Settings.VoiceActive,
+                    VoiceName = mount.Settings.VoiceName,
+                    VoiceVolume = mount.Settings.VoiceVolume
                 };
             }
             catch (Exception)

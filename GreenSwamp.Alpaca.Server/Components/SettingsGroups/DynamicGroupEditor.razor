@@ -1,4 +1,4 @@
-@using GreenSwamp.Alpaca.Server.Models
+﻿@using GreenSwamp.Alpaca.Server.Models
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.Server.Components.SettingsGroups
 
@@ -71,6 +71,9 @@
                     break;
                 case "Limits":
                     <LimitsEditor Device="device" OnChanged="OnSettingChanged" />
+                    break;
+                case "Voice":
+                    <VoiceSettingsEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 default:
                     <MudAlert Severity="Severity.Warning">No editor defined for group "@Node.GroupKey".</MudAlert>

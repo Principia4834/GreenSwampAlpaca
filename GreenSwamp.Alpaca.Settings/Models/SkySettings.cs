@@ -316,6 +316,14 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public string PolarMode { get; set; } = null!;
 
+        // Voice Settings
+        [CommonSetting]
+        public string VoiceName { get; set; } = string.Empty;
+        [CommonSetting]
+        public int VoiceVolume { get; set; } = 100;
+        [CommonSetting]
+        public bool VoiceActive { get; set; } = false;
+
         public class ParkPosition
         {
             public string Name { get; set; } = string.Empty;

@@ -154,6 +154,7 @@ public partial class SettingsExplorer : IDisposable
         ["Axis / Slew Limits"]   = "Upper/lower axis limits and maximum slew rate.",
         ["Horizontal Axis Limit"]= "Horizontal axis tracking limit for AltAz mounts.",
         ["Alignment Mode"]       = "Mount alignment mode (AltAz, GermanPolar, Polar).",
+        ["Voice"]               = "Voice announcement settings — enable/disable, voice selection and volume.",
     };
 
     // ── Lifecycle ──────────────────────────────────────────────────────────
@@ -323,6 +324,7 @@ public partial class SettingsExplorer : IDisposable
                 DeviceLeaf(deviceNumber, "Tracking & Guiding",   Icons.Material.Filled.Speed,            "Tracking & Guiding"),
                 DeviceLeaf(deviceNumber, "Home and Park",        Icons.Material.Filled.Home,             "Home and Park"),
                 DeviceLeaf(deviceNumber, "Limits",               Icons.Material.Filled.Block,            "Limits"),
+                DeviceLeaf(deviceNumber, "Voice",                Icons.Material.Filled.RecordVoiceOver,  "Voice"),
             });
 
             if (IsGroupVisible("Performance & Tuning"))

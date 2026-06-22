@@ -152,6 +152,11 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _autoTrack = false;
         private int _raTrackingOffset = 0;
 
+        // Voice Settings (3 fields)
+        private string _voiceName = string.Empty;
+        private int _voiceVolume = 100;
+        private bool _voiceActive = false;
+
         // Capabilities (28 fields - read-only)
         private bool _canAlignMode = true;
         private bool _canAltAz = true;
@@ -1573,6 +1578,50 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
+        #region Batch 13: Voice Settings (3 properties)
+
+        public string VoiceName
+        {
+            get => _voiceName;
+            set
+            {
+                if (_voiceName != value)
+                {
+                    _voiceName = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int VoiceVolume
+        {
+            get => _voiceVolume;
+            set
+            {
+                var clamped = Math.Clamp(value, 0, 100);
+                if (_voiceVolume != clamped)
+                {
+                    _voiceVolume = clamped;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool VoiceActive
+        {
+            get => _voiceActive;
+            set
+            {
+                if (_voiceActive != value)
+                {
+                    _voiceActive = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #endregion
+
         #region JSON Persistence Methods
 
         /// <summary>
@@ -1722,6 +1771,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 _deviceDescription = settings.DeviceDescription ?? "GreenSwamp Alpaca Server";
                 _autoTrack = settings.AutoTrack;
                 _raTrackingOffset = settings.RATrackingOffset;
+
+                // Batch 13: Voice Settings
+                _voiceName = settings.VoiceName ?? string.Empty;
+                _voiceVolume = Math.Clamp(settings.VoiceVolume, 0, 100);
+                _voiceActive = settings.VoiceActive;
 
                 // Batch 12: Capabilities (read-only)
                 _canAlignMode = settings.CanAlignMode;
@@ -1912,6 +1966,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.DisableKeysOnGoTo = _disableKeysOnGoTo;
 
                 settings.Temperature = _temperature;
+
+                // Batch 13: Voice Settings
+                settings.VoiceName = _voiceName;
+                settings.VoiceVolume = _voiceVolume;
+                settings.VoiceActive = _voiceActive;
 
                 // Batch 12: Capabilities
                 settings.CanAlignMode = _canAlignMode;

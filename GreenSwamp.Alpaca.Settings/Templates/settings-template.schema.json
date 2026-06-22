@@ -410,6 +410,20 @@
           "type": "string",
           "pattern": "^-?\\d{2}:\\d{2}:\\d{2}$",
           "description": "UTC offset (e.g., 00:00:00, -05:00:00)"
+        },
+        "VoiceActive": {
+          "type": "boolean",
+          "description": "Enable voice announcements for mount state changes"
+        },
+        "VoiceName": {
+          "type": "string",
+          "description": "Name of the speech synthesis voice to use (empty = browser default)"
+        },
+        "VoiceVolume": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Voice announcement volume as a percentage (0–100)"
         }
       },
       "required": [ "Mount", "Port", "AlignmentMode" ],

@@ -220,10 +220,20 @@ else
                                        Disabled="@(!CanEmergencyStop(dn, s))"
                                        OnClick="@(() => OnStopAsync(dn))">Stop</MudButton>
                         </MudStack>
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="@(IsUiClientConnected(dn) ? Color.Error : Color.Success)"
-                                   Size="Size.Small"
-                                   OnClick="@(() => OnConnectToggleAsync(dn))">@(IsUiClientConnected(dn) ? "Disconnect" : "Connect")</MudButton>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudTooltip Text="@(s.VoiceActive ? "Voice announcements on" : "Voice announcements off")" Placement="Placement.Top" Arrow="true">
+                                <MudCheckBox T="bool"
+                                             Checked="@(s.VoiceActive)"
+                                             CheckedChanged="@(() => OnVoiceActiveToggleAsync(dn))"
+                                             Color="Color.Primary"
+                                             Size="Size.Small"
+                                             Label="Voice" />
+                            </MudTooltip>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="@(IsUiClientConnected(dn) ? Color.Error : Color.Success)"
+                                       Size="Size.Small"
+                                       OnClick="@(() => OnConnectToggleAsync(dn))">@(IsUiClientConnected(dn) ? "Disconnect" : "Connect")</MudButton>
+                        </MudStack>
                     </MudStack>
                 </MudItem>
 
@@ -294,39 +304,40 @@ else
         foreach (var dn in GetConfiguredDeviceNumbers())
         {
             var state = StateService.GetCurrentState(dn);
+            var voiceEnabled = state.EnableVoice && state.VoiceActive;
 
             var wasAtPark = _lastAtParkState.GetValueOrDefault(dn);
             if (!wasAtPark && state.AtPark)
             {
-                _ = InvokeAsync(() => Tts.SpeakAsync("Parked"));
+                if (voiceEnabled) _ = InvokeAsync(() => Tts.SpeakAsync("Parked", state.VoiceName, state.VoiceVolume));
             }
 
             var wasSlewing = _lastSlewingState.GetValueOrDefault(dn);
             if (!wasSlewing && state.Slewing)
             {
-                _ = InvokeAsync(() => Tts.SpeakAsync("Slewing"));
+                if (voiceEnabled) _ = InvokeAsync(() => Tts.SpeakAsync("Slewing", state.VoiceName, state.VoiceVolume));
             }
 
             var wasHome = _lastHomeState.GetValueOrDefault(dn);
             if (!wasHome && state.AtHome)
             {
-                _ = InvokeAsync(() => Tts.SpeakAsync("At Home"));
+                if (voiceEnabled) _ = InvokeAsync(() => Tts.SpeakAsync("At Home", state.VoiceName, state.VoiceVolume));
             }
 
             var wasConnected = _lastConnectedState.GetValueOrDefault(dn);
             if (!wasConnected && IsUiClientConnected(dn))
             {
-                _ = InvokeAsync(() => Tts.SpeakAsync("Mount Connected"));
+                if (voiceEnabled) _ = InvokeAsync(() => Tts.SpeakAsync("Mount Connected", state.VoiceName, state.VoiceVolume));
             }
 
             var wasTracking = _lastTrackingState.GetValueOrDefault(dn);
             if (!wasTracking && state.Tracking)
             {
-                _ = InvokeAsync(() => Tts.SpeakAsync("Tracking On"));
+                if (voiceEnabled) _ = InvokeAsync(() => Tts.SpeakAsync("Tracking On", state.VoiceName, state.VoiceVolume));
             }
             else if (wasTracking && !state.Tracking)
             {
-                _ = InvokeAsync(() => Tts.SpeakAsync("Tracking Off"));
+                if (voiceEnabled) _ = InvokeAsync(() => Tts.SpeakAsync("Tracking Off", state.VoiceName, state.VoiceVolume));
             }
 
             _lastAtParkState[dn] = state.AtPark;
@@ -490,6 +501,23 @@ else
         catch (Exception ex)
         {
             Snackbar.Add($"Limits toggle failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    /// <summary>
+    /// Toggles VoiceActive for the given device and immediately persists the change to JSON.
+    /// </summary>
+    private async Task OnVoiceActiveToggleAsync(int dn)
+    {
+        if (!_deviceSettings.TryGetValue(dn, out var settings)) return;
+        settings.VoiceActive = !settings.VoiceActive;
+        try
+        {
+            await SettingsService.SaveDeviceSettingsAsync(dn, settings);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to save voice setting: {ex.Message}", Severity.Error);
         }
     }
 

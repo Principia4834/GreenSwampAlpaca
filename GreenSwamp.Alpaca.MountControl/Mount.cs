@@ -226,6 +226,12 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool HasEverBeenConnected => _hasEverBeenConnected;
 
         /// <summary>
+        /// Programmatic gate: when false, no voice announcements are produced regardless of settings.
+        /// Set by mount state logic; not controlled directly by the user.
+        /// </summary>
+        public bool EnableVoice { get; set; } = true;
+
+        /// <summary>
         /// Returns true if the given client ID is currently in the connected-client set.
         /// Used by the UI to check whether the internal UI client (key 0) is connected.
         /// </summary>
