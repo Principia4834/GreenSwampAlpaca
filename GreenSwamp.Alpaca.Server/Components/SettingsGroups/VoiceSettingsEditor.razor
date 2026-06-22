@@ -1,0 +1,84 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Server.Services
+@inject BrowserTtsService Tts
+
+@* Voice settings: active toggle, voice selector (populated from Web Speech API), and volume slider. *@
+
+<MudStack Spacing="3">
+
+    <MudTooltip Inline="false" RootStyle="max-width:300px"
+                Text="Enable voice announcements for this device (e.g. Parked, Slewing, Tracking On)."
+                Placement="Placement.Right" Arrow="true">
+        <MudSwitch T="bool"
+                   @bind-Value="Device!.VoiceActive"
+                   @bind-Value:after="OnVoiceActiveChanged"
+                   Label="Enable Voice Announcements"
+                   Color="Color.Primary" />
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:300px"
+                Text="Select a voice. Leave blank to use the browser default. Click Refresh to load voices filtered by your browser language."
+                Placement="Placement.Right" Arrow="true">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudSelect T="string"
+                       @bind-Value="Device!.VoiceName"
+                       @bind-Value:after="NotifyChanged"
+                       Label="Voice"
+                       Clearable="true"
+                       Style="min-width:260px">
+                @foreach (var v in _voices)
+                {
+                    <MudSelectItem T="string" Value="@v.Name">@v.Name (@v.Lang)@(v.Default ? " ★" : "")</MudSelectItem>
+                }
+            </MudSelect>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                           Title="Refresh available voices (filtered by browser language)"
+                           OnClick="LoadVoicesAsync"
+                           Size="Size.Small" />
+        </MudStack>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:300px"
+                Text="Volume for voice announcements (0 = silent, 100 = full volume)."
+                Placement="Placement.Right" Arrow="true">
+        <MudNumericField T="int"
+                         @bind-Value="Device!.VoiceVolume"
+                         @bind-Value:after="NotifyChanged"
+                         Label="Volume (%)"
+                         Min="0" Max="100"
+                         Immediate="true" />
+    </MudTooltip>
+
+</MudStack>
+
+@code {
+    [Parameter] public SkySettings? Device { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private List<BrowserVoice> _voices = [];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LoadVoicesAsync();
+    }
+
+    private async Task LoadVoicesAsync()
+    {
+        var lang = await Tts.GetLanguageAsync();
+        _voices = await Tts.GetVoicesAsync(lang);
+        StateHasChanged();
+    }
+
+    private async Task OnVoiceActiveChanged()
+    {
+        if (Device is null) return;
+        // Populate voice list when the user enables voice for the first time.
+        if (Device.VoiceActive && _voices.Count == 0)
+            await LoadVoicesAsync();
+        await NotifyChanged();
+    }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}
