@@ -17,6 +17,7 @@
 using GreenSwamp.Alpaca.Settings.Services;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 
 namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
@@ -28,9 +29,11 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
     /// </summary>
     public static class EnvironmentHelper
     {
-        private const string LogPattern = "GreenSwampEnv*.log";
+        private const string LogPattern = "GreenSwampEnv-*.log";
+        private const string SettingsZipPattern = "Settings-*.zip";
         private const int KeepCount = 3;
         private const int TimeoutSeconds = 10;
+        private const int SettingsZipTimeoutSeconds = 15;
 
         /// <summary>
         /// Write the environment log to the standard log location asynchronously.
@@ -70,6 +73,44 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
         /// </summary>
         public static string GetLogDirectory() => SettingsPathResolver.GetLogsRoot();
 
+        /// <summary>
+        /// Zips all JSON files from the versioned AppData settings folder to the
+        /// standard log location. Up to three files are retained; older ones are pruned.
+        /// </summary>
+        /// <returns>
+        /// The path of the created zip file, or <c>null</c> if no JSON files were
+        /// found or the operation failed.
+        /// </returns>
+        public static async Task<string?> BackupSettingsToLogsAsync()
+        {
+            try
+            {
+                var version = SettingsPathResolver.GetAssemblyVersion();
+                var appDataPath = SettingsPathResolver.GetVersionedPath(version);
+                if (!Directory.Exists(appDataPath))
+                    return null;
+
+                var jsonFiles = Directory.GetFiles(appDataPath, "*.json", SearchOption.TopDirectoryOnly);
+                if (jsonFiles.Length == 0)
+                    return null;
+
+                var logsRoot = SettingsPathResolver.GetLogsRoot();
+                Directory.CreateDirectory(logsRoot);
+
+                var zipPath = Path.Combine(logsRoot, $"Settings-{DateTime.Now:yyyy-MM-dd_HHmmss}.zip");
+
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(SettingsZipTimeoutSeconds));
+                await Task.Run(() => CreateSettingsZip(zipPath, jsonFiles, cts.Token), cts.Token).ConfigureAwait(false);
+
+                EnvironmentLogger.CleanupOldLogs(logsRoot, SettingsZipPattern, KeepCount);
+                return zipPath;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         // ── Private ──────────────────────────────────────────────────────────
 
         private static void CleanupLogs(string logPath)
@@ -77,6 +118,21 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             var dir = Path.GetDirectoryName(logPath);
             if (!string.IsNullOrEmpty(dir))
                 EnvironmentLogger.CleanupOldLogs(dir, LogPattern, KeepCount);
+        }
+
+        private static void CreateSettingsZip(string zipPath, string[] jsonFiles, CancellationToken ct)
+        {
+            using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            using var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, leaveOpen: false);
+
+            foreach (var jsonFile in jsonFiles)
+            {
+                ct.ThrowIfCancellationRequested();
+                var entry = archive.CreateEntry(Path.GetFileName(jsonFile), CompressionLevel.Optimal);
+                using var entryStream = entry.Open();
+                using var source = new FileStream(jsonFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                source.CopyTo(entryStream);
+            }
         }
     }
 }

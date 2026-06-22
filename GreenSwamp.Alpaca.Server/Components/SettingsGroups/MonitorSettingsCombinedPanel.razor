@@ -133,42 +133,11 @@
 
             <MudDivider />
 
-            @* ── Presets & Quick Actions row ─────────────────────────────────── *@
-            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
-                <MudSelect T="string?" @bind-Value="_selectedPreset" @bind-Value:after="OnPresetChangedAsync"
-                           Label="Configuration Presets"
-                           AdornmentIcon="@Icons.Material.Filled.Layers" Adornment="Adornment.Start"
-                           Variant="Variant.Outlined" Margin="Margin.Dense"
-                           Style="min-width:240px">
-                    <MudSelectItem T="string?" Value="@("Development")">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Success" Size="Size.Small" />
-                            <span>Development</span>
-                        </MudStack>
-                    </MudSelectItem>
-                    <MudSelectItem T="string?" Value="@("Production")">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Primary" Size="Size.Small" />
-                            <span>Production</span>
-                        </MudStack>
-                    </MudSelectItem>
-                    <MudSelectItem T="string?" Value="@("Troubleshooting")">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.BugReport" Color="Color.Warning" Size="Size.Small" />
-                            <span>Troubleshooting</span>
-                        </MudStack>
-                    </MudSelectItem>
-                    <MudSelectItem T="string?" Value="@("ProfileDebug")">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Info" Size="Size.Small" />
-                            <span>Profile Debug</span>
-                        </MudStack>
-                    </MudSelectItem>
-                </MudSelect>
-
+            @* ---- Quick Actions row ------------------------------------ *@
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
                 <MudSelect T="string?" @bind-Value="_selectedQuickAction" @bind-Value:after="OnQuickActionChangedAsync"
-                           Label="Quick Actions"
-                           AdornmentIcon="@Icons.Material.Filled.Bolt" Adornment="Adornment.Start"
+                           Label="Quick Set Actions"
+                           AdornmentIcon="@Icons.Material.Filled.Bolt" Adornment="Adornment.End"
                            Variant="Variant.Outlined" Margin="Margin.Dense"
                            Style="min-width:220px">
                     <MudSelectItem T="string?" Value="@("SelectAllDevices")">All Devices</MudSelectItem>

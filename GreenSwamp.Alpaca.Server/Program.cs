@@ -304,6 +304,16 @@ namespace GreenSwamp.Alpaca.Server
                             Logger.LogInformation("Environment log written to: {Path}", t.Result ?? "(unknown)");
                     }, System.Threading.Tasks.TaskContinuationOptions.ExecuteSynchronously);
 
+                // Fire-and-forget settings backup — zips JSON files from AppData to the log directory at startup
+                GreenSwamp.Alpaca.Shared.EnvironmentLog.EnvironmentHelper.BackupSettingsToLogsAsync()
+                    .ContinueWith(t =>
+                    {
+                        if (t.Exception is not null)
+                            Logger.LogWarning(t.Exception, "Settings backup failed");
+                        else if (t.Result is not null)
+                            Logger.LogInformation("Settings backup written to: {Path}", t.Result);
+                    }, System.Threading.Tasks.TaskContinuationOptions.ExecuteSynchronously);
+
                 // Populate filter checklists (now that Settings properties have values)
                 GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
                 Logger.LogInformation("Monitor filters loaded");

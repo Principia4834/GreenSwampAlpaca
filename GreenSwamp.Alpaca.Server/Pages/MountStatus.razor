@@ -1,6 +1,7 @@
 ﻿@page "/mount-status"
 @page "/mount-status/{DeviceNumber:int}"
 @using GreenSwamp.Alpaca.Server.Components
+@using GreenSwamp.Alpaca.Server.Components.ButtonBar
 @using GreenSwamp.Alpaca.Server.Models
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.MountControl
@@ -174,51 +175,9 @@ else
 
                     <MudItem xs="12">
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <MudStack Row="true" Spacing="2">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                           Disabled="@(!IsUiClientConnected(dn) || s.AtPark || !(MountRegistry.GetInstance(dn)?.Settings.CanFindHome ?? false))"
-                                           OnClick="@(() => OnHomeAsync(dn))">Home</MudButton>
-                                <MudButtonGroup Variant="Variant.Outlined"
-                                                Color="@(s.AtPark ? Color.Warning : Color.Primary)"
-                                                Size="Size.Small"
-                                                DropShadow="false">
-                                    <MudButton Disabled="@(!IsUiClientConnected(dn) || (s.AtPark ? !(MountRegistry.GetInstance(dn)?.Settings.CanUnPark ?? false) : !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false)))"
-                                               OnClick="@(() => OnParkToggleAsync(dn))">
-                                        @if (s.AtPark)
-                                        {
-                                            @(string.IsNullOrEmpty(s.ParkSelectedName) ? "UNPARK" : $"UNPARK: {s.ParkSelectedName}")
-                                        }
-                                        else
-                                        {
-                                            @(string.IsNullOrEmpty(s.ParkSelectedName) ? "PARK" : $"PARK: {s.ParkSelectedName}")
-                                        }
-                                    </MudButton>
-                                    <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
-                                             Style="align-self: auto;"
-                                             Disabled="@(s.AtPark || !IsUiClientConnected(dn) || !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false))">
-                                        @if (s.ParkPositionNames?.Count > 0)
-                                        {
-                                            @foreach (var posName in s.ParkPositionNames)
-                                            {
-                                                <MudMenuItem OnClick="@(() => OnParkPositionSelected(dn, posName))">@posName</MudMenuItem>
-                                            }
-                                        }
-                                    </MudMenu>
-                                </MudButtonGroup>
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="@(s.Tracking ? Color.Success : Color.Default)"
-                                           Size="Size.Small"
-                                           Disabled="@(!IsUiClientConnected(dn))"
-                                           OnClick="@(() => OnTrackingToggleAsync(dn))">@(s.Tracking ? "Tracking Off" : "Tracking On")</MudButton>
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="@(s.LimitsOn ? Color.Success : Color.Default)"
-                                           Size="Size.Small"
-                                           Disabled="@(!IsUiClientConnected(dn))"
-                                           OnClick="@(() => OnLimitsToggleAsync(dn))">@(s.LimitsOn ? "Limits Off" : "Limits On")</MudButton>
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                           Disabled="@(!CanEmergencyStop(dn, s))"
-                                           OnClick="@(() => OnStopAsync(dn))">Stop</MudButton>
-                            </MudStack>
+                            <MountButtonBar State="@s"
+                                            DeviceNumber="@dn"
+                                            IsConnected="@IsUiClientConnected(dn)" />
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                 <MudTooltip Text="@(_deviceSettings.GetValueOrDefault(dn)?.VoiceActive == true ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
                                         <MudCheckBox T="bool"
@@ -382,11 +341,6 @@ else
     private bool IsUiClientConnected(int dn) =>
         MountRegistry.GetInstance(dn)?.IsClientConnected(UiClientId) ?? false;
 
-    /// <summary>Returns true when the Stop button should be enabled: any client has connected
-    /// at least once this session, or the UI client is currently connected.</summary>
-    private bool CanEmergencyStop(int dn, TelescopeStateModel s) =>
-        s.HasEverBeenConnected || IsUiClientConnected(dn);
-
     private async Task OnConnectToggleAsync(int dn)
     {
         try
@@ -398,112 +352,6 @@ else
         catch (Exception ex)
         {
             Snackbar.Add($"Connect/Disconnect failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task OnHomeAsync(int dn)
-    {
-        try
-        {
-            var telescope = DeviceManager.GetTelescope((uint)dn);
-            await Task.Run(() => telescope.FindHome());
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Home failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task OnStopAsync(int dn)
-    {
-        try
-        {
-            var mount = MountRegistry.GetInstance(dn);
-            if (mount == null)
-            {
-                Snackbar.Add($"Mount device {dn} not found", Severity.Error);
-                return;
-            }
-            await Task.Run(() => mount.EmergencyStopAll());
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Stop failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task OnParkToggleAsync(int dn)
-    {
-        try
-        {
-            var telescope = DeviceManager.GetTelescope((uint)dn);
-            if (telescope.AtPark)
-                await Task.Run(() => telescope.Unpark());
-            else
-                await Task.Run(() => telescope.Park());
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Park/Unpark failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private void OnParkPositionSelected(int dn, string positionName)
-    {
-        try
-        {
-            var mount = MountRegistry.GetInstance(dn);
-            if (mount == null)
-            {
-                Snackbar.Add($"Mount device {dn} not found", Severity.Error);
-                return;
-            }
-
-            var position = mount.Settings.ParkPositions?.Find(p => p.Name == positionName);
-            if (position == null)
-            {
-                Snackbar.Add($"Park position '{positionName}' not found", Severity.Warning);
-                return;
-            }
-
-            mount.ParkSelected = position;
-            Snackbar.Add($"Park position set to: {positionName}", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Failed to set park position: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task OnTrackingToggleAsync(int dn)
-    {
-        try
-        {
-            var telescope = DeviceManager.GetTelescope((uint)dn);
-            await Task.Run(() => telescope.Tracking = !telescope.Tracking);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Tracking toggle failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task OnLimitsToggleAsync(int dn)
-    {
-        try
-        {
-            var mount = MountRegistry.GetInstance(dn);
-            if (mount == null)
-            {
-                Snackbar.Add($"Mount device {dn} not found", Severity.Error);
-                return;
-            }
-
-            await Task.Run(() => mount.LimitsOn = !mount.LimitsOn);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Limits toggle failed: {ex.Message}", Severity.Error);
         }
     }
 

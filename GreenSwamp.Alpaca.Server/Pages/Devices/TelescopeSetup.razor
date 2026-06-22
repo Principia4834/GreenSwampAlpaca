@@ -109,7 +109,7 @@
                 </MudCard>
             </MudItem>
 
-            @* ── Tracking Settings ────────────────────────────────────── *@
+            @* -- Tracking Settings ----------------------------------------- *@
             <MudItem xs="12" md="6">
                 <MudCard>
                     <MudCardHeader Style="padding:8px 16px 2px 16px; margin-bottom:6px;">
@@ -126,7 +126,7 @@
                                         <tr>
                                             <th>Auto Track on Unpark</th>
                                             <td>
-                                                @if (settings.AutoTrack)
+                                                @if (settings.TrackAfterUnpark)
                                                 {
                                                     <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" />
                                                 }

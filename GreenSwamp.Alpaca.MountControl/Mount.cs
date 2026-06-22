@@ -756,6 +756,13 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        /// <summary>Gets or sets whether the next GoTo will flip the pier side (GEM only).</summary>
+        public bool FlipOnNextGoto
+        {
+            get => _flipOnNextGoto;
+            set => _flipOnNextGoto = value;
+        }
+
         /// <summary>Set SideOfPier (triggers pier flip).</summary>
         public void SetSideOfPier(PointingState value)
         {

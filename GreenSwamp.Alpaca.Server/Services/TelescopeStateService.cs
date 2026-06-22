@@ -98,7 +98,13 @@ namespace GreenSwamp.Alpaca.Server.Services
                     EnableVoice = mount.EnableVoice,
                     VoiceActive = mount.Settings.VoiceActive,
                     VoiceName = mount.Settings.VoiceName,
-                    VoiceVolume = mount.Settings.VoiceVolume
+                    VoiceVolume = mount.Settings.VoiceVolume,
+                    IsAutoHomeRunning = mount.IsAutoHomeRunning,
+                    AutoHomeProgressBar = mount.AutoHomeProgressBar,
+                    IsGermanPolarMode = mount.Settings.AlignmentMode == ASCOM.Common.DeviceInterfaces.AlignmentMode.GermanPolar,
+                    FlipOnNextGoto = mount.FlipOnNextGoto,
+                    AutoHomeAxisX = mount.Settings.AutoHomeAxisX,
+                    AutoHomeAxisY = mount.Settings.AutoHomeAxisY
                 };
             }
             catch (Exception)

@@ -86,6 +86,9 @@ namespace GreenSwamp.Alpaca.Server.Models
         // Timestamp
         public DateTime LastUpdate { get; set; }
 
+        // Pier flip
+        public bool FlipOnNextGoto { get; set; }
+
         // SkyWatcher-specific
         public double ControllerVoltage { get; set; }
         public bool LowVoltageEvent { get; set; }
@@ -95,6 +98,13 @@ namespace GreenSwamp.Alpaca.Server.Models
         public bool VoiceActive { get; set; }
         public string VoiceName { get; set; } = string.Empty;
         public int VoiceVolume { get; set; }
+
+        // AutoHome
+        public bool IsAutoHomeRunning { get; set; }
+        public int AutoHomeProgressBar { get; set; }
+        public bool IsGermanPolarMode { get; set; }
+        public double AutoHomeAxisX { get; set; }
+        public double AutoHomeAxisY { get; set; }
         
         /// <summary>
         /// Constructor initializes with default/invalid values
@@ -135,12 +145,18 @@ namespace GreenSwamp.Alpaca.Server.Models
             LoopCounter = 0;
             TimerOverruns = 0;
             LastUpdate = DateTime.UtcNow;
+            FlipOnNextGoto = false;
             ControllerVoltage = double.NaN;
             LowVoltageEvent = false;
             EnableVoice = true;
             VoiceActive = false;
             VoiceName = string.Empty;
             VoiceVolume = 100;
+            IsAutoHomeRunning = false;
+            AutoHomeProgressBar = 0;
+            IsGermanPolarMode = false;
+            AutoHomeAxisX = 90.0;
+            AutoHomeAxisY = 90.0;
         }
     }
 }

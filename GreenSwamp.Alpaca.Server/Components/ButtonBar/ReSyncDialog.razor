@@ -1,0 +1,56 @@
+﻿@using GreenSwamp.Alpaca.MountControl
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Sync" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">ReSync Axes</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2">
+            <MudText Typo="Typo.body2">
+                Reset the axis position counters to a reference point without moving the mount.
+            </MudText>
+            <MudRadioGroup T="ReSyncMode" @bind-Value="_mode">
+                <MudRadio T="ReSyncMode" Value="ReSyncMode.Home" Color="Color.Primary">Sync to Home position</MudRadio>
+                <MudRadio T="ReSyncMode" Value="ReSyncMode.Park" Color="Color.Primary"
+                          Disabled="@(!ParkPositionNames.Any())">Sync to Park position</MudRadio>
+            </MudRadioGroup>
+            @if (_mode == ReSyncMode.Park)
+            {
+                <MudSelect T="string" Label="Park position" @bind-Value="_selectedParkName"
+                           Variant="Variant.Outlined" Dense="true">
+                    @foreach (var name in ParkPositionNames)
+                    {
+                        <MudSelectItem T="string" Value="@name">@name</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   Disabled="@(_mode == ReSyncMode.Park && string.IsNullOrEmpty(_selectedParkName))"
+                   OnClick="Accept">ReSync</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public List<string> ParkPositionNames { get; set; } = [];
+
+    private ReSyncMode _mode = ReSyncMode.Home;
+    private string? _selectedParkName;
+
+    private void Accept() =>
+        MudDialog.Close(DialogResult.Ok(new ReSyncRequest(_mode, _selectedParkName)));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public enum ReSyncMode { Home, Park }
+
+    public record ReSyncRequest(ReSyncMode Mode, string? ParkPositionName);
+}

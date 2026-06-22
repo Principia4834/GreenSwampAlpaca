@@ -280,6 +280,10 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        /// <summary>Public wrapper — resets axes to home or a named park position.</summary>
+        public void ReSync(ParkPosition? parkPosition = null, bool saveParkPosition = true)
+            => ReSyncAxes(parkPosition, saveParkPosition);
+
         /// <summary>Reset axes positions — instance version.</summary>
         private void ReSyncAxes(ParkPosition? parkPosition = null, bool saveParkPosition = true)
         {

@@ -123,7 +123,6 @@ public partial class SettingsExplorer : IDisposable
         ["Authentication"]    = "HTTP Basic authentication settings (username only — use Server Settings to change the password).",
 
         // Monitor groups
-        ["Configuration Presets"] = "Apply preset configurations for different logging scenarios (Development, Production, Troubleshooting, Profile Debug).",
         ["Device Filters"]       = "Enable or disable log entries by device type (server, telescope, UI).",
         ["Category Filters"]     = "Enable or disable log entries by category (driver, interface, mount, etc.).",
         ["Message Type Filters"] = "Enable or disable log entries by message type (info, warning, error, debug).",

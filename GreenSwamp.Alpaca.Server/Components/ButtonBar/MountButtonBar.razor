@@ -1,0 +1,359 @@
+﻿@using ASCOM.Alpaca
+@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Server.Components
+@using GreenSwamp.Alpaca.Server.Components.ButtonBar
+@using GreenSwamp.Alpaca.Server.Models
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+
+    @* ── Park / Unpark ─────────────────────────────────────────────── *@
+    <MudButtonGroup Variant="Variant.Outlined"
+                    Color="@(State.AtPark ? Color.Warning : Color.Primary)"
+                    Size="Size.Small"
+                    DropShadow="false">
+        <MudTooltip Text="@(State.AtPark ? "Unpark the mount" : "Park the mount at the selected position")"
+                    Placement="Placement.Top" Arrow="true">
+            <MudButton Disabled="@(!IsConnected || (State.AtPark
+                            ? !(Mount?.Settings.CanUnPark ?? false)
+                            :  !(Mount?.Settings.CanPark ?? false)))"
+                       OnClick="OnParkClickAsync">
+                @if (State.AtPark)
+                {
+                    @(string.IsNullOrEmpty(State.ParkSelectedName) ? "Unpark" : $"Unpark: {State.ParkSelectedName}")
+                }
+                else
+                {
+                    @(string.IsNullOrEmpty(State.ParkSelectedName) ? "Park" : $"Park: {State.ParkSelectedName}")
+                }
+            </MudButton>
+        </MudTooltip>
+        <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
+            <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
+                     Style="align-self: auto;"
+                     Disabled="@(State.AtPark || !IsConnected || !(Mount?.Settings.CanPark ?? false))">
+                @if (State.ParkPositionNames.Count > 0)
+                {
+                    @foreach (var posName in State.ParkPositionNames)
+                    {
+                        <MudMenuItem OnClick="@(() => OnParkPositionSelected(posName))">@posName</MudMenuItem>
+                    }
+                }
+                else
+                {
+                    <MudMenuItem Disabled="true">No positions configured</MudMenuItem>
+                }
+            </MudMenu>
+        </MudTooltip>
+    </MudButtonGroup>
+
+    @* ── Home ──────────────────────────────────────────────────────── *@
+    <MudTooltip Text="Slew to the home position" Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                   Disabled="@(!IsConnected || State.AtPark || !(Mount?.Settings.CanFindHome ?? false))"
+                   OnClick="OnHomeClickAsync">
+            Home
+        </MudButton>
+    </MudTooltip>
+
+    @* ── Tracking ──────────────────────────────────────────────────── *@
+    <MudTooltip Text="@(State.Tracking ? "Turn tracking off" : "Turn tracking on")"
+                Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined"
+                   Color="@(State.Tracking ? Color.Success : Color.Default)"
+                   Size="Size.Small"
+                   Disabled="@(!IsConnected)"
+                   OnClick="OnTrackingClickAsync">
+            @(State.Tracking ? "Tracking Off" : "Tracking On")
+        </MudButton>
+    </MudTooltip>
+
+    @* ── ReSync ────────────────────────────────────────────────────── *@
+    <MudTooltip Text="Reset axis counters to a reference position" Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                   Disabled="@(!IsConnected || State.Slewing)"
+                   OnClick="OnReSyncClickAsync">
+            ReSync
+        </MudButton>
+    </MudTooltip>
+
+    @* ── Flip SOP (GEM only) ───────────────────────────────────────── *@
+    @if (State.IsGermanPolarMode)
+    {
+        <MudTooltip Text="Flip the telescope to the opposite pier side" Placement="Placement.Top" Arrow="true">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                       Disabled="@(!IsConnected || State.Slewing)"
+                       OnClick="OnFlipSopClickAsync">
+                Flip SOP
+            </MudButton>
+        </MudTooltip>
+    }
+
+    @* ── AutoHome ──────────────────────────────────────────────────── *@
+    <MudTooltip Text="Search for home sensor and re-index axes" Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined"
+                   Color="@(State.IsAutoHomeRunning ? Color.Warning : Color.Primary)"
+                   Size="Size.Small"
+                   Disabled="@(!IsConnected || State.AtPark)"
+                   OnClick="OnAutoHomeClickAsync">
+            @(State.IsAutoHomeRunning ? "AutoHome…" : "AutoHome")
+        </MudButton>
+    </MudTooltip>
+
+    @* ── Limits ────────────────────────────────────────────────────── *@
+    <MudTooltip Text="@(State.LimitsOn ? "Disable hour angle limits" : "Enable hour angle limits")"
+                Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined"
+                   Color="@(State.LimitsOn ? Color.Success : Color.Default)"
+                   Size="Size.Small"
+                   Disabled="@(!IsConnected)"
+                   OnClick="OnLimitsClickAsync">
+            @(State.LimitsOn ? "Limits Off" : "Limits On")
+        </MudButton>
+    </MudTooltip>
+
+    @* ── Stop ──────────────────────────────────────────────────────── *@
+    <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                   Disabled="@(!State.HasEverBeenConnected && !IsConnected)"
+                   OnClick="OnStopClickAsync">
+            Stop
+        </MudButton>
+    </MudTooltip>
+
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public TelescopeStateModel State { get; set; } = new();
+    [Parameter, EditorRequired] public int DeviceNumber { get; set; }
+
+    /// <summary>True when the UI's internal client is registered as connected.</summary>
+    [Parameter] public bool IsConnected { get; set; }
+
+    private Mount? Mount => MountRegistry.GetInstance(DeviceNumber);
+
+    private static readonly DialogOptions _confirmOptions = new()
+    {
+        MaxWidth = MaxWidth.ExtraSmall,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
+
+    private static readonly DialogOptions _configOptions = new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
+
+    // ── Park ──────────────────────────────────────────────────────────────
+
+    private async Task OnParkClickAsync()
+    {
+        if (State.AtPark)
+        {
+            var confirmed = await ConfirmAsync("Unpark the mount?", "Unpark");
+            if (!confirmed) return;
+            await ExecuteAsync(
+                () => DeviceManager.GetTelescope((uint)DeviceNumber).Unpark(),
+                "Unpark failed");
+        }
+        else
+        {
+            var confirmed = await ConfirmAsync(
+                string.IsNullOrEmpty(State.ParkSelectedName)
+                    ? "Park the mount?"
+                    : $"Park the mount at '{State.ParkSelectedName}'?",
+                "Park");
+            if (!confirmed) return;
+            await ExecuteAsync(
+                () => DeviceManager.GetTelescope((uint)DeviceNumber).Park(),
+                "Park failed");
+        }
+    }
+
+    private void OnParkPositionSelected(string positionName)
+    {
+        var mount = Mount;
+        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+
+        var position = mount.Settings.ParkPositions?.Find(p => p.Name == positionName);
+        if (position == null) { Snackbar.Add($"Park position '{positionName}' not found", Severity.Warning); return; }
+
+        mount.ParkSelected = position;
+        Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
+    }
+
+    // ── Home ──────────────────────────────────────────────────────────────
+
+    private async Task OnHomeClickAsync()
+    {
+        var confirmed = await ConfirmAsync("Slew to the home position?", "Go to Home");
+        if (!confirmed) return;
+        await ExecuteAsync(
+            () => DeviceManager.GetTelescope((uint)DeviceNumber).FindHome(),
+            "Home failed");
+    }
+
+    // ── Tracking ──────────────────────────────────────────────────────────
+
+    private async Task OnTrackingClickAsync()
+    {
+        var action = State.Tracking ? "off" : "on";
+        var confirmed = await ConfirmAsync($"Turn tracking {action}?", State.Tracking ? "Tracking Off" : "Tracking On");
+        if (!confirmed) return;
+        await ExecuteAsync(() =>
+        {
+            var telescope = DeviceManager.GetTelescope((uint)DeviceNumber);
+            telescope.Tracking = !telescope.Tracking;
+        }, "Tracking toggle failed");
+    }
+
+    // ── ReSync ────────────────────────────────────────────────────────────
+
+    private async Task OnReSyncClickAsync()
+    {
+        var parameters = new DialogParameters<ReSyncDialog>
+        {
+            { x => x.ParkPositionNames, State.ParkPositionNames }
+        };
+
+        var dialog = await DialogService.ShowAsync<ReSyncDialog>("ReSync Axes", parameters, _configOptions);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled) return;
+
+        if (result.Data is not ReSyncDialog.ReSyncRequest request) return;
+
+        var mount = Mount;
+        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+
+        await ExecuteAsync(() =>
+        {
+            if (request.Mode == ReSyncDialog.ReSyncMode.Home)
+            {
+                mount.ReSync();
+            }
+            else
+            {
+                var position = mount.Settings.ParkPositions?.Find(p => p.Name == request.ParkPositionName);
+                mount.ReSync(position);
+            }
+        }, "ReSync failed");
+    }
+
+    // ── Flip SOP ──────────────────────────────────────────────────────────
+
+    private async Task OnFlipSopClickAsync()
+    {
+        var parameters = new DialogParameters<FlipSopDialog>
+        {
+            { x => x.FlipOnNextGoto, State.FlipOnNextGoto }
+        };
+
+        var dialog = await DialogService.ShowAsync<FlipSopDialog>("Flip Side of Pier", parameters, _configOptions);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled) return;
+
+        if (result.Data is not FlipSopDialog.FlipSopResult flipResult) return;
+
+        var mount = Mount;
+        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+
+        mount.FlipOnNextGoto = flipResult.FlipOnNextGoto;
+
+        if (flipResult.DoFlip)
+        {
+            var oppositeSide = State.SideOfPier == ASCOM.Common.DeviceInterfaces.PointingState.Normal
+                ? ASCOM.Common.DeviceInterfaces.PointingState.ThroughThePole
+                : ASCOM.Common.DeviceInterfaces.PointingState.Normal;
+
+            await ExecuteAsync(() => mount.SetSideOfPier(oppositeSide), "Flip SOP failed");
+        }
+    }
+
+    // ── AutoHome ──────────────────────────────────────────────────────────
+
+    private async Task OnAutoHomeClickAsync()
+    {
+        var mount = Mount;
+        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+
+        var parameters = new DialogParameters<AutoHomeDialog>
+        {
+            { x => x.IsGermanPolarMode,    State.IsGermanPolarMode },
+            { x => x.IsAutoHomeRunning,    State.IsAutoHomeRunning },
+            { x => x.AutoHomeProgress,     State.AutoHomeProgressBar },
+            { x => x.InitialAxisX,         State.AutoHomeAxisX },
+            { x => x.InitialAxisY,         State.AutoHomeAxisY }
+        };
+
+        var dialog = await DialogService.ShowAsync<AutoHomeDialog>("AutoHome", parameters, _configOptions);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled) return;
+
+        if (result.Data is not AutoHomeDialog.AutoHomeRequest req) return;
+
+        // Persist sensor position settings before starting
+        mount.Settings.AutoHomeAxisX = req.AxisX;
+        mount.Settings.AutoHomeAxisY = req.AxisY;
+
+        await ExecuteAsync(
+            () => mount.AutoHomeAsync(req.DegreeLimit, req.DecOffset),
+            "AutoHome failed");
+    }
+
+    // ── Limits ────────────────────────────────────────────────────────────
+
+    private async Task OnLimitsClickAsync()
+    {
+        var action = State.LimitsOn ? "disable" : "enable";
+        var confirmed = await ConfirmAsync($"Are you sure you want to {action} hour angle limits?",
+            State.LimitsOn ? "Disable Limits" : "Enable Limits");
+        if (!confirmed) return;
+
+        var mount = Mount;
+        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+
+        await ExecuteAsync(() => mount.LimitsOn = !mount.LimitsOn, "Limits toggle failed");
+    }
+
+    // ── Stop ──────────────────────────────────────────────────────────────
+
+    private async Task OnStopClickAsync()
+    {
+        var confirmed = await ConfirmAsync("Emergency stop all axis motion?", "Stop");
+        if (!confirmed) return;
+
+        var mount = Mount;
+        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+
+        await ExecuteAsync(() => mount.EmergencyStopAll(), "Stop failed");
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    private async Task<bool> ConfirmAsync(string message, string confirmText)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.ContentText, message },
+            { x => x.ConfirmText, confirmText }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(string.Empty, parameters, _confirmOptions);
+        var result = await dialog.Result;
+        return result is { Canceled: false };
+    }
+
+    private async Task ExecuteAsync(Action action, string errorPrefix)
+    {
+        try
+        {
+            await Task.Run(action);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{errorPrefix}: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -6,6 +6,10 @@
 
     <MudExpansionPanel Text="Tracking" Icon="@Icons.Material.Filled.Speed" Expanded="false">
         <MudStack Spacing="3">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Start tracking automatically when the mount unparks." Placement="Placement.Right" Arrow="true">
+                <MudCheckBox @bind-Value="Device!.TrackAfterUnpark" @bind-Value:after="NotifyChanged"
+                             Label="Track After Unpark" Color="Color.Primary" />
+            </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Default tracking rate (Sidereal, Lunar, Solar, King)." Placement="Placement.Right" Arrow="true">
                 <MudSelect T="string" @bind-Value="Device!.TrackingRate" @bind-Value:after="NotifyChanged"
                            Label="Tracking Rate">
@@ -68,13 +72,13 @@
                 <MudNumericField T="int" @bind-Value="Device!.St4Guiderate" @bind-Value:after="NotifyChanged"
                                  Label="ST4 Guide Rate" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA guide rate offset relative to sidereal." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="double" @bind-Value="Device!.GuideRateOffsetX" @bind-Value:after="NotifyChanged"
-                                 Label="Guide Rate Offset X" Format="F4" Immediate="true" />
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA guide rate as a percentage of sidereal (0–100, step 10)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="_raGuideRatePercent" @bind-Value:after="OnRaGuideRateChanged"
+                                 Label="RA Guiding Rate %" Min="0" Max="100" Step="10" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Dec guide rate offset." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="double" @bind-Value="Device!.GuideRateOffsetY" @bind-Value:after="NotifyChanged"
-                                 Label="Guide Rate Offset Y" Format="F4" Immediate="true" />
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Dec guide rate as a percentage of sidereal (0–100, step 10)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="int" @bind-Value="_decGuideRatePercent" @bind-Value:after="OnDecGuideRateChanged"
+                                 Label="Dec Guiding Rate %" Min="0" Max="100" Step="10" Immediate="true" />
             </MudTooltip>
         </MudStack>
     </MudExpansionPanel>
@@ -88,10 +92,14 @@
 
     private bool _initialized;
     private bool _parametersChanging;
+    private int _raGuideRatePercent;
+    private int _decGuideRatePercent;
 
     protected override void OnParametersSet()
     {
         _parametersChanging = true;
+        _raGuideRatePercent = (int)Math.Round((Device?.GuideRateOffsetX ?? 0.0) * 100);
+        _decGuideRatePercent = (int)Math.Round((Device?.GuideRateOffsetY ?? 0.0) * 100);
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -106,5 +114,17 @@
     {
         if (!_initialized || _parametersChanging) return;
         await OnChanged.InvokeAsync();
+    }
+
+    private async Task OnRaGuideRateChanged()
+    {
+        Device!.GuideRateOffsetX = _raGuideRatePercent / 100.0;
+        await NotifyChanged();
+    }
+
+    private async Task OnDecGuideRateChanged()
+    {
+        Device!.GuideRateOffsetY = _decGuideRatePercent / 100.0;
+        await NotifyChanged();
     }
 }

@@ -1,0 +1,130 @@
+﻿@using GreenSwamp.Alpaca.MountControl
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.HomeWork" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">AutoHome</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2">
+
+            @if (IsAutoHomeRunning)
+            {
+                <MudProgressLinear Value="@AutoHomeProgress" Color="Color.Secondary"
+                                   Rounded="true" Size="Size.Medium" Class="mb-2" />
+                <MudText Typo="Typo.body2" Align="Align.Center">Searching for home sensor…</MudText>
+            }
+            else
+            {
+                <MudProgressLinear Value="0" Color="Color.Secondary"
+                                   Rounded="true" Size="Size.Medium" Class="mb-2" />
+            }
+
+            <MudSelect T="int" Label="Degree limit" @bind-Value="_degreeLimit"
+                       Variant="Variant.Outlined" Dense="true"
+                       Disabled="@IsAutoHomeRunning"
+                       HelperText="Maximum degrees to travel when searching for the home sensor">
+                @foreach (var limit in _autoHomeLimits)
+                {
+                    <MudSelectItem T="int" Value="@limit">@limit°</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (IsGermanPolarMode)
+            {
+                <MudSelect T="int" Label="Dec offset" @bind-Value="_decOffset"
+                           Variant="Variant.Outlined" Dense="true"
+                           Disabled="@IsAutoHomeRunning"
+                           HelperText="Dec axis offset applied after home is found">
+                    @foreach (var offset in _decOffsets)
+                    {
+                        <MudSelectItem T="int" Value="@offset">@offset°</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudDivider />
+                <MudText Typo="Typo.subtitle2">Sensor positions (GEM)</MudText>
+
+                <MudSelect T="double" Label="RA sensor position" @bind-Value="_axisX"
+                           Variant="Variant.Outlined" Dense="true"
+                           Disabled="@IsAutoHomeRunning"
+                           ToStringFunc="@(v => v.ToString("F1") + "°")"
+                           HelperText="Expected RA axis position at home sensor">
+                    @foreach (var val in _axisValues)
+                    {
+                        <MudSelectItem T="double" Value="@val">@val.ToString("F1")°</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="double" Label="Dec sensor position" @bind-Value="_axisY"
+                           Variant="Variant.Outlined" Dense="true"
+                           Disabled="@IsAutoHomeRunning"
+                           ToStringFunc="@(v => v.ToString("F1") + "°")"
+                           HelperText="Expected Dec axis position at home sensor">
+                    @foreach (var val in _axisValues)
+                    {
+                        <MudSelectItem T="double" Value="@val">@val.ToString("F1")°</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudButton Variant="Variant.Text" Color="Color.Secondary"
+                           Disabled="@IsAutoHomeRunning"
+                           OnClick="ResetSensorPositions">
+                    Reset sensor positions to 90°
+                </MudButton>
+            }
+
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   Disabled="@IsAutoHomeRunning"
+                   OnClick="Start">
+            Start
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public bool IsGermanPolarMode { get; set; }
+    [Parameter] public bool IsAutoHomeRunning { get; set; }
+    [Parameter] public int AutoHomeProgress { get; set; }
+    [Parameter] public double InitialAxisX { get; set; } = 90.0;
+    [Parameter] public double InitialAxisY { get; set; } = 90.0;
+
+    private int _degreeLimit = 100;
+    private int _decOffset = 0;
+    private double _axisX;
+    private double _axisY;
+
+    // Option lists matching the WPF reference: Range(20,160) = 20..179
+    private static readonly List<int> _autoHomeLimits = Enumerable.Range(20, 160).ToList();
+    private static readonly List<int> _decOffsets = [0, -90, 90];
+    // 85.0..95.0 inclusive at 0.1 step
+    private static readonly List<double> _axisValues =
+        Enumerable.Range(0, 101).Select(i => Math.Round(85.0 + i * 0.1, 1)).ToList();
+
+    protected override void OnParametersSet()
+    {
+        _axisX = _axisValues.Contains(InitialAxisX) ? InitialAxisX : 90.0;
+        _axisY = _axisValues.Contains(InitialAxisY) ? InitialAxisY : 90.0;
+    }
+
+    private void ResetSensorPositions()
+    {
+        _axisX = 90.0;
+        _axisY = 90.0;
+    }
+
+    private void Start() =>
+        MudDialog.Close(DialogResult.Ok(new AutoHomeRequest(_degreeLimit, _decOffset, _axisX, _axisY)));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public record AutoHomeRequest(int DegreeLimit, int DecOffset, double AxisX, double AxisY);
+}
