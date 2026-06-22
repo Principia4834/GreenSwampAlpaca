@@ -18,12 +18,11 @@
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h5">Mount Status</MudText>
-    <MudButton 
-        Color="Color.Default" 
-        Variant="Variant.Outlined" 
-        Size="Size.Small"
-        StartIcon="@Icons.Material.Filled.Download"
-        OnClick="OpenExportDialog">
+    <MudButton Color="Color.Default"
+               Variant="Variant.Outlined"
+               Size="Size.Small"
+               StartIcon="@Icons.Material.Filled.Download"
+               OnClick="OpenExportDialog">
         Export Settings & Logs
     </MudButton>
 </MudStack>
@@ -34,228 +33,228 @@
 }
 else
 {
-<MudTabs Rounded="true" Elevation="1" @bind-ActivePanelIndex="ActiveTabIndex" Class="mb-4 gs-tabs-no-transform">
-    @foreach (var dn in GetConfiguredDeviceNumbers())
-    {
-        <MudTabPanel Text="@TabLabel(dn)" Class="@GetTabClass(dn)">
-            @{
-                var s = StateService.GetCurrentState(dn);
-                var mountSettings = _deviceSettings.GetValueOrDefault(dn);
-            }
+    <MudTabs Rounded="true" Elevation="1" @bind-ActivePanelIndex="ActiveTabIndex" Class="mb-4 gs-tabs-no-transform">
+        @foreach (var dn in GetConfiguredDeviceNumbers())
+        {
+            <MudTabPanel Text="@TabLabel(dn)" Class="@GetTabClass(dn)">
+                @{
+                    var s = StateService.GetCurrentState(dn);
+                    var mountSettings = _deviceSettings.GetValueOrDefault(dn);
+                }
 
-            <MudGrid Spacing="3" Class="mt-1">
+                <MudGrid Spacing="3" Class="mt-1">
 
-                @* -- Row 1: Position | Status --------------------------- *@
+                    @* -- Row 1: Position | Status --------------------------- *@
 
-                <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0" Class="pa-3">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Position</MudText>
-                        <MudSimpleTable Dense="true" Elevation="0">
-                            <tbody>
-                                <tr>
-                                    <td style="width:80px"><MudText Typo="Typo.caption" Color="Color.Primary">RA</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Dec</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Alt</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Az</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">LHA</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Pier</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.SideOfPier</MudText></td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
-                    </MudPaper>
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0" Class="pa-3">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Status</MudText>
-                        <MudStack Spacing="1">
-                            @StatusRowWithDetail("Mount Connected", s.IsMountRunning,
-                                mountSettings?.Mount == "SkyWatcher" ? (s.ComPort ?? string.Empty) : string.Empty,
-                                Color.Success)
-                            @ActiveClientsRow(s.ConnectedClientCount, s.HasEverBeenConnected)
-                            @StatusRow("Slewing",           s.Slewing,           Color.Warning)
-                            @StatusRow("Pulse Guiding", s.IsPulseGuidingRa || s.IsPulseGuidingDec, Color.Warning)
-                            @StatusRow("Pulse Guide RA", s.IsPulseGuidingRa, Color.Warning)
-                            @StatusRow("Pulse Guide Dec",   s.IsPulseGuidingDec, Color.Warning)
-                            @StatusRowWithDetail("Tracking", s.Tracking, s.TrackingRate.ToString(), Color.Success)
-                            @StatusRow("Limits On",        s.LimitsOn,          Color.Success)
-                            @StatusRow("Limit Warning",    s.LimitWarningActive, Color.Warning)
-                            @StatusRow("At Park",           s.AtPark,            Color.Info)
-                            @StatusRow("At Home",           s.AtHome,            Color.Info)
-                        </MudStack>
-                    </MudPaper>
-                </MudItem>
-
-                @* -- Row 2: Axis Positions | Mount ----------------------- *@
-
-                <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0" Class="pa-3">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Positions</MudText>
-                        <MudSimpleTable Dense="true" Elevation="0">
-                            <tbody>
-                                <tr>
-                                    <td style="width:90px"><MudText Typo="Typo.caption" Color="Color.Primary">Actual X</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.ActualAxisX)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Actual Y</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.ActualAxisY)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">App X</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.AppAxisX)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">App Y</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.AppAxisY)</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Steps X</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.Axis1Steps.ToString("N0")</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Steps Y</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.Axis2Steps.ToString("N0")</MudText></td>
-                                </tr>
-                            </tbody>
-                        </MudSimpleTable>
-                    </MudPaper>
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <MudPaper Elevation="0" Class="pa-3">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount</MudText>
-                        <MudSimpleTable Dense="true" Elevation="0">
-                            <tbody>
-                                <tr>
-                                    <td style="width:80px"><MudText Typo="Typo.caption" Color="Color.Primary">Type</MudText></td>
-                                    <td><MudText Typo="Typo.body2">@(mountSettings?.Mount ?? "—")</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Mode</MudText></td>
-                                    <td><MudText Typo="Typo.body2">@(mountSettings?.AlignmentMode ?? "—")</MudText></td>
-                                </tr>
-                                <tr>
-                                    <td><MudText Typo="Typo.caption" Color="Color.Primary">Local Date</MudText></td>
-                                    <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.LocalDate.ToString("dd MMM yyyy  HH:mm:ss.ff", CultureInfo.CurrentCulture)</MudText></td>
-                                </tr>
-                                @if (mountSettings?.Mount == "SkyWatcher")
-                                {
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="0" Class="pa-3">
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Position</MudText>
+                            <MudSimpleTable Dense="true" Elevation="0">
+                                <tbody>
                                     <tr>
-                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Voltage</MudText></td>
-                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@(double.IsNaN(s.ControllerVoltage) ? "—" : $"{s.ControllerVoltage:F2} V")</MudText></td>
+                                        <td style="width:80px"><MudText Typo="Typo.caption" Color="Color.Primary">RA</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText></td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Power Event</MudText></td>
-                                        <td>@BoolIcon(s.LowVoltageEvent, Color.Error)</td>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Dec</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText></td>
                                     </tr>
-                                }
-                            </tbody>
-                        </MudSimpleTable>
-                    </MudPaper>
-                </MudItem>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Alt</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Az</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">LHA</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Pier</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.SideOfPier</MudText></td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudPaper>
+                    </MudItem>
 
-                @* -- Row 3: Control Buttons ------------------------------ *@
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="0" Class="pa-3">
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Status</MudText>
+                            <MudStack Spacing="1">
+                                @StatusRowWithDetail("Mount Connected", s.IsMountRunning,
+                                    mountSettings?.Mount == "SkyWatcher" ? (s.ComPort ?? string.Empty) : string.Empty,
+                                    Color.Success)
+                                @ActiveClientsRow(s.ConnectedClientCount, s.HasEverBeenConnected)
+                                @StatusRow("Slewing", s.Slewing, Color.Warning)
+                                @StatusRow("Pulse Guiding", s.IsPulseGuidingRa || s.IsPulseGuidingDec, Color.Warning)
+                                @StatusRow("Pulse Guide RA", s.IsPulseGuidingRa, Color.Warning)
+                                @StatusRow("Pulse Guide Dec", s.IsPulseGuidingDec, Color.Warning)
+                                @StatusRowWithDetail("Tracking", s.Tracking, s.TrackingRate.ToString(), Color.Success)
+                                @StatusRow("Limits On", s.LimitsOn, Color.Success)
+                                @StatusRow("Limit Warning", s.LimitWarningActive, Color.Warning)
+                                @StatusRow("At Park", s.AtPark, Color.Info)
+                                @StatusRow("At Home", s.AtHome, Color.Info)
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
 
-                <MudItem xs="12">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudStack Row="true" Spacing="2">
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                       Disabled="@(!IsUiClientConnected(dn) || s.AtPark || !(MountRegistry.GetInstance(dn)?.Settings.CanFindHome ?? false))"
-                                       OnClick="@(() => OnHomeAsync(dn))">Home</MudButton>
-                            <MudButtonGroup Variant="Variant.Outlined"
-                                           Color="@(s.AtPark ? Color.Warning : Color.Primary)"
-                                           Size="Size.Small"
-                                           DropShadow="false">
-                                <MudButton Disabled="@(!IsUiClientConnected(dn) || (s.AtPark ? !(MountRegistry.GetInstance(dn)?.Settings.CanUnPark ?? false) : !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false)))"
-                                           OnClick="@(() => OnParkToggleAsync(dn))">
-                                    @if (s.AtPark)
+                    @* -- Row 2: Axis Positions | Mount ----------------------- *@
+
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="0" Class="pa-3">
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Positions</MudText>
+                            <MudSimpleTable Dense="true" Elevation="0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:90px"><MudText Typo="Typo.caption" Color="Color.Primary">Actual X</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.ActualAxisX)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Actual Y</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.ActualAxisY)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">App X</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.AppAxisX)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">App Y</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDegrees(s.AppAxisY)</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Steps X</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.Axis1Steps.ToString("N0")</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Steps Y</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.Axis2Steps.ToString("N0")</MudText></td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="0" Class="pa-3">
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount</MudText>
+                            <MudSimpleTable Dense="true" Elevation="0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:80px"><MudText Typo="Typo.caption" Color="Color.Primary">Type</MudText></td>
+                                        <td><MudText Typo="Typo.body2">@(mountSettings?.Mount ?? "—")</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Mode</MudText></td>
+                                        <td><MudText Typo="Typo.body2">@(mountSettings?.AlignmentMode ?? "—")</MudText></td>
+                                    </tr>
+                                    <tr>
+                                        <td><MudText Typo="Typo.caption" Color="Color.Primary">Local Date</MudText></td>
+                                        <td><MudText Typo="Typo.body2" Class="gs-font-mono">@s.LocalDate.ToString("dd MMM yyyy  HH:mm:ss.ff", CultureInfo.CurrentCulture)</MudText></td>
+                                    </tr>
+                                    @if (mountSettings?.Mount == "SkyWatcher")
                                     {
-                                        @(string.IsNullOrEmpty(s.ParkSelectedName) ? "UNPARK" : $"UNPARK: {s.ParkSelectedName}")
+                                        <tr>
+                                            <td><MudText Typo="Typo.caption" Color="Color.Primary">Voltage</MudText></td>
+                                            <td><MudText Typo="Typo.body2" Class="gs-font-mono">@(double.IsNaN(s.ControllerVoltage) ? "—" : $"{s.ControllerVoltage:F2} V")</MudText></td>
+                                        </tr>
+                                        <tr>
+                                            <td><MudText Typo="Typo.caption" Color="Color.Primary">Power Event</MudText></td>
+                                            <td>@BoolIcon(s.LowVoltageEvent, Color.Error)</td>
+                                        </tr>
                                     }
-                                    else
-                                    {
-                                        @(string.IsNullOrEmpty(s.ParkSelectedName) ? "PARK" : $"PARK: {s.ParkSelectedName}")
-                                    }
-                                </MudButton>
-                                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
-                                         Style="align-self: auto;"
-                                         Disabled="@(s.AtPark || !IsUiClientConnected(dn) || !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false))">
-                                    @if (s.ParkPositionNames?.Count > 0)
-                                    {
-                                        @foreach (var posName in s.ParkPositionNames)
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudPaper>
+                    </MudItem>
+
+                    @* -- Row 3: Control Buttons ------------------------------ *@
+
+                    <MudItem xs="12">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudStack Row="true" Spacing="2">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                           Disabled="@(!IsUiClientConnected(dn) || s.AtPark || !(MountRegistry.GetInstance(dn)?.Settings.CanFindHome ?? false))"
+                                           OnClick="@(() => OnHomeAsync(dn))">Home</MudButton>
+                                <MudButtonGroup Variant="Variant.Outlined"
+                                                Color="@(s.AtPark ? Color.Warning : Color.Primary)"
+                                                Size="Size.Small"
+                                                DropShadow="false">
+                                    <MudButton Disabled="@(!IsUiClientConnected(dn) || (s.AtPark ? !(MountRegistry.GetInstance(dn)?.Settings.CanUnPark ?? false) : !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false)))"
+                                               OnClick="@(() => OnParkToggleAsync(dn))">
+                                        @if (s.AtPark)
                                         {
-                                            <MudMenuItem OnClick="@(() => OnParkPositionSelected(dn, posName))">@posName</MudMenuItem>
+                                            @(string.IsNullOrEmpty(s.ParkSelectedName) ? "UNPARK" : $"UNPARK: {s.ParkSelectedName}")
                                         }
-                                    }
-                                </MudMenu>
-                            </MudButtonGroup>
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="@(s.Tracking ? Color.Success : Color.Default)"
-                                       Size="Size.Small"
-                                       Disabled="@(!IsUiClientConnected(dn))"
-                                       OnClick="@(() => OnTrackingToggleAsync(dn))">@(s.Tracking ? "Tracking Off" : "Tracking On")</MudButton>
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="@(s.LimitsOn ? Color.Success : Color.Default)"
-                                       Size="Size.Small"
-                                       Disabled="@(!IsUiClientConnected(dn))"
-                                       OnClick="@(() => OnLimitsToggleAsync(dn))">@(s.LimitsOn ? "Limits Off" : "Limits On")</MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                       Disabled="@(!CanEmergencyStop(dn, s))"
-                                       OnClick="@(() => OnStopAsync(dn))">Stop</MudButton>
+                                        else
+                                        {
+                                            @(string.IsNullOrEmpty(s.ParkSelectedName) ? "PARK" : $"PARK: {s.ParkSelectedName}")
+                                        }
+                                    </MudButton>
+                                    <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
+                                             Style="align-self: auto;"
+                                             Disabled="@(s.AtPark || !IsUiClientConnected(dn) || !(MountRegistry.GetInstance(dn)?.Settings.CanPark ?? false))">
+                                        @if (s.ParkPositionNames?.Count > 0)
+                                        {
+                                            @foreach (var posName in s.ParkPositionNames)
+                                            {
+                                                <MudMenuItem OnClick="@(() => OnParkPositionSelected(dn, posName))">@posName</MudMenuItem>
+                                            }
+                                        }
+                                    </MudMenu>
+                                </MudButtonGroup>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="@(s.Tracking ? Color.Success : Color.Default)"
+                                           Size="Size.Small"
+                                           Disabled="@(!IsUiClientConnected(dn))"
+                                           OnClick="@(() => OnTrackingToggleAsync(dn))">@(s.Tracking ? "Tracking Off" : "Tracking On")</MudButton>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="@(s.LimitsOn ? Color.Success : Color.Default)"
+                                           Size="Size.Small"
+                                           Disabled="@(!IsUiClientConnected(dn))"
+                                           OnClick="@(() => OnLimitsToggleAsync(dn))">@(s.LimitsOn ? "Limits Off" : "Limits On")</MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                           Disabled="@(!CanEmergencyStop(dn, s))"
+                                           OnClick="@(() => OnStopAsync(dn))">Stop</MudButton>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudTooltip Text="@(_deviceSettings.GetValueOrDefault(dn)?.VoiceActive == true ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
+                                        <MudCheckBox T="bool"
+                                                     @bind-Value:get="_deviceSettings.GetValueOrDefault(dn)?.VoiceActive ?? false"
+                                                     @bind-Value:set="@(v => OnVoiceActiveSetAsync(dn, v))"
+                                                     Color="Color.Primary"
+                                                     Size="Size.Small"
+                                                     Label="Voice" />
+                                    </MudTooltip>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="@(IsUiClientConnected(dn) ? Color.Error : Color.Success)"
+                                           Size="Size.Small"
+                                           OnClick="@(() => OnConnectToggleAsync(dn))">@(IsUiClientConnected(dn) ? "Disconnect" : "Connect")</MudButton>
+                            </MudStack>
                         </MudStack>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudTooltip Text="@(_deviceSettings.GetValueOrDefault(dn)?.VoiceActive == true ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
-                                <MudCheckBox T="bool"
-                                             Checked="@(_deviceSettings.GetValueOrDefault(dn)?.VoiceActive ?? false)"
-                                             CheckedChanged="@(() => OnVoiceActiveToggleAsync(dn))"
-                                             Color="Color.Primary"
-                                             Size="Size.Small"
-                                             Label="Voice" />
-                            </MudTooltip>
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="@(IsUiClientConnected(dn) ? Color.Error : Color.Success)"
-                                       Size="Size.Small"
-                                       OnClick="@(() => OnConnectToggleAsync(dn))">@(IsUiClientConnected(dn) ? "Disconnect" : "Connect")</MudButton>
-                        </MudStack>
-                    </MudStack>
-                </MudItem>
+                    </MudItem>
 
-                                @* -- Row 4: Axis Dials ---------------------------------- *@
+                    @* -- Row 4: Axis Dials ---------------------------------- *@
 
-                                <MudItem xs="12">
-                                    <MudPaper Elevation="0" Class="pa-3">
-                                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Dials</MudText>
-                                        <MudStack Row="true" Justify="Justify.FlexStart" Spacing="6" Class="mt-1">
-                                            <AxisDial Angle="@s.Azimuth" Label="Azimuth" Size="180" />
-                                            <AxisDial Angle="@s.Altitude" Label="Altitude" Size="180" />
-                                            <AxisDial Angle="@(s.RightAscension * 15)" Label="Right Ascension" 
-                                                      DisplayUnits="DialDisplayUnits.Hours" Size="180" />
-                                            <AxisDial Angle="@s.Declination" Label="Declination" Size="180" />
-                                        </MudStack>
-                                    </MudPaper>
-                                </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Elevation="0" Class="pa-3">
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Dials</MudText>
+                            <MudStack Row="true" Justify="Justify.FlexStart" Spacing="6" Class="mt-1">
+                                <AxisDial Angle="@s.Azimuth" Label="Azimuth" Size="180" />
+                                <AxisDial Angle="@s.Altitude" Label="Altitude" Size="180" />
+                                <AxisDial Angle="@(s.RightAscension * 15)" Label="Right Ascension"
+                                          DisplayUnits="DialDisplayUnits.Hours" Size="180" />
+                                <AxisDial Angle="@s.Declination" Label="Declination" Size="180" />
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
 
-                                    </MudGrid>
-                                </MudTabPanel>
-                    }
-</MudTabs>
+                </MudGrid>
+            </MudTabPanel>
+        }
+    </MudTabs>
 }
 
 @code {
@@ -509,12 +508,12 @@ else
     }
 
     /// <summary>
-    /// Toggles VoiceActive for the given device and immediately persists the change to JSON.
+    /// Sets VoiceActive for the given device and immediately persists the change to JSON.
     /// </summary>
-    private async Task OnVoiceActiveToggleAsync(int dn)
+    private async Task OnVoiceActiveSetAsync(int dn, bool value)
     {
         if (!_deviceSettings.TryGetValue(dn, out var settings)) return;
-        settings.VoiceActive = !settings.VoiceActive;
+        settings.VoiceActive = value;
         try
         {
             await SettingsService.SaveDeviceSettingsAsync(dn, settings);
@@ -557,7 +556,8 @@ else
     {
         <MudIcon Icon="@(value ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
                  Color="@(value ? trueColor : Color.Default)"
-                 Size="Size.Small" />;
+                 Size="Size.Small" />
+        ;
     };
 
     private RenderFragment StatusRow(string label, bool value, Color trueColor) => __builder =>
@@ -565,7 +565,8 @@ else
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
             @BoolIcon(value, trueColor)
             <MudText Typo="Typo.body2">@label</MudText>
-        </MudStack>;
+        </MudStack>
+;
     };
 
     private RenderFragment StatusRowWithDetail(string label, bool value, string detail, Color trueColor) => __builder =>
@@ -577,7 +578,8 @@ else
             {
                 <MudText Typo="Typo.body2" Color="Color.Success" Class="gs-font-mono">@detail</MudText>
             }
-        </MudStack>;
+        </MudStack>
+;
     };
 
     private RenderFragment ActiveClientsRow(int count, bool hasEverBeenConnected) => __builder =>
@@ -589,7 +591,8 @@ else
                      Size="Size.Small" />
             <MudText Typo="Typo.body2">Active clients</MudText>
             <MudText Typo="Typo.body2" Class="gs-font-mono" Color="@countColor">@count</MudText>
-        </MudStack>;
+        </MudStack>
+;
     };
 
     private string FormatHMS(double hours)
