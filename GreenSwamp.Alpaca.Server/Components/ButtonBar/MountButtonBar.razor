@@ -12,10 +12,13 @@
     <MudButtonGroup Variant="Variant.Outlined"
                     Color="@(State.AtPark ? Color.Warning : Color.Primary)"
                     Size="Size.Small"
-                    DropShadow="false">
+                    DropShadow="false"
+                    OverrideStyles="false">
         <MudTooltip Text="@(State.AtPark ? "Unpark the mount" : "Park the mount at the selected position")"
                     Placement="Placement.Top" Arrow="true">
-            <MudButton Size="Size.Small"
+            <MudButton Variant="Variant.Outlined"
+                       Color="@(State.AtPark ? Color.Warning : Color.Primary)"
+                       Size="Size.Small"
                        Disabled="@(!IsConnected || (State.AtPark
                             ? !(Mount?.Settings.CanUnPark ?? false)
                             :  !(Mount?.Settings.CanPark ?? false)))"
@@ -32,6 +35,8 @@
         </MudTooltip>
         <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
             <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
+                     Variant="Variant.Outlined"
+                     Color="@(State.AtPark ? Color.Warning : Color.Primary)" 
                      Size="Size.Small"
                      Style="align-self: auto;"
                      Disabled="@(State.AtPark || !IsConnected || !(Mount?.Settings.CanPark ?? false))">

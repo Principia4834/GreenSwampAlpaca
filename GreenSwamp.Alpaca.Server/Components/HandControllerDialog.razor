@@ -6,7 +6,7 @@
 @inject IVersionedSettingsService SettingsService
 @implements IAsyncDisposable
 
-<MudDialog ContentStyle="min-width: 560px; overflow: visible;">
+<MudDialog ContentClass="overflow-visible">
     <DialogContent>
         <MudStack Spacing="3">
             <MudText Typo="Typo.h6">Hand Controller</MudText>
@@ -50,7 +50,7 @@
 
                 @* Options panel — Flip and Anti-Backlash *@
                 <MudStack Spacing="1">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">Options</MudText>
+                    <MudText Typo="Typo.caption">Options</MudText>
                     <MudCheckBox @bind-Value="_flipEw"  @bind-Value:after="OnFlipEwChanged"  T="bool" Dense="true" Label="Flip RA/Az" />
                     <MudCheckBox @bind-Value="_flipNs"  @bind-Value:after="OnFlipNsChanged"  T="bool" Dense="true" Label="Flip Dec/Alt" />
                     @if (_mode != HcMode.Pulse)

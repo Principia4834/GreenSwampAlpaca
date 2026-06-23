@@ -90,4 +90,19 @@ namespace GreenSwamp.Alpaca.MountControl
     /// the pulse. Mirrors the pre-queue <c>this.SetTracking()</c> direct call.
     /// </summary>
     internal sealed record ResumeTrackingCommand : ITrackingCommand;
+
+    /// <summary>
+    /// Signals the processor to stop the AltAz predictor timer and switch to
+    /// Rate-based tracking so that HC motion is not countered by the predictor.
+    /// Posted by <c>HcMoves</c> when a non-zero change is being sent to the mount
+    /// in AltAz tracking mode.
+    /// </summary>
+    internal sealed record HcAltAzPauseCommand : ITrackingCommand;
+
+    /// <summary>
+    /// Signals the processor to re-seed the SkyPredictor and restart the AltAz
+    /// timer after HC motion has stopped.  Posted by the Task.Run continuation
+    /// inside <c>HcMoves</c> once the mount axes have returned to the sidereal rate.
+    /// </summary>
+    internal sealed record HcAltAzResumeCommand(double Ra, double Dec) : ITrackingCommand;
 }

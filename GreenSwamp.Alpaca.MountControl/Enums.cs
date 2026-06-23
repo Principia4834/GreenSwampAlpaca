@@ -61,7 +61,11 @@ namespace GreenSwamp.Alpaca.MountControl
         SlewLeft,
         SlewRight,
         SlewNoneRa,
-        SlewNoneDec
+        SlewNoneDec,
+        SlewNorthEast,
+        SlewNorthWest,
+        SlewSouthEast,
+        SlewSouthWest
     }
 
     public enum TrackingMode

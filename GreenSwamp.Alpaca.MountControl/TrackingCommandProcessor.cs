@@ -225,6 +225,23 @@ namespace GreenSwamp.Alpaca.MountControl
                         _mount.SetTracking();
                     PublishSnapshot();
                     break;
+
+                case HcAltAzPauseCommand:
+                    // HC move starting in AltAz tracking mode.  Stop the predictor timer so
+                    // tick-based rate updates do not fight the HC motion, then switch to
+                    // Rate-based tracking and push those rates to the hardware.
+                    _mount.StopAltAzTrackingTimerInternal();
+                    _mount.SetAltAzTrackingRates(AltAzTrackingType.Rate);
+                    _mount.SetTracking();
+                    break;
+
+                case HcAltAzResumeCommand hcr:
+                    // HC motion has stopped.  Re-seed the predictor with the current sky
+                    // position and re-enable predictor-based tracking (which restarts the timer).
+                    _mount.SkyPredictor.Set(hcr.Ra, hcr.Dec);
+                    _mount.ApplyTracking(true);
+                    PublishSnapshot();
+                    break;
             }
         }
 
