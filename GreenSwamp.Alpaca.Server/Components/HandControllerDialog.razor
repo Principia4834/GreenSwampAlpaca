@@ -238,7 +238,7 @@
         try
         {
             var speed = (SlewSpeed)_speed;
-            _mount.HcMoves(speed, ApplyFlip(slewDir));
+            _mount.HcMoves(speed, slewDir);
             _statusMessage = $"Moving {direction} at speed {_speed}";
             StateHasChanged();
         }
@@ -329,33 +329,6 @@
             persisted.HcMode = _mode.ToString();
             await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
         }
-    }
-
-    private SlewDirection ApplyFlip(SlewDirection direction)
-    {
-        var ew = _mount?.Settings.HcFlipEw ?? false;
-        var ns = _mount?.Settings.HcFlipNs ?? false;
-        if (!ew && !ns) return direction;
-        return direction switch
-        {
-            SlewDirection.SlewNorth when ns => SlewDirection.SlewSouth,
-            SlewDirection.SlewSouth when ns => SlewDirection.SlewNorth,
-            SlewDirection.SlewEast  when ew => SlewDirection.SlewWest,
-            SlewDirection.SlewWest  when ew => SlewDirection.SlewEast,
-            SlewDirection.SlewNorthEast when ns && ew => SlewDirection.SlewSouthWest,
-            SlewDirection.SlewNorthEast when ns       => SlewDirection.SlewSouthEast,
-            SlewDirection.SlewNorthEast when ew       => SlewDirection.SlewNorthWest,
-            SlewDirection.SlewNorthWest when ns && ew => SlewDirection.SlewSouthEast,
-            SlewDirection.SlewNorthWest when ns       => SlewDirection.SlewSouthWest,
-            SlewDirection.SlewNorthWest when ew       => SlewDirection.SlewNorthEast,
-            SlewDirection.SlewSouthEast when ns && ew => SlewDirection.SlewNorthWest,
-            SlewDirection.SlewSouthEast when ns       => SlewDirection.SlewNorthEast,
-            SlewDirection.SlewSouthEast when ew       => SlewDirection.SlewSouthWest,
-            SlewDirection.SlewSouthWest when ns && ew => SlewDirection.SlewNorthEast,
-            SlewDirection.SlewSouthWest when ns       => SlewDirection.SlewNorthWest,
-            SlewDirection.SlewSouthWest when ew       => SlewDirection.SlewSouthEast,
-            _ => direction
-        };
     }
 
     private async Task OnFlipEwChanged()

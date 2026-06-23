@@ -62,6 +62,8 @@ namespace GreenSwamp.Alpaca.MountControl
             bool altAzMode = Settings.AlignmentMode == AlignmentMode.AltAz;
             bool southernHemisphere = Settings.Latitude < 0;
 
+            direction = ApplyFlip(direction);
+
             double delta = speed switch
             {
                 SlewSpeed.One   => _slewSpeedOne,
@@ -309,6 +311,38 @@ namespace GreenSwamp.Alpaca.MountControl
                     MonitorLog.LogToMonitor(info);
                 });
             }
+        }
+
+        /// <summary>
+        /// Applies HcFlipEw / HcFlipNs settings to reverse axis directions before
+        /// the direction is dispatched to hardware. Mirrors the legacy SkyTelescopeVm
+        /// call-site flip applied before StartSlew().
+        /// </summary>
+        private SlewDirection ApplyFlip(SlewDirection direction)
+        {
+            var ew = Settings.HcFlipEw;
+            var ns = Settings.HcFlipNs;
+            if (!ew && !ns) return direction;
+            return direction switch
+            {
+                SlewDirection.SlewNorth     when ns       => SlewDirection.SlewSouth,
+                SlewDirection.SlewSouth     when ns       => SlewDirection.SlewNorth,
+                SlewDirection.SlewEast      when ew       => SlewDirection.SlewWest,
+                SlewDirection.SlewWest      when ew       => SlewDirection.SlewEast,
+                SlewDirection.SlewNorthEast when ns && ew => SlewDirection.SlewSouthWest,
+                SlewDirection.SlewNorthEast when ns       => SlewDirection.SlewSouthEast,
+                SlewDirection.SlewNorthEast when ew       => SlewDirection.SlewNorthWest,
+                SlewDirection.SlewNorthWest when ns && ew => SlewDirection.SlewSouthEast,
+                SlewDirection.SlewNorthWest when ns       => SlewDirection.SlewSouthWest,
+                SlewDirection.SlewNorthWest when ew       => SlewDirection.SlewNorthEast,
+                SlewDirection.SlewSouthEast when ns && ew => SlewDirection.SlewNorthWest,
+                SlewDirection.SlewSouthEast when ns       => SlewDirection.SlewNorthEast,
+                SlewDirection.SlewSouthEast when ew       => SlewDirection.SlewSouthWest,
+                SlewDirection.SlewSouthWest when ns && ew => SlewDirection.SlewNorthEast,
+                SlewDirection.SlewSouthWest when ns       => SlewDirection.SlewNorthWest,
+                SlewDirection.SlewSouthWest when ew       => SlewDirection.SlewSouthEast,
+                _ => direction
+            };
         }
 
         /// <summary>
