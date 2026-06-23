@@ -1,0 +1,335 @@
+﻿@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Settings.Services
+@using Microsoft.JSInterop
+@using MudBlazor
+@inject IJSRuntime JS
+@inject IVersionedSettingsService SettingsService
+@implements IAsyncDisposable
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.h6">Hand Controller</MudText>
+
+            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
+                @* 3x3 Direction Grid *@
+                <div class="hc-grid" @ref="_gridElement">
+                    @* Row 1: NW, N, NE *@
+                    <button class="hc-btn" data-hc-dir="NorthWest" title="North-West">
+                        <MudIcon Icon="@Icons.Material.Filled.NorthWest" />
+                    </button>
+                    <button class="hc-btn" data-hc-dir="North" title="North">
+                        <MudIcon Icon="@Icons.Material.Filled.North" />
+                    </button>
+                    <button class="hc-btn" data-hc-dir="NorthEast" title="North-East">
+                        <MudIcon Icon="@Icons.Material.Filled.NorthEast" />
+                    </button>
+
+                    @* Row 2: W, Stop, E *@
+                    <button class="hc-btn" data-hc-dir="West" title="West">
+                        <MudIcon Icon="@Icons.Material.Filled.West" />
+                    </button>
+                    <button class="hc-btn hc-stop" data-hc-stop="true" title="Stop">
+                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" Size="Size.Large" />
+                    </button>
+                    <button class="hc-btn" data-hc-dir="East" title="East">
+                        <MudIcon Icon="@Icons.Material.Filled.East" />
+                    </button>
+
+                    @* Row 3: SW, S, SE *@
+                    <button class="hc-btn" data-hc-dir="SouthWest" title="South-West">
+                        <MudIcon Icon="@Icons.Material.Filled.SouthWest" />
+                    </button>
+                    <button class="hc-btn" data-hc-dir="South" title="South">
+                        <MudIcon Icon="@Icons.Material.Filled.South" />
+                    </button>
+                    <button class="hc-btn" data-hc-dir="SouthEast" title="South-East">
+                        <MudIcon Icon="@Icons.Material.Filled.SouthEast" />
+                    </button>
+                </div>
+
+                @* Speed Slider *@
+                <MudStack Spacing="2" Style="min-width: 120px;">
+                    <MudText Typo="Typo.body2" Align="Align.Center">Speed</MudText>
+                    <MudSlider @bind-Value="_speed" 
+                               @bind-Value:after="OnSpeedChanged"
+                               Min="1" 
+                               Max="8" 
+                               Step="1" 
+                               Vertical="true" 
+                               TickMarks="true"
+                               Style="height: 200px;" />
+                    <MudText Typo="Typo.body2" Align="Align.Center">@_speed</MudText>
+                </MudStack>
+            </MudStack>
+
+            @* Mode Selector *@
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2">Mode</MudText>
+                <MudToggleGroup @bind-Value="_mode" 
+                                @bind-Value:after="OnModeChanged"
+                                Color="Color.Primary" 
+                                SelectionMode="SelectionMode.SingleSelection">
+                    <MudToggleItem Value="@HcMode.Axes">
+                        <MudText Typo="Typo.body2">Axes</MudText>
+                    </MudToggleItem>
+                    <MudToggleItem Value="@HcMode.Guiding">
+                        <MudText Typo="Typo.body2">Guiding</MudText>
+                    </MudToggleItem>
+                    <MudToggleItem Value="@HcMode.Pulse">
+                        <MudText Typo="Typo.body2">Pulse</MudText>
+                    </MudToggleItem>
+                </MudToggleGroup>
+            </MudStack>
+
+            @if (!string.IsNullOrEmpty(_statusMessage))
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">@_statusMessage</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .hc-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 60px);
+        gap: 8px;
+        user-select: none;
+        touch-action: none;
+    }
+
+    .hc-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--mud-palette-primary);
+        border-radius: 8px;
+        background: var(--mud-palette-surface);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        padding: 0;
+        outline: none;
+    }
+
+    .hc-btn:hover {
+        background: var(--mud-palette-action-default-hover);
+        transform: scale(1.05);
+    }
+
+    .hc-btn:active {
+        background: var(--mud-palette-action-default);
+        transform: scale(0.95);
+    }
+
+    .hc-btn.hc-stop {
+        border-color: var(--mud-palette-error);
+    }
+
+    .hc-btn.hc-stop:hover {
+        background: var(--mud-palette-error-hover);
+    }
+</style>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public int DeviceNumber { get; set; }
+
+    private ElementReference _gridElement;
+    private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<HandControllerDialog>? _dotNetRef;
+
+    private Mount? _mount;
+    private int _speed = 4;
+    private HcMode _mode = HcMode.Axes;
+    private string _statusMessage = string.Empty;
+
+    // Diagonal direction mappings for stop logic
+    private static readonly Dictionary<string, (SlewDirection RaStop, SlewDirection DecStop)> DiagonalStops = new()
+    {
+        ["NorthWest"] = (SlewDirection.SlewNoneRa, SlewDirection.SlewNoneDec),
+        ["NorthEast"] = (SlewDirection.SlewNoneRa, SlewDirection.SlewNoneDec),
+        ["SouthWest"] = (SlewDirection.SlewNoneRa, SlewDirection.SlewNoneDec),
+        ["SouthEast"] = (SlewDirection.SlewNoneRa, SlewDirection.SlewNoneDec)
+    };
+
+    // Cardinal direction mappings
+    private static readonly Dictionary<string, SlewDirection> CardinalStops = new()
+    {
+        ["North"] = SlewDirection.SlewNoneDec,
+        ["South"] = SlewDirection.SlewNoneDec,
+        ["East"] = SlewDirection.SlewNoneRa,
+        ["West"] = SlewDirection.SlewNoneRa
+    };
+
+    // Direction name to SlewDirection enum mapping
+    private static readonly Dictionary<string, SlewDirection> DirectionMap = new()
+    {
+        ["North"] = SlewDirection.SlewNorth,
+        ["South"] = SlewDirection.SlewSouth,
+        ["East"] = SlewDirection.SlewEast,
+        ["West"] = SlewDirection.SlewWest,
+        ["NorthEast"] = SlewDirection.SlewNorthEast,
+        ["NorthWest"] = SlewDirection.SlewNorthWest,
+        ["SouthEast"] = SlewDirection.SlewSouthEast,
+        ["SouthWest"] = SlewDirection.SlewSouthWest
+    };
+
+    protected override void OnInitialized()
+    {
+        _mount = MountRegistry.GetInstance(DeviceNumber);
+
+        if (_mount?.Settings != null)
+        {
+            // MountControl.SkySettings.HcSpeed is already typed as SlewSpeed
+            _speed = (int)_mount.Settings.HcSpeed;
+            _mode = _mount.Settings.HcMode;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Lazy-load JS ESM module
+                _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/handController.js");
+                _dotNetRef = DotNetObjectReference.Create(this);
+
+                // Initialize pointer event handlers
+                await _jsModule.InvokeVoidAsync("init", _dotNetRef, _gridElement);
+            }
+            catch (Exception ex)
+            {
+                _statusMessage = $"Failed to initialize controller: {ex.Message}";
+                StateHasChanged();
+            }
+        }
+    }
+
+    [JSInvokable]
+    public void OnButtonDown(string direction)
+    {
+        if (_mount == null || !DirectionMap.TryGetValue(direction, out var slewDir))
+            return;
+
+        try
+        {
+            var speed = (SlewSpeed)_speed;
+            _mount.HcMoves(speed, slewDir);
+            _statusMessage = $"Moving {direction} at speed {_speed}";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"Error: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnButtonUp(string direction)
+    {
+        if (_mount == null)
+            return;
+
+        try
+        {
+            var speed = (SlewSpeed)_speed;
+
+            // Diagonal directions must stop BOTH axes
+            if (DiagonalStops.TryGetValue(direction, out var stops))
+            {
+                _mount.HcMoves(speed, stops.RaStop);
+                _mount.HcMoves(speed, stops.DecStop);
+                _statusMessage = "Stopped";
+            }
+            // Cardinal directions stop single axis
+            else if (CardinalStops.TryGetValue(direction, out var stop))
+            {
+                _mount.HcMoves(speed, stop);
+                _statusMessage = "Stopped";
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"Error: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnStopPressed()
+    {
+        if (_mount == null)
+            return;
+
+        try
+        {
+            _mount.AbortSlew(speak: false);
+            _statusMessage = "Emergency stop";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"Error: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnSpeedChanged()
+    {
+        // Update the runtime mount settings (MountControl.SkySettings — typed enum)
+        if (_mount != null)
+            _mount.Settings.HcSpeed = (SlewSpeed)_speed;
+
+        // Persist via service using the JSON model (Settings.Models.SkySettings — strings)
+        var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
+        if (persisted != null)
+        {
+            persisted.HcSpeed = ((SlewSpeed)_speed).ToString();
+            await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
+        }
+    }
+
+    private async Task OnModeChanged()
+    {
+        // Update the runtime mount settings
+        if (_mount != null)
+            _mount.Settings.HcMode = _mode;
+
+        // Persist via service
+        var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
+        if (persisted != null)
+        {
+            persisted.HcMode = _mode.ToString();
+            await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
+        }
+    }
+
+    private void Close() => MudDialog.Close();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsModule != null)
+        {
+            try
+            {
+                await _jsModule.InvokeVoidAsync("dispose");
+                await _jsModule.DisposeAsync();
+            }
+            catch { /* Ignore disposal errors */ }
+        }
+
+        _dotNetRef?.Dispose();
+    }
+}

@@ -188,6 +188,14 @@ else
                                                      Label="Voice" />
                                     </MudTooltip>
                                 <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Gamepad"
+                                           Disabled="@(!s.IsMountRunning)"
+                                           OnClick="@(() => OpenHandControllerDialog(dn))">
+                                    Hand Controller
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined"
                                            Color="@(IsUiClientConnected(dn) ? Color.Error : Color.Success)"
                                            Size="Size.Small"
                                            OnClick="@(() => OnConnectToggleAsync(dn))">@(IsUiClientConnected(dn) ? "Disconnect" : "Connect")</MudButton>
@@ -378,6 +386,17 @@ else
         var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
 
         await DialogService.ShowAsync<SettingsExportDialog>("", parameters, options);
+    }
+
+    private async Task OpenHandControllerDialog(int deviceNumber)
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(HandControllerDialog.DeviceNumber), deviceNumber }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = false };
+
+        await DialogService.ShowAsync<HandControllerDialog>("", parameters, options);
     }
 
     private List<int> GetConfiguredDeviceNumbers() =>
