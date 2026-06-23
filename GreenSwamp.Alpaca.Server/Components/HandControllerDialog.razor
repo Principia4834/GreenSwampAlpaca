@@ -6,7 +6,7 @@
 @inject IVersionedSettingsService SettingsService
 @implements IAsyncDisposable
 
-<MudDialog>
+<MudDialog ContentStyle="min-width: 560px; overflow: visible;">
     <DialogContent>
         <MudStack Spacing="3">
             <MudText Typo="Typo.h6">Hand Controller</MudText>
@@ -48,20 +48,27 @@
                     </button>
                 </div>
 
-                @* Speed Slider *@
-                <MudStack Spacing="2" Style="min-width: 120px;">
-                    <MudText Typo="Typo.body2" Align="Align.Center">Speed</MudText>
-                    <MudSlider @bind-Value="_speed" 
-                               @bind-Value:after="OnSpeedChanged"
-                               Min="1" 
-                               Max="8" 
-                               Step="1" 
-                               Vertical="true" 
-                               TickMarks="true"
-                               Style="height: 200px;" />
-                    <MudText Typo="Typo.body2" Align="Align.Center">@_speed</MudText>
+                @* Options panel — Flip and Anti-Backlash *@
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Options</MudText>
+                    <MudCheckBox @bind-Value="_flipEw"  @bind-Value:after="OnFlipEwChanged"  T="bool" Dense="true" Label="Flip RA/Az" />
+                    <MudCheckBox @bind-Value="_flipNs"  @bind-Value:after="OnFlipNsChanged"  T="bool" Dense="true" Label="Flip Dec/Alt" />
+                    @if (_mode != HcMode.Pulse)
+                    {
+                        <MudCheckBox @bind-Value="_antiRa"  @bind-Value:after="OnAntiRaChanged"  T="bool" Dense="true" Label="Anti-backlash RA/Az" />
+                        <MudCheckBox @bind-Value="_antiDec" @bind-Value:after="OnAntiDecChanged" T="bool" Dense="true" Label="Anti-backlash Dec/Alt" />
+                    }
                 </MudStack>
             </MudStack>
+
+            @* Speed Slider — horizontal, own row *@
+            <MudSlider @bind-Value="_speed"
+                       @bind-Value:after="OnSpeedChanged"
+                       T="int"
+                       Min="1"
+                       Max="8"
+                       Step="1"
+                       TickMarks="true">Speed: @_speed</MudSlider>
 
             @* Mode Selector *@
             <MudStack Spacing="1">
@@ -149,6 +156,10 @@
     private int _speed = 4;
     private HcMode _mode = HcMode.Axes;
     private string _statusMessage = string.Empty;
+    private bool _flipEw;
+    private bool _flipNs;
+    private bool _antiRa;
+    private bool _antiDec;
 
     // Diagonal direction mappings for stop logic
     private static readonly Dictionary<string, (SlewDirection RaStop, SlewDirection DecStop)> DiagonalStops = new()
@@ -190,6 +201,10 @@
             // MountControl.SkySettings.HcSpeed is already typed as SlewSpeed
             _speed = (int)_mount.Settings.HcSpeed;
             _mode = _mount.Settings.HcMode;
+            _flipEw  = _mount.Settings.HcFlipEw;
+            _flipNs  = _mount.Settings.HcFlipNs;
+            _antiRa  = _mount.Settings.HcAntiRa;
+            _antiDec = _mount.Settings.HcAntiDec;
         }
     }
 
@@ -223,7 +238,7 @@
         try
         {
             var speed = (SlewSpeed)_speed;
-            _mount.HcMoves(speed, slewDir);
+            _mount.HcMoves(speed, ApplyFlip(slewDir));
             _statusMessage = $"Moving {direction} at speed {_speed}";
             StateHasChanged();
         }
@@ -314,6 +329,68 @@
             persisted.HcMode = _mode.ToString();
             await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
         }
+    }
+
+    private SlewDirection ApplyFlip(SlewDirection direction)
+    {
+        var ew = _mount?.Settings.HcFlipEw ?? false;
+        var ns = _mount?.Settings.HcFlipNs ?? false;
+        if (!ew && !ns) return direction;
+        return direction switch
+        {
+            SlewDirection.SlewNorth when ns => SlewDirection.SlewSouth,
+            SlewDirection.SlewSouth when ns => SlewDirection.SlewNorth,
+            SlewDirection.SlewEast  when ew => SlewDirection.SlewWest,
+            SlewDirection.SlewWest  when ew => SlewDirection.SlewEast,
+            SlewDirection.SlewNorthEast when ns && ew => SlewDirection.SlewSouthWest,
+            SlewDirection.SlewNorthEast when ns       => SlewDirection.SlewSouthEast,
+            SlewDirection.SlewNorthEast when ew       => SlewDirection.SlewNorthWest,
+            SlewDirection.SlewNorthWest when ns && ew => SlewDirection.SlewSouthEast,
+            SlewDirection.SlewNorthWest when ns       => SlewDirection.SlewSouthWest,
+            SlewDirection.SlewNorthWest when ew       => SlewDirection.SlewNorthEast,
+            SlewDirection.SlewSouthEast when ns && ew => SlewDirection.SlewNorthWest,
+            SlewDirection.SlewSouthEast when ns       => SlewDirection.SlewNorthEast,
+            SlewDirection.SlewSouthEast when ew       => SlewDirection.SlewSouthWest,
+            SlewDirection.SlewSouthWest when ns && ew => SlewDirection.SlewNorthEast,
+            SlewDirection.SlewSouthWest when ns       => SlewDirection.SlewNorthWest,
+            SlewDirection.SlewSouthWest when ew       => SlewDirection.SlewSouthEast,
+            _ => direction
+        };
+    }
+
+    private async Task OnFlipEwChanged()
+    {
+        if (_mount != null) _mount.Settings.HcFlipEw = _flipEw;
+        await PersistHcFlags();
+    }
+
+    private async Task OnFlipNsChanged()
+    {
+        if (_mount != null) _mount.Settings.HcFlipNs = _flipNs;
+        await PersistHcFlags();
+    }
+
+    private async Task OnAntiRaChanged()
+    {
+        if (_mount != null) _mount.Settings.HcAntiRa = _antiRa;
+        await PersistHcFlags();
+    }
+
+    private async Task OnAntiDecChanged()
+    {
+        if (_mount != null) _mount.Settings.HcAntiDec = _antiDec;
+        await PersistHcFlags();
+    }
+
+    private async Task PersistHcFlags()
+    {
+        var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
+        if (persisted == null) return;
+        persisted.HcFlipEW  = _flipEw;
+        persisted.HcFlipNS  = _flipNs;
+        persisted.HcAntiRa  = _antiRa;
+        persisted.HcAntiDec = _antiDec;
+        await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
     }
 
     private void Close() => MudDialog.Close();
