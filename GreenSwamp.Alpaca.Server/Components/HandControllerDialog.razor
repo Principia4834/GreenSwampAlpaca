@@ -15,35 +15,35 @@
                 @* 3x3 Direction Grid *@
                 <div class="hc-grid" @ref="_gridElement">
                     @* Row 1: NW, N, NE *@
-                    <button class="hc-btn" data-hc-dir="NorthWest" title="North-West">
+                    <button class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="North-West">
                         <MudIcon Icon="@Icons.Material.Filled.NorthWest" />
                     </button>
-                    <button class="hc-btn" data-hc-dir="North" title="North">
+                    <button class="@(GetButtonClass("North"))" data-hc-dir="North" title="North">
                         <MudIcon Icon="@Icons.Material.Filled.North" />
                     </button>
-                    <button class="hc-btn" data-hc-dir="NorthEast" title="North-East">
+                    <button class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="North-East">
                         <MudIcon Icon="@Icons.Material.Filled.NorthEast" />
                     </button>
 
                     @* Row 2: W, Stop, E *@
-                    <button class="hc-btn" data-hc-dir="West" title="West">
+                    <button class="@(GetButtonClass("West"))" data-hc-dir="West" title="West">
                         <MudIcon Icon="@Icons.Material.Filled.West" />
                     </button>
                     <button class="hc-btn hc-stop" data-hc-stop="true" title="Stop">
                         <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" Size="Size.Large" />
                     </button>
-                    <button class="hc-btn" data-hc-dir="East" title="East">
+                    <button class="@(GetButtonClass("East"))" data-hc-dir="East" title="East">
                         <MudIcon Icon="@Icons.Material.Filled.East" />
                     </button>
 
                     @* Row 3: SW, S, SE *@
-                    <button class="hc-btn" data-hc-dir="SouthWest" title="South-West">
+                    <button class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="South-West">
                         <MudIcon Icon="@Icons.Material.Filled.SouthWest" />
                     </button>
-                    <button class="hc-btn" data-hc-dir="South" title="South">
+                    <button class="@(GetButtonClass("South"))" data-hc-dir="South" title="South">
                         <MudIcon Icon="@Icons.Material.Filled.South" />
                     </button>
-                    <button class="hc-btn" data-hc-dir="SouthEast" title="South-East">
+                    <button class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="South-East">
                         <MudIcon Icon="@Icons.Material.Filled.SouthEast" />
                     </button>
                 </div>
@@ -58,6 +58,8 @@
                         <MudCheckBox @bind-Value="_antiRa"  @bind-Value:after="OnAntiRaChanged"  T="bool" Dense="true" Label="Anti-backlash RA/Az" />
                         <MudCheckBox @bind-Value="_antiDec" @bind-Value:after="OnAntiDecChanged" T="bool" Dense="true" Label="Anti-backlash Dec/Alt" />
                     }
+                    <MudDivider Class="my-1" />
+                    <MudCheckBox @bind-Value="_oneClickStart" @bind-Value:after="OnOneClickStartChanged" T="bool" Dense="true" Label="One Click Start" />
                 </MudStack>
             </MudStack>
 
@@ -140,6 +142,16 @@
     .hc-btn.hc-stop:hover {
         background: var(--mud-palette-error-hover);
     }
+
+    .hc-btn.hc-active {
+        background: var(--mud-palette-primary);
+        color: var(--mud-palette-primary-text);
+        border-color: var(--mud-palette-primary-darken);
+    }
+
+    .hc-btn.hc-active:hover {
+        background: var(--mud-palette-primary-darken);
+    }
 </style>
 
 @code {
@@ -160,8 +172,10 @@
     private bool _flipNs;
     private bool _antiRa;
     private bool _antiDec;
+    private bool _oneClickStart;
+    private string? _activeOneClickDir;
 
-    // Diagonal direction mappings for stop logic
+    // Diagonal direction mappings
     private static readonly Dictionary<string, (SlewDirection RaStop, SlewDirection DecStop)> DiagonalStops = new()
     {
         ["NorthWest"] = (SlewDirection.SlewNoneRa, SlewDirection.SlewNoneDec),
@@ -205,6 +219,7 @@
             _flipNs  = _mount.Settings.HcFlipNs;
             _antiRa  = _mount.Settings.HcAntiRa;
             _antiDec = _mount.Settings.HcAntiDec;
+            _oneClickStart = _mount.Settings.HcOneClickStart;
         }
     }
 
@@ -238,8 +253,32 @@
         try
         {
             var speed = (SlewSpeed)_speed;
-            _mount.HcMoves(speed, slewDir);
-            _statusMessage = $"Moving {direction} at speed {_speed}";
+
+            if (_oneClickStart)
+            {
+                if (_activeOneClickDir == direction)
+                {
+                    // Same button clicked again — stop
+                    StopDirection(direction);
+                    _activeOneClickDir = null;
+                    _statusMessage = "Stopped";
+                }
+                else
+                {
+                    // New direction — stop previous if any, start new
+                    if (_activeOneClickDir != null)
+                        StopDirection(_activeOneClickDir);
+                    _mount.HcMoves(speed, slewDir);
+                    _activeOneClickDir = direction;
+                    _statusMessage = $"Moving {direction} at speed {_speed}";
+                }
+            }
+            else
+            {
+                _mount.HcMoves(speed, slewDir);
+                _statusMessage = $"Moving {direction} at speed {_speed}";
+            }
+
             StateHasChanged();
         }
         catch (Exception ex)
@@ -253,6 +292,10 @@
     public void OnButtonUp(string direction)
     {
         if (_mount == null)
+            return;
+
+        // In one-click mode the button release has no effect
+        if (_oneClickStart)
             return;
 
         try
@@ -291,6 +334,7 @@
         try
         {
             _mount.AbortSlew(speak: false);
+            _activeOneClickDir = null;
             _statusMessage = "Emergency stop";
             StateHasChanged();
         }
@@ -354,6 +398,44 @@
         if (_mount != null) _mount.Settings.HcAntiDec = _antiDec;
         await PersistHcFlags();
     }
+
+    private async Task OnOneClickStartChanged()
+    {
+        // If turning off while a direction is active, stop it
+        if (!_oneClickStart && _activeOneClickDir != null)
+        {
+            StopDirection(_activeOneClickDir);
+            _activeOneClickDir = null;
+        }
+
+        if (_mount != null)
+            _mount.Settings.HcOneClickStart = _oneClickStart;
+
+        var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
+        if (persisted != null)
+        {
+            persisted.HcOneClickStart = _oneClickStart;
+            await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
+        }
+    }
+
+    private void StopDirection(string direction)
+    {
+        if (_mount == null) return;
+        var speed = (SlewSpeed)_speed;
+        if (DiagonalStops.TryGetValue(direction, out var stops))
+        {
+            _mount.HcMoves(speed, stops.RaStop);
+            _mount.HcMoves(speed, stops.DecStop);
+        }
+        else if (CardinalStops.TryGetValue(direction, out var stop))
+        {
+            _mount.HcMoves(speed, stop);
+        }
+    }
+
+    private string GetButtonClass(string direction) =>
+        _oneClickStart && _activeOneClickDir == direction ? "hc-btn hc-active" : "hc-btn";
 
     private async Task PersistHcFlags()
     {

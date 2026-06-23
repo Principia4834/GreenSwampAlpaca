@@ -15,6 +15,8 @@
     <MudCheckBox @bind-Value="Device!.HcFlipNS"  @bind-Value:after="NotifyChanged" Label="Flip N/S"          Color="Color.Primary" />
     <MudCheckBox @bind-Value="Device!.DisableKeysOnGoTo" @bind-Value:after="NotifyChanged"
                  Label="Disable Keys on GoTo" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcOneClickStart" @bind-Value:after="NotifyChanged"
+                 Label="One Click Start" Color="Color.Primary" />
 </MudStack>
 
 @code {

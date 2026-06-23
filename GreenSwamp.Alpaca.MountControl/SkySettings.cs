@@ -146,13 +146,14 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _pPecOn = false;
         private int _polarLedLevel = -1;
 
-        // Hand Controller (6 fields)
+        // Hand Controller (7 fields)
         private bool _hcAntiRa = false;
         private bool _hcAntiDec = false;
         private bool _hcFlipEw = false;
         private bool _hcFlipNs = false;
         private List<HcPulseGuide> _hcPulseGuides = [];
         private bool _disableKeysOnGoTo = false;
+        private bool _hcOneClickStart = false;
 
         // Miscellaneous (5 fields)
         private double _temperature = 15.0;
@@ -1585,9 +1586,22 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        public bool HcOneClickStart
+        {
+            get => _hcOneClickStart;
+            set
+            {
+                if (_hcOneClickStart != value)
+                {
+                    _hcOneClickStart = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         #endregion
 
-        #region Batch 11: Miscellaneous (6 properties)
+        #region Batch 11:
 
         public double Temperature
         {
@@ -1857,6 +1871,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _hcFlipEw = settings.HcFlipEW;
                 _hcFlipNs = settings.HcFlipNS;
                 _disableKeysOnGoTo = settings.DisableKeysOnGoTo;
+                _hcOneClickStart = settings.HcOneClickStart;
 
                 // Batch 11: Miscellaneous
                 _temperature = settings.Temperature;

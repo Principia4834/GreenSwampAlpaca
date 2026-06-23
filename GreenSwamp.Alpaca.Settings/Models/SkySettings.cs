@@ -222,6 +222,8 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public bool HcFlipNS { get; set; }
         [CommonSetting]
         public bool DisableKeysOnGoTo { get; set; }
+        [CommonSetting]
+        public bool HcOneClickStart { get; set; }
 
         // Camera/Eyepiece Settings
         [CommonSetting]
