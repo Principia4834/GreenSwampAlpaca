@@ -253,7 +253,7 @@
         },
         "HourAngleLimit": {
           "type": "number",
-          "description": "Hour angle limit in degrees"
+          "description": "Flip angle limit in degrees"
         },
         "HzLimitPark": {
           "type": "boolean",

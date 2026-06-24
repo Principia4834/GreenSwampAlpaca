@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://greenswampalpaca.com/schemas/settings-override.schema.json",
   "title": "Settings Override Template",
@@ -85,7 +85,7 @@
         },
         "HourAngleLimit": {
           "type": "number",
-          "description": "Hour angle limit in degrees (typically 0 for AltAz)"
+          "description": "Flip angle limit in degrees (typically 0 for AltAz)"
         },
         "AxisUpperLimitY": {
           "type": "number",

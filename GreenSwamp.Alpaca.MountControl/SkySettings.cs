@@ -111,7 +111,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _apertureDiameter = 0.0;
 
         // Advanced Settings (7 fields)
-        private double _maxSlewRate = 3.4;
+        private double _maxSlewRate = 3.5;
         private bool _fullCurrent = false;
         private bool _encoders = false;
         private bool _alternatingPPec = false;

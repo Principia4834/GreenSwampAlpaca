@@ -133,7 +133,7 @@ public partial class SettingsExplorer : IDisposable
         ["Serial Connection"]    = "Serial port, baud rate, handshake and timeout settings.",
         ["Mount Configuration"]      = "Device identity, serial connection, equatorial coordinates, mount hardware (motor settings, encoders, backlash) and custom gearing.",
         ["Home and Park"]            = "Stored home and park axis positions.",
-        ["Limits"]                   = "Axis / slew limits, sync limits, meridian / hour angle limit (GEM/Polar) and horizontal axis limit (AltAz).",
+        ["Limits"]                   = "Axis / slew limits, sync limits, meridian / flip angle limit (GEM/Polar) and horizontal axis limit (AltAz).",
         ["Tracking & Guiding"]       = "Tracking rates and pulse guiding settings.",
         ["Observatory Configuration"] = "Latitude, longitude, elevation, UTC offset, environmental conditions and GPS.",
         ["Optics"]                   = "Aperture diameter, aperture area and focal length.",

@@ -157,18 +157,29 @@ else
                                                 ShowPrimaryButtons="false"
                                                 ShowStopButton="true" />
 
+                            <MudTooltip Text="Click to enable / disable controls" Placement="Placement.Top" Arrow="true">
                                 <MudButton Variant="Variant.Outlined"
                                            Color="@(connected ? Color.Error : Color.Success)"
                                            Size="Size.Small"
                                            OnClick="@(() => OnConnectToggleAsync(dn))">
                                     @(connected ? "Disconnect" : "Connect")
                                 </MudButton>
+                            </MudTooltip>
                             </MudStack>
                         </MudStack>
                     </MudPaper>
 
                 </MudStack>
 
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudCheckBox @bind-Value="EnableShutdown" Label="Confirm shutdown" Dense="true" Color="Color.Primary" />
+                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected." Placement="Placement.Left" Arrow="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
+                        </MudTooltip>
+                </MudStack>
+                <MudButton Variant="Variant.Filled" Color="Color.Error" Disabled="@AllowShutdown" OnClick="Shutdown">
+                    Shutdown
+                </MudButton>
             </MudTabPanel>
         }
     </MudTabs>
@@ -184,6 +195,8 @@ else
     private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
     private enum CoordMode { RaDec, AltAz }
     private CoordMode _coordMode = CoordMode.RaDec;
+    private bool EnableShutdown { get; set; } = false;
+    private bool AllowShutdown => !EnableShutdown;
 
     private const long UiClientId = Mount.UiInternalClientId;
 
@@ -212,6 +225,18 @@ else
     {
         _deviceSettings[updated.DeviceNumber] = updated;
         InvokeAsync(StateHasChanged);
+    }
+
+    void Shutdown()
+    {
+        try
+        {
+            Program.Lifetime?.StopApplication();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Shutdown failed: {ex.Message}", Severity.Error);
+        }
     }
 
     public void Dispose()
