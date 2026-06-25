@@ -1,5 +1,6 @@
 ﻿using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Components;
+using GreenSwamp.Alpaca.Server.Components.Dialogs;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
