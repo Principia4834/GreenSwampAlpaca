@@ -406,6 +406,62 @@ namespace GreenSwamp.Alpaca.MountControl
             });
         }
 
+        /// <summary>Add a new named park position captured from the current mount position.</summary>
+        public async Task AddParkPositionAsync(string name)
+        {
+            if (!IsMountRunning) throw new InvalidOperationException("Mount is not running.");
+            name = string.IsNullOrWhiteSpace(name) ? "Park" : name.Trim();
+
+            if (Settings.ParkPositions?.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)) == true)
+                throw new ArgumentException($"A park position named '{name}' already exists.");
+
+            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y);
+            if (park == null) throw new InvalidOperationException("Could not compute mount axis position.");
+
+            var list = new List<ParkPosition>(Settings.ParkPositions ?? [])
+            {
+                new ParkPosition(name, Math.Round(park[0], 6), Math.Round(park[1], 6))
+            };
+            Settings.ParkPositions = list;
+            await Settings.SaveAsync();
+            LogMount($"AddParkPosition|{name}|{park[0]}|{park[1]}");
+        }
+
+        /// <summary>Update an existing named park position to the current mount position.</summary>
+        public async Task UpdateParkPositionAsync(string name)
+        {
+            if (!IsMountRunning) throw new InvalidOperationException("Mount is not running.");
+
+            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y);
+            if (park == null) throw new InvalidOperationException("Could not compute mount axis position.");
+
+            var list = new List<ParkPosition>(Settings.ParkPositions ?? []);
+            var idx = list.FindIndex(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (idx < 0) throw new ArgumentException($"Park position '{name}' not found.");
+
+            list[idx] = new ParkPosition(name, Math.Round(park[0], 6), Math.Round(park[1], 6));
+            Settings.ParkPositions = list;
+            await Settings.SaveAsync();
+            LogMount($"UpdateParkPosition|{name}|{park[0]}|{park[1]}");
+        }
+
+        /// <summary>Delete a named park position. Throws if it would leave zero positions.</summary>
+        public async Task DeleteParkPositionAsync(string name)
+        {
+            var list = new List<ParkPosition>(Settings.ParkPositions ?? []);
+            if (list.Count <= 1) throw new InvalidOperationException("Cannot delete the last park position.");
+
+            var removed = list.RemoveAll(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (removed == 0) throw new ArgumentException($"Park position '{name}' not found.");
+
+            if (string.Equals(ParkSelected?.Name, name, StringComparison.OrdinalIgnoreCase) && list.Count > 0)
+                ParkSelected = list[0];
+
+            Settings.ParkPositions = list;
+            await Settings.SaveAsync();
+            LogMount($"DeleteParkPosition|{name}");
+        }
+
         /// <summary>Start axes slew using SlewController.</summary>
         public void SlewAxes(double primaryAxis, double secondaryAxis, SlewType slewState, bool slewAsync = true)
         {
