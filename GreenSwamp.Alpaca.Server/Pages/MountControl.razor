@@ -182,12 +182,26 @@ else
                                            Color="@(connected ? Color.Error : Color.Success)"
                                            Size="Size.Small"
                                            OnClick="@(() => OnConnectToggleAsync(dn))">
-                                    @(connected ? "Disconnect" : "Connect")
-                                </MudButton>
-                            </MudTooltip>
-                            </MudStack>
-                        </MudStack>
-                    </MudPaper>
+                                                 @(connected ? "Disconnect" : "Connect")
+                                                </MudButton>
+                                            </MudTooltip>
+                                            </MudStack>
+
+                                            <MudDivider Class="my-1" Style="width:100%" />
+
+                                            <MudTooltip Text="Create, update or delete park positions"
+                                                        Placement="Placement.Top" Arrow="true">
+                                                <MudButton Variant="Variant.Outlined"
+                                                           Color="Color.Default"
+                                                           Size="Size.Small"
+                                                           StartIcon="@Icons.Material.Filled.LocalParking"
+                                                           OnClick="@(() => OpenManageParkPositionsDialogAsync(dn))">
+                                                    Manage Park Positions
+                                                </MudButton>
+                                            </MudTooltip>
+
+                                        </MudStack>
+                                    </MudPaper>
 
                 </MudStack>
 

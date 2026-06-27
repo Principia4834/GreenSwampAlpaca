@@ -1,0 +1,207 @@
+﻿@namespace GreenSwamp.Alpaca.Server.Components
+@using GreenSwamp.Alpaca.MountControl
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.LocalParking" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Manage Park Positions</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2">
+
+            @if (!_isMountRunning)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true">
+                    Mount is not connected. Connect the mount to create or update positions.
+                </MudAlert>
+            }
+
+            <MudSelect T="string"
+                       Label="Park Position"
+                       @bind-Value="_selectedName"
+                       Dense="true"
+                       Disabled="@(_positions.Count == 0)">
+                @foreach (var name in _positions)
+                {
+                    <MudSelectItem Value="@name">@name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                <MudTooltip Text="Set this position's coordinates to the current mount position"
+                            Placement="Placement.Top" Arrow="true">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Disabled="@(!CanUpdateSelected)"
+                               OnClick="OnUpdateClickAsync">
+                        Update from Current Position
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="@(_positions.Count <= 1 ? "Cannot delete the last park position" : "Delete the selected park position")"
+                            Placement="Placement.Top" Arrow="true">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               Disabled="@(!CanDeleteSelected)"
+                               OnClick="OnDeleteClickAsync">
+                        Delete
+                    </MudButton>
+                </MudTooltip>
+            </MudStack>
+
+            <MudDivider />
+
+            @if (!_showAddPanel)
+            {
+                <MudTooltip Text="@(!_isMountRunning ? "Mount must be connected to create a position" : "Add a new park position from the current mount position")"
+                            Placement="Placement.Top" Arrow="true">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Success"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Disabled="@(!_isMountRunning)"
+                               OnClick="@(() => _showAddPanel = true)">
+                        Add New Position
+                    </MudButton>
+                </MudTooltip>
+            }
+            else
+            {
+                <MudStack Spacing="2">
+                    <MudTextField @bind-Value="_newName"
+                                  Label="Position Name"
+                                  HelperText="Max 12 characters"
+                                  MaxLength="12"
+                                  Immediate="true"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Label"
+                                  @onkeydown="OnAddNameKeyDown" />
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   Size="Size.Small"
+                                   Disabled="@(!CanCreate)"
+                                   OnClick="OnCreateClickAsync">
+                            Create
+                        </MudButton>
+                        <MudButton Variant="Variant.Text"
+                                   Size="Size.Small"
+                                   OnClick="CancelAdd">
+                            Cancel
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+            }
+
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default"
+                   Variant="Variant.Text"
+                   OnClick="@(() => MudDialog.Close())">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public int DeviceNumber { get; set; }
+
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+
+    private Mount? _mount;
+    private List<string> _positions = [];
+    private string _selectedName = string.Empty;
+    private bool _showAddPanel;
+    private string _newName = string.Empty;
+    private bool _isMountRunning;
+
+    private bool CanUpdateSelected => _isMountRunning && !string.IsNullOrEmpty(_selectedName);
+    private bool CanDeleteSelected => !string.IsNullOrEmpty(_selectedName) && _positions.Count > 1;
+    private bool CanCreate        => _isMountRunning && !string.IsNullOrWhiteSpace(_newName) && _newName.Trim().Length <= 12;
+
+    protected override void OnInitialized()
+    {
+        _mount = MountRegistry.GetInstance(DeviceNumber);
+        RefreshPositions();
+    }
+
+    private void RefreshPositions()
+    {
+        if (_mount == null) return;
+        _isMountRunning = _mount.IsMountRunning;
+        _positions = _mount.Settings.ParkPositions?.Select(p => p.Name).ToList() ?? [];
+        if (!_positions.Contains(_selectedName))
+            _selectedName = _positions.FirstOrDefault() ?? string.Empty;
+    }
+
+    private async Task OnUpdateClickAsync()
+    {
+        if (_mount == null || string.IsNullOrEmpty(_selectedName)) return;
+        try
+        {
+            await _mount.UpdateParkPositionAsync(_selectedName);
+            RefreshPositions();
+            Snackbar.Add($"Park position '{_selectedName}' updated from current mount position.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Update failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnDeleteClickAsync()
+    {
+        if (_mount == null || string.IsNullOrEmpty(_selectedName)) return;
+        try
+        {
+            var deleted = _selectedName;
+            await _mount.DeleteParkPositionAsync(deleted);
+            RefreshPositions();
+            Snackbar.Add($"Park position '{deleted}' deleted.", Severity.Info);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnCreateClickAsync()
+    {
+        if (_mount == null || string.IsNullOrWhiteSpace(_newName)) return;
+        var name = _newName.Trim();
+        try
+        {
+            await _mount.AddParkPositionAsync(name);
+            _showAddPanel = false;
+            _newName = string.Empty;
+            RefreshPositions();
+            // Select the newly created position
+            if (_positions.Contains(name)) _selectedName = name;
+            Snackbar.Add($"Park position '{name}' created.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Create failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void CancelAdd()
+    {
+        _showAddPanel = false;
+        _newName = string.Empty;
+    }
+
+    private async Task OnAddNameKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && CanCreate)
+            await OnCreateClickAsync();
+        else if (e.Key == "Escape")
+            CancelAdd();
+    }
+}

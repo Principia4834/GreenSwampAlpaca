@@ -83,6 +83,22 @@ namespace GreenSwamp.Alpaca.Server.Pages
             await DialogService.ShowAsync<SettingsExportDialog>("", parameters, options);
         }
 
+        private async Task OpenManageParkPositionsDialogAsync(int deviceNumber)
+        {
+            var parameters = new DialogParameters
+            {
+                [nameof(ManageParkPositionsDialog.DeviceNumber)] = deviceNumber
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseOnEscapeKey = true,
+                CloseButton = true
+            };
+            await DialogService.ShowAsync<ManageParkPositionsDialog>("", parameters, options);
+        }
+
         /// <summary>Returns true when the UI's internal client is registered as connected.</summary>
         private bool IsUiClientConnected(int dn) =>
             MountRegistry.GetInstance(dn)?.IsClientConnected(UiClientId) ?? false;
