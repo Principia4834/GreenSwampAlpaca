@@ -23,6 +23,9 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private const long UiClientId = GreenSwamp.Alpaca.MountControl.Mount.UiInternalClientId;
 
+        private const string LimitsOnIcon = "<path d=\"M0 0h24v24H0z\" fill=\"none\"/>" +
+    "<path d=\"M12 21 0 9q2.4-2.45 5.5-3.725t6.5-1.275q3.425 0 6.525 1.275T24 9l-2.525 2.525q-.55-.25-1.125-.375t-1.2-.15l1.95-1.95q-1.95-1.475-4.2625-2.2625T12 6q-2.525 0-4.8375.7875T2.9 9.05l5.8 5.8q1.05-.625 2.45-.8125t2.55.1625q-.35.625-.525 1.3875t-.175 1.4375q0 .65.125 1.2625t.4 1.1875l-1.525 1.525ZM17 21q-.425 0-.7125-.2875T16 20v-3q0-.425.2875-.7125T17 16v-1q0-.825.5875-1.4125T19 13q.825 0 1.4125.5875T21 15v1q.425 0 .7125.2875T22 17v3q0 .425-.2875.7125T21 21h-4Zm1-5h2v-1q0-.425-.2875-.7125T19 14q-.425 0-.7125.2875T18 15v1Z\"/>";
+
         protected override void OnInitialized()
         {
             _alpacaDevices = SettingsService.GetAlpacaDevices();
@@ -83,22 +86,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
             await DialogService.ShowAsync<SettingsExportDialog>("", parameters, options);
         }
 
-        private async Task OpenManageParkPositionsDialogAsync(int deviceNumber)
-        {
-            var parameters = new DialogParameters
-            {
-                [nameof(ManageParkPositionsDialog.DeviceNumber)] = deviceNumber
-            };
-            var options = new DialogOptions
-            {
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true,
-                CloseOnEscapeKey = true,
-                CloseButton = true
-            };
-            await DialogService.ShowAsync<ManageParkPositionsDialog>("", parameters, options);
-        }
-
         /// <summary>Returns true when the UI's internal client is registered as connected.</summary>
         private bool IsUiClientConnected(int dn) =>
             MountRegistry.GetInstance(dn)?.IsClientConnected(UiClientId) ?? false;
@@ -114,21 +101,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
             catch (Exception ex)
             {
                 Snackbar.Add($"Connect/Disconnect failed: {ex.Message}", Severity.Error);
-            }
-        }
-
-        /// <summary>Sets VoiceActive for the given device and persists the change to JSON.</summary>
-        private async Task OnVoiceActiveSetAsync(int dn, bool value)
-        {
-            if (!_deviceSettings.TryGetValue(dn, out var settings)) return;
-            settings.VoiceActive = value;
-            try
-            {
-                await SettingsService.SaveDeviceSettingsAsync(dn, settings);
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Failed to save voice setting: {ex.Message}", Severity.Error);
             }
         }
 

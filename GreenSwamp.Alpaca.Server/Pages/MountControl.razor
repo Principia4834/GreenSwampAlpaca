@@ -86,28 +86,40 @@ else
                         <MudTooltip Text="@(s.AtHome ? "At Home" : "Not at Home")" Placement="Placement.Bottom" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.Home"
                                      Color="@(s.AtHome ? Color.Success : Color.Default)"
-                                     Size="Size.Medium" />
+                                     Size="Size.Large" />
                         </MudTooltip>
 
                         <MudTooltip Text="@(s.AtPark ? "Parked" : "Not Parked")" Placement="Placement.Bottom" Arrow="true">
-                            <MudIcon Icon="@Icons.Material.Filled.NightShelter"
+                            <MudIcon Icon="@Icons.Material.Filled.LocalParking"
                                      Color="@(s.AtPark ? Color.Info : Color.Default)"
-                                     Size="Size.Medium" />
+                                     Size="Size.Large" />
                         </MudTooltip>
 
                         <MudTooltip Text="@(s.Slewing ? "Slewing" : "Stationary")" Placement="Placement.Bottom" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.Moving"
                                      Color="@(s.Slewing ? Color.Warning : Color.Default)"
-                                     Size="Size.Medium" />
+                                     Size="Size.Large" />
                         </MudTooltip>
 
                         <MudTooltip Text="@(s.Tracking ? $"Tracking ({s.TrackingRate})" : "Tracking Off")"
                                     Placement="Placement.Bottom" Arrow="true">
                             <MudIcon Icon="@Icons.Material.Filled.TrackChanges"
                                      Color="@(s.Tracking ? Color.Success : Color.Default)"
-                                     Size="Size.Medium" />
+                                     Size="Size.Large" />
                         </MudTooltip>
 
+                        <MudTooltip Text="@(s.LimitsOn ? "Limits On" : "Limits Off")"
+                                    Placement="Placement.Bottom" Arrow="true">
+                            <MudIcon Icon="@LimitsOnIcon"
+                                     Color="@(s.LimitsOn ? Color.Success : Color.Default)"
+                                     Size="Size.Large" />
+                        </MudTooltip>
+
+                        <MudTooltip Text="@(!s.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
+                            <MudIcon Color="Color.Primary"
+                                     Icon="@(!s.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
+                                     Size="Size.Large" />
+                        </MudTooltip>
                     </MudStack>
                 </MudPaper>
 
@@ -156,18 +168,6 @@ else
 
                             <MudDivider Class="my-1" Style="width:100%" />
 
-                            <MudTooltip Text="@(ms?.VoiceActive == true ? "Voice on" : "Voice off")"
-                                        Placement="Placement.Top" Arrow="true">
-                                <MudCheckBox T="bool"
-                                             @bind-Value:get="ms?.VoiceActive ?? false"
-                                             @bind-Value:set="@(v => OnVoiceActiveSetAsync(dn, v))"
-                                             Color="Color.Primary"
-                                             Size="Size.Small"
-                                             Label="Voice Enabled" />
-                            </MudTooltip>
-
-                            <MudDivider Class="my-1" Style="width:100%" />
-
                             @* Stop left, Disconnect right *@
                             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="width:100%">
                                 <MountButtonBar State="@s"
@@ -186,19 +186,6 @@ else
                                                 </MudButton>
                                             </MudTooltip>
                                             </MudStack>
-
-                                            <MudDivider Class="my-1" Style="width:100%" />
-
-                                            <MudTooltip Text="Create, update or delete park positions"
-                                                        Placement="Placement.Top" Arrow="true">
-                                                <MudButton Variant="Variant.Outlined"
-                                                           Color="Color.Default"
-                                                           Size="Size.Small"
-                                                           StartIcon="@Icons.Material.Filled.LocalParking"
-                                                           OnClick="@(() => OpenManageParkPositionsDialogAsync(dn))">
-                                                    Manage Park Positions
-                                                </MudButton>
-                                            </MudTooltip>
 
                                         </MudStack>
                                     </MudPaper>

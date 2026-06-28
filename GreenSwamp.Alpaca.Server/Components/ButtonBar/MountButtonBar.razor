@@ -11,20 +11,33 @@
 
     @if (ShowPrimaryButtons)
     {
-        @* ── Park / Unpark ─────────────────────────────────────────────── *@
+        @* -- Manage park positions ------------------------------------------- *@
+        <MudTooltip Text="Create, update or delete park positions"
+                    Placement="Placement.Top" Arrow="true">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.LocalParking"
+                       Disabled="@(!IsConnected)"
+                       OnClick="@(() => OpenManageParkPositionsDialogAsync(DeviceNumber))">
+                Manage Park Positions
+            </MudButton>
+        </MudTooltip>
+
         <MudButtonGroup Variant="Variant.Outlined"
-                        Color="@(State.AtPark ? Color.Warning : Color.Primary)"
                         Size="Size.Small"
                         DropShadow="false"
                         OverrideStyles="false">
+
+            @* -- Park / Unpark ----------------------------------------------- *@
             <MudTooltip Text="@(State.AtPark ? "Unpark the mount" : "Park the mount at the selected position")"
                         Placement="Placement.Top" Arrow="true">
                 <MudButton Variant="Variant.Outlined"
                            Color="@(State.AtPark ? Color.Warning : Color.Primary)"
                            Size="Size.Small"
                            Disabled="@(!IsConnected || (State.AtPark
-                                ? !(Mount?.Settings.CanUnPark ?? false)
-                                :  !(Mount?.Settings.CanPark ?? false)))"
+                                                ? !(Mount?.Settings.CanUnPark ?? false)
+                                                : !(Mount?.Settings.CanPark ?? false)))"
                            OnClick="OnParkClickAsync">
                     @if (State.AtPark)
                     {
@@ -39,7 +52,7 @@
             <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
                 <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
                          Variant="Variant.Outlined"
-                         Color="@(State.AtPark ? Color.Warning : Color.Primary)" 
+                         Color="@(State.AtPark ? Color.Warning : Color.Primary)"
                          Size="Size.Small"
                          Style="align-self: auto;"
                          Disabled="@(State.AtPark || !IsConnected || !(Mount?.Settings.CanPark ?? false))">
@@ -58,305 +71,106 @@
             </MudTooltip>
         </MudButtonGroup>
 
-        @* ── Home ──────────────────────────────────────────────────────── *@
-        <MudTooltip Text="Slew to the home position" Placement="Placement.Top" Arrow="true">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                       Disabled="@(!IsConnected || State.AtPark || !(Mount?.Settings.CanFindHome ?? false))"
-                       OnClick="OnHomeClickAsync">
-                Home
-            </MudButton>
+        @* -- Park ----------------------------------------------------------- *@
+        <MudTooltip Text="@(State.AtPark ? "Unpark the mount" : "Park the mount at the selected position")"
+                    Placement="Placement.Top" Arrow="true">
+            <MudIconButton Variant="Variant.Text"
+                           Icon="@Icons.Material.Filled.LocalParking"
+                           Color="@(State.AtPark ? Color.Warning : Color.Primary)"
+                           Size="Size.Large"
+                           Disabled="@(!IsConnected || (State.AtPark
+                                                                                ? !(Mount?.Settings.CanUnPark ?? false)
+                                                                                : !(Mount?.Settings.CanPark ?? false)))"
+                           OnClick="OnParkClickAsync">
+            </MudIconButton>
         </MudTooltip>
 
-        @* ── Tracking ──────────────────────────────────────────────────── *@
+        @* -- Home ----------------------------------------------------------- *@
+        <MudTooltip Text="Slew to the home position" Placement="Placement.Top" Arrow="true">
+            <MudIconButton Color="Color.Primary" Variant="Variant.Text"
+                           Icon="@Icons.Material.Filled.Home"
+                           Size="Size.Large"
+                           Disabled="@(!IsConnected || State.AtPark || !(Mount?.Settings.CanFindHome ?? false))"
+                           OnClick="OnHomeClickAsync" />
+        </MudTooltip>
+
+        @* -- Tracking ---------------------------------------------------- *@
         <MudTooltip Text="@(State.Tracking ? "Turn tracking off" : "Turn tracking on")"
                     Placement="Placement.Top" Arrow="true">
-            <MudButton Variant="Variant.Outlined"
-                       Color="@(State.Tracking ? Color.Success : Color.Default)"
-                       Size="Size.Small"
-                       Disabled="@(!IsConnected)"
-                       OnClick="OnTrackingClickAsync">
-                Tracking
-            </MudButton>
+            <MudIconButton Color="Color.Primary" Variant="Variant.Text"
+                           Icon="@Icons.Material.Filled.TrackChanges"
+                           Size="Size.Large"
+                           Disabled="@(!IsConnected)"
+                           OnClick="OnTrackingClickAsync">
+            </MudIconButton>
         </MudTooltip>
 
-        @* ── ReSync ────────────────────────────────────────────────────── *@
+        @* -- ReSync ------------------------------------------------------ *@
         <MudTooltip Text="Reset axis counters to a reference position" Placement="Placement.Top" Arrow="true">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                       Disabled="@(!IsConnected || State.Slewing)"
-                       OnClick="OnReSyncClickAsync">
-                ReSync
-            </MudButton>
+            <MudIconButton Variant="Variant.Text" Color="Color.Primary"
+                           Icon="@Icons.Material.Filled.SettingsEthernet"
+                           Size="Size.Large"
+                           Disabled="@(!IsConnected || State.Slewing)"
+                           OnClick="OnReSyncClickAsync">
+            </MudIconButton>
         </MudTooltip>
 
-        @* ── Flip SOP (GEM only) ───────────────────────────────────────── *@
+        @* -- Flip SOP (GEM only) ----------------------------------------- *@
         @if (State.IsGermanPolarMode)
         {
             <MudTooltip Text="Flip the telescope to the opposite pier side" Placement="Placement.Top" Arrow="true">
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                           Disabled="@(!IsConnected || State.Slewing)"
-                           OnClick="OnFlipSopClickAsync">
-                    Flip SOP
-                </MudButton>
+                <MudIconButton Variant="Variant.Text" Color="Color.Primary"
+                               Icon="@Icons.Material.Filled.FlipCameraAndroid"
+                               Size="Size.Large"
+                               Disabled="@(!IsConnected || State.Slewing)"
+                               OnClick="OnFlipSopClickAsync">
+                </MudIconButton>
             </MudTooltip>
         }
 
-        @* ── AutoHome ──────────────────────────────────────────────────── *@
+        @* -- AutoHome ---------------------------------------------------- *@
         <MudTooltip Text="Search for home sensor and re-index axes" Placement="Placement.Top" Arrow="true">
-            <MudButton Variant="Variant.Outlined"
+            <MudIconButton Variant="Variant.Text"
                        Color="@(State.IsAutoHomeRunning ? Color.Warning : Color.Primary)"
-                       Size="Size.Small"
+                       Icon="@HomeSearchIcon"
+                       Size="Size.Large"
                        Disabled="@(!IsConnected || State.AtPark)"
                        OnClick="OnAutoHomeClickAsync">
                 @(State.IsAutoHomeRunning ? "AutoHome…" : "AutoHome")
-            </MudButton>
+            </MudIconButton>
         </MudTooltip>
 
-        @* ── Limits ────────────────────────────────────────────────────── *@
+        @* -- Limits ------------------------------------------------------ *@
         <MudTooltip Text="@(State.LimitsOn ? "Disable flip angle limits" : "Enable flip angle limits")"
                     Placement="Placement.Top" Arrow="true">
-            <MudButton Variant="Variant.Outlined"
-                       Color="@(State.LimitsOn ? Color.Success : Color.Default)"
-                       Size="Size.Small"
+            <MudIconButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       Icon="@LimitsOnIcon"
+                       Size="Size.Large"
                        Disabled="@(!IsConnected)"
                        OnClick="OnLimitsClickAsync">
-                Limits
-            </MudButton>
+            </MudIconButton>
         </MudTooltip>
-    }
 
-    @if (ShowStopButton)
-    {
-        @* ── Stop ──────────────────────────────────────────────────────── *@
-        <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
-                       Disabled="@(!State.HasEverBeenConnected && !IsConnected)"
-                       OnClick="OnStopClickAsync">
-                Stop
-            </MudButton>
+        @* -- Voice ----------------------------------------------------------- *@
+        <MudTooltip Text="@(!State.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
+            <MudIconButton Color="Color.Primary" Variant="Variant.Text"
+                           Icon="@(!State.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
+                           Size="Size.Large"
+                           OnClick="OnVoiceActiveSetAsync" />
         </MudTooltip>
     }
 
 </MudStack>
 
-@code {
-    [Parameter, EditorRequired] public TelescopeStateModel State { get; set; } = new();
-    [Parameter, EditorRequired] public int DeviceNumber { get; set; }
-    [Parameter] public bool IsConnected { get; set; }
-
-    // New layout/visibility toggles
-    [Parameter] public bool Vertical { get; set; } = false;
-    [Parameter] public bool ShowPrimaryButtons { get; set; } = true;
-    [Parameter] public bool ShowStopButton { get; set; } = true;
-
-    private Mount? Mount => MountRegistry.GetInstance(DeviceNumber);
-
-    private static readonly DialogOptions _confirmOptions = new()
-    {
-        MaxWidth = MaxWidth.ExtraSmall,
-        CloseOnEscapeKey = true
-    };
-
-    private static readonly DialogOptions _configOptions = new()
-    {
-        MaxWidth = MaxWidth.Small,
-        FullWidth = true,
-        CloseOnEscapeKey = true
-    };
-
-    // ── Park ──────────────────────────────────────────────────────────────
-
-    private async Task OnParkClickAsync()
-    {
-        if (State.AtPark)
-        {
-            var confirmed = await ConfirmAsync("Unpark the mount?", "Unpark");
-            if (!confirmed) return;
-            await ExecuteAsync(
-                () => DeviceManager.GetTelescope((uint)DeviceNumber).Unpark(),
-                "Unpark failed");
-        }
-        else
-        {
-            var confirmed = await ConfirmAsync(
-                string.IsNullOrEmpty(State.ParkSelectedName)
-                    ? "Park the mount?"
-                    : $"Park the mount at '{State.ParkSelectedName}'?",
-                "Park");
-            if (!confirmed) return;
-            await ExecuteAsync(
-                () => DeviceManager.GetTelescope((uint)DeviceNumber).Park(),
-                "Park failed");
-        }
-    }
-
-    private void OnParkPositionSelected(string positionName)
-    {
-        var mount = Mount;
-        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
-
-        var position = mount.Settings.ParkPositions?.Find(p => p.Name == positionName);
-        if (position == null) { Snackbar.Add($"Park position '{positionName}' not found", Severity.Warning); return; }
-
-        mount.ParkSelected = position;
-        Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
-    }
-
-    // ── Home ──────────────────────────────────────────────────────────────
-
-    private async Task OnHomeClickAsync()
-    {
-        var confirmed = await ConfirmAsync("Slew to the home position?", "Go to Home");
-        if (!confirmed) return;
-        await ExecuteAsync(
-            () => DeviceManager.GetTelescope((uint)DeviceNumber).FindHome(),
-            "Home failed");
-    }
-
-    // ── Tracking ──────────────────────────────────────────────────────────
-
-    private async Task OnTrackingClickAsync()
-    {
-        await ExecuteAsync(() =>
-        {
-            var telescope = DeviceManager.GetTelescope((uint)DeviceNumber);
-            telescope.Tracking = !telescope.Tracking;
-        }, "Tracking toggle failed");
-    }
-
-    // ── ReSync ────────────────────────────────────────────────────────────
-
-    private async Task OnReSyncClickAsync()
-    {
-        var parameters = new DialogParameters<ReSyncDialog>
-        {
-            { x => x.ParkPositionNames, State.ParkPositionNames }
-        };
-
-        var dialog = await DialogService.ShowAsync<ReSyncDialog>("ReSync Axes", parameters, _configOptions);
-        var result = await dialog.Result;
-        if (result is null || result.Canceled) return;
-
-        if (result.Data is not ReSyncDialog.ReSyncRequest request) return;
-
-        var mount = Mount;
-        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
-
-        await ExecuteAsync(() =>
-        {
-            if (request.Mode == ReSyncDialog.ReSyncMode.Home)
-            {
-                mount.ReSync();
-            }
-            else
-            {
-                var position = mount.Settings.ParkPositions?.Find(p => p.Name == request.ParkPositionName);
-                mount.ReSync(position);
-            }
-        }, "ReSync failed");
-    }
-
-    // ── Flip SOP ──────────────────────────────────────────────────────────
-
-    private async Task OnFlipSopClickAsync()
-    {
-        var parameters = new DialogParameters<FlipSopDialog>
-        {
-            { x => x.FlipOnNextGoto, State.FlipOnNextGoto }
-        };
-
-        var dialog = await DialogService.ShowAsync<FlipSopDialog>("Flip Side of Pier", parameters, _configOptions);
-        var result = await dialog.Result;
-        if (result is null || result.Canceled) return;
-
-        if (result.Data is not FlipSopDialog.FlipSopResult flipResult) return;
-
-        var mount = Mount;
-        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
-
-        mount.FlipOnNextGoto = flipResult.FlipOnNextGoto;
-
-        if (flipResult.DoFlip)
-        {
-            var oppositeSide = State.SideOfPier == ASCOM.Common.DeviceInterfaces.PointingState.Normal
-                ? ASCOM.Common.DeviceInterfaces.PointingState.ThroughThePole
-                : ASCOM.Common.DeviceInterfaces.PointingState.Normal;
-
-            try
-            {
-                await Task.Run(() => mount.SetSideOfPier(oppositeSide));
-            }
-            catch (InvalidOperationException ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Warning);
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Flip SOP failed: {ex.Message}", Severity.Error);
-            }
-        }
-    }
-
-    // ── AutoHome ──────────────────────────────────────────────────────────
-
-    private async Task OnAutoHomeClickAsync()
-    {
-        var mount = Mount;
-        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
-
-        var parameters = new DialogParameters<AutoHomeDialog>
-        {
-            { x => x.IsGermanPolarMode, State.IsGermanPolarMode },
-            { x => x.InitialAxisX,      State.AutoHomeAxisX },
-            { x => x.InitialAxisY,      State.AutoHomeAxisY },
-            { x => x.DeviceNumber,      DeviceNumber }
-        };
-
-        await DialogService.ShowAsync<AutoHomeDialog>("AutoHome", parameters, _configOptions);
-    }
-
-    // ── Limits ────────────────────────────────────────────────────────────
-
-    private async Task OnLimitsClickAsync()
-    {
-        var mount = Mount;
-        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
-
-        await ExecuteAsync(() => mount.LimitsOn = !mount.LimitsOn, "Limits toggle failed");
-    }
-
-    // ── Stop ──────────────────────────────────────────────────────────────
-
-    private async Task OnStopClickAsync()
-    {
-        var mount = Mount;
-        if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
-
-        await ExecuteAsync(() => mount.EmergencyStopAll(), "Stop failed");
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────
-
-    private async Task<bool> ConfirmAsync(string message, string confirmText)
-    {
-        var parameters = new DialogParameters<ConfirmDialog>
-        {
-            { x => x.ContentText, message },
-            { x => x.ConfirmText, confirmText }
-        };
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>(string.Empty, parameters, _confirmOptions);
-        var result = await dialog.Result;
-        return result is { Canceled: false };
-    }
-
-    private async Task ExecuteAsync(Action action, string errorPrefix)
-    {
-        try
-        {
-            await Task.Run(action);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"{errorPrefix}: {ex.Message}", Severity.Error);
-        }
-    }
+@if (ShowStopButton)
+{
+    @* -- Stop -------------------------------------------------------- *@
+    <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                   Disabled="@(!State.HasEverBeenConnected && !IsConnected)"
+                   OnClick="OnStopClickAsync">
+            Stop
+        </MudButton>
+    </MudTooltip>
 }

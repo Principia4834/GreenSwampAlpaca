@@ -12,6 +12,10 @@
 - After each phase of edits, always commit the changes with a one-line message such as "feat: add new feature X" or "fix: resolve issue Y". This includes committing changes after each edit phase.
 - Prefer strictly evidence-based analysis and do not make speculative assertions without direct support from code/logs.
 
+## SVG Icon Compositions
+- Revise SVG icon compositions to avoid additive-looking overlap.
+- Ensure clearly visible transparent spacing around overlay glyphs.
+
 ## Shell & CLI guidance for Copilot suggestions
 
 - Default shell: `powershell.exe`. Always generate PowerShell-compatible commands unless the user explicitly requests a different shell.
