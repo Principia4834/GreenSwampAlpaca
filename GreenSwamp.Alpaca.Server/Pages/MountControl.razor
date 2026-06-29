@@ -113,10 +113,17 @@ else
                                          Size="Size.Large" />
                             </MudTooltip>
 
+                            <MudTooltip Text="@(s.IsPulseGuidingDec || s.IsPulseGuidingRa ? $"Pulse Guiding Active" : "Pulse Guiding Off")"
+                                        Placement="Placement.Bottom" Arrow="true">
+                                <MudIcon Icon="@PulseIcon"
+                                         Color="@(s.IsPulseGuidingDec || s.IsPulseGuidingRa ? Color.Warning : Color.Default)"
+                                         Size="Size.Large" />
+                            </MudTooltip>
+
                             <MudTooltip Text="@(s.SideOfPier == PointingState.Normal ? $"Pier Side East" : "Pier Side West")"
                                         Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@(s.SideOfPier == PointingState.Normal ? Icons.Material.Filled.NorthEast : Icons.Material.Filled.NorthWest)"
-                                         Color="@(connected ? Color.Success : Color.Default)"
+                                         Color="@(s.ConnectedClientCount > 0 ? Color.Success : Color.Default)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
@@ -128,7 +135,7 @@ else
                             </MudTooltip>
 
                             <MudTooltip Text="@(s.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
-                                <MudIcon Color="Color.Primary"
+                                <MudIcon Color="@(connected ? Color.Success : Color.Default)"
                                          Icon="@(s.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
                                          Size="Size.Large" />
                             </MudTooltip>

@@ -15,6 +15,7 @@
 ## SVG Icon Compositions
 - Revise SVG icon compositions to avoid additive-looking overlap.
 - Ensure clearly visible transparent spacing around overlay glyphs.
+- Provide icon path data in native 24x24 coordinates without runtime scaling transforms.
 
 ## Shell & CLI guidance for Copilot suggestions
 
