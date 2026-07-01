@@ -5,95 +5,151 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudStack Spacing="3">
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="User-defined name for this observatory site." Placement="Placement.Right" Arrow="true">
-        <MudTextField @bind-Value="Observatory!.Name"
-                      @bind-Value:after="NotifyChanged"
-                      Label="Name" Immediate="true"
-                      Error="@_nameError"
-                      ErrorText="@_nameErrorText" />
-    </MudTooltip>
+<MudGrid Spacing="3">
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic latitude of the observatory in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
-        <MudNumericField T="double" @bind-Value="Observatory!.Latitude"
-                         @bind-Value:after="NotifyChanged"
-                         Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
-    </MudTooltip>
+    <MudItem xs="12" sm="6">
+        <MudStack Spacing="3">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="User-defined name for this observatory site." Placement="Placement.Right" Arrow="true">
+                <MudTextField @bind-Value="Observatory!.Name"
+                              @bind-Value:after="NotifyChanged"
+                              Label="Name" Immediate="true"
+                              Error="@_nameError"
+                              ErrorText="@_nameErrorText" />
+            </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic longitude of the observatory in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
-        <MudNumericField T="double" @bind-Value="Observatory!.Longitude"
-                         @bind-Value:after="NotifyChanged"
-                         Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
-    </MudTooltip>
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic latitude of the observatory in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Observatory!.Latitude"
+                                 @bind-Value:after="NotifyChanged"
+                                 Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
+            </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
-        <MudNumericField T="double" @bind-Value="Observatory!.Elevation"
-                         @bind-Value:after="NotifyChanged"
-                         Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
-    </MudTooltip>
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic longitude of the observatory in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Observatory!.Longitude"
+                                 @bind-Value:after="NotifyChanged"
+                                 Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
+            </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="UTC offset for the observatory site (hours). Use negative values for west." Placement="Placement.Right" Arrow="true">
-        <MudNumericField T="double" @bind-Value="_utcOffsetHours"
-                         @bind-Value:after="OnUtcOffsetChanged"
-                         Label="UTC Offset (h)" Format="F1" Min="-14" Max="14" Immediate="true" />
-    </MudTooltip>
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="Observatory!.Elevation"
+                                 @bind-Value:after="NotifyChanged"
+                                 Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
+            </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Select or type a serial port name for the GPS receiver at this site (e.g. COM4 or /dev/ttyUSB0)." Placement="Placement.Right" Arrow="true">
-        @if (_availableGpsPorts.Length > 0)
-        {
-            <MudSelect @bind-Value="Observatory!.GpsPort" @bind-Value:after="NotifyChanged"
-                       Label="GPS Port" AnchorOrigin="Origin.BottomLeft">
-                @foreach (var port in _availableGpsPorts)
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="UTC offset for the observatory site (hours). Use negative values for west." Placement="Placement.Right" Arrow="true">
+                <MudNumericField T="double" @bind-Value="_utcOffsetHours"
+                                 @bind-Value:after="OnUtcOffsetChanged"
+                                 Label="UTC Offset (h)" Format="F1" Min="-14" Max="14" Immediate="true" />
+            </MudTooltip>
+        </MudStack>
+    </MudItem>
+
+    <MudItem xs="12" sm="6">
+        <MudStack Spacing="3">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Select or type a serial port name for the GPS receiver at this site (e.g. COM4 or /dev/ttyUSB0)." Placement="Placement.Right" Arrow="true">
+                @if (_availableGpsPorts.Length > 0)
                 {
-                    <MudSelectItem Value="@port">@port</MudSelectItem>
+                    <MudSelect @bind-Value="Observatory!.GpsPort" @bind-Value:after="NotifyChanged"
+                               Label="GPS Port" AnchorOrigin="Origin.BottomLeft">
+                        @foreach (var port in _availableGpsPorts)
+                        {
+                            <MudSelectItem Value="@port">@port</MudSelectItem>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Observatory!.GpsPort) && !_availableGpsPorts.Contains(Observatory!.GpsPort, StringComparer.OrdinalIgnoreCase))
+                        {
+                            <MudSelectItem Value="@Observatory!.GpsPort">@Observatory!.GpsPort (manual)</MudSelectItem>
+                        }
+                    </MudSelect>
                 }
-                @if (!string.IsNullOrWhiteSpace(Observatory!.GpsPort) && !_availableGpsPorts.Contains(Observatory!.GpsPort, StringComparer.OrdinalIgnoreCase))
+                else
                 {
-                    <MudSelectItem Value="@Observatory!.GpsPort">@Observatory!.GpsPort (manual)</MudSelectItem>
+                    <MudTextField @bind-Value="Observatory!.GpsPort" @bind-Value:after="NotifyChanged"
+                                  Label="GPS Port" Immediate="true"
+                                  HelperText="No ports detected — type the port name manually." />
                 }
-            </MudSelect>
-        }
-        else
-        {
-            <MudTextField @bind-Value="Observatory!.GpsPort" @bind-Value:after="NotifyChanged"
-                          Label="GPS Port" Immediate="true"
-                          HelperText="No ports detected — type the port name manually." />
-        }
-    </MudTooltip>
+            </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver baud rate for this observatory site." Placement="Placement.Right" Arrow="true">
-        <MudSelect T="int" @bind-Value="Observatory!.GpsBaudRate" @bind-Value:after="NotifyChanged"
-                   Label="GPS Baud Rate">
-            <MudSelectItem Value="4800">4800</MudSelectItem>
-            <MudSelectItem Value="9600">9600</MudSelectItem>
-            <MudSelectItem Value="19200">19200</MudSelectItem>
-            <MudSelectItem Value="38400">38400</MudSelectItem>
-            <MudSelectItem Value="57600">57600</MudSelectItem>
-            <MudSelectItem Value="115200">115200</MudSelectItem>
-        </MudSelect>
-    </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the GPS receiver and read latitude, longitude, elevation and the local-vs-GPS time difference." Placement="Placement.Right" Arrow="true">
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                   StartIcon="@Icons.Material.Filled.GpsFixed"
-                   OnClick="OpenGpsFixAsync">
-            Get GPS Fix
-        </MudButton>
-    </MudTooltip>
-    @* Advanced GPS serial settings (Parity, Stop Bits, Data Bits, Timeout, Handshake) are
-       intentionally hidden from this panel but remain bound in ObservatoryInfo and are
-       still used by NmeaGpsReader when a fix is requested. *@
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver baud rate for this observatory site." Placement="Placement.Right" Arrow="true">
+                <MudSelect T="int" @bind-Value="Observatory!.GpsBaudRate" @bind-Value:after="NotifyChanged"
+                           Label="GPS Baud Rate">
+                    <MudSelectItem Value="4800">4800</MudSelectItem>
+                    <MudSelectItem Value="9600">9600</MudSelectItem>
+                    <MudSelectItem Value="19200">19200</MudSelectItem>
+                    <MudSelectItem Value="38400">38400</MudSelectItem>
+                    <MudSelectItem Value="57600">57600</MudSelectItem>
+                    <MudSelectItem Value="115200">115200</MudSelectItem>
+                </MudSelect>
+            </MudTooltip>
 
-    @if (DeviceSettings is { Count: > 0 })
-    {
-        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Copy location and GPS settings from this observatory to all telescope devices." Placement="Placement.Right" Arrow="true">
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
-                       StartIcon="@Icons.Material.Filled.CopyAll"
-                       OnClick="CopyToAllDevices">
-                Copy to all devices
-            </MudButton>
-        </MudTooltip>
-    }
-</MudStack>
+            @* Advanced GPS serial settings (Parity, Stop Bits, Data Bits, Timeout, Handshake) are
+               intentionally hidden from this panel but remain bound in ObservatoryInfo and are
+               still used by NmeaGpsReader when a fix is requested. *@
+            @if (ShowHidden)
+            {
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port parity." Placement="Placement.Right" Arrow="true">
+                    <MudSelect T="string" @bind-Value="Observatory!.GpsParity" @bind-Value:after="NotifyChanged"
+                               Label="GPS Parity">
+                        <MudSelectItem Value="@("None")">None</MudSelectItem>
+                        <MudSelectItem Value="@("Odd")">Odd</MudSelectItem>
+                        <MudSelectItem Value="@("Even")">Even</MudSelectItem>
+                        <MudSelectItem Value="@("Mark")">Mark</MudSelectItem>
+                        <MudSelectItem Value="@("Space")">Space</MudSelectItem>
+                    </MudSelect>
+                </MudTooltip>
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port stop bits." Placement="Placement.Right" Arrow="true">
+                    <MudSelect T="string" @bind-Value="Observatory!.GpsStopBits" @bind-Value:after="NotifyChanged"
+                               Label="GPS Stop Bits">
+                        <MudSelectItem Value="@("None")">None</MudSelectItem>
+                        <MudSelectItem Value="@("One")">One</MudSelectItem>
+                        <MudSelectItem Value="@("OnePointFive")">OnePointFive</MudSelectItem>
+                        <MudSelectItem Value="@("Two")">Two</MudSelectItem>
+                    </MudSelect>
+                </MudTooltip>
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port data bits." Placement="Placement.Right" Arrow="true">
+                    <MudSelect T="int" @bind-Value="Observatory!.GpsDataBits" @bind-Value:after="NotifyChanged"
+                               Label="GPS Data Bits">
+                        <MudSelectItem Value="5">5</MudSelectItem>
+                        <MudSelectItem Value="6">6</MudSelectItem>
+                        <MudSelectItem Value="7">7</MudSelectItem>
+                        <MudSelectItem Value="8">8</MudSelectItem>
+                    </MudSelect>
+                </MudTooltip>
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
+                    <MudNumericField T="int" @bind-Value="Observatory!.GpsTimeout" @bind-Value:after="NotifyChanged"
+                                     Label="GPS Timeout (ms)" Min="100" Max="30000" />
+                </MudTooltip>
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port handshake." Placement="Placement.Right" Arrow="true">
+                    <MudSelect T="string" @bind-Value="Observatory!.GpsHandshake" @bind-Value:after="NotifyChanged"
+                               Label="GPS Handshake">
+                        <MudSelectItem Value="@("None")">None</MudSelectItem>
+                        <MudSelectItem Value="@("XOnXOff")">XOnXOff</MudSelectItem>
+                        <MudSelectItem Value="@("RequestToSend")">RequestToSend</MudSelectItem>
+                        <MudSelectItem Value="@("RequestToSendXOnXOff")">RequestToSendXOnXOff</MudSelectItem>
+                    </MudSelect>
+                </MudTooltip>
+            }
+
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the GPS receiver and read latitude, longitude, elevation and the local-vs-GPS time difference." Placement="Placement.Right" Arrow="true">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.GpsFixed"
+                           OnClick="OpenGpsFixAsync">
+                    Get GPS Fix
+                </MudButton>
+            </MudTooltip>
+
+            @if (DeviceSettings is { Count: > 0 })
+            {
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Copy location and GPS settings from this observatory to all telescope devices." Placement="Placement.Right" Arrow="true">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.CopyAll"
+                               OnClick="CopyToAllDevices">
+                        Copy to all devices
+                    </MudButton>
+                </MudTooltip>
+            }
+        </MudStack>
+    </MudItem>
+
+</MudGrid>
 
 @code {
     /// <summary>The individual observatory being edited (working copy).</summary>
@@ -101,6 +157,7 @@
 
     /// <summary>All observatories in the working copy — used for name-uniqueness validation.</summary>
     [Parameter] public ObservatorySettings? AllObservatories { get; set; }
+    [Parameter] public bool ShowHidden { get; set; }
 
     [Parameter] public Dictionary<int, SkySettings>? DeviceSettings { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
