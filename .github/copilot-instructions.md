@@ -11,6 +11,7 @@
 - When using the edit_file tool always confirm the context is unique and the line numbers are correct by first using get_file_with_lines to read the exact lines you plan to edit, and verifying the content matches what you expect to change
 - After each phase of edits, always commit the changes with a one-line message such as "feat: add new feature X" or "fix: resolve issue Y". This includes committing changes after each edit phase.
 - Prefer strictly evidence-based analysis and do not make speculative assertions without direct support from code/logs.
+- The workspace is Windows/PowerShell-only. Flag any tool usage that looks Unix-like (e.g., grep-named search tools) even when it's an internal IDE tool rather than an actual shell command. Continue defaulting to PowerShell syntax for all real terminal commands, and briefly clarify when a non-terminal tool has a Unix-sounding name.
 
 ## SVG Icon Compositions
 - Revise SVG icon compositions to avoid additive-looking overlap.
