@@ -1,6 +1,9 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.Shared
+@using GreenSwamp.Alpaca.Server.Components.Dialogs
+@using GreenSwamp.Alpaca.Server.Services
 @inject MudBlazor.ISnackbar Snackbar
+@inject MudBlazor.IDialogService DialogService
 
 @* Combined editor: Location + Environmental + GPS *@
 
@@ -98,47 +101,16 @@
                     <MudSelectItem Value="115200">115200</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port parity." Placement="Placement.Right" Arrow="true">
-                <MudSelect T="string" @bind-Value="Device!.GpsParity" @bind-Value:after="NotifyChanged"
-                            Label="GPS Parity">
-                    <MudSelectItem Value="@("None")">None</MudSelectItem>
-                    <MudSelectItem Value="@("Odd")">Odd</MudSelectItem>
-                    <MudSelectItem Value="@("Even")">Even</MudSelectItem>
-                    <MudSelectItem Value="@("Mark")">Mark</MudSelectItem>
-                    <MudSelectItem Value="@("Space")">Space</MudSelectItem>
-                </MudSelect>
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the GPS receiver and read latitude, longitude, elevation and the local-vs-GPS time difference." Placement="Placement.Right" Arrow="true">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.GpsFixed"
+                           OnClick="OpenGpsFixAsync">
+                    Get GPS Fix
+                </MudButton>
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port stop bits." Placement="Placement.Right" Arrow="true">
-                <MudSelect T="string" @bind-Value="Device!.GpsStopBits" @bind-Value:after="NotifyChanged"
-                            Label="GPS Stop Bits">
-                    <MudSelectItem Value="@("None")">None</MudSelectItem>
-                    <MudSelectItem Value="@("One")">One</MudSelectItem>
-                    <MudSelectItem Value="@("OnePointFive")">OnePointFive</MudSelectItem>
-                    <MudSelectItem Value="@("Two")">Two</MudSelectItem>
-                </MudSelect>
-            </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port data bits." Placement="Placement.Right" Arrow="true">
-                <MudSelect T="int" @bind-Value="Device!.GpsDataBits" @bind-Value:after="NotifyChanged"
-                            Label="GPS Data Bits">
-                    <MudSelectItem Value="5">5</MudSelectItem>
-                    <MudSelectItem Value="6">6</MudSelectItem>
-                    <MudSelectItem Value="7">7</MudSelectItem>
-                    <MudSelectItem Value="8">8</MudSelectItem>
-                </MudSelect>
-            </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
-                <MudNumericField T="int" @bind-Value="Device!.GpsTimeout" @bind-Value:after="NotifyChanged"
-                                 Label="GPS Timeout (ms)" Min="100" Max="30000" />
-            </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port handshake." Placement="Placement.Right" Arrow="true">
-                <MudSelect T="string" @bind-Value="Device!.GpsHandshake" @bind-Value:after="NotifyChanged"
-                            Label="GPS Handshake">
-                    <MudSelectItem Value="@("None")">None</MudSelectItem>
-                    <MudSelectItem Value="@("XOnXOff")">XOnXOff</MudSelectItem>
-                    <MudSelectItem Value="@("RequestToSend")">RequestToSend</MudSelectItem>
-                    <MudSelectItem Value="@("RequestToSendXOnXOff")">RequestToSendXOnXOff</MudSelectItem>
-                </MudSelect>
-            </MudTooltip>
+            @* Advanced GPS serial settings (Parity, Stop Bits, Data Bits, Timeout, Handshake) are
+               intentionally hidden from this panel but remain bound in SkySettings and are
+               still used by NmeaGpsReader when a fix is requested. *@
         </MudStack>
     </MudExpansionPanel>
 
@@ -192,6 +164,43 @@
     {
         if (Device is not null)
             Device.UTCOffset = TimeSpan.FromHours(_utcHours);
+        await NotifyChanged();
+    }
+
+    private async Task OpenGpsFixAsync()
+    {
+        if (Device is null) return;
+        if (string.IsNullOrWhiteSpace(Device.GpsPort))
+        {
+            Snackbar.Add("No GPS port is configured for this device.", MudBlazor.Severity.Warning);
+            return;
+        }
+
+        var connectionParams = new GpsConnectionParams(
+            Device.GpsPort,
+            Device.GpsBaudRate,
+            Device.GpsParity,
+            Device.GpsStopBits,
+            Device.GpsDataBits,
+            Device.GpsTimeout,
+            Device.GpsHandshake);
+
+        var parameters = new DialogParameters<GpsFixDialog>
+        {
+            { d => d.ConnectionParams, connectionParams }
+        };
+
+        var dialog = await DialogService.ShowAsync<GpsFixDialog>(
+            "GPS Fix", parameters,
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result.Canceled || result.Data is not GpsFixResult fix) return;
+
+        Device.Latitude = fix.Latitude;
+        Device.Longitude = fix.Longitude;
+        Device.Elevation = fix.Altitude;
+        Snackbar.Add("Latitude, longitude and elevation updated from GPS.", MudBlazor.Severity.Success);
         await NotifyChanged();
     }
 

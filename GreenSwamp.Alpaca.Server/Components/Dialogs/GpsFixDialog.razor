@@ -1,0 +1,83 @@
+﻿@using GreenSwamp.Alpaca.Server.Services
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.GpsFixed" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">GPS Fix</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2" Style="min-width: 320px">
+            @if (_reading)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                    <MudText Typo="Typo.body1">Reading from @ConnectionParams.Port&hellip;</MudText>
+                </MudStack>
+            }
+            else if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.GpsOff">
+                    @_error
+                </MudAlert>
+            }
+            else if (_result is not null)
+            {
+                <MudSimpleTable Dense="true">
+                    <tbody>
+                        <tr>
+                            <td>Latitude</td>
+                            <td>@_result.Latitude.ToString("F6")&deg;</td>
+                        </tr>
+                        <tr>
+                            <td>Longitude</td>
+                            <td>@_result.Longitude.ToString("F6")&deg;</td>
+                        </tr>
+                        <tr>
+                            <td>Altitude</td>
+                            <td>@_result.Altitude.ToString("F1") m</td>
+                        </tr>
+                        <tr>
+                            <td>GPS UTC</td>
+                            <td>@(_result.GpsUtc?.ToString("yyyy-MM-dd HH:mm:ss.fff") ?? "Not reported")</td>
+                        </tr>
+                        <tr>
+                            <td>PC UTC</td>
+                            <td>@_result.PcUtc.ToString("yyyy-MM-dd HH:mm:ss.fff")</td>
+                        </tr>
+                        <tr>
+                            <td>Time Difference</td>
+                            <td>@FormatTimeDiff(_result.TimeDiff)</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">
+            @(_result is null ? "Close" : "Cancel")
+        </MudButton>
+        @if (_result is not null)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Check"
+                       OnClick="Apply">
+                Apply
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static string FormatTimeDiff(TimeSpan? diff)
+    {
+        if (diff is null) return "N/A \u2014 no GPS timestamp received";
+        var seconds = diff.Value.TotalSeconds;
+        return seconds >= 0
+            ? $"GPS ahead of PC by {seconds:F2} s"
+            : $"GPS behind PC by {-seconds:F2} s";
+    }
+}
