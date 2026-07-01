@@ -153,6 +153,28 @@ namespace GreenSwamp.Alpaca.Settings.Services
         }
 
         /// <summary>
+        /// Returns full paths of version folders in the settings root whose version is strictly
+        /// lower than <paramref name="currentVersion"/>, ordered descending (highest/closest first).
+        /// Only considers folders whose names parse as a standard x.y.z or x.y.z.w version string.
+        /// </summary>
+        /// <param name="currentVersion">The running application version to compare against.</param>
+        public static IEnumerable<string> GetPreviousVersionPaths(string currentVersion)
+        {
+            var root = GetSettingsRoot();
+            if (!Directory.Exists(root))
+                return [];
+
+            if (!Version.TryParse(currentVersion, out var current))
+                return [];
+
+            return Directory.GetDirectories(root)
+                .Select(d => (path: d, name: Path.GetFileName(d)))
+                .Where(x => Version.TryParse(x.name, out var v) && v < current)
+                .OrderByDescending(x => Version.Parse(x.name))
+                .Select(x => x.path);
+        }
+
+        /// <summary>
         /// Returns the logs directory.
         /// <list type="bullet">
         ///   <item>Service mode / overridden → <c>&lt;SettingsRoot&gt;/Logs</c></item>

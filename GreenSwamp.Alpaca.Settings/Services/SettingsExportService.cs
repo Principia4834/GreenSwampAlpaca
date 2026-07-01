@@ -25,6 +25,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
     /// </summary>
     public interface ISettingsExportService
     {
+        /// <summary>Gets the current application version string (e.g. "1.2.3").</summary>
+        string CurrentVersion { get; }
+
         /// <summary>
         /// Generates a ZIP stream containing all settings and user documents.
         /// The stream is created in-memory with maximum compression.
@@ -71,6 +74,8 @@ namespace GreenSwamp.Alpaca.Settings.Services
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         }
+
+        public string CurrentVersion => _settingsService.CurrentVersion;
 
         public async Task<MemoryStream> GenerateExportZipAsync(
             Action<int>? progressCallback = null,

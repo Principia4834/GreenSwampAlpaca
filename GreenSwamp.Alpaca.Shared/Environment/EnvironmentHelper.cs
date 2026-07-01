@@ -29,8 +29,6 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
     /// </summary>
     public static class EnvironmentHelper
     {
-        private const string LogPattern = "GreenSwampEnv-*.log";
-        private const string SettingsZipPattern = "Settings-*.zip";
         private const int KeepCount = 3;
         private const int TimeoutSeconds = 10;
         private const int SettingsZipTimeoutSeconds = 15;
@@ -59,12 +57,13 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
 
         /// <summary>
         /// Returns the full path for the next environment log file.
-        /// Format: <c>&lt;LogsRoot&gt;\GreenSwampEnv_yyyy-MM-dd_HHmmss.log</c>
+        /// Format: <c>&lt;LogsRoot&gt;\GreenSwampEnv_v{version}_yyyy-MM-dd_HHmmss.log</c>
         /// </summary>
         public static string GetDefaultLogPath()
         {
             var logsRoot = SettingsPathResolver.GetLogsRoot();
-            var fileName = $"GreenSwampEnv_{DateTime.Now:yyyy-MM-dd_HHmmss}.log";
+            var version = SettingsPathResolver.GetAssemblyVersion();
+            var fileName = $"GreenSwampEnv_v{version}_{DateTime.Now:yyyy-MM-dd_HHmmss}.log";
             return Path.Combine(logsRoot, fileName);
         }
 
@@ -97,12 +96,12 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
                 var logsRoot = SettingsPathResolver.GetLogsRoot();
                 Directory.CreateDirectory(logsRoot);
 
-                var zipPath = Path.Combine(logsRoot, $"Settings-{DateTime.Now:yyyy-MM-dd_HHmmss}.zip");
+                var zipPath = Path.Combine(logsRoot, $"Settings_v{version}_{DateTime.Now:yyyy-MM-dd_HHmmss}.zip");
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(SettingsZipTimeoutSeconds));
                 await Task.Run(() => CreateSettingsZip(zipPath, jsonFiles, cts.Token), cts.Token).ConfigureAwait(false);
 
-                EnvironmentLogger.CleanupOldLogs(logsRoot, SettingsZipPattern, KeepCount);
+                EnvironmentLogger.CleanupOldLogs(logsRoot, $"Settings_v{version}_*.zip", KeepCount);
                 return zipPath;
             }
             catch
@@ -117,7 +116,10 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
         {
             var dir = Path.GetDirectoryName(logPath);
             if (!string.IsNullOrEmpty(dir))
-                EnvironmentLogger.CleanupOldLogs(dir, LogPattern, KeepCount);
+            {
+                var version = SettingsPathResolver.GetAssemblyVersion();
+                EnvironmentLogger.CleanupOldLogs(dir, $"GreenSwampEnv_v{version}_*.log", KeepCount);
+            }
         }
 
         private static void CreateSettingsZip(string zipPath, string[] jsonFiles, CancellationToken ct)

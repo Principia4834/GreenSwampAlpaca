@@ -69,8 +69,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             Directory.CreateDirectory(_currentVersionPath);
 
-            // Ensure the default device file exists before anything else (e.g. discovery, DeviceManager)
-            // can attempt to read it. This is a no-op if device files already exist.
+            // On upgrade: copy JSON files from the nearest lower version before first-run init.
+            // This is a no-op when the current version folder already has device files.
+            TryMigrateFromPreviousVersion();
+
+            // Ensure device files exist before anything else (e.g. discovery, DeviceManager).
+            // After migration this creates only the files that were not copied.
             RunFirstRunDeviceInit();
         }
         
@@ -232,14 +236,53 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         // ── First-run initialisation ──────────────────────────────────────────
 
+        /// <summary>
+        /// Attempts to migrate all JSON settings files from the nearest strictly-lower version
+        /// folder into the current version folder. Returns <c>true</c> if any files were copied.
+        /// Files that already exist in the destination are never overwritten.
+        /// </summary>
+        private bool TryMigrateFromPreviousVersion()
+        {
+            // Guard: current version already has device files — nothing to migrate.
+            if (Directory.GetFiles(_currentVersionPath, "device-??.settings.json").Length > 0)
+                return false;
+
+            foreach (var previousPath in SettingsPathResolver.GetPreviousVersionPaths(CurrentVersion))
+            {
+                var jsonFiles = Directory.GetFiles(previousPath, "*.json", SearchOption.TopDirectoryOnly);
+                if (jsonFiles.Length == 0)
+                    continue;
+
+                var sourceVersion = Path.GetFileName(previousPath);
+                LogSafe("INFO", $"Migrating settings from version {sourceVersion} to {CurrentVersion}.");
+
+                foreach (var src in jsonFiles)
+                {
+                    var dest = Path.Combine(_currentVersionPath, Path.GetFileName(src));
+                    if (File.Exists(dest))
+                        continue;
+
+                    try
+                    {
+                        File.Copy(src, dest);
+                        LogSafe("INFO", $"  Copied {Path.GetFileName(src)} from {sourceVersion}.");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogSafe("WARNING", $"  Failed to copy {Path.GetFileName(src)}: {ex.Message}");
+                    }
+                }
+
+                return true;
+            }
+
+            LogSafe("INFO", "No previous version settings found — first-run initialisation will apply.");
+            return false;
+        }
+
         private void RunFirstRunDeviceInit()
         {
-            // No-op if device files are already present (normal startup after first run).
-            var existingFiles = Directory.GetFiles(_currentVersionPath, "device-??.settings.json");
-            if (existingFiles.Length > 0)
-                return;
-
-            LogSafe("INFO", "No device files found — running first-run device initialisation from DeviceTemplates.");
+            LogSafe("INFO", "Checking for missing device files — creating any absent entries from DeviceTemplates.");
 
             var devicesSection = _configuration.GetSection("Devices");
             if (!devicesSection.Exists())
@@ -262,6 +305,13 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 if (string.IsNullOrEmpty(stub.AlignmentMode) || !Enum.TryParse<AlignmentMode>(stub.AlignmentMode, out _))
                 {
                     LogSafe("WARNING", $"Device {stub.DeviceNumber} has unknown AlignmentMode '{stub.AlignmentMode}' — skipping.");
+                    continue;
+                }
+
+                // Skip devices whose settings file already exists (e.g. migrated from a previous version).
+                if (DeviceSettingsExist(stub.DeviceNumber))
+                {
+                    LogSafe("INFO", $"Device {stub.DeviceNumber:D2} settings already present — skipping template init.");
                     continue;
                 }
 
