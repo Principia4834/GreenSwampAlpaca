@@ -10,6 +10,7 @@
 @inject TelescopeStateService StateService
 @inject IVersionedSettingsService SettingsService
 @inject IDialogService DialogService
+@inject FloatingWindowManager FloatingWindowManager
 @implements IDisposable
 
 <PageTitle>Mount Status</PageTitle>
@@ -26,13 +27,23 @@
                            Style="flex: 0 0 33%; max-width: 33%;" />
     }
 
-    <MudButton Color="Color.Default"
-               Variant="Variant.Outlined"
-               Size="Size.Small"
-               StartIcon="@Icons.Material.Filled.Download"
-               OnClick="OpenExportDialog">
-        Export Settings & Logs
-    </MudButton>
+    <MudStack Row="true" Spacing="2">
+@*         <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.OpenInNew"
+                   OnClick="OpenHelloWorldWindow">
+            Open Floating Window
+        </MudButton>
+ *@
+        <MudButton Color="Color.Default"
+                   Variant="Variant.Outlined"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.Download"
+                   OnClick="OpenExportDialog">
+            Export Settings & Logs
+        </MudButton>
+    </MudStack>
 </MudStack>
 
 @if (_alpacaDevices.Count == 0)

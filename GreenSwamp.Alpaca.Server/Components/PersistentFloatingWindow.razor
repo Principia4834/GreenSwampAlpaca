@@ -1,0 +1,79 @@
+﻿@* Shared/PersistentFloatingWindow.razor *@
+@using GreenSwamp.Alpaca.Server.Services
+
+@inject FloatingWindowManager WindowManager
+@inject IJSRuntime JS
+@implements IDisposable
+
+@if (WindowManager.IsVisible)
+{
+    <div id="floating-window"
+         style="position: fixed;
+        z-index: 9999;
+        left: @(WindowManager.X)px;
+        top: @(WindowManager.Y)px;
+        width: @(WindowManager.Width)px;
+        height: @(WindowManager.Height)px;
+        box-shadow: var(--mud-elevation-8);
+        background-color: var(--mud-palette-background-grey);
+        border: 1px solid var(--mud-palette-lines-default);
+        display: flex; flex-direction: column; border-radius: 4px; overflow: hidden;">
+
+        <div id="floating-header"
+             style="cursor: move;
+            background-color: var(--mud-palette-primary);
+            color: var(--mud-palette-primary-text);
+            padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;">
+            <MudText Typo="Typo.subtitle2">@WindowManager.Title</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Inherit" OnClick="WindowManager.Close" />
+        </div>
+
+        <div style="flex-grow: 1; padding: 16px; overflow-y: auto; background-color: var(--mud-palette-surface);">
+            <MudText Typo="Typo.body1">@WindowManager.ContentText</MudText>
+        </div>
+
+        <div id="floating-resizer"
+             style="width: 15px; height: 15px;
+            cursor: nwse-resize;
+            position: absolute; bottom: 0; right: 0;
+            background: linear-gradient(135deg, transparent 50%, var(--mud-palette-text-disabled) 50%);">
+        </div>
+    </div>
+}
+
+@code {
+    private DotNetObjectReference<PersistentFloatingWindow>? _objRef;
+    private bool _interopInitialized;
+
+    protected override void OnInitialized()
+    {
+        WindowManager.OnStateChanged += HandleStateUpdate;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (WindowManager.IsVisible && !_interopInitialized)
+        {
+            _objRef ??= DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("floatingWindowInterop.init", _objRef, "floating-window", "floating-header", "floating-resizer");
+            _interopInitialized = true;
+        }
+
+        if (!WindowManager.IsVisible)
+            _interopInitialized = false;
+    }
+
+    private void HandleStateUpdate() => InvokeAsync(StateHasChanged);
+
+    [JSInvokable]
+    public void SavePosition(double x, double y) => WindowManager.UpdatePosition(x, y);
+
+    [JSInvokable]
+    public void SaveSize(double w, double h) => WindowManager.UpdateSize(w, h);
+
+    public void Dispose()
+    {
+        WindowManager.OnStateChanged -= HandleStateUpdate;
+        _objRef?.Dispose();
+    }
+}

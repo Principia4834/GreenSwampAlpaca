@@ -59,6 +59,11 @@ namespace GreenSwamp.Alpaca.Server.Pages
             InvokeAsync(StateHasChanged);
         }
 
+        //private void OpenHelloWorldWindow()
+        //{
+        //    FloatingWindowManager.Open("Mount Status Demo", "Hello World!");
+        //}
+
         public void Dispose()
         {
             StateService.StateChanged -= OnStateChanged;

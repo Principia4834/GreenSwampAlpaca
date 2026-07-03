@@ -1,5 +1,9 @@
 ﻿@using System.Globalization
+@using GreenSwamp.Alpaca.Server.Services
+
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject FloatingWindowManager WindowManager
 
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -37,6 +41,9 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
+
+<!-- Renders globally over all views without reset boundaries -->
+<PersistentFloatingWindow />
 
 @code {
     private bool _drawerOpen = true;

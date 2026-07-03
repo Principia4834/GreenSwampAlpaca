@@ -195,6 +195,9 @@ namespace GreenSwamp.Alpaca.Server
                 builder.Host.UseSystemd();
             }
 
+            // Register FloatingWindowManager for DI injection
+            builder.Services.AddScoped<FloatingWindowManager>();
+
             // Apply the same timestamp format to the host's console logger.
             builder.Logging.AddSimpleConsole(o => { o.TimestampFormat = "yyyy-MM-dd HH:mm:ss "; o.SingleLine = true; });
 
