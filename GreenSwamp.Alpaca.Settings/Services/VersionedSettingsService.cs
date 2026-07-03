@@ -372,6 +372,20 @@ namespace GreenSwamp.Alpaca.Settings.Services
             else
                 alpacaDevices = new List<AlpacaDevice>();
 
+            // Replace any placeholder / well-known fixed GUID with a freshly generated one.
+            // This ensures that every first-run installation receives a unique ASCOM discovery identity
+            // regardless of what is written in appsettings.json.
+            const string placeholderGuid = "*";
+            foreach (var device in alpacaDevices)
+            {
+                if (string.IsNullOrWhiteSpace(device.UniqueId) ||
+                    string.Equals(device.UniqueId, placeholderGuid, StringComparison.OrdinalIgnoreCase))
+                {
+                    device.UniqueId = Guid.NewGuid().ToString();
+                    LogSafe("INFO", $"Generated new UniqueId for device {device.DeviceNumber}: {device.UniqueId}");
+                }
+            }
+
             try
             {
                 var doc = new { AlpacaDevices = alpacaDevices };
