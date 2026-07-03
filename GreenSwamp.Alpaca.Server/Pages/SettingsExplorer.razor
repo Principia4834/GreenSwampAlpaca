@@ -102,19 +102,19 @@
         }
         else if (IsDeviceManagerNode(_selectedNode))
         {
-            <DeviceManagerCard Devices="_deviceWork"
-                               IsBusy="_deviceManagerBusy"
-                               HasPendingChanges="_hasPendingDeviceReload"
+            <DeviceManagerCard Devices="@_deviceWork"
+                               IsBusy="@_deviceManagerBusy"
+                               HasPendingChanges="@_hasPendingDeviceReload"
                                OnAdd="AddDeviceAsync"
                                OnDelete="DeleteDeviceAsync"
                                OnHotReload="HotReloadDevicesAsync" />
         }
         else if (IsObservatoriesSectionNode(_selectedNode))
         {
-            <ObservatorySectionCard Observatories="_observatoryWork"
+            <ObservatorySectionCard Observatories="@_observatoryWork"
                                     IsDirty="@_selectedNode.IsDirty"
                                     IsLoading="@_saving"
-                                    DeviceSettings="_deviceWork"
+                                    DeviceSettings="@_deviceWork"
                                     OnAdd="AddObservatoryAsync"
                                     OnDelete="DeleteObservatoryAsync"
                                     OnCopyToAllDevices="HandleCopyObservatoryToAllDevicesAsync"
@@ -159,12 +159,12 @@
                             Hidden settings are shown. These are advanced values not normally needed.
                         </MudAlert>
                     }
-                    <DynamicGroupEditor Node="_selectedNode"
-                                        Observatory="_observatoryWork"
-                                        ServerConfig="_serverConfigWork"
-                                        Monitor="_monitorWork"
-                                        DeviceSettings="_deviceWork"
-                                        ShowHidden="_showHidden"
+                    <DynamicGroupEditor Node="@_selectedNode"
+                                        Observatory="@_observatoryWork"
+                                        ServerConfig="@_serverConfigWork"
+                                        Monitor="@_monitorWork"
+                                        DeviceSettings="@_deviceWork"
+                                        ShowHidden="@_showHidden"
                                         OnCopyObservatoryToAllDevices="HandleCopyObservatoryToAllDevicesAsync"
                                         OnSettingChanged="HandleSettingChanged" />
                 </MudCardContent>

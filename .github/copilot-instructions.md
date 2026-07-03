@@ -33,29 +33,24 @@ Rules (must follow)
    - Never generate `-r` (or other short Unix flags) with PowerShell cmdlets (e.g., `Select-String -r` is invalid).
    - Replace recursive `-r` usage with PowerShell equivalents such as `-Recurse` or `Get-ChildItem -Recurse` where appropriate.
 3. Provide a correct PowerShell alternative whenever Copilot would suggest a Unix-style command
-   - Example (incorrect):
-     - `Select-String -r -Path .\src\*.cs -Pattern "TODO"`
-   - Correct PowerShell alternatives:
-     - `Get-ChildItem -Path .\src -Recurse -Filter '*.cs' | Select-String -Pattern 'TODO'`
-     - `Select-String -Path (Get-ChildItem -Path .\src -Recurse -Filter '*.cs') -Pattern 'TODO'`
-     - (PowerShell 7+) `Select-String -Path '.\src\**\*.cs' -Pattern 'TODO'`
-4. Prefer explicit, readable PowerShell forms over compact Unix-like one-liners
-   - Use `Get-ChildItem -Recurse` + `Select-String -Pattern` rather than emulating `grep -r` semantics.
-5. When the user has a different preferred shell configured in the workspace, confirm before switching
-   - If the user explicitly requests `bash`, `sh`, or `zsh`, generate POSIX-style commands instead.
 
-Suggested verification text for Copilot assistant prompts
-- "Target shell: PowerShell (powershell.exe). Use `-Recurse` for recursion; do not emit Unix `-r` flags."
+## MudBlazor UI creation, editing and debugging
 
-Add mapping hints (for Copilot model / prompts)
-- Map `grep -r PATTERN PATH` -> `Get-ChildItem -Path PATH -Recurse | Select-String -Pattern 'PATTERN'`
-- Map `rg PATTERN PATH` -> `rg 'PATTERN' PATH` (only when author requests `rg` explicitly)
+- When answering MudBlazor UI behavior questions in this workspace, consult the MudBlazor MCP docs before responding.
+
+## Razor file creation, editing and debugging
+
+When editing, creating or debugging a .razor file always refer to Microsoft Learn MCP, use:
+
+- [Razor syntax reference for ASP.NET Core | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-10.0) 
+- [Introduction to ASP.NET Web Programming Using the Razor Syntax (C#) | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/web-pages/overview/getting-started/introducing-razor-syntax-c) 
+- [ASP.NET Core Razor components | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-10.0)
 
 ## ?? CRITICAL: ALWAYS FOLLOW THIS WORKFLOW
 
 ### Before Making ANY Changes:
 
-1. **VERIFY BUILD STATE FIRST**run_build   - **If build fails:** STOP. Report the issue. Do NOT proceed with changes.
+1. **VERIFY BUILD STATE FIRST** run_build   - **If build fails:** STOP. Report the issue. Do NOT proceed with changes.
    - **If build succeeds:** Document this baseline state before proceeding.
    - **Record the baseline**: "Build SUCCESS - 0 errors"
 
@@ -72,7 +67,7 @@ Write-Host "File has $linesBefore lines before edit"
    - Edit only what is necessary
    - Avoid large code block replacements
    - Use precise line ranges when possible
-   - **For files >2000 lines: Use get_file_with_lines for context, edit ONLY the specific section**
+   - **For files >1500 lines: Use get_file_with_lines for context, edit ONLY the specific section**
 
 5. **VERIFY IMMEDIATELY AFTER EACH EDIT (MANDATORY)**# After EVERY edit_file call:
 
@@ -100,48 +95,7 @@ git diff --stat path/to/file.cs
    - **If Y < X:** Verify the fix actually worked.
    - **If Y = X:** Verify no new errors in different locations.
 
----
 
-## ?? LARGE FILE HANDLING (3000+ lines)
-
-### Critical Rules for Large Files:
-
-**Files like `SkyServer.Core.cs` (3000+ lines) require special care:**
-
-1. **NEVER replace entire switch statements or large blocks**
-   - The edit_file tool can corrupt large structures
-   - Edit ONLY the specific case/method/block you need to change
-
-2. **Use targeted edits with context:**// ? CORRECT - Minimal context
-   case SomeCase:
-    // ...existing code...
-    newCode(); // Change here
-    // ...existing code...
-    break;
-3. **For settings file copying in MountConnect():**
-   - **Target ONLY the try-catch block** (lines ~318-335)
-   - Do NOT include surrounding switch cases
-   - Verify line numbers with get_file_with_lines first
-
-4. **If edit fails:**
-   - STOP immediately
-   - Do NOT attempt multiple fixes
-   - Ask user to revert
-   - Try with smaller scope
-
-### Example: Replacing Settings Code Block
-
-**WRONG (too much context):**// Including entire switch case and surrounding code
-**CORRECT (minimal context):**            try
-            {
-                // Get path to current version's appsettings.user.json file
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                // ...new implementation...
-            }
-            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
-            {
-                // ...error handling...
-            }
 ---
 
 ## ?? Solution Architecture
@@ -160,9 +114,10 @@ git diff --stat path/to/file.cs
 
 ### Technology Stack
 
-- **.NET 8.0** - Target framework
+- **.NET 10.0** - Target framework
 - **C# 12.0** - Language version
 - **Blazor Server** - UI framework
+- **MudBlazor** - UI components
 - **JSON configuration** - Modern settings (no XML user.config)
 
 ---
@@ -205,10 +160,6 @@ get_file "path/to/found/file.cs"
 2. **Use modern settings service:**// ? CORRECT
    IVersionedSettingsService settingsService
    var settings = settingsService.GetSettings();
-   
-   // ? WRONG
-   ConfigurationManager.OpenExeConfiguration(...)
-   Properties.Settings.Default.Port
 3. **Settings file locations:**
    - Default settings: `appsettings.json`
    - User settings: `%AppData%/GreenSwampAlpaca/{version}/appsettings.user.json`
@@ -316,35 +267,6 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
 ---
 
-## ?? Key Files Reference
-
-### Core Files (Edit with Extreme Care)
-
-| File | Purpose | Partial Class? |
-|------|---------|----------------|
-| `SkyServer.Core.cs` | Mount core operations | ? Yes |
-| `SkyServer.cs` | Main mount state/properties | ? Yes |
-| `SkySystem.cs` | System initialization | ? No |
-| `SkySettings.cs` | Static settings facade | ? No |
-| `SkySettingsBridge.cs` | Settings DI bridge | ? No |
-
-### Settings Files
-
-| File | Purpose |
-|------|---------|
-| `GreenSwamp.Alpaca.Settings/Services/VersionedSettingsService.cs` | Settings service |
-| `GreenSwamp.Alpaca.Settings/Models/SkySettings.cs` | Settings model |
-| `GreenSwamp.Alpaca.Shared/Settings.cs` | Monitor settings |
-
-### Entry Points
-
-| File | Purpose |
-|------|---------|
-| `GreenSwamp.Alpaca.Server/Program.cs` | Application startup |
-| `ASCOM.Alpaca.Razor/StartupHelpers.cs` | ASCOM configuration |
-
----
-
 ## ? Success Checklist
 
 Before claiming a task is complete:
@@ -387,7 +309,3 @@ If you break the build:
 > **Build first. Edit small. Verify immediately. Own your mistakes.**
 
 This is a production astronomy mount control system. Breaking the build wastes telescope time and frustrates users. ALWAYS follow the verification workflow.
-
-## MudBlazor UI Behavior
-
-- When answering MudBlazor UI behavior questions in this workspace, consult the MudBlazor MCP docs before responding.

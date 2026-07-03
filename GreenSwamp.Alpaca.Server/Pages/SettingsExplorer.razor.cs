@@ -38,26 +38,26 @@ public class SettingsTreeItemData : TreeItemData<SettingsNode>
 
 public partial class SettingsExplorer : IDisposable
 {
-    // ── Working copies ──────────────────────────────────────────────────────
+    // -- Working copies ------------------------------------------------------
     private ObservatorySettings       _observatoryWork  = new();
     private ServerConfig              _serverConfigWork = new();
     private MonitorSettingsModel      _monitorWork      = new();
     private Dictionary<int, SkySettings> _deviceWork   = new();
 
-    // ── Originals for dirty detection / reset ──────────────────────────────
+    // -- Originals for dirty detection / reset ------------------------------
     private string _observatoryOrigJson  = string.Empty;
     private string _serverConfigOrigJson = string.Empty;
     private string _monitorOrigJson      = string.Empty;
     private Dictionary<int, string> _deviceOrigJson = new();
 
-    // ── Tree state ──────────────────────────────────────────────────────────
+    // -- Tree state ----------------------------------------------------------
     private List<ITreeItemData<SettingsNode>> _treeItems = new();
     private MudTreeView<SettingsNode>? _treeView;
     private SettingsNode? _selectedNode;
     private SettingsNode? _treeSelectedValue;
     private string _searchText = string.Empty;
 
-    // ── Deep-link query parameters ──────────────────────────────────────────
+    // -- Deep-link query parameters ------------------------------------------
     /// <summary>Device number supplied via ?device=N query parameter.</summary>
     [SupplyParameterFromQuery(Name = "device")]
     public int? DeepLinkDevice { get; set; }
@@ -69,7 +69,7 @@ public partial class SettingsExplorer : IDisposable
     /// <summary>Ensures deep-link selection fires only once per navigation.</summary>
     private bool _deepLinkApplied;
 
-    // ── UI state ────────────────────────────────────────────────────────────
+    // -- UI state ------------------------------------------------------------
     private bool    _saving;
     private bool    _deviceManagerBusy = false;
     private bool    _hasPendingDeviceReload = false;
@@ -88,7 +88,7 @@ public partial class SettingsExplorer : IDisposable
     private static bool IsObservatoriesSectionNode(SettingsNode? node) =>
         node is { Level: SettingsNodeLevel.Section, Source: SettingsNodeSource.Observatory };
 
-    // ── Hidden-group definitions ────────────────────────────────────────────
+    // -- Hidden-group definitions --------------------------------------------
     private static readonly HashSet<string> _allHiddenGroups = new(StringComparer.Ordinal)
     {
         "Optics",
@@ -107,7 +107,7 @@ public partial class SettingsExplorer : IDisposable
 
     private static readonly JsonSerializerOptions _jsonOpts = new() { WriteIndented = false };
 
-    // ── Node description lookup ─────────────────────────────────────────────
+    // -- Node description lookup ---------------------------------------------
     private static readonly Dictionary<string, string> NodeDescriptions = new()
     {
         // Section descriptions
@@ -159,7 +159,7 @@ public partial class SettingsExplorer : IDisposable
         ["Voice"]               = "Voice announcement settings — enable/disable, voice selection and volume.",
     };
 
-    // ── Lifecycle ──────────────────────────────────────────────────────────
+    // -- Lifecycle ----------------------------------------------------------
     protected override async Task OnInitializedAsync()
     {
         SettingsService.DeviceSettingsChanged  += OnDeviceSettingsChanged;
@@ -245,7 +245,7 @@ public partial class SettingsExplorer : IDisposable
         return Task.CompletedTask;
     }
 
-    // ── Tree construction ──────────────────────────────────────────────────
+    // -- Tree construction --------------------------------------------------
     private void BuildTree()
     {
         var root = new List<SettingsNode>();
@@ -386,7 +386,7 @@ public partial class SettingsExplorer : IDisposable
         GroupKey     = groupKey
     };
 
-    // ── Node selection with unsaved-changes guard (Q4) ─────────────────────
+    // -- Node selection with unsaved-changes guard (Q4) ---------------------
     private async Task OnTreeNodeSelected(SettingsNode? node)
     {
         if (node is null)
@@ -554,7 +554,7 @@ public partial class SettingsExplorer : IDisposable
         }
     }
 
-    // ── Dirty detection ────────────────────────────────────────────────────
+    // -- Dirty detection ----------------------------------------------------
     private void HandleSettingChanged()
     {
         if (_selectedNode is null) return;
@@ -744,7 +744,7 @@ public partial class SettingsExplorer : IDisposable
         ShowSuccess("Logging settings reset to last saved state.");
     }
 
-    // ── Save ───────────────────────────────────────────────────────────────
+    // -- Save ---------------------------------------------------------------
     private async Task SaveSelectedGroupAsync()
     {
         if (_selectedNode is null) return;
@@ -875,7 +875,7 @@ public partial class SettingsExplorer : IDisposable
         return result is { Canceled: false };
     }
 
-    // ── Reset ──────────────────────────────────────────────────────────────
+    // -- Reset --------------------------------------------------------------
     private void ResetSelectedGroup()
     {
         if (_selectedNode is null) return;
@@ -911,8 +911,8 @@ public partial class SettingsExplorer : IDisposable
         }
     }
 
-    // ── Observatory location propagation dialog (Q7) ───────────────────────
-    // ── Observatory CRUD ──────────────────────────────────────────────────────────────────────────
+    // -- Observatory location propagation dialog (Q7) -----------------------
+    // -- Observatory CRUD --------------------------------------------------------------------------
 
     /// <summary>
     /// Presents the Add Observatory dialog, appends the result to the working copy, rebuilds
@@ -1056,7 +1056,7 @@ public partial class SettingsExplorer : IDisposable
         StateHasChanged();
     }
 
-    // ── Unsaved-changes guard dialog (Q4) ──────────────────────────────────
+    // -- Unsaved-changes guard dialog (Q4) ----------------------------------
     private async Task<bool> ShowDiscardDialogAsync()
     {
         var parameters = new DialogParameters<ConfirmDialog>
@@ -1071,7 +1071,7 @@ public partial class SettingsExplorer : IDisposable
         return result is { Canceled: false };
     }
 
-    // ── Tree expand / collapse ─────────────────────────────────────────────
+    // -- Tree expand / collapse ---------------------------------------------
     private async Task ExpandAll()
     {
         if (_treeView is not null)
@@ -1084,7 +1084,7 @@ public partial class SettingsExplorer : IDisposable
             await _treeView.CollapseAllAsync();
     }
 
-    // ── Search filter ──────────────────────────────────────────────────────
+    // -- Search filter ------------------------------------------------------
     private bool MatchesSearch(SettingsNode node)
     {
         if (string.IsNullOrWhiteSpace(_searchText)) return true;
@@ -1092,7 +1092,7 @@ public partial class SettingsExplorer : IDisposable
             || node.Description.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
     }
 
-    // ── External settings-change callbacks ────────────────────────────────
+    // -- External settings-change callbacks --------------------------------
     private void OnDeviceSettingsChanged(object? sender, SkySettings updated)
     {
         // Skip when we triggered the save ourselves — the working copy is already current
@@ -1111,7 +1111,7 @@ public partial class SettingsExplorer : IDisposable
         InvokeAsync(StateHasChanged);
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
+    // -- Helpers ------------------------------------------------------------
     private static string Serialize<T>(T obj) =>
         JsonSerializer.Serialize(obj, _jsonOpts);
 
