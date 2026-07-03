@@ -437,9 +437,9 @@ public partial class SettingsExplorer : IDisposable
                 DeviceType = "Telescope"
             });
 
+            _hasPendingDeviceReload = true;
             await LoadSettingsAsync();
             SelectDeviceManagerNode();
-            _hasPendingDeviceReload = true;
             ShowSuccess($"Added device {nextDeviceNumber}: {deviceName}.");
         }
         catch (Exception ex)
@@ -481,9 +481,9 @@ public partial class SettingsExplorer : IDisposable
             await SettingsService.RemoveAlpacaDeviceAsync(deviceNumber);
             await SettingsService.DeleteDeviceSettingsAsync(deviceNumber);
 
+            _hasPendingDeviceReload = true;
             await LoadSettingsAsync();
             SelectDeviceManagerNode();
-            _hasPendingDeviceReload = true;
             ShowSuccess($"Deleted device {deviceNumber}: {device.DeviceName}.");
         }
         catch (Exception ex)

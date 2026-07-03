@@ -46,7 +46,7 @@
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteForever"
                                                Color="Color.Error"
                                                Size="Size.Small"
-                                               Disabled="IsBusy"
+                                               Disabled="@IsBusy"
                                                OnClick="() => RequestDelete(deviceNumber)" />
                             </MudTooltip>
                         </MudStack>
@@ -67,7 +67,7 @@
                 <MudButton Variant="Variant.Filled" Color="Color.Warning"
                            StartIcon="@Icons.Material.Filled.Refresh"
                            Class="me-2"
-                           Disabled="IsBusy"
+                           Disabled="@IsBusy"
                            OnClick="RequestHotReload">
                     Apply Changes
                 </MudButton>
@@ -75,7 +75,7 @@
         }
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Add"
-                   Disabled="IsBusy"
+                   Disabled="@IsBusy"
                    OnClick="RequestAdd">
             Add Device
         </MudButton>
