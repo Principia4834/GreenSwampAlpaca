@@ -1,0 +1,58 @@
+﻿@using GreenSwamp.Alpaca.Server.Helpers
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="2" Class="mt-2">
+
+            <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+                <MudText Typo="Typo.caption" Color="Color.Primary">@_label1</MudText>
+                <MudText Typo="Typo.body1">@_formatted1</MudText>
+            </MudStack>
+
+            <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+                <MudText Typo="Typo.caption" Color="Color.Primary">@_label2</MudText>
+                <MudText Typo="Typo.body1">@_formatted2</MudText>
+            </MudStack>
+
+            <MudSpacer />
+
+        </MudStack>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel"
+                   Variant="Variant.Filled"
+                   Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Accept"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">Accept</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Dialog title — pass "Accept GoTo" from the caller.</summary>
+    [Parameter] public string Title   { get; set; } = "Accept Coordinates";
+
+    /// <summary>RA in decimal hours (RaDec mode) or Az in decimal degrees (AltAz mode).</summary>
+    [Parameter] public double Coord1  { get; set; }
+
+    /// <summary>Dec in decimal degrees (RaDec mode) or Alt in decimal degrees (AltAz mode).</summary>
+    [Parameter] public double Coord2  { get; set; }
+
+    /// <summary>True for RA/Dec labels and HMS formatting on Coord1; false for Az/Alt with DMS.</summary>
+    [Parameter] public bool   IsRaDec { get; set; } = true;
+
+    private string _label1     => IsRaDec ? "RA"  : "Az";
+    private string _label2     => IsRaDec ? "Dec" : "Alt";
+    private string _formatted1 => IsRaDec ? CoordinateFormatter.FormatHMS(Coord1)
+                                           : CoordinateFormatter.FormatDMS(Coord1);
+    private string _formatted2 => CoordinateFormatter.FormatDMS(Coord2);
+
+    private void Accept() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+}

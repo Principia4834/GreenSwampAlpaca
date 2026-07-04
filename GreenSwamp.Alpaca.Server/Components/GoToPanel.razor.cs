@@ -1,6 +1,7 @@
 ﻿using GreenSwamp.Alpaca.MountControl;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using GreenSwamp.Alpaca.Server.Components.Dialogs;
 
 namespace GreenSwamp.Alpaca.Server.Components
 {
@@ -70,6 +71,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         }
 
         /// <summary>Commands the mount to slew to the entered coordinates.</summary>
+        /// <summary>Shows a confirmation dialog then commands the mount to slew to the entered coordinates.</summary>
         private async Task OnGoTo()
         {
             _isMountRunning = _mount?.IsMountRunning ?? false;
@@ -79,26 +81,50 @@ namespace GreenSwamp.Alpaca.Server.Components
                 return;
             }
 
+            // Resolve target coordinates from current entry fields
+            double coord1, coord2;
+            if (_coordMode == CoordMode.RaDec)
+            {
+                coord1 = _entryMode == EntryMode.Float ? _raFloat : HmsToHours(_raH, _raM, _raS);
+                coord2 = _entryMode == EntryMode.Float ? _decFloat : DmsToDegs(_decD, _decM, _decS);
+            }
+            else
+            {
+                coord1 = _entryMode == EntryMode.Float ? _azFloat : DmsToDegs(_azD, _azM, _azS);
+                coord2 = _entryMode == EntryMode.Float ? _altFloat : DmsToDegs(_altD, _altM, _altS);
+            }
+
+            // Show confirmation dialog
+            var parameters = new DialogParameters
+            {
+                [nameof(AcceptCoordinatesDialog.Title)] = "Accept GoTo Coordinates",
+                [nameof(AcceptCoordinatesDialog.Coord1)] = coord1,
+                [nameof(AcceptCoordinatesDialog.Coord2)] = coord2,
+                [nameof(AcceptCoordinatesDialog.IsRaDec)] = _coordMode == CoordMode.RaDec
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraSmall,
+                CloseOnEscapeKey = true,
+                BackdropClick = false
+            };
+            var dialog = await DialogService.ShowAsync<AcceptCoordinatesDialog>("", parameters, options);
+            var result = await dialog.Result;
+            if (result is null || result.Canceled) return;
+
+            // Execute slew
             try
             {
-                SlewResult result;
+                SlewResult slewResult;
                 if (_coordMode == CoordMode.RaDec)
-                {
-                    var ra = _entryMode == EntryMode.Float ? _raFloat : HmsToHours(_raH, _raM, _raS);
-                    var dec = _entryMode == EntryMode.Float ? _decFloat : DmsToDegs(_decD, _decM, _decS);
-                    result = await _mount.SlewRaDecAsync(ra, dec, tracking: true);
-                }
+                    slewResult = await _mount.SlewRaDecAsync(coord1, coord2, tracking: true);
                 else
-                {
-                    var az = _entryMode == EntryMode.Float ? _azFloat : DmsToDegs(_azD, _azM, _azS);
-                    var alt = _entryMode == EntryMode.Float ? _altFloat : DmsToDegs(_altD, _altM, _altS);
-                    result = await _mount.SlewAltAzAsync(alt, az);
-                }
+                    slewResult = await _mount.SlewAltAzAsync(coord2, coord1);   // signature: (alt, az)
 
-                if (result.CanProceed)
+                if (slewResult.CanProceed)
                     Snackbar.Add("GoTo in progress\u2026", Severity.Info);
                 else
-                    Snackbar.Add($"GoTo rejected: {result.ErrorMessage}", Severity.Warning);
+                    Snackbar.Add($"GoTo rejected: {slewResult.ErrorMessage}", Severity.Warning);
             }
             catch (Exception ex)
             {
@@ -132,13 +158,41 @@ namespace GreenSwamp.Alpaca.Server.Components
                 return;
             }
 
+            // Resolve target coordinates from current entry fields
+            double coord1, coord2;
+            if (_coordMode == CoordMode.RaDec)
+            {
+                coord1 = _entryMode == EntryMode.Float ? _raFloat : HmsToHours(_raH, _raM, _raS);
+                coord2 = _entryMode == EntryMode.Float ? _decFloat : DmsToDegs(_decD, _decM, _decS);
+            }
+            else
+            {
+                coord1 = _entryMode == EntryMode.Float ? _azFloat : DmsToDegs(_azD, _azM, _azS);
+                coord2 = _entryMode == EntryMode.Float ? _altFloat : DmsToDegs(_altD, _altM, _altS);
+            }
+
+            // Show confirmation dialog
+            var parameters = new DialogParameters
+            {
+                [nameof(AcceptCoordinatesDialog.Title)] = "Accept Sync Coordinates",
+                [nameof(AcceptCoordinatesDialog.Coord1)] = coord1,
+                [nameof(AcceptCoordinatesDialog.Coord2)] = coord2,
+                [nameof(AcceptCoordinatesDialog.IsRaDec)] = _coordMode == CoordMode.RaDec
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.ExtraSmall,
+                CloseOnEscapeKey = true,
+                BackdropClick = false
+            };
+            var dialog = await DialogService.ShowAsync<AcceptCoordinatesDialog>("", parameters, options);
+            var result = await dialog.Result;
+            if (result is null || result.Canceled) return;
+
             try
             {
-                var ra = _entryMode == EntryMode.Float ? _raFloat : HmsToHours(_raH, _raM, _raS);
-                var dec = _entryMode == EntryMode.Float ? _decFloat : DmsToDegs(_decD, _decM, _decS);
-
-                _mount.TargetRa = ra;
-                _mount.TargetDec = dec;
+                _mount.TargetRa = coord1;
+                _mount.TargetDec = coord2;
                 await Task.Run(() => _mount.SyncToTargetRaDec());
                 Snackbar.Add("Sync complete.", Severity.Success);
             }
@@ -148,7 +202,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             }
         }
 
-        // ── Coordinate conversion helpers ───────────────────────────────────────
+        // -- Coordinate conversion helpers ---------------------------------------
 
         private static double HmsToHours(int h, int m, double s) =>
             h + m / 60.0 + s / 3600.0;

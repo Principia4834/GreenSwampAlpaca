@@ -2,6 +2,7 @@
 @using GreenSwamp.Alpaca.Server.Services
 @inject ISnackbar Snackbar
 @inject TelescopeStateService StateService
+@inject IDialogService DialogService
 
 <fieldset disabled="@(!IsEnabled)" style="border:none;padding:0;margin:0">
 <MudStack Spacing="3" Class="mt-1">
@@ -15,19 +16,19 @@
                        Color="Color.Primary"
                        Size="Size.Small"
                        FullWidth="true"
-                       Disabled="@(!IsEnabled || !_isMountRunning)"
+                       Disabled="@(!IsEnabled)"
                        OnClick="OnGoTo">GoTo</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        Size="Size.Small"
                        FullWidth="true"
-                       Disabled="@(!IsEnabled || !_isMountRunning)"
+                       Disabled="@(!IsEnabled)"
                        OnClick="OnCopy">Copy</MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        Size="Size.Small"
                        FullWidth="true"
-                       Disabled="@(!IsEnabled || !_isMountRunning || _coordMode != CoordMode.RaDec || !_canSync)"
+                       Disabled="@(!IsEnabled|| _coordMode != CoordMode.RaDec || !_canSync)"
                        OnClick="OnSync">Sync</MudButton>
         </MudStack>
 
@@ -38,17 +39,20 @@
                 @if (_coordMode == CoordMode.RaDec)
                 {
                     <MudNumericField T="double" @bind-Value="_raFloat"
+                                    Disabled="@(!IsEnabled)"
                                     Label="RA (h)" Format="F4"
                                     Min="0.0" Max="23.9999" Immediate="true" />
                     <MudNumericField T="double" @bind-Value="_decFloat"
+                                    Disabled="@(!IsEnabled)"
                                     Label="Dec (°)" Format="F4"
                                     Min="-90.0" Max="90.0" Immediate="true" />
                 }
                 else
                 {
                     <MudNumericField T="double" @bind-Value="_azFloat"
+                                    Disabled="@(!IsEnabled)"
                                     Label="Az (°)" Format="F4"
-                                    Min="0.0" Max="359.9999" Immediate="true" />
+                                    Min="0.0" Max="359.999" Immediate="true" />
                     <MudNumericField T="double" @bind-Value="_altFloat"
                                     Label="Alt (°)" Format="F4"
                                     Min="@_horizonLimit" Max="90.0" Immediate="true" />
@@ -58,44 +62,56 @@
             {
                 @if (_coordMode == CoordMode.RaDec)
                 {
-                    @* RA: hours [0..23], minutes [0..59], seconds [0..59.999] *@
+                    @* RA: hours [0..23], minutes [0..59], seconds [0..59.99] *@
                     <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
                         <MudNumericField T="int" @bind-Value="_raH" Label="RA hours"
-                                        Min="0" Max="23" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0" Max="23" Immediate="true" Style="width:80px" />
                         <MudNumericField T="int" @bind-Value="_raM" Label="minutes"
-                                        Min="0" Max="59" Immediate="true" Style="width:68px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
                         <MudNumericField T="double" @bind-Value="_raS" Label="seconds"
-                                        Min="0.0" Max="59.999" Format="F2" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
                     </MudStack>
-                    @* Dec: degrees [-90..90], minutes [0..59], seconds [0..59.999] *@
+                    @* Dec: degrees [-90..90], minutes [0..59], seconds [0..59.99] *@
                     <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
                         <MudNumericField T="int" @bind-Value="_decD" Label="Dec degrees"
-                                        Min="-90" Max="90" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="-90" Max="90" Immediate="true" Style="width:80px" />
                         <MudNumericField T="int" @bind-Value="_decM" Label="minutes"
-                                        Min="0" Max="59" Immediate="true" Style="width:68px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
                         <MudNumericField T="double" @bind-Value="_decS" Label="seconds"
-                                        Min="0.0" Max="59.999" Format="F2" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
                     </MudStack>
                 }
                 else
                 {
-                    @* Az: degrees [0..359], minutes [0..59], seconds [0..59.999] *@
+                    @* Az: degrees [0..359], minutes [0..59], seconds [0..59.99] *@
                     <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
                         <MudNumericField T="int" @bind-Value="_azD" Label="Az degrees"
-                                        Min="0" Max="359" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0" Max="359" Immediate="true" Style="width:80px" />
                         <MudNumericField T="int" @bind-Value="_azM" Label="minutes"
-                                        Min="0" Max="59" Immediate="true" Style="width:68px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
                         <MudNumericField T="double" @bind-Value="_azS" Label="seconds"
-                                        Min="0.0" Max="59.999" Format="F2" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
                     </MudStack>
-                    @* Alt: degrees [HorizonLimit..90], minutes [0..59], seconds [0..59.999] *@
+                    @* Alt: degrees [HorizonLimit..90], minutes [0..59], seconds [0..59.99] *@
                     <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
                         <MudNumericField T="int" @bind-Value="_altD" Label="Alt degrees"
-                                        Min="@_altDMin" Max="90" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="@_altDMin" Max="90" Immediate="true" Style="width:80px" />
                         <MudNumericField T="int" @bind-Value="_altM" Label="minutes"
-                                        Min="0" Max="59" Immediate="true" Style="width:68px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
                         <MudNumericField T="double" @bind-Value="_altS" Label="seconds"
-                                        Min="0.0" Max="59.999" Format="F2" Immediate="true" Style="width:80px" />
+                                    Disabled="@(!IsEnabled)"
+                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
                     </MudStack>
                 }
             }
