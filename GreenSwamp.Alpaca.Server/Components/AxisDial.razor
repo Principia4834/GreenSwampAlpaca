@@ -17,13 +17,13 @@
 
 <svg viewBox="0 0 240 260" width="@Size" style="overflow:visible;display:block" aria-label="@Label dial showing @Angle.ToString("F1", CultureInfo.InvariantCulture) degrees">
 
-    @* ── Outer ring ─────────────────────────────────────────────────────── *@
+    @* -- Outer ring ------------------------------------------------------- *@
     <circle cx="120" cy="115" r="92"
             fill="none"
             stroke="var(--mud-palette-text-secondary)"
             stroke-width="1.5" />
 
-    @* ── 24 tick marks at 15° intervals ─────────────────────────────────── *@
+    @* -- 24 tick marks at 15° intervals ----------------------------------- *@
     @for (int i = 0; i < 24; i++)
     {
         var tickDeg = i * 15.0;
@@ -45,7 +45,7 @@
               stroke="@color" stroke-width="@sw" />
     }
 
-    @* ── Cardinal degree labels inside the ring ──────────────────────────── *@
+    @* -- Cardinal degree labels inside the ring ---------------------------- *@
     @foreach (var (deg, lbl) in CardinalLabels)
     {
         var svgRad = ToRad(deg - 90);
@@ -55,7 +55,7 @@
         @SvgText(lx, ly, lbl, fontSize: "12", fill: "var(--mud-palette-text-secondary)")
     }
 
-    @* ── Needle ──────────────────────────────────────────────────────────── *@
+    @* -- Needle ------------------------------------------------------------ *@
     @{
         var needleRad = ToRad(NeedleAngle - 90);
         var nx = 120 + 76 * Math.Cos(needleRad);
@@ -67,14 +67,14 @@
           stroke="var(--mud-palette-primary)" stroke-width="2.5"
           stroke-linecap="round" />
 
-    @* ── Centre dot ──────────────────────────────────────────────────────── *@
+    @* -- Centre dot -------------------------------------------------------- *@
     <circle cx="120" cy="115" r="5"
             fill="var(--mud-palette-primary)" />
 
-    @* ── Axis label beneath the dial ─────────────────────────────────────── *@
+    @* -- Axis label beneath the dial --------------------------------------- *@
     @SvgText(120, 228, Label, fontSize: "14", fontWeight: "600", fill: "var(--mud-palette-text-primary)")
 
-    @* ── Live numeric angle readout ───────────────────────────────────────── *@
+    @* -- Live numeric angle readout ----------------------------------------- *@
     @SvgText(120, 248, ReadoutText, fontSize: "14", fontFamily: "monospace", fill: "var(--mud-palette-primary)")
 
 </svg>

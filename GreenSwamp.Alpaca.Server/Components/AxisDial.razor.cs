@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Web;
 using Microsoft.AspNetCore.Components;
+using GreenSwamp.Alpaca.Server.Helpers;
 
 namespace GreenSwamp.Alpaca.Server.Components;
 
@@ -28,31 +29,9 @@ public partial class AxisDial
     // Readout beneath the dial: degrees show the raw angle; hours convert back to hours.
     private string ReadoutText => DisplayUnits switch
     {
-        DialDisplayUnits.Hours => FormatHMS(Angle / 15.0),
-        _                      => FormatDMS(Angle),
+        DialDisplayUnits.Hours => CoordinateFormatter.FormatHMS(Angle / 15.0),
+        _                      => CoordinateFormatter.FormatDMS(Angle),
     };
-
-    private string FormatHMS(double hours)
-    {
-        if (double.IsNaN(hours) || double.IsInfinity(hours)) return "N/A";
-        var sign = hours < 0 ? "-" : "+";
-        hours = Math.Abs(hours);
-        var h = (int)hours;
-        var m = (int)((hours - h) * 60);
-        var s = ((hours - h) * 60 - m) * 60;
-        return $"{sign}{h:00}h {m:00}m {s:00.00}s";
-    }
-
-    private string FormatDMS(double degrees)
-    {
-        if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
-        var sign = degrees < 0 ? "-" : "+";
-        degrees = Math.Abs(degrees);
-        var d = (int)degrees;
-        var m = (int)((degrees - d) * 60);
-        var s = ((degrees - d) * 60 - m) * 60;
-        return $"{sign}{d:00}° {m:00}' {s:00.00}\"";
-    }
 
     // Blazor's Razor parser treats <text> as a directive keyword, so SVG text
     // elements with attributes must be emitted as raw markup from a code-behind method.

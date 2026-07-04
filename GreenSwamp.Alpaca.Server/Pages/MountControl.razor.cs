@@ -18,7 +18,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
         private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
-        private enum CoordMode { RaDec, AltAz }
+        private enum CoordMode { RaDec, AltAz, Optics }
         private CoordMode _coordMode = CoordMode.RaDec;
         private bool EnableShutdown { get; set; } = false;
         private bool AllowShutdown => !EnableShutdown;

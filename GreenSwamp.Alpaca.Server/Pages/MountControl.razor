@@ -20,11 +20,11 @@
 
     @if (IsActiveMountSimulator)
     {
-        <MudProgressLinear Color="Color.Primary"
-                           Value="100"
-                           Rounded="true"
-                           Size="Size.Large"
-                           Style="flex: 0 0 33%; max-width: 33%;" />
+        <MudPaper Elevation="0"
+                  Class="d-flex align-center justify-center pa-1"
+                  Style="background-color: var(--mud-palette-success); border-radius: 8px; flex: 0 0 33%; max-width: 33%;">
+            <MudText Typo="Typo.h4" Color="Color.Default">Simulator</MudText>
+        </MudPaper>
     }
 
     <MudButton Color="Color.Default"
@@ -219,11 +219,17 @@ else
                                           DisplayUnits="DialDisplayUnits.Hours" Size="160" />
                                 <AxisDial Angle="@s.Declination" Label="Declination" Size="160" />
                             }
+                            @if (_coordMode == CoordMode.Optics)
+                            {
+                                <AxisDial Angle="@s.ActualAxisX" Label="X Axis" Size="160" />
+                                <AxisDial Angle="@s.ActualAxisY" Label="Y Axis" Size="160" />
+                            }
                         </MudStack>
                         <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
                                         SelectionMode="SelectionMode.SingleSelection">
                             <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
                             <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
+                            <MudToggleItem Value="CoordMode.Optics" Text="Optics" />
                         </MudToggleGroup>
                     </MudPaper>
 
