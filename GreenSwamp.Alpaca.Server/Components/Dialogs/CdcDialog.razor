@@ -1,0 +1,135 @@
+﻿@using GreenSwamp.Alpaca.Server.Services
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Language" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">Carte du Ciel</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3" Class="mt-2" Style="min-width: 380px">
+
+            @* ── Connection target ───────────────────────────────────── *@
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Server: @ConnectionParams.Address : @ConnectionParams.Port
+            </MudText>
+
+            @* ── State: Idle ──────────────────────────────────────────── *@
+            @if (_state == DialogState.Idle)
+            {
+                <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Language" Dense="true">
+                    Click <strong>Test Connection</strong> to read the location from CdC.
+                </MudAlert>
+            }
+
+            @* ── State: Connecting ────────────────────────────────────── *@
+            @if (_state == DialogState.Connecting)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                    <MudText Typo="Typo.body1">Connecting to @ConnectionParams.Address&hellip;</MudText>
+                </MudStack>
+            }
+
+            @* ── State: Fetch error ───────────────────────────────────── *@
+            @if (_state == DialogState.Error)
+            {
+                <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.CloudOff">
+                    @_error
+                </MudAlert>
+            }
+
+            @* ── State: Ready — CdC location table ───────────────────── *@
+            @if (_state is DialogState.Ready or DialogState.Sending or DialogState.Sent or DialogState.SendError)
+            {
+                <MudSimpleTable Dense="true">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>CdC</th>
+                            <th>Local</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Latitude</td>
+                            <td>@_cdcResult!.Latitude.ToString("F6")&deg;</td>
+                            <td>@LocalLatitude.ToString("F6")&deg;</td>
+                        </tr>
+                        <tr>
+                            <td>Longitude</td>
+                            <td>@_cdcResult!.Longitude.ToString("F6")&deg;</td>
+                            <td>@LocalLongitude.ToString("F6")&deg;</td>
+                        </tr>
+                        <tr>
+                            <td>Altitude</td>
+                            <td>@_cdcResult!.Altitude.ToString("F1") m</td>
+                            <td>@LocalAltitude.ToString("F1") m</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @* ── State: Sending to CdC ────────────────────────────────── *@
+            @if (_state == DialogState.Sending)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">Sending location to CdC&hellip;</MudText>
+                </MudStack>
+            }
+
+            @* ── State: Send success ──────────────────────────────────── *@
+            @if (_state == DialogState.Sent)
+            {
+                <MudAlert Severity="Severity.Success" Icon="@Icons.Material.Filled.CloudDone" Dense="true">
+                    Location sent to CdC successfully.
+                </MudAlert>
+            }
+
+            @* ── State: Send error ────────────────────────────────────── *@
+            @if (_state == DialogState.SendError)
+            {
+                <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.CloudOff" Dense="true">
+                    @_sendError
+                </MudAlert>
+            }
+
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.NetworkCheck"
+                   Disabled="@(_state is DialogState.Connecting or DialogState.Sending)"
+                   OnClick="TestConnectionAsync">
+            Test Connection
+        </MudButton>
+
+        @if (_state is DialogState.Ready or DialogState.Sending or DialogState.Sent or DialogState.SendError)
+        {
+            <MudButton Color="Color.Secondary"
+                       Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.CloudUpload"
+                       Disabled="@(_state is DialogState.Connecting or DialogState.Sending)"
+                       OnClick="CopyToCdcAsync">
+                Copy To CdC
+            </MudButton>
+
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                       Disabled="@(_state is DialogState.Connecting or DialogState.Sending)"
+                       OnClick="CopyFromCdc">
+                Copy From CdC
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private enum DialogState { Idle, Connecting, Ready, Error, Sending, Sent, SendError }
+}
