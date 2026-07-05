@@ -134,9 +134,9 @@
                         <MudSelectItem Value="8">8</MudSelectItem>
                     </MudSelect>
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port read timeout in seconds." Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.GpsTimeout" @bind-Value:after="NotifyChanged"
-                    Label="GPS Timeout (ms)" Min="100" Max="30000" />
+                    Label="GPS Timeout (s)" Min="1" Max="30" />
                 </MudTooltip>
                 <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port handshake." Placement="Placement.Right" Arrow="true">
                     <MudSelect T="string" @bind-Value="Device!.GpsHandshake" @bind-Value:after="NotifyChanged"

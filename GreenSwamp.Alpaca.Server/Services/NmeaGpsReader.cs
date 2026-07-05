@@ -41,7 +41,7 @@ namespace GreenSwamp.Alpaca.Server.Services
 
         /// <summary>
         /// Opens the configured serial port and waits for a valid GGA and/or RMC sentence,
-        /// up to <see cref="GpsConnectionParams.TimeoutMs"/>. Fails fast with an
+        /// up to <see cref="GpsConnectionParams.TimeoutS"/>. Fails fast with an
         /// <see cref="InvalidOperationException"/> if the configured port is not present
         /// on the system, without attempting to open it.
         /// </summary>
@@ -68,7 +68,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             using var serial = new GsSerialPort(
                 connectionParams.Port,
                 connectionParams.BaudRate,
-                TimeSpan.FromMilliseconds(connectionParams.TimeoutMs),
+                TimeSpan.FromSeconds(connectionParams.TimeoutS),
                 ParseHandshake(connectionParams.Handshake),
                 ParseParity(connectionParams.Parity),
                 ParseStopBits(connectionParams.StopBits),
@@ -81,7 +81,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             RmcFix? rmc = null;
 
             var stopwatch = Stopwatch.StartNew();
-            var budgetMs = connectionParams.TimeoutMs;
+            var budgetMs = connectionParams.TimeoutS * 1000;
 
             while (stopwatch.Elapsed.TotalMilliseconds < budgetMs && (gga is null || rmc is null))
             {
@@ -120,7 +120,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             }
 
             if (gga is null && rmc is null)
-                throw new TimeoutException($"No valid GPS fix (GGA/RMC) received on '{connectionParams.Port}' within {connectionParams.TimeoutMs} ms.");
+                throw new TimeoutException($"No valid GPS fix (GGA/RMC) received on '{connectionParams.Port}' within {connectionParams.TimeoutS} s.");
 
             double latitude, longitude, altitude;
             DateTime? gpsUtc;

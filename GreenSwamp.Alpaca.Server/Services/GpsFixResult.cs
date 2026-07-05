@@ -25,7 +25,7 @@ namespace GreenSwamp.Alpaca.Server.Services
     /// <param name="Parity">Parity: None, Odd, Even, Mark, Space.</param>
     /// <param name="StopBits">Stop bits: None, One, OnePointFive, Two.</param>
     /// <param name="DataBits">Data bits (5-8).</param>
-    /// <param name="TimeoutMs">Read timeout in milliseconds.</param>
+    /// <param name="TimeoutS">Read timeout in seconds.</param>
     /// <param name="Handshake">Handshake: None, XOnXOff, RequestToSend, RequestToSendXOnXOff.</param>
     public sealed record GpsConnectionParams(
         string Port,
@@ -33,7 +33,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         string Parity,
         string StopBits,
         int DataBits,
-        int TimeoutMs,
+        int TimeoutS,
         string Handshake);
 
     /// <summary>
