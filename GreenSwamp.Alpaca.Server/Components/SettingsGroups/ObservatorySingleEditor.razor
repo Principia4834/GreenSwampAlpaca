@@ -241,7 +241,7 @@
 
         var dialog = await DialogService.ShowAsync<GpsFixDialog>(
             "GPS Fix", parameters,
-            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, BackdropClick = false});
 
         var result = await dialog.Result;
         if (result.Canceled || result.Data is not GpsFixResult fix) return;

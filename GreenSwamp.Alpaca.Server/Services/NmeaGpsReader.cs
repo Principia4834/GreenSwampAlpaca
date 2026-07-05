@@ -13,31 +13,29 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+using GreenSwamp.Alpaca.Shared;
+using GreenSwamp.Alpaca.Shared.Transport;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Ports;
-using GreenSwamp.Alpaca.Shared;
-using GreenSwamp.Alpaca.Shared.Transport;
+using System.Reflection;
 
 namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
     /// Reads a single position fix from a GPS receiver over a serial port, parsing
-    /// NMEA GGA (position + altitude) and RMC (position + UTC date/time) sentences.
-    /// Ported from the legacy GSS GpsHardware implementation, with ASCOM/monitor-log
-    /// dependencies removed and an async, cancellable API.
+    /// NMEA GGA (position + altitudeWGS84 + UTC date/time) and RMC (position + UTC date/time) sentences.
+    /// Ported from the GSS GpsHardware implementation
     /// </summary>
     /// <remarks>
-    /// GGA is preferred for latitude/longitude/altitude since it carries altitude;
-    /// RMC is preferred for the reported UTC timestamp since it carries a full date.
-    /// Whichever sentence(s) arrive first with valid data are used - the reader does
-    /// not require both to be present.
+    /// GGA is preferred for latitude/longitude/altitudeWGS84 since it carries WGS84 referenced altitude;
+    /// Fallbackto RMC if no GGA is received within the timeout.
     /// </remarks>
     /// <seealso href="https://gpsd.gitlab.io/gpsd/NMEA.html">NMEA reference</seealso>
     public sealed class NmeaGpsReader(GpsConnectionParams connectionParams)
     {
-        private readonly record struct GgaFix(double Latitude, double Longitude, double Altitude, DateTime? GpsUtc, DateTime PcUtc);
-        private readonly record struct RmcFix(double Latitude, double Longitude, DateTime? GpsUtc, DateTime PcUtc);
+        private readonly record struct GgaFix(string NmeaTag, double Latitude, double Longitude, double Altitude, DateTime? GpsUtc, DateTime PcUtc);
+        private readonly record struct RmcFix(string NmeaTag, double Latitude, double Longitude, DateTime? GpsUtc, DateTime PcUtc);
 
         /// <summary>
         /// Opens the configured serial port and waits for a valid GGA and/or RMC sentence,
@@ -63,97 +61,144 @@ namespace GreenSwamp.Alpaca.Server.Services
             return await Task.Run(() => ReadFix(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Opens the configured serial port and reads NMEA sentences until a valid GGA and/or RMC sentence is received, or 
+        /// until the timeout is reached. Returns the parsed <see cref="GpsFixResult"/>.
+        /// </summary>
+        /// <param name="cancellationToken">Token used to cancel the read.</param>
+        /// <returns>The parsed <see cref="GpsFixResult"/>.</returns>
+        /// <exception cref="TimeoutException">No valid GGA/RMC sentence was received within the timeout.</exception>
         private GpsFixResult ReadFix(CancellationToken cancellationToken)
+{
+    using var serial = new GsSerialPort(
+        connectionParams.Port,
+        connectionParams.BaudRate,
+        TimeSpan.FromSeconds(connectionParams.TimeoutS),
+        ParseHandshake(connectionParams.Handshake),
+        ParseParity(connectionParams.Parity),
+        ParseStopBits(connectionParams.StopBits),
+        connectionParams.DataBits,
+        SerialOptions.None);
+
+    serial.Open();
+
+    GgaFix? gga = null;
+    RmcFix? rmc = null;
+    var ggaCount = 0;
+    var rmcCount = 0;
+    const int MaxPerType = 3;
+
+    var stopwatch = Stopwatch.StartNew();
+    var budgetMs = connectionParams.TimeoutS * 1000;
+
+    // Read until we have one of each type, or until either type has been seen
+    // MaxPerType times (each sentence is ~1 s at NMEA 1 Hz), or the budget expires.
+    while (stopwatch.Elapsed.TotalMilliseconds < budgetMs
+           && !(gga.HasValue && rmc.HasValue)   // ideal: got both → exit early
+           && ggaCount < MaxPerType             // 3 GGAs seen → give up waiting for RMC
+           && rmcCount < MaxPerType)            // 3 RMCs seen → give up waiting for GGA
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var remainingMs = budgetMs - stopwatch.Elapsed.TotalMilliseconds;
+        if (remainingMs <= 0) break;
+        serial.ReadTimeout = (int)Math.Max(1, remainingMs);
+
+        string sentence;
+        try
         {
-            using var serial = new GsSerialPort(
-                connectionParams.Port,
-                connectionParams.BaudRate,
-                TimeSpan.FromSeconds(connectionParams.TimeoutS),
-                ParseHandshake(connectionParams.Handshake),
-                ParseParity(connectionParams.Parity),
-                ParseStopBits(connectionParams.StopBits),
-                connectionParams.DataBits,
-                SerialOptions.None);
-
-            serial.Open();
-
-            GgaFix? gga = null;
-            RmcFix? rmc = null;
-
-            var stopwatch = Stopwatch.StartNew();
-            var budgetMs = connectionParams.TimeoutS * 1000;
-
-            while (stopwatch.Elapsed.TotalMilliseconds < budgetMs && (gga is null || rmc is null))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var remainingMs = budgetMs - stopwatch.Elapsed.TotalMilliseconds;
-                if (remainingMs <= 0) break;
-                serial.ReadTimeout = (int)Math.Max(1, remainingMs);
-
-                var pcUtcNow = DateTime.UtcNow;
-                string line;
-                try
-                {
-                    line = serial.ReadLine();
-                }
-                catch (TimeoutException)
-                {
-                    break;
-                }
-
-                if (string.IsNullOrEmpty(line) || line.Length < 6) continue;
-
-                var fields = line.Split(',');
-                if (fields[0].Length < 6) continue;
-                var code = fields[0].Substring(3, 3);
-
-                switch (code)
-                {
-                    case "GGA" when gga is null && fields.Length == 15 && ValidateCheckSum(line):
-                        if (TryParseGga(fields, pcUtcNow, out var ggaFix)) gga = ggaFix;
-                        break;
-                    case "RMC" when rmc is null && fields.Length == 13 && ValidateCheckSum(line):
-                        if (TryParseRmc(fields, pcUtcNow, out var rmcFix)) rmc = rmcFix;
-                        break;
-                }
-            }
-
-            if (gga is null && rmc is null)
-                throw new TimeoutException($"No valid GPS fix (GGA/RMC) received on '{connectionParams.Port}' within {connectionParams.TimeoutS} s.");
-
-            double latitude, longitude, altitude;
-            DateTime? gpsUtc;
-            DateTime pcUtc;
-
-            if (rmc is { } rmcValue)
-            {
-                latitude = gga?.Latitude ?? rmcValue.Latitude;
-                longitude = gga?.Longitude ?? rmcValue.Longitude;
-                altitude = gga?.Altitude ?? 0.0;
-                gpsUtc = rmcValue.GpsUtc ?? gga?.GpsUtc;
-                pcUtc = rmcValue.PcUtc;
-            }
-            else
-            {
-                var ggaValue = gga!.Value;
-                latitude = ggaValue.Latitude;
-                longitude = ggaValue.Longitude;
-                altitude = ggaValue.Altitude;
-                gpsUtc = ggaValue.GpsUtc;
-                pcUtc = ggaValue.PcUtc;
-            }
-
-            var timeDiff = gpsUtc.HasValue ? gpsUtc.Value - pcUtc : (TimeSpan?)null;
-            return new GpsFixResult(latitude, longitude, altitude, gpsUtc, pcUtc, timeDiff);
+            sentence = serial.ReadLine();
+        }
+        catch (TimeoutException)
+        {
+            break;
         }
 
+        // Correct for serial data transmission time – 75 characters, 9 bits at 4800 baud
+        var pcUtcNow = Principles.HiResDateTime.UtcNow - TimeSpan.FromMilliseconds(75.0 * 9.0 / 4800.0);
+
+        if (string.IsNullOrEmpty(sentence) || sentence.Length < 6) continue;
+
+        var fields = sentence.Split(',');
+        if (fields[0].Length < 6) continue;
+        var code = fields[0].Substring(3, 3);
+
+        switch (code)
+        {
+            // GGA: count every valid sentence; only keep the first for position/altitude.
+            case "GGA" when fields.Length == 15 && ValidateCheckSum(sentence):
+                if (TryParseGga(fields, pcUtcNow, out var ggaFix))
+                {
+                    ggaCount++;
+                    gga ??= ggaFix;   // capture first only; keep counting for exit condition
+                    var monitorItem = new MonitorEntry
+                    {
+                        Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server, Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"[GGA {ggaCount}/{MaxPerType}] {sentence}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
+                break;
+
+            // RMC: count every valid sentence; always keep the most recent for freshest UTC date/time.
+            case "RMC" when fields.Length == 13 && ValidateCheckSum(sentence):
+                if (TryParseRmc(fields, pcUtcNow, out var rmcFix))
+                {
+                    rmcCount++;
+                    rmc = rmcFix;
+                    var monitorItem = new MonitorEntry
+                    {
+                        Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                        Category = MonitorCategory.Server, Type = MonitorType.Information,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Message = $"[RMC {rmcCount}/{MaxPerType}] {sentence}"
+                    };
+                    MonitorLog.LogToMonitor(monitorItem);
+                }
+                break;
+        }
+    }
+
+    if (gga is null && rmc is null)
+        throw new TimeoutException(
+            $"No valid GPS fix (GGA/RMC) received on '{connectionParams.Port}' within {connectionParams.TimeoutS} s.");
+
+    double latitude, longitude, altitude;
+    DateTime? gpsUtc;
+    DateTime pcUtc;
+
+    if (rmc is { } rmcValue)
+    {
+        latitude  = gga?.Latitude  ?? rmcValue.Latitude;
+        longitude = gga?.Longitude ?? rmcValue.Longitude;
+        altitude  = gga?.Altitude  ?? 0.0;
+        gpsUtc    = rmcValue.GpsUtc ?? gga?.GpsUtc;
+        pcUtc     = rmcValue.PcUtc;
+    }
+    else
+    {
+        var ggaValue = gga!.Value;
+        latitude  = ggaValue.Latitude;
+        longitude = ggaValue.Longitude;
+        altitude  = ggaValue.Altitude;
+        gpsUtc    = ggaValue.GpsUtc;
+        pcUtc     = ggaValue.PcUtc;
+    }
+
+    var timeDiff = gpsUtc.HasValue ? gpsUtc.Value - pcUtc : (TimeSpan?)null;
+    return new GpsFixResult(gga?.NmeaTag ?? rmc?.NmeaTag ?? "Unknown", latitude, longitude, altitude, gpsUtc, pcUtc, timeDiff);
+}
         /// <summary>Parses a GGA sentence: $--GGA,hhmmss.ss,llll.ll,a,yyyyy.yy,a,x,xx,x.x,x.x,M,x.x,M,x.x,xxxx*hh</summary>
         private static bool TryParseGga(IReadOnlyList<string> fields, DateTime pcUtcNow, out GgaFix fix)
         {
             fix = default;
             try
             {
+                var nmeaTag = fields[0];
                 var lat = fields[2];
                 var ns = fields[3];
                 var lon = fields[4];
@@ -165,15 +210,20 @@ namespace GreenSwamp.Alpaca.Server.Services
                 var longitude = NmeaToDecimal(lon, ew);
                 if (Math.Abs(latitude) <= 0.0 && Math.Abs(longitude) <= 0.0) return false;
 
-                double.TryParse(fields[9], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var altitude);
+                double.TryParse(fields[9], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var altitudeWGS84);
+                double.TryParse(fields[11], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var offsetMSL);
 
                 var timestamp = TryParseNmeaDateTime(null, fields[1], pcUtcNow, out var ts) ? ts : (DateTime?)null;
 
-                fix = new GgaFix(latitude, longitude, altitude, timestamp, pcUtcNow);
+                // Correct WGS84 altitude for location dependent Mean Sea Level geoid
+                fix = new GgaFix(nmeaTag, latitude, longitude, altitudeWGS84 - offsetMSL, timestamp, pcUtcNow);
                 return true;
             }
             catch (Exception ex) when (ex is IndexOutOfRangeException or FormatException)
             {
+                var monitorItem = new MonitorEntry
+                { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ex.Message}|{ex.StackTrace}" };
+                MonitorLog.LogToMonitor(monitorItem);
                 return false;
             }
         }
@@ -184,6 +234,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             fix = default;
             try
             {
+                var nmeaTag = fields[0];
                 var lat = fields[3];
                 var ns = fields[4];
                 var lon = fields[5];
@@ -197,11 +248,14 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                 var timestamp = TryParseNmeaDateTime(fields[9], fields[1], pcUtcNow, out var ts) ? ts : (DateTime?)null;
 
-                fix = new RmcFix(latitude, longitude, timestamp, pcUtcNow);
+                fix = new RmcFix(nmeaTag, latitude, longitude, timestamp, pcUtcNow);
                 return true;
             }
             catch (Exception ex) when (ex is IndexOutOfRangeException or FormatException)
             {
+                var monitorItem = new MonitorEntry
+                { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ex.Message}|{ex.StackTrace}" };
+                MonitorLog.LogToMonitor(monitorItem);
                 return false;
             }
         }
@@ -213,7 +267,20 @@ namespace GreenSwamp.Alpaca.Server.Services
         {
             const NumberStyles style = NumberStyles.AllowDecimalPoint;
             if (!double.TryParse(num, style, CultureInfo.InvariantCulture, out var raw))
+            {
+                var monitorItem = new MonitorEntry
+                {
+                    Datetime = Principles.HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Message = $"Failed Conversion|{num}|{dir}"
+                };
+                MonitorLog.LogToMonitor(monitorItem);
                 return 0.0;
+            }
 
             var hemisphere = dir.Equals("S", StringComparison.OrdinalIgnoreCase) || dir.Equals("W", StringComparison.OrdinalIgnoreCase) ? -1 : 1;
             var degrees = Math.Truncate(raw / 100);
@@ -271,8 +338,12 @@ namespace GreenSwamp.Alpaca.Server.Services
             {
                 checkSum ^= Convert.ToByte(ch);
             }
-
-            return string.Equals(checkChar, checkSum.ToString("X2"), StringComparison.Ordinal);
+            if (string.Equals(checkChar, checkSum.ToString("X2"), StringComparison.Ordinal))
+                return true;
+            var monitorItem = new MonitorEntry
+            { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{receivedData}" };
+            MonitorLog.LogToMonitor(monitorItem);
+            return false;
         }
 
         private static string GetTextBetween(string source, string start, string end)
@@ -282,6 +353,15 @@ namespace GreenSwamp.Alpaca.Server.Services
             startIndex += start.Length;
             var endIndex = source.IndexOf(end, startIndex, StringComparison.Ordinal);
             return endIndex < 0 ? string.Empty : source.Substring(startIndex, endIndex - startIndex);
+        }
+
+        /// <summary>
+        /// Write to Monitor the NmEa sentence before being parsed
+        /// </summary>
+        /// <param name="sentence"></param>
+        /// <param name="valid">Passed prechecks</param>
+        private void LogNmEaSentence(string sentence, bool valid)
+        {
         }
 
         private static Handshake ParseHandshake(string value) =>
