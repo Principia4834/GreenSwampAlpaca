@@ -183,6 +183,25 @@ namespace GreenSwamp.Alpaca.Server.Services
             SendCommand(command);
         }
 
+        /// <summary>
+        /// Asynchronously retrieves the observatory location from the CdC server.
+        /// Wraps the synchronous <see cref="GetObs"/> call on a thread-pool thread.
+        /// </summary>
+        internal async Task<CdcLocationResult> GetObsAsync(CancellationToken ct = default)
+        {
+            var data = await Task.Run(() => GetObs(), ct).ConfigureAwait(false);
+            return new CdcLocationResult(data[0], data[1], data[2]);
+        }
+
+        /// <summary>
+        /// Asynchronously pushes an observatory location to the CdC server.
+        /// Wraps the synchronous <see cref="SetObs"/> call on a thread-pool thread.
+        /// </summary>
+        internal async Task SetObsAsync(double lat, double lon, double alt, CancellationToken ct = default)
+        {
+            await Task.Run(() => SetObs(lat, lon, alt), ct).ConfigureAwait(false);
+        }
+
         public void Dispose()
         {
             Dispose(true);
