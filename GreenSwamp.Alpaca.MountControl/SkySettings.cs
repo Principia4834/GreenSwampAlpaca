@@ -66,6 +66,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private int _gpsDataBits = 8;
         private int _gpsTimeout = 2000;
         private Handshake _gpsHandshake = Handshake.None;
+        private string _cdcAddress = "127.0.0.1";
+        private int _cdcPort = 3292;
         private bool _trackAfterUnpark = false;
         private SlewSpeed _hcSpeed = SlewSpeed.Eight;
         private HcMode _hcMode = HcMode.Guiding;
@@ -454,6 +456,32 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_gpsHandshake != value)
                 {
                     _gpsHandshake = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string CdcAddress
+        {
+            get => _cdcAddress;
+            set
+            {
+                if (_cdcAddress != value)
+                {
+                    _cdcAddress = value ?? string.Empty;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int CdcPort
+        {
+            get => _cdcPort;
+            set
+            {
+                if (_cdcPort != value)
+                {
+                    _cdcPort = value;
                     OnPropertyChanged();
                 }
             }
@@ -1761,6 +1789,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 _gpsDataBits = settings.GpsDataBits > 0 ? settings.GpsDataBits : 8;
                 _gpsTimeout = settings.GpsTimeout > 0 ? settings.GpsTimeout : 2000;
                 _gpsHandshake = Enum.TryParse<Handshake>(settings.GpsHandshake, true, out var gpsHs) ? gpsHs : Handshake.None;
+                _cdcAddress = settings.CdcAddress;
+                _cdcPort = settings.CdcPort;
                 _trackAfterUnpark = settings.TrackAfterUnpark;
 
                 if (Enum.TryParse<SlewSpeed>(settings.HcSpeed, true, out var hcSpd))
@@ -1986,6 +2016,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.GpsDataBits = _gpsDataBits;
                 settings.GpsTimeout = _gpsTimeout;
                 settings.GpsHandshake = _gpsHandshake.ToString();
+                settings.CdcAddress = _cdcAddress;
+                settings.CdcPort = _cdcPort;
                 settings.TrackAfterUnpark = _trackAfterUnpark;
                 settings.HcSpeed = _hcSpeed.ToString();
                 settings.HcMode = _hcMode.ToString();

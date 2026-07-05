@@ -136,28 +136,28 @@
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.GpsFixed"
                            OnClick="OpenGpsFixAsync">
-                    Get GPS Fix
+                    Connect
                 </MudButton>
             </MudTooltip>
             </MudExpansionPanel>
 
-            <MudExpansionPanel Text="Carte du Ciel" Icon="@Icons.Material.Filled.Language">
+            <MudExpansionPanel Text="Cartes du Ciel" Icon="@Icons.Material.Filled.Language">
                 <MudStack Spacing="3">
-                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="IP address or hostname of the Carte du Ciel server at this observatory site (e.g. 127.0.0.1)." Placement="Placement.Right" Arrow="true">
+                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="IP address or hostname of the Cartes du Ciel server at this observatory site (e.g. 127.0.0.1)." Placement="Placement.Right" Arrow="true">
                         <MudTextField @bind-Value="Observatory!.CdcAddress"
                                       @bind-Value:after="NotifyChanged"
                                       Label="CdC Address" Immediate="true" />
                     </MudTooltip>
-                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="TCP port the Carte du Ciel server is listening on (default 3292)." Placement="Placement.Right" Arrow="true">
+                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="TCP port the Cartes du Ciel server is listening on (default 3292)." Placement="Placement.Right" Arrow="true">
                         <MudNumericField T="int" @bind-Value="Observatory!.CdcPort"
                                          @bind-Value:after="NotifyChanged"
                                          Label="CdC Port" Min="1" Max="65535" Immediate="true" />
                     </MudTooltip>
-                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the Carte du Ciel server to read or write latitude, longitude and elevation." Placement="Placement.Right" Arrow="true">
+                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the Cartes du Ciel server to read or write latitude, longitude and elevation." Placement="Placement.Right" Arrow="true">
                         <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
                                    StartIcon="@Icons.Material.Filled.Language"
                                    OnClick="OpenCdcDialogAsync">
-                            Connect to Carte du Ciel
+                            Connect
                         </MudButton>
                     </MudTooltip>
                 </MudStack>
@@ -295,7 +295,7 @@
         };
 
         var dialog = await DialogService.ShowAsync<CdcDialog>(
-            "Carte du Ciel", parameters,
+            "Cartes du Ciel", parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, BackdropClick = false });
 
         var result = await dialog.Result;
@@ -304,7 +304,7 @@
         Observatory.Latitude  = location.Latitude;
         Observatory.Longitude = location.Longitude;
         Observatory.Elevation = location.Altitude;
-        Snackbar.Add("Latitude, longitude and elevation updated from Carte du Ciel.", Severity.Success);
+        Snackbar.Add("Latitude, longitude and elevation updated from Cartes du Ciel.", Severity.Success);
         await NotifyChanged();
     }
 }

@@ -19,6 +19,8 @@
                      "AxisUpperLimitY":  180.0,
                      "BaudRate":  9600,
                      "CanSetPierSide":  true,
+                     "CdcAddress": "127.0.0.1",
+                     "CdcPort": 3292,
                      "CustomDec360Steps":  0,
                      "CustomDecTrackingOffset":  0,
                      "CustomDecWormTeeth":  0,

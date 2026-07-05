@@ -78,6 +78,18 @@
           "type": "boolean",
           "description": "Mount can set pier side (for meridian flips)"
         },
+        "CdcAddress": {
+          "type": "string",
+          "description": "Cartes du Ciel IP address",
+          "default": "127.0.0.1"
+        },
+        "CdcPort": {
+          "type": "integer",
+          "description": "Cartes du Ciel port",
+          "minimum": 1024,
+          "maximum": 65535,
+          "default": 3292
+        },
         "CustomDec360Steps": {
           "type": "integer",
           "minimum": 0,

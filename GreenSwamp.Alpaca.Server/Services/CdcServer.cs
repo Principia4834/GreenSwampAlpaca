@@ -117,7 +117,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     }
                     else
                     {
-                        darray[0] = Utilities.DMSToDegrees(lat.Trim());
+                        darray[0] = Utilities.DMSToDegrees(NormalizeDmsString(lat.Trim()));
                     }
                 }
 
@@ -130,7 +130,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     }
                     else
                     {
-                        darray[1] = Utilities.DMSToDegrees(lon.Trim()) * -1;
+                        darray[1] = Utilities.DMSToDegrees(NormalizeDmsString(lon.Trim())) * -1;
                     }
                 }
 
@@ -202,6 +202,12 @@ namespace GreenSwamp.Alpaca.Server.Services
             await Task.Run(() => SetObs(lat, lon, alt), ct).ConfigureAwait(false);
         }
 
+        private static string NormalizeDmsString(string dms)
+        {
+            return dms.Replace("d", ":").Replace("m", ":").TrimEnd('s');
+            // "+51d12m41s" → "+51:12:41"
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -213,7 +219,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         {
             if (!disposing) return;
             // dispose managed resources
-            _tcpClient.Dispose();
+            _tcpClient?.Dispose();
             // free native resources
         }
     }

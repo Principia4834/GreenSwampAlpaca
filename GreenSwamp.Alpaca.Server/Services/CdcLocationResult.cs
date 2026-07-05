@@ -17,14 +17,14 @@
 namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
-    /// Network connection parameters for a Carte du Ciel (CdC) server.
+    /// Network connection parameters for a Cartes du Ciel (CdC) server.
     /// </summary>
     /// <param name="Address">IP address or hostname of the CdC server (e.g. 127.0.0.1).</param>
     /// <param name="Port">TCP port the CdC server is listening on (default 3292).</param>
     public sealed record CdcConnectionParams(string Address, int Port);
 
     /// <summary>
-    /// Observatory location data returned by a Carte du Ciel server via the GETOBS command.
+    /// Observatory location data returned by a Cartes du Ciel server via the GETOBS command.
     /// </summary>
     /// <param name="Latitude">Latitude in decimal degrees (positive = North).</param>
     /// <param name="Longitude">Longitude in decimal degrees (positive = East).</param>

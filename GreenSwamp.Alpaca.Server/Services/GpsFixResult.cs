@@ -39,6 +39,7 @@ namespace GreenSwamp.Alpaca.Server.Services
     /// <summary>
     /// Result of a successful GPS fix parsed from NMEA GGA/RMC sentences.
     /// </summary>
+    /// <param name="NmeaTag">NMEA sentence tag that provided the fix (GGA or RMC).</param>
     /// <param name="Latitude">Latitude in decimal degrees.</param>
     /// <param name="Longitude">Longitude in decimal degrees.</param>
     /// <param name="Altitude">Altitude in metres above sea level (from GGA; 0 if only RMC was received).</param>
@@ -46,6 +47,7 @@ namespace GreenSwamp.Alpaca.Server.Services
     /// <param name="PcUtc">Local machine UTC date/time captured when the fix was read.</param>
     /// <param name="TimeDiff">Difference between <see cref="GpsUtc"/> and <see cref="PcUtc"/>, if <see cref="GpsUtc"/> is available.</param>
     public sealed record GpsFixResult(
+        string NmeaTag,
         double Latitude,
         double Longitude,
         double Altitude,

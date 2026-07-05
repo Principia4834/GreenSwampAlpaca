@@ -20,7 +20,7 @@ using MudBlazor;
 namespace GreenSwamp.Alpaca.Server.Components.Dialogs
 {
     /// <summary>
-    /// Code-behind for <see cref="CdcDialog"/>: connects to a Carte du Ciel server and
+    /// Code-behind for <see cref="CdcDialog"/>: connects to a Cartes du Ciel server and
     /// supports bidirectional transfer of observatory location data.
     /// <list type="bullet">
     ///   <item><term>Copy From CdC</term><description>Reads lat/lon/alt from CdC and returns it to the caller.</description></item>

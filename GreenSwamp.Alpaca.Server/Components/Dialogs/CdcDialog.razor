@@ -4,18 +4,13 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Language" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">Carte du Ciel</MudText>
+            <MudText Typo="Typo.h6">Cartes du Ciel (@ConnectionParams.Address : @ConnectionParams.Port)</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3" Class="mt-2" Style="min-width: 380px">
 
-            @* ── Connection target ───────────────────────────────────── *@
-            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                Server: @ConnectionParams.Address : @ConnectionParams.Port
-            </MudText>
-
-            @* ── State: Idle ──────────────────────────────────────────── *@
+            @* -- State: Idle -------------------------------------------- *@
             @if (_state == DialogState.Idle)
             {
                 <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Language" Dense="true">
@@ -23,7 +18,7 @@
                 </MudAlert>
             }
 
-            @* ── State: Connecting ────────────────────────────────────── *@
+            @* -- State: Connecting -------------------------------------- *@
             @if (_state == DialogState.Connecting)
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
@@ -32,7 +27,7 @@
                 </MudStack>
             }
 
-            @* ── State: Fetch error ───────────────────────────────────── *@
+            @* -- State: Fetch error ------------------------------------- *@
             @if (_state == DialogState.Error)
             {
                 <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.CloudOff">
@@ -40,7 +35,7 @@
                 </MudAlert>
             }
 
-            @* ── State: Ready — CdC location table ───────────────────── *@
+            @* -- State: Ready — CdC location table --------------------- *@
             @if (_state is DialogState.Ready or DialogState.Sending or DialogState.Sent or DialogState.SendError)
             {
                 <MudSimpleTable Dense="true">
@@ -71,7 +66,7 @@
                 </MudSimpleTable>
             }
 
-            @* ── State: Sending to CdC ────────────────────────────────── *@
+            @* -- State: Sending to CdC ---------------------------------- *@
             @if (_state == DialogState.Sending)
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
@@ -80,7 +75,7 @@
                 </MudStack>
             }
 
-            @* ── State: Send success ──────────────────────────────────── *@
+            @* -- State: Send success ------------------------------------ *@
             @if (_state == DialogState.Sent)
             {
                 <MudAlert Severity="Severity.Success" Icon="@Icons.Material.Filled.CloudDone" Dense="true">
@@ -88,7 +83,7 @@
                 </MudAlert>
             }
 
-            @* ── State: Send error ────────────────────────────────────── *@
+            @* -- State: Send error -------------------------------------- *@
             @if (_state == DialogState.SendError)
             {
                 <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.CloudOff" Dense="true">

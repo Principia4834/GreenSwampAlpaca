@@ -317,6 +317,11 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public int GpsTimeout { get; set; } = 2000;
         [CommonSetting]
         public string GpsHandshake { get; set; } = "None";
+        [CommonSetting]
+        public string CdcAddress { get; set; } = "127.0.0.1";
+        [CommonSetting]
+        public int CdcPort { get; set; } = 3292;
+
 
         // Instrument Info
         [CommonSetting]

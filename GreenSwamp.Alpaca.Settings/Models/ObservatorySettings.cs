@@ -61,6 +61,12 @@ namespace GreenSwamp.Alpaca.Settings.Models
 
         /// <summary>Handshake for the GPS receiver serial port (None, XOnXOff, RequestToSend, RequestToSendXOnXOff).</summary>
         public string GpsHandshake { get; set; } = "None";
+
+        /// <summary>IP address of the CDC server for this observatory site. Defaults to localhost (127.0.0.1).</summary>
+        public string CdcAddress { get; set; } = "127.0.0.1";
+
+        /// <summary>Port number of the CDC server for this observatory site. Defaults to 3292.</summary>
+        public int CdcPort { get; set; } = 3292;
     }
 
     /// <summary>
