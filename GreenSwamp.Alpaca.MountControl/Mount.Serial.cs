@@ -55,10 +55,6 @@ namespace GreenSwamp.Alpaca.MountControl
                     Connecting = true;
                 }
 
-                // Add synchronously so IsConnected returns true as soon as SetConnected returns —
-                // required by the ASCOM Connected property contract.
-                _connectStates.TryAdd(id, true);
-
                 if (!IsMountRunning)
                 {
                     // Phase 1: Start mount initialization in background to comply with ASCOM <1 second return requirement
@@ -68,6 +64,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             MountStart();
 
+                            // Hardware succeeded — add to connected set before clearing Connecting so the
+                            // 200 ms TelescopeStateService tick always sees IsConnected = true on the same
+                            // tick that Connecting transitions to false. This ensures the "Mount Connected"
+                            // voice announcement fires on the correct state transition.
+                            _connectStates.TryAdd(id, true);
                             _hasEverBeenConnected = true;
                             _lastConnectionError = null;
                             Connecting = false;
@@ -86,8 +87,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         catch (Exception ex)
                         {
-                            // Hardware failed — undo TryAdd so IsConnected returns false.
-                            _connectStates.TryRemove(id, out _);
+                            // TryAdd was never called — IsConnected is already false.
                             _lastConnectionError = ex.Message;
 
                             // MountErrorHandler calls MountStop() and stores _mountError.
@@ -124,6 +124,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     return; // Early return - Connecting remains true until background task completes
                 }
 
+                // Mount already running — add this client immediately; no hardware init needed.
+                _connectStates.TryAdd(id, true);
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Add|{id}|AlreadyRunning" };
                 MonitorLog.LogToMonitor(monitorItem);
