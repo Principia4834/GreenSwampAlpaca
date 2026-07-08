@@ -30,6 +30,13 @@ namespace GreenSwamp.Alpaca.Mount.Commands
         bool IsRunning { get; }
 
         /// <summary>
+        /// Indicates whether the underlying hardware executor has confirmed a live connection
+        /// (serial port open AND at least one successful response received).
+        /// False when the queue is running but no mount has responded — e.g. failed connect.
+        /// </summary>
+        bool IsMountConnected { get; }
+
+        /// <summary>
         /// Gets a new unique command ID
         /// </summary>
         long NewId { get; }

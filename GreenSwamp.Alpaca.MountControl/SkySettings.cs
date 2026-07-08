@@ -1773,6 +1773,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mount = mountType;
                 _port = settings.Port ?? "COM1";
                 _baudRate = (SerialSpeed)settings.BaudRate;
+                _dataBits = settings.DataBits > 0 ? settings.DataBits : 8;
+                _readTimeout = settings.ReadTimeout > 0 ? settings.ReadTimeout : 5000;
+                if (Enum.TryParse<Handshake>(settings.Handshake, true, out var hs))
+                    _handShake = hs;
+                _dtrEnable = settings.DTREnable;
+                _rtsEnable = settings.RTSEnable;
                 if (Enum.TryParse<AlignmentMode>(settings.AlignmentMode, true, out var alignMode))
                     _alignmentMode = alignMode;
                 if (Enum.TryParse<EquatorialCoordinateType>(settings.EquatorialCoordinateType, true, out var eqType))

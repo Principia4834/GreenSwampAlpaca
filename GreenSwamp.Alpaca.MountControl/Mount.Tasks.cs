@@ -38,76 +38,69 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>
         /// Handles MountControlException and SkyServerException for this mount instance.
         /// </summary>
-        internal void MountErrorHandler(Exception ex)
-        {
-            var monitorItem = new MonitorEntry
-            {
-                Datetime = HiResDateTime.UtcNow,
-                Device = MonitorDevice.Server,
-                Category = MonitorCategory.Server,
-                Type = MonitorType.Error,
-                Method = MethodBase.GetCurrentMethod()?.Name,
-                Thread = Environment.CurrentManagedThreadId,
-                Message = $"{ex.Message}|{ex.StackTrace}"
-            };
-            MonitorLog.LogToMonitor(monitorItem);
+internal void MountErrorHandler(Exception ex)
+{
+    var monitorItem = new MonitorEntry
+    {
+        Datetime = HiResDateTime.UtcNow,
+        Device = MonitorDevice.Server,
+        Category = MonitorCategory.Server,
+        Type = MonitorType.Error,
+        Method = MethodBase.GetCurrentMethod()?.Name,
+        Thread = Environment.CurrentManagedThreadId,
+        Message = $"{ex.Message}|{ex.StackTrace}"
+    };
+    MonitorLog.LogToMonitor(monitorItem);
 
-            var extype = ex.GetType().ToString().Trim();
-            switch (extype)
+    switch (ex)
+    {
+        case MountControlException mounterr:
+            switch (mounterr.ErrorCode)
             {
-                case "GS.SkyWatcher.MountControlException":
-                    var mounterr = (MountControlException)ex;
-                    switch (mounterr.ErrorCode)
-                    {
-                        case SkyWatcherErrorCode.ErrInvalidId:
-                        case SkyWatcherErrorCode.ErrAlreadyConnected:
-                        case SkyWatcherErrorCode.ErrNotConnected:
-                        case SkyWatcherErrorCode.ErrInvalidData:
-                        case SkyWatcherErrorCode.ErrSerialPortBusy:
-                        case SkyWatcherErrorCode.ErrMountNotFound:
-                        case SkyWatcherErrorCode.ErrNoResponseAxis1:
-                        case SkyWatcherErrorCode.ErrNoResponseAxis2:
-                        case SkyWatcherErrorCode.ErrAxisBusy:
-                        case SkyWatcherErrorCode.ErrMaxPitch:
-                        case SkyWatcherErrorCode.ErrMinPitch:
-                        case SkyWatcherErrorCode.ErrUserInterrupt:
-                        case SkyWatcherErrorCode.ErrAlignFailed:
-                        case SkyWatcherErrorCode.ErrUnimplemented:
-                        case SkyWatcherErrorCode.ErrWrongAlignmentData:
-                        case SkyWatcherErrorCode.ErrQueueFailed:
-                        case SkyWatcherErrorCode.ErrTooManyRetries:
-                            MountStop();
-                            _mountError = mounterr;
-                            break;
-                        default:
-                            MountStop();
-                            _mountError = mounterr;
-                            break;
-                    }
-                    break;
-                case "GS.Server.SkyTelescope.SkyServerException":
-                    var skyerr = (SkyServerException)ex;
-                    switch (skyerr.ErrorCode)
-                    {
-                        case ErrorCode.ErrMount:
-                        case ErrorCode.ErrExecutingCommand:
-                        case ErrorCode.ErrUnableToDeqeue:
-                        case ErrorCode.ErrSerialFailed:
-                            MountStop();
-                            _mountError = skyerr;
-                            break;
-                        default:
-                            MountStop();
-                            _mountError = skyerr;
-                            break;
-                    }
-                    break;
+                case SkyWatcherErrorCode.ErrInvalidId:
+                case SkyWatcherErrorCode.ErrAlreadyConnected:
+                case SkyWatcherErrorCode.ErrNotConnected:
+                case SkyWatcherErrorCode.ErrInvalidData:
+                case SkyWatcherErrorCode.ErrSerialPortBusy:
+                case SkyWatcherErrorCode.ErrMountNotFound:
+                case SkyWatcherErrorCode.ErrNoResponseAxis1:
+                case SkyWatcherErrorCode.ErrNoResponseAxis2:
+                case SkyWatcherErrorCode.ErrAxisBusy:
+                case SkyWatcherErrorCode.ErrMaxPitch:
+                case SkyWatcherErrorCode.ErrMinPitch:
+                case SkyWatcherErrorCode.ErrUserInterrupt:
+                case SkyWatcherErrorCode.ErrAlignFailed:
+                case SkyWatcherErrorCode.ErrUnimplemented:
+                case SkyWatcherErrorCode.ErrWrongAlignmentData:
+                case SkyWatcherErrorCode.ErrQueueFailed:
+                case SkyWatcherErrorCode.ErrTooManyRetries:
                 default:
-                    _mountError = ex;
                     MountStop();
+                    _mountError = mounterr;
                     break;
             }
-        }
+            break;
+
+        case SkyServerException skyerr:
+            switch (skyerr.ErrorCode)
+            {
+                case ErrorCode.ErrMount:
+                case ErrorCode.ErrExecutingCommand:
+                case ErrorCode.ErrUnableToDeqeue:
+                case ErrorCode.ErrSerialFailed:
+                default:
+                    MountStop();
+                    _mountError = skyerr;
+                    break;
+            }
+            break;
+
+        default:
+            _mountError = ex;
+            MountStop();
+            break;
+    }
+}
 
         /// <summary>Checks command object for errors and unsuccessful execution.</summary>
         /// <returns>true if errors found or not successful</returns>
@@ -566,6 +559,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     return false;
                 case MountType.SkyWatcher:
                     var sq = SkyQueue!;
+                    // If the mount never responded (e.g. failed connect), IsMountConnected is false.
+                    // There are no running axes to stop — return immediately so GetCommandResult
+                    // is never called and the 40 s CompletionTimeoutMs is never incurred.
+                    if (!sq.IsMountConnected) return false;
                     stopwatch = Stopwatch.StartNew();
                     SkyTasks(MountTaskName.StopAxes);
                     while (stopwatch.Elapsed.TotalMilliseconds <= 5000)

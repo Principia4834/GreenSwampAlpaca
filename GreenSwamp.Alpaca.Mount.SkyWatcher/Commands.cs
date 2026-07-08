@@ -1659,67 +1659,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             return commandStr.ToString().Trim();
         }
 
-        ///// <summary>
-        ///// Work for serial port event - medium cpu usage
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void DataReceived(object sender, SerialDataReceivedEventArgs e)
-        //{
-        //    IncomingData = ReceiveResponse();
-        //}
-
-        ///// <summary>
-        ///// Errors for serial port event
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private static void ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
-        //{
-        //    var monitorItem = new MonitorEntry
-        //        { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{e}" };
-        //    MonitorLog.LogToMonitor(monitorItem);
-        //}
-
-        ///// <summary>
-        ///// Reads serial port buffer - medium cpu usage
-        ///// </summary>
-        //private StringBuilder serialBuffer = new StringBuilder();
-        //private const string terminationSequence = "\r";
-        //private string DataReceived(string cmdDataStr)
-        //{
-        //    try
-        //    {
-        //        var data = Serial.ReadExisting();
-        //        string message = null;
-        //        serialBuffer.Append(data);
-        //        var bufferString = serialBuffer.ToString();
-        //        int index;
-        //        do
-        //        {
-        //            index = bufferString.IndexOf(terminationSequence, StringComparison.Ordinal);
-        //            if (index <= -1) continue;
-        //            message = bufferString.Substring(0, index);
-        //            bufferString = bufferString.Remove(0, index + terminationSequence.Length);
-
-        //        } while (index > -1);
-        //        serialBuffer = new StringBuilder(bufferString);
-        //        return message;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Trace.TraceInformation("Retry {0}", ex.Message);
-        //        var monitorItem = new MonitorEntry
-        //            { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{cmdDataStr}|{ex.Message}" };
-        //        MonitorLog.LogToMonitor(monitorItem);
-        //        throw;
-        //    }
-        //}
-
-        /// <summary>
-        /// Read serial port buffer - skyWatcher original source
-        /// </summary>
-        /// <returns></returns>
         private string ReceiveResponse()
         {
             // format "::e1\r=020883\r"
@@ -1752,26 +1691,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <returns></returns>
         private string ReceiveResponse(Axis axis, char command, string cmdDataStr)
         {
-            //var sw  = Stopwatch.StartNew();
-            //while (sw.Elapsed.TotalMilliseconds < 1000)
-            //{
-            //    // alternative method
-            //    //receivedData = DataReceived(cmdDataStr);
-
-            //    receivedData = ReceiveResponse();
-            //    if (!string.IsNullOrEmpty(receivedData)) break;
-
-            //    // alternative using events
-            //    //if (!string.IsNullOrEmpty(IncomingData))
-            //    //{
-            //    //    receivedData = IncomingData;
-            //    //    IncomingData = null;
-            //    //    break;
-            //    //}
-            //    //Thread.Sleep(10);
-            //}
-            //sw.Stop();
-
             var receivedData = ReceiveResponse();
 
             var monitorItem = new MonitorEntry
@@ -1862,55 +1781,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             return receivedData;
         }
 
-        ///// <summary>
-        ///// Sends :e1 to the mounts and evaluates response to see its an appropriate response.
-        ///// </summary>
-        //internal void TestSerial()
-        //{
-        //    var isError = true;
-        //    //Serial.ClearBuffers();
-        //    // send the request
-        //    SendRequest(Axis.Axis1, 'e', null);
-        //    // receive the response
-        //     var responseString = Serial.ReceiveCounted(8);
-        //    //var responseString = Serial.ReadLine();
 
-        //    if (responseString.Length > 0)
-        //    {
-        //        responseString = responseString.Replace("\0", string.Empty).Trim();
-        //        // check to see if the response is valid 
-        //        switch (responseString[0].ToString())
-        //        {
-        //            case "=":
-        //                isError = false;
-        //                break;
-        //            case "!":
-        //                isError = false;
-        //                break;
-        //        }
-        //        // check to see if the number for the mount type is valid
-        //        if (!isError)
-        //        {
-        //            var parsed = int.TryParse(responseString.Substring(6, 1), out var mountNumber);
-        //            if (parsed)
-        //            {
-        //                if (mountNumber < 0 || mountNumber > 6)isError = true;
-        //            }
-        //            else
-        //            {
-        //                isError = true;
-        //            }
-        //        }
-
-        //    }
-
-        //    var monitorItem = new MonitorEntry
-        //        { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" Response:{responseString}"};
-        //    MonitorLog.LogToMonitor(monitorItem);
-
-        //    if (!isError) return;
-        //    throw new MountControlException(ErrorCode.ErrMountNotFound);
-        //}
 
         /// <summary>
         /// Converts the string to a long
@@ -1926,11 +1797,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 {
                     value += (long)(int.Parse(str.Substring(i, 2), NumberStyles.AllowHexSpecifier) * Math.Pow(16, i - 1));
                 }
-
-                //var msg = $"|{str}|{value}";
-                //var monitorItem = new MonitorEntry
-                //{ Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = msg };
-                //MonitorLog.LogToMonitor(monitorItem);
 
                 return value;
             }
@@ -2002,10 +1868,6 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 var parsed = int.Parse(response, NumberStyles.HexNumber);
                 var a = parsed / divFactor;
 
-                //var msg = $"|{response}|{parseFirst}|{divFactor}|{a}";
-                //var monitorItem = new MonitorEntry
-                //{ Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = msg };
-                //MonitorLog.LogToMonitor(monitorItem);
                 return a;
             }
             catch (Exception ex)

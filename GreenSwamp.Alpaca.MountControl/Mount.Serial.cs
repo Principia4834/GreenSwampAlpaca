@@ -48,12 +48,16 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (value)
             {
-                if (_connectStates.IsEmpty) { Connecting = true; }
-                var notAlreadyPresent = _connectStates.TryAdd(id, true);
-                // Record that this mount has been connected at least once this session
-                _hasEverBeenConnected = true;
+                if (_connectStates.IsEmpty)
+                {
+                    // Reset connection error so a repeated failure always triggers a new toast.
+                    _lastConnectionError = null;
+                    Connecting = true;
+                }
+                // Do NOT add to _connectStates yet — IsConnected must stay false until hardware succeeds.
+                // This prevents a premature "Mount Connected" voice announcement.
 
-                if (!_connectStates.IsEmpty && !IsMountRunning)
+                if (!IsMountRunning)
                 {
                     // Phase 1: Start mount initialization in background to comply with ASCOM <1 second return requirement
                     _ = Task.Run(() =>
@@ -62,7 +66,13 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             MountStart();
 
-                            // Mark connection as complete
+                            // Hardware succeeded — NOW the client is connected and IsConnected becomes true.
+                            _connectStates.TryAdd(id, true);
+                            _hasEverBeenConnected = true;
+                            _lastConnectionError = null;
+
+                            // Set Connecting = false AFTER _connectStates is populated so the state tick
+                            // fires with IsConnected already true — "Mount Connected" voice fires correctly.
                             Connecting = false;
 
                             var completionItem = new MonitorEntry
@@ -79,8 +89,18 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         catch (Exception ex)
                         {
-                            // Risk 2: Store exception for later retrieval
-                            _mountError = ex;
+                            // _connectStates was never populated — IsConnected is already false.
+                            // Store the error message so the notification service fires the toast.
+                            // Connecting stays true here — MountStop() is cleanup that is an
+                            // integral part of the failed connect workflow. The spinner must remain
+                            // active until ALL connect-related work (including teardown) is done.
+                            _lastConnectionError = ex.Message;
+
+                            // MountErrorHandler calls MountStop() and stores _mountError.
+                            // This blocks until queue teardown is complete (~up to 5 s).
+                            MountErrorHandler(ex);
+
+                            // NOW the entire connect workflow is finished — drop the spinner.
                             Connecting = false;
 
                             var errorItem = new MonitorEntry
@@ -106,14 +126,14 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Environment.CurrentManagedThreadId,
-                        Message = $"Add|{id}|{notAlreadyPresent}|StartingAsync|Connecting:{Connecting}"
+                        Message = $"Add|{id}|StartingAsync|Connecting:{Connecting}"
                     };
                     MonitorLog.LogToMonitor(startItem);
                     return; // Early return - Connecting remains true until background task completes
                 }
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Add|{id}|{notAlreadyPresent}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Add|{id}|AlreadyRunning" };
                 MonitorLog.LogToMonitor(monitorItem);
             }
             else
@@ -314,12 +334,13 @@ namespace GreenSwamp.Alpaca.MountControl
                     // create a command and put in queue to test connection
                     var init = new SkyGetMotorCardVersion(SkyQueue!.NewId, SkyQueue, Axis.Axis1);
                     _ = (string)SkyQueue.GetCommandResult(init).Result;
-                    if (!init.Successful && init.Exception != null)
+                    if (!init.Successful)
                     {
-                        // ToDo: fix string resource
-                        init.Exception = new Exception($"CheckMount{Environment.NewLine}{init.Exception.Message}", init.Exception);
-                        // init.Exception = new Exception($"{MediaTypeNames.Application.Current.Resources["CheckMount"]}{Environment.NewLine}{init.Exception.Message}", init.Exception);
-                        MountErrorHandler(init.Exception);
+                        // Assign _mountError directly — MountErrorHandler will be called once
+                        // by SetConnected()'s catch block, avoiding a double MountStop().
+                        _mountError = init.Exception != null
+                            ? new Exception($"CheckMount{Environment.NewLine}{init.Exception.Message}", init.Exception)
+                            : new SkyServerException(ErrorCode.ErrSerialFailed, "No response from mount controller — check port and power");
                         return false;
                     }
 
@@ -409,13 +430,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         if (counter > 5)
                         {
-                            _ = new SkySetAxisPosition(SkyQueue!.NewId, SkyQueue, Axis.Axis1, positions[0]);
-                            _ = new SkySetAxisPosition(SkyQueue!.NewId, SkyQueue, Axis.Axis2, positions[1]);
-                            positionsSet = true;
-                            monitorItem = new MonitorEntry
-                            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Counter exceeded:{positions[0]}|{positions[1]}" };
-                            MonitorLog.LogToMonitor(monitorItem);
-                            break;
+                            // All position reads failed — no mount is responding.
+                            var error = new SkyServerException(ErrorCode.ErrMount,
+                                "Mount not responding: failed to read axis positions after 5 retries");
+                            MountErrorHandler(error);
+                            return false;
                         }
                         counter++;
 
@@ -631,7 +650,10 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                MountStop();
+                // MountConnect() set _mountError directly — throw it so SetConnected()'s catch
+                // block calls MountErrorHandler() once and sets _lastConnectionError.
+                throw _mountError
+                    ?? new SkyServerException(ErrorCode.ErrMount, "Mount failed during initialisation");
             }
         }
 

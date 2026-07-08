@@ -93,6 +93,10 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private bool IsUiClientConnected(int dn) =>
             MountRegistry.GetInstance(dn)?.IsClientConnected(UiClientId) ?? false;
 
+        /// <summary>Returns true while the mount hardware handshake is in progress.</summary>
+        private static bool IsConnecting(int dn) =>
+            MountRegistry.GetInstance(dn)?.Connecting ?? false;
+
         private async Task OnConnectToggleAsync(int dn)
         {
             try

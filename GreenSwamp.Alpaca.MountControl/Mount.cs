@@ -53,6 +53,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector _appAxes;
         private Vector _targetRaDec;
         internal Exception? _mountError;
+        private volatile string? _lastConnectionError;
         internal Vector _altAzSync;
 
         // Factor steps (conversion ratios)
@@ -683,6 +684,12 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             return _mountError;
         }
+
+        /// <summary>
+        /// The error message from the most recent failed connection attempt, or null if the last
+        /// connection succeeded. Used by MountNotificationService to surface a UI error toast.
+        /// </summary>
+        public string? LastConnectionError => _lastConnectionError;
 
         #endregion
 

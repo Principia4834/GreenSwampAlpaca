@@ -20,6 +20,9 @@
 
         if (e.IsLimitWarning)
             _ = InvokeAsync(() => Snackbar.Add(e.Text, Severity.Warning));
+
+        if (e.IsConnectionError)
+            _ = InvokeAsync(() => Snackbar.Add(e.Text, Severity.Error));
     }
 
     public void Dispose()

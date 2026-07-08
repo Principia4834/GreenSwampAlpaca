@@ -37,6 +37,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
         private long _id;
 
         public bool IsRunning { get; private set; }
+        public bool IsMountConnected => IsConnected();
         public long NewId => Interlocked.Increment(ref _id);
 
         /// <summary>

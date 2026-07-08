@@ -32,6 +32,8 @@ namespace GreenSwamp.Alpaca.Server.Services
         public int VoiceVolume { get; init; }
         /// <summary>True when this notification should be shown as a snackbar warning.</summary>
         public bool IsLimitWarning { get; init; }
+        /// <summary>True when this notification should be shown as an error snackbar for a connection failure.</summary>
+        public bool IsConnectionError { get; init; }
     }
 
     /// <summary>
@@ -48,7 +50,8 @@ namespace GreenSwamp.Alpaca.Server.Services
             bool Slewing,
             bool AtHome,
             bool IsConnected,
-            long LimitWarningSequence);
+            long LimitWarningSequence,
+            string? LastConnectionError);
 
         private readonly Dictionary<int, DeviceNotificationState> _lastState = new();
 
@@ -74,13 +77,14 @@ namespace GreenSwamp.Alpaca.Server.Services
             {
                 var state = _stateService.GetCurrentState(dn);
                 var isConnected = IsUiClientConnected(dn);
+                var connectionError = MountRegistry.GetInstance(dn)?.LastConnectionError;
 
                 if (!_lastState.TryGetValue(dn, out var last))
                 {
                     // Prime state on first tick — no events fired.
                     _lastState[dn] = new DeviceNotificationState(
                         state.AtPark, state.Slewing, state.AtHome,
-                        isConnected, state.LimitWarningSequence);
+                        isConnected, state.LimitWarningSequence, connectionError);
                     continue;
                 }
 
@@ -115,9 +119,23 @@ namespace GreenSwamp.Alpaca.Server.Services
                     });
                 }
 
+                // Fire once when a new connection error message appears.
+                if (!string.IsNullOrEmpty(connectionError) && connectionError != last.LastConnectionError)
+                {
+                    NotificationRequested?.Invoke(this, new MountNotificationEventArgs
+                    {
+                        DeviceNumber = dn,
+                        Text = $"Connection failed: {connectionError}",
+                        IsVoiceEnabled = false,
+                        IsConnectionError = true,
+                        VoiceName = state.VoiceName,
+                        VoiceVolume = state.VoiceVolume,
+                    });
+                }
+
                 _lastState[dn] = new DeviceNotificationState(
                     state.AtPark, state.Slewing, state.AtHome,
-                    isConnected, state.LimitWarningSequence);
+                    isConnected, state.LimitWarningSequence, connectionError);
             }
         }
 

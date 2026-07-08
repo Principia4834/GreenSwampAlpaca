@@ -276,11 +276,27 @@ else
                                             ShowPrimaryButtons="false"
                                             ShowStopButton="true" />
                             <MudTooltip Text="Click to enable / disable controls" Placement="Placement.Top" Arrow="true">
+                                @{
+                                    var connecting = IsConnecting(dn);
+                                }
                                 <MudButton Variant="Variant.Outlined"
                                            Color="@(connected ? Color.Error : Color.Success)"
                                            Size="Size.Small"
+                                           Disabled="@connecting"
                                            OnClick="@(() => OnConnectToggleAsync(dn))">
-                                    @(connected ? "Disconnect" : "Connect")
+                                    @if (connecting)
+                                    {
+                                        <MudProgressCircular Indeterminate="true"
+                                                             Size="Size.Small"
+                                                             Color="Color.Default"
+                                                             Class="mr-2"
+                                                             StrokeWidth="4" />
+                                        <span>Connecting&#x2026;</span>
+                                    }
+                                    else
+                                    {
+                                        @(connected ? "Disconnect" : "Connect")
+                                    }
                                 </MudButton>
                             </MudTooltip>
                         </MudStack>
