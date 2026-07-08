@@ -54,8 +54,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     _lastConnectionError = null;
                     Connecting = true;
                 }
-                // Do NOT add to _connectStates yet — IsConnected must stay false until hardware succeeds.
-                // This prevents a premature "Mount Connected" voice announcement.
+
+                // Add synchronously so IsConnected returns true as soon as SetConnected returns —
+                // required by the ASCOM Connected property contract.
+                _connectStates.TryAdd(id, true);
 
                 if (!IsMountRunning)
                 {
@@ -66,13 +68,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             MountStart();
 
-                            // Hardware succeeded — NOW the client is connected and IsConnected becomes true.
-                            _connectStates.TryAdd(id, true);
                             _hasEverBeenConnected = true;
                             _lastConnectionError = null;
-
-                            // Set Connecting = false AFTER _connectStates is populated so the state tick
-                            // fires with IsConnected already true — "Mount Connected" voice fires correctly.
                             Connecting = false;
 
                             var completionItem = new MonitorEntry
@@ -89,18 +86,13 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         catch (Exception ex)
                         {
-                            // _connectStates was never populated — IsConnected is already false.
-                            // Store the error message so the notification service fires the toast.
-                            // Connecting stays true here — MountStop() is cleanup that is an
-                            // integral part of the failed connect workflow. The spinner must remain
-                            // active until ALL connect-related work (including teardown) is done.
+                            // Hardware failed — undo TryAdd so IsConnected returns false.
+                            _connectStates.TryRemove(id, out _);
                             _lastConnectionError = ex.Message;
 
                             // MountErrorHandler calls MountStop() and stores _mountError.
-                            // This blocks until queue teardown is complete (~up to 5 s).
                             MountErrorHandler(ex);
 
-                            // NOW the entire connect workflow is finished — drop the spinner.
                             Connecting = false;
 
                             var errorItem = new MonitorEntry
@@ -612,26 +604,6 @@ namespace GreenSwamp.Alpaca.MountControl
             // Run mount default commands and start the UI updates
             if (MountConnect())
             {
-                // Guard: client may have disconnected while MountConnect() was executing in the background.
-                // If _connectStates is now empty, MountStop() has already nulled _mediaTimer.
-                // Creating a new timer here would orphan it — stop cleanly instead.
-                if (_connectStates.IsEmpty)
-                {
-                    var abortItem = new MonitorEntry
-                    {
-                        Datetime = HiResDateTime.UtcNow,
-                        Device = MonitorDevice.Server,
-                        Category = MonitorCategory.Mount,
-                        Type = MonitorType.Warning,
-                        Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Environment.CurrentManagedThreadId,
-                        Message = "MountStart aborted: disconnected during MountConnect() — stopping to avoid orphaned timer"
-                    };
-                    MonitorLog.LogToMonitor(abortItem);
-                    MountStop();
-                    return;
-                }
-
                 // Start the tracking command processor (queue-based AltAz serialisation)
                 _trackingProcessor = new TrackingCommandProcessor(this);
                 _trackingProcessor.Start(CancellationToken.None);
