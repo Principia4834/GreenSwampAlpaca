@@ -134,10 +134,25 @@ else
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Top" Arrow="true">
+                            <MudTooltip Text="@(s.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Color="@(connected ? Color.Success : Color.Default)"
                                          Icon="@(s.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
                                          Size="Size.Large" />
+                            </MudTooltip>
+
+                            @* -- Connections --------------------------------------- *@
+                            <MudTooltip Text="@(s.ConnectedClientCount > 0 ? $"{s.ConnectedClientCount} active connection(s)" : (s.HasEverBeenConnected ? "No active connections (has been connected)" : "No connections"))"
+                                        Placement="Placement.Bottom" Arrow="true">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                                    <MudIcon Icon="@(s.ConnectedClientCount > 0 ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
+                                             Color="@(s.ConnectedClientCount > 0 ? Color.Success : Color.Default)"
+                                             Size="Size.Large" />
+                                    <MudText Typo="Typo.h1"
+                                             Color="@(s.ConnectedClientCount > 0 ? Color.Success : (s.HasEverBeenConnected ? Color.Warning : Color.Default))"
+                                             Style="line-height: 1;">
+                                        : @s.ConnectedClientCount
+                                    </MudText>
+                                </MudStack>
                             </MudTooltip>
 
                         </MudStack>
@@ -256,50 +271,49 @@ else
                 <MudPaper Elevation="1" Class="pa-2 mt-3">
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
-                        @* Left: Shutdown controls *@
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudCheckBox @bind-Value="EnableShutdown" Label="Confirm shutdown" Dense="true" Color="Color.Primary" />
-                            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected." Placement="Placement.Top" Arrow="true">
-                                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Default" />
-                            </MudTooltip>
-                            <MudButton Variant="Variant.Filled" Color="Color.Error" Disabled="@AllowShutdown" OnClick="Shutdown">
-                                Shutdown
-                            </MudButton>
-                        </MudStack>
+                        @* Far left: Shutdown *@
+                        <MudTooltip Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected."
+                                    Placement="Placement.Top" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.PowerSettingsNew"
+                                           Color="Color.Error"
+                                           Size="Size.Large"
+                                           Variant="Variant.Text"
+                                           OnClick="ShutdownAsync" />
+                        </MudTooltip>
 
-                        @* Right: Stop + Connect *@
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MountButtonBar State="@s"
-                                            DeviceNumber="@dn"
-                                            IsConnected="@connected"
-                                            Vertical="false"
-                                            ShowPrimaryButtons="false"
-                                            ShowStopButton="true" />
-                            <MudTooltip Text="Click to enable / disable controls" Placement="Placement.Top" Arrow="true">
-                                @{
-                                    var connecting = IsConnecting(dn);
-                                }
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="@(connected ? Color.Error : Color.Success)"
-                                           Size="Size.Small"
+                        @* Centre: Stop — same StopCircle icon as the hand controller *@
+                        <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
+                            <MudIconButton Icon="@Icons.Material.Filled.StopCircle"
+                                           Color="Color.Error"
+                                           Size="Size.Large"
+                                           Variant="Variant.Text"
+                                           Disabled="@(!s.HasEverBeenConnected && !connected)"
+                                           OnClick="@(() => OnStopClickAsync(dn))" />
+                        </MudTooltip>
+
+                        @* Right: Connect / Disconnect — shows spinner while connecting *@
+                        @{
+                            var connecting = IsConnecting(dn);
+                        }
+                        <MudTooltip Text="@(connecting ? "Connecting\u2026" : connected ? "Disconnect from mount" : "Connect to mount")"
+                                    Placement="Placement.Top" Arrow="true">
+                            <MudIconButton Color="@(connected ? Color.Error : Color.Success)"
+                                           Size="Size.Large"
+                                           Variant="Variant.Text"
                                            Disabled="@connecting"
                                            OnClick="@(() => OnConnectToggleAsync(dn))">
-                                    @if (connecting)
-                                    {
-                                        <MudProgressCircular Indeterminate="true"
-                                                             Size="Size.Small"
-                                                             Color="Color.Default"
-                                                             Class="mr-2"
-                                                             StrokeWidth="4" />
-                                        <span>Connecting&#x2026;</span>
-                                    }
-                                    else
-                                    {
-                                        @(connected ? "Disconnect" : "Connect")
-                                    }
-                                </MudButton>
-                            </MudTooltip>
-                        </MudStack>
+                                @if (connecting)
+                                {
+                                    <MudProgressCircular Indeterminate="true" Size="Size.Small"
+                                                         Color="Color.Default" StrokeWidth="4" />
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@(connected ? Icons.Material.Filled.LinkOff : Icons.Material.Filled.Link)"
+                                             Size="Size.Large" />
+                                }
+                            </MudIconButton>
+                        </MudTooltip>
 
                     </MudStack>
                 </MudPaper>
