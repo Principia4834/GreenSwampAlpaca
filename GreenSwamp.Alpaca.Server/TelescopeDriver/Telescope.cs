@@ -409,18 +409,22 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 var r = _mount.IsConnected;
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Debug, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return r;
             }
             set
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {value}|legacy" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {value}|legacy" };
                 MonitorLog.LogToMonitor(monitorItem);
                 // Use real ClientID if available, fall back to legacy key 0
                 long clientKey = (long)AlpacaRequestContext.ClientId.Value; // 0 when not set by REST layer
                 _mount.SetConnected(clientKey, value);
+                while (Connecting)
+                {
+                    Thread.Sleep(10);
+                }
             }
         }
 
@@ -433,7 +437,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             {
                 var r = _mount.Connecting;
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" {r}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return r;
             }
@@ -1207,7 +1211,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             long clientKey = (long)AlpacaRequestContext.ClientId.Value;
             _mount.SetConnected(clientKey, false);
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"false|clientKey:{clientKey}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"false|clientKey:{clientKey}" };
             MonitorLog.LogToMonitor(monitorItem);
         }
 
