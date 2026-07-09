@@ -73,13 +73,13 @@
                    TickMarks="true"
                    Disabled="@(!IsEnabled)">Speed: @_speed</MudSlider>
 
-        @* Mode Selector *@
-        <MudStack Spacing="1">
-            <MudText Typo="Typo.body2">Mode</MudText>
+        @* Mode Selector + Pulse Guides gear button on one row *@
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
             <MudToggleGroup @bind-Value="_mode"
                             @bind-Value:after="OnModeChanged"
                             Color="Color.Primary"
                             SelectionMode="SelectionMode.SingleSelection"
+                            Size="Size.Small"
                             Disabled="@(!IsEnabled)">
                 <MudToggleItem Value="@HcMode.Axes">
                     <MudText Typo="Typo.body2">Axes</MudText>
@@ -91,11 +91,6 @@
                     <MudText Typo="Typo.body2">Pulse</MudText>
                 </MudToggleItem>
             </MudToggleGroup>
-        </MudStack>
-
-        @* HC Pulse Guides settings — gear icon opens the editor dialog *@
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Pulse Guides</MudText>
             <MudTooltip Text="Edit HC Pulse Guides" Placement="Placement.Right" Arrow="true">
                 <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                Size="Size.Small"
