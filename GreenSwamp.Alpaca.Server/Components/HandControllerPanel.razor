@@ -74,26 +74,19 @@
                    Disabled="@(!IsEnabled)">Speed: @_speed</MudSlider>
 
         @* Mode Selector + Pulse Guides gear button on one row *@
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
             <MudToggleGroup @bind-Value="_mode"
                             @bind-Value:after="OnModeChanged"
                             Color="Color.Primary"
-                            SelectionMode="SelectionMode.SingleSelection"
                             Size="Size.Small"
+                            SelectionMode="SelectionMode.SingleSelection"
                             Disabled="@(!IsEnabled)">
-                <MudToggleItem Value="@HcMode.Axes">
-                    <MudText Typo="Typo.body2">Axes</MudText>
-                </MudToggleItem>
-                <MudToggleItem Value="@HcMode.Guiding">
-                    <MudText Typo="Typo.body2">Guiding</MudText>
-                </MudToggleItem>
-                <MudToggleItem Value="@HcMode.Pulse">
-                    <MudText Typo="Typo.body2">Pulse</MudText>
-                </MudToggleItem>
+                <MudToggleItem Value="@HcMode.Axes" Text="Axes" />
+                <MudToggleItem Value="@HcMode.Guiding" Text="Guiding" />
+                <MudToggleItem Value="@HcMode.Pulse" Text="Pulse" />
             </MudToggleGroup>
             <MudTooltip Text="Edit HC Pulse Guides" Placement="Placement.Right" Arrow="true">
                 <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                               Size="Size.Small"
                                Color="Color.Default"
                                OnClick="OpenHcPulseGuidesDialogAsync"
                                Disabled="@(!IsEnabled)" />
