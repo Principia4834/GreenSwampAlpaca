@@ -1,4 +1,8 @@
-﻿<MudNavMenu>
+﻿@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
+<MudNavMenu>
+
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 
     @foreach (var device in ASCOM.Alpaca.DeviceManager.Cameras)
@@ -62,7 +66,45 @@
 
     <MudDivider Class="my-2" />
 
+    <MudNavLink Icon="@Icons.Material.Filled.ShowChart"
+                OnClick="@(() => OpenChartWindowAsync("/charts/radec", "gs-radec-chart"))">
+        RA / Dec Chart
+    </MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.DataUsage"
+                OnClick="@(() => OpenChartWindowAsync("/charts/pulse", "gs-pulse-chart"))">
+        Pulse Chart
+    </MudNavLink>
+
+    <MudDivider Class="my-2" />
+
     <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">Settings Explorer</MudNavLink>
     <MudNavLink Href="/setup" Icon="@Icons.Material.Filled.Settings">Alpaca Settings</MudNavLink>
     <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">Check Settings</MudNavLink>
 </MudNavMenu>
+
+@code {
+    private async Task OpenChartWindowAsync(string url, string windowKey)
+    {
+        await JS.InvokeVoidAsync(
+            "chartWindowInterop.open",
+            DotNetObjectReference.Create(this),
+            url,
+            windowKey,
+            1200,
+            700);
+    }
+
+    [JSInvokable]
+    public void OnPopupBlocked(string url)
+    {
+        Snackbar.Add(
+            "Chart window was blocked. Please allow pop-ups for this site.",
+            Severity.Warning);
+    }
+
+    [JSInvokable]
+    public void OnChartWindowClosed(string windowKey)
+    {
+        // Chart window closed externally — no nav-menu state to update.
+    }
+}

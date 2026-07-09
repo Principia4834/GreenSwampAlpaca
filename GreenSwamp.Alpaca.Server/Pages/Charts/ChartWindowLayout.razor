@@ -1,0 +1,13 @@
+﻿@using GreenSwamp.Alpaca.Server.Theme
+
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudMainContent Style="padding:0;">
+        @Body
+    </MudMainContent>
+</MudLayout>

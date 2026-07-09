@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-05-27 08:29**
+**2026-07-09 22:51**
 
 ---
 
@@ -26,6 +26,8 @@
    - 5.5 [Settings Explorer](#55-settings-explorer)
    - 5.6 [Alpaca Settings](#56-alpaca-settings)
    - 5.7 [Check Settings](#57-check-settings)
+   - 5.8 [RA / Dec Chart](#58-ra--dec-chart)
+   - 5.9 [Pulse Guide Chart](#59-pulse-guide-chart)
 6. [Settings Explorer In Depth](#6-settings-explorer-in-depth)
    - 6.1 [Tree Structure](#61-tree-structure)
    - 6.2 [Dirty-State Tracking and Saving](#62-dirty-state-tracking-and-saving)
@@ -159,6 +161,9 @@ Status              ← Real-time mount telemetry
 Settings            ← Per-device quick settings overview
 Monitor             ← Live log stream + filter controls
 ─────────────────────
+RA / Dec Chart      ← Opens live position chart in a new window
+Pulse Chart         ← Opens live pulse-guide chart in a new window
+─────────────────────
 Settings Explorer   ← Full settings tree (all groups)
 Alpaca Settings     ← Server-level network and auth settings
 Check Settings      ← Settings validation and auto-repair
@@ -288,6 +293,51 @@ Each issue includes:
 - An **Auto-repairable** chip if the server can fix it automatically
 
 An **Auto-repair** button is shown when at least one auto-repairable issue exists. Clicking it applies all available automatic fixes and re-validates. You can also re-run validation manually at any time with the **Validate** button.
+
+---
+
+### 5.8 RA / Dec Chart
+
+**URL:** `/charts/radec`
+
+Opens in a **separate browser window** when clicked in the navigation menu. The window hosts an
+independent Blazor circuit connected to the server via SignalR.
+
+| Control | Purpose |
+|---|---|
+| **Scale** drop-down | Switches the Y-axis between Steps, Degrees, and Arc-seconds |
+| **Axis 1 / Axis 2** toggles | Show or hide each position series |
+| **Record** (●) button | Starts writing received data points to a `GSChartingLogRaDec` file in the log directory |
+| **Stop** (■) button | Stops disk logging for this session |
+| **Clear** (🧹) button | Removes all plotted points from the current view |
+
+On opening, the chart pre-populates with up to 5 000 buffered historical points from the server
+before live streaming begins. Settings (scale, series visibility) are saved automatically and
+restored the next time the chart window is opened.
+
+> **Popup blocker:** If the window does not open, a warning snackbar is shown in the main
+> application window. See [Troubleshooting — Chart window is blocked](#chart-window-is-blocked-by-the-browser).
+
+---
+
+### 5.9 Pulse Guide Chart
+
+**URL:** `/charts/pulse`
+
+Opens in a **separate browser window** identical in structure to the RA/Dec chart. Shows four
+series for guide pulse data received from the mount driver:
+
+| Series | Colour | Description |
+|---|---|---|
+| **RA** | Green | Accepted RA pulse durations |
+| **RA rej.** | Amber | Rejected RA pulses (scatter plot) |
+| **Dec** | Blue | Accepted Dec pulse durations |
+| **Dec rej.** | Red | Rejected Dec pulses (scatter plot) |
+
+The **Scale** drop-down switches the Y-axis between Milliseconds (pulse duration), Arc-seconds
+(rate), and Steps.
+
+All toolbar controls (logging, clear, series toggles) are identical to the RA/Dec chart.
 
 ---
 
@@ -605,6 +655,24 @@ Enable **Auto-start Browser** in Alpaca Settings → UI Options, or navigate man
   dot on the tree node.
 - Some server settings (e.g. port number) require a server restart to take effect.
 
+### Chart window is blocked by the browser
+
+Chart windows open via `window.open()`. Most modern browsers block pop-ups by default for sites
+that have not been explicitly allowed.
+
+**Symptoms:** Clicking *RA / Dec Chart* or *Pulse Chart* in the navigation menu shows a
+yellow **"Chart window was blocked"** snackbar at the top of the main window. The browser may
+also show a pop-up blocked indicator in the address bar.
+
+**Resolution:**
+
+1. Click the pop-up blocked icon in the browser's address bar.
+2. Choose **Always allow pop-ups from `http://localhost:31416`** (or whichever port is configured).
+3. Click the chart link again — the window will open normally.
+
+> Charts can also be opened directly by navigating to `/charts/radec` or `/charts/pulse` in
+> any browser tab; the launcher in the navigation menu is a convenience shortcut only.
+
 ---
 
 ## 14. Appendix A — File and Directory Locations
@@ -797,4 +865,4 @@ to the journal. Use `journalctl -u greenswamp-alpaca` to view these entries.
 
 ---
 
-*Green Swamp Alpaca Server — User Guide — 2026-05-27 08:29*
+*Green Swamp Alpaca Server — User Guide — 2026-07-09 22:51*
