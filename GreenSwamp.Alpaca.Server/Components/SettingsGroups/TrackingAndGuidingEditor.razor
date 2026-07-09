@@ -83,6 +83,15 @@
         </MudStack>
     </MudExpansionPanel>
 
+    <MudExpansionPanel Text="HC Pulse Guides" Icon="@Icons.Material.Filled.Speed">
+        @if (Device != null)
+        {
+            <HcPulseGuidesEditor Guides="@Device.HcPulseGuides"
+                                 MaxRate="@Device.MaximumSlewRate"
+                                 OnChanged="@NotifyChanged" />
+        }
+    </MudExpansionPanel>
+
 </MudExpansionPanels>
 
 @code {

@@ -1,0 +1,110 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+
+@* Reusable tabular editor for SkySettings.HcPulseGuides (8 speed-step rows).
+   Used as a panel inside TrackingAndGuidingEditor and as dialog content from HandControllerPanel. *@
+
+@if (Guides is not null)
+{
+    <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+        <thead>
+            <tr>
+                <th style="width:60px"><MudText Typo="Typo.caption" Color="Color.Primary">Speed</MudText></th>
+                <th><MudText Typo="Typo.caption" Color="Color.Primary">Duration (ms)</MudText></th>
+                <th><MudText Typo="Typo.caption" Color="Color.Primary">Interval (ms)</MudText></th>
+                <th><MudText Typo="Typo.caption" Color="Color.Primary">Rate</MudText></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Guides.Count; i++)
+            {
+                var guide = Guides[i];
+                <tr>
+                    <td><MudText Typo="Typo.body2">@guide.Speed</MudText></td>
+                    <td>
+                        <MudNumericField T="int"
+                                         @bind-Value="guide.Duration"
+                                         @bind-Value:after="NotifyChanged"
+                                         HideSpinButtons="true"
+                                         Min="1"
+                                         Immediate="true"
+                                         Variant="Variant.Text"
+                                         Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudNumericField T="int"
+                                         @bind-Value="guide.Interval"
+                                         @bind-Value:after="NotifyChanged"
+                                         HideSpinButtons="true"
+                                         Min="1"
+                                         Immediate="true"
+                                         Variant="Variant.Text"
+                                         Margin="Margin.Dense" />
+                    </td>
+                    <td>
+                        <MudNumericField T="double"
+                                         @bind-Value="guide.Rate"
+                                         @bind-Value:after="NotifyChanged"
+                                         HideSpinButtons="true"
+                                         Min="0.001"
+                                         Max="@MaxRate"
+                                         Format="F3"
+                                         Immediate="true"
+                                         Variant="Variant.Text"
+                                         Margin="Margin.Dense" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+        Rate max: @MaxRate.ToString("F3") (MaximumSlewRate)
+    </MudText>
+}
+
+@code {
+    /// <summary>The list of HC pulse guide entries to edit. Auto-padded to 8 entries if shorter.</summary>
+    [Parameter] public List<SkySettings.HcPulseGuide>? Guides { get; set; }
+
+    /// <summary>Upper bound for the Rate field — sourced from SkySettings.MaximumSlewRate.</summary>
+    [Parameter] public double MaxRate { get; set; }
+
+    /// <summary>Fired after any cell value changes, subject to the initialisation guard.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    // Guards against MudNumericField firing ValueChanged during initial render or
+    // parameter-change re-render (Min/Max coercion causing a false IsDirty on reset).
+    private bool _initialized;
+    private bool _parametersChanging;
+
+    protected override void OnParametersSet()
+    {
+        _parametersChanging = true;
+
+        // Ensure the list always has exactly 8 entries.
+        if (Guides is not null)
+        {
+            for (int i = Guides.Count; i < 8; i++)
+            {
+                Guides.Add(new SkySettings.HcPulseGuide
+                {
+                    Speed    = i + 1,
+                    Duration = 1000,
+                    Interval = 1000,
+                    Rate     = 0.0
+                });
+            }
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _initialized = true;
+        _parametersChanging = false;
+    }
+
+    private async Task NotifyChanged()
+    {
+        if (!_initialized || _parametersChanging) return;
+        await OnChanged.InvokeAsync();
+    }
+}

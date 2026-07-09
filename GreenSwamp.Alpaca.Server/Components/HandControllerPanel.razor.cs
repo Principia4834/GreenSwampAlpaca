@@ -1,6 +1,9 @@
 ﻿using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Server.Components.Dialogs;
+using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Components
 {
@@ -295,6 +298,21 @@ namespace GreenSwamp.Alpaca.Server.Components
             persisted.HcAntiRa = _antiRa;
             persisted.HcAntiDec = _antiDec;
             await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
+        }
+
+        /// <summary>Opens the HC Pulse Guides editor dialog for this device.</summary>
+        private async Task OpenHcPulseGuidesDialogAsync()
+        {
+            var maxRate = _mount?.Settings?.MaxSlewRate ?? 3.5;
+
+            var parameters = new DialogParameters<HcPulseGuidesDialog>
+            {
+                { d => d.DeviceNumber, DeviceNumber },
+                { d => d.MaxRate,      maxRate      }
+            };
+
+            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+            await DialogService.ShowAsync<HcPulseGuidesDialog>("HC Pulse Guides", parameters, options);
         }
 
         public async ValueTask DisposeAsync()

@@ -1,0 +1,94 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Server.Components.SettingsGroups
+@inject IVersionedSettingsService SettingsService
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">HC Pulse Guides — Device @DeviceNumber</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <HcPulseGuidesEditor Guides="@_working"
+                             MaxRate="@MaxRate"
+                             OnChanged="@OnEditorChanged" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(!_isDirty)"
+                   StartIcon="@Icons.Material.Filled.Save">
+            Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Device number used to load/save settings.</summary>
+    [Parameter] public int DeviceNumber { get; set; }
+
+    /// <summary>Upper bound for the Rate column; sourced from SkySettings.MaximumSlewRate.</summary>
+    [Parameter] public double MaxRate { get; set; }
+
+    private List<SkySettings.HcPulseGuide> _working = [];
+    private bool _isDirty;
+
+    protected override void OnInitialized()
+    {
+        var current = SettingsService.GetDeviceSettings(DeviceNumber);
+        if (current?.HcPulseGuides is { Count: > 0 } guides)
+        {
+            // Deep copy so edits don't mutate the live settings until Save is confirmed.
+            _working = guides
+                .Select(g => new SkySettings.HcPulseGuide
+                {
+                    Speed    = g.Speed,
+                    Duration = g.Duration,
+                    Interval = g.Interval,
+                    Rate     = g.Rate
+                })
+                .ToList();
+        }
+    }
+
+    private void OnEditorChanged() => _isDirty = true;
+
+    private async Task SaveAsync()
+    {
+        var settings = SettingsService.GetDeviceSettings(DeviceNumber);
+        if (settings == null)
+        {
+            MudDialog.Cancel();
+            return;
+        }
+
+        settings.HcPulseGuides = _working;
+        await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, settings);
+
+        // Also update the live mount instance if it is running.
+        // The mount uses a structurally identical but separate HcPulseGuide type, so project across.
+        var mount = GreenSwamp.Alpaca.MountControl.MountRegistry.GetInstance(DeviceNumber);
+        if (mount?.Settings != null)
+        {
+            mount.Settings.HcPulseGuides = _working
+                .Select(g => new GreenSwamp.Alpaca.MountControl.Pulses.HcPulseGuide
+                {
+                    Speed    = g.Speed,
+                    Duration = g.Duration,
+                    Interval = g.Interval,
+                    Rate     = g.Rate
+                })
+                .ToList();
+        }
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -1,9 +1,11 @@
 ﻿@using GreenSwamp.Alpaca.MountControl
 @using GreenSwamp.Alpaca.Settings.Services
+@using GreenSwamp.Alpaca.Server.Components.Dialogs
 @using Microsoft.JSInterop
 @using MudBlazor
 @inject IJSRuntime JS
 @inject IVersionedSettingsService SettingsService
+@inject IDialogService DialogService
 @implements IAsyncDisposable
 
 <div>
@@ -89,6 +91,18 @@
                     <MudText Typo="Typo.body2">Pulse</MudText>
                 </MudToggleItem>
             </MudToggleGroup>
+        </MudStack>
+
+        @* HC Pulse Guides settings — gear icon opens the editor dialog *@
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Pulse Guides</MudText>
+            <MudTooltip Text="Edit HC Pulse Guides" Placement="Placement.Right" Arrow="true">
+                <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                               Size="Size.Small"
+                               Color="Color.Default"
+                               OnClick="OpenHcPulseGuidesDialogAsync"
+                               Disabled="@(!IsEnabled)" />
+            </MudTooltip>
         </MudStack>
 
         @if (!string.IsNullOrEmpty(_statusMessage))
