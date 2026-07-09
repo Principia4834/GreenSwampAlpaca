@@ -111,7 +111,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal bool MonitorPulse { private get; set; }
         internal string MountType { get; private set; }
         private int MountNum { get; set; }
-        internal string MountVersion { get; private set; }
+        internal string[] MountVersion { get; private set; } = { string.Empty, string.Empty };
         internal bool SouthernHemisphere { private get; set; }
         internal int MinPulseDurationRa { get; set; }
         internal int MinPulseDurationDec { get; set; }
@@ -1130,12 +1130,12 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 switch (axis)
                 {
                     case Axis.Axis1:
-                        MountVersion = versions[0];
+                        MountVersion[0] = versions[0];
                         MountType = GetEnumDescription((McModel)models[0]);
                         MountNum = models[0];
                         break;
                     case Axis.Axis2:
-                        MountVersion = versions[1];
+                        MountVersion[1] = versions[1];
                         MountType = GetEnumDescription((McModel)models[1]);
                         MountNum = models[1];
                         break;
@@ -1145,14 +1145,14 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
             catch (Exception)
             {
-                MountVersion = "99";
+                MountVersion = new string[] { "99", "99" };
             }
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{MountType}|{MountVersion}|{MountNum}" };
             MonitorLog.LogToMonitor(monitorItem);
 
-            return MountVersion;
+            return MountVersion[(int)axis];
         }
 
         internal double GetPecPeriod(Axis axis)

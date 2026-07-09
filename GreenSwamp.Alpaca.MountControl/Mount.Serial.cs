@@ -338,14 +338,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         return false;
                     }
 
-                    var controllerVoltage = double.NaN;
+                    // Warm Axis2 version cache so SkyTasks(MountVersion) can read both axes from cache.
+                    // Axis version never changes at runtime; this is the only time it needs to be queried.
+                    var initAxis2 = new SkyGetMotorCardVersion(SkyQueue.NewId, SkyQueue, Axis.Axis2);
+                    _ = (string)SkyQueue.GetCommandResult(initAxis2).Result; var controllerVoltage = double.NaN;
+
                     try
                     {
-                        if (SkyQueue != null)
-                        {
-                            var vs = new SkyGetControllerVoltage(SkyQueue.NewId, SkyQueue, Axis.Axis1);
-                            controllerVoltage = (double)SkyQueue.GetCommandResult(vs).Result;
-                        }
+                        var vs = new SkyGetControllerVoltage(SkyQueue.NewId, SkyQueue, Axis.Axis1);
+                        controllerVoltage = (double)SkyQueue.GetCommandResult(vs).Result;
                     }
                     catch { }
                     ControllerVoltage = controllerVoltage;
@@ -361,10 +362,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     };
                     MonitorLog.LogToMonitor(monitorItem);
                     // defaults
-                    if (Settings.Mount == MountType.SkyWatcher)
-                    {
-                        SkyTasks(MountTaskName.AllowAdvancedCommandSet);
-                    }
+                    SkyTasks(MountTaskName.AllowAdvancedCommandSet);
                     SkyTasks(MountTaskName.LoadDefaults);
                     SkyTasks(MountTaskName.StepsPerRevolution);
                     SkyTasks(MountTaskName.StepsWormPerRevolution);

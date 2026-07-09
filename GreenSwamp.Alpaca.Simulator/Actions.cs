@@ -417,7 +417,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// Gets version
         /// </summary>
         /// <returns></returns>
-        internal string MountVersion()
+        internal string MountVersion(Axis axis)
         {
             var result = _ioSerial.Send("mountversion");
 

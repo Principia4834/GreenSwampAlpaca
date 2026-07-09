@@ -991,11 +991,16 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
     public class SkyMountVersion : SkyQueryCommand
     {
-        public SkyMountVersion(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
+        private readonly Axis _axis;
+
+        public SkyMountVersion(long id, ICommandQueue<SkyWatcher> queue, Axis axis) : base(id, queue)
+        {
+            _axis = axis;
+        }
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
-            return skyWatcher.MountVersion;
+            return skyWatcher.MountVersion[(int)_axis];
         }
     }
 

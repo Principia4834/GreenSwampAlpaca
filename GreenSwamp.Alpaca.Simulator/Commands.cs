@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -360,11 +360,16 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
     public class CmdMountVersion : MountQueryCommand
     {
-        public CmdMountVersion(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        private readonly Axis _axis;
+
+        public CmdMountVersion(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        {
+            _axis = axis;
+        }
 
         protected override dynamic ExecuteQuery(Actions actions)
         {
-            return actions.MountVersion();
+            return actions.MountVersion(_axis);
         }
     }
 

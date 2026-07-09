@@ -118,7 +118,7 @@ namespace GreenSwamp.Alpaca.Server.Models
         public bool CanPolarLed { get; set; }
         public bool CanAdvancedCmdSupport { get; set; }
         public string MountName { get; set; } = string.Empty;
-        public string MountVersion { get; set; } = string.Empty;
+        public string[] MountVersion { get; set; } = { string.Empty, string.Empty };
         public string Capabilities { get; set; } = string.Empty;
 
         /// <summary>

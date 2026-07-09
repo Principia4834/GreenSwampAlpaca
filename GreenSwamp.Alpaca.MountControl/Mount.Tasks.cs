@@ -238,8 +238,10 @@ internal void MountErrorHandler(Exception ex)
                         case MountTaskName.GetAxisStrVersions:
                             break;
                         case MountTaskName.MountVersion:
-                            var mountVersionCmd = new CmdMountVersion(q.NewId, q);
-                            _mountVersion = (string)q.GetCommandResult(mountVersionCmd).Result;
+                            var mountVersionCmd = new CmdMountVersion(q.NewId, q, Axis.Axis1);
+                            _mountVersion[0] = (string)q.GetCommandResult(mountVersionCmd).Result;
+                            mountVersionCmd = new CmdMountVersion(q.NewId, q, Axis.Axis2);
+                            _mountVersion[1] = (string)q.GetCommandResult(mountVersionCmd).Result;
                             break;
                         case MountTaskName.StepsPerRevolution:
                             var spr = new CmdSpr(q.NewId, q);
@@ -438,8 +440,10 @@ internal void MountErrorHandler(Exception ex)
                             _mountName = (string)q.GetCommandResult(skyMountType).Result;
                             break;
                         case MountTaskName.MountVersion:
-                            var skyMountVersion = new SkyMountVersion(q.NewId, q);
-                            _mountVersion = (string)q.GetCommandResult(skyMountVersion).Result;
+                            var skyMountVersion1 = new SkyMountVersion(q.NewId, q, Axis.Axis1);
+                            _mountVersion[0] = (string)q.GetCommandResult(skyMountVersion1).Result;
+                            var skyMountVersion2 = new SkyMountVersion(q.NewId, q, Axis.Axis2);
+                            _mountVersion[1] = (string)q.GetCommandResult(skyMountVersion2  ).Result;
                             break;
                         case MountTaskName.StepsPerRevolution:
                             var skyMountRevolutions = new SkyGetStepsPerRevolution(q.NewId, q);

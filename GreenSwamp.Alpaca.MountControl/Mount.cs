@@ -68,7 +68,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal bool _canPolarLed;
         internal bool _canAdvancedCmdSupport;
         internal string _mountName = string.Empty;
-        internal string _mountVersion = string.Empty;
+        internal string[] _mountVersion = { string.Empty, string.Empty };
         internal string _capabilities = string.Empty;
 
         // Mount state
@@ -529,7 +529,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool CanPolarLed => _canPolarLed;
         public bool CanAdvancedCmdSupport => _canAdvancedCmdSupport;
         public string MountName => _mountName;
-        public string MountVersion => _mountVersion;
+        public string[] MountVersion => _mountVersion;
         public string Capabilities => _capabilities;
 
         #endregion
