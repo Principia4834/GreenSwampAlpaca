@@ -57,6 +57,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
         public event EventHandler<SkySettings>? DeviceSettingsChanged;
         public event EventHandler<MonitorSettings>? MonitorSettingsChanged;
         public event EventHandler<ServerConfig>? ServerConfigChanged;
+        public event EventHandler<ChartSettings>? ChartSettingsChanged;
+
+        private readonly SemaphoreSlim _chartFileLock = new(1, 1);
+        public string ChartSettingsPath => Path.Combine(_currentVersionPath, "chart.settings.user.json");
 
         public VersionedSettingsService(IConfiguration configuration)
         {
@@ -813,7 +817,49 @@ namespace GreenSwamp.Alpaca.Settings.Services
             MonitorSettingsChanged?.Invoke(this, settings);
         }
 
-        // ── Observatory settings ──────────────────────────────
+        // ── Chart settings ────────────────────────────────────────────────────────────
+
+        public ChartSettings GetChartSettings()
+        {
+            if (!File.Exists(ChartSettingsPath))
+                return new ChartSettings();
+
+            try
+            {
+                var json = File.ReadAllText(ChartSettingsPath);
+                return JsonSerializer.Deserialize<ChartSettings>(json, _jsonReadOptions)
+                    ?? new ChartSettings();
+            }
+            catch
+            {
+                return new ChartSettings();
+            }
+        }
+
+        public async Task SaveChartSettingsAsync(ChartSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+
+            if (!await _chartFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Timeout acquiring chart settings lock.");
+
+            try
+            {
+                var json = JsonSerializer.Serialize(settings, _jsonOptions);
+                var tempPath = ChartSettingsPath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json, Encoding.UTF8);
+                File.Move(tempPath, ChartSettingsPath, overwrite: true);
+                LogSafe("INFO", $"Chart settings saved for version {CurrentVersion}");
+            }
+            finally
+            {
+                _chartFileLock.Release();
+            }
+
+            ChartSettingsChanged?.Invoke(this, settings);
+        }
+
+        // ── Observatory settings ──────────────────────────────────────────────────────
 
         public ObservatorySettings GetObservatorySettings()
         {

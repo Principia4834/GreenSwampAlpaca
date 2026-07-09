@@ -133,5 +133,16 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         /// <summary>Event raised when server configuration is changed via SaveServerConfigAsync.</summary>
         event EventHandler<ServerConfig>? ServerConfigChanged;
+
+        // ── Chart settings (chart.settings.user.json) ─────────────────────────────────
+
+        /// <summary>Gets the current chart display settings. Returns defaults if the file is absent.</summary>
+        ChartSettings GetChartSettings();
+
+        /// <summary>Saves chart display settings to chart.settings.user.json.</summary>
+        Task SaveChartSettingsAsync(ChartSettings settings);
+
+        /// <summary>Event raised when chart settings are changed via SaveChartSettingsAsync.</summary>
+        event EventHandler<ChartSettings>? ChartSettingsChanged;
     }
 }

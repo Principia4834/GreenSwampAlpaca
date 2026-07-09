@@ -1,5 +1,7 @@
-﻿using ASCOM.Alpaca;
+﻿using ApexCharts;
+using ASCOM.Alpaca;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Server.Hubs;
 using GreenSwamp.Alpaca.Server.Middleware;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
@@ -197,6 +199,20 @@ namespace GreenSwamp.Alpaca.Server
 
             // Register FloatingWindowManager for DI injection
             builder.Services.AddScoped<FloatingWindowManager>();
+
+            // SignalR is used by ChartHub for real-time chart data streaming
+            builder.Services.AddSignalR();
+
+            // ApexCharts Blazor wrapper service (manages global options and chart instances)
+            builder.Services.AddApexCharts();
+
+            // ChartDataService is singleton so MonitorQueue subscriptions and ring buffers
+            // persist across Blazor circuit lifetimes (i.e. multiple chart windows).
+            builder.Services.AddSingleton<ChartDataService>();
+
+            // ChartLoggingService is scoped — each chart window circuit tracks its own
+            // logging state (file path, active flag) independently.
+            builder.Services.AddScoped<ChartLoggingService>();
 
             // Apply the same timestamp format to the host's console logger.
             builder.Logging.AddSimpleConsole(o => { o.TimestampFormat = "yyyy-MM-dd HH:mm:ss "; o.SingleLine = true; });
@@ -493,12 +509,20 @@ namespace GreenSwamp.Alpaca.Server
 
             app.MapBlazorHub();
 
+            // Chart data streaming endpoint
+            app.MapHub<ChartHub>("/charthub");
+
             app.MapControllers();
 
             app.MapFallbackToPage("/_Host");
 
             // Re-read server config post-build so any first-run seed is reflected
             var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
+
+            // Eagerly resolve ChartDataService so its MonitorQueue subscription is active from startup,
+            // not lazily on first hub connection. Safe: it is a singleton registered above.
+            _ = app.Services.GetRequiredService<ChartDataService>();
+            Logger.LogInformation("ChartDataService initialized — MonitorQueue subscriptions active.");
             if (startupConfig.AutoStartBrowser && OperatingSystem.IsWindows() && !isWindowsService)
             {
                 try
