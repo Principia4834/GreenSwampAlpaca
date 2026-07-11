@@ -50,7 +50,7 @@ internal void MountErrorHandler(Exception ex)
         Thread = Environment.CurrentManagedThreadId,
         Message = $"{ex.Message}|{ex.StackTrace}"
     };
-    MonitorLog.LogToMonitor(monitorItem);
+    LogMount(monitorItem);
 
     switch (ex)
     {
@@ -144,7 +144,7 @@ internal void MountErrorHandler(Exception ex)
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{taskName}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             var settings = Settings;
             var q = SimQueue!;
@@ -408,7 +408,7 @@ internal void MountErrorHandler(Exception ex)
                             _ = new SkySyncAxis(0, q, Axis.Axis1, sync[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, sync[1]);
                             monitorItem.Message += $",{appAxesSync.X}|{appAxesSync.Y}|{sync[0]}|{sync[1]}";
-                            MonitorLog.LogToMonitor(monitorItem);
+                            LogMount(monitorItem);
                             break;
                         case MountTaskName.SyncTarget:
                             var at = Transforms.CoordTypeToInternal(TargetRa, TargetDec, settings: settings);
@@ -416,7 +416,7 @@ internal void MountErrorHandler(Exception ex)
                             _ = new SkySyncAxis(0, q, Axis.Axis1, targetR[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, targetR[1]);
                             monitorItem.Message += $",{Utilities.HoursToHMS(at.X, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(at.Y, " ", ":", "", 2)}|{targetR[0]}|{targetR[1]}";
-                            MonitorLog.LogToMonitor(monitorItem);
+                            LogMount(monitorItem);
                             break;
                         case MountTaskName.SyncAltAz:
                             var altAzSyncPos = _altAzSync;
@@ -425,7 +425,7 @@ internal void MountErrorHandler(Exception ex)
                             _ = new SkySyncAxis(0, q, Axis.Axis1, targetAz[0]);
                             _ = new SkySyncAxis(0, q, Axis.Axis2, targetAz[1]);
                             monitorItem.Message += $",{altAzSyncPos.Y}|{altAzSyncPos.X}|{targetAz[0]}|{targetAz[1]}";
-                            MonitorLog.LogToMonitor(monitorItem);
+                            LogMount(monitorItem);
                             break;
                         case MountTaskName.GetAxisVersions:
                             var skyAxisVersions = new SkyGetAxisStringVersions(q.NewId, q);

@@ -1,4 +1,4 @@
-﻿@page "/charts/pulse"
+﻿@page "/charts/pulse/{DeviceNumber:int}"
 @layout ChartWindowLayout
 @using ApexCharts
 @using Microsoft.AspNetCore.SignalR.Client
@@ -18,8 +18,8 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-            <b style="color:var(--gs-accent-500);">Pulse</b> Guide
-        </MudText>
+                <b style="color:var(--gs-accent-500);">Pulse</b> Guide &mdash; Device @DeviceNumber
+            </MudText>
 
         <MudSpacer />
 
@@ -142,6 +142,8 @@
 </MudContainer>
 
 @code {
+    [Parameter] public int DeviceNumber { get; set; }
+
     // ── State ──────────────────────────────────────────────────────────────
     private ChartSettings _settings = new();
     private readonly List<PulsePointDto> _raData    = [];
@@ -177,8 +179,8 @@
 
         await _hub.StartAsync();
         _hubState = _hub.State;
-        await _hub.InvokeAsync("JoinPulseGroupAsync");
-        await _hub.InvokeAsync("RequestHistoricalDataAsync", "pulse");
+        await _hub.InvokeAsync("JoinPulseGroupAsync", DeviceNumber);
+        await _hub.InvokeAsync("RequestHistoricalDataAsync", "pulse", DeviceNumber);
 
         if (_settings.AutoStartLogging)
         {
@@ -343,7 +345,7 @@
         if (_loggingActive) await Logger.StopPulseLoggingAsync();
         if (_hub is not null)
         {
-            await _hub.InvokeAsync("LeavePulseGroupAsync");
+            await _hub.InvokeAsync("LeavePulseGroupAsync", DeviceNumber);
             await _hub.DisposeAsync();
         }
     }

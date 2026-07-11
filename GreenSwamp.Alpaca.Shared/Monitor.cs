@@ -376,6 +376,7 @@ namespace GreenSwamp.Alpaca.Shared
     {
         public DateTime Datetime { get; set; }
         public int Index { get; set; }
+        public int DeviceNumber { get; set; }
         public MonitorDevice Device { get; set; }
         public MonitorCategory Category { get; set; }
         public MonitorType Type { get; set; }
@@ -389,6 +390,7 @@ namespace GreenSwamp.Alpaca.Shared
     /// </summary>
     public class PulseEntry
     {
+        public int DeviceNumber { get; set; }
         public int Axis { get; set; }
         public DateTime StartTime { get; set; }
     //    public long PositionStart { get; set; }

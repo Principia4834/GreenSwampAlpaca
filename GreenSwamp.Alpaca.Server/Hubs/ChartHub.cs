@@ -16,65 +16,94 @@
 
 using GreenSwamp.Alpaca.Server.Services;
 using Microsoft.AspNetCore.SignalR;
+using System.Collections.Concurrent;
 
 namespace GreenSwamp.Alpaca.Server.Hubs
 {
     /// <summary>
     /// SignalR hub that streams live RA/Dec position and pulse guide data to chart windows.
-    /// Chart windows join a named group on connect and leave on disconnect.
+    /// Each chart window identifies its device by passing a deviceNumber to the join/history methods.
+    /// Group names are "RaDecChart-{n}" and "PulseChart-{n}".
+    ///
+    /// Tracks per-connection group membership so that OnDisconnectedAsync can close the
+    /// MonitorQueue data gates when the last subscriber disconnects without a clean leave.
     /// </summary>
     public class ChartHub : Hub
     {
-        private const string RaDecGroup = "RaDecChart";
-        private const string PulseGroup = "PulseChart";
-
         private readonly ChartDataService _chartData;
+
+        // Tracks which chart type ("radec" | "pulse") each connection has joined.
+        // Key = connectionId, Value = set of chart-type strings.
+        // Static so it survives across the transient hub instances SignalR creates per call.
+        private static readonly ConcurrentDictionary<string, HashSet<string>> _connectionGroups = new();
 
         public ChartHub(ChartDataService chartData)
         {
             _chartData = chartData;
         }
 
-        /// <summary>Subscribes the caller to RA/Dec position chart broadcasts.</summary>
-        public async Task JoinRaDecGroupAsync()
+        /// <summary>Subscribes the caller to RA/Dec position chart broadcasts for the given device.</summary>
+        public async Task JoinRaDecGroupAsync(int deviceNumber)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, RaDecGroup);
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"RaDecChart-{deviceNumber}");
+            if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add("radec"))
+                _chartData.OnRaDecClientJoined();
         }
 
-        /// <summary>Unsubscribes the caller from RA/Dec position chart broadcasts.</summary>
-        public async Task LeaveRaDecGroupAsync()
+        /// <summary>Unsubscribes the caller from RA/Dec position chart broadcasts for the given device.</summary>
+        public async Task LeaveRaDecGroupAsync(int deviceNumber)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, RaDecGroup);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"RaDecChart-{deviceNumber}");
+            if (_connectionGroups.TryGetValue(Context.ConnectionId, out var groups) && groups.Remove("radec"))
+                _chartData.OnRaDecClientLeft();
         }
 
-        /// <summary>Subscribes the caller to pulse guide chart broadcasts.</summary>
-        public async Task JoinPulseGroupAsync()
+        /// <summary>Subscribes the caller to pulse guide chart broadcasts for the given device.</summary>
+        public async Task JoinPulseGroupAsync(int deviceNumber)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, PulseGroup);
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"PulseChart-{deviceNumber}");
+            if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add("pulse"))
+                _chartData.OnPulseClientJoined();
         }
 
-        /// <summary>Unsubscribes the caller from pulse guide chart broadcasts.</summary>
-        public async Task LeavePulseGroupAsync()
+        /// <summary>Unsubscribes the caller from pulse guide chart broadcasts for the given device.</summary>
+        public async Task LeavePulseGroupAsync(int deviceNumber)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, PulseGroup);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"PulseChart-{deviceNumber}");
+            if (_connectionGroups.TryGetValue(Context.ConnectionId, out var groups) && groups.Remove("pulse"))
+                _chartData.OnPulseClientLeft();
         }
 
         /// <summary>
         /// Returns buffered historical data to the calling client only.
         /// Called by a chart window immediately after joining to pre-populate the chart.
         /// </summary>
-        public async Task RequestHistoricalDataAsync(string chartType)
+        public async Task RequestHistoricalDataAsync(string chartType, int deviceNumber)
         {
             if (chartType == "radec")
             {
-                var (axis1, axis2) = _chartData.GetRaDecHistory();
+                var (axis1, axis2) = _chartData.GetRaDecHistory(deviceNumber);
                 await Clients.Caller.SendAsync("ReceiveRaDecHistory", axis1, axis2);
             }
             else if (chartType == "pulse")
             {
-                var (ra, dec) = _chartData.GetPulseHistory();
+                var (ra, dec) = _chartData.GetPulseHistory(deviceNumber);
                 await Clients.Caller.SendAsync("ReceivePulseHistory", ra, dec);
             }
+        }
+
+        /// <summary>
+        /// Handles abrupt disconnections (browser close, network drop) so the data gates
+        /// are closed even when the chart page never called LeaveXxxGroupAsync.
+        /// </summary>
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            if (_connectionGroups.TryRemove(Context.ConnectionId, out var groups))
+            {
+                if (groups.Contains("radec"))  _chartData.OnRaDecClientLeft();
+                if (groups.Contains("pulse"))  _chartData.OnPulseClientLeft();
+            }
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }

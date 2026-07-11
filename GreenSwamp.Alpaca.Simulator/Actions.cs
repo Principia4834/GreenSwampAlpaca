@@ -1,4 +1,4 @@
-﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -43,11 +43,28 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         internal static bool IsConnected => IoSerial.IsConnected;
         internal MountInfo MountInfo { get; private set; }
         internal bool MonitorPulse { private get; set; }
+
+        /// <summary>Alpaca device number stamped onto every MonitorEntry/PulseEntry this instance creates.</summary>
+        internal int DeviceNumber { get; set; }
         #endregion
 
         internal Actions()
         {
             _ioSerial = new IoSerial();
+        }
+
+        /// <summary>Stamps DeviceNumber on a MonitorEntry and logs it.</summary>
+        private void LogMonitor(MonitorEntry entry)
+        {
+            entry.DeviceNumber = DeviceNumber;
+            MonitorLog.LogToMonitor(entry);
+        }
+
+        /// <summary>Stamps DeviceNumber on a PulseEntry and logs it.</summary>
+        private void LogPulse(PulseEntry entry)
+        {
+            entry.DeviceNumber = DeviceNumber;
+            MonitorLog.LogToMonitor(entry);
         }
 
         internal void SetCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
@@ -90,7 +107,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             var stepsx = _ioSerial.Send($"steps|{Axis.Axis1}");
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"steps1|{null}|{stepsx}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMonitor(monitorItem);
 
             var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}"));
 
@@ -98,7 +115,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             var stepsy = _ioSerial.Send($"steps|{Axis.Axis2}");
             monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"steps2|{null}|{stepsy}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMonitor(monitorItem);
 
 
             var d = new[] { x, y };
@@ -118,7 +135,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             var stepsx = _ioSerial.Send($"steps|{Axis.Axis1}");
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"steps1|{null}|{stepsx}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMonitor(monitorItem);
 
             var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}")) * z;
 
@@ -126,7 +143,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             var stepsy = _ioSerial.Send($"steps|{Axis.Axis2}");
             monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"steps2|{null}|{stepsy}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMonitor(monitorItem);
 
             var d = new[] { x , y };
             _stepsCallback?.Invoke(d);
@@ -223,7 +240,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"{axis}|Async operation cancelled"
                     };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMonitor(monitorItem);
                 }
                 finally
                 {
@@ -241,7 +258,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
                     if (MonitorPulse)
                     {
-                        MonitorLog.LogToMonitor(pulseEntry);
+                        LogPulse(pulseEntry);
                     }
                 }
             }, token);

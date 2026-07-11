@@ -85,7 +85,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private void OnLowVoltageEvent(object sender, EventArgs e)
         {
             _lowVoltageEventState = true;
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,

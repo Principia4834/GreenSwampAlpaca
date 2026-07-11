@@ -139,7 +139,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
 
             var message = $"{source}: {action}";
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,

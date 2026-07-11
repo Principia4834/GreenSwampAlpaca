@@ -1,4 +1,4 @@
-﻿@page "/charts/radec"
+﻿@page "/charts/radec/{DeviceNumber:int}"
 @layout ChartWindowLayout
 @using ApexCharts
 @using Microsoft.AspNetCore.SignalR.Client
@@ -18,8 +18,8 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-            <b style="color:var(--gs-accent-500);">RA / Dec</b> Position
-        </MudText>
+                <b style="color:var(--gs-accent-500);">RA / Dec</b> Position &mdash; Device @DeviceNumber
+            </MudText>
 
         <MudSpacer />
 
@@ -115,6 +115,8 @@
 </MudContainer>
 
 @code {
+    [Parameter] public int DeviceNumber { get; set; }
+
     // ── State ──────────────────────────────────────────────────────────────
     private ChartSettings _settings = new();
     private readonly List<ChartPointDto> _axis1Data = [];
@@ -149,8 +151,8 @@
 
         await _hub.StartAsync();
         _hubState = _hub.State;
-        await _hub.InvokeAsync("JoinRaDecGroupAsync");
-        await _hub.InvokeAsync("RequestHistoricalDataAsync", "radec");
+        await _hub.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
+        await _hub.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber);
 
         if (_settings.AutoStartLogging)
         {
@@ -289,7 +291,7 @@
         if (_loggingActive) await Logger.StopRaDecLoggingAsync();
         if (_hub is not null)
         {
-            await _hub.InvokeAsync("LeaveRaDecGroupAsync");
+            await _hub.InvokeAsync("LeaveRaDecGroupAsync", DeviceNumber);
             await _hub.DisposeAsync();
         }
     }

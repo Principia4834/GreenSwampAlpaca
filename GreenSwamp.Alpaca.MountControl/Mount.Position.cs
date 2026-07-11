@@ -1,4 +1,4 @@
-﻿ /* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+ /* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published
@@ -71,7 +71,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_flipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
-                MonitorLog.LogToMonitor(new MonitorEntry
+                LogMount(new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
                     Device = MonitorDevice.Server,
@@ -95,7 +95,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_flipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
-                MonitorLog.LogToMonitor(new MonitorEntry
+                LogMount(new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
                     Device = MonitorDevice.Server,
@@ -124,7 +124,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_flipOnNextGoto)
                 {
                     cl = cl == "a" ? "b" : "a";
-                    MonitorLog.LogToMonitor(new MonitorEntry
+                    LogMount(new MonitorEntry
                     {
                         Datetime = HiResDateTime.UtcNow,
                         Device = MonitorDevice.Server,

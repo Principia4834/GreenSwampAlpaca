@@ -1,4 +1,4 @@
-ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -64,7 +64,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             MountStart();
 
-                            // Hardware succeeded â€” add to connected set before clearing Connecting so the
+                            // Hardware succeeded — add to connected set before clearing Connecting so the
                             // 200 ms TelescopeStateService tick always sees IsConnected = true on the same
                             // tick that Connecting transitions to false. This ensures the "Mount Connected"
                             // voice announcement fires on the correct state transition.
@@ -83,11 +83,11 @@ namespace GreenSwamp.Alpaca.MountControl
                                 Thread = Environment.CurrentManagedThreadId,
                                 Message = $"Connection complete|Mount:{Id}|LoopCount:{_loopCounter}"
                             };
-                            MonitorLog.LogToMonitor(completionItem);
+                            LogMount(completionItem);
                         }
                         catch (Exception ex)
                         {
-                            // TryAdd was never called â€” IsConnected is already false.
+                            // TryAdd was never called — IsConnected is already false.
                             _lastConnectionError = ex.Message;
 
                             // MountErrorHandler calls MountStop() and stores _mountError.
@@ -105,7 +105,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                 Thread = Environment.CurrentManagedThreadId,
                                 Message = $"Connection failed|Mount:{Id}|Error:{ex.Message}"
                             };
-                            MonitorLog.LogToMonitor(errorItem);
+                            LogMount(errorItem);
                         }
                     });
 
@@ -120,15 +120,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"Add|{id}|StartingAsync|Connecting:{Connecting}"
                     };
-                    MonitorLog.LogToMonitor(startItem);
+                    LogMount(startItem);
                     return; // Early return - Connecting remains true until background task completes
                 }
 
-                // Mount already running â€” add this client immediately; no hardware init needed.
+                // Mount already running — add this client immediately; no hardware init needed.
                 _connectStates.TryAdd(id, true);
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Add|{id}|AlreadyRunning" };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
             else
             {
@@ -140,7 +140,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Remove|{id}|{successfullyRemoved}" };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
             Connecting = false;
         }
@@ -190,7 +190,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _serialError = ex;
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{ex.Message}|{ex.InnerException?.Message}" };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
                 _serial = null;
                 _connectType = ConnectType.None;
             }
@@ -274,7 +274,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                   $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
                                   $"CanPPec:{_canPPec}|MountName:{_mountName}"
                     };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
 
                     // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
                     while (rawPositions == null)
@@ -286,7 +286,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             positionsSet = true;
                             monitorItem = new MonitorEntry
                             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Counter exceeded:{positions[0]}|{positions[1]}" };
-                            MonitorLog.LogToMonitor(monitorItem);
+                            LogMount(monitorItem);
                             break;
                         }
                         counter++;
@@ -295,7 +295,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         msg = rawPositions != null ? $"GetRawDegrees:{rawPositions[0]}|{rawPositions[1]}" : $"NULL";
                         monitorItem = new MonitorEntry
                         { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = msg };
-                        MonitorLog.LogToMonitor(monitorItem);
+                        LogMount(monitorItem);
 
                         if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
                         {
@@ -330,11 +330,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     _ = (string)SkyQueue.GetCommandResult(init).Result;
                     if (!init.Successful)
                     {
-                        // Assign _mountError directly â€” MountErrorHandler will be called once
+                        // Assign _mountError directly — MountErrorHandler will be called once
                         // by SetConnected()'s catch block, avoiding a double MountStop().
                         _mountError = init.Exception != null
                             ? new Exception($"CheckMount{Environment.NewLine}{init.Exception.Message}", init.Exception)
-                            : new SkyServerException(ErrorCode.ErrSerialFailed, "No response from mount controller â€” check port and power");
+                            : new SkyServerException(ErrorCode.ErrSerialFailed, "No response from mount controller — check port and power");
                         return false;
                     }
 
@@ -360,7 +360,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"Voltage|{controllerVoltage:F2} V"
                     };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
                     // defaults
                     SkyTasks(MountTaskName.AllowAdvancedCommandSet);
                     SkyTasks(MountTaskName.LoadDefaults);
@@ -402,7 +402,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                   $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
                                   $"CanPPec:{_canPPec}|MountName:{_mountName}"
                     };
-                    MonitorLog.LogToMonitor(monitorItemSky);
+                    LogMount(monitorItemSky);
 
                     //CanHomeSensor = true; //test auto home
 
@@ -415,14 +415,14 @@ namespace GreenSwamp.Alpaca.MountControl
                     var steps = GetRawSteps();
                     monitorItem = new MonitorEntry
                     { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"GetSteps:{steps[0]}|{steps[1]}" };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
 
                     // checks if the mount is close enough to home position to set default position. If not use the positions from the mount
                     while (rawPositions == null)
                     {
                         if (counter > 5)
                         {
-                            // All position reads failed â€” no mount is responding.
+                            // All position reads failed — no mount is responding.
                             var error = new SkyServerException(ErrorCode.ErrMount,
                                 "Mount not responding: failed to read axis positions after 5 retries");
                             MountErrorHandler(error);
@@ -435,7 +435,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         msg = rawPositions != null ? $"GetDegrees|{rawPositions[0]}|{rawPositions[1]}" : $"NULL";
                         monitorItem = new MonitorEntry
                         { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = msg };
-                        MonitorLog.LogToMonitor(monitorItem);
+                        LogMount(monitorItem);
 
                         //if an error getting positions then stay in while loop and try again
                         if (rawPositions == null || double.IsNaN(rawPositions[0]) || double.IsNaN(rawPositions[1]))
@@ -471,15 +471,15 @@ namespace GreenSwamp.Alpaca.MountControl
             msg = positionsSet ? $"SetPositions|{positions[0]}|{positions[1]}" : $"PositionsNotSet";
             monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = msg };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"MountAxes|{_appAxes.X}|{_appAxes.Y}|Actual|{_actualAxisX}|{_actualAxisY}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"StepsPerRevolution|{_stepsPerRevolution[0]}|{_stepsPerRevolution[1]}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             try
             {
@@ -514,21 +514,21 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     monitorItem = new MonitorEntry
                     { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Copied monitor.settings.user.json to {logDirectoryPath}" };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
                 }
                 else
                 {
                     // Settings file doesn't exist yet - log info (it will be created later by the settings service)
                     monitorItem = new MonitorEntry
                     { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"monitor.settings.user.json not found at {userSettingsPath} - will be created on first settings save" };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
                 }
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException)
             {
                 monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Cannot copy appsettings.user.json. {e.Message}" };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
 
             return true;
@@ -541,8 +541,8 @@ namespace GreenSwamp.Alpaca.MountControl
         public void MountStart()
         {
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Settings.Mount}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            { Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Settings.Mount}" };
+            LogMount(monitorItem);
 
             // setup server defaults, stop auto-discovery, connect serial port, start queues
             Defaults();
@@ -552,6 +552,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Alpaca.Mount.Simulator.Settings.AutoHomeAxisX = (int)Settings.AutoHomeAxisX;
                     Alpaca.Mount.Simulator.Settings.AutoHomeAxisY = (int)Settings.AutoHomeAxisY;
                     var mqImpl = new GreenSwamp.Alpaca.Mount.Simulator.MountQueueImplementation();
+                    mqImpl.DeviceNumber = DeviceNumber;
                     mqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
                         v => { _isPulseGuidingRa = v; },
@@ -586,6 +587,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     // Create queue for SkyWatcher.
                     var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
+                    sqImpl.DeviceNumber = DeviceNumber;
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
                         v => { _isPulseGuidingRa = v; },
@@ -622,7 +624,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                // MountConnect() set _mountError directly â€” throw it so SetConnected()'s catch
+                // MountConnect() set _mountError directly — throw it so SetConnected()'s catch
                 // block calls MountErrorHandler() once and sets _lastConnectionError.
                 throw _mountError
                     ?? new SkyServerException(ErrorCode.ErrMount, "Mount failed during initialisation");
@@ -637,7 +639,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Settings.Mount}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             // Stop all asynchronous operations
             TrackingMode = TrackingMode.Off;
@@ -654,7 +656,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4 / N6: moved before AxesStopValidate
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
-            _altAzTrackingTimer = null;  // N6: null the field â€” was missing, causing IsRunning check on disposed timer after reconnect
+            _altAzTrackingTimer = null;  // N6: null the field — was missing, causing IsRunning check on disposed timer after reconnect
             if (_mediaTimer != null)
             {
                 _mediaTimer.Tick -= OnUpdateServerEvent;  // No more subscriptions
@@ -667,7 +669,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mediaTimer = null;  // Safe to null now
                 }
             }
-            AxesStopValidate(); // Now safe â€” no timer can race and re-queue motion
+            AxesStopValidate(); // Now safe — no timer can race and re-queue motion
 
             if (SimQueue?.IsRunning == true) { SimQueue.Stop(); }
 
@@ -695,7 +697,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public void ClearAllConnections()
         {
             var count = _connectStates.Count;
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -718,7 +720,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             Settings.PropertyChanged -= OnPropertyChangedSkySettings; // Prevent double-wiring
             Settings.PropertyChanged += OnPropertyChangedSkySettings;
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -732,7 +734,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Per-tick update loop.
-        /// Replaces static UpdateServerEvent body â€” per-instance lock prevents cross-device re-entrancy.
+        /// Replaces static UpdateServerEvent body — per-instance lock prevents cross-device re-entrancy.
         /// </summary>
         private void OnUpdateServerEvent(object sender, EventArgs e)
         {

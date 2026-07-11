@@ -66,14 +66,17 @@
 
     <MudDivider Class="my-2" />
 
-    <MudNavLink Icon="@Icons.Material.Filled.ShowChart"
-                OnClick="@(() => OpenChartWindowAsync("/charts/radec", "gs-radec-chart"))">
-        RA / Dec Chart
-    </MudNavLink>
-    <MudNavLink Icon="@Icons.Material.Filled.DataUsage"
-                OnClick="@(() => OpenChartWindowAsync("/charts/pulse", "gs-pulse-chart"))">
-        Pulse Chart
-    </MudNavLink>
+    @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes)
+    {
+        <MudNavLink Icon="@Icons.Material.Filled.ShowChart"
+                    OnClick="@(() => OpenChartWindowAsync($"/charts/radec/{device.Key}", $"gs-radec-chart-{device.Key}"))">
+            RA/Dec Chart @device.Key
+        </MudNavLink>
+        <MudNavLink Icon="@Icons.Material.Filled.DataUsage"
+                    OnClick="@(() => OpenChartWindowAsync($"/charts/pulse/{device.Key}", $"gs-pulse-chart-{device.Key}"))">
+            Pulse Chart @device.Key
+        </MudNavLink>
+    }
 
     <MudDivider Class="my-2" />
 

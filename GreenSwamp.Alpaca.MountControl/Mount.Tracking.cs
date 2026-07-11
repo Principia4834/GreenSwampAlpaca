@@ -1,4 +1,4 @@
-ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -34,9 +34,9 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Represents a per-device instance of a telescope mount controller, implementing the
     /// <see cref="IMountController"/> interface for both SkyWatcher hardware and the built-in simulator.
     /// <para>
-    /// Each <see cref="Mount"/> owns its full lifecycle â€” serial/UDP connection, hardware command
+    /// Each <see cref="Mount"/> owns its full lifecycle — serial/UDP connection, hardware command
     /// queues (<see cref="SkyQueue"/> / <see cref="SimQueue"/>), coordinate pipeline,
-    /// tracking timers, slew controller, and all associated cancellation tokens â€” so that multiple
+    /// tracking timers, slew controller, and all associated cancellation tokens — so that multiple
     /// physical devices can operate concurrently without shared state.
     /// </para>
     /// <para>
@@ -54,7 +54,7 @@ namespace GreenSwamp.Alpaca.MountControl
     ///   <item><description>Enforces meridian and horizon axis limits and reacts with configurable
     ///   stop-tracking or auto-park responses.</description></item>
     ///   <item><description>Exposes ASCOM-compliant properties and bridge methods consumed by
-    ///   <c>Telescope.cs</c> and the Blazor UI without routing through the static <c>SkyServer</c> faÃ§ade.</description></item>
+    ///   <c>Telescope.cs</c> and the Blazor UI without routing through the static <c>SkyServer</c> façade.</description></item>
     /// </list>
     /// </para>
     /// <para>
@@ -244,7 +244,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{currentTrackingMode}|{rateChange * 3600}|{_skyTrackingOffset[0]}|{_skyTrackingOffset[1]}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
         }
 
         private Vector SkyGetRate()
@@ -267,7 +267,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{change}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
             return change;
         }
 
@@ -286,7 +286,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{GuideRateRa * 3600}|{GuideRateDec * 3600}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
         }
 
         internal void CalcCustomTrackingOffset()
@@ -317,7 +317,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{_trackingOffsetRate.X}|{_trackingOffsetRate.Y}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
         }
 
         internal void SetSlewRates(double maxRate)
@@ -340,7 +340,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{_slewSpeedOne}|{_slewSpeedTwo}|{_slewSpeedThree}|{_slewSpeedFour}|{_slewSpeedFive}|{_slewSpeedSix}|{_slewSpeedSeven}|{_slewSpeedEight}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
         }
 
         #endregion
@@ -404,7 +404,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             Thread = Environment.CurrentManagedThreadId,
                             Message = $"Ra:{internalRaDec.X}|Dec:{internalRaDec.Y}|Azimuth delta:{delta[0]}|Altitude delta:{delta[1]}"
                         };
-                        MonitorLog.LogToMonitor(monitorItem);
+                        LogMount(monitorItem);
                     }
                     break;
             }
@@ -501,7 +501,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{direction}|{duration}" };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             var useAltRate = Math.Abs(altRate) > 0;
 

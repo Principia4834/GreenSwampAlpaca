@@ -85,6 +85,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// </summary> 
         public bool AllowAdvancedCommandSet { get; set; }
 
+        /// <summary>Alpaca device number stamped on every MonitorEntry created by this Commands instance.</summary>
+        internal int DeviceNumber { get; set; }
+
         #endregion
 
         #region Methods
@@ -1694,7 +1697,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             var receivedData = ReceiveResponse();
 
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{cmdDataStr}|{receivedData}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{cmdDataStr}|{receivedData}", DeviceNumber = DeviceNumber };
             MonitorLog.LogToMonitor(monitorItem);
 
             // process incoming data string

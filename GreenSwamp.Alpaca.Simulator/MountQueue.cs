@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -32,6 +32,9 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private Action<bool>? _pulseGuideRaCallback;
         private Action<bool>? _pulseGuideDecCallback;
 
+        /// <summary>Alpaca device number stamped onto every MonitorEntry/PulseEntry the executor creates.</summary>
+        public int DeviceNumber { get; set; }
+
         public void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
         {
             _stepsCallback = stepsCallback;
@@ -53,6 +56,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             executor?.InitializeAxes();
             executor?.SetCallbacks(_stepsCallback, _pulseGuideRaCallback, _pulseGuideDecCallback);
+            if (executor != null) executor.DeviceNumber = DeviceNumber;
         }
 
         protected override void CleanupExecutor(Actions executor)

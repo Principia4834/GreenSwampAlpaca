@@ -1,4 +1,4 @@
-ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -49,7 +49,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount:{_mountId}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             token.ThrowIfCancellationRequested();
             var simTarget = MapSlewTargetToAxes(target, slewType);
@@ -74,7 +74,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     var axis1Distance = Math.Abs(simTarget[0] - rawPos[0]);
                     var axis2Distance = Math.Abs(simTarget[1] - rawPos[1]);
                     // Use the dominant axis distance so that Dec-heavy slews are correctly
-                    // accounted for â€” the mount won't stop until both axes have settled.
+                    // accounted for — the mount won't stop until both axes have settled.
                     // Apply a minimum floor to account for the simulator's acceleration profile:
                     // short slews are accel-dominated and take far longer than distance/rate predicts.
                     // 4000ms is empirically derived from observed minimum settle times in test data.
@@ -96,7 +96,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"Mount:{_mountId}|GoToRaCorrection|{raCorrection:F6}|EstSlewMs|{estimatedSlewMs:F1}|Dist|{axis1Distance:F4}|Dist2|{axis2Distance:F4}"
                     };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
                 }
             }
 
@@ -146,7 +146,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount:{_mountId}|GoToSeconds|{stopwatch.Elapsed.TotalSeconds}|Target|{simTarget[0]}|{simTarget[1]}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
             #endregion
 
             #region Final precision slew
@@ -175,14 +175,14 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount:{_mountId}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             const int returnCode = 0;
             // var gotoPrecision = SkySettings.GotoPrecision;
             var maxTries = 0;
             double[] deltaDegree = [0.0, 0.0];
             double[] gotoPrecision = [ConvertStepsToDegrees(2, 0), ConvertStepsToDegrees(2, 1)];
-            double deltaTime = 75.0; // ms â€” initial seed for first-iteration drift estimate
+            double deltaTime = 75.0; // ms — initial seed for first-iteration drift estimate
 
             while (true)
             {
@@ -272,7 +272,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (axis1Stopped && axis2Stopped) { break; }
                 }
                 loopTimer.Stop();
-                // EMA smoothing (Î±=0.4): reduces noise while adapting quickly to iteration time changes
+                // EMA smoothing (a=0.4): reduces noise while adapting quickly to iteration time changes
                 deltaTime = 0.4 * loopTimer.Elapsed.TotalMilliseconds + 0.6 * deltaTime;
 
                 monitorItem = new MonitorEntry
@@ -285,7 +285,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"Mount:{_mountId}|Delta|({deltaDegree[0]},{deltaDegree[1]})|RaFwd|{raFeedforward:F6}|Seconds|{loopTimer.Elapsed.TotalSeconds}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
             return returnCode;
         }
@@ -410,7 +410,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount:{_mountId}|from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
             token.ThrowIfCancellationRequested();
 
             var skyTarget = MapSlewTargetToAxes(target, slewType);
@@ -448,7 +448,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"Mount:{_mountId}|RaPreCorr|Dist:{axis1DistDeg:F4}deg|EstT:{estimatedSlewSec:F3}s|Adv:{raAdv:F6}deg"
                     };
-                    MonitorLog.LogToMonitor(advItem);
+                    LogMount(advItem);
                 }
             }
 
@@ -486,7 +486,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                 }
 
-                // Poll Axis2 if not yet confirmed stopped â€” always, every iteration
+                // Poll Axis2 if not yet confirmed stopped — always, every iteration
                 if (!axis2Stopped)
                 {
                     token.WaitHandle.WaitOne(125);
@@ -531,7 +531,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount:{_mountId}|Seconds|{elapsedSeconds:F3}|A1Stopped|{axis1Stopped}|A2Stopped|{axis2Stopped}|Completed|{firstSlewCompleted}|Abort|{abortReason}|Target|{target[0]}|{target[1]}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             if (!firstSlewCompleted && !string.IsNullOrEmpty(abortReason))
             {
@@ -545,11 +545,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"Mount:{_mountId}|FirstSlewAborted|{abortReason}|PrecisionGoto skipped"
                 };
-                MonitorLog.LogToMonitor(warnItem);
+                LogMount(warnItem);
             }
             #endregion
 
-            #region Final precision slew â€” only when both axes confirmed stopped
+            #region Final precision slew — only when both axes confirmed stopped
             token.ThrowIfCancellationRequested();
             _flipOnNextGoto = false;  // consumed by first slew; must not bleed into precision loop
             if (firstSlewCompleted)
@@ -589,7 +589,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount:{_mountId}|from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             const int returnCode = 0;
             var maxTries = 0;
@@ -617,7 +617,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"Mount:{_mountId}|Timeout waiting for position update|Try:{maxTries}"
                     };
-                    MonitorLog.LogToMonitor(errorItem);
+                    LogMount(errorItem);
                     throw new TimeoutException($"Mount position update timeout in precision goto (Mount: {_mountId})");
                 }
 
@@ -653,7 +653,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"Mount:{_mountId}|Delta {deltaDegree[0]:F2},{deltaDegree[1]:F2}|Try:{maxTries}"
                     };
-                    MonitorLog.LogToMonitor(errorItem);
+                    LogMount(errorItem);
                     // Snapshot log file for large error
                     // MonitorQueue.WriteBuffer();
                 }
@@ -725,7 +725,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
 
                 loopTimer.Stop();
-                // EMA smoothing (Î±=0.4): reduces noise while adapting to iteration time changes
+                // EMA smoothing (a=0.4): reduces noise while adapting to iteration time changes
                 deltaTime = 0.4 * loopTimer.Elapsed.TotalMilliseconds + 0.6 * deltaTime;
 
                 monitorItem = new MonitorEntry
@@ -738,7 +738,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"Mount:{_mountId}|Delta|({deltaDegree[0]},{deltaDegree[1]})|RaFwd|{raFeedforward:F6}|Seconds|{loopTimer.Elapsed.TotalSeconds}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
             return returnCode;
         }
@@ -772,8 +772,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     if (Settings.AlignmentMode == AlignmentMode.AltAz)
                     {
                         // Fix 1: compute two separate targets per iteration, mirroring SimPulseGoto.
-                        // skyTarget      â€” feed-forward position for the hardware goto command.
-                        // skyTargetNow   â€” where the mount should be RIGHT NOW, used only for the
+                        // skyTarget      — feed-forward position for the hardware goto command.
+                        // skyTargetNow   — where the mount should be RIGHT NOW, used only for the
                         //                  convergence check so that a pure Dec pulse does not
                         //                  produce a spurious Axis1 (Az) goto command.
                         var now = HiResDateTime.UtcNow;
@@ -791,7 +791,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     { break; }
 
                     // Fix 1 (continued): use skyTargetNow for the convergence delta, with Range180
-                    // wrapping, so delta[0] â‰ˆ 0 for a pure Dec pulse and no Axis1 goto is issued.
+                    // wrapping, so delta[0] ˜ 0 for a pure Dec pulse and no Axis1 goto is issued.
                     deltaDegree[0] = Range.Range180(skyTargetNow[0] - rawPositions[0]);
                     deltaDegree[1] = Range.Range180(skyTargetNow[1] - rawPositions[1]);
 
@@ -855,7 +855,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     loopTimer.Stop();
-                    // EMA smoothing (Î±=0.4): reduces noise while adapting to iteration time changes
+                    // EMA smoothing (a=0.4): reduces noise while adapting to iteration time changes
                     deltaTime = 0.4 * loopTimer.Elapsed.TotalMilliseconds + 0.6 * deltaTime;
                 }
             }
@@ -885,7 +885,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"SlewController initialized|Mount:{Id}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
         }
 
@@ -902,7 +902,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Synchronous wrapper â€” blocks until slew completes.
+        /// Synchronous wrapper — blocks until slew completes.
         /// Used for synchronous ASCOM methods (FindHome, SlewToCoordinates).
         /// </summary>
         internal void SlewSync(double[] target, SlewType slewType, bool tracking = false)

@@ -210,6 +210,11 @@ namespace GreenSwamp.Alpaca.MountControl
         public string DeviceName { get; }
 
         /// <summary>
+        /// Gets the Alpaca device number (0-based) for this mount instance.
+        /// </summary>
+        public int DeviceNumber { get; private set; }
+
+        /// <summary>
         /// Gets the settings for this mount
         /// </summary>
         public SkySettings Settings { get; }
@@ -546,6 +551,8 @@ namespace GreenSwamp.Alpaca.MountControl
             Id = id ?? "mount-0";
             _mountId = id ?? "default";
             DeviceName = deviceName ?? id ?? "Unnamed Device";
+            // Parse device number from id string format "device-{n}"
+            DeviceNumber = id != null && id.StartsWith("device-") && int.TryParse(id["device-".Length..], out var dn) ? dn : 0;
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             // Wire settings back-reference
             Settings._owner = this;
@@ -554,6 +561,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
+                DeviceNumber = DeviceNumber,
                 Device = MonitorDevice.Server,
                 Category = MonitorCategory.Mount,
                 Type = MonitorType.Information,
@@ -561,7 +569,21 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"Mount created|ID:{Id}|Mount:{Settings.Mount}|Port:{Settings.Port}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
+        }
+
+        /// <summary>Stamps DeviceNumber on a MonitorEntry and logs it.</summary>
+        internal void LogMount(MonitorEntry entry)
+        {
+            entry.DeviceNumber = DeviceNumber;
+            MonitorLog.LogToMonitor(entry);
+        }
+
+        /// <summary>Stamps DeviceNumber on a PulseEntry and logs it.</summary>
+        internal void LogPulse(PulseEntry entry)
+        {
+            entry.DeviceNumber = DeviceNumber;
+            MonitorLog.LogToMonitor(entry);
         }
 
         #region IMountController Implementation (Delegation)
@@ -623,7 +645,7 @@ namespace GreenSwamp.Alpaca.MountControl
                                          && _connectStates.ContainsKey(UiInternalClientId);
 
             LogMount($"EmergencyStopAll | Running:{IsMountRunning} | Clients:{_connectStates.Count} | OnlyUiClient:{onlyUiClientConnected}");
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -971,7 +993,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (string.IsNullOrEmpty(name)) { name = "Empty"; }
             var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y);
             if (park == null) { return; }
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -988,7 +1010,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public void SyncToAltAzm(double azimuth, double altitude)
         {
             if (!IsMountRunning) { return; }
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -1028,7 +1050,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public void SyncToTargetRaDec()
         {
             if (!IsMountRunning) { return; }
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -1080,7 +1102,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
             var ret = !(Math.Abs(a) > Settings.SyncLimit || Math.Abs(b) > Settings.SyncLimit);
             if (ret) return true;
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -1112,7 +1134,7 @@ namespace GreenSwamp.Alpaca.MountControl
             var b = Math.Abs(target[1]) - Math.Abs(current[1]);
             var ret = !(Math.Abs(a) > Settings.SyncLimit || Math.Abs(b) > Settings.SyncLimit);
             if (ret) return true;
-            MonitorLog.LogToMonitor(new MonitorEntry
+            LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
                 Device = MonitorDevice.Server,
@@ -1349,7 +1371,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"Mount:{_mountId}|Timeout waiting for position update"
                 };
-                MonitorLog.LogToMonitor(errorItem);
+                LogMount(errorItem);
                 result = false;
             }
             return result;
@@ -1590,7 +1612,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // remaining duration wait — the pulse is already stopped.
                 if (token.IsCancellationRequested)
                 {
-                    MonitorLog.LogToMonitor(new MonitorEntry
+                    LogMount(new MonitorEntry
                     {
                         Datetime = Principles.HiResDateTime.UtcNow,
                         Device = MonitorDevice.Server,
@@ -1623,7 +1645,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // log and graph pulse
                 if (_monitorPulse)
                 {
-                    MonitorLog.LogToMonitor(pulseEntry);
+                    LogPulse(pulseEntry);
                 }
                 // set pulse guiding status
                 switch (axis)
@@ -1652,7 +1674,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = message
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
             catch
             {

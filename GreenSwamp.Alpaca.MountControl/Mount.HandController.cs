@@ -1,4 +1,4 @@
-ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -41,7 +41,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Mirrors the former static SkyServer.HcMoves(), converted to instance-based.
         /// Anti-backlash and mode settings are read from <see cref="SkySettings"/>.
         /// </summary>
-        /// <param name="speed">HC speed (1â€“8)</param>
+        /// <param name="speed">HC speed (1–8)</param>
         /// <param name="direction">Direction of move</param>
         public void HcMoves(SlewSpeed speed, SlewDirection direction)
         {
@@ -57,7 +57,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Thread = Environment.CurrentManagedThreadId,
                 Message = $"{Settings.HcSpeed}|{Settings.HcMode}|{direction}|{_actualAxisX}|{_actualAxisY}"
             };
-            MonitorLog.LogToMonitor(monitorItem);
+            LogMount(monitorItem);
 
             bool altAzMode = Settings.AlignmentMode == AlignmentMode.AltAz;
             bool southernHemisphere = Settings.Latitude < 0;
@@ -113,12 +113,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"{Settings.HcSpeed}|{direction}|{change[0]}|{change[1]}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
 
             _slewState = Math.Abs(change[0]) + Math.Abs(change[1]) > 0 ? SlewType.SlewHandpad : SlewType.SlewNone;
 
-            // Anti-backlash â€” Dec axis
+            // Anti-backlash — Dec axis
             long stepsNeededDec = 0;
             bool hcAntiDec = Settings.HcAntiDec;
             int decBacklash = Settings.DecBacklash;
@@ -145,7 +145,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
 
-            // Anti-backlash â€” RA axis
+            // Anti-backlash — RA axis
             long stepsNeededRa = 0;
             bool hcAntiRa = Settings.HcAntiRa;
             int raBacklash = Settings.RaBacklash;
@@ -189,7 +189,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"{_hcPrevMoveDec.Delta}|{_hcPrevMovesDec.Sum()},Anti-Lash,{stepsNeededDec} of {decBacklash}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
             if (Math.Abs(stepsNeededRa) > 0 && _hcPrevMoveRa != null)
             {
@@ -203,7 +203,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"{_hcPrevMoveRa.Direction}|{_hcPrevMoveRa.StepDiff},Anti-Lash,{stepsNeededRa} of {raBacklash}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
 
             // Track previous direction for backlash next time
@@ -308,7 +308,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"|RaDec SlewNone tracking|{capturedRa}|{capturedDec}"
                     };
-                    MonitorLog.LogToMonitor(info);
+                    LogMount(info);
                 });
             }
         }
@@ -363,7 +363,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"{speed}|{direction}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
 
                 switch (direction)
                 {
@@ -422,7 +422,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Thread = Environment.CurrentManagedThreadId,
                         Message = $"ReturnCode:{returnCode}|{hcPulseGuide.Speed}|{hcPulseGuide.Duration}|{hcPulseGuide.Interval}|{hcPulseGuide.Rate}"
                     };
-                    MonitorLog.LogToMonitor(monitorItem);
+                    LogMount(monitorItem);
                 }
             }
             catch (Exception ex)
@@ -438,12 +438,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = cancelled ? "HcPulseGuide cancelled by command" : "HcPulseGuides failed"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
             }
         }
 
         /// <summary>
-        /// Synchronous pulse loop â€” fires one pulse per iteration until the token is cancelled.
+        /// Synchronous pulse loop — fires one pulse per iteration until the token is cancelled.
         /// Returns 0 on clean cancellation, 2 on invalid settings, 3 on error.
         /// </summary>
         private int HcPulseMove(HcPulseGuide hcPulseGuide, GuideDirection pulseDirection, CancellationToken token)
@@ -483,7 +483,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Thread = Environment.CurrentManagedThreadId,
                     Message = $"{ex}"
                 };
-                MonitorLog.LogToMonitor(monitorItem);
+                LogMount(monitorItem);
                 HcPulseDone = false;
                 _ctsPulseGuideDec?.Cancel();
                 _ctsPulseGuideRa?.Cancel();

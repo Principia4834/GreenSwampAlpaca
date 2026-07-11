@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob  Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob  Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -38,6 +38,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private Action<bool>? _pulseGuideRaCallback;
         private Action<bool>? _pulseGuideDecCallback;
 
+        /// <summary>Alpaca device number stamped onto every MonitorEntry/PulseEntry the executor creates.</summary>
+        public int DeviceNumber { get; set; }
+
         public ISerialPort Serial => _serial;
         public int[] CustomMount360Steps => _customMount360Steps;
         public double[] CustomRaWormSteps => _customRaWormSteps;
@@ -47,7 +50,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             try
             {
                 var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{serial?.IsOpen}|{customMount360Steps}|{customRaWormSteps}" };
+                    { Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{serial?.IsOpen}|{customMount360Steps}|{customRaWormSteps}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 _serial = serial;
@@ -60,7 +63,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             catch (Exception ex)
             {
                 var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{IsRunning}|{ex}" };
+                    { Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{IsRunning}|{ex}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 throw;
             }
@@ -96,6 +99,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             executor?.Initialize(_serial);
             executor?.SetCustomGearing(_customMount360Steps, _customRaWormSteps);
             executor?.SetCallbacks(_stepsCallback, _pulseGuideRaCallback, _pulseGuideDecCallback);
+            if (executor != null) executor.DeviceNumber = DeviceNumber;
         }
 
         protected override void CleanupExecutor(SkyWatcher executor)
