@@ -573,7 +573,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>Stamps DeviceNumber on a MonitorEntry and logs it.</summary>
-        internal void LogMount(MonitorEntry entry)
+        public void LogMount(MonitorEntry entry)
         {
             entry.DeviceNumber = DeviceNumber;
             MonitorLog.LogToMonitor(entry);
