@@ -58,6 +58,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 _customRaWormSteps = customRaWormSteps;
                 _lowVoltageEventHandler = lowVoltageEventHandler;
 
+                base.DeviceNumber = DeviceNumber;
                 base.Start();
             }
             catch (Exception ex)
