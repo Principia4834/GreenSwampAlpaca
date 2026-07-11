@@ -129,19 +129,20 @@
 		var header = line[..messageSeparatorIndex];
 		var message = line[(messageSeparatorIndex + 3)..];
 		var parts = header.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-		if (parts.Length < 7)
+		if (parts.Length < 8)
 		{
 			return line;
 		}
 
 		var timestamp = $"{parts[0]} {parts[1]}";
 		var index = parts[2];
-		var device = parts[3];
-		var category = parts[4];
-		var type = parts[5];
-		var method = string.Join(' ', parts[6..]);
+		var deviceNumber = parts[3];
+		var device = parts[4];
+		var category = parts[5];
+		var type = parts[6];
+		var method = string.Join(' ', parts[7..]);
 
-		return $"{timestamp}|{index}|{device}|{category}|{type}|{method}|{message}";
+		return $"{timestamp}|{index}|{deviceNumber}|{device}|{category}|{type}|{method}|{message}";
 	}
 
 	private void OnRecordsChanged(object? sender, EventArgs e)
