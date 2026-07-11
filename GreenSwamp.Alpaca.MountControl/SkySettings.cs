@@ -2177,6 +2177,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 var monitorItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
+                    DeviceNumber = _deviceNumber,
                     Device = MonitorDevice.Server,
                     Category = MonitorCategory.Mount,
                     Type = MonitorType.Information,

@@ -39,7 +39,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             try
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $" Started|DeviceNumber:{deviceNumber}" };
+                { Datetime = HiResDateTime.UtcNow, DeviceNumber = deviceNumber, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Started|DeviceNumber:{deviceNumber}" };
                 MonitorLog.LogToMonitor(monitorItem);
 
                 _mAxisRates = new AxisRates[3];
