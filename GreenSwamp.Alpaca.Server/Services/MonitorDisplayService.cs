@@ -101,7 +101,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         // ── Helpers ──────────────────────────────────────────────────────────
 
         private static string FormatEntry(MonitorEntry entry) =>
-            $"{entry.Datetime.ToLocalTime():HH:mm:ss.fff zzz} [{entry.Index:D4}] {entry.Device,-12} {entry.Category,-12} {entry.Type,-12} {entry.Method} | {entry.Message}";
+            $"{entry.Datetime.ToLocalTime():HH:mm:ss.fff zzz} [{entry.Index:D4}] [{entry.DeviceNumber}] {entry.Device,-12} {entry.Category,-12} {entry.Type,-12} {entry.Method} | {entry.Message}";
 
         public void Dispose()
         {
