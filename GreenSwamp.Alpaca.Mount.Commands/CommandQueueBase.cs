@@ -58,6 +58,9 @@ namespace GreenSwamp.Alpaca.Mount.Commands
         /// </summary>
         protected virtual string[] DiagnosticCommandFilter => [];
 
+        /// <summary>Alpaca device number injected from the concrete queue implementation. Stamped on every MonitorEntry logged by this base class.</summary>
+        protected int DeviceNumber { get; set; }
+
         public virtual void AddCommand(ICommand<TExecutor> command)
         {
             if (!IsRunning || _cts.IsCancellationRequested || !IsConnected())
@@ -218,7 +221,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                 {
                     MonitorLog.LogToMonitor(new MonitorEntry
                     {
-                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope,
+                        Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Telescope,
                         Category = MonitorCategory.Mount, Type = MonitorType.Warning,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Environment.CurrentManagedThreadId,
@@ -237,7 +240,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                     var threadMsg = $"|Worker:{worker:N0}|IO:{io:N0}|MinW:{minWorker:N0}|MinIO:{minIoc:N0}|MaxW:{maxWorker:N0}|MaxIO:{portThreads:N0}";
                     MonitorLog.LogToMonitor(new MonitorEntry
                     {
-                        Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                        Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Server,
                         Category = MonitorCategory.Mount, Type = MonitorType.Debug,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Environment.CurrentManagedThreadId,
@@ -253,7 +256,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                         _isInWarningState = true;
                         MonitorLog.LogToMonitor(new MonitorEntry
                         {
-                            Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                            Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Server,
                             Category = MonitorCategory.Mount, Type = MonitorType.Warning,
                             Method = MethodBase.GetCurrentMethod()?.Name,
                             Thread = Environment.CurrentManagedThreadId,
@@ -264,7 +267,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                         _isInWarningState = false;
                         MonitorLog.LogToMonitor(new MonitorEntry
                         {
-                            Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                            Datetime = HiResDateTime.UtcNow, DeviceNumber = DeviceNumber, Device = MonitorDevice.Server,
                             Category = MonitorCategory.Mount, Type = MonitorType.Warning,
                             Method = MethodBase.GetCurrentMethod()?.Name,
                             Thread = Environment.CurrentManagedThreadId,
