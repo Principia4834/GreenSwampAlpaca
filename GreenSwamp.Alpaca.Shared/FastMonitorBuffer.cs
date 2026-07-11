@@ -88,7 +88,7 @@ namespace GreenSwamp.Alpaca.Shared
                     sw.WriteLine(
                         $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}" +
                         $"|{idx.ToString(Fmt)}" +
-                        $"|{entry.Device}|{entry.Category}|{entry.Type}" +
+                        $"|{entry.DeviceNumber}|{entry.Device}|{entry.Category}|{entry.Type}" +
                         $"|{entry.Thread}|{entry.Method}|{entry.Message}");
                 }
             }

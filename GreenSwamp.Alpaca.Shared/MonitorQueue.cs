@@ -367,7 +367,7 @@ namespace GreenSwamp.Alpaca.Shared
             {
                 if (!Settings.LogSession) return;
                 ++_sessionIndex;
-                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSSessionLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_sessionIndex.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
+                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSSessionLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_sessionIndex.ToString(Fmt)}|{entry.DeviceNumber}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
             }
             catch (Exception e)
             {
@@ -385,7 +385,7 @@ namespace GreenSwamp.Alpaca.Shared
             try
             {
                 ++_errIndex;
-                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSErrorLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_errIndex.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
+                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSErrorLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{_errIndex.ToString(Fmt)}|{entry.DeviceNumber}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}");
             }
             catch (Exception e)
             {
@@ -412,7 +412,7 @@ namespace GreenSwamp.Alpaca.Shared
 
                 if (!Settings.LogMonitor) return;
 
-                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSMonitorLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{entry.Index.ToString(Fmt)}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}"); //YYYY-MM-DD HH:MM:SS.fff
+                FileWriteAsync(Path.Combine(GsFile.GetLogPath(), "GSMonitorLog") + FileName, $"{entry.Datetime.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff}|{entry.Index.ToString(Fmt)}|{entry.DeviceNumber}|{entry.Device}|{entry.Category}|{entry.Type}|{entry.Thread}|{entry.Method}|{entry.Message}"); //YYYY-MM-DD HH:MM:SS.fff
             }
             catch (Exception e)
             {
