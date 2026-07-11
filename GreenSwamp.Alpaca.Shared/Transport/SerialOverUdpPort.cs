@@ -39,6 +39,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Device = MonitorDevice.Server,
                     Message = $"{_remoteEndpoint}|{ex.Message}"
                 };
+                // DeviceNumber intentionally 0 — transport layer has no device context
                 MonitorLog.LogToMonitor(monitorItem);
                 throw;
             }
@@ -80,6 +81,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Device = MonitorDevice.Server,
                     Message = $"|{_remoteEndpoint}|Error|{ex.Message}"
                 };
+                // DeviceNumber intentionally 0 — transport layer has no device context
                 MonitorLog.LogToMonitor(monitorItem);
                 throw;
             }
@@ -108,6 +110,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Device = MonitorDevice.Server,
                     Message = $"SerialOverUdpPort|{_remoteEndpoint}|Send|{ex.Message}"
                 };
+                // DeviceNumber intentionally 0 — transport layer has no device context
                 MonitorLog.LogToMonitor(monitorItem);
             }
         }
@@ -134,6 +137,7 @@ namespace GreenSwamp.Alpaca.Shared.Transport
                     Device = MonitorDevice.Server,
                     Message = $"SerialOverUdpPort|{_remoteEndpoint}|Receive|{ex.Message}"
                 };
+                // DeviceNumber intentionally 0 — transport layer has no device context
                 MonitorLog.LogToMonitor(monitorItem);
                 Client?.Close();
             }
