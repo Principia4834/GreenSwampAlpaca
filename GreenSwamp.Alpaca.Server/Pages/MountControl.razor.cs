@@ -19,7 +19,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
         private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
-        private Dictionary<int, TelescopeStateModel> _stateCache = new();
         private enum CoordMode { RaDec, AltAz, Optics }
         private CoordMode _coordMode = CoordMode.RaDec;
 
@@ -37,10 +36,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
             _deviceSettings = SettingsService.GetAllDeviceSettings()
                 .ToDictionary(d => d.DeviceNumber);
 
-            // Prime the cache so the first render has data without calling GetCurrentState inside the template.
-            foreach (var dn in GetConfiguredDeviceNumbers())
-                _stateCache[dn] = StateService.GetCurrentState(dn);
-
             StateService.StateChanged += OnStateChanged;
             SettingsService.DeviceSettingsChanged += OnDeviceSettingsChanged;
         }
@@ -53,14 +48,8 @@ namespace GreenSwamp.Alpaca.Server.Pages
             ActiveTabIndex = idx >= 0 ? idx : 0;
         }
 
-        private void OnStateChanged(object? sender, EventArgs e)
-        {
-            // Snapshot state once per tick per device; the Razor template reads from _stateCache.
-            foreach (var dn in GetConfiguredDeviceNumbers())
-                _stateCache[dn] = StateService.GetCurrentState(dn);
-
+        private void OnStateChanged(object? sender, EventArgs e) =>
             InvokeAsync(StateHasChanged);
-        }
 
         private void OnDeviceSettingsChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.SkySettings updated)
         {

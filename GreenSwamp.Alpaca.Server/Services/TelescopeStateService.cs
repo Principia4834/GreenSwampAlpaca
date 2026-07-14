@@ -23,14 +23,20 @@ namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
     /// Service that provides telescope state snapshots for the Blazor UI.
-    /// Fires a tick event on a 100 ms timer; callers read per-device state via GetCurrentState(deviceNumber).
+    /// On each 200 ms tick the service snapshots every registered device into an
+    /// internal cache and then fires <see cref="StateChanged"/>. Subscribers call
+    /// <see cref="GetCurrentState"/> to read the pre-built snapshot — no mount
+    /// properties are read by the caller.
     /// </summary>
     public class TelescopeStateService : IDisposable
     {
         private readonly Timer _updateTimer;
 
+        // Keyed by device number. Replaced atomically each tick; never mutated in place.
+        private Dictionary<int, TelescopeStateModel> _cache = new();
+
         /// <summary>
-        /// Fired every 200 ms so Blazor pages can call StateHasChanged().
+        /// Fired every 200 ms after the internal snapshot cache has been refreshed.
         /// </summary>
         public event EventHandler? StateChanged;
 
@@ -40,14 +46,33 @@ namespace GreenSwamp.Alpaca.Server.Services
                 TimeSpan.FromMilliseconds(200), TimeSpan.FromMilliseconds(200));
         }
 
-        private void OnTimerTick(object? state) =>
+        private void OnTimerTick(object? state)
+        {
+            // Build a fresh snapshot for every registered device first, then notify
+            // subscribers. This ensures GetCurrentState() is always a cheap cache read
+            // regardless of how many subscribers call it.
+            var instances = MountRegistry.GetAllInstances();
+            var next = new Dictionary<int, TelescopeStateModel>(instances.Count);
+            foreach (var dn in instances.Keys)
+                next[dn] = BuildSnapshot(dn);
+
+            _cache = next;
             StateChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         /// <summary>
-        /// Builds a state snapshot directly from the per-instance Mount.
-        /// Returns an empty model when the device number is not registered.
+        /// Returns the most recent cached snapshot for the given device number.
+        /// Returns an empty model when the device is not registered.
+        /// This is always a dictionary lookup — no mount properties are read.
         /// </summary>
-        public TelescopeStateModel GetCurrentState(int deviceNumber = 0)
+        public TelescopeStateModel GetCurrentState(int deviceNumber = 0) =>
+            _cache.TryGetValue(deviceNumber, out var cached) ? cached : new TelescopeStateModel();
+
+        /// <summary>
+        /// Reads all mount properties and builds a new snapshot.
+        /// Called once per device per tick, inside OnTimerTick.
+        /// </summary>
+        private static TelescopeStateModel BuildSnapshot(int deviceNumber)
         {
             try
             {

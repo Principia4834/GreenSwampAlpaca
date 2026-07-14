@@ -49,7 +49,7 @@ else
         {
             <MudTabPanel Text="@TabLabel(dn)">
                 @{
-                    var s  = _stateCache.GetValueOrDefault(dn) ?? new TelescopeStateModel();
+                    var s  = StateService.GetCurrentState(dn);
                     var ms = _deviceSettings.GetValueOrDefault(dn);
                     var connected = IsUiClientConnected(dn);
                     var mount = MountRegistry.GetInstance(dn);
