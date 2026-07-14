@@ -40,7 +40,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         private bool _raDecActive;
         private bool _pulseActive;
 
-        // ── Lifecycle ─────────────────────────────────────────────────────────────────
+        // -- Lifecycle -----------------------------------------------------------------
 
         /// <summary>Begins a new RA/Dec logging session, creating a timestamped file.</summary>
         public Task StartRaDecLoggingAsync()
@@ -78,7 +78,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                 $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}|STOP|Pulse logging session");
         }
 
-        // ── Write helpers called by chart pages ───────────────────────────────────────
+        // -- Write helpers called by chart pages ---------------------------------------
 
         /// <summary>Appends a single RA/Dec axis point to the active log file.</summary>
         public Task LogRaDecPointAsync(int axis, ChartPointDto point)
@@ -100,7 +100,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                 $"{dt:yyyy-MM-dd HH:mm:ss.fff}|Pulse|{point.Axis}|{point.Duration}|{point.Rate}|{point.Rejected}");
         }
 
-        // ── Internals ─────────────────────────────────────────────────────────────────
+        // -- Internals -----------------------------------------------------------------
 
         private static string BuildFilePath(string prefix)
         {

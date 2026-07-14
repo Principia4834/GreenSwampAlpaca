@@ -1977,7 +1977,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     LogSettings("InitializedPolarParkValues", $"ParkAxes:[{settings.ParkAxes[0]},{settings.ParkAxes[1]}]|ParkPositions:{settings.ParkPositions?.Count ?? 0}");
                 }
 
-                LogSettings("AppliedSettings", $"Mount:{_mount}|Port:{_port}");
+                LogSettings("AppliedSettings", $"Port:{_port}");
             }
             catch (Exception ex)
             {

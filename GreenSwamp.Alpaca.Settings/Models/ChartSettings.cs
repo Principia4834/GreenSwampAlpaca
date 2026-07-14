@@ -22,7 +22,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
     /// </summary>
     public class ChartSettings
     {
-        // ── RA/Dec chart ──────────────────────────────────────────────────────────────
+        // -- RA/Dec chart --------------------------------------------------------------
 
         /// <summary>
         /// Scale used on the RA/Dec chart Y-axis.
@@ -36,7 +36,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Show the Axis-2 (Dec) series on the RA/Dec chart.</summary>
         public bool ShowAxis2 { get; set; } = true;
 
-        // ── Pulse chart ───────────────────────────────────────────────────────────────
+        // -- Pulse chart ---------------------------------------------------------------
 
         /// <summary>
         /// Scale used on the Pulse chart Y-axis.
@@ -56,7 +56,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Show rejected Dec pulse series.</summary>
         public bool ShowDecRejected { get; set; } = true;
 
-        // ── Shared ────────────────────────────────────────────────────────────────────
+        // -- Shared --------------------------------------------------------------------
 
         /// <summary>
         /// Maximum number of data points retained per series before the oldest are dropped.

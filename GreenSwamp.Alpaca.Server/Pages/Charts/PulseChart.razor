@@ -5,6 +5,7 @@
 
 @inject IVersionedSettingsService SettingsService
 @inject ChartLoggingService Logger
+@inject TelescopeStateService StateService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
@@ -12,9 +13,9 @@
 
 <PageTitle>Pulse Guide Chart — GS Alpaca</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False" Class="pa-2">
+<div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;padding:8px;box-sizing:border-box;">
 
-    @* ── Toolbar ─────────────────────────────────────────────────────────── *@
+    @* -- Toolbar ----------------------------------------------------------- *@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
@@ -52,26 +53,37 @@
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecRejected), v))"
                    Color="MudBlazor.Color.Error" />
 
-        <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")">
+        <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")" Placement="Placement.Left">
             <MudIconButton Icon="@(_loggingActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.FiberManualRecord)"
                            Color="@(_loggingActive ? MudBlazor.Color.Error : MudBlazor.Color.Default)"
                            OnClick="ToggleLoggingAsync" Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
-        <MudTooltip Text="Clear chart">
+        <MudMenu Icon="@Icons.Material.Filled.Download"
+                 Size="MudBlazor.Size.Small"
+                 AnchorOrigin="Origin.BottomRight"
+                 TransformOrigin="Origin.TopRight"
+                 Dense="true"
+                 AriaLabel="Export chart">
+            <MudMenuItem Icon="@Icons.Material.Filled.Image" OnClick="ExportPngAsync">Export PNG</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.TableChart" OnClick="ExportCsvAsync">Export CSV</MudMenuItem>
+        </MudMenu>
+
+        <MudTooltip Text="Clear chart" Placement="Placement.Left">
             <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep"
                            OnClick="ClearChartAsync" Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
     </MudStack>
 
-    @* ── Chart ───────────────────────────────────────────────────────────── *@
-    <div style="width:100%; height:calc(100vh - 72px);">
+    @* -- Chart ------------------------------------------------------------- *@
+    <div style="flex:1;min-height:0;">
         <ErrorBoundary>
             <ChildContent>
         @if (_raData.Count > 0 || _raRejData.Count > 0 || _decData.Count > 0 || _decRejData.Count > 0 || _ready)
         {
             <ApexChart TItem="PulsePointDto"
+                       @key="@_settings.PulseScale"
                        Title=""
                        Options="@_chartOptions"
                        @ref="_chart"
@@ -139,214 +151,4 @@
         </ErrorBoundary>
     </div>
 
-</MudContainer>
-
-@code {
-    [Parameter] public int DeviceNumber { get; set; }
-
-    // ── State ──────────────────────────────────────────────────────────────
-    private ChartSettings _settings = new();
-    private readonly List<PulsePointDto> _raData    = [];
-    private readonly List<PulsePointDto> _raRejData = [];
-    private readonly List<PulsePointDto> _decData   = [];
-    private readonly List<PulsePointDto> _decRejData = [];
-    private ApexChart<PulsePointDto>? _chart;
-    private ApexChartOptions<PulsePointDto> _chartOptions = new();
-    private HubConnection? _hub;
-    private bool _loggingActive;
-    private bool _ready;
-    private HubConnectionState _hubState = HubConnectionState.Disconnected;
-
-    // ── Lifecycle ──────────────────────────────────────────────────────────
-
-    protected override async Task OnInitializedAsync()
-    {
-        _settings = SettingsService.GetChartSettings();
-        BuildChartOptions();
-
-        var hubUrl = Nav.ToAbsoluteUri("/charthub");
-        _hub = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
-        _hub.On<PulsePointDto>("ReceivePulsePoint", OnPulsePoint);
-        _hub.On<IReadOnlyList<PulsePointDto>, IReadOnlyList<PulsePointDto>>("ReceivePulseHistory", OnHistory);
-
-        _hub.Reconnecting  += _ => { _hubState = HubConnectionState.Reconnecting;  InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-        _hub.Reconnected   += _ => { _hubState = HubConnectionState.Connected;      InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-        _hub.Closed        += _ => { _hubState = HubConnectionState.Disconnected;   InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-
-        await _hub.StartAsync();
-        _hubState = _hub.State;
-        await _hub.InvokeAsync("JoinPulseGroupAsync", DeviceNumber);
-        await _hub.InvokeAsync("RequestHistoricalDataAsync", "pulse", DeviceNumber);
-
-        if (_settings.AutoStartLogging)
-        {
-            await Logger.StartPulseLoggingAsync();
-            _loggingActive = true;
-        }
-
-        _ready = true;
-    }
-
-    // ── SignalR handlers ───────────────────────────────────────────────────
-
-    private void OnPulsePoint(PulsePointDto point)
-    {
-        InvokeAsync(async () =>
-        {
-            AddToBuffer(point);
-            if (_loggingActive) await Logger.LogPulsePointAsync(point);
-            if (_chart is not null)
-                await _chart.UpdateSeriesAsync(animate: false);
-        });
-    }
-
-    private void OnHistory(IReadOnlyList<PulsePointDto> ra, IReadOnlyList<PulsePointDto> dec)
-    {
-        InvokeAsync(async () =>
-        {
-            _raData.Clear();
-            _raRejData.Clear();
-            _decData.Clear();
-            _decRejData.Clear();
-
-            var maxPts = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-            foreach (var p in ra.TakeLast(maxPts))
-            {
-                if (p.Rejected) _raRejData.Add(p);
-                else _raData.Add(p);
-            }
-            foreach (var p in dec.TakeLast(maxPts))
-            {
-                if (p.Rejected) _decRejData.Add(p);
-                else _decData.Add(p);
-            }
-
-            if (_chart is not null)
-                await _chart.UpdateSeriesAsync(animate: false);
-            StateHasChanged();
-        });
-    }
-
-    // ── Toolbar handlers ───────────────────────────────────────────────────
-
-    private async Task OnScaleChangedAsync(string scale)
-    {
-        _settings.PulseScale = scale;
-        await SettingsService.SaveChartSettingsAsync(_settings);
-        BuildChartOptions();
-        if (_chart is not null)
-            await _chart.UpdateOptionsAsync(false, false, false);
-    }
-
-    private async Task OnSeriesToggleAsync(string propertyName, bool value)
-    {
-        switch (propertyName)
-        {
-            case nameof(ChartSettings.ShowRaPulse):    _settings.ShowRaPulse    = value; break;
-            case nameof(ChartSettings.ShowRaRejected): _settings.ShowRaRejected = value; break;
-            case nameof(ChartSettings.ShowDecPulse):   _settings.ShowDecPulse   = value; break;
-            case nameof(ChartSettings.ShowDecRejected):_settings.ShowDecRejected = value; break;
-        }
-        await SettingsService.SaveChartSettingsAsync(_settings);
-        StateHasChanged();
-    }
-
-    private async Task ToggleLoggingAsync()
-    {
-        if (_loggingActive)
-        {
-            await Logger.StopPulseLoggingAsync();
-            _loggingActive = false;
-        }
-        else
-        {
-            await Logger.StartPulseLoggingAsync();
-            _loggingActive = true;
-        }
-    }
-
-    private async Task ClearChartAsync()
-    {
-        _raData.Clear();
-        _raRejData.Clear();
-        _decData.Clear();
-        _decRejData.Clear();
-        if (_chart is not null)
-            await _chart.UpdateSeriesAsync(animate: false);
-    }
-
-    // ── Helpers ────────────────────────────────────────────────────────────
-
-    private double GetValue(PulsePointDto p) => _settings.PulseScale switch
-    {
-        "ArcSeconds" => p.Rate,
-        "Steps"      => p.Duration,
-        _            => p.Duration
-    };
-
-    private void BuildChartOptions()
-    {
-        var yTitle = _settings.PulseScale switch
-        {
-            "ArcSeconds" => "Arc-seconds/sec",
-            "Steps"      => "Steps",
-            _            => "ms"
-        };
-
-        _chartOptions = new ApexChartOptions<PulsePointDto>
-        {
-            Chart = new Chart
-            {
-                Background = "#1e1e1e",
-                ForeColor  = "rgba(255,255,255,0.87)",
-                Animations = new Animations { Enabled = false },
-                Toolbar    = new Toolbar { Show = true },
-                Zoom       = new Zoom { Enabled = true }
-            },
-            Theme = new Theme { Mode = Mode.Dark },
-            Xaxis = new XAxis
-            {
-                Type   = XAxisType.Datetime,
-                Labels = new XAxisLabels { DatetimeUTC = true }
-            },
-            Yaxis = [new YAxis { Title = new AxisTitle { Text = yTitle } }],
-            Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 0, 1, 0] },
-            Markers = new Markers { Size = [0, 4, 0, 4] },
-            Legend = new Legend { Show = true },
-            Grid   = new Grid { BorderColor = "rgba(255,255,255,0.12)" }
-        };
-    }
-
-    private void AddToBuffer(PulsePointDto p)
-    {
-        var max = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-        if (p.Axis == 0)
-        {
-            var list = p.Rejected ? _raRejData : _raData;
-            if (list.Count >= max) list.RemoveAt(0);
-            list.Add(p);
-        }
-        else
-        {
-            var list = p.Rejected ? _decRejData : _decData;
-            if (list.Count >= max) list.RemoveAt(0);
-            list.Add(p);
-        }
-    }
-
-    // ── Dispose ────────────────────────────────────────────────────────────
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_loggingActive) await Logger.StopPulseLoggingAsync();
-        if (_hub is not null)
-        {
-            await _hub.InvokeAsync("LeavePulseGroupAsync", DeviceNumber);
-            await _hub.DisposeAsync();
-        }
-    }
-}
+</div>

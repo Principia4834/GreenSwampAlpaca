@@ -61,5 +61,23 @@ window.chartWindowInterop = {
         const win = window.gsChartWindows[windowKey];
         if (win && !win.closed) win.close();
         delete window.gsChartWindows[windowKey];
+    },
+
+    // Triggers a browser download for a data-URI (e.g. PNG from ApexCharts.GetDataUriAsync).
+    downloadDataUri: (dataUri, filename) => {
+        const link = document.createElement('a');
+        link.href = dataUri;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+
+    // Calls the ApexCharts built-in CSV export on the first chart instance on the page.
+    exportChartCsv: (filename) => {
+        const instances = window.Apex && window.Apex._chartInstances;
+        if (instances && instances.length > 0) {
+            instances[0].exports.exportToCSV({ fileName: filename });
+        }
     }
 };

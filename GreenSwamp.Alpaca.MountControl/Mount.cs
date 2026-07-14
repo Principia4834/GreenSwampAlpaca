@@ -1369,7 +1369,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Warning,
                     Method = MethodBase.GetCurrentMethod()?.Name + "_" + caller,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"Mount:{_mountId}|Timeout waiting for position update"
+                    Message = $"Timeout waiting for position update"
                 };
                 LogMount(errorItem);
                 result = false;

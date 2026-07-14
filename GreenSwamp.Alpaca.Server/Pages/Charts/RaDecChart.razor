@@ -5,6 +5,7 @@
 
 @inject IVersionedSettingsService SettingsService
 @inject ChartLoggingService Logger
+@inject TelescopeStateService StateService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
@@ -12,9 +13,9 @@
 
 <PageTitle>RA / Dec Chart — GS Alpaca</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.False" Class="pa-2">
+<div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;padding:8px;box-sizing:border-box;">
 
-    @* ── Toolbar ─────────────────────────────────────────────────────────── *@
+    @* -- Toolbar ----------------------------------------------------------- *@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
@@ -41,32 +42,45 @@
 
         <MudSwitch T="bool" Label="Axis 1" Value="@_settings.ShowAxis1"
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 1))"
-                   Color="MudBlazor.Color.Primary" />
+                   Color="MudBlazor.Color.Error" />
 
         <MudSwitch T="bool" Label="Axis 2" Value="@_settings.ShowAxis2"
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 2))"
-                   Color="MudBlazor.Color.Secondary" />
+                   Color="MudBlazor.Color.Info" />
 
-        <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")">
+        <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")" Placement="Placement.Left">
             <MudIconButton Icon="@(_loggingActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.FiberManualRecord)"
                            Color="@(_loggingActive ? MudBlazor.Color.Error : MudBlazor.Color.Default)"
                            OnClick="ToggleLoggingAsync" Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
-        <MudTooltip Text="Clear chart">
+        <MudTooltip Text="Export chart" Placement="Placement.Left">
+            <MudMenu Icon="@Icons.Material.Filled.Download"
+                     Size="MudBlazor.Size.Small"
+                     AnchorOrigin="Origin.BottomRight"
+                     TransformOrigin="Origin.TopRight"
+                     Dense="true"
+                     AriaLabel="Export chart">
+                <MudMenuItem Icon="@Icons.Material.Filled.Image" OnClick="ExportPngAsync">Export PNG</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.TableChart" OnClick="ExportCsvAsync">Export CSV</MudMenuItem>
+            </MudMenu>
+        </MudTooltip>
+
+        <MudTooltip Text="Clear chart" Placement="Placement.Left">
             <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep"
                            OnClick="ClearChartAsync" Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
     </MudStack>
 
-    @* ── Chart ───────────────────────────────────────────────────────────── *@
-    <div style="width:100%; height:calc(100vh - 72px);">
+    @* -- Chart ------------------------------------------------------------- *@
+    <div style="flex:1;min-height:0;">
         <ErrorBoundary>
             <ChildContent>
         @if (_axis1Data.Count > 0 || _axis2Data.Count > 0 || _ready)
         {
             <ApexChart TItem="ChartPointDto"
+                       @key="@_settings.RaDecScale"
                        Title=""
                        Options="@_chartOptions"
                        @ref="_chart"
@@ -80,8 +94,8 @@
                                      Name="Axis 1"
                                      SeriesType="SeriesType.Line"
                                      XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)p.Value)"
-                                     Color="#4caf50" />
+                                     YValue="@(p => (decimal)GetValue(p, 0))"
+                                     Color="#b71c1c" />
                 }
 
                 @if (_settings.ShowAxis2)
@@ -91,7 +105,7 @@
                                      Name="Axis 2"
                                      SeriesType="SeriesType.Line"
                                      XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)p.Value)"
+                                     YValue="@(p => (decimal)GetValue(p, 1))"
                                      Color="#2196f3" />
                 }
 
@@ -112,187 +126,4 @@
         </ErrorBoundary>
     </div>
 
-</MudContainer>
-
-@code {
-    [Parameter] public int DeviceNumber { get; set; }
-
-    // ── State ──────────────────────────────────────────────────────────────
-    private ChartSettings _settings = new();
-    private readonly List<ChartPointDto> _axis1Data = [];
-    private readonly List<ChartPointDto> _axis2Data = [];
-    private ApexChart<ChartPointDto>? _chart;
-    private ApexChartOptions<ChartPointDto> _chartOptions = new();
-    private HubConnection? _hub;
-    private bool _loggingActive;
-    private bool _ready;
-    private HubConnectionState _hubState = HubConnectionState.Disconnected;
-
-    // ── Lifecycle ──────────────────────────────────────────────────────────
-
-    protected override async Task OnInitializedAsync()
-    {
-        _settings = SettingsService.GetChartSettings();
-        BuildChartOptions();
-
-        var hubUrl = Nav.ToAbsoluteUri("/charthub");
-        _hub = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
-        _hub.On<ChartPointDto>("ReceiveAxis1Point", OnAxis1Point);
-        _hub.On<ChartPointDto>("ReceiveAxis2Point", OnAxis2Point);
-        _hub.On<IReadOnlyList<ChartPointDto>, IReadOnlyList<ChartPointDto>>("ReceiveRaDecHistory", OnHistory);
-
-        _hub.Reconnecting  += _ => { _hubState = HubConnectionState.Reconnecting;  InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-        _hub.Reconnected   += _ => { _hubState = HubConnectionState.Connected;      InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-        _hub.Closed        += _ => { _hubState = HubConnectionState.Disconnected;   InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-
-        await _hub.StartAsync();
-        _hubState = _hub.State;
-        await _hub.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
-        await _hub.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber);
-
-        if (_settings.AutoStartLogging)
-        {
-            await Logger.StartRaDecLoggingAsync();
-            _loggingActive = true;
-        }
-
-        _ready = true;
-    }
-
-    // ── SignalR handlers ───────────────────────────────────────────────────
-
-    private void OnAxis1Point(ChartPointDto point)
-    {
-        InvokeAsync(async () =>
-        {
-            TrimBuffer(_axis1Data);
-            _axis1Data.Add(point);
-            if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
-            if (_chart is not null && _settings.ShowAxis1)
-                await _chart.UpdateSeriesAsync(animate: false);
-        });
-    }
-
-    private void OnAxis2Point(ChartPointDto point)
-    {
-        InvokeAsync(async () =>
-        {
-            TrimBuffer(_axis2Data);
-            _axis2Data.Add(point);
-            if (_loggingActive) await Logger.LogRaDecPointAsync(2, point);
-            if (_chart is not null && _settings.ShowAxis2)
-                await _chart.UpdateSeriesAsync(animate: false);
-        });
-    }
-
-    private void OnHistory(IReadOnlyList<ChartPointDto> axis1, IReadOnlyList<ChartPointDto> axis2)
-    {
-        InvokeAsync(async () =>
-        {
-            _axis1Data.Clear();
-            _axis1Data.AddRange(axis1.TakeLast(_settings.MaxPoints));
-            _axis2Data.Clear();
-            _axis2Data.AddRange(axis2.TakeLast(_settings.MaxPoints));
-            if (_chart is not null)
-                await _chart.UpdateSeriesAsync(animate: false);
-            StateHasChanged();
-        });
-    }
-
-    // ── Toolbar handlers ───────────────────────────────────────────────────
-
-    private async Task OnScaleChangedAsync(string scale)
-    {
-        _settings.RaDecScale = scale;
-        await SettingsService.SaveChartSettingsAsync(_settings);
-        BuildChartOptions();
-        if (_chart is not null)
-            await _chart.UpdateOptionsAsync(false, false, false);
-    }
-
-    private async Task OnSeriesToggleAsync(bool value, int axis)
-    {
-        if (axis == 1) _settings.ShowAxis1 = value;
-        else _settings.ShowAxis2 = value;
-        await SettingsService.SaveChartSettingsAsync(_settings);
-        StateHasChanged();
-    }
-
-    private async Task ToggleLoggingAsync()
-    {
-        if (_loggingActive)
-        {
-            await Logger.StopRaDecLoggingAsync();
-            _loggingActive = false;
-        }
-        else
-        {
-            await Logger.StartRaDecLoggingAsync();
-            _loggingActive = true;
-        }
-    }
-
-    private async Task ClearChartAsync()
-    {
-        _axis1Data.Clear();
-        _axis2Data.Clear();
-        if (_chart is not null)
-            await _chart.UpdateSeriesAsync(animate: false);
-    }
-
-    // ── Helpers ────────────────────────────────────────────────────────────
-
-    private void BuildChartOptions()
-    {
-        var yTitle = _settings.RaDecScale switch
-        {
-            "Degrees"    => "Degrees",
-            "ArcSeconds" => "Arc-seconds",
-            _            => "Steps"
-        };
-
-        _chartOptions = new ApexChartOptions<ChartPointDto>
-        {
-            Chart = new Chart
-            {
-                Background = "#1e1e1e",
-                ForeColor  = "rgba(255,255,255,0.87)",
-                Animations = new Animations { Enabled = false },
-                Toolbar    = new Toolbar { Show = true },
-                Zoom       = new Zoom { Enabled = true }
-            },
-            Theme = new Theme { Mode = Mode.Dark },
-            Xaxis = new XAxis
-            {
-                Type   = XAxisType.Datetime,
-                Labels = new XAxisLabels { DatetimeUTC = true }
-            },
-            Yaxis = [new YAxis { Title = new AxisTitle { Text = yTitle } }],
-            Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 1] },
-            Legend = new Legend { Show = true },
-            Grid   = new Grid { BorderColor = "rgba(255,255,255,0.12)" }
-        };
-    }
-
-    private void TrimBuffer(List<ChartPointDto> list)
-    {
-        var max = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-        if (list.Count >= max) list.RemoveAt(0);
-    }
-
-    // ── Dispose ────────────────────────────────────────────────────────────
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_loggingActive) await Logger.StopRaDecLoggingAsync();
-        if (_hub is not null)
-        {
-            await _hub.InvokeAsync("LeaveRaDecGroupAsync", DeviceNumber);
-            await _hub.DisposeAsync();
-        }
-    }
-}
+</div>
