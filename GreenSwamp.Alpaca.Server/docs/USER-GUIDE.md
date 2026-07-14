@@ -156,14 +156,14 @@ The application is a single-page web application. All pages are reachable from t
 
 ```
 Home
-─────────────────────
+---------------------
 Status              ← Real-time mount telemetry
 Settings            ← Per-device quick settings overview
 Monitor             ← Live log stream + filter controls
-─────────────────────
+---------------------
 RA / Dec Chart      ← Opens live position chart in a new window
 Pulse Chart         ← Opens live pulse-guide chart in a new window
-─────────────────────
+---------------------
 Settings Explorer   ← Full settings tree (all groups)
 Alpaca Settings     ← Server-level network and auth settings
 Check Settings      ← Settings validation and auto-repair
@@ -349,7 +349,7 @@ The settings tree has three levels:
 
 ```
 Section
-  └─ Group (leaf node — clicking shows the editor)
+  └- Group (leaf node — clicking shows the editor)
 ```
 
 The top-level sections are:
