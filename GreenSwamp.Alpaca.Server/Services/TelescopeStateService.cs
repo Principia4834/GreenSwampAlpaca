@@ -23,39 +23,48 @@ namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
     /// Service that provides telescope state snapshots for the Blazor UI.
-    /// On each 200 ms tick the service snapshots every registered device into an
-    /// internal cache and then fires <see cref="StateChanged"/>. Subscribers call
+    /// A background loop snapshots every registered device into an internal cache
+    /// every 200 ms and then fires <see cref="StateChanged"/>. Subscribers call
     /// <see cref="GetCurrentState"/> to read the pre-built snapshot — no mount
     /// properties are read by the caller.
+    /// The loop uses Task.Delay so each iteration only starts after the previous
+    /// one fully completes, making re-entrancy structurally impossible.
     /// </summary>
     public class TelescopeStateService : IDisposable
     {
-        private readonly Timer _updateTimer;
+        private readonly CancellationTokenSource _cts = new();
 
         // Keyed by device number. Replaced atomically each tick; never mutated in place.
         private Dictionary<int, TelescopeStateModel> _cache = new();
 
         /// <summary>
-        /// Fired every 200 ms after the internal snapshot cache has been refreshed.
+        /// Fired every ~200 ms after the internal snapshot cache has been refreshed.
         /// </summary>
         public event EventHandler? StateChanged;
 
         public TelescopeStateService()
         {
-            // Infinite period: the next tick is only scheduled after the current
-            // callback finishes (see finally block in OnTimerTick). This prevents
-            // System.Threading.Timer re-entrancy when subscribers take >= 200 ms.
-            _updateTimer = new Timer(OnTimerTick, null,
-                TimeSpan.FromMilliseconds(200), Timeout.InfiniteTimeSpan);
+            _ = RunLoopAsync(_cts.Token);
         }
 
-        private void OnTimerTick(object? state)
+        private async Task RunLoopAsync(CancellationToken ct)
         {
-            try
+            while (!ct.IsCancellationRequested)
             {
-                // Build a fresh snapshot for every registered device first, then notify
-                // subscribers. This ensures GetCurrentState() is always a cheap cache read
-                // regardless of how many subscribers call it.
+                try
+                {
+                    await Task.Delay(200, ct).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
+                if (ct.IsCancellationRequested) break;
+
+                // Build a fresh snapshot for every registered device first, then
+                // notify subscribers. GetCurrentState() is always a cheap cache
+                // read regardless of how many subscribers call it.
                 var instances = MountRegistry.GetAllInstances();
                 var next = new Dictionary<int, TelescopeStateModel>(instances.Count);
                 foreach (var dn in instances.Keys)
@@ -63,11 +72,6 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                 _cache = next;
                 StateChanged?.Invoke(this, EventArgs.Empty);
-            }
-            finally
-            {
-                // Reschedule only after the callback completes, guaranteeing no overlap.
-                _updateTimer.Change(TimeSpan.FromMilliseconds(200), Timeout.InfiniteTimeSpan);
             }
         }
 
@@ -160,6 +164,10 @@ namespace GreenSwamp.Alpaca.Server.Services
             }
         }
 
-        public void Dispose() => _updateTimer?.Dispose();
+        public void Dispose()
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
     }
 }
