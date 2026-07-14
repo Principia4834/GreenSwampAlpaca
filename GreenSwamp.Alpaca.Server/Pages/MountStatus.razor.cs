@@ -15,6 +15,7 @@
  */
 
 using GreenSwamp.Alpaca.Server.Components;
+using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -30,12 +31,17 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
         private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
+        private Dictionary<int, TelescopeStateModel> _stateCache = new();
 
         protected override void OnInitialized()
         {
             _alpacaDevices = SettingsService.GetAlpacaDevices();
             _deviceSettings = SettingsService.GetAllDeviceSettings()
                 .ToDictionary(d => d.DeviceNumber);
+
+            // Prime the cache so the first render has data without calling GetCurrentState inside the template.
+            foreach (var dn in GetConfiguredDeviceNumbers())
+                _stateCache[dn] = StateService.GetCurrentState(dn);
 
             StateService.StateChanged += OnStateChanged;
             SettingsService.DeviceSettingsChanged += OnDeviceSettingsChanged;
@@ -50,8 +56,14 @@ namespace GreenSwamp.Alpaca.Server.Pages
             ActiveTabIndex = idx >= 0 ? idx : 0;
         }
 
-        private void OnStateChanged(object? sender, EventArgs e) =>
+        private void OnStateChanged(object? sender, EventArgs e)
+        {
+            // Snapshot state once per tick per device; the Razor template reads from _stateCache.
+            foreach (var dn in GetConfiguredDeviceNumbers())
+                _stateCache[dn] = StateService.GetCurrentState(dn);
+
             InvokeAsync(StateHasChanged);
+        }
 
         private void OnDeviceSettingsChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.SkySettings updated)
         {

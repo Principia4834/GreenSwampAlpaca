@@ -57,7 +57,7 @@ else
         {
             <MudTabPanel Text="@TabLabel(dn)">
                 @{
-                    var s = StateService.GetCurrentState(dn);
+                    var s = _stateCache.GetValueOrDefault(dn) ?? new TelescopeStateModel();
                     var mountSettings = _deviceSettings.GetValueOrDefault(dn);
                 }
 
