@@ -26,7 +26,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
     /// </summary>
     public interface IVersionedSettingsService
     {
-        // ── Metadata ──────────────────────────────────────────────────────────
+        // -- Metadata ----------------------------------------------------------
 
         /// <summary>Gets the current application version.</summary>
         string CurrentVersion { get; }
@@ -40,7 +40,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Gets the path to device-nn.settings.json for the specified device number (0-99).</summary>
         string GetDeviceSettingsPath(int deviceNumber);
 
-        // ── Server-wide settings (monitor.settings.user.json) ────────────────
+        // -- Server-wide settings (monitor.settings.user.json) ----------------
 
         /// <summary>Gets the current monitor settings.</summary>
         MonitorSettings GetMonitorSettings();
@@ -48,7 +48,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Saves monitor settings to monitor.settings.user.json.</summary>
         Task SaveMonitorSettingsAsync(MonitorSettings settings);
 
-        // ── Alpaca discovery (devices.alpaca.user.json) ───────────────────────
+        // -- Alpaca discovery (devices.alpaca.user.json) -----------------------
 
         /// <summary>Gets Alpaca device discovery metadata for all configured devices.</summary>
         List<AlpacaDevice> GetAlpacaDevices();
@@ -62,7 +62,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Removes the AlpacaDevice entry for the specified device number.</summary>
         Task RemoveAlpacaDeviceAsync(int deviceNumber);
 
-        // ── Per-device settings (device-nn.settings.json) ────────────────────
+        // -- Per-device settings (device-nn.settings.json) --------------------
 
         /// <summary>Gets device settings for the specified device number, or null if not found.</summary>
         SkySettings? GetDeviceSettings(int deviceNumber);
@@ -80,7 +80,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Returns true if device-nn.settings.json exists for the specified device number.</summary>
         bool DeviceSettingsExist(int deviceNumber);
 
-        // ── Validation ────────────────────────────────────────────────────────
+        // -- Validation --------------------------------------------------------
 
         /// <summary>Validates device-nn.settings.json for the specified device number.</summary>
         ValidationResult ValidateDeviceSettings(int deviceNumber);
@@ -88,7 +88,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Validates devices.alpaca.user.json.</summary>
         ValidationResult ValidateAlpacaDevices();
 
-        // ── Observatory settings (observatory.settings.json) ─────────────────
+        // -- Observatory settings (observatory.settings.json) -----------------
 
         /// <summary>Gets the path to observatory.settings.json for the current version.</summary>
         string ObservatorySettingsPath { get; }
@@ -101,7 +101,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// Does not propagate changes to existing device-nn.settings.json files (v1).</summary>
         Task SaveObservatorySettingsAsync(ObservatorySettings settings);
 
-        // ── Mode-aware device creation and change ────────────────────────────
+        // -- Mode-aware device creation and change ----------------------------
 
         /// <summary>Creates a new device-nn.settings.json populated with app defaults for the specified
         /// alignment mode and observatory properties from observatory.settings.json.</summary>
@@ -112,7 +112,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// all [CommonSetting] properties are preserved. Operation is atomic.</summary>
         Task ChangeAlignmentModeAsync(int deviceNumber, AlignmentMode newMode);
 
-        // ── Server configuration (appsettings.server.user.json) ──────────────
+        // -- Server configuration (appsettings.server.user.json) --------------
 
         /// <summary>Gets the path to appsettings.server.user.json for the current version.</summary>
         string ServerConfigPath { get; }
@@ -123,7 +123,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Saves server configuration atomically to appsettings.server.user.json.</summary>
         Task SaveServerConfigAsync(ServerConfig config);
 
-        // ── Events ────────────────────────────────────────────────────────────
+        // -- Events ------------------------------------------------------------
 
         /// <summary>Event raised when device settings are changed via SaveDeviceSettingsAsync.</summary>
         event EventHandler<SkySettings>? DeviceSettingsChanged;
@@ -134,7 +134,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Event raised when server configuration is changed via SaveServerConfigAsync.</summary>
         event EventHandler<ServerConfig>? ServerConfigChanged;
 
-        // ── Chart settings (chart.settings.user.json) ─────────────────────────────────
+        // -- Chart settings (chart.settings.user.json) ---------------------------------
 
         /// <summary>Gets the current chart display settings. Returns defaults if the file is absent.</summary>
         ChartSettings GetChartSettings();

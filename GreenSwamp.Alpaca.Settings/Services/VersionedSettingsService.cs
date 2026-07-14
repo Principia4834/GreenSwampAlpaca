@@ -82,7 +82,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             RunFirstRunDeviceInit();
         }
         
-        // ── Path helpers ──────────────────────────────────────────────────────
+        // -- Path helpers ------------------------------------------------------
 
         public string GetDeviceSettingsPath(int deviceNumber)
         {
@@ -94,7 +94,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private SemaphoreSlim GetDeviceLock(int deviceNumber)
             => _deviceFileLocks.GetOrAdd(deviceNumber, _ => new SemaphoreSlim(1, 1));
 
-        // ── Per-device settings ───────────────────────────────────────────────
+        // -- Per-device settings -----------------------------------------------
 
         public SkySettings? GetDeviceSettings(int deviceNumber)
         {
@@ -238,7 +238,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         public bool DeviceSettingsExist(int deviceNumber)
             => File.Exists(GetDeviceSettingsPath(deviceNumber));
 
-        // ── First-run initialisation ──────────────────────────────────────────
+        // -- First-run initialisation ------------------------------------------
 
         /// <summary>
         /// Attempts to migrate all JSON settings files from the nearest strictly-lower version
@@ -403,7 +403,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
         }
 
-        // ── Alpaca discovery ──────────────────────────────────────────────────
+        // -- Alpaca discovery --------------------------------------------------
 
         public List<AlpacaDevice> GetAlpacaDevices()
         {
@@ -506,7 +506,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             File.Move(tempPath, AlpacaDevicesSettingsPath, overwrite: true);
         }
 
-        // ── Validation ────────────────────────────────────────────────────────
+        // -- Validation --------------------------------------------------------
 
         public ValidationResult ValidateDeviceSettings(int deviceNumber)
         {
@@ -722,7 +722,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             return result;
         }
 
-        // ── Server configuration ──────────────────────────────────────────────
+        // -- Server configuration ----------------------------------------------
 
         public ServerConfig GetServerConfig()
         {
@@ -783,7 +783,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             ServerConfigChanged?.Invoke(this, config);
         }
 
-        // ── Monitor settings ──────────────────────────────────────────────────
+        // -- Monitor settings --------------------------------------------------
 
         public MonitorSettings GetMonitorSettings()
         {
@@ -817,7 +817,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             MonitorSettingsChanged?.Invoke(this, settings);
         }
 
-        // ── Chart settings ────────────────────────────────────────────────────────────
+        // -- Chart settings ------------------------------------------------------------
 
         public ChartSettings GetChartSettings()
         {
@@ -859,7 +859,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             ChartSettingsChanged?.Invoke(this, settings);
         }
 
-        // ── Observatory settings ──────────────────────────────────────────────────────
+        // -- Observatory settings ------------------------------------------------------
 
         public ObservatorySettings GetObservatorySettings()
         {
@@ -930,7 +930,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             }
         }
 
-        // ── Mode-aware device creation and change ─────────────────────────────
+        // -- Mode-aware device creation and change -----------------------------
 
         public async Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, MountType type, AlignmentMode mode)
         {
@@ -983,7 +983,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             LogSafe("INFO", $"Changed device {deviceNumber} alignment mode to {modeName}");
         }
 
-        // ── Private helpers ───────────────────────────────────────────────────
+        // -- Private helpers ---------------------------------------------------
 
         private async Task<Dictionary<string, JsonElement>> ReadSettingsFileAsync(string path)
         {

@@ -60,11 +60,34 @@ namespace GreenSwamp.Alpaca.Settings.Models
 
         /// <summary>
         /// Maximum number of data points retained per series before the oldest are dropped.
-        /// Default 5000 matches the legacy GSServer chart buffer.
+        /// Default 5000 matches the legacy GSServer chart buffer. Used by the Pulse chart
+        /// (fixed 5 000 per series, four series).
         /// </summary>
         public int MaxPoints { get; set; } = 5000;
 
         /// <summary>Automatically start disk logging when a chart window opens.</summary>
         public bool AutoStartLogging { get; set; } = false;
+
+        // -- RA/Dec redesign -----------------------------------------------------------
+
+        /// <summary>
+        /// Active display mode for both chart windows.
+        /// Valid values: <c>"Realtime"</c> (default) or <c>"Historical"</c>.
+        /// Persisted so the window reopens in the last-used mode.
+        /// </summary>
+        public string DisplayMode { get; set; } = "Realtime";
+
+        /// <summary>
+        /// Duration of the realtime rolling-window in seconds.
+        /// Valid values: 10, 30 (default), 120.
+        /// </summary>
+        public int RealtimeWindowSeconds { get; set; } = 30;
+
+        /// <summary>
+        /// Maximum number of data points retained per RA/Dec series in the browser-local
+        /// JavaScript buffer. User-selectable: 5 000, 10 000, or 20 000.
+        /// Default 5 000 matches the legacy GSServer chart buffer.
+        /// </summary>
+        public int RaDecMaxPoints { get; set; } = 5000;
     }
 }

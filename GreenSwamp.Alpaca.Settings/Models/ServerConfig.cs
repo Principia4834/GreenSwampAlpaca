@@ -26,7 +26,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
     /// </summary>
     public class ServerConfig
     {
-        // ── Network ───────────────────────────────────────────────────────────
+        // -- Network -----------------------------------------------------------
 
         /// <summary>TCP port the Alpaca server listens on.</summary>
         public ushort ServerPort { get; set; } = 31416;
@@ -40,7 +40,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Advertise this server via Alpaca UDP discovery.</summary>
         public bool AllowDiscovery { get; set; } = true;
 
-        // ── Alpaca behaviour ─────────────────────────────────────────────────
+        // -- Alpaca behaviour -------------------------------------------------
 
         /// <summary>Reject non-compliant Alpaca requests when true.</summary>
         public bool RunInStrictAlpacaMode { get; set; } = true;
@@ -51,7 +51,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Allow the image-bytes binary download endpoint.</summary>
         public bool AllowImageBytesDownload { get; set; } = true;
 
-        // ── Identity / UI ─────────────────────────────────────────────────────
+        // -- Identity / UI -----------------------------------------------------
 
         /// <summary>Human-readable location shown in discovery and the setup page.</summary>
         public string Location { get; set; } = "Unknown";
@@ -62,7 +62,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Expose the OpenAPI / Swagger UI at /swagger.</summary>
         public bool RunSwagger { get; set; } = true;
 
-        // ── Authentication ────────────────────────────────────────────────────
+        // -- Authentication ----------------------------------------------------
 
         /// <summary>Require HTTP Basic / Cookie authentication.</summary>
         public bool UseAuth { get; set; } = false;
@@ -76,7 +76,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// </summary>
         public string Password { get; set; } = string.Empty;
 
-        // ── Bootstrap helper ──────────────────────────────────────────────────
+        // -- Bootstrap helper --------------------------------------------------
 
         private static readonly JsonSerializerOptions _readOptions =
             new() { PropertyNameCaseInsensitive = true };
