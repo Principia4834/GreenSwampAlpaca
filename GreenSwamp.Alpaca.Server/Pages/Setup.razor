@@ -14,7 +14,7 @@
 
 <MudGrid Spacing="3">
 
-    @* ── Network ─────────────────────────────────────────────────────────── *@
+    @* -- Network ----------------------------------------------------------- *@
     <MudItem xs="12" md="6">
         <MudCard Elevation="1" Style="height:100%">
             <MudCardHeader>
@@ -92,7 +92,7 @@
         </MudCard>
     </MudItem>
 
-    @* ── Discovery / Runtime Configuration (merged) ────────────────────────── *@
+    @* -- Discovery / Runtime Configuration (merged) -------------------------- *@
     <MudItem xs="12" md="6">
         <MudCard Elevation="1" Style="height:100%">
             <MudCardHeader>
@@ -136,7 +136,7 @@
 
 
 
-    @* ── Security ─────────────────────────────────────────────────────────── *@
+    @* -- Security ----------------------------------------------------------- *@
     <MudItem xs="12">
         <MudCard Elevation="1">
             <MudCardHeader><MudText Typo="Typo.subtitle2">Security</MudText></MudCardHeader>
@@ -166,7 +166,7 @@
 
 </MudGrid>
 
-@* ── Footer action bar ────────────────────────────────────────────────────── *@
+@* -- Footer action bar ------------------------------------------------------ *@
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-4" Spacing="3">
 <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_isDirty)" OnClick="SaveAllSettingsAsync">
     Save
@@ -185,7 +185,7 @@
 
 @code {
 
-    // ── Snapshot record for dirty-state tracking ──────────────────────────────
+    // -- Snapshot record for dirty-state tracking ------------------------------
 
     private record SettingsSnapshot(
         string   Location,
@@ -204,7 +204,7 @@
     private GreenSwamp.Alpaca.Settings.Models.ServerConfig _config = new();
     private SettingsSnapshot _snapshot = new(string.Empty, 0, false, false, false, false, false, false, false, false, string.Empty);
 
-    // ── Form-bound properties ─────────────────────────────────────────────────
+    // -- Form-bound properties -------------------------------------------------
 
     bool Discovery              { get; set; }
     bool StrictAPIMode          { get; set; }
@@ -223,7 +223,7 @@
     string Password2            { get; set; } = string.Empty;
     bool RunSwagger             { get; set; }
 
-    // ── Dirty-state ───────────────────────────────────────────────────────────
+    // -- Dirty-state -----------------------------------------------------------
 
     private bool _isDirty =>
         Location              != _snapshot.Location              ||
@@ -239,7 +239,7 @@
         UserName              != _snapshot.UserName              ||
         !string.IsNullOrEmpty(Password);
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    // -- Lifecycle -------------------------------------------------------------
 
     protected override void OnInitialized()
     {
@@ -271,7 +271,7 @@
             RunSwagger, RequireAuthorization, UserName
         );
 
-    // ── Unified save ─────────────────────────────────────────────────────────
+    // -- Unified save ---------------------------------------------------------
 
     async Task SaveAllSettingsAsync()
     {

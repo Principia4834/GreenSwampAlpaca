@@ -80,7 +80,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             catch { /* non-critical */ }
         }
 
-        // ── Internal ─────────────────────────────────────────────────────────
+        // -- Internal ---------------------------------------------------------
 
         private static void WriteLog(string logFilePath, CancellationToken ct)
         {

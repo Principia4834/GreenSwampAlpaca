@@ -110,7 +110,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             }
         }
 
-        // ── Private ──────────────────────────────────────────────────────────
+        // -- Private ----------------------------------------------------------
 
         private static void CleanupLogs(string logPath)
         {

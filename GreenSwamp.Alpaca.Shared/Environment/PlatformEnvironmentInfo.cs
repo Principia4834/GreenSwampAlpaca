@@ -33,7 +33,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
     /// </summary>
     internal static class PlatformEnvironmentInfo
     {
-        // ── CPU ──────────────────────────────────────────────────────────────
+        // -- CPU --------------------------------------------------------------
 
         /// <summary>Log CPU name and clock speed from registry (Windows) or /proc/cpuinfo (Linux).</summary>
         internal static void LogCpuInfo(StreamWriter writer)
@@ -105,7 +105,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             if (coreIds > 0)       writer.WriteLine($"Physical Cores: {coreIds}");
         }
 
-        // ── Memory ───────────────────────────────────────────────────────────
+        // -- Memory -----------------------------------------------------------
 
         /// <summary>Log total and available physical memory.</summary>
         internal static void LogMemoryInfo(StreamWriter writer)
@@ -162,7 +162,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             if (availKb > 0) writer.WriteLine($"Avail Physical: {availKb / (1024.0 * 1024):N2} GB");
         }
 
-        // ── Admin / privilege ─────────────────────────────────────────────────
+        // -- Admin / privilege -------------------------------------------------
 
         /// <summary>Log whether the process is running with elevated privileges.</summary>
         internal static void LogAdminInfo(StreamWriter writer)
@@ -194,7 +194,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             writer.WriteLine();
         }
 
-        // ── Win32 P/Invoke ───────────────────────────────────────────────────
+        // -- Win32 P/Invoke ---------------------------------------------------
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private struct MEMORYSTATUSEX
@@ -216,7 +216,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
         [SupportedOSPlatform("windows")]
         private static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
 
-        // ── System info (manufacturer / model) ──────────────────────────────
+        // -- System info (manufacturer / model) ------------------------------
 
         /// <summary>Log system manufacturer and model from BIOS registry (Windows) or DMI sysfs (Linux).</summary>
         internal static void LogSystemInfo(StreamWriter writer)
@@ -286,7 +286,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             if (!string.IsNullOrEmpty(biosDate))     writer.WriteLine($"BIOS Date:    {biosDate}");
         }
 
-        // ── Video adapter ────────────────────────────────────────────────────
+        // -- Video adapter ----------------------------------------------------
 
         /// <summary>Log display adapter name, driver, and primary screen resolution.</summary>
         internal static void LogVideoInfo(StreamWriter writer)
@@ -348,7 +348,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             }
         }
 
-        // ── WMI helper ───────────────────────────────────────────────────────
+        // -- WMI helper -------------------------------------------------------
 
         private const int WmiTimeoutSeconds = 2;
 

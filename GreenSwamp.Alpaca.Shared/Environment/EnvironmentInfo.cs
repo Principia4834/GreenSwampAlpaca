@@ -33,7 +33,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
     /// </summary>
     internal static class EnvironmentInfo
     {
-        // ── Privacy helpers ──────────────────────────────────────────────────
+        // -- Privacy helpers --------------------------------------------------
 
         /// <summary>
         /// Masks all characters except the first and last with asterisks.
@@ -74,7 +74,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
                 : string.Concat(path.AsSpan(0, nameStart), masked, path.AsSpan(sep));
         }
 
-        // ── MAC address helper ───────────────────────────────────────────────
+        // -- MAC address helper -----------------------------------------------
 
         /// <summary>
         /// Masks all but the last two octets of a MAC address.
@@ -92,7 +92,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
             return string.Join(":", parts);
         }
 
-        // ── Sections ─────────────────────────────────────────────────────────
+        // -- Sections ---------------------------------------------------------
 
         /// <summary>Log application assembly details.</summary>
         internal static void LogApplicationInfo(StreamWriter writer)

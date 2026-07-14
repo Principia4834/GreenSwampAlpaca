@@ -66,7 +66,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // ── Monitor settings ──────────────────────────────────────────────────
+        // -- Monitor settings --------------------------------------------------
 
         /// <summary>
         /// Returns the current monitor settings from <c>monitor.settings.user.json</c>.
@@ -199,7 +199,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             return Ok(_settingsService.GetMonitorSettings());
         }
 
-        // ── Shared upload validation pipeline (7 checks) ─────────────────────
+        // -- Shared upload validation pipeline (7 checks) ---------------------
 
         /// <summary>
         /// Runs the 7-check upload validation pipeline.
@@ -252,7 +252,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             return (null, StatusCodes.Status200OK, json);
         }
 
-        // ── Server configuration ──────────────────────────────────────────────
+        // -- Server configuration ----------------------------------------------
 
         /// <summary>
         /// Returns the current Alpaca server configuration from <c>appsettings.server.user.json</c>.
@@ -377,7 +377,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             return Ok(_settingsService.GetServerConfig());
         }
 
-        // ── Observatory settings ──────────────────────────────────────────────
+        // -- Observatory settings ----------------------------------------------
 
         /// <summary>
         /// Returns the current observatory physical settings from <c>observatory.settings.json</c>.
@@ -512,7 +512,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             return Ok(_settingsService.GetObservatorySettings());
         }
 
-        // ── Alpaca devices ────────────────────────────────────────────────────
+        // -- Alpaca devices ----------------------------------------------------
 
         /// <summary>
         /// Returns all Alpaca discovery device entries from <c>devices.alpaca.user.json</c>.
@@ -750,7 +750,7 @@ namespace GreenSwamp.Alpaca.Server.Controllers
             return Ok(_settingsService.GetAlpacaDevices());
         }
 
-        // ── Per-device settings ───────────────────────────────────────────────
+        // -- Per-device settings -----------------------------------------------
 
         /// <summary>
         /// Returns the full operational settings for every configured device by enumerating

@@ -55,7 +55,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                 TimeSpan.FromMilliseconds(ThrottleMs));
         }
 
-        // ── Event handler ────────────────────────────────────────────────────
+        // -- Event handler ----------------------------------------------------
 
         private void OnMonitorQueuePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -81,7 +81,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             RecordsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        // ── Public API ───────────────────────────────────────────────────────
+        // -- Public API -------------------------------------------------------
 
         /// <summary>
         /// Returns a snapshot of all current lines in chronological order (oldest first).
@@ -98,7 +98,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             _dirty = true;
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────────
+        // -- Helpers ----------------------------------------------------------
 
         private static string FormatEntry(MonitorEntry entry) =>
             $"{entry.Datetime.ToLocalTime():HH:mm:ss.fff zzz} [{entry.Index:D4}] [{entry.DeviceNumber}] {entry.Device,-12} {entry.Category,-12} {entry.Type,-12} {entry.Method} | {entry.Message}";
