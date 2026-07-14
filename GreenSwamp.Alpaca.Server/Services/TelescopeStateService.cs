@@ -42,22 +42,33 @@ namespace GreenSwamp.Alpaca.Server.Services
 
         public TelescopeStateService()
         {
+            // Infinite period: the next tick is only scheduled after the current
+            // callback finishes (see finally block in OnTimerTick). This prevents
+            // System.Threading.Timer re-entrancy when subscribers take >= 200 ms.
             _updateTimer = new Timer(OnTimerTick, null,
-                TimeSpan.FromMilliseconds(200), TimeSpan.FromMilliseconds(200));
+                TimeSpan.FromMilliseconds(200), Timeout.InfiniteTimeSpan);
         }
 
         private void OnTimerTick(object? state)
         {
-            // Build a fresh snapshot for every registered device first, then notify
-            // subscribers. This ensures GetCurrentState() is always a cheap cache read
-            // regardless of how many subscribers call it.
-            var instances = MountRegistry.GetAllInstances();
-            var next = new Dictionary<int, TelescopeStateModel>(instances.Count);
-            foreach (var dn in instances.Keys)
-                next[dn] = BuildSnapshot(dn);
+            try
+            {
+                // Build a fresh snapshot for every registered device first, then notify
+                // subscribers. This ensures GetCurrentState() is always a cheap cache read
+                // regardless of how many subscribers call it.
+                var instances = MountRegistry.GetAllInstances();
+                var next = new Dictionary<int, TelescopeStateModel>(instances.Count);
+                foreach (var dn in instances.Keys)
+                    next[dn] = BuildSnapshot(dn);
 
-            _cache = next;
-            StateChanged?.Invoke(this, EventArgs.Empty);
+                _cache = next;
+                StateChanged?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                // Reschedule only after the callback completes, guaranteeing no overlap.
+                _updateTimer.Change(TimeSpan.FromMilliseconds(200), Timeout.InfiniteTimeSpan);
+            }
         }
 
         /// <summary>
