@@ -5,6 +5,7 @@
 @implements IDisposable
 @inject FloatingWindowManager WindowManager
 @inject NavigationManager NavigationManager
+@inject TelescopeStateService TelescopeStateService
 
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -61,9 +62,6 @@
         // Create a timer that ticks every 1000 ms (1 second)
         _timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
-        // Subscribe to the event
-        NavigationManager.LocationChanged += LocationChanged;
-
         base.OnInitialized();
     }
 
@@ -79,17 +77,6 @@
         InvokeAsync(() => UpdateDateTime());
     }
 
-
-    void LocationChanged(object sender, LocationChangedEventArgs e)
-    {
-        string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "code";
-    }
-
-    void IDisposable.Dispose()
-    {
-        // Unsubscribe from the event when our component is disposed
-        NavigationManager.LocationChanged -= LocationChanged;
-    }
     public void Dispose()
     {
         _timer?.Dispose();

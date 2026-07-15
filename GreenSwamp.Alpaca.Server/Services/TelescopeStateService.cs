@@ -24,7 +24,7 @@ namespace GreenSwamp.Alpaca.Server.Services
     /// <summary>
     /// Service that provides telescope state snapshots for the Blazor UI.
     /// A background loop snapshots every registered device into an internal cache
-    /// every 200 ms and then fires <see cref="StateChanged"/>. Subscribers call
+    /// every 250 ms and then fires <see cref="StateChanged"/>. Subscribers call
     /// <see cref="GetCurrentState"/> to read the pre-built snapshot — no mount
     /// properties are read by the caller.
     /// The loop uses Task.Delay so each iteration only starts after the previous
@@ -37,37 +37,53 @@ namespace GreenSwamp.Alpaca.Server.Services
         // Keyed by device number. Replaced atomically each tick; never mutated in place.
         private Dictionary<int, TelescopeStateModel> _cache = new();
 
+        private int _activeTabIndex = -1;
+        /// <summary>
+        /// Gets or sets the index of the currently active tab.
+        /// </summary>
+        public int ActiveTabIndex
+        {
+            get => Volatile.Read(ref _activeTabIndex);
+            set => Interlocked.Exchange(ref _activeTabIndex, value);
+        }
+
+
+
         /// <summary>
         /// Fired every ~200 ms after the internal snapshot cache has been refreshed.
         /// </summary>
         public event EventHandler? StateChanged;
+        private readonly ActiveDeviceViewRegistry _activeViews;
 
-        public TelescopeStateService()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TelescopeStateService"/> class and starts the background loop.
+        /// </summary>
+        /// <param name="activeViews"></param>
+        public TelescopeStateService(ActiveDeviceViewRegistry activeViews)
         {
+            _activeViews = activeViews;
             _ = RunLoopAsync(_cts.Token);
         }
 
+        /// <summary>
+        /// Background loop that runs every ~200 ms, snapshots all active devices, and fires <see cref="StateChanged"/>.
+        /// </summary>
+        /// <param name="ct">Cancellation token to stop the loop.</param>
+        /// <returns>A task representing the background loop.</returns>
         private async Task RunLoopAsync(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
-                try
-                {
-                    await Task.Delay(200, ct).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
+                await Task.Delay(250, ct).ConfigureAwait(false);
 
-                if (ct.IsCancellationRequested) break;
+                var active = _activeViews.GetActiveDeviceNumbers(TimeSpan.FromSeconds(10));
 
-                // Build a fresh snapshot for every registered device first, then
-                // notify subscribers. GetCurrentState() is always a cheap cache
-                // read regardless of how many subscribers call it.
-                var instances = MountRegistry.GetAllInstances();
-                var next = new Dictionary<int, TelescopeStateModel>(instances.Count);
-                foreach (var dn in instances.Keys)
+                // optional fallback if nobody is viewing
+                if (active.Count == 0)
+                    continue;
+
+                var next = new Dictionary<int, TelescopeStateModel>(active.Count);
+                foreach (var dn in active)
                     next[dn] = BuildSnapshot(dn);
 
                 _cache = next;
@@ -80,7 +96,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// Returns an empty model when the device is not registered.
         /// This is always a dictionary lookup — no mount properties are read.
         /// </summary>
-        public TelescopeStateModel GetCurrentState(int deviceNumber = 0) =>
+        public TelescopeStateModel GetCurrentState(int deviceNumber) =>
             _cache.TryGetValue(deviceNumber, out var cached) ? cached : new TelescopeStateModel();
 
         /// <summary>
@@ -94,7 +110,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                 var mount = MountRegistry.GetInstance(deviceNumber);
                 if (mount == null) return new TelescopeStateModel();
 
-                return new TelescopeStateModel
+                var xxx = new TelescopeStateModel
                 {
                     Altitude = mount.Altitude,
                     Azimuth = mount.Azimuth,
@@ -157,6 +173,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     MountVersion = mount.MountVersion,
                     Capabilities = mount.Capabilities
                 };
+                return xxx;
             }
             catch (Exception)
             {

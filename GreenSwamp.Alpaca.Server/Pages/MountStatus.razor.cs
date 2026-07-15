@@ -16,6 +16,7 @@
 
 using GreenSwamp.Alpaca.Server.Components;
 using GreenSwamp.Alpaca.Server.Models;
+using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -29,6 +30,11 @@ namespace GreenSwamp.Alpaca.Server.Pages
         public int DeviceNumber { get; set; }
 
         [Inject] private NavigationManager NavManager { get; set; } = default!;
+        [Inject] private ActiveDeviceViewRegistry ActiveViews { get; set; } = default!;
+
+        private readonly string _viewSessionId = Guid.NewGuid().ToString("N");
+        private PeriodicTimer? _heartbeat;
+        private CancellationTokenSource? _hbCts;
 
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
@@ -42,6 +48,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
             StateService.StateChanged += OnStateChanged;
             SettingsService.DeviceSettingsChanged += OnDeviceSettingsChanged;
+            StartHeartbeat();
         }
 
         protected override void OnParametersSet()
@@ -51,8 +58,20 @@ namespace GreenSwamp.Alpaca.Server.Pages
             var keys = GetConfiguredDeviceNumbers();
             var idx = keys.IndexOf(DeviceNumber);
             ActiveTabIndex = idx >= 0 ? idx : 0;
+
+            if (keys.Count > 0 && ActiveTabIndex >= 0 && ActiveTabIndex < keys.Count)
+                ActiveViews.Touch(_viewSessionId, keys[ActiveTabIndex]);
         }
 
+        private void OnDeviceTabChanged(int index)
+        {
+            var keys = GetConfiguredDeviceNumbers();
+            if (index >= 0 && index < keys.Count)
+            {
+                ActiveViews.Touch(_viewSessionId, keys[index]);
+                NavManager.NavigateTo($"/mount-control/{keys[index]}");
+            }
+        }
         private void OnStateChanged(object? sender, EventArgs e) =>
             InvokeAsync(StateHasChanged);
 
@@ -66,17 +85,28 @@ namespace GreenSwamp.Alpaca.Server.Pages
         //{
         //    FloatingWindowManager.Open("Mount Status Demo", "Hello World!");
         //}
-        private void OnDeviceTabChanged(int index)
+        private void StartHeartbeat()
         {
-            var keys = GetConfiguredDeviceNumbers();
-            if (index >= 0 && index < keys.Count)
-                NavManager.NavigateTo($"/mount-control/{keys[index]}");
+            _hbCts = new CancellationTokenSource();
+            _heartbeat = new PeriodicTimer(TimeSpan.FromSeconds(2));
+            _ = Task.Run(async () =>
+            {
+                while (await _heartbeat.WaitForNextTickAsync(_hbCts.Token))
+                {
+                    var keys = GetConfiguredDeviceNumbers();
+                    if (ActiveTabIndex >= 0 && ActiveTabIndex < keys.Count)
+                        ActiveViews.Touch(_viewSessionId, keys[ActiveTabIndex]);
+                }
+            }, _hbCts.Token);
         }
 
         public void Dispose()
         {
             StateService.StateChanged -= OnStateChanged;
             SettingsService.DeviceSettingsChanged -= OnDeviceSettingsChanged;
+            _hbCts?.Cancel();
+            _heartbeat?.Dispose();
+            ActiveViews.Remove(_viewSessionId);
         }
 
         private async Task OpenExportDialog()
