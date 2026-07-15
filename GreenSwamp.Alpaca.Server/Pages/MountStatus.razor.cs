@@ -24,6 +24,9 @@ using System.Globalization;
 
 namespace GreenSwamp.Alpaca.Server.Pages
 {
+    /// <summary>
+    /// Blazor page that displays the status of a mount device, including its current state, settings, and other relevant information.
+    /// </summary>
     public partial class MountStatus
     {
         [Parameter]
@@ -63,13 +66,17 @@ namespace GreenSwamp.Alpaca.Server.Pages
                 ActiveViews.Touch(_viewSessionId, keys[ActiveTabIndex]);
         }
 
+        /// <summary>
+        /// Handles the event when the active device tab is changed. Updates the active view and navigates to the corresponding mount status page.
+        /// </summary>
+        /// <param name="index">The index of the newly selected tab.</param>
         private void OnDeviceTabChanged(int index)
         {
             var keys = GetConfiguredDeviceNumbers();
             if (index >= 0 && index < keys.Count)
             {
                 ActiveViews.Touch(_viewSessionId, keys[index]);
-                NavManager.NavigateTo($"/mount-control/{keys[index]}");
+                NavManager.NavigateTo($"/mount-status/{keys[index]}");
             }
         }
         private void OnStateChanged(object? sender, EventArgs e) =>
