@@ -28,6 +28,8 @@ namespace GreenSwamp.Alpaca.Server.Pages
         [Parameter]
         public int DeviceNumber { get; set; }
 
+        [Inject] private NavigationManager NavManager { get; set; } = default!;
+
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
         private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
@@ -64,6 +66,12 @@ namespace GreenSwamp.Alpaca.Server.Pages
         //{
         //    FloatingWindowManager.Open("Mount Status Demo", "Hello World!");
         //}
+        private void OnDeviceTabChanged(int index)
+        {
+            var keys = GetConfiguredDeviceNumbers();
+            if (index >= 0 && index < keys.Count)
+                NavManager.NavigateTo($"/mount-control/{keys[index]}");
+        }
 
         public void Dispose()
         {

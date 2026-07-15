@@ -4,6 +4,7 @@
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject FloatingWindowManager WindowManager
+@inject NavigationManager NavigationManager
 
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -57,8 +58,13 @@
         // Update immediately on load
         UpdateDateTime();
 
-        // Create a timer that ticks every 200 ms
-        _timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(200));
+        // Create a timer that ticks every 1000 ms (1 second)
+        _timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+
+        // Subscribe to the event
+        NavigationManager.LocationChanged += LocationChanged;
+
+        base.OnInitialized();
     }
 
     private void UpdateDateTime()
@@ -73,6 +79,17 @@
         InvokeAsync(() => UpdateDateTime());
     }
 
+
+    void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        string navigationMethod = e.IsNavigationIntercepted ? "HTML" : "code";
+    }
+
+    void IDisposable.Dispose()
+    {
+        // Unsubscribe from the event when our component is disposed
+        NavigationManager.LocationChanged -= LocationChanged;
+    }
     public void Dispose()
     {
         _timer?.Dispose();

@@ -52,7 +52,9 @@
 }
 else
 {
-    <MudTabs Rounded="true" Elevation="1" @bind-ActivePanelIndex="ActiveTabIndex" Class="mb-4 gs-tabs-no-transform">
+    <MudTabs Rounded="true" Elevation="1" Class="mb-4 gs-tabs-no-transform"
+             ActivePanelIndex=@ActiveTabIndex"
+             ActivePanelIndexChanged="OnDeviceTabChanged">
         @foreach (var dn in GetConfiguredDeviceNumbers())
         {
             <MudTabPanel Text="@TabLabel(dn)">
