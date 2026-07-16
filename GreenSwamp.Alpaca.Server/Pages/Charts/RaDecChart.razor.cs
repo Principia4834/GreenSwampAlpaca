@@ -1,4 +1,20 @@
-﻿using ApexCharts;
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+using ApexCharts;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.AspNetCore.Components;
@@ -7,14 +23,15 @@ using Microsoft.JSInterop;
 
 namespace GreenSwamp.Alpaca.Server.Pages.Charts
 {
+    // RaDecChart: uses the same C# list-buffer + System.Threading.Timer pattern as PulseChart.
+    // The wrapper's UpdateSeriesAsync / AppendDataAsync are the only chart-update paths.
+    // No raw IJSRuntime calls on the data hot path — those violate the prerender contract.
     public partial class RaDecChart
     {
         [Parameter] public int DeviceNumber { get; set; }
 
         // -- State --------------------------------------------------------------
         private ChartSettings _settings = new();
-        private readonly List<ChartPointDto> _axis1Data = [];
-        private readonly List<ChartPointDto> _axis2Data = [];
         private ApexChart<ChartPointDto>? _chart;
         private ApexChartOptions<ChartPointDto> _chartOptions = new();
         private HubConnection? _hub;
@@ -22,6 +39,20 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private bool _ready;
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
         private bool _disposed;
+
+        // C# list buffers — the single source of truth for the chart wrapper.
+        // Points are added directly here from SignalR handlers; the 1-second timer
+        // calls UpdateSeriesAsync(animate:true) which, combined with Easing.Linear and
+        // DynamicAnimation.Speed=1000, produces the smooth left-scroll in Realtime mode.
+        private readonly List<ChartPointDto> _axis1Data = [];
+        private readonly List<ChartPointDto> _axis2Data = [];
+
+        // _chartKey is bumped to force <ApexChart> recreation when options change
+        // (mode / scale / window). Matches the @key pattern used by PulseChart.
+        private string _chartKey = "radec-init";
+
+        // Coalesces incoming points into one UpdateSeriesAsync call per second,
+        // matching the PulseChart FlushChartUpdate pattern.
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
 
@@ -43,8 +74,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _hub.On<IReadOnlyList<ChartPointDto>, IReadOnlyList<ChartPointDto>>("ReceiveRaDecHistory", OnHistory);
 
             _hub.Reconnecting += _ => { _hubState = HubConnectionState.Reconnecting; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-            _hub.Reconnected += _ => { _hubState = HubConnectionState.Connected; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-            _hub.Closed += _ => { _hubState = HubConnectionState.Disconnected; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
+            _hub.Reconnected  += _ => { _hubState = HubConnectionState.Connected;    InvokeAsync(StateHasChanged); return Task.CompletedTask; };
+            _hub.Closed       += _ => { _hubState = HubConnectionState.Disconnected; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
 
             await _hub.StartAsync();
             _hubState = _hub.State;
@@ -58,7 +89,15 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             }
 
             _ready = true;
-            _refreshTimer = new System.Threading.Timer(_ => FlushChartUpdate(), null,
+        }
+
+        // Timer is started here — OnAfterRender is the first point guaranteed to be
+        // post-prerender, matching the official RealTime.razor example pattern exactly.
+        protected override void OnAfterRender(bool firstRender)
+        {
+            if (!firstRender || _refreshTimer != null) return;
+            _refreshTimer = new System.Threading.Timer(
+                _ => FlushChartUpdate(), null,
                 TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
@@ -67,36 +106,44 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private void OnAxis1Point(ChartPointDto point)
         {
             if (_disposed) return;
-            InvokeAsync(async () =>
-            {
-                TrimBuffer(_axis1Data);
-                _axis1Data.Add(point);
-                if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
-                if (_settings.ShowAxis1) _pendingChartUpdate = true;
-            });
+            //InvokeAsync(async () =>
+            //{
+            //    if (_disposed) return;
+            //    AddToBuffer(_axis1Data, point, axisIndex: 0);
+            //    if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
+            //    _pendingChartUpdate = true;
+            //});
         }
 
         private void OnAxis2Point(ChartPointDto point)
         {
             if (_disposed) return;
-            InvokeAsync(async () =>
-            {
-                TrimBuffer(_axis2Data);
-                _axis2Data.Add(point);
-                if (_loggingActive) await Logger.LogRaDecPointAsync(2, point);
-                if (_settings.ShowAxis2) _pendingChartUpdate = true;
-            });
+            //InvokeAsync(async () =>
+            //{
+            //    if (_disposed) return;
+            //    AddToBuffer(_axis2Data, point, axisIndex: 1);
+            //    if (_loggingActive) await Logger.LogRaDecPointAsync(2, point);
+            //    _pendingChartUpdate = true;
+            //});
         }
 
         private void OnHistory(IReadOnlyList<ChartPointDto> axis1, IReadOnlyList<ChartPointDto> axis2)
         {
             if (_disposed) return;
+            // Bulk-load into C# lists — pure in-memory, no JSInterop, safe during prerender.
             InvokeAsync(async () =>
             {
+                if (_disposed) return;
+                var cap = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
+
                 _axis1Data.Clear();
-                _axis1Data.AddRange(axis1.TakeLast(_settings.MaxPoints));
+                foreach (var p in axis1.TakeLast(cap))
+                    _axis1Data.Add(p);
+
                 _axis2Data.Clear();
-                _axis2Data.AddRange(axis2.TakeLast(_settings.MaxPoints));
+                foreach (var p in axis2.TakeLast(cap))
+                    _axis2Data.Add(p);
+
                 if (_chart is not null)
                 {
                     try { await _chart.UpdateSeriesAsync(animate: false); }
@@ -106,69 +153,147 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             });
         }
 
+        // -- Realtime flush (1-second timer) ------------------------------------
+
+        /// <summary>
+        /// Called by the 1-second timer. Calls UpdateSeriesAsync once per tick.
+        /// In Realtime mode animate:true is essential — combined with Easing.Linear
+        /// and DynamicAnimation.Speed=1000, the wrapper animates from the old series
+        /// state to the new one over exactly 1 second, producing smooth left-scroll.
+        /// In Historical mode animate:false gives instant redraw after a full load.
+        /// </summary>
+        private void FlushChartUpdate()
+        {
+            if (!_pendingChartUpdate || _disposed) return;
+            _pendingChartUpdate = false;
+            //InvokeAsync(async () =>
+            //{
+            //    if (_chart is null || _disposed) return;
+            //    var animate = _settings.DisplayMode == "Realtime";
+            //    try { await _chart.UpdateSeriesAsync(animate); }
+            //    catch (TaskCanceledException) { }
+            //});
+        }
+
         // -- Toolbar handlers ---------------------------------------------------
 
+        /// <summary>Switches between Realtime and Historical display modes.</summary>
+        private async Task OnModeChangedAsync(string? newMode)
+        {
+            if (newMode is null || newMode == _settings.DisplayMode) return;
+            _settings.DisplayMode = newMode;
+            await SettingsService.SaveChartSettingsAsync(_settings);
+            BuildChartOptions();
+            _chartKey = $"radec-{_settings.DisplayMode}-{_settings.RealtimeWindowSeconds}";
+            StateHasChanged();
+        }
+
+        /// <summary>Changes the realtime rolling-window duration (10 / 30 / 120 seconds).</summary>
+        private async Task OnWindowChangedAsync(int seconds)
+        {
+            _settings.RealtimeWindowSeconds = seconds;
+            await SettingsService.SaveChartSettingsAsync(_settings);
+            BuildChartOptions();
+            _chartKey = $"radec-{_settings.DisplayMode}-{seconds}s";
+        }
+
+        /// <summary>Changes the per-series buffer cap (5 000 / 10 000 / 20 000 points).</summary>
+        private async Task OnMaxPointsChangedAsync(int newMax)
+        {
+            _settings.RaDecMaxPoints = newMax;
+            await SettingsService.SaveChartSettingsAsync(_settings);
+            // Trim existing buffers to the new cap immediately.
+            TrimBuffer(_axis1Data);
+            TrimBuffer(_axis2Data);
+        }
+
+        /// <summary>Changes the Y-axis scale (Steps / Degrees / Arc-seconds).</summary>
         private async Task OnScaleChangedAsync(string scale)
         {
             _settings.RaDecScale = scale;
             await SettingsService.SaveChartSettingsAsync(_settings);
+            // Scale change invalidates buffered values — re-request history to refill in new unit.
+            _axis1Data.Clear();
+            _axis2Data.Clear();
             BuildChartOptions();
-            // @key="@_settings.RaDecScale" on <ApexChart> causes Blazor to recreate the
-            // component with the new options, including the correct y-axis title.
-            StateHasChanged();
+            _chartKey = $"radec-{_settings.RaDecScale}";
+            try { await _hub!.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber); }
+            catch (TaskCanceledException) { }
         }
 
         private async Task OnSeriesToggleAsync(bool value, int axis)
         {
             if (axis == 1) _settings.ShowAxis1 = value;
-            else _settings.ShowAxis2 = value;
+            else           _settings.ShowAxis2 = value;
             await SettingsService.SaveChartSettingsAsync(_settings);
-            StateHasChanged();
+            if (_chart is not null)
+                await _chart.ToggleSeriesAsync(axis == 1 ? "Axis 1" : "Axis 2");
         }
 
         private async Task ToggleLoggingAsync()
         {
-            if (_loggingActive)
-            {
-                await Logger.StopRaDecLoggingAsync();
-                _loggingActive = false;
-            }
-            else
-            {
-                await Logger.StartRaDecLoggingAsync();
-                _loggingActive = true;
-            }
+            if (_loggingActive) { await Logger.StopRaDecLoggingAsync();  _loggingActive = false; }
+            else                { await Logger.StartRaDecLoggingAsync(); _loggingActive = true;  }
         }
 
-        private async Task ClearChartAsync()
+        /// <summary>Manual refresh — re-requests history from the server.</summary>
+        private async Task RefreshHistoricalAsync()
         {
-            _axis1Data.Clear();
-            _axis2Data.Clear();
-            if (_chart is not null)
-                await _chart.UpdateSeriesAsync(animate: false);
+            try { await _hub!.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber); }
+            catch (TaskCanceledException) { }
         }
 
         private async Task ExportPngAsync()
         {
             if (_chart is null) return;
-            var imgUri = await _chart.GetDataUriAsync(new DataUriOptions());
-            await JS.InvokeVoidAsync("chartWindowInterop.downloadDataUri", imgUri, "radec-chart.png");
+            try
+            {
+                var imgUri = await _chart.GetDataUriAsync(new DataUriOptions());
+                var filename = $"radec-{DateTime.Now:yyyyMMdd-HHmmss}.png";
+                await JS.InvokeVoidAsync("chartWindowInterop.downloadDataUri", imgUri, filename);
+            }
+            catch (TaskCanceledException) { }
         }
 
         private async Task ExportCsvAsync()
         {
-            await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", "radec-chart");
+            var filename = $"radec-{DateTime.Now:yyyyMMdd-HHmmss}.csv";
+            try { await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", filename); }
+            catch (TaskCanceledException) { }
         }
 
-        // -- Helpers ------------------------------------------------------------
+        // -- Chart options builder ----------------------------------------------
 
         private void BuildChartOptions()
         {
             var yTitle = _settings.RaDecScale switch
             {
-                "Degrees" => "Degrees",
+                "Degrees"    => "Degrees",
                 "ArcSeconds" => "Arc-seconds",
-                _ => "Steps"
+                _            => "Steps"
+            };
+
+            var yFormatter = _settings.RaDecScale switch
+            {
+                "Degrees"    => "function(val) { return parseFloat(val).toFixed(3); }",
+                "ArcSeconds" => "function(val) { return parseFloat(val).toFixed(1); }",
+                _            => "function(val) { return Math.round(val).toString(); }"
+            };
+
+            if (_settings.DisplayMode == "Realtime")
+                BuildRealtimeOptions(yTitle, yFormatter);
+            else
+                BuildHistoricalOptions(yTitle, yFormatter);
+        }
+
+        private void BuildRealtimeOptions(string yTitle, string yFormatter)
+        {
+            var windowMs = _settings.RealtimeWindowSeconds * 1000;
+            var tickAmount = _settings.RealtimeWindowSeconds switch
+            {
+                10  => 10,
+                120 => 12,
+                _   => 6    // 30 s default
             };
 
             _chartOptions = new ApexChartOptions<ChartPointDto>
@@ -176,99 +301,134 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 Chart = new Chart
                 {
                     Background = "#1e1e1e",
-                    ForeColor = "rgba(255,255,255,0.87)",
-                    Animations = new Animations { Enabled = false },
-                    Toolbar = new Toolbar
+                    ForeColor  = "rgba(255,255,255,0.87)",
+                    Animations = new Animations
                     {
-                        Show = true,
-                        AutoSelected = AutoSelected.Zoom,
-                        Tools = new Tools
-                        {
-                            Zoom = true,
-                            Zoomin = true,
-                            Zoomout = true,
-                            Pan = true,
-                            Reset = true,
-                            Download = false  // export handled by the Blazor toolbar MudMenu
-                        }
+                        Enabled          = true,
+                        Easing           = Easing.Linear,
+                        DynamicAnimation = new DynamicAnimation { Speed = 1000 }
                     },
-                    Zoom = new Zoom { Enabled = true }
+                    Toolbar = new Toolbar { Show = false },
+                    Zoom    = new Zoom   { Enabled = false }
                 },
-                Theme = new ApexCharts.Theme { Mode = Mode.Dark },
-                Xaxis = new XAxis
+                Theme  = new ApexCharts.Theme { Mode = Mode.Dark },
+                Xaxis  = new XAxis
                 {
-                    Type = XAxisType.Datetime,
-                    Range = 30_000,
-                    Labels = new XAxisLabels
+                    Type       = XAxisType.Datetime,
+                    Range      = windowMs,
+                    TickAmount = tickAmount,
+                    Labels     = new XAxisLabels
                     {
-                        DatetimeUTC = true,
-                        Show = true,
+                        DatetimeUTC           = true,
+                        Show                  = true,
                         HideOverlappingLabels = false,
-                        Format = "HH:mm:ss",
+                        Format                = "HH:mm:ss",
                         Style = new AxisLabelStyle { Colors = "rgba(255,255,255,0.87)" }
                     }
                 },
-
                 Yaxis =
                 [
                     new YAxis
                     {
-                        Title = new AxisTitle { Text = yTitle },
-                        Labels = new YAxisLabels
-                        {
-                            Formatter = _settings.RaDecScale switch
-                            {
-                                "Degrees"    => "function(val) { return parseFloat(val).toFixed(3); }",
-                                "ArcSeconds" => "function(val) { return parseFloat(val).toFixed(1); }",
-                                _            => "function(val) { return Math.round(val).toString(); }"
-                            }
-                        }
+                        Title  = new AxisTitle { Text = yTitle },
+                        Labels = new YAxisLabels { Formatter = yFormatter }
                     }
                 ],
                 Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 1] },
                 Legend = new Legend { Show = true },
-                Grid = new Grid { BorderColor = "rgba(255,255,255,0.12)" }
+                Grid   = new Grid   { BorderColor = "rgba(255,255,255,0.12)" }
             };
         }
 
-        /// <summary>
-        /// Converts a raw step value from the mount to the user-selected unit.
-        /// axisIndex: 0 = RA (Axis 1), 1 = Dec (Axis 2).
-        /// </summary>
-        private double GetValue(ChartPointDto p, int axisIndex)
+        private void BuildHistoricalOptions(string yTitle, string yFormatter)
         {
-            if (_settings.RaDecScale == "Steps") return p.Value;
+            _chartOptions = new ApexChartOptions<ChartPointDto>
+            {
+                Chart = new Chart
+                {
+                    Background = "#1e1e1e",
+                    ForeColor  = "rgba(255,255,255,0.87)",
+                    Animations = new Animations { Enabled = false },
+                    Toolbar    = new Toolbar
+                    {
+                        Show         = true,
+                        AutoSelected = AutoSelected.Zoom,
+                        Tools        = new Tools
+                        {
+                            Zoom     = true,
+                            Zoomin   = true,
+                            Zoomout  = true,
+                            Pan      = true,
+                            Reset    = true,
+                            Download = false   // export handled by Blazor MudMenu
+                        }
+                    },
+                    Zoom = new Zoom { Enabled = true }
+                },
+                Theme  = new ApexCharts.Theme { Mode = Mode.Dark },
+                Xaxis  = new XAxis
+                {
+                    Type   = XAxisType.Datetime,
+                    Labels = new XAxisLabels
+                    {
+                        DatetimeUTC           = true,
+                        Show                  = true,
+                        HideOverlappingLabels = true,
+                        Format                = "HH:mm:ss",
+                        Style = new AxisLabelStyle { Colors = "rgba(255,255,255,0.87)" }
+                    }
+                },
+                Yaxis =
+                [
+                    new YAxis
+                    {
+                        Title  = new AxisTitle { Text = yTitle },
+                        Labels = new YAxisLabels { Formatter = yFormatter }
+                    }
+                ],
+                Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 1] },
+                Legend = new Legend { Show = true },
+                Grid   = new Grid   { BorderColor = "rgba(255,255,255,0.12)" }
+            };
+        }
+
+        // -- Value conversion & buffer helpers ----------------------------------
+
+        /// <summary>Converts a raw point to a new ChartPointDto with the scaled Y value.</summary>
+        private ChartPointDto ConvertPoint(ChartPointDto p, int axisIndex)
+            => new(p.TimestampMs, ScaleValue(p.Value, axisIndex));
+
+        /// <summary>Scales a raw step value to the user-selected unit.</summary>
+        private double ScaleValue(double value, int axisIndex)
+        {
+            if (_settings.RaDecScale == "Steps") return value;
             var stepsPerRev = StateService.GetCurrentState(DeviceNumber).StepsPerRevolution;
-            var spr = stepsPerRev is { Length: > 0 } ? stepsPerRev[Math.Min(axisIndex, stepsPerRev.Length - 1)] : 0L;
-            if (spr <= 0) return p.Value;  // guard: mount not yet initialised, show raw steps
+            var spr = stepsPerRev is { Length: > 0 }
+                ? stepsPerRev[Math.Min(axisIndex, stepsPerRev.Length - 1)]
+                : 0L;
+            if (spr <= 0) return value;
             return _settings.RaDecScale switch
             {
-                "Degrees" => p.Value * 360.0 / spr,
-                "ArcSeconds" => p.Value * 360.0 * 3600.0 / spr,
-                _ => p.Value
+                "Degrees"    => value * 360.0 / spr,
+                "ArcSeconds" => value * 360.0 * 3600.0 / spr,
+                _            => value
             };
         }
 
-        private void TrimBuffer(List<ChartPointDto> list)
+        // GetValue kept for the ApexPointSeries YValue lambda in the markup.
+        private double GetValue(ChartPointDto p, int axisIndex) => ScaleValue(p.Value, axisIndex);
+
+        private void AddToBuffer(List<ChartPointDto> buffer, ChartPointDto point, int axisIndex)
         {
-            var max = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-            if (list.Count >= max) list.RemoveAt(0);
+            var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
+            if (buffer.Count >= max) buffer.RemoveAt(0);
+            buffer.Add(ConvertPoint(point, axisIndex));
         }
 
-        /// <summary>Flushed by the 1-second timer; calls UpdateSeriesAsync once per tick if data arrived.</summary>
-        private void FlushChartUpdate()
+        private void TrimBuffer(List<ChartPointDto> buffer)
         {
-            if (!_pendingChartUpdate || _disposed) return;
-            _pendingChartUpdate = false;
-            InvokeAsync(async () =>
-            {
-                if (_chart is null || _disposed) return;
-                try
-                {
-                    await _chart.UpdateSeriesAsync(animate: false);
-                }
-                catch (TaskCanceledException) { }
-            });
+            var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
+            while (buffer.Count > max) buffer.RemoveAt(0);
         }
 
         // -- Dispose ------------------------------------------------------------

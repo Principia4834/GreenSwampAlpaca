@@ -110,7 +110,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                 var mount = MountRegistry.GetInstance(deviceNumber);
                 if (mount == null) return new TelescopeStateModel();
 
-                var xxx = new TelescopeStateModel
+                return new TelescopeStateModel
                 {
                     Altitude = mount.Altitude,
                     Azimuth = mount.Azimuth,
@@ -173,7 +173,6 @@ namespace GreenSwamp.Alpaca.Server.Services
                     MountVersion = mount.MountVersion,
                     Capabilities = mount.Capabilities
                 };
-                return xxx;
             }
             catch (Exception)
             {

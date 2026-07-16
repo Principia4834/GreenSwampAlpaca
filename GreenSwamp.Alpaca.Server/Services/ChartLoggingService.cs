@@ -20,16 +20,9 @@ using GreenSwamp.Alpaca.Shared;
 namespace GreenSwamp.Alpaca.Server.Services
 {
     /// <summary>
-    /// Writes chart data points to disk in the legacy GSChartingLog format so the files
-    /// are compatible with the same 7-day rotation that <see cref="MonitorQueue"/> manages.
-    ///
-    /// Log format per line:
-    ///   <c>yyyy-MM-dd HH:mm:ss.fff|<chartType>|<axis>|<value></c>   — for RA/Dec points
-    ///   <c>yyyy-MM-dd HH:mm:ss.fff|Pulse|<axis>|<duration>|<rate>|<rejected></c>   — for pulse points
-    ///
-    /// Logging is opt-in per chart window; call <see cref="StartLoggingAsync"/> /
-    /// <see cref="StopLoggingAsync"/> from the chart page based on user preference.
+    /// A service for logging chart data (RA/Dec and pulse points) to timestamped text files.
     /// </summary>
+
     public sealed class ChartLoggingService
     {
         private static readonly SemaphoreSlim FileLock = new(1, 1);

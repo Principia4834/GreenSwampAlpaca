@@ -1,4 +1,20 @@
-﻿// gsChartBuffer.js
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+// gsChartBuffer.js
 // Browser-local data buffer for the RA/Dec and Pulse chart windows.
 //
 // Architecture: Option A revised (JS timer)
@@ -95,6 +111,19 @@ window.gsChartBuffer = (() => {
             if (!buf) return;
             buf.push({ x, y });
             if (buf.length > s.maxPoints) buf.shift();
+        },
+
+        // addBulk(chartType, seriesKey, points)
+        // Loads an array of {x, y} objects into the buffer in a single JSInterop call.
+        // Used by OnHistory to avoid thousands of per-point round-trips.
+        // Trims to maxPoints after inserting (keeps the newest points).
+        addBulk: (chartType, seriesKey, points) => {
+            const s = _state[chartType];
+            if (!s) return;
+            const buf = s.series[seriesKey];
+            if (!buf) return;
+            for (const p of points) buf.push({ x: p.x, y: p.y });
+            if (buf.length > s.maxPoints) buf.splice(0, buf.length - s.maxPoints);
         },
 
         // setRealtimeActive(chartType, active)

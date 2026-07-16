@@ -19,8 +19,8 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-                <b style="color:var(--gs-accent-500);">RA / Dec</b> Position &mdash; Device @DeviceNumber
-            </MudText>
+            <b style="color:var(--gs-accent-500);">RA / Dec</b> Position &mdash; Device @DeviceNumber
+        </MudText>
 
         <MudSpacer />
 
@@ -29,6 +29,37 @@
             <MudChip T="string" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="@Icons.Material.Filled.SignalWifiOff">
                 @(_hubState == HubConnectionState.Reconnecting ? "Reconnecting…" : "Disconnected")
             </MudChip>
+        }
+
+        @* Mode selector — Realtime / Historical *@
+        <MudToggleGroup T="string" Value="@_settings.DisplayMode"
+                        ValueChanged="@OnModeChangedAsync"
+                        SelectionMode="SelectionMode.SingleSelection"
+                        Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Primary" Outlined="true">
+            <MudToggleItem Value="@("Realtime")">Realtime</MudToggleItem>
+            <MudToggleItem Value="@("Historical")">Historical</MudToggleItem>
+        </MudToggleGroup>
+
+        @* Window duration — only visible in Realtime mode *@
+        @if (_settings.DisplayMode == "Realtime")
+        {
+            <MudSelect T="int" Label="Window" Value="@_settings.RealtimeWindowSeconds"
+                       ValueChanged="@OnWindowChangedAsync"
+                       Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Style="min-width:100px;">
+                <MudSelectItem Value="10">10 s</MudSelectItem>
+                <MudSelectItem Value="30">30 s</MudSelectItem>
+                <MudSelectItem Value="120">120 s</MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="int" Label="Max pts" Value="@_settings.RaDecMaxPoints"
+                       ValueChanged="@OnMaxPointsChangedAsync"
+                       Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Style="min-width:110px;">
+                <MudSelectItem Value="5000">5 000</MudSelectItem>
+                <MudSelectItem Value="10000">10 000</MudSelectItem>
+                <MudSelectItem Value="20000">20 000</MudSelectItem>
+            </MudSelect>
         }
 
         <MudSelect T="string" Label="Scale" Value="@_settings.RaDecScale"
@@ -48,6 +79,15 @@
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 2))"
                    Color="MudBlazor.Color.Info" />
 
+        @* Manual refresh — only visible in Historical mode *@
+        @if (_settings.DisplayMode == "Historical")
+        {
+            <MudTooltip Text="Refresh chart" Placement="Placement.Left">
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                               OnClick="RefreshHistoricalAsync" Size="MudBlazor.Size.Small" />
+            </MudTooltip>
+        }
+
         <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")" Placement="Placement.Left">
             <MudIconButton Icon="@(_loggingActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.FiberManualRecord)"
                            Color="@(_loggingActive ? MudBlazor.Color.Error : MudBlazor.Color.Default)"
@@ -61,14 +101,9 @@
                      TransformOrigin="Origin.TopRight"
                      Dense="true"
                      AriaLabel="Export chart">
-                <MudMenuItem Icon="@Icons.Material.Filled.Image" OnClick="ExportPngAsync">Export PNG</MudMenuItem>
-                <MudMenuItem Icon="@Icons.Material.Filled.TableChart" OnClick="ExportCsvAsync">Export CSV</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Image"       OnClick="ExportPngAsync">Export PNG</MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.TableChart"  OnClick="ExportCsvAsync">Export CSV</MudMenuItem>
             </MudMenu>
-        </MudTooltip>
-
-        <MudTooltip Text="Clear chart" Placement="Placement.Left">
-            <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep"
-                           OnClick="ClearChartAsync" Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
     </MudStack>
@@ -77,37 +112,37 @@
     <div style="flex:1;min-height:0;">
         <ErrorBoundary>
             <ChildContent>
-        @if (_axis1Data.Count > 0 || _axis2Data.Count > 0 || _ready)
+        @if (_ready)
         {
+            @* _chartKey is bumped whenever options change (mode/scale/window) to force
+               a clean component rebuild — matching the @key pattern used by PulseChart. *@
             <ApexChart TItem="ChartPointDto"
-                       @key="@_settings.RaDecScale"
+                       @key="@_chartKey"
                        Title=""
                        Options="@_chartOptions"
                        @ref="_chart"
                        Height="@("100%")"
                        Width="@("100%")">
 
-                @if (_settings.ShowAxis1)
-                {
-                    <ApexPointSeries TItem="ChartPointDto"
-                                     Items="@_axis1Data"
-                                     Name="Axis 1"
-                                     SeriesType="SeriesType.Line"
-                                     XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)GetValue(p, 0))"
-                                     Color="#b71c1c" />
-                }
+                @* Items bound to the C# list buffers (raw points; YValue lambda scales).
+                   The 1-second timer calls UpdateSeriesAsync(animate:true) in Realtime mode.
+                   Easing.Linear + DynamicAnimation.Speed=1000 in the chart options produces
+                   the smooth left-scroll. Historical mode uses UpdateSeriesAsync(animate:false). *@
+                <ApexPointSeries TItem="ChartPointDto"
+                                 Items="@_axis1Data"
+                                 Name="Axis 1"
+                                 SeriesType="SeriesType.Line"
+                                 XValue="@(p => p.TimestampMs)"
+                                 YValue="@(p => (decimal)GetValue(p, axisIndex: 0))"
+                                 Color="#b71c1c" />
 
-                @if (_settings.ShowAxis2)
-                {
-                    <ApexPointSeries TItem="ChartPointDto"
-                                     Items="@_axis2Data"
-                                     Name="Axis 2"
-                                     SeriesType="SeriesType.Line"
-                                     XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)GetValue(p, 1))"
-                                     Color="#2196f3" />
-                }
+                <ApexPointSeries TItem="ChartPointDto"
+                                 Items="@_axis2Data"
+                                 Name="Axis 2"
+                                 SeriesType="SeriesType.Line"
+                                 XValue="@(p => p.TimestampMs)"
+                                 YValue="@(p => (decimal)GetValue(p, axisIndex: 1))"
+                                 Color="#2196f3" />
 
             </ApexChart>
         }

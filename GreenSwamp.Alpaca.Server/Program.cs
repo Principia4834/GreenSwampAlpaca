@@ -243,6 +243,9 @@ namespace GreenSwamp.Alpaca.Server
 
             #region Finish Building and Start server
 
+            // Register ActiveDeviceViewRegistry as singleton for DI injection
+            builder.Services.AddSingleton<ActiveDeviceViewRegistry>();
+
             // Add Text To Speech browser service
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserTtsService>();
 
