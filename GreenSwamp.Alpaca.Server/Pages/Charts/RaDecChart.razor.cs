@@ -32,20 +32,11 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         // -- State --------------------------------------------------------------
         private ChartSettings _settings = new();
-        private ApexChart<ChartPointDto>? _chart;
-        private ApexChartOptions<ChartPointDto> _chartOptions = new();
         private HubConnection? _hub;
         private bool _loggingActive;
         private bool _ready;
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
         private bool _disposed;
-
-        // C# list buffers — the single source of truth for the chart wrapper.
-        // Points are added directly here from SignalR handlers; the 1-second timer
-        // calls UpdateSeriesAsync(animate:true) which, combined with Easing.Linear and
-        // DynamicAnimation.Speed=1000, produces the smooth left-scroll in Realtime mode.
-        private readonly List<ChartPointDto> _axis1Data = [];
-        private readonly List<ChartPointDto> _axis2Data = [];
 
         // _chartKey is bumped to force <ApexChart> recreation when options change
         // (mode / scale / window). Matches the @key pattern used by PulseChart.
@@ -136,19 +127,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 if (_disposed) return;
                 var cap = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
 
-                _axis1Data.Clear();
-                foreach (var p in axis1.TakeLast(cap))
-                    _axis1Data.Add(p);
-
-                _axis2Data.Clear();
-                foreach (var p in axis2.TakeLast(cap))
-                    _axis2Data.Add(p);
-
-                if (_chart is not null)
-                {
-                    try { await _chart.UpdateSeriesAsync(animate: false); }
-                    catch (TaskCanceledException) { }
-                }
                 StateHasChanged();
             });
         }
@@ -203,8 +181,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _settings.RaDecMaxPoints = newMax;
             await SettingsService.SaveChartSettingsAsync(_settings);
             // Trim existing buffers to the new cap immediately.
-            TrimBuffer(_axis1Data);
-            TrimBuffer(_axis2Data);
         }
 
         /// <summary>Changes the Y-axis scale (Steps / Degrees / Arc-seconds).</summary>
@@ -213,8 +189,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _settings.RaDecScale = scale;
             await SettingsService.SaveChartSettingsAsync(_settings);
             // Scale change invalidates buffered values — re-request history to refill in new unit.
-            _axis1Data.Clear();
-            _axis2Data.Clear();
             BuildChartOptions();
             _chartKey = $"radec-{_settings.RaDecScale}";
             try { await _hub!.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber); }
@@ -226,8 +200,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             if (axis == 1) _settings.ShowAxis1 = value;
             else           _settings.ShowAxis2 = value;
             await SettingsService.SaveChartSettingsAsync(_settings);
-            if (_chart is not null)
-                await _chart.ToggleSeriesAsync(axis == 1 ? "Axis 1" : "Axis 2");
         }
 
         private async Task ToggleLoggingAsync()
@@ -245,14 +217,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         private async Task ExportPngAsync()
         {
-            if (_chart is null) return;
-            try
-            {
-                var imgUri = await _chart.GetDataUriAsync(new DataUriOptions());
-                var filename = $"radec-{DateTime.Now:yyyyMMdd-HHmmss}.png";
-                await JS.InvokeVoidAsync("chartWindowInterop.downloadDataUri", imgUri, filename);
-            }
-            catch (TaskCanceledException) { }
         }
 
         private async Task ExportCsvAsync()
@@ -296,100 +260,10 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 _   => 6    // 30 s default
             };
 
-            _chartOptions = new ApexChartOptions<ChartPointDto>
-            {
-                Chart = new Chart
-                {
-                    Background = "#1e1e1e",
-                    ForeColor  = "rgba(255,255,255,0.87)",
-                    Animations = new Animations
-                    {
-                        Enabled          = true,
-                        Easing           = Easing.Linear,
-                        DynamicAnimation = new DynamicAnimation { Speed = 1000 }
-                    },
-                    Toolbar = new Toolbar { Show = false },
-                    Zoom    = new Zoom   { Enabled = false }
-                },
-                Theme  = new ApexCharts.Theme { Mode = Mode.Dark },
-                Xaxis  = new XAxis
-                {
-                    Type       = XAxisType.Datetime,
-                    Range      = windowMs,
-                    TickAmount = tickAmount,
-                    Labels     = new XAxisLabels
-                    {
-                        DatetimeUTC           = true,
-                        Show                  = true,
-                        HideOverlappingLabels = false,
-                        Format                = "HH:mm:ss",
-                        Style = new AxisLabelStyle { Colors = "rgba(255,255,255,0.87)" }
-                    }
-                },
-                Yaxis =
-                [
-                    new YAxis
-                    {
-                        Title  = new AxisTitle { Text = yTitle },
-                        Labels = new YAxisLabels { Formatter = yFormatter }
-                    }
-                ],
-                Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 1] },
-                Legend = new Legend { Show = true },
-                Grid   = new Grid   { BorderColor = "rgba(255,255,255,0.12)" }
-            };
         }
 
         private void BuildHistoricalOptions(string yTitle, string yFormatter)
         {
-            _chartOptions = new ApexChartOptions<ChartPointDto>
-            {
-                Chart = new Chart
-                {
-                    Background = "#1e1e1e",
-                    ForeColor  = "rgba(255,255,255,0.87)",
-                    Animations = new Animations { Enabled = false },
-                    Toolbar    = new Toolbar
-                    {
-                        Show         = true,
-                        AutoSelected = AutoSelected.Zoom,
-                        Tools        = new Tools
-                        {
-                            Zoom     = true,
-                            Zoomin   = true,
-                            Zoomout  = true,
-                            Pan      = true,
-                            Reset    = true,
-                            Download = false   // export handled by Blazor MudMenu
-                        }
-                    },
-                    Zoom = new Zoom { Enabled = true }
-                },
-                Theme  = new ApexCharts.Theme { Mode = Mode.Dark },
-                Xaxis  = new XAxis
-                {
-                    Type   = XAxisType.Datetime,
-                    Labels = new XAxisLabels
-                    {
-                        DatetimeUTC           = true,
-                        Show                  = true,
-                        HideOverlappingLabels = true,
-                        Format                = "HH:mm:ss",
-                        Style = new AxisLabelStyle { Colors = "rgba(255,255,255,0.87)" }
-                    }
-                },
-                Yaxis =
-                [
-                    new YAxis
-                    {
-                        Title  = new AxisTitle { Text = yTitle },
-                        Labels = new YAxisLabels { Formatter = yFormatter }
-                    }
-                ],
-                Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 1] },
-                Legend = new Legend { Show = true },
-                Grid   = new Grid   { BorderColor = "rgba(255,255,255,0.12)" }
-            };
         }
 
         // -- Value conversion & buffer helpers ----------------------------------

@@ -114,37 +114,6 @@
             <ChildContent>
         @if (_ready)
         {
-            @* _chartKey is bumped whenever options change (mode/scale/window) to force
-               a clean component rebuild — matching the @key pattern used by PulseChart. *@
-            <ApexChart TItem="ChartPointDto"
-                       @key="@_chartKey"
-                       Title=""
-                       Options="@_chartOptions"
-                       @ref="_chart"
-                       Height="@("100%")"
-                       Width="@("100%")">
-
-                @* Items bound to the C# list buffers (raw points; YValue lambda scales).
-                   The 1-second timer calls UpdateSeriesAsync(animate:true) in Realtime mode.
-                   Easing.Linear + DynamicAnimation.Speed=1000 in the chart options produces
-                   the smooth left-scroll. Historical mode uses UpdateSeriesAsync(animate:false). *@
-                <ApexPointSeries TItem="ChartPointDto"
-                                 Items="@_axis1Data"
-                                 Name="Axis 1"
-                                 SeriesType="SeriesType.Line"
-                                 XValue="@(p => p.TimestampMs)"
-                                 YValue="@(p => (decimal)GetValue(p, axisIndex: 0))"
-                                 Color="#b71c1c" />
-
-                <ApexPointSeries TItem="ChartPointDto"
-                                 Items="@_axis2Data"
-                                 Name="Axis 2"
-                                 SeriesType="SeriesType.Line"
-                                 XValue="@(p => p.TimestampMs)"
-                                 YValue="@(p => (decimal)GetValue(p, axisIndex: 1))"
-                                 Color="#2196f3" />
-
-            </ApexChart>
         }
         else
         {
