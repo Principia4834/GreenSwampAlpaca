@@ -21,7 +21,7 @@
     <PackageReference Include="ASCOM.Common.Components" Version="3.1.0" />
     <PackageReference Include="ASCOM.Exception.Library" Version="7.1.2" />
     <PackageReference Include="ASCOM.Tools" Version="3.1.0" />
-    <PackageReference Include="MudBlazor.Translations" Version="3.3.0" />
+    <PackageReference Include="MudBlazor" Version="9.7.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.6" />
   </ItemGroup>

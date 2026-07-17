@@ -37,13 +37,12 @@
   <ItemGroup>
     <PackageReference Include="ASCOM.AstrometryTools" Version="3.1.0" />
     <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.9" />
-    <PackageReference Include="MudBlazor" Version="9.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.10" />
     <!-- Windows Service host lifetime support — no-op on Linux/RPi at runtime -->
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.9" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.10" Condition="'$(TargetFramework)' == 'net10.0'" />
     <!-- Linux systemd service lifetime support — no-op on Windows/RPi at runtime -->
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.9" />
-    <PackageReference Include="MudBlazor.Translations" Version="3.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.10" />
+    <PackageReference Include="MudBlazor" Version="9.7.0" />
   </ItemGroup>
 
   <ItemGroup>
