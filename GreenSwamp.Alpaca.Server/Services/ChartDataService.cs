@@ -20,6 +20,7 @@ using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using static GreenSwamp.Alpaca.Server.Services.TelescopeStateService;
 
 namespace GreenSwamp.Alpaca.Server.Services
 {
@@ -59,30 +60,30 @@ namespace GreenSwamp.Alpaca.Server.Services
         private int _raDecSubscribers;
         private int _pulseSubscribers;
 
-        public ChartDataService(IHubContext<ChartHub> hub, ILogger<ChartDataService> logger)
+        private readonly TelescopeStateService _telescopeState;
+        private readonly ConcurrentDictionary<int, int> _raDecSubscribersByDevice = new();
+
+        public ChartDataService(
+            IHubContext<ChartHub> hub,
+            ILogger<ChartDataService> logger,
+            TelescopeStateService telescopeState)
         {
             _hub = hub;
             _logger = logger;
-            MonitorQueue.StaticPropertyChanged += OnMonitorQueuePropertyChanged;
-        }
+            _telescopeState = telescopeState;
 
+            _telescopeState.DeviceStateChanged += OnTelescopeStatePropertyChanged;
+            MonitorQueue.StaticPropertyChanged += OnMonitorQueuePropertyChanged; // keep only pulse path
+        }
         // -- Subscriber gate API (called by ChartHub) ----------------------------------------------
 
         /// <summary>Called when a client joins an RA/Dec chart group. Opens the data gate on first subscriber.</summary>
-        public void OnRaDecClientJoined()
-        {
-            if (Interlocked.Increment(ref _raDecSubscribers) == 1)
-                MonitorLog.GetJEntries = true;
-        }
+        public void OnRaDecClientJoined(int deviceNumber) =>
+            _raDecSubscribersByDevice.AddOrUpdate(deviceNumber, 1, (_, v) => v + 1);
 
-        /// <summary>Called when a client leaves an RA/Dec chart group. Closes the data gate when last subscriber leaves.</summary>
-        public void OnRaDecClientLeft()
+        public void OnRaDecClientLeft(int deviceNumber)
         {
-            if (Interlocked.Decrement(ref _raDecSubscribers) <= 0)
-            {
-                Interlocked.Exchange(ref _raDecSubscribers, 0);
-                MonitorLog.GetJEntries = false;
-            }
+            _raDecSubscribersByDevice.AddOrUpdate(deviceNumber, 0, (_, v) => Math.Max(0, v - 1));
         }
 
         /// <summary>Called when a client joins a Pulse chart group. Opens the pulse gate on first subscriber.</summary>
@@ -100,6 +101,41 @@ namespace GreenSwamp.Alpaca.Server.Services
                 Interlocked.Exchange(ref _pulseSubscribers, 0);
                 MonitorLog.GetPulses = false;
             }
+        }
+
+        /// <summary>
+        /// Called when the TelescopeStateService raises a DeviceStateChanged event. If the property is AxisSteps,
+        /// this method updates the RA/Dec chart buffers and notifies connected clients.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnTelescopeStatePropertyChanged(object? sender, TelescopeStateChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(TelescopeStateModel.AxisSteps)) return;
+            if (!_raDecSubscribersByDevice.TryGetValue(e.DeviceNumber, out var subs) || subs <= 0) return;
+
+            var steps = e.State.AxisSteps;
+            if (steps is null || steps.Length < 2) return;
+
+            var tsMs = new DateTimeOffset(e.State.LastUpdate, TimeSpan.Zero).ToUnixTimeMilliseconds();
+            var group = $"RaDecChart-{e.DeviceNumber}";
+
+            var axis1Point = new ChartPointDto(tsMs, steps[0]);
+            var axis2Point = new ChartPointDto(tsMs, steps[1]);
+
+            var a1 = _axis1Buffers.GetOrAdd(e.DeviceNumber, _ => new());
+            var a1c = _axis1Counts.GetOrAdd(e.DeviceNumber, 0);
+            EnqueueItem(a1, ref a1c, axis1Point);
+            _axis1Counts[e.DeviceNumber] = a1c;
+
+            var a2 = _axis2Buffers.GetOrAdd(e.DeviceNumber, _ => new());
+            var a2c = _axis2Counts.GetOrAdd(e.DeviceNumber, 0);
+            EnqueueItem(a2, ref a2c, axis2Point);
+            _axis2Counts[e.DeviceNumber] = a2c;
+
+            _ = _hub.Clients.Group(group).SendAsync(
+                "ReceiveAxisPoint",
+                new[] { axis1Point, axis2Point });
         }
 
         // -- Public API for ChartHub historical data requests ------------------------------------
@@ -139,52 +175,11 @@ namespace GreenSwamp.Alpaca.Server.Services
         {
             switch (e.PropertyName)
             {
-                case nameof(MonitorQueue.CmdjSentEntry):
-                    HandleRaDecEntry(MonitorQueue.CmdjSentEntry, isAxis1: true);
-                    break;
-
-                case nameof(MonitorQueue.Cmdj2SentEntry):
-                    HandleRaDecEntry(MonitorQueue.Cmdj2SentEntry, isAxis1: false);
-                    break;
-
                 case nameof(MonitorQueue.PulseEntry):
                     HandlePulseEntry(MonitorQueue.PulseEntry);
                     break;
-            }
-        }
-
-        // -- RA/Dec handling -----------------------------------------------------------------------
-
-        private void HandleRaDecEntry(MonitorEntry? entry, bool isAxis1)
-        {
-            if (entry is null) return;
-
-            // Message format: "<cmd>|<rawHex>|<longValue>"
-            // The third pipe-delimited segment is the numeric step/degree value.
-            var parts = entry.Message.Split('|');
-            if (parts.Length < 3) return;
-            if (!double.TryParse(parts[2].Trim(), out var value)) return;
-
-            var dn = entry.DeviceNumber;
-            var tsMs = new DateTimeOffset(entry.Datetime, TimeSpan.Zero).ToUnixTimeMilliseconds();
-            var point = new ChartPointDto(tsMs, value);
-            var group = $"RaDecChart-{dn}";
-
-            if (isAxis1)
-            {
-                var buf = _axis1Buffers.GetOrAdd(dn, _ => new());
-                var cnt = _axis1Counts.GetOrAdd(dn, 0);
-                EnqueueItem(buf, ref cnt, point);
-                _axis1Counts[dn] = cnt;
-                _ = _hub.Clients.Group(group).SendAsync("ReceiveAxis1Point", point);
-            }
-            else
-            {
-                var buf = _axis2Buffers.GetOrAdd(dn, _ => new());
-                var cnt = _axis2Counts.GetOrAdd(dn, 0);
-                EnqueueItem(buf, ref cnt, point);
-                _axis2Counts[dn] = cnt;
-                _ = _hub.Clients.Group(group).SendAsync("ReceiveAxis2Point", point);
+                default:
+                    break; // ignore other properties; RA/Dec is handled via TelescopeStateService
             }
         }
 

@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
@@ -46,16 +47,16 @@ namespace GreenSwamp.Alpaca.Server.Hubs
         public async Task JoinRaDecGroupAsync(int deviceNumber)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"RaDecChart-{deviceNumber}");
-            if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add("radec"))
-                _chartData.OnRaDecClientJoined();
+            if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add($"radec:{deviceNumber}"))
+                _chartData.OnRaDecClientJoined(deviceNumber);
         }
 
         /// <summary>Unsubscribes the caller from RA/Dec position chart broadcasts for the given device.</summary>
         public async Task LeaveRaDecGroupAsync(int deviceNumber)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"RaDecChart-{deviceNumber}");
-            if (_connectionGroups.TryGetValue(Context.ConnectionId, out var groups) && groups.Remove("radec"))
-                _chartData.OnRaDecClientLeft();
+            if (_connectionGroups.TryGetValue(Context.ConnectionId, out var groups) && groups.Remove($"radec:{deviceNumber}"))
+                _chartData.OnRaDecClientLeft(deviceNumber);
         }
 
         /// <summary>Subscribes the caller to pulse guide chart broadcasts for the given device.</summary>
@@ -83,7 +84,9 @@ namespace GreenSwamp.Alpaca.Server.Hubs
             if (chartType == "radec")
             {
                 var (axis1, axis2) = _chartData.GetRaDecHistory(deviceNumber);
-                await Clients.Caller.SendAsync("ReceiveRaDecHistory", axis1, axis2);
+                await Clients.Caller.SendAsync(
+                    "ReceiveRaDecHistory",
+                    new HistoricalDataDto(ChartType.RaDec, axis1, axis2));
             }
             else if (chartType == "pulse")
             {
@@ -100,8 +103,13 @@ namespace GreenSwamp.Alpaca.Server.Hubs
         {
             if (_connectionGroups.TryRemove(Context.ConnectionId, out var groups))
             {
-                if (groups.Contains("radec"))  _chartData.OnRaDecClientLeft();
-                if (groups.Contains("pulse"))  _chartData.OnPulseClientLeft();
+                foreach (var g in groups)
+                {
+                    if (g.StartsWith("radec:") && int.TryParse(g["radec:".Length..], out var dn))
+                        _chartData.OnRaDecClientLeft(dn);
+                    else if (g == "pulse")
+                        _chartData.OnPulseClientLeft();
+                }
             }
             return base.OnDisconnectedAsync(exception);
         }

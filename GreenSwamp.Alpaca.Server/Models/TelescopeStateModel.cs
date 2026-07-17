@@ -68,9 +68,8 @@ namespace GreenSwamp.Alpaca.Server.Models
         public double AppAxisY { get; set; }
 
         // Axis step positions
-        public double Axis1Steps { get; set; }
-        public double Axis2Steps { get; set; }
-        
+        public double[] AxisSteps { get; set; } = new double[2];
+
         // Rates and guides
         public DriveRate TrackingRate { get; set; }
         public bool IsPulseGuidingRa { get; set; }
@@ -151,8 +150,7 @@ namespace GreenSwamp.Alpaca.Server.Models
             TargetDeclination = double.NaN;
             ActualAxisX = double.NaN;
             ActualAxisY = double.NaN;
-            Axis1Steps = 0;
-            Axis2Steps = 0;
+            AxisSteps = new double[2];
             TrackingRate = DriveRate.Sidereal;
             IsPulseGuidingRa = false;
             IsPulseGuidingDec = false;

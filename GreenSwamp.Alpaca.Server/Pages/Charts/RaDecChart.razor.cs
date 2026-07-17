@@ -60,9 +60,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 .WithAutomaticReconnect()
                 .Build();
 
-            _hub.On<ChartPointDto>("ReceiveAxis1Point", OnAxis1Point);
-            _hub.On<ChartPointDto>("ReceiveAxis2Point", OnAxis2Point);
-            _hub.On<IReadOnlyList<ChartPointDto>, IReadOnlyList<ChartPointDto>>("ReceiveRaDecHistory", OnHistory);
+            _hub.On<ChartPointDto[]>("ReceiveAxisPoint", OnAxisPoints);
+            _hub.On<HistoricalDataDto>("ReceiveRaDecHistory", OnHistory);
 
             _hub.Reconnecting += _ => { _hubState = HubConnectionState.Reconnecting; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
             _hub.Reconnected  += _ => { _hubState = HubConnectionState.Connected;    InvokeAsync(StateHasChanged); return Task.CompletedTask; };
@@ -94,7 +93,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         // -- SignalR handlers ---------------------------------------------------
 
-        private void OnAxis1Point(ChartPointDto point)
+        private void OnAxisPoints(ChartPointDto[] points)
         {
             if (_disposed) return;
             //InvokeAsync(async () =>
@@ -104,24 +103,26 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             //    if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
             //    _pendingChartUpdate = true;
             //});
-        }
-
-        private void OnAxis2Point(ChartPointDto point)
-        {
-            if (_disposed) return;
             //InvokeAsync(async () =>
             //{
             //    if (_disposed) return;
-            //    AddToBuffer(_axis2Data, point, axisIndex: 1);
-            //    if (_loggingActive) await Logger.LogRaDecPointAsync(2, point);
+            //    AddToBuffer(_axis1Data, point, axisIndex: 0);
+            //    if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
             //    _pendingChartUpdate = true;
             //});
         }
 
-        private void OnHistory(IReadOnlyList<ChartPointDto> axis1, IReadOnlyList<ChartPointDto> axis2)
+        /// <summary>
+        /// SignalR handler for the historical data response. Bulk-loads the two series into the C# buffers.
+        /// </summary>
+        /// <param name="history"></param>
+        private void OnHistory(HistoricalDataDto history)
         {
             if (_disposed) return;
-            // Bulk-load into C# lists — pure in-memory, no JSInterop, safe during prerender.
+
+            var axis1 = history.AxisOnePoints;
+            var axis2 = history.AxisTwoPoints;
+
             InvokeAsync(async () =>
             {
                 if (_disposed) return;

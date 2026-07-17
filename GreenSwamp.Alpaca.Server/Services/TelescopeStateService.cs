@@ -14,10 +14,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.Models;
-using ASCOM.Common.DeviceInterfaces;
 
 namespace GreenSwamp.Alpaca.Server.Services
 {
@@ -37,23 +37,27 @@ namespace GreenSwamp.Alpaca.Server.Services
         // Keyed by device number. Replaced atomically each tick; never mutated in place.
         private Dictionary<int, TelescopeStateModel> _cache = new();
 
-        private int _activeTabIndex = -1;
-        /// <summary>
-        /// Gets or sets the index of the currently active tab.
-        /// </summary>
-        public int ActiveTabIndex
-        {
-            get => Volatile.Read(ref _activeTabIndex);
-            set => Interlocked.Exchange(ref _activeTabIndex, value);
-        }
-
-
-
         /// <summary>
         /// Fired every ~200 ms after the internal snapshot cache has been refreshed.
         /// </summary>
         public event EventHandler? StateChanged;
         private readonly ActiveDeviceViewRegistry _activeViews;
+
+        public sealed class TelescopeStateChangedEventArgs : EventArgs
+        {
+            public int DeviceNumber { get; }
+            public string PropertyName { get; }
+            public TelescopeStateModel State { get; }
+
+            public TelescopeStateChangedEventArgs(int deviceNumber, string propertyName, TelescopeStateModel state)
+            {
+                DeviceNumber = deviceNumber;
+                PropertyName = propertyName;
+                State = state;
+            }
+        }
+
+        public event EventHandler<TelescopeStateChangedEventArgs>? DeviceStateChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TelescopeStateService"/> class and starts the background loop.
@@ -77,14 +81,18 @@ namespace GreenSwamp.Alpaca.Server.Services
                 await Task.Delay(250, ct).ConfigureAwait(false);
 
                 var active = _activeViews.GetActiveDeviceNumbers(TimeSpan.FromSeconds(10));
-
-                // optional fallback if nobody is viewing
-                if (active.Count == 0)
-                    continue;
+                if (active.Count == 0) continue;
 
                 var next = new Dictionary<int, TelescopeStateModel>(active.Count);
                 foreach (var dn in active)
-                    next[dn] = BuildSnapshot(dn);
+                {
+                    var snapshot = BuildSnapshot(dn);
+                    next[dn] = snapshot;
+
+                    DeviceStateChanged?.Invoke(
+                        this,
+                        new TelescopeStateChangedEventArgs(dn, nameof(TelescopeStateModel.AxisSteps), snapshot));
+                }
 
                 _cache = next;
                 StateChanged?.Invoke(this, EventArgs.Empty);
@@ -140,8 +148,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     ActualAxisY = mount.ActualAxisY,
                     AppAxisX = mount.AppAxisX,
                     AppAxisY = mount.AppAxisY,
-                    Axis1Steps = mount.Steps?[0] ?? 0,
-                    Axis2Steps = mount.Steps?[1] ?? 0,
+                    AxisSteps = mount.Steps ?? new double[2],
                     TrackingRate = DriveRate.Sidereal,
                     IsPulseGuidingRa = mount.IsPulseGuidingRa,
                     IsPulseGuidingDec = mount.IsPulseGuidingDec,
@@ -179,6 +186,8 @@ namespace GreenSwamp.Alpaca.Server.Services
                 return new TelescopeStateModel();
             }
         }
+
+
 
         public void Dispose()
         {
