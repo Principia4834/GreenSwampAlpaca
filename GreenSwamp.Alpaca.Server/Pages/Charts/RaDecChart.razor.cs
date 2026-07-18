@@ -34,6 +34,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private ChartSettings _settings = new();
         private HubConnection? _hub;
         private bool _loggingActive;
+        private bool _loggingBusy;
         private bool _ready;
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
         private bool _disposed;
@@ -175,10 +176,45 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             await SettingsService.SaveChartSettingsAsync(_settings);
         }
 
+        /// <summary>
+        /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ToggleLoggingAsync()
         {
-            if (_loggingActive) { await Logger.StopRaDecLoggingAsync();  _loggingActive = false; }
-            else                { await Logger.StartRaDecLoggingAsync(); _loggingActive = true;  }
+            if (_loggingBusy || _disposed) return;
+
+            _loggingBusy = true;
+
+            try
+            {
+                if (_loggingActive)
+                {
+                    await Logger.StopRaDecLoggingAsync();
+                    _loggingActive = false;
+                }
+                else
+                {
+                    await Logger.StartRaDecLoggingAsync();
+                    _loggingActive = true;
+                }
+            }
+            finally
+            {
+                _loggingBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Returns the tooltip text for the logging button based on the current logging state.
+        /// </summary>
+        /// <returns>The tooltip text for the logging button.</returns>
+        private string GetLoggingTooltipText()
+        {
+            if (_loggingBusy)
+                return _loggingActive ? "Stopping logging…" : "Starting logging…";
+
+            return _loggingActive ? "Stop logging" : "Start logging";
         }
 
         /// <summary>Manual refresh — re-requests history from the server.</summary>

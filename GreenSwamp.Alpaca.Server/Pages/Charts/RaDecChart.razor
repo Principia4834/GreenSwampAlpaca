@@ -88,10 +88,12 @@
             </MudTooltip>
         }
 
-        <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")" Placement="Placement.Left">
+        <MudTooltip Text="@GetLoggingTooltipText()" Placement="Placement.Left">
             <MudIconButton Icon="@(_loggingActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.FiberManualRecord)"
                            Color="@(_loggingActive ? MudBlazor.Color.Error : MudBlazor.Color.Default)"
-                           OnClick="ToggleLoggingAsync" Size="MudBlazor.Size.Small" />
+                           Disabled="@_loggingBusy"
+                           OnClick="ToggleLoggingAsync"
+                           Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
         <MudTooltip Text="Export chart" Placement="Placement.Left">
@@ -140,6 +142,7 @@
     private readonly List<RaDecChartData> _raDecChartData = [];
     private ApexChart<RaDecChartData>? _chart;
     private ApexChartOptions<RaDecChartData> _chartOptions = new();
+    private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
 
     /// <summary>Represents a data point for the RA/Dec chart.</summary>
     private sealed class RaDecChartData
@@ -297,6 +300,7 @@
             _ => "Steps"
         };
 
+        // The formatter function for the y-axis labels, based on the selected scale.
         var yFormatter = _settings.RaDecScale switch
         {
             "Degrees" => "function(val) { return Number(val).toFixed(2); }",
@@ -304,35 +308,36 @@
             _ => "function(val) { return Math.round(Number(val)).toString(); }"
         };
 
+        // Build the chart options with the appropriate y-axis title and formatter.
         _chartOptions = new ApexChartOptions<RaDecChartData>
         {
             Xaxis = new XAxis
             {
-                Type = XAxisType.Datetime
+                Type = XAxisType.Datetime,
+                Labels = new XAxisLabels
+                {
+                    Style = new AxisLabelStyle
+                    {
+                        Colors = MudDefaultAxisLabelColor
+                    }
+                }
             },
             Yaxis =
             [
                 new YAxis
-            {
-                Title = new AxisTitle { Text = yTitle },
-                Labels = new YAxisLabels
                 {
-                    Formatter = yFormatter
+                    Title = new AxisTitle { Text = yTitle },
+                    Labels = new YAxisLabels
+                    {
+                        Formatter = yFormatter,
+                        Style = new AxisLabelStyle
+                        {
+                            Colors = MudDefaultAxisLabelColor
+                        }
+                    }
                 }
-            }
             ]
         };
-    }
-    private void BuildRealtimeOptions(string yTitle, string yFormatter)
-    {
-        var windowMs = _settings.RealtimeWindowSeconds * 1000;
-        var tickAmount = _settings.RealtimeWindowSeconds switch
-        {
-            10 => 10,
-            120 => 12,
-            _ => 30    // 30 s default
-        };
-
     }
 
     private void BuildHistoricalOptions(string yTitle, string yFormatter)
