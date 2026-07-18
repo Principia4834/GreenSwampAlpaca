@@ -91,47 +91,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
-        // -- SignalR handlers ---------------------------------------------------
-
-        private void OnAxisPoints(ChartPointDto[] points)
-        {
-            if (_disposed) return;
-            //InvokeAsync(async () =>
-            //{
-            //    if (_disposed) return;
-            //    AddToBuffer(_axis1Data, point, axisIndex: 0);
-            //    if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
-            //    _pendingChartUpdate = true;
-            //});
-            //InvokeAsync(async () =>
-            //{
-            //    if (_disposed) return;
-            //    AddToBuffer(_axis1Data, point, axisIndex: 0);
-            //    if (_loggingActive) await Logger.LogRaDecPointAsync(1, point);
-            //    _pendingChartUpdate = true;
-            //});
-        }
-
-        /// <summary>
-        /// SignalR handler for the historical data response. Bulk-loads the two series into the C# buffers.
-        /// </summary>
-        /// <param name="history"></param>
-        private void OnHistory(HistoricalDataDto history)
-        {
-            if (_disposed) return;
-
-            var axis1 = history.AxisOnePoints;
-            var axis2 = history.AxisTwoPoints;
-
-            InvokeAsync(async () =>
-            {
-                if (_disposed) return;
-                var cap = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
-
-                StateHasChanged();
-            });
-        }
-
         // -- Realtime flush (1-second timer) ------------------------------------
 
         /// <summary>
@@ -225,46 +184,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var filename = $"radec-{DateTime.Now:yyyyMMdd-HHmmss}.csv";
             try { await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", filename); }
             catch (TaskCanceledException) { }
-        }
-
-        // -- Chart options builder ----------------------------------------------
-
-        private void BuildChartOptions()
-        {
-            var yTitle = _settings.RaDecScale switch
-            {
-                "Degrees"    => "Degrees",
-                "ArcSeconds" => "Arc-seconds",
-                _            => "Steps"
-            };
-
-            var yFormatter = _settings.RaDecScale switch
-            {
-                "Degrees"    => "function(val) { return parseFloat(val).toFixed(3); }",
-                "ArcSeconds" => "function(val) { return parseFloat(val).toFixed(1); }",
-                _            => "function(val) { return Math.round(val).toString(); }"
-            };
-
-            if (_settings.DisplayMode == "Realtime")
-                BuildRealtimeOptions(yTitle, yFormatter);
-            else
-                BuildHistoricalOptions(yTitle, yFormatter);
-        }
-
-        private void BuildRealtimeOptions(string yTitle, string yFormatter)
-        {
-            var windowMs = _settings.RealtimeWindowSeconds * 1000;
-            var tickAmount = _settings.RealtimeWindowSeconds switch
-            {
-                10  => 10,
-                120 => 12,
-                _   => 6    // 30 s default
-            };
-
-        }
-
-        private void BuildHistoricalOptions(string yTitle, string yFormatter)
-        {
         }
 
         // -- Value conversion & buffer helpers ----------------------------------

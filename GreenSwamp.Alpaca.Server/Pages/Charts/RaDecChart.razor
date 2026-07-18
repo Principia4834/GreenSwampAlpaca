@@ -109,166 +109,131 @@
     </MudStack>
 
     @* -- Chart ------------------------------------------------------------- *@
-    <div style="flex:none;">
-        <ErrorBoundary>
-            <ChildContent>
-                @if (_ready)
-                {
-                <ApexChart TItem="Order"
-                           Title="Order Net Value"
-                           Options="@options">
+    <ApexChart TItem="RaDecChartData" Title="RA/Dec Chart">
 
-
-                    <ApexPointSeries TItem="Order"
-                                     Items="Orders"
-                                     Name="Gross Value"
-                                     SeriesType="SeriesType.Line"
-                                     XValue="@(e => e.Country)"
-                                     YAggregate="@(e => e.Sum(e => e.GrossValue))"
-                                     OrderByDescending="e=>e.Y"
-                                     ShowDataLabels />
-
-                    <ApexPointSeries TItem="Order"
-                                     Items="Orders"
-                                     Name="Net Value"
-                                     SeriesType="SeriesType.Line"
-                                     XValue="@(e => e.Country)"
-                                     YAggregate="@(e => e.Sum(e => e.NetValue))"
-                                     OrderByDescending="e=>e.Y"
-                                     ShowDataLabels />
-                </ApexChart>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-4">
-                        Waiting for mount data…
-                    </MudText>
-                }
-            </ChildContent>
-            <ErrorContent>
-                <MudAlert Severity="Severity.Error" Class="ma-2">
-                    Chart failed to render. Please close and reopen this window.
-                </MudAlert>
-            </ErrorContent>
-        </ErrorBoundary>
-    </div>
+    </ApexChart>
 
 </div>
-
 @code {
+    private readonly List<RaDecChartData> _raDecChartData = [];
 
-    public class Order
+    private sealed class RaDecChartData
     {
-        public Guid OrderId { get; set; } = Guid.NewGuid();
-        public string CustomerName { get; set; }
-        public string Country { get; set; }
-        public DateTimeOffset OrderDate { get; set; }
-        public OrderType OrderType { get; set; }
-        public decimal GrossValue { get; set; }
-        public decimal NetValue { get => GrossValue * (1 - (DiscountPercentage / 100)); }
-        public decimal DiscountPercentage { get; set; }
+        public long TimestampMs { get; init; }
+        public double Ra { get; init; }
+        public double Dec { get; init; }
     }
 
-    public enum OrderType
+    // -- SignalR handlers ---------------------------------------------------
+
+    /// <summary>
+    /// SignalR handler for incoming axis points. Adds the points to the chart data buffers.
+    /// </summary>
+    /// <param name="points"></param>
+    private void OnAxisPoints(ChartPointDto[] points)
     {
-        Web, Contract, Mail, Phone
-    }
+        if (_disposed || points.Length < 2) return;
 
-    private List<Order> Orders { get; set; } = GetOrders();
-
-    private ApexChartOptions<Order> options;
-
-    protected override void OnInitialized()
-    {
-        options = new ApexChartOptions<Order>
+        InvokeAsync(async () =>
         {
-            Chart = new Chart
-            {
-                Toolbar = new Toolbar
-                {
-                    Show = true
-                },
-                DropShadow = new DropShadow
-                {
-                    Enabled = true,
-                    Color = "",
-                    Top = 18,
-                    Left = 7,
-                    Blur = 10,
-                    Opacity = 0.2d
-                }
-            },
-            DataLabels = new ApexCharts.DataLabels
-            {
-                OffsetY = -6d
-            },
-            Grid = new Grid
-            {
-                BorderColor = "#e7e7e7",
-                Row = new GridRow
-                {
-                    Colors = new List<string> { "#f3f3f3", "transparent" },
-                    Opacity = 0.5d
-                }
-            },
+            if (_disposed) return;
 
-            // Colors = new List<string> { "#77B6EA", "#545454" },
-            Colors = new List<string> { "#00af00", "#af0000" },
-            Markers = new Markers { Shape = MarkerShape.Circle, Size = 5, FillOpacity = new Opacity(0.8d) },
-            Stroke = new Stroke { Curve = Curve.Smooth },
-            Legend = new Legend
-            {
-                Position = LegendPosition.Top,
-                HorizontalAlign = ApexCharts.Align.Right,
-                Floating = true,
-                OffsetX = -5,
-                OffsetY = -25
-            },
+            AddToRaDecChartData(points[0], points[1]);
 
-        };
+            if (_loggingActive)
+            {
+                await Logger.LogRaDecPointAsync(1, points[0]);
+                await Logger.LogRaDecPointAsync(2, points[1]);
+            }
+
+            _pendingChartUpdate = true;
+        });
     }
 
-    public static List<Order> GetOrders()
+    /// <summary>
+    /// SignalR handler for incoming historical data. Clears the existing chart data and populates it with the new historical data.
+    /// </summary>
+    /// <param name="history">The historical data received from the server.</param>
+    private void OnHistory(HistoricalDataDto history)
     {
-        var orders = new List<Order>();
-        orders.Add(new Order { CustomerName = "Odio Corporation", Country = "Norway", OrderDate = DateTimeOffset.Now.AddDays(-12), GrossValue = 34531, DiscountPercentage = 21, OrderType = OrderType.Contract });
-        orders.Add(new Order { CustomerName = "Odio Corporation", Country = "Norway", OrderDate = DateTimeOffset.Now.AddDays(-100), GrossValue = 2800, DiscountPercentage = 12, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Odio Corporation", Country = "Norway", OrderDate = DateTimeOffset.Now.AddDays(-128), GrossValue = 12532, DiscountPercentage = 24, OrderType = OrderType.Contract });
-        orders.Add(new Order { CustomerName = "Odio Corporation", Country = "Norway", OrderDate = DateTimeOffset.Now.AddDays(-232), GrossValue = 1400, DiscountPercentage = 65, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Odio Corporation", Country = "Norway", OrderDate = DateTimeOffset.Now.AddDays(-321), GrossValue = 22000, DiscountPercentage = 10, OrderType = OrderType.Contract });
-        orders.Add(new Order { CustomerName = "Odio Corporation", Country = "Norway", OrderDate = DateTimeOffset.Now.AddDays(-400), GrossValue = 3000, DiscountPercentage = 17, OrderType = OrderType.Web });
+        if (_disposed) return;
 
-        orders.Add(new Order { CustomerName = "Nascetur AB", Country = "Sweden", OrderDate = DateTimeOffset.Now.AddDays(-17), GrossValue = 2134, DiscountPercentage = 10, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Nascetur AB", Country = "Sweden", OrderDate = DateTimeOffset.Now.AddDays(-27), GrossValue = 11345, DiscountPercentage = 12, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Nascetur AB", Country = "Sweden", OrderDate = DateTimeOffset.Now.AddDays(-124), GrossValue = 63400, DiscountPercentage = 79, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Nascetur AB", Country = "Sweden", OrderDate = DateTimeOffset.Now.AddDays(-299), GrossValue = 1235, DiscountPercentage = 12, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Nascetur AB", Country = "Sweden", OrderDate = DateTimeOffset.Now.AddDays(-372), GrossValue = 44000, DiscountPercentage = 11, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Nascetur AB", Country = "Sweden", OrderDate = DateTimeOffset.Now.AddDays(-410), GrossValue = 17000, DiscountPercentage = 5, OrderType = OrderType.Phone });
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
 
-        orders.Add(new Order { CustomerName = "Justo Eu Institute", Country = "Spain", OrderDate = DateTimeOffset.Now.AddDays(-10), GrossValue = 12000, DiscountPercentage = 23, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Justo Eu Institute", Country = "Spain", OrderDate = DateTimeOffset.Now.AddDays(-13), GrossValue = 92800, DiscountPercentage = 48, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Justo Eu Institute", Country = "Spain", OrderDate = DateTimeOffset.Now.AddDays(-45), GrossValue = 12532, DiscountPercentage = 24, OrderType = OrderType.Web });
-        orders.Add(new Order { CustomerName = "Justo Eu Institute", Country = "Spain", OrderDate = DateTimeOffset.Now.AddDays(-60), GrossValue = 1400, DiscountPercentage = 12, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Justo Eu Institute", Country = "Spain", OrderDate = DateTimeOffset.Now.AddDays(-150), GrossValue = 22000, DiscountPercentage = 10, OrderType = OrderType.Web });
-        orders.Add(new Order { CustomerName = "Justo Eu Institute", Country = "Spain", OrderDate = DateTimeOffset.Now.AddDays(-200), GrossValue = 3000, DiscountPercentage = 17, OrderType = OrderType.Web });
+            _raDecChartData.Clear();
 
-        orders.Add(new Order { CustomerName = "Ani Vent", Country = "Germany", OrderDate = DateTimeOffset.Now.AddDays(-17), GrossValue = 2134, DiscountPercentage = 34, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Ani Vent", Country = "Germany", OrderDate = DateTimeOffset.Now.AddDays(-27), GrossValue = 11345, DiscountPercentage = 12, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Ani Vent", Country = "Germany", OrderDate = DateTimeOffset.Now.AddDays(-124), GrossValue = 17002, DiscountPercentage = 32, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Cali Inc", Country = "Germany", OrderDate = DateTimeOffset.Now.AddDays(-10), GrossValue = 77000, DiscountPercentage = 17, OrderType = OrderType.Web });
-        orders.Add(new Order { CustomerName = "Cali Inc", Country = "Germany", OrderDate = DateTimeOffset.Now.AddDays(-110), GrossValue = 120000, DiscountPercentage = 23, OrderType = OrderType.Web });
-        orders.Add(new Order { CustomerName = "Cali Inc", Country = "Germany", OrderDate = DateTimeOffset.Now.AddDays(-243), GrossValue = 44000, DiscountPercentage = 8, OrderType = OrderType.Web });
+            var cap = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
+            var axis1 = history.AxisOnePoints.TakeLast(cap).ToArray();
+            var axis2 = history.AxisTwoPoints.TakeLast(cap).ToArray();
+            var count = Math.Min(axis1.Length, axis2.Length);
 
+            for (var i = 0; i < count; i++)
+            {
+                AddToRaDecChartData(axis1[i], axis2[i]);
+            }
 
-        orders.Add(new Order { CustomerName = "Chart Inc", Country = "Brazil", OrderDate = DateTimeOffset.Now.AddDays(-11), GrossValue = 2345, DiscountPercentage = 11, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Chart Inc", Country = "Brazil", OrderDate = DateTimeOffset.Now.AddDays(-14), GrossValue = 34567, DiscountPercentage = 22, OrderType = OrderType.Phone });
-        orders.Add(new Order { CustomerName = "Chart Inc", Country = "Brazil", OrderDate = DateTimeOffset.Now.AddDays(-121), GrossValue = 45662, DiscountPercentage = 23, OrderType = OrderType.Mail });
-        orders.Add(new Order { CustomerName = "Chart Inc", Country = "Brazil", OrderDate = DateTimeOffset.Now.AddDays(-11), GrossValue = 66000, DiscountPercentage = 11, OrderType = OrderType.Web });
-        orders.Add(new Order { CustomerName = "Chart Inc", Country = "Brazil", OrderDate = DateTimeOffset.Now.AddDays(-90), GrossValue = 10000, DiscountPercentage = 8, OrderType = OrderType.Web });
-        orders.Add(new Order { CustomerName = "Chart Inc", Country = "Brazil", OrderDate = DateTimeOffset.Now.AddDays(-123), GrossValue = 69000, DiscountPercentage = 25, OrderType = OrderType.Web });
+            _pendingChartUpdate = true;
+            StateHasChanged();
+        });
+    }
 
+    private void AddToRaDecChartData(ChartPointDto raPoint, ChartPointDto decPoint)
+    {
+        var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
 
-        return orders;
+        if (_raDecChartData.Count >= max)
+        {
+            _raDecChartData.RemoveAt(0);
+        }
+
+        _raDecChartData.Add(new RaDecChartData
+        {
+            TimestampMs = raPoint.TimestampMs,
+            Ra = ScaleValue(raPoint.Value, axisIndex: 0),
+            Dec = ScaleValue(decPoint.Value, axisIndex: 1)
+        });
+    }
+
+    // -- Chart options builder ----------------------------------------------
+
+    private void BuildChartOptions()
+    {
+        var yTitle = _settings.RaDecScale switch
+        {
+            "Degrees" => "Degrees",
+            "ArcSeconds" => "Arc-seconds",
+            _ => "Steps"
+        };
+
+        var yFormatter = _settings.RaDecScale switch
+        {
+            "Degrees" => "function(val) { return parseFloat(val).toFixed(3); }",
+            "ArcSeconds" => "function(val) { return parseFloat(val).toFixed(1); }",
+            _ => "function(val) { return Math.round(val).toString(); }"
+        };
+
+        if (_settings.DisplayMode == "Realtime")
+            BuildRealtimeOptions(yTitle, yFormatter);
+        else
+            BuildHistoricalOptions(yTitle, yFormatter);
+    }
+
+    private void BuildRealtimeOptions(string yTitle, string yFormatter)
+    {
+        var windowMs = _settings.RealtimeWindowSeconds * 1000;
+        var tickAmount = _settings.RealtimeWindowSeconds switch
+        {
+            10 => 10,
+            120 => 12,
+            _ => 6    // 30 s default
+        };
+
+    }
+
+    private void BuildHistoricalOptions(string yTitle, string yFormatter)
+    {
     }
 
 }

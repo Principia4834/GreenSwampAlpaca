@@ -70,7 +70,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         }
 
         /// <summary>
-        /// Background loop that runs every ~200 ms, snapshots all active devices, and fires <see cref="StateChanged"/>.
+        /// Background loop that runs every ~250 ms, snapshots all active devices, and fires <see cref="StateChanged"/>.
         /// </summary>
         /// <param name="ct">Cancellation token to stop the loop.</param>
         /// <returns>A task representing the background loop.</returns>
