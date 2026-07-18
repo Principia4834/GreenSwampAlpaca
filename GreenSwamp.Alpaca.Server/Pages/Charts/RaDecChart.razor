@@ -112,6 +112,7 @@
     <ApexChart TItem="RaDecChartData"
                Title="RA/Dec Chart"
                XAxisType="XAxisType.Datetime"
+               Options="@_chartOptions"
                @ref="_chart"
                Height="350">
 
@@ -138,6 +139,7 @@
     private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
     private readonly List<RaDecChartData> _raDecChartData = [];
     private ApexChart<RaDecChartData>? _chart;
+    private ApexChartOptions<RaDecChartData> _chartOptions = new();
 
     /// <summary>Represents a data point for the RA/Dec chart.</summary>
     private sealed class RaDecChartData
@@ -283,6 +285,9 @@
 
     // -- Chart options builder ----------------------------------------------
 
+    /// <summary>
+    /// Builds the chart options based on the current settings.
+    /// </summary>
     private void BuildChartOptions()
     {
         var yTitle = _settings.RaDecScale switch
@@ -294,17 +299,30 @@
 
         var yFormatter = _settings.RaDecScale switch
         {
-            "Degrees" => "function(val) { return parseFloat(val).toFixed(3); }",
-            "ArcSeconds" => "function(val) { return parseFloat(val).toFixed(1); }",
-            _ => "function(val) { return Math.round(val).toString(); }"
+            "Degrees" => "function(val) { return Number(val).toFixed(2); }",
+            "ArcSeconds" => "function(val) { return Number(val).toFixed(1); }",
+            _ => "function(val) { return Math.round(Number(val)).toString(); }"
         };
 
-        if (_settings.DisplayMode == "Realtime")
-            BuildRealtimeOptions(yTitle, yFormatter);
-        else
-            BuildHistoricalOptions(yTitle, yFormatter);
+        _chartOptions = new ApexChartOptions<RaDecChartData>
+        {
+            Xaxis = new XAxis
+            {
+                Type = XAxisType.Datetime
+            },
+            Yaxis =
+            [
+                new YAxis
+            {
+                Title = new AxisTitle { Text = yTitle },
+                Labels = new YAxisLabels
+                {
+                    Formatter = yFormatter
+                }
+            }
+            ]
+        };
     }
-
     private void BuildRealtimeOptions(string yTitle, string yFormatter)
     {
         var windowMs = _settings.RealtimeWindowSeconds * 1000;
