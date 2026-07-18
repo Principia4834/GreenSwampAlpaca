@@ -135,7 +135,7 @@
 
 </div>
 @code {
-    private const long RaDecRollingWindowMs = 10_000;
+    private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
     private readonly List<RaDecChartData> _raDecChartData = [];
     private ApexChart<RaDecChartData>? _chart;
 
@@ -222,6 +222,19 @@
             Ra = ScaleValue(raPoint.Value, axisIndex: 0),
             Dec = ScaleValue(decPoint.Value, axisIndex: 1)
         });
+    }
+
+    /// <summary>
+    /// Trims the RA/Dec chart data to fit within the rolling window.
+    /// </summary>
+    private void TrimRaDecChartDataToRollingWindow()
+    {
+        if (_raDecChartData.Count == 0) return;
+
+        var latestTimestampMs = _raDecChartData[^1].TimestampMs;
+        var cutoffMs = latestTimestampMs - RaDecRollingWindowMs;
+
+        _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
     }
 
     /// <summary>

@@ -126,16 +126,25 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             StateHasChanged();
         }
 
-        /// <summary>Changes the realtime rolling-window duration (10 / 30 / 120 seconds).</summary>
+        /// <summary>
+        /// Changes the rolling window size (5 / 10 / 30 / 60 seconds) for Realtime mode.
+        /// </summary>
+        /// <param name="seconds">The new rolling window size in seconds.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task OnWindowChangedAsync(int seconds)
         {
             _settings.RealtimeWindowSeconds = seconds;
             await SettingsService.SaveChartSettingsAsync(_settings);
+
+            TrimRaDecChartDataToRollingWindow();
+
             BuildChartOptions();
             _chartKey = $"radec-{_settings.DisplayMode}-{seconds}s";
+
+            await UpdateRaDecChartAsync(animate: false);
         }
 
-        /// <summary>Changes the per-series buffer cap (5 000 / 10 000 / 20 000 points).</summary>
+        /// <summary>Changes the per-series buffer cap (5,000 / 10,000 / 20,000 points).</summary>
         private async Task OnMaxPointsChangedAsync(int newMax)
         {
             _settings.RaDecMaxPoints = newMax;
