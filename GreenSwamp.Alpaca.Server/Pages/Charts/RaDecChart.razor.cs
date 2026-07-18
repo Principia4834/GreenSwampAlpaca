@@ -23,11 +23,31 @@ using Microsoft.JSInterop;
 
 namespace GreenSwamp.Alpaca.Server.Pages.Charts
 {
+
     // RaDecChart: uses the same C# list-buffer + System.Threading.Timer pattern as PulseChart.
     // The wrapper's UpdateSeriesAsync / AppendDataAsync are the only chart-update paths.
     // No raw IJSRuntime calls on the data hot path — those violate the prerender contract.
     public partial class RaDecChart
     {
+        /// <summary>Represents a data point for the RA/Dec chart.</summary>
+        private sealed class RaDecChartData
+        {
+            /// <summary>Gets the timestamp of the data point in milliseconds.</summary>
+            public long TimestampMs { get; init; }
+
+            /// <summary>Gets the raw RA/axis-1 value in steps.</summary>
+            public double RawRaSteps { get; init; }
+
+            /// <summary>Gets the raw Dec/axis-2 value in steps.</summary>
+            public double RawDecSteps { get; init; }
+
+            /// <summary>Gets the display RA value in the selected scale.</summary>
+            public double Ra { get; set; }
+
+            /// <summary>Gets the display Dec value in the selected scale.</summary>
+            public double Dec { get; set; }
+        }
+
         [Parameter] public int DeviceNumber { get; set; }
 
         // -- State --------------------------------------------------------------
@@ -39,6 +59,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
         private bool _disposed;
 
+
         // _chartKey is bumped to force <ApexChart> recreation when options change
         // (mode / scale / window). Matches the @key pattern used by PulseChart.
         private string _chartKey = "radec-init";
@@ -48,6 +69,91 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
 
+        private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
+        private readonly List<RaDecChartData> _raDecChartData = [];
+        private ApexChart<RaDecChartData>? _chart;
+        private ApexChartOptions<RaDecChartData> _chartOptions = new();
+        private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
+
+        #region SignalR Handlers
+        // -- SignalR handlers ---------------------------------------------------
+
+        /// <summary>
+        /// SignalR handler for incoming axis points. Adds the points to the chart data buffers.
+        /// </summary>
+        /// <param name="points">The array of incoming axis points.</param>
+        private void OnAxisPoints(ChartPointDto[] points)
+        {
+            if (_disposed || points.Length < 2) return;
+
+            InvokeAsync(async () =>
+            {
+                if (_disposed) return;
+
+                AddToRaDecChartData(points[0], points[1]);
+
+                if (_loggingActive)
+                {
+                    await Logger.LogRaDecPointAsync(1, points[0]);
+                    await Logger.LogRaDecPointAsync(2, points[1]);
+                }
+
+                await UpdateRaDecChartAsync(animate: true);
+            });
+        }
+
+        /// <summary>
+        /// SignalR handler for incoming historical data. Clears the existing chart data and populates it
+        /// with the new historical data.
+        /// </summary>
+        /// <param name="history">The historical data received from the server.</param>
+        private void OnHistory(HistoricalDataDto history)
+        {
+            if (_disposed) return;
+
+            _ = InvokeAsync(async () =>
+            {
+                if (_disposed) return;
+
+                _raDecChartData.Clear();
+
+                var axis1 = history.AxisOnePoints.ToArray();
+                var axis2 = history.AxisTwoPoints.ToArray();
+                var count = Math.Min(axis1.Length, axis2.Length);
+
+                for (var i = 0; i < count; i++)
+                {
+                    AddToRaDecChartData(axis1[i], axis2[i]);
+                }
+
+                await UpdateRaDecChartAsync(animate: false);
+            });
+        }
+
+        /// <summary>
+        /// Adds a new RA/Dec data point to the chart data buffer.
+        /// </summary>
+        /// <param name="raPoint">The RA data point.</param>
+        /// <param name="decPoint">The Dec data point.</param>
+        private void AddToRaDecChartData(ChartPointDto raPoint, ChartPointDto decPoint)
+        {
+            var timestampMs = raPoint.TimestampMs;
+            var cutoffMs = timestampMs - RaDecRollingWindowMs;
+
+            _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
+
+            _raDecChartData.Add(new RaDecChartData
+            {
+                TimestampMs = timestampMs,
+                RawRaSteps = raPoint.Value,
+                RawDecSteps = decPoint.Value,
+                Ra = ScaleValue(raPoint.Value, axisIndex: 0),
+                Dec = ScaleValue(decPoint.Value, axisIndex: 1)
+            });
+        }
+        #endregion
+
+        #region Chart Update
         // -- Lifecycle ----------------------------------------------------------
 
         protected override async Task OnInitializedAsync()
@@ -113,6 +219,53 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             //    catch (TaskCanceledException) { }
             //});
         }
+        /// <summary>
+        /// Rescales the RA/Dec chart data points based on the current scale settings.
+        /// </summary>
+        private void RescaleRaDecChartData()
+        {
+            foreach (var point in _raDecChartData)
+            {
+                point.Ra = ScaleValue(point.RawRaSteps, axisIndex: 0);
+                point.Dec = ScaleValue(point.RawDecSteps, axisIndex: 1);
+            }
+        }
+
+        /// <summary>
+        /// Trims the RA/Dec chart data to fit within the rolling window.
+        /// </summary>
+        private void TrimRaDecChartDataToRollingWindow()
+        {
+            if (_raDecChartData.Count == 0) return;
+
+            var latestTimestampMs = _raDecChartData[^1].TimestampMs;
+            var cutoffMs = latestTimestampMs - RaDecRollingWindowMs;
+
+            _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
+        }
+
+        /// <summary>
+        /// Updates the RA/Dec chart with the current data.
+        /// </summary>
+        /// <param name="animate">Indicates whether the update should be animated.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task UpdateRaDecChartAsync(bool animate)
+        {
+            if (_chart is null || _disposed)
+            {
+                StateHasChanged();
+                return;
+            }
+
+            try
+            {
+                await _chart.UpdateSeriesAsync(animate);
+            }
+            catch (TaskCanceledException)
+            {
+            }
+        }
+        #endregion
 
         // -- Toolbar handlers ---------------------------------------------------
 
@@ -248,6 +401,82 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             catch (TaskCanceledException) { }
         }
 
+        #region Chart options builder
+        // -- Chart options builder ----------------------------------------------
+
+        /// <summary>
+        /// Builds the chart options based on the current settings.
+        /// </summary>
+        private void BuildChartOptions()
+        {
+            var yTitle = _settings.RaDecScale switch
+            {
+                "Degrees" => "Degrees",
+                "ArcSeconds" => "Arc-seconds",
+                _ => "Steps"
+            };
+
+            // The formatter function for the y-axis labels, based on the selected scale.
+            var yFormatter = _settings.RaDecScale switch
+            {
+                "Degrees" => "function(val) { return Number(val).toFixed(2); }",
+                "ArcSeconds" => "function(val) { return Number(val).toFixed(1); }",
+                _ => "function(val) { return Math.round(Number(val)).toString(); }"
+            };
+
+            _chartOptions = new ApexChartOptions<RaDecChartData>
+            {
+                Chart = new Chart
+                {
+                    ParentHeightOffset = 0,
+                    RedrawOnParentResize = true,
+                    RedrawOnWindowResize = true
+                },
+                Xaxis = new XAxis
+                {
+                    Type = XAxisType.Datetime,
+                    Labels = new XAxisLabels
+                    {
+                        Show = true,
+                        HideOverlappingLabels = false,
+                        Format = "HH:mm:ss",
+                        DatetimeUTC = true,
+                        Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
+                    },
+                    AxisTicks = new AxisTicks
+                    {
+                        Show = true
+                    },
+                    AxisBorder = new AxisBorder
+                    {
+                        Show = true
+                    }
+                },
+                Yaxis =
+                [
+                    new YAxis
+                {
+                    Title = new AxisTitle
+                    {
+                        Text = yTitle,
+                        Style = new AxisTitleStyle { Color = MudDefaultAxisLabelColor }
+                    },
+                    Labels = new YAxisLabels
+                    {
+                        Formatter = yFormatter,
+                        Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
+                    }
+                }
+                ]
+            };
+        }
+
+        private void BuildHistoricalOptions(string yTitle, string yFormatter)
+        {
+        }
+        #endregion
+
+        #region Helpers
         // -- Value conversion & buffer helpers ----------------------------------
 
         /// <summary>Converts a raw point to a new ChartPointDto with the scaled Y value.</summary>
@@ -286,6 +515,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
             while (buffer.Count > max) buffer.RemoveAt(0);
         }
+        #endregion
 
         // -- Dispose ------------------------------------------------------------
 

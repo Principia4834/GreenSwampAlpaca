@@ -111,238 +111,35 @@
     </MudStack>
 
     @* -- Chart ------------------------------------------------------------- *@
-    <ApexChart TItem="RaDecChartData"
-               @key="@_chartKey"
-               Title="RA/Dec Chart"
-               XAxisType="XAxisType.Datetime"
-               Options="@_chartOptions"
-               @ref="_chart"
-               Height="350">
+    <div style="flex:1;min-height:0;overflow:hidden;">
+        <ApexChart TItem="RaDecChartData"
+                   @key="@_chartKey"
+                   Title="RA/Dec Chart"
+                   XAxisType="XAxisType.Datetime"
+                   Options="@_chartOptions"
+                   @ref="_chart"
+                   Height="@("100%")"
+                   Width="@("100%")">
 
-        <ApexPointSeries TItem="RaDecChartData"
-                         Items="@_raDecChartData"
-                         Name="RA"
-                         SeriesType="SeriesType.Line"
-                         XValue="@(p => p.TimestampMs)"
-                         YValue="@(p => (decimal)p.Ra)"
-                         Hidden="@(!_settings.ShowAxis1)"
-                         Color="#f44336" />
+            <ApexPointSeries TItem="RaDecChartData"
+                             Items="@_raDecChartData"
+                             Name="RA"
+                             SeriesType="SeriesType.Line"
+                             XValue="@(p => p.TimestampMs)"
+                             YValue="@(p => (decimal)p.Ra)"
+                             Hidden="@(!_settings.ShowAxis1)"
+                             Color="#f44336" />
 
-        <ApexPointSeries TItem="RaDecChartData"
-                         Items="@_raDecChartData"
-                         Name="Dec"
-                         SeriesType="SeriesType.Line"
-                         XValue="@(p => p.TimestampMs)"
-                         YValue="@(p => (decimal)p.Dec)"
-                         Hidden="@(!_settings.ShowAxis2)"
-                         Color="#2196f3" />
+            <ApexPointSeries TItem="RaDecChartData"
+                             Items="@_raDecChartData"
+                             Name="Dec"
+                             SeriesType="SeriesType.Line"
+                             XValue="@(p => p.TimestampMs)"
+                             YValue="@(p => (decimal)p.Dec)"
+                             Hidden="@(!_settings.ShowAxis2)"
+                             Color="#2196f3" />
 
-    </ApexChart>
+        </ApexChart>
+    </div>
 
 </div>
-@code {
-    private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
-    private readonly List<RaDecChartData> _raDecChartData = [];
-    private ApexChart<RaDecChartData>? _chart;
-    private ApexChartOptions<RaDecChartData> _chartOptions = new();
-    private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
-
-    /// <summary>Represents a data point for the RA/Dec chart.</summary>
-    private sealed class RaDecChartData
-    {
-        /// <summary>Gets the timestamp of the data point in milliseconds.</summary>
-        public long TimestampMs { get; init; }
-
-        /// <summary>Gets the raw RA/axis-1 value in steps.</summary>
-        public double RawRaSteps { get; init; }
-
-        /// <summary>Gets the raw Dec/axis-2 value in steps.</summary>
-        public double RawDecSteps { get; init; }
-
-        /// <summary>Gets the display RA value in the selected scale.</summary>
-        public double Ra { get; set; }
-
-        /// <summary>Gets the display Dec value in the selected scale.</summary>
-        public double Dec { get; set; }
-    }
-
-    // -- SignalR handlers ---------------------------------------------------
-
-    /// <summary>
-    /// SignalR handler for incoming axis points. Adds the points to the chart data buffers.
-    /// </summary>
-    /// <param name="points">The array of incoming axis points.</param>
-    private void OnAxisPoints(ChartPointDto[] points)
-    {
-        if (_disposed || points.Length < 2) return;
-
-        InvokeAsync(async () =>
-        {
-            if (_disposed) return;
-
-            AddToRaDecChartData(points[0], points[1]);
-
-            if (_loggingActive)
-            {
-                await Logger.LogRaDecPointAsync(1, points[0]);
-                await Logger.LogRaDecPointAsync(2, points[1]);
-            }
-
-            await UpdateRaDecChartAsync(animate: true);
-        });
-    }
-
-    /// <summary>
-    /// SignalR handler for incoming historical data. Clears the existing chart data and populates it
-    /// with the new historical data.
-    /// </summary>
-    /// <param name="history">The historical data received from the server.</param>
-    private void OnHistory(HistoricalDataDto history)
-    {
-        if (_disposed) return;
-
-        _ = InvokeAsync(async () =>
-        {
-            if (_disposed) return;
-
-            _raDecChartData.Clear();
-
-            var axis1 = history.AxisOnePoints.ToArray();
-            var axis2 = history.AxisTwoPoints.ToArray();
-            var count = Math.Min(axis1.Length, axis2.Length);
-
-            for (var i = 0; i < count; i++)
-            {
-                AddToRaDecChartData(axis1[i], axis2[i]);
-            }
-
-            await UpdateRaDecChartAsync(animate: false);
-        });
-    }
-
-    /// <summary>
-    /// Adds a new RA/Dec data point to the chart data buffer.
-    /// </summary>
-    /// <param name="raPoint">The RA data point.</param>
-    /// <param name="decPoint">The Dec data point.</param>
-    private void AddToRaDecChartData(ChartPointDto raPoint, ChartPointDto decPoint)
-    {
-        var timestampMs = raPoint.TimestampMs;
-        var cutoffMs = timestampMs - RaDecRollingWindowMs;
-
-        _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
-
-        _raDecChartData.Add(new RaDecChartData
-        {
-            TimestampMs = timestampMs,
-            RawRaSteps = raPoint.Value,
-            RawDecSteps = decPoint.Value,
-            Ra = ScaleValue(raPoint.Value, axisIndex: 0),
-            Dec = ScaleValue(decPoint.Value, axisIndex: 1)
-        });
-    }
-
-    /// <summary>
-    /// Rescales the RA/Dec chart data points based on the current scale settings.
-    /// </summary>
-    private void RescaleRaDecChartData()
-    {
-        foreach (var point in _raDecChartData)
-        {
-            point.Ra = ScaleValue(point.RawRaSteps, axisIndex: 0);
-            point.Dec = ScaleValue(point.RawDecSteps, axisIndex: 1);
-        }
-    }
-
-    /// <summary>
-    /// Trims the RA/Dec chart data to fit within the rolling window.
-    /// </summary>
-    private void TrimRaDecChartDataToRollingWindow()
-    {
-        if (_raDecChartData.Count == 0) return;
-
-        var latestTimestampMs = _raDecChartData[^1].TimestampMs;
-        var cutoffMs = latestTimestampMs - RaDecRollingWindowMs;
-
-        _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
-    }
-
-    /// <summary>
-    /// Updates the RA/Dec chart with the current data.
-    /// </summary>
-    /// <param name="animate">Indicates whether the update should be animated.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task UpdateRaDecChartAsync(bool animate)
-    {
-        if (_chart is null || _disposed)
-        {
-            StateHasChanged();
-            return;
-        }
-
-        try
-        {
-            await _chart.UpdateSeriesAsync(animate);
-        }
-        catch (TaskCanceledException)
-        {
-        }
-    }
-
-    // -- Chart options builder ----------------------------------------------
-
-    /// <summary>
-    /// Builds the chart options based on the current settings.
-    /// </summary>
-    private void BuildChartOptions()
-    {
-        var yTitle = _settings.RaDecScale switch
-        {
-            "Degrees" => "Degrees",
-            "ArcSeconds" => "Arc-seconds",
-            _ => "Steps"
-        };
-
-        // The formatter function for the y-axis labels, based on the selected scale.
-        var yFormatter = _settings.RaDecScale switch
-        {
-            "Degrees" => "function(val) { return Number(val).toFixed(2); }",
-            "ArcSeconds" => "function(val) { return Number(val).toFixed(1); }",
-            _ => "function(val) { return Math.round(Number(val)).toString(); }"
-        };
-
-        // Build the chart options with the appropriate y-axis title and formatter.
-        _chartOptions = new ApexChartOptions<RaDecChartData>
-        {
-            Xaxis = new XAxis
-            {
-                Type = XAxisType.Datetime,
-                Labels = new XAxisLabels
-                {
-                    Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
-                }
-            },
-            Yaxis =
-            [
-                new YAxis
-                {
-                    Title = new AxisTitle
-                    { 
-                        Text = yTitle,
-                        Style = new AxisTitleStyle { Color = MudDefaultAxisLabelColor }
-                    },
-                    Labels = new YAxisLabels
-                    {
-                        Formatter = yFormatter,
-                        Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
-                    }
-                }
-            ]
-        };
-    }
-
-    private void BuildHistoricalOptions(string yTitle, string yFormatter)
-    {
-    }
-
-}
