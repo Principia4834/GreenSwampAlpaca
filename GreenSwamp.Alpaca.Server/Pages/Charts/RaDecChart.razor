@@ -109,18 +109,44 @@
     </MudStack>
 
     @* -- Chart ------------------------------------------------------------- *@
-    <ApexChart TItem="RaDecChartData" Title="RA/Dec Chart">
+    <ApexChart TItem="RaDecChartData"
+               Title="RA/Dec Chart"
+               XAxisType="XAxisType.Datetime"
+               @ref="_chart"
+               Height="350">
+
+        <ApexPointSeries TItem="RaDecChartData"
+                         Items="@_raDecChartData"
+                         Name="RA"
+                         SeriesType="SeriesType.Line"
+                         XValue="@(p => p.TimestampMs)"
+                         YValue="@(p => (decimal)p.Ra)"
+                         Color="#f44336" />
+
+        <ApexPointSeries TItem="RaDecChartData"
+                         Items="@_raDecChartData"
+                         Name="Dec"
+                         SeriesType="SeriesType.Line"
+                         XValue="@(p => p.TimestampMs)"
+                         YValue="@(p => (decimal)p.Dec)"
+                         Color="#2196f3" />
 
     </ApexChart>
 
 </div>
 @code {
+    private const long RaDecRollingWindowMs = 10_000;
     private readonly List<RaDecChartData> _raDecChartData = [];
+    private ApexChart<RaDecChartData>? _chart;
 
+    /// <summary>Represents a data point for the RA/Dec chart.</summary>
     private sealed class RaDecChartData
     {
+        /// <summary>Gets the timestamp of the data point in milliseconds.</summary>
         public long TimestampMs { get; init; }
+        /// <summary>Gets the RA value of the data point.</summary>
         public double Ra { get; init; }
+        /// <summary>Gets the Dec value of the data point.</summary>
         public double Dec { get; init; }
     }
 
@@ -129,7 +155,7 @@
     /// <summary>
     /// SignalR handler for incoming axis points. Adds the points to the chart data buffers.
     /// </summary>
-    /// <param name="points"></param>
+    /// <param name="points">The array of incoming axis points.</param>
     private void OnAxisPoints(ChartPointDto[] points)
     {
         if (_disposed || points.Length < 2) return;
@@ -146,27 +172,27 @@
                 await Logger.LogRaDecPointAsync(2, points[1]);
             }
 
-            _pendingChartUpdate = true;
+            await UpdateRaDecChartAsync(animate: true);
         });
     }
 
     /// <summary>
-    /// SignalR handler for incoming historical data. Clears the existing chart data and populates it with the new historical data.
+    /// SignalR handler for incoming historical data. Clears the existing chart data and populates it
+    /// with the new historical data.
     /// </summary>
     /// <param name="history">The historical data received from the server.</param>
     private void OnHistory(HistoricalDataDto history)
     {
         if (_disposed) return;
 
-        _ = InvokeAsync(() =>
+        _ = InvokeAsync(async () =>
         {
             if (_disposed) return;
 
             _raDecChartData.Clear();
 
-            var cap = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
-            var axis1 = history.AxisOnePoints.TakeLast(cap).ToArray();
-            var axis2 = history.AxisTwoPoints.TakeLast(cap).ToArray();
+            var axis1 = history.AxisOnePoints.ToArray();
+            var axis2 = history.AxisTwoPoints.ToArray();
             var count = Math.Min(axis1.Length, axis2.Length);
 
             for (var i = 0; i < count; i++)
@@ -174,26 +200,50 @@
                 AddToRaDecChartData(axis1[i], axis2[i]);
             }
 
-            _pendingChartUpdate = true;
-            StateHasChanged();
+            await UpdateRaDecChartAsync(animate: false);
         });
     }
 
+    /// <summary>
+    /// Adds a new RA/Dec data point to the chart data buffer.
+    /// </summary>
+    /// <param name="raPoint">The RA data point.</param>
+    /// <param name="decPoint">The Dec data point.</param>
     private void AddToRaDecChartData(ChartPointDto raPoint, ChartPointDto decPoint)
     {
-        var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
+        var timestampMs = raPoint.TimestampMs;
+        var cutoffMs = timestampMs - RaDecRollingWindowMs;
 
-        if (_raDecChartData.Count >= max)
-        {
-            _raDecChartData.RemoveAt(0);
-        }
+        _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
 
         _raDecChartData.Add(new RaDecChartData
         {
-            TimestampMs = raPoint.TimestampMs,
+            TimestampMs = timestampMs,
             Ra = ScaleValue(raPoint.Value, axisIndex: 0),
             Dec = ScaleValue(decPoint.Value, axisIndex: 1)
         });
+    }
+
+    /// <summary>
+    /// Updates the RA/Dec chart with the current data.
+    /// </summary>
+    /// <param name="animate">Indicates whether the update should be animated.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private async Task UpdateRaDecChartAsync(bool animate)
+    {
+        if (_chart is null || _disposed)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            await _chart.UpdateSeriesAsync(animate);
+        }
+        catch (TaskCanceledException)
+        {
+        }
     }
 
     // -- Chart options builder ----------------------------------------------
@@ -227,7 +277,7 @@
         {
             10 => 10,
             120 => 12,
-            _ => 6    // 30 s default
+            _ => 30    // 30 s default
         };
 
     }
