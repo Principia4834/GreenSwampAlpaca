@@ -169,11 +169,24 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             await UpdateRaDecChartAsync(animate: false);
         }
 
+        /// <summary>
+        /// Toggles the visibility of a series (Axis 1 or Axis 2) on or off.
+        /// </summary>
+        /// <param name="value">The new visibility state.</param>
+        /// <param name="axis">The axis index (1 or 2).</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task OnSeriesToggleAsync(bool value, int axis)
         {
-            if (axis == 1) _settings.ShowAxis1 = value;
-            else           _settings.ShowAxis2 = value;
+            if (axis == 1)
+                _settings.ShowAxis1 = value;
+            else
+                _settings.ShowAxis2 = value;
+
             await SettingsService.SaveChartSettingsAsync(_settings);
+
+            _chartKey = $"radec-{_settings.RaDecScale}-{_settings.RealtimeWindowSeconds}s-a1{_settings.ShowAxis1}-a2{_settings.ShowAxis2}";
+
+            StateHasChanged();
         }
 
         /// <summary>

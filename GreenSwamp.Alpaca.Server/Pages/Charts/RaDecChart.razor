@@ -112,6 +112,7 @@
 
     @* -- Chart ------------------------------------------------------------- *@
     <ApexChart TItem="RaDecChartData"
+               @key="@_chartKey"
                Title="RA/Dec Chart"
                XAxisType="XAxisType.Datetime"
                Options="@_chartOptions"
@@ -124,6 +125,7 @@
                          SeriesType="SeriesType.Line"
                          XValue="@(p => p.TimestampMs)"
                          YValue="@(p => (decimal)p.Ra)"
+                         Hidden="@(!_settings.ShowAxis1)"
                          Color="#f44336" />
 
         <ApexPointSeries TItem="RaDecChartData"
@@ -132,6 +134,7 @@
                          SeriesType="SeriesType.Line"
                          XValue="@(p => p.TimestampMs)"
                          YValue="@(p => (decimal)p.Dec)"
+                         Hidden="@(!_settings.ShowAxis2)"
                          Color="#2196f3" />
 
     </ApexChart>
@@ -316,24 +319,22 @@
                 Type = XAxisType.Datetime,
                 Labels = new XAxisLabels
                 {
-                    Style = new AxisLabelStyle
-                    {
-                        Colors = MudDefaultAxisLabelColor
-                    }
+                    Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
                 }
             },
             Yaxis =
             [
                 new YAxis
                 {
-                    Title = new AxisTitle { Text = yTitle },
+                    Title = new AxisTitle
+                    { 
+                        Text = yTitle,
+                        Style = new AxisTitleStyle { Color = MudDefaultAxisLabelColor }
+                    },
                     Labels = new YAxisLabels
                     {
                         Formatter = yFormatter,
-                        Style = new AxisLabelStyle
-                        {
-                            Colors = MudDefaultAxisLabelColor
-                        }
+                        Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
                     }
                 }
             ]
