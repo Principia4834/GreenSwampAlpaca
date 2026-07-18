@@ -127,7 +127,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
 
         /// <summary>
-        /// Changes the rolling window size (5 / 10 / 30 / 60 seconds) for Realtime mode.
+        /// Changes the rolling window size (10 / 30 / 120 seconds) for Realtime mode.
         /// </summary>
         /// <param name="seconds">The new rolling window size in seconds.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -155,13 +155,17 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <summary>Changes the Y-axis scale (Steps / Degrees / Arc-seconds).</summary>
         private async Task OnScaleChangedAsync(string scale)
         {
+            if (scale == _settings.RaDecScale) return;
+
             _settings.RaDecScale = scale;
             await SettingsService.SaveChartSettingsAsync(_settings);
-            // Scale change invalidates buffered values — re-request history to refill in new unit.
+
+            RescaleRaDecChartData();
+
             BuildChartOptions();
             _chartKey = $"radec-{_settings.RaDecScale}";
-            try { await _hub!.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber); }
-            catch (TaskCanceledException) { }
+
+            await UpdateRaDecChartAsync(animate: false);
         }
 
         private async Task OnSeriesToggleAsync(bool value, int axis)
