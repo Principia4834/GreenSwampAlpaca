@@ -50,6 +50,7 @@
                 <MudSelectItem Value="10">10 s</MudSelectItem>
                 <MudSelectItem Value="30">30 s</MudSelectItem>
                 <MudSelectItem Value="120">120 s</MudSelectItem>
+                <MudSelectItem Value="300">300 s</MudSelectItem>
             </MudSelect>
 
             <MudSelect T="int" Label="Max pts" Value="@_settings.RaDecMaxPoints"
@@ -121,7 +122,7 @@
                    Width="@("100%")">
 
             <ApexPointSeries TItem="RaDecChartData"
-                             Items="@_raDecChartData"
+                             Items="@_raDecChartDataSubList"
                              Name="RA"
                              SeriesType="SeriesType.Line"
                              XValue="@(p => p.TimestampMs)"
@@ -130,7 +131,7 @@
                              Stroke="@(new SeriesStroke { Width = 2, Color = "#f44336" })"/>
 
             <ApexPointSeries TItem="RaDecChartData"
-                             Items="@_raDecChartData"
+                             Items="@_raDecChartDataSubList"
                              Name="Dec"
                              SeriesType="SeriesType.Line"
                              XValue="@(p => p.TimestampMs)"

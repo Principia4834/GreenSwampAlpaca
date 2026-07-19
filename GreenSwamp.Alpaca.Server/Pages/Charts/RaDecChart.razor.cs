@@ -17,6 +17,7 @@
 using ApexCharts;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
+using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -70,7 +71,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private System.Threading.Timer? _refreshTimer;
 
         private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
-        private readonly List<RaDecChartData> _raDecChartData = [];
+        private  List<RaDecChartData> _raDecChartData = [];
+        private SubList<RaDecChartData> _raDecChartDataSubList = null; // Will be initialized in OnInitializedAsync
         private ApexChart<RaDecChartData>? _chart;
         private ApexChartOptions<RaDecChartData> _chartOptions = new();
         private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
@@ -78,7 +80,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         #region SignalR Handlers
         // -- SignalR handlers ---------------------------------------------------
 
-        /// <summary>
+        /// <summary>       
         /// SignalR handler for incoming axis points. Adds the points to the chart data buffers.
         /// </summary>
         /// <param name="points">The array of incoming axis points.</param>
@@ -103,35 +105,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
 
         /// <summary>
-        /// SignalR handler for incoming historical data. Clears the existing chart data and populates it
-        /// with the new historical data.
-        /// </summary>
-        /// <param name="history">The historical data received from the server.</param>
-        private void OnHistory(HistoricalDataDto history)
-        {
-            if (_disposed) return;
-
-            _ = InvokeAsync(async () =>
-            {
-                if (_disposed) return;
-
-                _raDecChartData.Clear();
-
-                var axis1 = history.AxisOnePoints.ToArray();
-                var axis2 = history.AxisTwoPoints.ToArray();
-                var count = Math.Min(axis1.Length, axis2.Length);
-
-                for (var i = 0; i < count; i++)
-                {
-                    AddToRaDecChartData(axis1[i], axis2[i]);
-                }
-
-                await UpdateRaDecChartAsync(animate: false);
-            });
-        }
-
-        /// <summary>
         /// Adds a new RA/Dec data point to the chart data buffer.
+        /// Update SubList buffer to maintain the rolling window size, 
+        /// and notify the SubList of the new data.
         /// </summary>
         /// <param name="raPoint">The RA data point.</param>
         /// <param name="decPoint">The Dec data point.</param>
@@ -140,7 +116,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var timestampMs = raPoint.TimestampMs;
             var cutoffMs = timestampMs - RaDecRollingWindowMs;
 
-            _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
+            var count = _raDecChartDataSubList.Count(p => p.TimestampMs < cutoffMs);
+            _raDecChartDataSubList.RemoveFromStart(count);
 
             _raDecChartData.Add(new RaDecChartData
             {
@@ -150,6 +127,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 Ra = ScaleValue(raPoint.Value, axisIndex: 0),
                 Dec = ScaleValue(decPoint.Value, axisIndex: 1)
             });
+            _raDecChartDataSubList.NotifyInsertedAtEnd();
         }
         #endregion
 
@@ -158,6 +136,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         protected override async Task OnInitializedAsync()
         {
+            _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
+            
             _settings = SettingsService.GetChartSettings();
             BuildChartOptions();
 
@@ -168,7 +148,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 .Build();
 
             _hub.On<ChartPointDto[]>("ReceiveAxisPoint", OnAxisPoints);
-            _hub.On<HistoricalDataDto>("ReceiveRaDecHistory", OnHistory);
+            // _hub.On<HistoricalDataDto>("ReceiveRaDecHistory", OnHistory);
 
             _hub.Reconnecting += _ => { _hubState = HubConnectionState.Reconnecting; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
             _hub.Reconnected  += _ => { _hubState = HubConnectionState.Connected;    InvokeAsync(StateHasChanged); return Task.CompletedTask; };
@@ -177,7 +157,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             await _hub.StartAsync();
             _hubState = _hub.State;
             await _hub.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
-            await _hub.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber);
 
             if (_settings.AutoStartLogging)
             {
@@ -219,6 +198,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             //    catch (TaskCanceledException) { }
             //});
         }
+
         /// <summary>
         /// Rescales the RA/Dec chart data points based on the current scale settings.
         /// </summary>
@@ -234,14 +214,15 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <summary>
         /// Trims the RA/Dec chart data to fit within the rolling window.
         /// </summary>
-        private void TrimRaDecChartDataToRollingWindow()
+        private void SetRaDecChartDataToRollingWindow()
         {
             if (_raDecChartData.Count == 0) return;
 
             var latestTimestampMs = _raDecChartData[^1].TimestampMs;
             var cutoffMs = latestTimestampMs - RaDecRollingWindowMs;
 
-            _raDecChartData.RemoveAll(p => p.TimestampMs < cutoffMs);
+            var index = _raDecChartData.FindIndex(p => p.TimestampMs >= cutoffMs);
+            _raDecChartDataSubList.SetStartIndex(index);
         }
 
         /// <summary>
@@ -282,7 +263,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
 
         /// <summary>
-        /// Changes the rolling window size (10 / 30 / 120 seconds) for Realtime mode.
+        /// Changes the rolling window size (10 / 30 / 120 / 300seconds) for Realtime mode.
         /// </summary>
         /// <param name="seconds">The new rolling window size in seconds.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -291,7 +272,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _settings.RealtimeWindowSeconds = seconds;
             await SettingsService.SaveChartSettingsAsync(_settings);
 
-            TrimRaDecChartDataToRollingWindow();
+            SetRaDecChartDataToRollingWindow();
 
             BuildChartOptions();
             _chartKey = $"radec-{_settings.DisplayMode}-{seconds}s";
@@ -369,18 +350,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             {
                 _loggingBusy = false;
             }
-        }
-
-        /// <summary>
-        /// Returns the tooltip text for the logging button based on the current logging state.
-        /// </summary>
-        /// <returns>The tooltip text for the logging button.</returns>
-        private string GetLoggingTooltipText()
-        {
-            if (_loggingBusy)
-                return _loggingActive ? "Stopping logging…" : "Starting logging…";
-
-            return _loggingActive ? "Stop logging" : "Start logging";
         }
 
         /// <summary>Manual refresh — re-requests history from the server.</summary>
