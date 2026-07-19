@@ -29,6 +29,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     // No raw IJSRuntime calls on the data hot path — those violate the prerender contract.
     public partial class RaDecChart
     {
+        [Parameter] public int DeviceNumber { get; set; }
+
         /// <summary>Represents a data point for the RA/Dec chart.</summary>
         private sealed class RaDecChartData
         {
@@ -47,8 +49,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             /// <summary>Gets the display Dec value in the selected scale.</summary>
             public double Dec { get; set; }
         }
-
-        [Parameter] public int DeviceNumber { get; set; }
 
         // -- State --------------------------------------------------------------
         private ChartSettings _settings = new();
@@ -267,6 +267,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
         #endregion
 
+        #region Toolbar Handlers
         // -- Toolbar handlers ---------------------------------------------------
 
         /// <summary>Switches between Realtime and Historical display modes.</summary>
@@ -346,23 +347,22 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task ToggleLoggingAsync()
+        private async Task ToggleLoggingAsync(bool v)
         {
             if (_loggingBusy || _disposed) return;
 
             _loggingBusy = true;
+            _loggingActive = v;
 
             try
             {
                 if (_loggingActive)
                 {
                     await Logger.StopRaDecLoggingAsync();
-                    _loggingActive = false;
                 }
                 else
                 {
                     await Logger.StartRaDecLoggingAsync();
-                    _loggingActive = true;
                 }
             }
             finally
@@ -400,6 +400,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             try { await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", filename); }
             catch (TaskCanceledException) { }
         }
+        #endregion
 
         #region Chart options builder
         // -- Chart options builder ----------------------------------------------
@@ -428,10 +429,21 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             {
                 Chart = new Chart
                 {
+                    Toolbar = new Toolbar { Show = false },
                     ParentHeightOffset = 0,
                     RedrawOnParentResize = true,
-                    RedrawOnWindowResize = true
+                    RedrawOnWindowResize = true,
+                    ForeColor = MudDefaultAxisLabelColor,
                 },
+
+                Title = new Title
+                {
+                    Text = "RA/Dec Chart",
+                    Align = Align.Center
+                },
+
+                Tooltip = new Tooltip { Enabled = false },
+
                 Xaxis = new XAxis
                 {
                     Type = XAxisType.Datetime,
@@ -440,32 +452,17 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         Show = true,
                         HideOverlappingLabels = false,
                         Format = "HH:mm:ss",
-                        DatetimeUTC = true,
-                        Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
+                        DatetimeUTC = true
                     },
-                    AxisTicks = new AxisTicks
-                    {
-                        Show = true
-                    },
-                    AxisBorder = new AxisBorder
-                    {
-                        Show = true
-                    }
+                    AxisTicks = new AxisTicks { Show = true },
+                    AxisBorder = new AxisBorder { Show = true }
                 },
                 Yaxis =
                 [
                     new YAxis
                 {
-                    Title = new AxisTitle
-                    {
-                        Text = yTitle,
-                        Style = new AxisTitleStyle { Color = MudDefaultAxisLabelColor }
-                    },
-                    Labels = new YAxisLabels
-                    {
-                        Formatter = yFormatter,
-                        Style = new AxisLabelStyle { Colors = MudDefaultAxisLabelColor }
-                    }
+                    Title = new AxisTitle { Text = yTitle },
+                    Labels = new YAxisLabels { Formatter = yFormatter }
                 }
                 ]
             };

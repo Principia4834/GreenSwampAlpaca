@@ -88,14 +88,12 @@
             </MudTooltip>
         }
 
-        <MudTooltip Text="@GetLoggingTooltipText()" Placement="Placement.Left">
-            <MudIconButton Icon="@(_loggingActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.FiberManualRecord)"
-                           Color="@(_loggingActive ? MudBlazor.Color.Error : MudBlazor.Color.Default)"
-                           Disabled="@_loggingBusy"
-                           OnClick="ToggleLoggingAsync"
-                           Size="MudBlazor.Size.Small" />
-        </MudTooltip>
+        <MudSwitch T="bool" Label="Log Data" Value="@_settings.ShowAxis1"
+                   ValueChanged="@(v => ToggleLoggingAsync(v))"
+                   Color="MudBlazor.Color.Primary" />
 
+
+        @*
         <MudTooltip Text="Export chart" Placement="Placement.Left">
             <MudMenu Icon="@Icons.Material.Filled.Download"
                      Size="MudBlazor.Size.Small"
@@ -107,6 +105,8 @@
                 <MudMenuItem Icon="@Icons.Material.Filled.TableChart" OnClick="ExportCsvAsync">Export CSV</MudMenuItem>
             </MudMenu>
         </MudTooltip>
+                   Title="@new ChartTitle { Text = "RA / Dec Position", Align = TitleAlign.Left, Style = new ChartStyle { FontSize = "14px" } }""
+        *@
 
     </MudStack>
 
@@ -114,7 +114,6 @@
     <div style="flex:1;min-height:0;overflow:hidden;">
         <ApexChart TItem="RaDecChartData"
                    @key="@_chartKey"
-                   Title="RA/Dec Chart"
                    XAxisType="XAxisType.Datetime"
                    Options="@_chartOptions"
                    @ref="_chart"
@@ -128,7 +127,7 @@
                              XValue="@(p => p.TimestampMs)"
                              YValue="@(p => (decimal)p.Ra)"
                              Hidden="@(!_settings.ShowAxis1)"
-                             Color="#f44336" />
+                             Stroke="@(new SeriesStroke { Width = 2, Color = "#f44336" })"/>
 
             <ApexPointSeries TItem="RaDecChartData"
                              Items="@_raDecChartData"
@@ -137,7 +136,7 @@
                              XValue="@(p => p.TimestampMs)"
                              YValue="@(p => (decimal)p.Dec)"
                              Hidden="@(!_settings.ShowAxis2)"
-                             Color="#2196f3" />
+                             Stroke="@(new SeriesStroke { Width = 2, Color = "#2196f3" })"/>    
 
         </ApexChart>
     </div>
