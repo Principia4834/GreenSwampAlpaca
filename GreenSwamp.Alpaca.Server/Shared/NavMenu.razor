@@ -66,20 +66,6 @@
 
     <MudDivider Class="my-2" />
 
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.Telescopes)
-    {
-        <MudNavLink Icon="@Icons.Material.Filled.ShowChart"
-                    OnClick="@(() => OpenChartWindowAsync($"/charts/radec/{device.Key}", $"gs-radec-chart-{device.Key}"))">
-            RA/Dec Chart @device.Key
-        </MudNavLink>
-        <MudNavLink Icon="@Icons.Material.Filled.DataUsage"
-                    OnClick="@(() => OpenChartWindowAsync($"/charts/pulse/{device.Key}", $"gs-pulse-chart-{device.Key}"))">
-            Pulse Chart @device.Key
-        </MudNavLink>
-    }
-
-    <MudDivider Class="my-2" />
-
     <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">Settings Explorer</MudNavLink>
     <MudNavLink Href="/setup" Icon="@Icons.Material.Filled.Settings">Alpaca Settings</MudNavLink>
     <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">Check Settings</MudNavLink>

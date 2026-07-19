@@ -32,14 +32,14 @@
         }
 
         @* Mode selector — Realtime / Historical *@
-        <MudToggleGroup T="string" Value="@_settings.DisplayMode"
+@*         <MudToggleGroup T="string" Value="@_settings.DisplayMode"
                         ValueChanged="@OnModeChangedAsync"
                         SelectionMode="SelectionMode.SingleSelection"
                         Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Primary" Outlined="true">
             <MudToggleItem Value="@("Realtime")">Realtime</MudToggleItem>
             <MudToggleItem Value="@("Historical")">Historical</MudToggleItem>
         </MudToggleGroup>
-
+ *@
         @* Window duration — only visible in Realtime mode *@
         @if (_settings.DisplayMode == "Realtime")
         {
@@ -53,7 +53,7 @@
                 <MudSelectItem Value="300">300 s</MudSelectItem>
             </MudSelect>
 
-            <MudSelect T="int" Label="Max pts" Value="@_settings.RaDecMaxPoints"
+@*             <MudSelect T="int" Label="Max pts" Value="@_settings.RaDecMaxPoints"
                        ValueChanged="@OnMaxPointsChangedAsync"
                        Variant="Variant.Outlined" Margin="Margin.Dense"
                        Style="min-width:110px;">
@@ -61,7 +61,7 @@
                 <MudSelectItem Value="10000">10 000</MudSelectItem>
                 <MudSelectItem Value="20000">20 000</MudSelectItem>
             </MudSelect>
-        }
+ *@        }
 
         <MudSelect T="string" Label="Scale" Value="@_settings.RaDecScale"
                    ValueChanged="@OnScaleChangedAsync"
@@ -81,6 +81,7 @@
                    Color="MudBlazor.Color.Info" />
 
         @* Manual refresh — only visible in Historical mode *@
+        @*
         @if (_settings.DisplayMode == "Historical")
         {
             <MudTooltip Text="Refresh chart" Placement="Placement.Left">
@@ -92,7 +93,7 @@
         <MudSwitch T="bool" Label="Log Data" Value="@_settings.ShowAxis1"
                    ValueChanged="@(v => ToggleLoggingAsync(v))"
                    Color="MudBlazor.Color.Primary" />
-
+        *@
 
         @*
         <MudTooltip Text="Export chart" Placement="Placement.Left">

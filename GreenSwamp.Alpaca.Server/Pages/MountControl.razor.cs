@@ -23,6 +23,7 @@ using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Pages
@@ -258,6 +259,32 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
             mount.ParkSelected = position;
             Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
+        }
+
+        // -- RA/Dec Plot -------------------------------------------------------
+        private async Task OpenChartWindowAsync(string url, string windowKey)
+        {
+            await JS.InvokeVoidAsync(
+                "chartWindowInterop.open",
+                DotNetObjectReference.Create(this),
+                url,
+                windowKey,
+                1200,
+                700);
+        }
+
+        [JSInvokable]
+        public void OnPopupBlocked(string url)
+        {
+            Snackbar.Add(
+                "Chart window was blocked. Please allow pop-ups for this site.",
+                Severity.Warning);
+        }
+
+        [JSInvokable]
+        public void OnChartWindowClosed(string windowKey)
+        {
+            // Chart window closed externally — no nav-menu state to update.
         }
     }
 }

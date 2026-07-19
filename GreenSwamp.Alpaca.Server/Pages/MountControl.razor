@@ -11,6 +11,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject TelescopeStateService StateService
+@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Mount Control</PageTitle>
@@ -263,6 +264,13 @@ else
                                             ShowPrimaryButtons="true"
                                             ShowStopButton="false" />
                         </MudStack>
+                        <MudDivider />
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   OnClick="@(()=>
+                            OpenChartWindowAsync($"/charts/radec/{dn}", $"gs-radec-chart-{dn}"))">
+                            RA/Dec Plot
+                        </MudButton>
                     </MudPaper>
 
                 </MudStack>
