@@ -1,4 +1,4 @@
-﻿## :bust_in_silhouette:  (19/07/2026 17:46)
+## :bust_in_silhouette:  (19/07/2026 17:46)
 I have implemented a chart feature which uses SignalR to transport data and uses MudBlazor and ApexCharts to create and render the charts. This has high bandwidth traffic between the server app and the browser which I suspect is due to teh provision of htnl and svg constructs to render the chart. I want to explore migrating the Blazor approach to a native javascript. This is the native codebase for ApexCharts so the conop osto use SignalR to send data to a locally hosted  Javascript buffer which apex charts then consumes and renders directly in the browser. I have a prototype javascript chart buffer file which may be useful. Assess the feasibility and blockers to this approach. Give me a short summary report on screen. You have access to the ApexCharts MCP and Microsoft Learn - use them
 ## :speech_balloon: GitHub Copilot
 
