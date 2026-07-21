@@ -33,7 +33,8 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         {
             MaxWidth = MaxWidth.Small,
             FullWidth = true,
-            CloseOnEscapeKey = true
+            CloseOnEscapeKey = true,
+            BackdropClick = false
         };
 
         // -- Park --------------------------------------------------------------

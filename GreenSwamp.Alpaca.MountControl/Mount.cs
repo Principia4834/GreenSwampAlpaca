@@ -471,7 +471,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>Requests an in-progress AutoHome operation to stop.</summary>
-        public void RequestAutoHomeStop() => _autoHomeStop = true;
+        public void RequestAutoHomeStop() => AutoHomeStop = true;
 
         #endregion
 
