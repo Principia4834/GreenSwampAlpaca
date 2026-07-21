@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -64,7 +64,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         {
                             MountStart();
 
-                            // Hardware succeeded — add to connected set before clearing Connecting so the
+                            // Hardware succeeded â€” add to connected set before clearing Connecting so the
                             // 200 ms TelescopeStateService tick always sees IsConnected = true on the same
                             // tick that Connecting transitions to false. This ensures the "Mount Connected"
                             // voice announcement fires on the correct state transition.
@@ -87,7 +87,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         }
                         catch (Exception ex)
                         {
-                            // TryAdd was never called — IsConnected is already false.
+                            // TryAdd was never called â€” IsConnected is already false.
                             _lastConnectionError = ex.Message;
 
                             // MountErrorHandler calls MountStop() and stores _mountError.
@@ -124,7 +124,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     return; // Early return - Connecting remains true until background task completes
                 }
 
-                // Mount already running — add this client immediately; no hardware init needed.
+                // Mount already running â€” add this client immediately; no hardware init needed.
                 _connectStates.TryAdd(id, true);
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Add|{id}|AlreadyRunning" };
@@ -330,11 +330,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     _ = (string)SkyQueue.GetCommandResult(init).Result;
                     if (!init.Successful)
                     {
-                        // Assign _mountError directly — MountErrorHandler will be called once
+                        // Assign _mountError directly â€” MountErrorHandler will be called once
                         // by SetConnected()'s catch block, avoiding a double MountStop().
                         _mountError = init.Exception != null
                             ? new Exception($"CheckMount{Environment.NewLine}{init.Exception.Message}", init.Exception)
-                            : new SkyServerException(ErrorCode.ErrSerialFailed, "No response from mount controller — check port and power");
+                            : new SkyServerException(ErrorCode.ErrSerialFailed, "No response from mount controller â€” check port and power");
                         return false;
                     }
 
@@ -422,7 +422,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     {
                         if (counter > 5)
                         {
-                            // All position reads failed — no mount is responding.
+                            // All position reads failed â€” no mount is responding.
                             var error = new SkyServerException(ErrorCode.ErrMount,
                                 "Mount not responding: failed to read axis positions after 5 retries");
                             MountErrorHandler(error);
@@ -555,8 +555,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     mqImpl.DeviceNumber = DeviceNumber;
                     mqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
-                        v => { _isPulseGuidingRa = v; },
-                        v => { _isPulseGuidingDec = v; });
+                        v => { IsPulseGuidingRa = v; },
+                        v => { IsPulseGuidingDec = v; });
                     // Start the instance-owned simulator queue directly (no static facade)
                     mqImpl.Start();
                     SimQueue = mqImpl;
@@ -590,8 +590,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     sqImpl.DeviceNumber = DeviceNumber;
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
-                        v => { _isPulseGuidingRa = v; },
-                        v => { _isPulseGuidingDec = v; });
+                        v => { IsPulseGuidingRa = v; },
+                        v => { IsPulseGuidingDec = v; });
                     sqImpl.Start(_serial, custom360Steps, customWormSteps, this.OnLowVoltageEvent);
                     SkyQueue = sqImpl;
                     if (!sqImpl.IsRunning)
@@ -624,7 +624,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             else
             {
-                // MountConnect() set _mountError directly — throw it so SetConnected()'s catch
+                // MountConnect() set _mountError directly â€” throw it so SetConnected()'s catch
                 // block calls MountErrorHandler() once and sets _lastConnectionError.
                 throw _mountError
                     ?? new SkyServerException(ErrorCode.ErrMount, "Mount failed during initialisation");
@@ -656,7 +656,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4 / N6: moved before AxesStopValidate
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
-            _altAzTrackingTimer = null;  // N6: null the field — was missing, causing IsRunning check on disposed timer after reconnect
+            _altAzTrackingTimer = null;  // N6: null the field â€” was missing, causing IsRunning check on disposed timer after reconnect
             if (_mediaTimer != null)
             {
                 _mediaTimer.Tick -= OnUpdateServerEvent;  // No more subscriptions
@@ -669,7 +669,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _mediaTimer = null;  // Safe to null now
                 }
             }
-            AxesStopValidate(); // Now safe — no timer can race and re-queue motion
+            AxesStopValidate(); // Now safe â€” no timer can race and re-queue motion
 
             if (SimQueue?.IsRunning == true) { SimQueue.Stop(); }
 
@@ -734,7 +734,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>
         /// Per-tick update loop.
-        /// Replaces static UpdateServerEvent body — per-instance lock prevents cross-device re-entrancy.
+        /// Replaces static UpdateServerEvent body â€” per-instance lock prevents cross-device re-entrancy.
         /// </summary>
         private void OnUpdateServerEvent(object sender, EventArgs e)
         {

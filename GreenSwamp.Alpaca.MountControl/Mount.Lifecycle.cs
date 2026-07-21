@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -252,8 +252,8 @@ namespace GreenSwamp.Alpaca.MountControl
             else
             {
                 SkyPredictor.Reset(); // N5: reset on tracking OFF only — never on re-enable
-                _isPulseGuidingRa = false;
-                _isPulseGuidingDec = false;
+                IsPulseGuidingRa = false;
+                IsPulseGuidingDec = false;
                 TrackingMode = TrackingMode.Off;
             }
             this.SetTracking(waitForQueueCompletion: waitForQueueCompletion);

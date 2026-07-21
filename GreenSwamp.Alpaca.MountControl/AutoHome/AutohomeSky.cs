@@ -170,18 +170,18 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             HomeSensorCapabilityCheck();
             if (!HasHomeSensor) { return AutoHomeResult.HomeCapabilityCheckFailed; }
             _ = new SkyAxisStop(_skyQueue.NewId, _skyQueue, axis);
+
             if (_mount.Tracking)
             {
                 _mount.EnableVoice = false;
                 _mount.ApplyTracking(false);
             }
+
             var totalMove = 0.0;
-            // ReSharper disable once RedundantAssignment
             var clockwise = false;
             var startOvers = 0;
-            bool? status;
             bool? loopStatus = null;
-            _mount._autoHomeProgressBar += 5;
+            _mount.AutoHomeProgressBar += 5;
 
             // slew away from those that start at home position
             var slewResult = SlewAxis(3.3, axis);
@@ -195,61 +195,63 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
                 if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
                 if (startOvers >= 2) return AutoHomeResult.TooManyRestarts;
 
-                status = GetValidStatus(axis);
-                var lastStatus = status;
+                var lastStatus = GetValidStatus(axis);
+
                 // check status last loop vs this loop and see if status changed
-                if (status != null && loopStatus != null) // home not found and not first loop
+                if (lastStatus.HasValue && loopStatus.HasValue) // home not found and not first loop
                 {
-                    if (status != loopStatus) // status changed but no detection of home
+                    if (lastStatus != loopStatus) // status changed but no detection of home
                     {
-                        slewResult = SlewAxis(2.7, axis, clockwise); //slew 2.7 degrees
-                        if (slewResult != 0) return slewResult;
-                        status = GetHomeSensorStatus(axis); // check sensor
-                        if (status != null)
+                        slewResult = SlewAxis(2.7, axis, clockwise); // slew 2.7 degrees
+                        if (slewResult != AutoHomeResult.Success) return slewResult;
+
+                        var sensorStatus = GetHomeSensorStatus(axis); // check sensor
+                        if (sensorStatus.HasValue)
                         {
                             i = 0;
-                            //total move = 0.0;
+                            // total move = 0.0;
                             startOvers++;
-                            continue; //start over
+                            continue; // start over
                         }
-                        break; //found home
+                        break; // found home
                     }
                     if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
                 }
-                switch (status)
-                {
-                    case null:
-                        return _mount.AutoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
-                    case true:
-                    case false:
-                        clockwise = (bool)status;
-                        break;
-                }
 
-                _mount._autoHomeProgressBar += 1;
+                if (!lastStatus.HasValue)
+                    return _mount.AutoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
 
-                slewResult = SlewAxis(5.0, axis, clockwise); //slew 5 degrees
+                clockwise = lastStatus.Value;
+                _mount.AutoHomeProgressBar += 1;
+
+                slewResult = SlewAxis(5.0, axis, clockwise); // slew 5 degrees
                 if (slewResult != AutoHomeResult.Success) return slewResult;
+
                 totalMove += 5.0; // keep track of how far moved
-                status = GetHomeSensorStatus(axis); // check sensor
-                loopStatus = status;
-                if (status != null) // home not found
+                var sensorStatusAfterSlew = GetHomeSensorStatus(axis); // check sensor
+                loopStatus = sensorStatusAfterSlew;
+
+                if (sensorStatusAfterSlew.HasValue) // home not found
                 {
-                    if (status == lastStatus) continue;
+                    if (sensorStatusAfterSlew == lastStatus) continue;
+
                     slewResult = SlewAxis(2.5, axis, clockwise);
                     if (slewResult != AutoHomeResult.Success) return slewResult;
-                    status = GetHomeSensorStatus(axis);
-                    loopStatus = status;
-                    if (status != null)
+
+                    sensorStatusAfterSlew = GetHomeSensorStatus(axis);
+                    loopStatus = sensorStatusAfterSlew;
+
+                    if (sensorStatusAfterSlew.HasValue)
                     {
                         i = 0;
-                        //total move = 0.0;
+                        // total move = 0.0;
                         startOvers++;
-                        continue; //start over
+                        continue; // start over
                     }
                 }
                 break;
             }
+
             if (_mount.AutoHomeStop) return AutoHomeResult.StopRequested;
             if (totalMove >= maxMove) return AutoHomeResult.HomeSensorNotFound;
             if (startOvers >= 2) return AutoHomeResult.TooManyRestarts;
@@ -258,45 +260,35 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
             slewResult = SlewToHome(axis);
             if (slewResult != AutoHomeResult.Success) return slewResult;
 
-            _mount._autoHomeProgressBar += 5;
+            _mount.AutoHomeProgressBar += 5;
 
             // 3.7 degree slew away from home for a validation move
             slewResult = SlewAxis(3.7, axis); // slew away from home
             if (slewResult != AutoHomeResult.Success) return slewResult;
-            status = GetValidStatus(axis);
-            switch (status)
-            {
-                case null:
-                    return _mount.AutoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
-                case true:
-                case false:
-                    clockwise = (bool)status;
-                    break;
-            }
 
-            _mount._autoHomeProgressBar += 5;
+            var validationStatus = GetValidStatus(axis);
+            if (!validationStatus.HasValue)
+                return _mount.AutoHomeStop ? AutoHomeResult.StopRequested : AutoHomeResult.FailedHomeSensorReset;
+
+            clockwise = validationStatus.Value;
+
+            _mount.AutoHomeProgressBar += 5;
 
             // slew back over home to validate home position
             slewResult = SlewAxis(5, axis, clockwise); // slew over home
             if (slewResult != AutoHomeResult.Success) return slewResult;
-            status = GetHomeSensorStatus(axis); // check sensor
-            switch (status)
-            {
-                case null:
-                    // home found
-                    break;
-                case true:
-                case false:
-                    return AutoHomeResult.HomeSensorNotFound; // home not found
-            }
 
-            _mount._autoHomeProgressBar += 5;
+            var homeStatus = GetHomeSensorStatus(axis); // check sensor
+            if (homeStatus.HasValue)
+                return AutoHomeResult.HomeSensorNotFound; // home not found
+
+            _mount.AutoHomeProgressBar += 5;
 
             // slew back to remove backlash
             slewResult = SlewAxis(3, axis, !clockwise); // slew over home
             if (slewResult != AutoHomeResult.Success) return slewResult;
 
-            _mount._autoHomeProgressBar += 5;
+            _mount.AutoHomeProgressBar += 5;
 
             // slew to home
             slewResult = SlewToHome(axis);
@@ -311,11 +303,11 @@ namespace GreenSwamp.Alpaca.Mount.AutoHome
 
             return AutoHomeResult.Success;
         }
-
+        
         /// <summary>
-        /// Slew to home based on TripPosition already being set
-        /// </summary>
-        /// <param name="axis"></param>
+                 /// Slew to home based on TripPosition already being set
+                 /// </summary>
+                 /// <param name="axis"></param>
         private AutoHomeResult SlewToHome(Axis axis)
         {
             if (_mount.AutoHomeStop) return AutoHomeResult.StopRequested;

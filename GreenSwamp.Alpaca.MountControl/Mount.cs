@@ -88,16 +88,10 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _limitTriggerSuppressed;
 
         // Backing fields
-        private bool _isPulseGuidingRa;
-        private bool _isPulseGuidingDec;
         internal Vector _rateMoveAxes;
         internal bool _moveAxisActive;
         private bool _flipOnNextGoto;
         internal SlewType _slewState;
-        private Exception? _lastAutoHomeError;
-        internal int _autoHomeProgressBar;
-        internal bool _autoHomeStop;
-        private bool _isAutoHomeRunning;
         internal bool _snapPort1Result;
         internal bool _snapPort2Result;
         internal bool _snapPort1;
@@ -397,20 +391,12 @@ namespace GreenSwamp.Alpaca.MountControl
             _slewState != SlewType.SlewNone;
 
         // IsPulseGuiding — combined pulse guide state
-        public bool IsPulseGuiding => _isPulseGuidingRa || _isPulseGuidingDec;
+        public bool IsPulseGuiding => IsPulseGuidingRa || IsPulseGuidingDec;
 
         // IsPulseGuidingRa / IsPulseGuidingDec — public access for Telescope.cs
-        public bool IsPulseGuidingRa
-        {
-            get => _isPulseGuidingRa;
-            set => _isPulseGuidingRa = value;
-        }
+        public bool IsPulseGuidingRa { get; set; }
 
-        public bool IsPulseGuidingDec
-        {
-            get => _isPulseGuidingDec;
-            set => _isPulseGuidingDec = value;
-        }
+        public bool IsPulseGuidingDec { get; set; }
 
         // SlewState — public access to slew state
         public SlewType SlewState
@@ -446,29 +432,10 @@ namespace GreenSwamp.Alpaca.MountControl
         public double AppAxisY => _appAxes.Y;
         public double[] Steps => _steps;
 
-        public int AutoHomeProgressBar
-        {
-            get => _autoHomeProgressBar;
-            set => _autoHomeProgressBar = value;
-        }
-
-        public bool AutoHomeStop
-        {
-            get => _autoHomeStop;
-            set => _autoHomeStop = value;
-        }
-
-        public bool IsAutoHomeRunning
-        {
-            get => _isAutoHomeRunning;
-            internal set => _isAutoHomeRunning = value;
-        }
-
-        public Exception? LastAutoHomeError
-        {
-            get => _lastAutoHomeError;
-            internal set => _lastAutoHomeError = value;
-        }
+        public int AutoHomeProgressBar { get; set; }
+        public bool AutoHomeStop { get; set; }
+        public bool IsAutoHomeRunning { get; internal set; }
+        public Exception? LastAutoHomeError { get; internal set; }
 
         /// <summary>Requests an in-progress AutoHome operation to stop.</summary>
         public void RequestAutoHomeStop() => AutoHomeStop = true;
@@ -1559,7 +1526,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 switch (axis)
                 {
                     case 0:
-                        if (!_isPulseGuidingDec)
+                        if (!IsPulseGuidingDec)
                         {
                             var ackRa = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                             _trackingProcessor?.Post(new SlewBoundaryCommand(ackRa));
@@ -1570,7 +1537,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         _trackingProcessor?.Post(new PulseGuideCommand(axis, guideRate, duration));
                         break;
                     case 1:
-                        if (!_isPulseGuidingRa)
+                        if (!IsPulseGuidingRa)
                         {
                             var ackDec = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                             _trackingProcessor?.Post(new SlewBoundaryCommand(ackDec));
@@ -1624,8 +1591,8 @@ namespace GreenSwamp.Alpaca.MountControl
                     });
                     switch (axis)
                     {
-                        case 0: _isPulseGuidingRa = false; break;
-                        case 1: _isPulseGuidingDec = false; break;
+                        case 0: IsPulseGuidingRa = false; break;
+                        case 1: IsPulseGuidingDec = false; break;
                     }
                     return;
                 }
@@ -1650,8 +1617,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 // set pulse guiding status
                 switch (axis)
                 {
-                    case 0: _isPulseGuidingRa = false; break;
-                    case 1: _isPulseGuidingDec = false; break;
+                    case 0: IsPulseGuidingRa = false; break;
+                    case 1: IsPulseGuidingDec = false; break;
                 }
             });
         }
