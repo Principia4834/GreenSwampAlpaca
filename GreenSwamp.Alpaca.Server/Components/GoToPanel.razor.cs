@@ -1,7 +1,10 @@
 ﻿using GreenSwamp.Alpaca.MountControl;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
+using ASCOM.Tools.Novas31;
+using GreenSwamp.Alpaca.Mount.Simulator;
 
 namespace GreenSwamp.Alpaca.Server.Components
 {
@@ -83,15 +86,25 @@ namespace GreenSwamp.Alpaca.Server.Components
 
             // Resolve target coordinates from current entry fields
             double coord1, coord2;
+            double[] AltAz = new double[2];
             if (_coordMode == CoordMode.RaDec)
             {
                 coord1 = _entryMode == EntryMode.Float ? _raFloat : HmsToHours(_raH, _raM, _raS);
                 coord2 = _entryMode == EntryMode.Float ? _decFloat : DmsToDegs(_decD, _decM, _decS);
+                AltAz = Coordinate.RaDec2AltAz(coord1, coord2, _mount.SiderealTime, _mount.Settings.Latitude);
             }
             else
             {
                 coord1 = _entryMode == EntryMode.Float ? _azFloat : DmsToDegs(_azD, _azM, _azS);
                 coord2 = _entryMode == EntryMode.Float ? _altFloat : DmsToDegs(_altD, _altM, _altS);
+                AltAz = new double[] { coord2, coord1 }; // signature: (alt, az)
+            }
+
+            // Check if the target coordinates are below the mount's horizon limit
+            if (AltAz[0] < _horizonLimit)
+            {
+                Snackbar.Add("Target coordinates are below the mount's horizon limit.", Severity.Warning);
+                return;
             }
 
             // Show confirmation dialog

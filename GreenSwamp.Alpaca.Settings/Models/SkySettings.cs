@@ -175,6 +175,8 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public double HourAngleLimit { get; set; }
         [UniqueSetting]
+        public double HorizonLimit { get; set; }
+        [UniqueSetting]
         public bool NoSyncPastMeridian { get; set; }
         [CommonSetting]
         public int SyncLimit { get; set; }

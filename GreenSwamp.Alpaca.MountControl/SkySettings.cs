@@ -131,11 +131,12 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _limitPark = false;
         private string _parkLimitName = string.Empty;
 
-        // Limits (10 fields)
+        // Limits
         private double _hourAngleLimit = 15.0;
         private double _axisLimitX = 180.0;
         private double _axisUpperLimitY = 90.0;
         private double _axisLowerLimitY = -90.0;
+        private double _horizonLimit = 0.0;
         private bool _limitsOn = false;
         private bool _limitTracking = false;
         private bool _syncLimitOn = false;
@@ -1438,6 +1439,19 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        public double HorizonLimit
+        {
+            get => _horizonLimit;
+            set
+            {
+                if (Math.Abs(_horizonLimit - value) > 0.01)
+                {
+                    _horizonLimit = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool LimitTracking
         {
             get => _limitTracking;
@@ -1887,6 +1901,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Batch 8: Limits
                 _limitsOn = settings.LimitsOn;
                 _hourAngleLimit = settings.HourAngleLimit;
+                _horizonLimit = settings.HorizonLimit;
                 _axisLimitX = settings.AxisLimitX;
                 _axisUpperLimitY = settings.AxisUpperLimitY;
                 _axisLowerLimitY = settings.AxisLowerLimitY;
@@ -2101,6 +2116,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                 settings.LimitsOn = _limitsOn;
                 settings.HourAngleLimit = _hourAngleLimit;
+                settings.HorizonLimit = _horizonLimit;
                 settings.AxisLimitX = _axisLimitX;
                 settings.AxisUpperLimitY = _axisUpperLimitY;
                 settings.AxisLowerLimitY = _axisLowerLimitY;

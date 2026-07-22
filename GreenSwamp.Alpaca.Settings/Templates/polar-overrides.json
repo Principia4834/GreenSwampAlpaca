@@ -15,6 +15,7 @@
     "CanSetPierSide": true,
     "HomeAxisX": 180.0,
     "HomeAxisY": 5.0,
+    "HorizonLimit": 0.0,
     "HourAngleLimit": 0.0,
     "HzLimitPark": false,
     "HzLimitTracking": false,

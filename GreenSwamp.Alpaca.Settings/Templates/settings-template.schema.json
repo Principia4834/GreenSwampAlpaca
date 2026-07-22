@@ -263,6 +263,10 @@
           "type": "number",
           "description": "Home position for Y axis in degrees"
         },
+        "HorizonLimit": {
+          "type": "number",
+          "description": "Horizon limit in degrees (typically -10 for AltAz and 0 for equatorial mounts)"
+        },
         "HourAngleLimit": {
           "type": "number",
           "description": "Flip angle limit in degrees"

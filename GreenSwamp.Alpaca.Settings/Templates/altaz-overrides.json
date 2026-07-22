@@ -16,6 +16,7 @@
     "HomeAxisX": 0.0,
     "HomeAxisY": 0.0,
     "HourAngleLimit": 0.0,
+    "HorizonLimit": -10.0,
     "HzLimitPark": false,
     "HzLimitTracking": false,
     "LimitsOn": false,
