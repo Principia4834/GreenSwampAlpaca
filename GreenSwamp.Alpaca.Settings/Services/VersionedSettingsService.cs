@@ -241,10 +241,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
         // -- First-run initialisation ------------------------------------------
 
         /// <summary>
-        /// Attempts to migrate all JSON settings files from the nearest strictly-lower version
-        /// folder into the current version folder. Returns <c>true</c> if any files were copied.
-        /// Files that already exist in the destination are never overwritten.
+        /// Attempts to migrate device settings from the nearest previous version folder.
+        /// Check for existing device files in the current version folder first; if any exist, migration is skipped.
+        /// Check settings for newly introduced keys and patch them into migrated device files with default values.
         /// </summary>
+        /// <returns><c>true</c> if any settings were migrated; otherwise, <c>false</c>.</returns>
         private bool TryMigrateFromPreviousVersion()
         {
             // Guard: current version already has device files — nothing to migrate.
@@ -277,11 +278,139 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     }
                 }
 
+                // NEW: add newly introduced settings keys to migrated device files
+                PatchMigratedDeviceFilesWithNewSkySettingsKeys(previousPath);
+
                 return true;
             }
 
             LogSafe("INFO", "No previous version settings found — first-run initialisation will apply.");
             return false;
+        }
+
+        /// <summary>
+        /// After migrating device files from a previous version, check for any newly introduced keys in the SkySettings class
+        /// and patch them into the migrated device files with default values.
+        /// </summary>
+        /// <param name="previousVersionPath">The path to the previous version's settings folder.</param>
+        private void PatchMigratedDeviceFilesWithNewSkySettingsKeys(string previousVersionPath)
+        {
+            var legacyCommonValues = LoadLegacyCommonSkySettings(previousVersionPath);
+
+            foreach (var devicePath in Directory.GetFiles(_currentVersionPath, "device-??.settings.json", SearchOption.TopDirectoryOnly))
+            {
+                JsonObject? deviceJson;
+                try
+                {
+                    deviceJson = JsonNode.Parse(File.ReadAllText(devicePath)) as JsonObject;
+                    if (deviceJson is null) continue;
+                }
+                catch (Exception ex)
+                {
+                    LogSafe("WARNING", $"Skipping key patch for {Path.GetFileName(devicePath)}: {ex.Message}");
+                    continue;
+                }
+
+                var mode = deviceJson["AlignmentMode"]?.GetValue<string>();
+                if (string.IsNullOrWhiteSpace(mode))
+                    mode = "GermanPolar";
+
+                var templateDefaults = BuildSkySettingsTemplateJson(mode);
+                var changed = false;
+
+                foreach (var prop in typeof(SkySettings).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (!prop.CanWrite) continue;
+                    if (deviceJson.ContainsKey(prop.Name)) continue; // existing key wins
+
+                    JsonNode? valueToAdd = null;
+
+                    // Prefer old "common" value when present
+                    if (prop.GetCustomAttribute<CommonSettingAttribute>() != null &&
+                        legacyCommonValues.TryGetValue(prop.Name, out var commonNode))
+                    {
+                        valueToAdd = commonNode?.DeepClone();
+                    }
+
+                    // Otherwise use device-mode template default
+                    valueToAdd ??= templateDefaults[prop.Name]?.DeepClone();
+
+                    if (valueToAdd is null) continue;
+
+                    deviceJson[prop.Name] = valueToAdd;
+                    changed = true;
+                }
+
+                if (!changed) continue;
+
+                var sorted = new JsonObject(
+                    deviceJson
+                        .OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase)
+                        .Select(kvp => KeyValuePair.Create(kvp.Key, kvp.Value?.DeepClone())));
+
+                File.WriteAllText(devicePath, sorted.ToJsonString(_jsonOptions), Encoding.UTF8);
+                LogSafe("INFO", $"Patched missing SkySettings keys in {Path.GetFileName(devicePath)}.");
+            }
+        }
+
+        /// <summary>
+        /// Builds a JsonObject containing the default SkySettings for a given alignment mode, based on the 
+        /// DeviceTemplates section in appsettings.json.
+        /// </summary>
+        /// <param name="alignmentMode">The alignment mode for which to build the template.</param>
+        /// <returns>A JsonObject containing the default SkySettings for the specified alignment mode.</returns>
+        private JsonObject BuildSkySettingsTemplateJson(string alignmentMode)
+        {
+            var defaults = new SkySettings();
+            _configuration.GetSection($"DeviceTemplates:{alignmentMode}").Bind(defaults);
+
+            // fallback if unknown mode/template
+            if (string.IsNullOrWhiteSpace(defaults.AlignmentMode))
+            {
+                defaults = new SkySettings();
+                _configuration.GetSection("DeviceTemplates:GermanPolar").Bind(defaults);
+            }
+
+            return JsonNode.Parse(JsonSerializer.Serialize(defaults, _jsonOptions))?.AsObject() ?? new JsonObject();
+        }
+
+        private Dictionary<string, JsonNode?> LoadLegacyCommonSkySettings(string previousVersionPath)
+        {
+            var result = new Dictionary<string, JsonNode?>(StringComparer.OrdinalIgnoreCase);
+            var legacyPath = Path.Combine(previousVersionPath, "appsettings.user.json");
+            if (!File.Exists(legacyPath)) return result;
+
+            try
+            {
+                var root = JsonNode.Parse(File.ReadAllText(legacyPath)) as JsonObject;
+                if (root is null) return result;
+
+                // preferred old section name
+                if (root["SkySettings"] is JsonObject skySettingsSection)
+                {
+                    foreach (var kvp in skySettingsSection)
+                        result[kvp.Key] = kvp.Value?.DeepClone();
+                }
+
+                // fallback: first Devices entry (if old schema used Devices array)
+                if (root["Devices"] is JsonArray devices && devices.FirstOrDefault() is JsonObject firstDevice)
+                {
+                    foreach (var prop in typeof(SkySettings).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        if (prop.GetCustomAttribute<CommonSettingAttribute>() == null) continue;
+                        if (result.ContainsKey(prop.Name)) continue;
+                        if (firstDevice[prop.Name] is null) continue;
+
+                        result[prop.Name] = firstDevice[prop.Name]!.DeepClone();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogSafe("WARNING", $"Failed loading legacy common settings from {legacyPath}: {ex.Message}");
+            }
+
+            return result;
         }
 
         private void RunFirstRunDeviceInit()
