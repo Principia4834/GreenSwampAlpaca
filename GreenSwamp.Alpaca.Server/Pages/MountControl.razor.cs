@@ -25,6 +25,7 @@ using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
+using MudBlazor.Utilities;
 
 namespace GreenSwamp.Alpaca.Server.Pages
 {
@@ -84,6 +85,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
                 NavManager.NavigateTo($"/mount-control/{keys[index]}");
             }
         }
+
         private void OnStateChanged(object? sender, EventArgs e) =>
             InvokeAsync(StateHasChanged);
 
@@ -165,6 +167,40 @@ namespace GreenSwamp.Alpaca.Server.Pages
             _hbCts?.Cancel();
             _heartbeat?.Dispose();
             ActiveViews.Remove(_viewSessionId);
+        }
+
+        /// <summary>
+        /// Returns the tooltip text for the limit icon based on the telescope state.
+        /// </summary>
+        /// <param name="state">The telescope state model.</param>
+        /// <returns>The tooltip text for the limit icon.</returns>
+        private string? GetLimitTootltip(TelescopeStateModel state)
+        {
+            if (state.LimitsOn)
+            {
+                return state.LimitTriggered ? "Limit Triggered" : "Limits On";
+            }
+            else
+            {
+                return "Limits off";
+            }
+        }
+
+        /// <summary>
+        /// Returns the color for the limit icon based on the telescope state.
+        /// </summary>
+        /// <param name="state">The telescope state model.</param>
+        /// <returns>The color for the limit icon.</returns>
+        private Color GetLimitIconColor(TelescopeStateModel state)
+        {
+            if (state.LimitsOn)
+            {
+                return state.LimitTriggered ? Color.Error : Color.Success;
+            }
+            else
+            {
+                return Color.Default;
+            }
         }
 
         private async Task OpenExportDialog()

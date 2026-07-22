@@ -67,7 +67,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 limitState[LimitType.Horizon] = false;
             }
 
-            bool activeLimit = limitState.Values.Any(v => true);
+            bool activeLimit = limitState.Values.Contains(true);
             bool primaryLimit = Settings.AlignmentMode == AlignmentMode.GermanPolar ? limitState[LimitType.Meridian] : limitState[LimitType.Hardware];
 
             if (!activeLimit)
@@ -76,12 +76,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 return;
             }
 
-            if (_limitTriggerSuppressed)
+            if (LimitTriggered)
             {
                 return;
             }
 
-            _limitTriggerSuppressed = true;
+            LimitTriggered = true;
 
             if (primaryLimit)
             {
@@ -97,7 +97,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             LimitWarningActive = false;
             LimitWarningMessage = string.Empty;
-            _limitTriggerSuppressed = false;
+            LimitTriggered = false;
         }
 
         private void HandleLimitAction(string source, bool stopTracking, bool parkAtLimit, string parkPositionName)

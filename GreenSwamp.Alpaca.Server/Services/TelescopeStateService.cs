@@ -136,6 +136,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     LimitWarningSequence = mount.LimitWarningSequence,
                     AtPark = mount.AtPark,
                     AtHome = mount.AtHome,
+                    LimitTriggered = mount.LimitTriggered,
                     IsMountRunning = mount.IsMountRunning,
                     ComPort = mount.Settings.Port ?? string.Empty,
                     ConnectedClientCount = mount.ConnectedClientCount,

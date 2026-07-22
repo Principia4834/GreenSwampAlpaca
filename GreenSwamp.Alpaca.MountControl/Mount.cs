@@ -76,7 +76,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // AltAz limit status
         private LimitStatusType _limitStatus;
-        private bool _limitTriggerSuppressed;
+        public bool LimitTriggered { get; set; }
 
         // Backing fields
         internal Vector _rateMoveAxes;
