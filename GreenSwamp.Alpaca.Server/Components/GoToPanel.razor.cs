@@ -45,7 +45,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             _mount = MountRegistry.GetInstance(DeviceNumber);
             _isMountRunning = _mount?.IsMountRunning ?? false;
-            _horizonLimit = _mount?.Settings.AxisLowerLimitY ?? 0.0;
+            _horizonLimit = _mount?.Settings.HorizonLimit ?? 0.0;
             _altDMin = (int)Math.Floor(_horizonLimit);
             _canSync = _mount?.Settings.CanSync ?? false;
         }
