@@ -487,7 +487,7 @@ namespace GreenSwamp.Alpaca.MountControl
             try
             {
                 // Call public SkyServer stop method
-                await Task.Run(() => { mount?.InstanceStopAxes(); });
+                await Task.Run(() => { mount?.MountStopAxes(); });
             }
             catch (Exception ex)
             {

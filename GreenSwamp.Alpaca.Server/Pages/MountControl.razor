@@ -128,10 +128,10 @@ else
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.LimitsOn ? "Limits On" : "Limits Off")"
+                            <MudTooltip Text="@(GetLimitTootltip(s))"
                                         Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@LimitsOnIcon"
-                                         Color="@(s.LimitsOn ? Color.Success : Color.Default)"
+                                         Color="@(GetLimitIconColor(s))"
                                          Size="Size.Large" />
                             </MudTooltip>
 

@@ -47,6 +47,8 @@ namespace GreenSwamp.Alpaca.Server.Models
         public long LimitWarningSequence { get; set; }
         public bool AtPark { get; set; }
         public bool AtHome { get; set; }
+        public bool LimitTriggered { get; set; }
+
         public bool IsMountRunning { get; set; }
         public string ComPort { get; set; } = string.Empty;
         public int ConnectedClientCount { get; set; }
@@ -141,6 +143,7 @@ namespace GreenSwamp.Alpaca.Server.Models
             LimitWarningSequence = 0;
             AtPark = false;
             AtHome = false;
+            LimitTriggered = false;
             IsMountRunning = false;
             ComPort = string.Empty;
             ConnectedClientCount = 0;

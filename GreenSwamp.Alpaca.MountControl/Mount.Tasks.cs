@@ -161,18 +161,18 @@ internal void MountErrorHandler(Exception ex)
                         case MountTaskName.AlternatingPpec:
                             break;
                         case MountTaskName.CanAdvancedCmdSupport:
-                            _canAdvancedCmdSupport = false;
+                            CanAdvancedCmdSupport = false;
                             break;
                         case MountTaskName.CanPpec:
-                            _canPPec = false;
+                            CanPPec = false;
                             break;
                         case MountTaskName.CanPolarLed:
-                            _canPolarLed = false;
+                            CanPolarLed = false;
                             break;
                         case MountTaskName.CanHomeSensor:
                             var canHomeCmd = new GetHomeSensorCapability(q.NewId, q);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(canHomeCmd).Result), out bool hasHome);
-                            _canHomeSensor = hasHome;
+                            CanHomeSensor = hasHome;
                             break;
                         case MountTaskName.DecPulseToGoTo:
                             break;
@@ -217,7 +217,7 @@ internal void MountErrorHandler(Exception ex)
                         case MountTaskName.PecTraining:
                             break;
                         case MountTaskName.Capabilities:
-                            _capabilities = @"N/A";
+                            Capabilities = @"N/A";
                             break;
                         case MountTaskName.SetSt4Guiderate:
                             break;
@@ -231,7 +231,7 @@ internal void MountErrorHandler(Exception ex)
                             break;
                         case MountTaskName.MountName:
                             var mountNameCmd = new CmdMountName(q.NewId, q);
-                            _mountName = (string)q.GetCommandResult(mountNameCmd).Result;
+                            MountName = (string)q.GetCommandResult(mountNameCmd).Result;
                             break;
                         case MountTaskName.GetAxisVersions:
                             break;
@@ -316,26 +316,26 @@ internal void MountErrorHandler(Exception ex)
                         case MountTaskName.CanAdvancedCmdSupport:
                             var skyCanAdvanced = new SkyGetAdvancedCmdSupport(q.NewId, q);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(skyCanAdvanced).Result), out bool pAdvancedResult);
-                            _canAdvancedCmdSupport = pAdvancedResult;
+                            CanAdvancedCmdSupport = pAdvancedResult;
                             break;
                         case MountTaskName.CanPpec:
                             var skyMountCanPpec = new SkyCanPPec(q.NewId, q);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(skyMountCanPpec).Result), out bool pPecResult);
-                            _canPPec = pPecResult;
+                            CanPPec = pPecResult;
                             break;
                         case MountTaskName.CanPolarLed:
                             var skyCanPolarLed = new SkyCanPolarLed(q.NewId, q);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(skyCanPolarLed).Result), out bool polarLedResult);
-                            _canPolarLed = polarLedResult;
+                            CanPolarLed = polarLedResult;
                             break;
                         case MountTaskName.CanHomeSensor:
                             var canHomeSky = new SkyCanHomeSensors(q.NewId, q);
                             bool.TryParse(Convert.ToString(q.GetCommandResult(canHomeSky).Result), out bool homeSensorResult);
-                            _canHomeSensor = homeSensorResult;
+                            CanHomeSensor = homeSensorResult;
                             break;
                         case MountTaskName.Capabilities:
                             var skyCap = new SkyGetCapabilities(q.NewId, q);
-                            _capabilities = (string)q.GetCommandResult(skyCap).Result;
+                            Capabilities = (string)q.GetCommandResult(skyCap).Result;
                             break;
                         case MountTaskName.Encoders:
                             _ = new SkySetEncoder(0, q, Axis.Axis1, Settings.Encoders);
@@ -437,7 +437,7 @@ internal void MountErrorHandler(Exception ex)
                             break;
                         case MountTaskName.MountName:
                             var skyMountType = new SkyMountType(q.NewId, q);
-                            _mountName = (string)q.GetCommandResult(skyMountType).Result;
+                            MountName = (string)q.GetCommandResult(skyMountType).Result;
                             break;
                         case MountTaskName.MountVersion:
                             var skyMountVersion1 = new SkyMountVersion(q.NewId, q, Axis.Axis1);

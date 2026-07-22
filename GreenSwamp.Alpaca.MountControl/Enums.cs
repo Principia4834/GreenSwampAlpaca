@@ -204,13 +204,23 @@ namespace GreenSwamp.Alpaca.MountControl
     }
 
     /// <summary>
-    /// 
+    /// Represents the type of automatic homing position.
     /// </summary>
     public enum AutoHomePositionType
     {
         DefaultGEM,
         PolarRADec,
         PolarAzAlt
+    }
+
+    /// <summary>
+    /// Represents the type of limit that can be applied to a mount's movement.
+    /// </summary>
+    public enum LimitType
+    {
+        Hardware,
+        Meridian,
+        Horizon
     }
 
 }
