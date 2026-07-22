@@ -63,13 +63,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double[] _stepsWormPerRevolution = new double[2];
 
         // Mount capabilities
-        internal bool _canPPec;
-        internal bool _canHomeSensor;
-        internal bool _canPolarLed;
-        internal bool _canAdvancedCmdSupport;
-        internal string _mountName = string.Empty;
         internal string[] _mountVersion = { string.Empty, string.Empty };
-        internal string _capabilities = string.Empty;
 
         // Mount state
         private bool _atPark;
@@ -82,9 +76,6 @@ namespace GreenSwamp.Alpaca.MountControl
 
         // AltAz limit status
         private LimitStatusType _limitStatus;
-        private bool _limitWarningActive;
-        private string _limitWarningMessage = string.Empty;
-        private long _limitWarningSequence;
         private bool _limitTriggerSuppressed;
 
         // Backing fields
@@ -416,9 +407,9 @@ namespace GreenSwamp.Alpaca.MountControl
         public ulong LoopCounter { get => _loopCounter; internal set => _loopCounter = value; }
         public int TimerOverruns { get => _timerOverruns; internal set => _timerOverruns = value; }
         public AltAzTrackingType AltAzTrackingMode { get => _altAzTrackingMode; set => _altAzTrackingMode = value; }
-        public bool LimitWarningActive => _limitWarningActive;
-        public string LimitWarningMessage => _limitWarningMessage;
-        public long LimitWarningSequence => _limitWarningSequence;
+        public bool LimitWarningActive { get; set; }
+        public string LimitWarningMessage { get; set; } = string.Empty;
+        public long LimitWarningSequence { get; set; }
         public bool LimitsOn
         {
             get => Settings.LimitsOn;
@@ -496,13 +487,13 @@ namespace GreenSwamp.Alpaca.MountControl
         public Vector TrackingOffsetRate => _trackingOffsetRate;
 
         // Mount hardware capabilities (SkyWatcher only; false/empty if unavailable)
-        public bool CanPPec => _canPPec;
-        public bool CanHomeSensor => _canHomeSensor;
-        public bool CanPolarLed => _canPolarLed;
-        public bool CanAdvancedCmdSupport => _canAdvancedCmdSupport;
-        public string MountName => _mountName;
+        public bool CanPPec { get; set; }
+        public bool CanHomeSensor { get; set; }
+        public bool CanPolarLed { get; set; }
+        public bool CanAdvancedCmdSupport { get; set; }
+        public string MountName { get; set; } = string.Empty;
         public string[] MountVersion => _mountVersion;
-        public string Capabilities => _capabilities;
+        public string Capabilities { get; set; } = string.Empty;
 
         #endregion
 

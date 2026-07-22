@@ -41,44 +41,35 @@ namespace GreenSwamp.Alpaca.MountControl
                 return;
             }
 
-            bool hardwareLimit = false;
-            bool meridianLimit = false;
-            bool horizonLimit = false;
-
-            switch (Settings.AlignmentMode)
+            var totalMeridianLimit = Settings.HourAngleLimit + Settings.AxisTrackingLimit;
+            var sh = Settings.Latitude < 0;
+            Dictionary<LimitType, bool> limitState = new Dictionary<LimitType, bool>()
             {
-                case AlignmentMode.AltAz:
-                case AlignmentMode.Polar:
-                    hardwareLimit = _limitStatus.AtLowerLimitAxisX
-                                    || _limitStatus.AtUpperLimitAxisX
-                                    || _limitStatus.AtLowerLimitAxisY
-                                    || _limitStatus.AtUpperLimitAxisY;
-                    break;
-                case AlignmentMode.GermanPolar:
-                {
-                    var totalMeridianLimit = Settings.HourAngleLimit + Settings.AxisTrackingLimit;
-                    bool sh = Settings.Latitude < 0;
-                    if (sh)
-                    {
-                        meridianLimit = _appAxes.X >= totalMeridianLimit
-                                        || _appAxes.X <= -totalMeridianLimit - 180;
-                    }
-                    else
-                    {
-                        meridianLimit = _appAxes.X >= totalMeridianLimit + 180
-                                        || _appAxes.X <= -totalMeridianLimit;
-                    }
+                { LimitType.Hardware, _limitStatus.AtLowerLimitAxisX || _limitStatus.AtUpperLimitAxisX
+                                        || _limitStatus.AtLowerLimitAxisY || _limitStatus.AtUpperLimitAxisY },
 
-                    horizonLimit = SideOfPier == PointingState.Normal
-                                   && _altAzm.Y <= Settings.AxisHzTrackingLimit;
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException();
+                { LimitType.Meridian, sh ? _appAxes.X >= totalMeridianLimit
+                                        || _appAxes.X <= -totalMeridianLimit - 180 :
+                                        _appAxes.X >= totalMeridianLimit + 180
+                                        || _appAxes.X <= -totalMeridianLimit},
+
+                { LimitType.Horizon, SideOfPier == PointingState.Normal
+                                        && _altAzm.Y <= Settings.AxisHzTrackingLimit }
+            };
+
+            if (Settings.AlignmentMode == AlignmentMode.GermanPolar)
+            {
+                limitState[LimitType.Hardware] = false;
+            }
+            else
+            {
+                limitState[LimitType.Meridian] = false;
+                limitState[LimitType.Horizon] = false;
             }
 
-            bool primaryLimit = Settings.AlignmentMode == AlignmentMode.GermanPolar ? meridianLimit : hardwareLimit;
-            bool activeLimit = primaryLimit || horizonLimit;
+            bool activeLimit = limitState.Values.Any(v => true);
+            bool primaryLimit = Settings.AlignmentMode == AlignmentMode.GermanPolar ? limitState[LimitType.Meridian] : limitState[LimitType.Hardware];
+
             if (!activeLimit)
             {
                 ClearLimitWarningState();
@@ -104,8 +95,8 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private void ClearLimitWarningState()
         {
-            _limitWarningActive = false;
-            _limitWarningMessage = string.Empty;
+            LimitWarningActive = false;
+            LimitWarningMessage = string.Empty;
             _limitTriggerSuppressed = false;
         }
 
@@ -117,7 +108,7 @@ namespace GreenSwamp.Alpaca.MountControl
             if (stopTracking && TrackingMode != TrackingMode.Off)
             {
                 TrackingMode = TrackingMode.Off;
-                Tracking = false;
+                ApplyTracking(false);
                 action = "Stopped tracking";
             }
 
@@ -127,7 +118,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (found == null)
                 {
                     action = $"Park target '{parkPositionName}' not found; stopped axes";
-                    InstanceStopAxes();
+                    MountStopAxes();
                 }
                 else
                 {
@@ -150,16 +141,15 @@ namespace GreenSwamp.Alpaca.MountControl
                 Message = message
             });
 
-            _limitWarningMessage = message;
-            _limitWarningActive = warningStaysOn;
-            _limitWarningSequence++;
+            LimitWarningMessage = message;
+            LimitWarningActive = warningStaysOn;
+            LimitWarningSequence++;
         }
 
         /// <summary>
-        /// J7: Per-instance axis stop — halts this device's mount axes without affecting other devices.
-        /// Cancels any active GoTo, clears rate moves, then issues hardware stop commands.
+        /// Stops all mount axes and cancels any active GoTo or pulse guide operations.
         /// </summary>
-        internal void InstanceStopAxes()
+        internal void MountStopAxes()
         {
             _ctsGoTo?.Cancel();
             _moveAxisActive = false;

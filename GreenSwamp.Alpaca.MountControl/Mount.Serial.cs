@@ -272,7 +272,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Message = $"Mount:{Id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
                                   $"FactorStep:{_factorStep[0]:F10},{_factorStep[1]:F10}|" +
                                   $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
-                                  $"CanPPec:{_canPPec}|MountName:{_mountName}"
+                                  $"CanPPec:{CanPPec}|MountName:{MountName}"
                     };
                     LogMount(monitorItem);
 
@@ -385,7 +385,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyTasks(MountTaskName.GetFactorStep);
                     SkyTasks(MountTaskName.Capabilities);
                     SkyTasks(MountTaskName.CanAdvancedCmdSupport);
-                    if (_canPPec) SkyTasks(MountTaskName.Pec);
+                    if (CanPPec) SkyTasks(MountTaskName.Pec);
 
 
                     // Log instance values for verification
@@ -400,7 +400,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Message = $"Mount:{Id}|StepsPerRev:{_stepsPerRevolution[0]},{_stepsPerRevolution[1]}|" +
                                   $"FactorStep:{_factorStep[0]:F10},{_factorStep[1]:F10}|" +
                                   $"WormSteps:{_stepsWormPerRevolution[0]:F2},{_stepsWormPerRevolution[1]:F2}|" +
-                                  $"CanPPec:{_canPPec}|MountName:{_mountName}"
+                                  $"CanPPec:{CanPPec}|MountName:{MountName}"
                     };
                     LogMount(monitorItemSky);
 
