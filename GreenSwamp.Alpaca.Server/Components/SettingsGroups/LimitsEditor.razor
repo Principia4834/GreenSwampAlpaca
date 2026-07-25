@@ -35,7 +35,7 @@
             }
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Horizon go to limit angle in degrees." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.HorizonLimit" @bind-Value:after="NotifyChanged"
-                                 Label="Horizon Go To Limit (°)" Format="F2" Immediate="true" />
+                                 Label="Horizon Go To Limit (°)" Format="F2" Min="-20" Max="30" Immediate="true" />
             </MudTooltip>
         </MudStack>
     </MudExpansionPanel>

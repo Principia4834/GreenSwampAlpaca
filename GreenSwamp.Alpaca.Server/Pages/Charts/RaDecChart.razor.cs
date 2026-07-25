@@ -70,6 +70,29 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
 
+        private readonly CancellationTokenSource _disposeCts = new();
+        private int _chartUpdateInFlight;
+        private volatile bool _forceNonAnimatedRefresh;
+
+        private bool CanAcceptWork()
+            => !_disposed && !_disposeCts.IsCancellationRequested;
+
+        private bool CanPushChartUpdate()
+            => CanAcceptWork()
+               && _ready
+               && _hubState == HubConnectionState.Connected
+               && _chart is not null;
+
+        private void RequestChartUpdate(bool animate)
+        {
+            if (!animate)
+            {
+                _forceNonAnimatedRefresh = true;
+            }
+
+            _pendingChartUpdate = true;
+        }
+
         private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
         private  List<RaDecChartData> _raDecChartData = [];
         private SubList<RaDecChartData> _raDecChartDataSubList = null; // Will be initialized in OnInitializedAsync
@@ -86,39 +109,74 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <param name="points">The array of incoming axis points.</param>
         private void OnAxisPoints(ChartPointDto[] points)
         {
-            if (_disposed || points.Length < 2) return;
+            if (points.Length < 2 || !CanAcceptWork()) return;
 
-            InvokeAsync(async () =>
+            _ = InvokeAsync(() =>
             {
-                if (_disposed) return;
+                if (!CanAcceptWork()) return Task.CompletedTask;
 
                 AddToRaDecChartData(points[0], points[1]);
+                RequestChartUpdate(animate: true);
 
-                if (_loggingActive)
-                {
-                    await Logger.LogRaDecPointAsync(1, points[0]);
-                    await Logger.LogRaDecPointAsync(2, points[1]);
-                }
-
-                await UpdateRaDecChartAsync(animate: true);
+                return Task.CompletedTask;
             });
         }
 
+        //private void OnAxisPoints(ChartPointDto[] points)
+        //{
+        //    if (_disposed || points.Length < 2) return;
+
+        //    InvokeAsync(async () =>
+        //    {
+        //        if (_disposed) return;
+
+        //        AddToRaDecChartData(points[0], points[1]);
+
+        //        if (_loggingActive)
+        //        {
+        //            await Logger.LogRaDecPointAsync(1, points[0]);
+        //            await Logger.LogRaDecPointAsync(2, points[1]);
+        //        }
+
+        //        await UpdateRaDecChartAsync(animate: true);
+        //    });
+        //}
+
         /// <summary>
-        /// Adds a new RA/Dec data point to the chart data buffer.
-        /// Update SubList buffer to maintain the rolling window size, 
-        /// and notify the SubList of the new data.
+        /// Adds the given RA and Dec points to the RA/Dec chart data buffers, maintaining the rolling window and history limits.
         /// </summary>
         /// <param name="raPoint">The RA data point.</param>
         /// <param name="decPoint">The Dec data point.</param>
         private void AddToRaDecChartData(ChartPointDto raPoint, ChartPointDto decPoint)
         {
             var timestampMs = raPoint.TimestampMs;
-            var cutoffMs = timestampMs - RaDecRollingWindowMs;
+            var rollingCutoffMs = timestampMs - RaDecRollingWindowMs;
+            var historyCutoffMs = timestampMs - 1 * 60 * 60 * 1000L; // 1 hour
 
-            var count = _raDecChartDataSubList.Count(p => p.TimestampMs < cutoffMs);
-            _raDecChartDataSubList.RemoveFromStart(count);
+            // Store the old start index before trimming the history
+            var oldStartIndex = _raDecChartData.Count == 0
+                ? 0
+                : _raDecChartDataSubList.StartIndex;
 
+            // Trim the history to keep only the last 1 hour of data
+            var historyTrimCount = _raDecChartData
+                .TakeWhile(p => p.TimestampMs < historyCutoffMs)
+                .Count();
+            if (historyTrimCount > 0) _raDecChartData.RemoveRange(0, historyTrimCount);
+
+            // Adjust the start index of the sublist after trimming the history
+            if (_raDecChartData.Count == 0) 
+            {
+                _raDecChartDataSubList.SetStartIndex(0);
+            }
+            else
+            {
+                var adjustedStartIndex = Math.Max(0, oldStartIndex - historyTrimCount);
+                adjustedStartIndex = Math.Min(adjustedStartIndex, _raDecChartData.Count - 1);
+                _raDecChartDataSubList.SetStartIndex(adjustedStartIndex);
+            }
+
+            // Add the new point to the chart data
             _raDecChartData.Add(new RaDecChartData
             {
                 TimestampMs = timestampMs,
@@ -127,8 +185,14 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 Ra = ScaleValue(raPoint.Value, axisIndex: 0),
                 Dec = ScaleValue(decPoint.Value, axisIndex: 1)
             });
-            _raDecChartDataSubList.NotifyInsertedAtEnd();
+
+            // Find the index of the first point that is within the rolling window and update the sublist's start index accordingly
+            var rollingStartIndex = _raDecChartData.FindIndex(p => p.TimestampMs >= rollingCutoffMs);
+            if (rollingStartIndex < 0) rollingStartIndex = _raDecChartData.Count - 1;
+
+            _raDecChartDataSubList.SetStartIndex(rollingStartIndex);
         }
+        
         #endregion
 
         #region Chart Update
@@ -150,9 +214,38 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _hub.On<ChartPointDto[]>("ReceiveAxisPoint", OnAxisPoints);
             // _hub.On<HistoricalDataDto>("ReceiveRaDecHistory", OnHistory);
 
-            _hub.Reconnecting += _ => { _hubState = HubConnectionState.Reconnecting; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-            _hub.Reconnected  += _ => { _hubState = HubConnectionState.Connected;    InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-            _hub.Closed       += _ => { _hubState = HubConnectionState.Disconnected; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
+            _hub.Reconnecting += _ =>
+            {
+                _hubState = HubConnectionState.Reconnecting;
+                return InvokeAsync(StateHasChanged);
+            };
+
+            _hub.Reconnected += async _ =>
+            {
+                if (!CanAcceptWork()) return;
+                _hubState = HubConnectionState.Connected;
+                try
+                {
+                    await _hub!.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
+                    // Force a clean non-animated repaint after reconnect.
+                    _forceNonAnimatedRefresh = true;
+                    _pendingChartUpdate = true;
+                }
+                catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested || _disposed)
+                {
+                }
+                catch (Exception ex)
+                {
+                    await DispatchExceptionAsync(ex);
+                }
+                await InvokeAsync(StateHasChanged);
+            };
+
+            _hub.Closed += _ =>
+            {
+                _hubState = HubConnectionState.Disconnected;
+                return InvokeAsync(StateHasChanged);
+            };
 
             await _hub.StartAsync();
             _hubState = _hub.State;
@@ -180,25 +273,82 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         // -- Realtime flush (1-second timer) ------------------------------------
 
         /// <summary>
-        /// Called by the 1-second timer. Calls UpdateSeriesAsync once per tick.
-        /// In Realtime mode animate:true is essential — combined with Easing.Linear
-        /// and DynamicAnimation.Speed=1000, the wrapper animates from the old series
-        /// state to the new one over exactly 1 second, producing smooth left-scroll.
-        /// In Historical mode animate:false gives instant redraw after a full load.
+        /// Flushes any pending chart updates to the RA/Dec chart if there are updates pending and the 
+        /// component can accept work.
         /// </summary>
         private void FlushChartUpdate()
         {
-            if (!_pendingChartUpdate || _disposed) return;
-            _pendingChartUpdate = false;
-            //InvokeAsync(async () =>
-            //{
-            //    if (_chart is null || _disposed) return;
-            //    var animate = _settings.DisplayMode == "Realtime";
-            //    try { await _chart.UpdateSeriesAsync(animate); }
-            //    catch (TaskCanceledException) { }
-            //});
+            if (!_pendingChartUpdate || !CanAcceptWork()) return;
+
+            _ = InvokeAsync(FlushChartUpdateCoreAsync);
         }
 
+        /// <summary>
+        /// Flushes any pending chart updates to the RA/Dec chart asynchronously. If there are updates pending and 
+        /// the component can accept work, it will update the chart series. This method ensures that only one chart 
+        /// update is in flight at a time.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task FlushChartUpdateCoreAsync()
+        {
+            if (System.Threading.Interlocked.Exchange(ref _chartUpdateInFlight, 1) == 1) return;
+
+            try
+            {
+                while (_pendingChartUpdate && CanPushChartUpdate())
+                {
+                    _pendingChartUpdate = false;
+                    var animate = !_forceNonAnimatedRefresh
+                                  && _settings.DisplayMode == "Realtime";
+                    _forceNonAnimatedRefresh = false;
+
+                    try
+                    {
+                        await _chart!.UpdateSeriesAsync(animate);
+                    }
+                    catch (JSDisconnectedException)
+                    {
+                        break;
+                    }
+                    catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested || _disposed)
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await DispatchExceptionAsync(ex);
+            }
+            finally
+            {
+                System.Threading.Interlocked.Exchange(ref _chartUpdateInFlight, 0);
+                if (_pendingChartUpdate && CanPushChartUpdate()) _ = InvokeAsync(FlushChartUpdateCoreAsync);
+            }
+        }
+
+        /// <summary>
+        /// Updates the RA/Dec chart asynchronously, optionally animating the update. If the component cannot accept work, 
+        /// the method returns a completed task.
+        /// </summary>
+        /// <param name="animate">Indicates whether the update should be animated.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private Task UpdateRaDecChartAsync(bool animate)
+        {
+            if (!CanAcceptWork())
+            {
+                return Task.CompletedTask;
+            }
+
+            RequestChartUpdate(animate);
+
+            if (_chart is null)
+            {
+                StateHasChanged();
+            }
+
+            return Task.CompletedTask;
+        }
         /// <summary>
         /// Rescales the RA/Dec chart data points based on the current scale settings.
         /// </summary>
@@ -222,29 +372,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var cutoffMs = latestTimestampMs - RaDecRollingWindowMs;
 
             var index = _raDecChartData.FindIndex(p => p.TimestampMs >= cutoffMs);
+            if (index < 0) index = _raDecChartData.Count - 1;
+
             _raDecChartDataSubList.SetStartIndex(index);
-        }
-
-        /// <summary>
-        /// Updates the RA/Dec chart with the current data.
-        /// </summary>
-        /// <param name="animate">Indicates whether the update should be animated.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task UpdateRaDecChartAsync(bool animate)
-        {
-            if (_chart is null || _disposed)
-            {
-                StateHasChanged();
-                return;
-            }
-
-            try
-            {
-                await _chart.UpdateSeriesAsync(animate);
-            }
-            catch (TaskCanceledException)
-            {
-            }
         }
         #endregion
 
@@ -419,9 +549,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     Labels = new XAxisLabels
                     {
                         Show = true,
-                        HideOverlappingLabels = false,
+                        HideOverlappingLabels = true,
                         Format = "HH:mm:ss",
-                        DatetimeUTC = true
+                        DatetimeUTC = false
                     },
                     AxisTicks = new AxisTicks { Show = true },
                     AxisBorder = new AxisBorder { Show = true }
@@ -485,19 +615,56 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         // -- Dispose ------------------------------------------------------------
 
+        /// <summary>
+        /// Disposes of the resources used by the RaDecChart component, including stopping logging, leaving the SignalR group, 
+        /// and disposing of the SignalR hub connection and timer.
+        /// </summary>
+        /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
             _disposed = true;
+
+            if (!_disposeCts.IsCancellationRequested) _disposeCts.Cancel();
+
             if (_refreshTimer is not null) await _refreshTimer.DisposeAsync();
+
             if (_loggingActive)
             {
-                try { await Logger.StopRaDecLoggingAsync(); } catch { }
+                try
+                {
+                    await Logger.StopRaDecLoggingAsync();
+                }
+                catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested)
+                {
+                }
+                catch
+                {
+                }
             }
+
             if (_hub is not null)
             {
-                try { await _hub.InvokeAsync("LeaveRaDecGroupAsync", DeviceNumber); } catch { }
-                await _hub.DisposeAsync();
+                try
+                {
+                    if (_hub.State != HubConnectionState.Disconnected) await _hub.InvokeAsync("LeaveRaDecGroupAsync", DeviceNumber);
+                }
+                catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested)
+                {
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    await _hub.DisposeAsync();
+                }
+                catch
+                {
+                }
             }
+
+            _disposeCts.Dispose();
         }
     }
 }

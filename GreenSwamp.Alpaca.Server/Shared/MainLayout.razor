@@ -68,7 +68,7 @@
     private void UpdateDateTime()
     {
         // Customise the date and time format string here
-        CurrentDateTimeString = DateTime.Now.ToString("dd MMM yyyy  HH:mm:ss.ff", CultureInfo.CurrentCulture);
+        CurrentDateTimeString = DateTime.Now.ToString("dd MMM yyyy  HH:mm:ss", CultureInfo.CurrentCulture);
         StateHasChanged(); // Refresh the UI
     }
 
