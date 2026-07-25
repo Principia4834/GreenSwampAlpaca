@@ -256,12 +256,11 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         });
                         await ApplyRollingWindowViewportAsync(batch[^1].TimestampMs);
                     }
-                    catch (JSDisconnectedException)
+                    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException || ex is JSDisconnectedException)
                     {
-                        break;
-                    }
-                    catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested || _disposed)
-                    {
+                        // Circuit/transport interruption during JS interop.
+                        // Expected during disconnect/reconnect or shutdown.
+                        // Blazor Server circuit dropped; ignore and let reconnect path recover.
                         break;
                     }
                 }
@@ -285,13 +284,19 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ApplyRollingWindowViewportAsync(long latestTimestampMs)
         {
-            if (_chart is null || _settings.DisplayMode != "Realtime")
-            {
-                return;
-            }
+            if (_chart is null || _settings.DisplayMode != "Realtime" || !CanPushChartUpdate()) return;
 
             var windowStartMs = latestTimestampMs - RaDecRollingWindowMs;
-            await _chart.ZoomXAsync((decimal)windowStartMs, (decimal)latestTimestampMs);
+            try
+            {
+                await _chart.ZoomXAsync((decimal)windowStartMs, (decimal)latestTimestampMs);
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException || ex is JSDisconnectedException)
+            {
+                // Circuit/transport interruption during JS interop.
+                // Expected during disconnect/reconnect or shutdown.
+                // Blazor Server circuit dropped; ignore and let reconnect path recover.
+            }
         }
 
         /// <summary>
