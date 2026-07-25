@@ -83,16 +83,20 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                && _hubState == HubConnectionState.Connected
                && _chart is not null;
 
+        private readonly List<RaDecChartData> _pendingAppendPoints = [];
+        private volatile bool _forceFullSeriesRefresh;
+
         private void RequestChartUpdate(bool animate)
         {
-            if (!animate)
-            {
-                _forceNonAnimatedRefresh = true;
-            }
-
+            if (!animate)  _forceNonAnimatedRefresh = true;
             _pendingChartUpdate = true;
         }
 
+        private void RequestFullSeriesRefresh(bool animate)
+        {
+            _forceFullSeriesRefresh = true;
+            RequestChartUpdate(animate);
+        }
         private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
         private  List<RaDecChartData> _raDecChartData = [];
         private SubList<RaDecChartData> _raDecChartDataSubList = null; // Will be initialized in OnInitializedAsync
@@ -177,14 +181,17 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             }
 
             // Add the new point to the chart data
-            _raDecChartData.Add(new RaDecChartData
+            var chartPoint = new RaDecChartData
             {
                 TimestampMs = timestampMs,
                 RawRaSteps = raPoint.Value,
                 RawDecSteps = decPoint.Value,
                 Ra = ScaleValue(raPoint.Value, axisIndex: 0),
                 Dec = ScaleValue(decPoint.Value, axisIndex: 1)
-            });
+            };
+
+            _raDecChartData.Add(chartPoint);
+            _pendingAppendPoints.Add(chartPoint);
 
             // Find the index of the first point that is within the rolling window and update the sublist's start index accordingly
             var rollingStartIndex = _raDecChartData.FindIndex(p => p.TimestampMs >= rollingCutoffMs);
@@ -229,7 +236,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     await _hub!.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
                     // Force a clean non-animated repaint after reconnect.
                     _forceNonAnimatedRefresh = true;
-                    _pendingChartUpdate = true;
+                    RequestFullSeriesRefresh(animate: false);
                 }
                 catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested || _disposed)
                 {
@@ -298,13 +305,34 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 while (_pendingChartUpdate && CanPushChartUpdate())
                 {
                     _pendingChartUpdate = false;
+
                     var animate = !_forceNonAnimatedRefresh
                                   && _settings.DisplayMode == "Realtime";
                     _forceNonAnimatedRefresh = false;
 
                     try
                     {
-                        await _chart!.UpdateSeriesAsync(animate);
+                        if (_forceFullSeriesRefresh)
+                        {
+                            _forceFullSeriesRefresh = false;
+                            _pendingAppendPoints.Clear();
+                            await _chart!.UpdateSeriesAsync(animate);
+                            continue;
+                        }
+
+                        if (_pendingAppendPoints.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        var batch = _pendingAppendPoints.ToArray();
+                        _pendingAppendPoints.Clear();
+
+                        await _chart!.AppendDataBySeriesNameAsync(new Dictionary<string, IEnumerable<RaDecChartData>>
+                        {
+                            ["RA"] = batch,
+                            ["Dec"] = batch
+                        });
                     }
                     catch (JSDisconnectedException)
                     {
@@ -407,7 +435,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             BuildChartOptions();
             _chartKey = $"radec-{_settings.DisplayMode}-{seconds}s";
 
-            await UpdateRaDecChartAsync(animate: false);
+            RequestFullSeriesRefresh(animate: false); // inserted
         }
 
         /// <summary>Changes the per-series buffer cap (5,000 / 10,000 / 20,000 points).</summary>
@@ -431,7 +459,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             BuildChartOptions();
             _chartKey = $"radec-{_settings.RaDecScale}";
 
-            await UpdateRaDecChartAsync(animate: false);
+            RequestFullSeriesRefresh(animate: false); // inserted
         }
 
         /// <summary>
