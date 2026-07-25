@@ -56,8 +56,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         private readonly ConcurrentDictionary<int, int> _raCounts = new();
         private readonly ConcurrentDictionary<int, int> _decCounts = new();
 
-        // Active subscriber counts — drive GetJEntries / GetPulses gates
-        private int _raDecSubscribers;
+        // Active subscriber counts — drive GetPulses gates
         private int _pulseSubscribers;
 
         private readonly TelescopeStateService _telescopeState;
