@@ -316,14 +316,15 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         {
                             _forceFullSeriesRefresh = false;
                             _pendingAppendPoints.Clear();
+
                             await _chart!.UpdateSeriesAsync(animate);
+
+                            if (_raDecChartData.Count > 0) await ApplyRollingWindowViewportAsync(_raDecChartData[^1].TimestampMs);
+
                             continue;
                         }
 
-                        if (_pendingAppendPoints.Count == 0)
-                        {
-                            continue;
-                        }
+                        if (_pendingAppendPoints.Count == 0) continue;
 
                         var batch = _pendingAppendPoints.ToArray();
                         _pendingAppendPoints.Clear();
@@ -333,6 +334,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                             ["RA"] = batch,
                             ["Dec"] = batch
                         });
+
+                        await ApplyRollingWindowViewportAsync(batch[^1].TimestampMs);
                     }
                     catch (JSDisconnectedException)
                     {
@@ -353,6 +356,17 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 System.Threading.Interlocked.Exchange(ref _chartUpdateInFlight, 0);
                 if (_pendingChartUpdate && CanPushChartUpdate()) _ = InvokeAsync(FlushChartUpdateCoreAsync);
             }
+        }
+
+        private async Task ApplyRollingWindowViewportAsync(long latestTimestampMs)
+        {
+            if (_chart is null || _settings.DisplayMode != "Realtime")
+            {
+                return;
+            }
+
+            var windowStartMs = latestTimestampMs - RaDecRollingWindowMs;
+            await _chart.ZoomXAsync((decimal)windowStartMs, (decimal)latestTimestampMs);
         }
 
         /// <summary>
