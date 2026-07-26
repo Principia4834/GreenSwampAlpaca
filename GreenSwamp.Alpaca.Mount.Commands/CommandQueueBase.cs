@@ -112,6 +112,10 @@ namespace GreenSwamp.Alpaca.Mount.Commands
             }
         }
 
+        /// <summary>
+        /// Starts the command queue and initializes resources. This method is idempotent and can be called 
+        /// multiple times without adverse effects.
+        /// </summary>
         public virtual void Start()
         {
             Stop();
@@ -158,16 +162,34 @@ namespace GreenSwamp.Alpaca.Mount.Commands
             _taskReadySignal = null;
         }
 
+        /// <summary>
+        /// Stops the command queue and cleans up resources. This method is idempotent and can be called 
+        /// multiple times without adverse effects.
+        /// </summary>
         public virtual void Stop()
         {
             IsRunning = false;
-            _commandBlockingCollection?.CompleteAdding();   // must be before Cancel()
-            _cts?.Cancel();
+            try
+            {
+                _commandBlockingCollection?.CompleteAdding();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already torn down.
+            }
 
+            _cts?.Cancel();
             if (_processingTask != null)
             {
-                try { _processingTask.Wait(TimeSpan.FromSeconds(5)); }
-                catch (AggregateException) { /* cancellation aggregate */ }
+                try
+                {
+                    _processingTask.Wait(TimeSpan.FromSeconds(15));
+                }
+                catch (Exception e) when (e is AggregateException || e is ObjectDisposedException)
+                {
+                    // Expected during cancellation.
+                    // Worker already exited.
+                }
                 _processingTask = null;
             }
 
