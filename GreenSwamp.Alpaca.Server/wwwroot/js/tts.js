@@ -22,6 +22,20 @@ function getVoicesAsync() {
 
 export async function speak(text, voiceName = "", volumePct = 100, rate = 0.8) {
     if (!window.speechSynthesis) return;
+
+    // Resume audio context if it's suspended (required for speech synthesis to work
+    // when the tab is not focused or has navigated away from the page).
+    try {
+        if (window.AudioContext && typeof window.AudioContext === 'function') {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+        }
+    } catch (e) {
+        // AudioContext might not be available in all browsers; continue anyway.
+    }
+
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = rate;

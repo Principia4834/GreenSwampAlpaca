@@ -111,6 +111,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     "Parked", dn, voiceEnabled, state);
                 CheckAndNotify(atParkDn,
                     "Unparked", dn, voiceEnabled, state);
+
                 if (!state.Slewing)
                 {
                     CheckAndNotify(trackingUp,
