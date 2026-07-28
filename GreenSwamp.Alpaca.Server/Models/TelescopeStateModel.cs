@@ -93,9 +93,6 @@ namespace GreenSwamp.Alpaca.Server.Models
         // SkyWatcher-specific
         public double ControllerVoltage { get; set; }
         public bool LowVoltageEvent { get; set; }
-
-        // Voice
-        public bool EnableVoice { get; set; }
         public bool VoiceActive { get; set; }
         public string VoiceName { get; set; } = string.Empty;
         public int VoiceVolume { get; set; }
@@ -164,7 +161,6 @@ namespace GreenSwamp.Alpaca.Server.Models
             FlipOnNextGoto = false;
             ControllerVoltage = double.NaN;
             LowVoltageEvent = false;
-            EnableVoice = true;
             VoiceActive = false;
             VoiceName = string.Empty;
             VoiceVolume = 100;

@@ -131,7 +131,6 @@ namespace GreenSwamp.Alpaca.MountControl.AutoHome
 
             if (_mount.Tracking)
             {
-                _mount.EnableVoice = false;
                 _mount.ApplyTracking(false);
             }
 

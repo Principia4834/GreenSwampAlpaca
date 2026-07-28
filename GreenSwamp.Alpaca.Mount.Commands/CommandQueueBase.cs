@@ -141,9 +141,10 @@ namespace GreenSwamp.Alpaca.Mount.Commands
                         ProcessCommandQueue(command);
                     }
                 }
-                catch (OperationCanceledException)
+                catch (Exception e) when (e is OperationCanceledException || e is ObjectDisposedException)
                 {
-                    // Expected on cancellation
+                    // Expected on cancellation.
+                    // Queue was disposed during shutdown.
                 }
             }, ct, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 

@@ -50,6 +50,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             bool Slewing,
             bool AtHome,
             bool IsConnected,
+            bool Tracking,
             long LimitWarningSequence,
             string? LastConnectionError);
 
@@ -76,7 +77,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             foreach (var dn in MountRegistry.GetAllInstances().Keys)
             {
                 var state = _stateService.GetCurrentState(dn);
-                var isConnected = IsUiClientConnected(dn);
+                var isUiClinetConnected = IsUiClientConnected(dn);
                 var connectionError = MountRegistry.GetInstance(dn)?.LastConnectionError;
 
                 if (!_lastState.TryGetValue(dn, out var last))
@@ -84,26 +85,73 @@ namespace GreenSwamp.Alpaca.Server.Services
                     // Prime state on first tick — no events fired.
                     _lastState[dn] = new DeviceNotificationState(
                         state.AtPark, state.Slewing, state.AtHome,
-                        isConnected, state.LimitWarningSequence, connectionError);
+                        state.ConnectedClientCount > 0, state.Tracking, state.LimitWarningSequence, connectionError);
                     continue;
                 }
 
-                var voiceEnabled = state.EnableVoice && state.VoiceActive;
+                var connectedUp = !last.IsConnected && state.ConnectedClientCount > 0;
+                var connectedDn = last.IsConnected && state.ConnectedClientCount == 0;
 
-                CheckAndNotify(!last.AtPark && state.AtPark,
+                var atParkUp = !last.AtPark && state.AtPark;
+                var atParkDn = last.AtPark && !state.AtPark;
+
+                var slewingUp = !last.Slewing && state.Slewing;
+                var slewingDn = last.Slewing && !state.Slewing;
+
+                var trackingUp = !last.Tracking && state.Tracking;
+                var trackingDn = last.Tracking && !state.Tracking;
+
+                var atHomeUp = !last.AtHome && state.AtHome;
+                var atHomeDn = last.AtHome && !state.AtHome;
+
+                // Silence when autohomne is in progress
+                var voiceEnabled = state.VoiceActive && !state.IsAutoHomeRunning;
+
+                CheckAndNotify(atParkUp,
                     "Parked", dn, voiceEnabled, state);
+                CheckAndNotify(atParkDn,
+                    "Unparked", dn, voiceEnabled, state);
+                if (!state.Slewing)
+                {
+                    CheckAndNotify(trackingUp,
+                        "Tracking on", dn, voiceEnabled, state);
+                    CheckAndNotify(trackingDn,
+                        "Tracking off", dn, voiceEnabled, state);
+                }
 
-                CheckAndNotify(!last.Slewing && state.Slewing,
+                CheckAndNotify(slewingUp,
                     "Started Slewing", dn, voiceEnabled, state);
-
-                CheckAndNotify(last.Slewing && !state.Slewing,
+                CheckAndNotify(slewingDn && !state.AtPark && !state.AtHome,
                     "Finished Slewing", dn, voiceEnabled, state);
 
-                CheckAndNotify(!last.AtHome && state.AtHome,
+                CheckAndNotify(atHomeUp,
                     "At Home", dn, voiceEnabled, state);
 
-                CheckAndNotify(!last.IsConnected && isConnected,
+                CheckAndNotify(connectedDn,
+                    "Mount Disconnected", dn, voiceEnabled, state);
+                CheckAndNotify(connectedUp,
                     "Mount Connected", dn, voiceEnabled, state);
+
+                // Condition: Transition from not Slewing to Slewing (i.e., started slewing)
+                //if(slewingUp)
+                //{
+                //    switch (state.SlewState)
+                //    {
+                //        case SlewType.SlewAltAz:
+                //        case SlewType.SlewRaDec:
+                //            CheckAndNotify(true, "Slewing to coordinates", dn, voiceEnabled, state);
+                //            break;
+                //        case SlewType.SlewHome:
+                //            CheckAndNotify(true, "Slewing to home", dn, voiceEnabled, state);
+                //            break;
+                //        case SlewType.SlewPark:
+                //            CheckAndNotify(true, "Slewing to park", dn, voiceEnabled, state);
+                //            break;
+                //        default:
+                //            CheckAndNotify(true, "Started Slewing", dn, voiceEnabled, state);
+                //            break;
+                //    }
+                //}
 
                 if (state.LimitWarningSequence > last.LimitWarningSequence
                     && !string.IsNullOrWhiteSpace(state.LimitWarningMessage))
@@ -135,8 +183,10 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                 _lastState[dn] = new DeviceNotificationState(
                     state.AtPark, state.Slewing, state.AtHome,
-                    isConnected, state.LimitWarningSequence, connectionError);
+                    state.ConnectedClientCount > 0, state.Tracking, state.LimitWarningSequence, connectionError);
             }
+
+
         }
 
         private void CheckAndNotify(
