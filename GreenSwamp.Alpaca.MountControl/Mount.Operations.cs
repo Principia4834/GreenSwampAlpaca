@@ -1,4 +1,4 @@
- /* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+ï»¿ /* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -66,12 +66,11 @@ namespace GreenSwamp.Alpaca.MountControl
                         throw new ArgumentOutOfRangeException();
                 }
             }
+            ApplyTracking(false);
             _slewState = SlewType.SlewNone;
-            Tracking = false;
-            TrackingMode = TrackingMode.Off;
         }
 
-        /// <summary>Abort any active slew with optional start notification — instance version.</summary>
+        /// <summary>Abort any active slew with optional start notification â€” instance version.</summary>
         public void AbortSlew(bool speak, EventWaitHandle? abortSlewStarted = null)
         {
             if (!IsMountRunning)
@@ -91,7 +90,7 @@ namespace GreenSwamp.Alpaca.MountControl
             });
             abortSlewStarted?.Set();
             var tracking = Tracking || _slewState == SlewType.SlewRaDec || _moveAxisActive;
-            // Abort path is synchronous for all alignment modes — bypasses the tracking queue
+            // Abort path is synchronous for all alignment modes â€” bypasses the tracking queue
             // to avoid consumer-dispatch latency during an abort.
             ApplyTracking(false);
             if (_slewController != null)
@@ -107,7 +106,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = "Cancelling SlewController operation"
                 });
                 // Use RequestCancellation (fire-and-forget signal) rather than
-                // CancelCurrentSlewAsync().Wait() — the latter blocks for up to 5 s waiting
+                // CancelCurrentSlewAsync().Wait() â€” the latter blocks for up to 5 s waiting
                 // for HandleCancellationAsync/ForceStopAxesAsync to complete. The explicit
                 // SkyTasks(StopAxes) call below already issues the hardware stop directly,
                 // so waiting for the background task's own stop path is redundant.
@@ -148,7 +147,7 @@ namespace GreenSwamp.Alpaca.MountControl
             });
         }
 
-        /// <summary>GoTo park slew — synchronous version.</summary>
+        /// <summary>GoTo park slew â€” synchronous version.</summary>
         private void GoToPark()
         {
             ApplyTracking(false);
@@ -170,10 +169,10 @@ namespace GreenSwamp.Alpaca.MountControl
             SlewSync([ps.X, ps.Y], SlewType.SlewPark, tracking: false);
         }
 
-        /// <summary>Complete park — delegates to InstanceCompletePark.</summary>
+        /// <summary>Complete park â€” delegates to InstanceCompletePark.</summary>
         public void CompletePark() => InstanceCompletePark();
 
-        /// <summary>Auto home using mount home sensor — instance version.</summary>
+        /// <summary>Auto home using mount home sensor â€” instance version.</summary>
         public async void AutoHomeAsync(int degreeLimit = 100, int offSetDec = 0)
         {
             try
@@ -280,11 +279,11 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        /// <summary>Public wrapper — resets axes to home or a named park position.</summary>
+        /// <summary>Public wrapper â€” resets axes to home or a named park position.</summary>
         public void ReSync(ParkPosition? parkPosition = null, bool saveParkPosition = true)
             => ReSyncAxes(parkPosition, saveParkPosition);
 
-        /// <summary>Reset axes positions — instance version.</summary>
+        /// <summary>Reset axes positions â€” instance version.</summary>
         private void ReSyncAxes(ParkPosition? parkPosition = null, bool saveParkPosition = true)
         {
             if (!IsMountRunning) return;
@@ -333,7 +332,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _hcPrevMoveDec = null;
         }
 
-        /// <summary>Get default startup positions — instance version of GetDefaultPositions_Internal.</summary>
+        /// <summary>Get default startup positions â€” instance version of GetDefaultPositions_Internal.</summary>
         private double[] GetDefaultPositions()
         {
             double[] positions = [0, 0];
@@ -385,11 +384,11 @@ namespace GreenSwamp.Alpaca.MountControl
             return positions;
         }
 
-        /// <summary>Get stored park position from settings — instance version.</summary>
+        /// <summary>Get stored park position from settings â€” instance version.</summary>
         private ParkPosition GetStoredParkPosition()
             => new ParkPosition(Settings.ParkName, Settings.ParkAxes[0], Settings.ParkAxes[1]);
 
-        /// <summary>Set park axis by coordinates — private instance helper.</summary>
+        /// <summary>Set park axis by coordinates â€” private instance helper.</summary>
         private void SetParkAxis(string name, double x, double y)
         {
             if (string.IsNullOrEmpty(name)) name = "Empty";

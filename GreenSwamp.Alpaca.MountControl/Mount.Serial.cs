@@ -642,8 +642,7 @@ namespace GreenSwamp.Alpaca.MountControl
             LogMount(monitorItem);
 
             // Stop all asynchronous operations
-            TrackingMode = TrackingMode.Off;
-            Tracking = false;
+            ApplyTracking(false);
             _ctsGoTo?.Cancel();
             _ctsPulseGuideRa?.Cancel();
             _ctsPulseGuideDec?.Cancel();

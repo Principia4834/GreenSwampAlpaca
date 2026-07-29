@@ -167,9 +167,8 @@ namespace GreenSwamp.Alpaca.MountControl
                         break;
                 }
             }
+            ApplyTracking(false);
             _slewState = SlewType.SlewNone;
-            Tracking = false;
-            TrackingMode = TrackingMode.Off;
         }
 
         /// <summary>
@@ -182,8 +181,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             var ps = _parkSelected;
             if (ps == null || double.IsNaN(ps.X) || double.IsNaN(ps.Y)) return;
-            Tracking = false;
-            TrackingMode = TrackingMode.Off;
+            ApplyTracking(false);
             Settings.ParkAxes = [ps.X, ps.Y];
             Settings.ParkName = ps.Name;
             _ = SlewAsync([ps.X, ps.Y], SlewType.SlewPark, tracking: false);
@@ -265,8 +263,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void InstanceCompletePark()
         {
             AtPark = true;
-            Tracking = false;
-            TrackingMode = TrackingMode.Off;
+            ApplyTracking(false);
             SkyPredictor.Reset();
             this.SetTracking();
         }
