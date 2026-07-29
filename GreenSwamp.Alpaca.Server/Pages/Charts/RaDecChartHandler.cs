@@ -44,6 +44,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private long RaDecRollingWindowMs => Math.Max(1, _settings.RealtimeWindowSeconds) * 1000L;
         private List<RaDecChartData> _raDecChartData = [];
         private SubList<RaDecChartData> _raDecChartDataSubList = null; // Will be initialized in OnInitializedAsync
+        private readonly string _viewSessionId = Guid.NewGuid().ToString("N");
+        private PeriodicTimer? _viewHeartbeat;
 
         #region SignalR Handlers
         // -- SignalR handlers ---------------------------------------------------
@@ -186,15 +188,43 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             }
 
             _ready = true;
+
+            // Register immediately so the state loop starts right away
+            ActiveViews.Touch(_viewSessionId, DeviceNumber);
+
+            // Keep the registry alive for as long as this chart window is open.
+            // The state loop uses a 10-second stale threshold, so touching every 3s is safe.
+            _ = RunViewHeartbeatAsync();
         }
 
         /// <summary>
-        /// Called after the component has been rendered. If this is the first render and the 
-        /// refresh timer has not been initialized, it sets up a timer to flush chart updates 
-        /// every second. OnAfterRender is the first point guaranteed to be post-prerender, 
-        /// matching the official RealTime.razor example pattern exactly.
+        /// Periodically touches ActiveDeviceViewRegistry so that TelescopeStateService
+        /// continues polling and pushing axis-point data to the chart hub even when
+        /// no MountControl tab is open.
         /// </summary>
-        /// <param name="firstRender"></param>
+        private async Task RunViewHeartbeatAsync()
+        {
+            _viewHeartbeat = new PeriodicTimer(TimeSpan.FromSeconds(3));
+            try
+            {
+                while (await _viewHeartbeat.WaitForNextTickAsync(_disposeCts.Token))
+                {
+                    if (!CanAcceptWork()) break;
+                    ActiveViews.Touch(_viewSessionId, DeviceNumber);
+                }
+            }
+            catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested)
+            {
+            }
+        }
+        
+        /// <summary>
+                 /// Called after the component has been rendered. If this is the first render and the 
+                 /// refresh timer has not been initialized, it sets up a timer to flush chart updates 
+                 /// every second. OnAfterRender is the first point guaranteed to be post-prerender, 
+                 /// matching the official RealTime.razor example pattern exactly.
+                 /// </summary>
+                 /// <param name="firstRender"></param>
         protected override void OnAfterRender(bool firstRender)
         {
             if (!firstRender || _refreshTimer != null) return;

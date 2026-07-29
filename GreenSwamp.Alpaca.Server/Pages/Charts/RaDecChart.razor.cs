@@ -312,6 +312,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             if (!_disposeCts.IsCancellationRequested) _disposeCts.Cancel();
 
+            ActiveViews.Remove(_viewSessionId);
+            if (_viewHeartbeat is not null) _viewHeartbeat.Dispose();
+            
             if (_refreshTimer is not null) await _refreshTimer.DisposeAsync();
 
             if (_loggingActive)
