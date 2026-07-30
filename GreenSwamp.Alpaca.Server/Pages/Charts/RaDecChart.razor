@@ -12,7 +12,7 @@
 
 @implements IAsyncDisposable
 
-<PageTitle>RA / Dec Chart — GS Alpaca</PageTitle>
+<PageTitle>@_axisLabels[0] / @_axisLabels[1] Chart — GS Alpaca</PageTitle>
 
 <div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;padding:8px;box-sizing:border-box;">
 
@@ -20,12 +20,12 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-            <b style="color:var(--gs-accent-500);">RA / Dec</b> Position &mdash; Device @DeviceNumber
+            <b style="color:var(--gs-accent-500);">@_axisLabels[0] / @_axisLabels[1]</b> Position &mdash; Device @DeviceNumber
         </MudText>
 
         <MudSpacer />
 
-        @if (_hubState != HubConnectionState.Connected)
+        @if (_hubInitialised && _hubState != HubConnectionState.Connected)
         {
             <MudChip T="string" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="@Icons.Material.Filled.SignalWifiOff">
                 @(_hubState == HubConnectionState.Reconnecting ? "Reconnecting…" : "Disconnected")
@@ -53,6 +53,7 @@
                 <MudSelectItem Value="120">2 m</MudSelectItem>
                 <MudSelectItem Value="300">5 m</MudSelectItem>
                 <MudSelectItem Value="900">15 m</MudSelectItem>
+                <MudSelectItem Value="1800">30 m</MudSelectItem>
             </MudSelect>
 
 @*             <MudSelect T="int" Label="Max pts" Value="@_settings.RaDecMaxPoints"
@@ -71,14 +72,14 @@
                    Style="min-width:130px;">
             <MudSelectItem Value="@("Steps")">Steps</MudSelectItem>
             <MudSelectItem Value="@("Degrees")">Degrees</MudSelectItem>
-            <MudSelectItem Value="@("ArcSeconds")">Arc-seconds</MudSelectItem>
+            <MudSelectItem Value="@("ArcSeconds")">Arc Seconds</MudSelectItem>
         </MudSelect>
 
-        <MudSwitch T="bool" Label="Axis 1" Value="@_settings.ShowAxis1"
+        <MudSwitch T="bool" Label="@_axisLabels[0]" Value="@_settings.ShowAxis1"
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 1))"
                    Color="MudBlazor.Color.Error" />
 
-        <MudSwitch T="bool" Label="Axis 2" Value="@_settings.ShowAxis2"
+            <MudSwitch T="bool" Label="@_axisLabels[1]" Value="@_settings.ShowAxis2"
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 2))"
                    Color="MudBlazor.Color.Info" />
 
@@ -126,7 +127,7 @@
 
             <ApexPointSeries TItem="RaDecChartData"
                              Items="@_raDecChartDataSubList"
-                             Name="RA"
+                             Name="@(_axisLabels[0])"
                              SeriesType="SeriesType.Line"
                              XValue="@(p => p.TimestampMs)"
                              YValue="@(p => (decimal)p.Ra)"
@@ -135,7 +136,7 @@
 
             <ApexPointSeries TItem="RaDecChartData"
                              Items="@_raDecChartDataSubList"
-                             Name="Dec"
+                             Name="@(_axisLabels[1])"
                              SeriesType="SeriesType.Line"
                              XValue="@(p => p.TimestampMs)"
                              YValue="@(p => (decimal)p.Dec)"

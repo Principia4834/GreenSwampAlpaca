@@ -268,8 +268,8 @@ else
                         <MudButton Color="Color.Primary"
                                    Variant="Variant.Outlined"
                                    OnClick="@(()=>
-                            OpenChartWindowAsync($"/charts/radec/{dn}", $"gs-radec-chart-{dn}"))">
-                            RA/Dec Plot
+                            OpenChartWindowAsync($"/charts/radec/{dn}?type={ms.AlignmentMode}", $"gs-radec-chart-{dn}"))">
+                            Axes Plot
                         </MudButton>
                     </MudPaper>
 

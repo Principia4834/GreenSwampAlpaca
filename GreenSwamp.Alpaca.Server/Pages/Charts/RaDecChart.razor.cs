@@ -32,6 +32,11 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     {
         [Parameter] public int DeviceNumber { get; set; }
 
+        [SupplyParameterFromQuery(Name = "type")]
+        public string? AlignmentMode { get; set; }
+
+        private string[] _axisLabels;
+
         /// <summary>Represents a data point for the RA/Dec chart.</summary>
         private sealed class RaDecChartData
         {
@@ -198,7 +203,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var yTitle = _settings.RaDecScale switch
             {
                 "Degrees" => "Degrees",
-                "ArcSeconds" => "Arc-seconds",
+                "ArcSeconds" => "Arc Seconds",
                 _ => "Steps"
             };
 
@@ -223,7 +228,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
                 Title = new Title
                 {
-                    Text = "RA/Dec Chart",
+                    Text = $"{_axisLabels[0]} / {_axisLabels[1]} Chart",
                     Align = Align.Center
                 },
 
@@ -296,6 +301,24 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
             while (buffer.Count > max) buffer.RemoveAt(0);
+        }
+
+        string[] AxisLabels(string alignmentMode)
+        {
+            string[] label = { "Axis 1", "Axis 2" };
+            switch (alignmentMode?.ToLowerInvariant())
+            {
+                case "altaz":
+                    label[0] = "Az";
+                    label[1] = "Alt";
+                    break;
+                case "germanpolar":
+                case "polar":
+                    label[0] = "RA";
+                    label[1] = "Dec";
+                    break;
+            }
+            return label;
         }
         #endregion
 

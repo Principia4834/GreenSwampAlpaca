@@ -27,6 +27,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     public partial class RaDecChart
     {
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
+        private bool _hubInitialised; // true once StartAsync completes; suppresses spurious "Disconnected" on first render        private volatile bool _pendingChartUpdate;
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
         private readonly CancellationTokenSource _disposeCts = new();
@@ -127,13 +128,36 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         #region Chart Update
         // -- Lifecycle ----------------------------------------------------------
-
+        /// <summary>
+        /// Called when the component is initialized. This method sets up the axis labels, builds the 
+        /// chart options, initializes the RA/Dec chart data sublist, and retrieves the chart settings 
+        /// from the SettingsService.
+        /// </summary>
+        /// <returns></returns>
         protected override async Task OnInitializedAsync()
         {
-            _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
-
-            _settings = SettingsService.GetChartSettings();
+            _settings = SettingsService.GetChartSettings();   // ← load BEFORE BuildChartOptions
+            _axisLabels = AxisLabels(AlignmentMode);
             BuildChartOptions();
+            _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
+        }
+
+        /// <summary>
+        /// Called only after the interactive SignalR circuit is established — never during
+        /// the static prerender pass. All SignalR hub construction is done here to prevent
+        /// the double-initialization that prerendering causes in OnInitializedAsync.
+        /// The refresh timer is also started here (replaces the previous sync OnAfterRender).
+        /// </summary>
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (!firstRender) return;
+
+            // Start the 1-second flush timer (previously in sync OnAfterRender).
+            _refreshTimer ??= new System.Threading.Timer(
+                _ => FlushChartUpdate(), null,
+                TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+
+            if (_hub is not null) return; // already initialised (safety guard)
 
             var hubUrl = Nav.ToAbsoluteUri("/charthub");
             _hub = new HubConnectionBuilder()
@@ -157,7 +181,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 try
                 {
                     await _hub!.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
-                    // Force a clean non-animated repaint after reconnect.
                     _forceNonAnimatedRefresh = true;
                     RequestFullSeriesRefresh(animate: false);
                 }
@@ -179,6 +202,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             await _hub.StartAsync();
             _hubState = _hub.State;
+            _hubInitialised = true;
             await _hub.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
 
             if (_settings.AutoStartLogging)
@@ -189,11 +213,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             _ready = true;
 
-            // Register immediately so the state loop starts right away
             ActiveViews.Touch(_viewSessionId, DeviceNumber);
-
-            // Keep the registry alive for as long as this chart window is open.
-            // The state loop uses a 10-second stale threshold, so touching every 3s is safe.
             _ = RunViewHeartbeatAsync();
         }
 
@@ -281,8 +301,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         _pendingAppendPoints.Clear();
                         await _chart!.AppendDataBySeriesNameAsync(new Dictionary<string, IEnumerable<RaDecChartData>>
                         {
-                            ["RA"] = batch,
-                            ["Dec"] = batch
+                            [_axisLabels[0]] = batch,
+                            [_axisLabels[1]] = batch
                         });
                         await ApplyRollingWindowViewportAsync(batch[^1].TimestampMs);
                     }
