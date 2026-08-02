@@ -53,6 +53,11 @@ namespace GreenSwamp.Alpaca.MountControl
         private Vector _appAxes;
         private Vector _targetRaDec;
         internal Exception? _mountError;
+        // Slew-specific error — set by SlewOperation.HandleError on any post-return
+        // movement failure. Distinct from _mountError so connection/tracking errors
+        // do not overwrite slew failure evidence.
+        internal Exception? _slewException; 
+        
         private volatile string? _lastConnectionError;
         internal Vector _altAzSync;
 
@@ -660,6 +665,18 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
+        /// Returns the exception recorded by the most recent failed slew movement,
+        /// or null if no failure has occurred since the last call to ClearLastSlewError.
+        /// </summary>
+        public Exception? GetLastSlewError() => _slewException;
+
+        /// <summary>
+        /// Clears the last recorded slew exception.
+        /// Call before initiating a new slew so stale failures are not misread.
+        /// </summary>
+        public void ClearLastSlewError() => _slewException = null;
+        
+        /// <summary>
         /// The error message from the most recent failed connection attempt, or null if the last
         /// connection succeeded. Used by MountNotificationService to surface a UI error toast.
         /// </summary>
@@ -667,7 +684,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         #endregion
 
-        #region Telescope API Bridge Methods
+        #region Telescope API Methods
 
         /// <summary>Rate move on primary axis — L: dispatches to this device's hardware queue.</summary>
         public double RateMovePrimaryAxis

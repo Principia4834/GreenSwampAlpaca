@@ -125,8 +125,8 @@ namespace GreenSwamp.Alpaca.MountControl
             if (operation == null)
                 throw new ArgumentNullException(nameof(operation));
 
-            // Enforce < 1 second setup timeout
-            using var setupTimeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(950));
+            // Enforce < 5 second setup timeout - allows mount time to stop from previous slew or abort
+            using var setupTimeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(5000));
             using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(
                 externalCancellationToken,
                 setupTimeoutCts.Token
@@ -174,9 +174,9 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Warning,
                     Method = nameof(ExecuteSlewAsync),
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = "Setup phase exceeded 1 second timeout"
+                    Message = "Setup phase exceeded 5 second timeout"
                 });
-                return SlewResult.Failed("Setup phase exceeded 1 second timeout");
+                return SlewResult.Failed("Setup phase exceeded 5 second timeout");
             }
             finally
             {
@@ -737,23 +737,32 @@ namespace GreenSwamp.Alpaca.MountControl
             Mount._rateMoveAxes.X = 0.0;
             Mount._moveAxisActive = false;
 
-            // Mark slew as complete (direct access, no reflection needed)
+            // Mark slew as complete
             Mount._slewState = SlewType.SlewNone;
 
             Mount.ApplyTracking(TrackingAfterSlew);
         }
 
         /// <summary>
-        /// Handles error by setting mount error state.
+        /// Handles cancellation by resetting rates and state.
         /// </summary>
         public void HandleError(Exception ex)
         {
-            // Set mount error (direct access, no reflection needed)
-            Mount._mountError = new Exception($"Slew Error|{SlewType}|{ex.Message}");
+            // Wrap in SkyServerException, preserving the original as InnerException
+            // so the cause (TimeoutException, InvalidOperationException, etc.) is not lost.
+            var slewEx = new SkyServerException(
+                ErrorCode.ErrExecutingCommand,
+                $"Slew failed|{SlewType}|{ex.Message}",
+                ex);
 
-            // Mark slew as complete (direct access, no reflection needed)
+            // Write to dedicated slew field — survives until explicitly cleared,
+            // independent of connection/tracking errors that write _mountError.
+            Mount._slewException = slewEx;
+
+            // Keep _mountError updated for backward compat with GetLastError() callers.
+            Mount._mountError = slewEx;
+
             Mount._slewState = SlewType.SlewNone;
-
             Mount.ApplyTracking(false);
         }
 

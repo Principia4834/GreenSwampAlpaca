@@ -27,7 +27,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     public partial class RaDecChart
     {
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
-        private bool _hubInitialised; // true once StartAsync completes; suppresses spurious "Disconnected" on first render        private volatile bool _pendingChartUpdate;
+        private bool _hubInitialised; // true once StartAsync completes; suppresses spurious "Disconnected" on first render
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
         private readonly CancellationTokenSource _disposeCts = new();
@@ -239,12 +239,12 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
         
         /// <summary>
-                 /// Called after the component has been rendered. If this is the first render and the 
-                 /// refresh timer has not been initialized, it sets up a timer to flush chart updates 
-                 /// every second. OnAfterRender is the first point guaranteed to be post-prerender, 
-                 /// matching the official RealTime.razor example pattern exactly.
-                 /// </summary>
-                 /// <param name="firstRender"></param>
+        /// Called after the component has been rendered. If this is the first render and the 
+        /// refresh timer has not been initialized, it sets up a timer to flush chart updates 
+        /// every second. OnAfterRender is the first point guaranteed to be post-prerender, 
+        /// matching the official RealTime.razor example pattern exactly.
+        /// </summary>
+        /// <param name="firstRender"></param>
         protected override void OnAfterRender(bool firstRender)
         {
             if (!firstRender || _refreshTimer != null) return;

@@ -533,19 +533,30 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             LogMount(monitorItem);
 
-            if (!firstSlewCompleted && !string.IsNullOrEmpty(abortReason))
+            if (!firstSlewCompleted)
             {
+                // Normalise: abortReason empty means the 240-second watchdog expired.
+                var reason = string.IsNullOrEmpty(abortReason)
+                    ? $"First slew watchdog expired after {timer} seconds"
+                    : abortReason;
+
                 var warnItem = new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
                     Device = MonitorDevice.Server,
                     Category = MonitorCategory.Server,
-                    Type = MonitorType.Warning,
+                    Type = MonitorType.Error,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"FirstSlewAborted|{abortReason}|PrecisionGoto skipped"
+                    Message = $"FirstSlewFailed|{reason}|Target|{target[0]}|{target[1]}"
                 };
                 LogMount(warnItem);
+
+                // Throw so the failure propagates to ExecuteMovementAndCompletionAsync
+                // → HandleErrorAsync → SlewOperation.HandleError → Mount._slewException.
+                // ForceStopAxesAsync in HandleErrorAsync covers the StopAxes call.
+                throw new SkyServerException(ErrorCode.ErrExecutingCommand,
+                    $"SkyGoTo first slew failed|{reason}");
             }
             #endregion
 

@@ -2,15 +2,16 @@
 using ASCOM.Alpaca;
 using ASCOM.Common.DeviceInterfaces;
 using ASCOM.Tools;
-using GreenSwamp.Alpaca.Principles;
-using GreenSwamp.Alpaca.Shared;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Server.MountControl;
+using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using GreenSwamp.Alpaca.Server.MountControl;
-using Newtonsoft.Json;
 using InvalidOperationException = ASCOM.InvalidOperationException;
 
 namespace GreenSwamp.Alpaca.Server.TelescopeDriver
@@ -1316,7 +1317,22 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            _mount.GoToHome().GetAwaiter().GetResult();
+            var slewResult = _mount.GoToHome().GetAwaiter().GetResult();
+            if (!slewResult.CanProceed)
+            {
+                var monitorError = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Telescope,
+                    Category = MonitorCategory.Driver,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"FindHome failed|{slewResult.ErrorMessage}"
+                };
+                LogMonitor(monitorError);
+                throw new DriverException($"FindHome could not be initiated: {slewResult.ErrorMessage}");
+            }
         }
 
         public void MoveAxis(TelescopeAxis Axis, double Rate)
@@ -1387,7 +1403,22 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
                 // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
                 // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-                _mount.GoToParkAsync().GetAwaiter().GetResult();
+                var slewResult = _mount.GoToParkAsync().GetAwaiter().GetResult();
+                if (!slewResult.CanProceed)
+                {
+                    var monitorError = new MonitorEntry
+                    {
+                        Datetime = HiResDateTime.UtcNow,
+                        Device = MonitorDevice.Telescope,
+                        Category = MonitorCategory.Driver,
+                        Type = MonitorType.Error,
+                        Method = MethodBase.GetCurrentMethod()?.Name,
+                        Thread = Environment.CurrentManagedThreadId,
+                        Message = $"Park failed|{slewResult.ErrorMessage}"
+                    };
+                    LogMonitor(monitorError);
+                    throw new DriverException($"Park could not be initiated: {slewResult.ErrorMessage}");
+                }
             }
         }
 
@@ -1465,7 +1496,22 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckReachable(Azimuth, Altitude, SlewType.SlewAltAz);
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            _mount.SlewAltAzAsync(Altitude, Azimuth).GetAwaiter().GetResult();
+            var slewResult = _mount.SlewAltAzAsync(Altitude, Azimuth).GetAwaiter().GetResult();
+            if (!slewResult.CanProceed)
+            {
+                var monitorError = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Telescope,
+                    Category = MonitorCategory.Driver,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"SlewToAltAzAsync failed|{slewResult.ErrorMessage}"
+                };
+                LogMonitor(monitorError);
+                throw new DriverException($"SlewToAltAzAsync could not be initiated: {slewResult.ErrorMessage}");
+            }
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
@@ -1530,7 +1576,22 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            _mount.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true).GetAwaiter().GetResult();
+            var slewResult = _mount.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true).GetAwaiter().GetResult();
+            if (!slewResult.CanProceed)
+            {
+                var monitorError = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Telescope,
+                    Category = MonitorCategory.Driver,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"SlewToCoordinatesAsync failed|{slewResult.ErrorMessage}"
+                };
+                LogMonitor(monitorError);
+                throw new DriverException($"SlewToCoordinatesAsync could not be initiated: {slewResult.ErrorMessage}");
+            }
         }
 
         public void SlewToTarget()
@@ -1596,7 +1657,22 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            _mount.SlewRaDecAsync(xy.X, xy.Y, tracking: true).GetAwaiter().GetResult();
+            var slewResult = _mount.SlewRaDecAsync(xy.X, xy.Y, tracking: true).GetAwaiter().GetResult();
+            if (!slewResult.CanProceed)
+            {
+                var monitorError = new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow,
+                    Device = MonitorDevice.Telescope,
+                    Category = MonitorCategory.Driver,
+                    Type = MonitorType.Error,
+                    Method = MethodBase.GetCurrentMethod()?.Name,
+                    Thread = Environment.CurrentManagedThreadId,
+                    Message = $"SlewToTargetAsync failed|{slewResult.ErrorMessage}"
+                };
+                LogMonitor(monitorError);
+                throw new DriverException($"SlewToTargetAsync could not be initiated: {slewResult.ErrorMessage}");
+            }
         }
 
         public void Unpark()
