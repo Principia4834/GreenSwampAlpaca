@@ -1859,7 +1859,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _apertureArea = settings.ApertureArea;
                 _apertureDiameter = settings.ApertureDiameter;
 
-                // Batch 6: Advanced
+                // Advanced
                 _maxSlewRate = settings.MaximumSlewRate;
                 _fullCurrent = settings.FullCurrent;
                 _encoders = settings.EncodersOn;
@@ -1867,7 +1867,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _refraction = settings.Refraction;
                 _gotoPrecision = settings.GotoPrecision;
 
-                // Batch 7: Home & Park
+                // Home & Park
                 _homeAxisX = settings.HomeAxisX;
                 _homeAxisY = settings.HomeAxisY;
                 _autoHomeAxisX = settings.AutoHomeAxisX;
@@ -1898,7 +1898,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _limitPark = settings.LimitPark;
                 _parkLimitName = settings.ParkLimitName ?? string.Empty;
 
-                // Batch 8: Limits
+                // Limits
                 _limitsOn = settings.LimitsOn;
                 _hourAngleLimit = settings.HourAngleLimit;
                 _horizonLimit = settings.HorizonLimit;
@@ -1912,11 +1912,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 _parkHzLimitName = settings.ParkHzLimitName ?? string.Empty;
                 _syncLimit = settings.SyncLimit;
 
-                // Batch 9: PPEC
+                // PPEC
                 _pPecOn = settings.PpecOn;
                 _polarLedLevel = settings.PolarLedLevel;
 
-                // Batch 10: Hand Controller
+                // Hand Controller
                 _hcAntiRa = settings.HcAntiRa;
                 _hcAntiDec = settings.HcAntiDec;
                 _hcFlipEw = settings.HcFlipEW;
@@ -1927,18 +1927,18 @@ namespace GreenSwamp.Alpaca.MountControl
                     .Select(g => new HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })
                     .ToList();
 
-                // Batch 11: Miscellaneous
+                // Miscellaneous
                 _temperature = settings.Temperature;
                 _deviceDescription = settings.DeviceDescription ?? "GreenSwamp Alpaca Server";
                 _autoTrack = settings.AutoTrack;
                 _raTrackingOffset = settings.RATrackingOffset;
 
-                // Batch 13: Voice Settings
+                // Voice Settings
                 _voiceName = settings.VoiceName ?? string.Empty;
                 _voiceVolume = Math.Clamp(settings.VoiceVolume, 0, 100);
                 _voiceActive = settings.VoiceActive;
 
-                // Batch 12: Capabilities (read-only)
+                // Capabilities (read-only)
                 _canAlignMode = settings.CanAlignMode;
                 _canAltAz = settings.CanAltAz;
                 _canEquatorial = settings.CanEquatorial;
@@ -1965,32 +1965,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 _canUnPark = settings.CanUnpark;
                 _noSyncPastMeridian = settings.NoSyncPastMeridian;
                 _numMoveAxis = settings.NumMoveAxis;
-
-                // For Polar mode: Initialize settings service with profile Az/Alt values
-                // This ensures they're preserved when SaveAsync() runs for the first time
-                if (_alignmentMode == AlignmentMode.Polar && settings.ParkAxes != null && settings.ParkAxes.Length == 2)
-                {
-                    // Update the settings service to have the profile's Az/Alt values
-                    // The backing fields (_parkAxes, _parkPositions) remain NaN/empty for lazy loading
-                    var currentSettings = _settingsService.GetDeviceSettings(_deviceNumber) ?? new Settings.Models.SkySettings();
-
-                    // Copy ParkAxes from profile to settings service
-                    currentSettings.ParkAxes = [settings.ParkAxes[0], settings.ParkAxes[1]];
-
-                    // Copy ParkPositions from profile to settings service
-                    if (settings.ParkPositions != null && settings.ParkPositions.Count > 0)
-                    {
-                        currentSettings.ParkPositions = [.. settings.ParkPositions.Select(p =>
-                            new Settings.Models.SkySettings.ParkPosition
-                            {
-                                Name = p.Name,
-                                X = p.X,
-                                Y = p.Y
-                            })];
-                    }
-                    _settingsService.SaveDeviceSettingsAsync(_deviceNumber, currentSettings).GetAwaiter().GetResult();
-                    LogSettings("InitializedPolarParkValues", $"ParkAxes:[{settings.ParkAxes[0]},{settings.ParkAxes[1]}]|ParkPositions:{settings.ParkPositions?.Count ?? 0}");
-                }
 
                 LogSettings("AppliedSettings", $"Port:{_port}");
             }
