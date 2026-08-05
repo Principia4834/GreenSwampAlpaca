@@ -32,6 +32,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public abstract class MountCommandBase : CommandBase<Actions>, IMountCommand
     {
         protected MountCommandBase(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        protected MountCommandBase(long id) : base(id) { }
     }
 
     /// <summary>
@@ -40,6 +41,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public abstract class MountQueryCommand : QueryCommand<Actions>, IMountCommand
     {
         protected MountQueryCommand(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        protected MountQueryCommand(long id) : base(id) { }
     }
 
     /// <summary>
@@ -48,6 +50,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     public abstract class MountActionCommand : ActionCommand<Actions>, IMountCommand
     {
         protected MountActionCommand(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
+        protected MountActionCommand(long id) : base(id) { }
     }
 
     // Action Commands (no result returned)
@@ -56,10 +59,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly Axis _axis;
         private readonly double _rate;
 
-        public CmdRaDecRate(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id, queue)
+        public CmdRaDecRate(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id)
         {
             _axis = axis;
             _rate = rate;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -73,10 +77,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly Axis _axis;
         private readonly double _rate;
 
-        public CmdMoveAxisRate(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id, queue)
+        public CmdMoveAxisRate(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id)
         {
             _axis = axis;
             _rate = rate;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -89,9 +94,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly int _rate;
 
-        public CmdGotoSpeed(long id, ICommandQueue<Actions> queue, int rate) : base(id, queue)
+        public CmdGotoSpeed(long id, ICommandQueue<Actions> queue, int rate) : base(id)
         {
             _rate = rate;
+            queue.AddCommand(this);
         }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -115,9 +121,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly Axis _axis;
 
-        public CmdAxisStop(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        public CmdAxisStop(long id, ICommandQueue<Actions> queue, Axis axis) : base(id)
         {
             _axis = axis;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -131,10 +138,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly Axis _axis;
         private readonly double _rate;
 
-        public CmdHcSlew(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id, queue)
+        public CmdHcSlew(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id)
         {
             _axis = axis;
             _rate = rate;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -148,10 +156,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly Axis _axis;
         private readonly double _rate;
 
-        public CmdAxisTracking(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id, queue)
+        public CmdAxisTracking(long id, ICommandQueue<Actions> queue, Axis axis, double rate) : base(id)
         {
             _axis = axis;
             _rate = rate;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -165,10 +174,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly Axis _axis;
         private readonly double _targetPosition;
 
-        public CmdAxisGoToTarget(long id, ICommandQueue<Actions> queue, Axis axis, double targetPosition) : base(id, queue)
+        public CmdAxisGoToTarget(long id, ICommandQueue<Actions> queue, Axis axis, double targetPosition) : base(id)
         {
             _axis = axis;
             _targetPosition = targetPosition;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -182,10 +192,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly Axis _axis;
         private readonly double _degrees;
 
-        public CmdAxisToDegrees(long id, ICommandQueue<Actions> queue, Axis axis, double degrees) : base(id, queue)
+        public CmdAxisToDegrees(long id, ICommandQueue<Actions> queue, Axis axis, double degrees) : base(id)
         {
             _axis = axis;
             _degrees = degrees;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -201,12 +212,13 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly int _duration;
         private readonly CancellationToken _token;
 
-        public CmdAxisPulse(long id, ICommandQueue<Actions> queue, Axis axis, double guideRate, int duration, CancellationToken token) : base(id, queue)
+        public CmdAxisPulse(long id, ICommandQueue<Actions> queue, Axis axis, double guideRate, int duration, CancellationToken token) : base(id)
         {
             _axis = axis;
             _guideRate = guideRate;
             _duration = duration;
             _token = token;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -219,9 +231,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly Axis _axis;
 
-        public CmdHomeSensorReset(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        public CmdHomeSensorReset(long id, ICommandQueue<Actions> queue, Axis axis) : base(id)
         {
             _axis = axis;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -235,10 +248,11 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private readonly int _port;
         private readonly bool _on;
 
-        public CmdSnapPort(long id, ICommandQueue<Actions> queue, int port, bool on) : base(id, queue)
+        public CmdSnapPort(long id, ICommandQueue<Actions> queue, int port, bool on) : base(id)
         {
             _port = port;
             _on = on;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -251,9 +265,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly bool _on;
 
-        public CmdSetMonitorPulse(long id, ICommandQueue<Actions> queue, bool on) : base(id, queue)
+        public CmdSetMonitorPulse(long id, ICommandQueue<Actions> queue, bool on) : base(id)
         {
             _on = on;
+            queue.AddCommand(this);
         }
 
         protected override void ExecuteAction(Actions actions)
@@ -287,9 +302,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly Axis _axis;
 
-        public AxisStepsDt(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        public AxisStepsDt(long id, ICommandQueue<Actions> queue, Axis axis) : base(id)
         {
             _axis = axis;
+            queue.AddCommand(this);
         }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -302,9 +318,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly Axis _axis;
 
-        public CmdAxisStatus(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        public CmdAxisStatus(long id, ICommandQueue<Actions> queue, Axis axis) : base(id)
         {
             _axis = axis;
+            queue.AddCommand(this);
         }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -327,9 +344,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly Axis _axis;
 
-        public CmdHomeSensor(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        public CmdHomeSensor(long id, ICommandQueue<Actions> queue, Axis axis) : base(id)
         {
             _axis = axis;
+            queue.AddCommand(this);
         }
 
         protected override dynamic ExecuteQuery(Actions actions)
@@ -362,9 +380,10 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     {
         private readonly Axis _axis;
 
-        public CmdMountVersion(long id, ICommandQueue<Actions> queue, Axis axis) : base(id, queue)
+        public CmdMountVersion(long id, ICommandQueue<Actions> queue, Axis axis) : base(id)
         {
             _axis = axis;
+            queue.AddCommand(this);
         }
 
         protected override dynamic ExecuteQuery(Actions actions)
