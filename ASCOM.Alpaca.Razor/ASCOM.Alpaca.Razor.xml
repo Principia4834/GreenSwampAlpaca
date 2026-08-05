@@ -17,6 +17,23 @@
             Defaults to 0 (legacy anonymous slot) when not explicitly set.
             </summary>
         </member>
+        <member name="F:ASCOM.Alpaca.AlpacaRequestContext.ClientIpAddress">
+            <summary>
+            The IP address of the client making the current REST request.
+            </summary>
+        </member>
+        <member name="F:ASCOM.Alpaca.AlpacaRequestContext.ClientPort">
+            <summary>
+            The port number of the client making the current REST request.
+            Defaults to 0 when not explicitly set.
+            </summary>
+        </member>
+        <member name="M:ASCOM.Alpaca.AlpacaRequestContext.BeginClientRefIdScope(System.UInt32,System.String,System.UInt32)">
+            <summary>
+            Begins a scoped ClientID assignment for the current async flow and restores
+            the prior value when the returned scope is disposed.
+            </summary>
+        </member>
         <member name="T:ASCOM.Alpaca.AscomLoggerAdapter">
             <summary>
             Adapts a <see cref="T:Microsoft.Extensions.Logging.ILogger"/> to the
