@@ -529,7 +529,13 @@ namespace GreenSwamp.Alpaca.MountControl
 
         public PolarMode PolarMode
         {
-            get => _polarMode;
+            get
+            {
+                if (Mount == MountType.Simulator)
+                    return PolarMode.Right;
+                else
+                    return _polarMode;
+            }
             set
             {
                 if (_polarMode != value)
@@ -1782,7 +1788,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 // Store device number for persistence
                 _deviceNumber = settings.DeviceNumber;
 
-                // Batch 1: Connection & Mount
+                // Connection & Mount
                 if (Enum.TryParse<MountType>(settings.Mount, true, out var mountType))
                     _mount = mountType;
                 _port = settings.Port ?? "COM1";
@@ -1820,7 +1826,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (Enum.TryParse<PolarMode>(settings.PolarMode, true, out var polMd))
                     _polarMode = polMd;
 
-                // Batch 2: Location & Custom Gearing
+                // Location & Custom Gearing
                 _latitude = settings.Latitude;
                 _longitude = settings.Longitude;
                 _elevation = settings.Elevation;
@@ -1833,7 +1839,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _customDecTrackingOffset = settings.CustomDecTrackingOffset;
                 _allowAdvancedCommandSet = settings.AllowAdvancedCommandSet;
 
-                // Batch 3: Tracking Rates
+                // Tracking Rates
                 _siderealRate = settings.SiderealRate;
                 _lunarRate = settings.LunarRate;
                 _solarRate = settings.SolarRate;
@@ -1843,7 +1849,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _checkInterval = settings.CheckInterval;
                 _altAzTrackingUpdateInterval = settings.AltAzTrackingUpdateInterval;
 
-                // Batch 4: Guiding
+                // Guiding
                 _minPulseRa = settings.MinPulseRa;
                 _minPulseDec = settings.MinPulseDec;
                 _decPulseToGoTo = settings.DecPulseToGoTo;
@@ -1853,7 +1859,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _raBacklash = settings.RaBacklash;
                 _decBacklash = settings.DecBacklash;
 
-                // Batch 5: Optics
+                // Optics
                 _focalLength = settings.FocalLength;
                 _eyepieceFs = settings.EyepieceFS;
                 _apertureArea = settings.ApertureArea;
