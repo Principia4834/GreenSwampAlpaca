@@ -1308,16 +1308,18 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void FindHome()
         {
+            string clientRefId = AlpacaRequestContext.CurrentClientRefId;
+
             CheckCapability(_mount.Settings.CanFindHome, "FindHome");
             CheckParked("FindHome");
 
             var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = "Started" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"Started|clientRefId:{clientRefId}" };
             LogMonitor(monitorItem);
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            var slewResult = _mount.GoToHome().GetAwaiter().GetResult();
+            var slewResult = _mount.GoToHome(clientRefId).GetAwaiter().GetResult();
             if (!slewResult.CanProceed)
             {
                 var monitorError = new MonitorEntry
@@ -1379,6 +1381,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <exception cref="ASCOM.ParkedException">If the telescope is already parked</exception>
         public void Park()
         {
+            var clientRefId = AlpacaRequestContext.CurrentClientRefId;
+
             CheckCapability(_mount.Settings.CanPark, "Park");
 
             var monitorItem = new MonitorEntry
@@ -1389,12 +1393,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = "Started"
+                Message = $"Started|clientRefId:{clientRefId}"
             };
 
             if (_mount.AtPark)
             {
-                monitorItem.Message = "Already Parked";
+                monitorItem.Message = $"Already Parked|clientRefId:{clientRefId}";
                 LogMonitor(monitorItem);
             }
             else
@@ -1403,7 +1407,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
                 // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
                 // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-                var slewResult = _mount.GoToParkAsync().GetAwaiter().GetResult();
+                var slewResult = _mount.GoToParkAsync(clientRefId).GetAwaiter().GetResult();
                 if (!slewResult.CanProceed)
                 {
                     var monitorError = new MonitorEntry
@@ -1484,8 +1488,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
+            string clientRefId = AlpacaRequestContext.CurrentClientRefId;
+
             var monitorItem = new MonitorEntry
-            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}" };
+            { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(Azimuth, "\u00B0 ", ":", "", 2)}|{Utilities.DegreesToDMS(Altitude, "\u00B0 ", ":", "", 2)}|clientRefId:{clientRefId}" };
             LogMonitor(monitorItem);
 
             CheckCapability(_mount.Settings.CanSlewAltAzAsync, "SlewToAltAzAsync");
@@ -1496,7 +1502,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckReachable(Azimuth, Altitude, SlewType.SlewAltAz);
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            var slewResult = _mount.SlewAltAzAsync(Altitude, Azimuth).GetAwaiter().GetResult();
+            var slewResult = _mount.SlewAltAzAsync(Altitude, Azimuth, clientRefId: clientRefId).GetAwaiter().GetResult();
             if (!slewResult.CanProceed)
             {
                 var monitorError = new MonitorEntry
@@ -1548,7 +1554,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            long clientKey = (long)AlpacaRequestContext.ClientId.Value;
+            string clientRefId = AlpacaRequestContext.CurrentClientRefId;
 
             var monitorItem = new MonitorEntry
             {
@@ -1558,7 +1564,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}|clientKey:{clientKey}"
+                Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}|clientRefId:{clientRefId}"
             };
             LogMonitor(monitorItem);
 
@@ -1568,8 +1574,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckParked("SlewToCoordinatesAsync");
             CheckReachable(RightAscension, Declination, SlewType.SlewRaDec);
 
-            TargetRightAscension = RightAscension;
-            TargetDeclination = Declination;
             var raDec = Transforms.CoordTypeToInternal(RightAscension, Declination, settings: _mount.Settings);
 
             // Enable tracking before starting slew
@@ -1578,7 +1582,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            var slewResult = _mount.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true).GetAwaiter().GetResult();
+            var slewResult = _mount.SlewRaDecAsync(raDec.X, raDec.Y, tracking: true, clientRefId: clientRefId).GetAwaiter().GetResult();
             if (!slewResult.CanProceed)
             {
                 var monitorError = new MonitorEntry
@@ -1593,6 +1597,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 };
                 LogMonitor(monitorError);
                 throw new DriverException($"SlewToCoordinatesAsync could not be initiated: {slewResult.ErrorMessage}");
+            }
+            else
+            {
+                // Slew in progess update TargetRA/TargetDec to requested values
+                // (not actual values, which will be updated by the mount when the slew completes).
+                TargetRightAscension = RightAscension;
+                TargetDeclination = Declination;
             }
         }
 
@@ -1633,6 +1644,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             var ra = TargetRightAscension;
             var dec = TargetDeclination;
+            string clientRefId = AlpacaRequestContext.CurrentClientRefId;
 
             var monitorItem = new MonitorEntry
             {
@@ -1642,7 +1654,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = FormattableString.Invariant($"{ra}|{dec}")
+                Message = FormattableString.Invariant($"{ra}|{dec}|clientRefId:{clientRefId}")
             };
             LogMonitor(monitorItem);
 
@@ -1659,7 +1671,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
             // Block until ExecuteSlewAsync returns (after IsSlewing=true is set, before movement completes).
             // This ensures Slewing=true is visible to polling clients before the HTTP response is sent.
-            var slewResult = _mount.SlewRaDecAsync(xy.X, xy.Y, tracking: true).GetAwaiter().GetResult();
+            var slewResult = _mount.SlewRaDecAsync(xy.X, xy.Y, tracking: true, clientRefId: clientRefId).GetAwaiter().GetResult();
             if (!slewResult.CanProceed)
             {
                 var monitorError = new MonitorEntry

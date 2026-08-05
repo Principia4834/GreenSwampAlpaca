@@ -904,23 +904,24 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Modern async slew implementation using SlewController.
         /// Returns immediately after setup phase completes.
         /// </summary>
-        private async Task<SlewResult> SlewAsync(double[] target, SlewType slewType, bool tracking = false)
+        private async Task<SlewResult> SlewAsync(double[] target, SlewType slewType, bool tracking = false, string clientRefId = null)
         {
             EnsureSlewController();
+            var effectiveClientRefId = string.IsNullOrWhiteSpace(clientRefId) ? "0:0.0.0.0:0" : clientRefId;
             // Capture offset rates now
             var operation = new SlewOperation(this, target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
-            return await _slewController!.ExecuteSlewAsync(operation);
+            return await _slewController!.ExecuteSlewAsync(operation, effectiveClientRefId);
         }
 
         /// <summary>
         /// Synchronous wrapper — blocks until slew completes.
-        /// Used for synchronous ASCOM methods (FindHome, SlewToCoordinates).
+        /// Used for synchronous ASCOM methods (SlewToCoordinates and SlewToAltAz).
         /// </summary>
         internal void SlewSync(double[] target, SlewType slewType, bool tracking = false)
         {
             EnsureSlewController();
             var operation = new SlewOperation(this, target, slewType, tracking, _rateRaDec.X, _rateRaDec.Y);
-            var setupResult = _slewController!.ExecuteSlewAsync(operation).Result;
+            var setupResult = _slewController!.ExecuteSlewAsync(operation, "0:0.0.0.0:0").Result;
             if (!setupResult.CanProceed)
                 throw new InvalidOperationException($"Slew setup failed: {setupResult.ErrorMessage}");
             _slewController.WaitForSlewCompletionAsync().Wait();

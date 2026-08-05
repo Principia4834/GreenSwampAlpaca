@@ -395,6 +395,9 @@ namespace GreenSwamp.Alpaca.MountControl
             set => _slewState = value;
         }
 
+        // SlewClientRefId from the current SlewController, or an empty string if no SlewController is active.
+        public string SlewClientRefId => _slewController?.SlewClientKeyId ?? string.Empty;
+
         // SlewSettleTime — public access to settle time
         public double SlewSettleTime
         {
@@ -911,18 +914,18 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>Start GoTo Home — L: uses this device's HomeAxes, AtHome, and SlewAsync.</summary>
-        public Task<SlewResult> GoToHome()
+        public Task<SlewResult> GoToHome(string clientRefId = null)
         {
             if (AtHome || _slewState == SlewType.SlewHome)
                 return Task.FromResult(SlewResult.Failed("Already at home or home slew in progress"));
             ApplyTracking(false);
-            LogMount("GoToHome|Async using per-instance SlewController");
+            LogMount($"GoToHome|Async using SlewController|clientRefId:{clientRefId}");
             var target = new[] { _homeAxes.X, _homeAxes.Y };
-            return SlewAsync(target, SlewType.SlewHome, tracking: false);
+            return SlewAsync(target, SlewType.SlewHome, tracking: false, clientRefId: clientRefId);
         }
 
         /// <summary>Start park async — L: uses this device's ParkSelected and SlewAsync.</summary>
-        public async Task<SlewResult> GoToParkAsync()
+        public async Task<SlewResult> GoToParkAsync(string clientRefId = null)
         {
             ApplyTracking(false);
             var ps = ParkSelected;
@@ -932,9 +935,9 @@ namespace GreenSwamp.Alpaca.MountControl
                 return SlewResult.Failed("Invalid park coordinates");
             Settings.ParkAxes = [ps.X, ps.Y];
             Settings.ParkName = ps.Name;
-            LogMount($"GoToParkAsync|{ps.Name}|{ps.X}|{ps.Y}");
+            LogMount($"GoToParkAsync|{ps.Name}|{ps.X}|{ps.Y}|clientRefId:{clientRefId}");
             var target = new[] { ps.X, ps.Y };
-            return await SlewAsync(target, SlewType.SlewPark, tracking: false);
+            return await SlewAsync(target, SlewType.SlewPark, tracking: false, clientRefId: clientRefId);
         }
 
         /// <summary>Synchronous Alt/Az slew — dispatches directly.</summary>
@@ -942,16 +945,16 @@ namespace GreenSwamp.Alpaca.MountControl
             SlewSync([azimuth, altitude], SlewType.SlewAltAz);
 
         /// <summary>Async Alt/Az slew — dispatches directly.</summary>
-        public Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth) =>
-            SlewAsync([azimuth, altitude], SlewType.SlewAltAz);
+        public Task<SlewResult> SlewAltAzAsync(double altitude, double azimuth, string clientRefId = null) =>
+            SlewAsync([azimuth, altitude], SlewType.SlewAltAz, tracking: false, clientRefId: clientRefId);
 
         /// <summary>Synchronous RA/Dec slew — dispatches directly.</summary>
         public void SlewRaDec(double rightAscension, double declination, bool tracking = false) =>
             SlewSync([rightAscension, declination], SlewType.SlewRaDec, tracking);
 
         /// <summary>Async RA/Dec slew — dispatches directly.</summary>
-        public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false) =>
-            SlewAsync([rightAscension, declination], SlewType.SlewRaDec, tracking);
+        public Task<SlewResult> SlewRaDecAsync(double rightAscension, double declination, bool tracking = false, string clientRefId = null) =>
+            SlewAsync([rightAscension, declination], SlewType.SlewRaDec, tracking, clientRefId);
 
         /// <summary>Enable tracking on a slew cycle</summary>
         public void CycleOnTracking(bool silence) => ApplyTracking(true);

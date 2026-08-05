@@ -51,6 +51,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private CancellationTokenSource? _currentOperationCts;
         private Task? _movementTask;
         private SlewOperation? _currentOperation;
+        private string _slewClientKeyId = string.Empty;
         
         private bool _isSlewing;
         private SlewType _currentSlewType = SlewType.SlewNone;
@@ -103,6 +104,27 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        /// <summary>
+        /// Gets the current slew owner client reference ID.
+        /// </summary>
+        public string SlewClientKeyId
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return _slewClientKeyId;
+                }
+            }
+            private set
+            {
+                lock (_stateLock)
+                {
+                    _slewClientKeyId = value;
+                }
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -113,17 +135,24 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Returns when setup phase completes (less than 1 second), with movement continuing in background.
         /// </summary>
         /// <param name="operation">The slew operation to execute</param>
+        /// <param name="clientRefId">Client reference ID for slew ownership admission control.</param>
         /// <param name="externalCancellationToken">Optional external cancellation token</param>
         /// <returns>Result of the setup phase</returns>
         /// <exception cref="ObjectDisposedException">Controller has been disposed</exception>
         public async Task<SlewResult> ExecuteSlewAsync(
             SlewOperation operation,
+            string clientRefId,
             CancellationToken externalCancellationToken = default)
         {
             ThrowIfDisposed();
 
             if (operation == null)
                 throw new ArgumentNullException(nameof(operation));
+
+            if (string.IsNullOrWhiteSpace(clientRefId))
+            {
+                clientRefId = "0:0.0.0.0:0";
+            }
 
             // Enforce < 5 second setup timeout - allows mount time to stop from previous slew or abort
             using var setupTimeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(5000));
@@ -143,11 +172,26 @@ namespace GreenSwamp.Alpaca.MountControl
 
             try
             {
+                if (IsSlewing)
+                {
+                    var activeClientRefId = SlewClientKeyId;
+                    if (!string.Equals(activeClientRefId, clientRefId, StringComparison.Ordinal))
+                    {
+                        return SlewResult.Failed($"Slew already in progress for another client: {activeClientRefId}");
+                    }
+
+                    // Owner-replace allowed: same client can replace an active slew.
+                    await CancelCurrentSlewAsync();
+                }
+
+                SlewClientKeyId = clientRefId;
+
                 // ===== PHASE 1: SETUP (< 1 second) =====
                 var setupResult = await SetupPhaseAsync(operation, combinedCts.Token);
 
                 if (!setupResult.CanProceed)
                 {
+                    SlewClientKeyId = string.Empty;
                     return setupResult;
                 }
 
@@ -166,6 +210,7 @@ namespace GreenSwamp.Alpaca.MountControl
             }
             catch (OperationCanceledException) when (setupTimeoutCts.IsCancellationRequested)
             {
+                SlewClientKeyId = string.Empty;
                 MonitorLog.LogToMonitor(new MonitorEntry
                 {
                     Datetime = HiResDateTime.UtcNow,
@@ -177,6 +222,11 @@ namespace GreenSwamp.Alpaca.MountControl
                     Message = "Setup phase exceeded 5 second timeout"
                 });
                 return SlewResult.Failed("Setup phase exceeded 5 second timeout");
+            }
+            catch
+            {
+                SlewClientKeyId = string.Empty;
+                throw;
             }
             finally
             {
@@ -294,7 +344,7 @@ namespace GreenSwamp.Alpaca.MountControl
         #region Private Phase Methods
 
         /// <summary>
-        /// PHASE 1: Setup - Validates state, cancels previous operation, prepares new operation.
+        /// PHASE 1: Setup - Validates state and prepares new operation.
         /// Must complete in < 1 second (enforced by caller's timeout).
         /// </summary>
         private async Task<SlewResult> SetupPhaseAsync(
@@ -312,9 +362,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 Message = $"Starting {operation.SlewType} to [{operation.Target[0]:F4}, {operation.Target[1]:F4}]"
             };
             MonitorLog.LogToMonitor(log);
-
-            // Cancel any existing operation first (auto-cancellation on new command)
-            await CancelCurrentSlewAsync();
 
             ct.ThrowIfCancellationRequested();
 
@@ -464,6 +511,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 IsSlewing = false;
                 CurrentSlewType = SlewType.SlewNone;
+                SlewClientKeyId = string.Empty;
 
                 _currentOperationCts?.Dispose();
                 _currentOperationCts = null;
