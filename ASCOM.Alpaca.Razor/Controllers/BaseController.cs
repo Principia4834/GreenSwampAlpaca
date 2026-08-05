@@ -155,9 +155,12 @@ namespace ASCOM.Alpaca
         {
             try
             {
-                using var _ = AlpacaRequestContext.BeginClientIdScope(clientID);
+                using var _ = AlpacaRequestContext.BeginClientRefIdScope(clientID, HttpContext.Connection.RemoteIpAddress?.ToString(), (uint)HttpContext.Connection.RemotePort);
 
-                LogAPICall(HttpContext.Connection.RemoteIpAddress, HttpContext.Request.Path.ToString(), clientID, clientTransactionID, transactionID, payload);
+                LogAPICall(HttpContext.Connection.RemoteIpAddress, 
+                           HttpContext.Request.Path.ToString(), 
+                           AlpacaRequestContext.CurrentClientId, 
+                           clientTransactionID, transactionID, payload);
 
                 if (DeviceManager.Configuration.RunInStrictAlpacaMode)
                 {
