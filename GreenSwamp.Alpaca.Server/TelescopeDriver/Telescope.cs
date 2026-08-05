@@ -1548,6 +1548,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
+            long clientKey = (long)AlpacaRequestContext.ClientId.Value;
+
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -1556,7 +1558,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}"
+                Message = $"{Utilities.HoursToHMS(RightAscension, "h ", ":", "", 2)}|{Utilities.DegreesToDMS(Declination, "\u00B0 ", ":", "", 2)}|clientKey:{clientKey}"
             };
             LogMonitor(monitorItem);
 

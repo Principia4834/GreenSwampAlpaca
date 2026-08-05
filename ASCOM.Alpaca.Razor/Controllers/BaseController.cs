@@ -155,6 +155,8 @@ namespace ASCOM.Alpaca
         {
             try
             {
+                using var _ = AlpacaRequestContext.BeginClientIdScope(clientID);
+
                 LogAPICall(HttpContext.Connection.RemoteIpAddress, HttpContext.Request.Path.ToString(), clientID, clientTransactionID, transactionID, payload);
 
                 if (DeviceManager.Configuration.RunInStrictAlpacaMode)
