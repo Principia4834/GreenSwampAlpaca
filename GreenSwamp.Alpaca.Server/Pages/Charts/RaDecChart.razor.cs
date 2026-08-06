@@ -20,7 +20,6 @@ using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.JSInterop;
 
 namespace GreenSwamp.Alpaca.Server.Pages.Charts
 {
@@ -34,6 +33,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         [SupplyParameterFromQuery(Name = "type")]
         public string? AlignmentMode { get; set; }
+
+        [SupplyParameterFromQuery(Name = "label")]
+        public string? Label { get; set; }
 
         private string[] _axisLabels;
 
@@ -77,17 +79,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         #region Toolbar Handlers
         // -- Toolbar handlers ---------------------------------------------------
 
-        /// <summary>Switches between Realtime and Historical display modes.</summary>
-        private async Task OnModeChangedAsync(string? newMode)
-        {
-            if (string.IsNullOrWhiteSpace(newMode) || newMode == _displayMode) return;
-
-            if (newMode == "Historical")
-                await PauseDisplayAsync();
-            else
-                await ResumeDisplayAsync();
-        }
-
         /// <summary>
         /// Changes the rolling window size (10 / 30 / 120 / 300seconds) for Realtime mode.
         /// </summary>
@@ -100,7 +91,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             await SettingsService.SaveChartSettingsAsync(_settings);
 
             SetRaDecChartDataToRollingWindow();
-            BuildChartOptions();
+            BuildChartOptions(ChartId);
             _chartKey = $"radec-{_displayMode}-{seconds}s";
             RequestFullSeriesRefresh(animate: false);
         }
@@ -123,7 +114,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             RescaleRaDecChartData();
 
-            BuildChartOptions();
+            BuildChartOptions(ChartId);
             _chartKey = $"radec-{_settings.RaDecScale}";
 
             RequestFullSeriesRefresh(animate: false); // inserted
@@ -164,15 +155,17 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             if (IsHistoricalMode) return Task.CompletedTask;
 
-            _pausedSnapshot = _raDecChartDataSubList.ToList(); // static snapshot of current visible window
+            _pausedSnapshot = _raDecChartDataSubList.ToList();
             _displayMode = "Historical";
 
+            RebuildChartForCurrentMode();
             _pendingAppendPoints.Clear();
-            RequestFullSeriesRefresh(animate: false); // redraw from snapshot + historical viewport
+            RequestFullSeriesRefresh(animate: false);
             StateHasChanged();
 
             return Task.CompletedTask;
         }
+
 
         /// <summary>
         /// Resumes the display of the RA/Dec chart, clearing the paused snapshot and switching back to Realtime mode.
@@ -185,17 +178,18 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _displayMode = "Realtime";
             _pausedSnapshot.Clear();
 
-            SetRaDecChartDataToRollingWindow();       // include accumulated points
-            RequestFullSeriesRefresh(animate: false); // redraw from rolling window + realtime viewport
+            RebuildChartForCurrentMode();
+            SetRaDecChartDataToRollingWindow();
+            RequestFullSeriesRefresh(animate: false);
             StateHasChanged();
 
             return Task.CompletedTask;
         }
-        
+
         /// <summary>
-                 /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
-                 /// </summary>
-                 /// <returns>A task representing the asynchronous operation.</returns>
+        /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ToggleLoggingAsync(bool v)
         {
             if (_loggingBusy || _disposed) return;
@@ -220,23 +214,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             }
         }
 
-        /// <summary>Manual refresh — re-requests history from the server.</summary>
-        private async Task RefreshHistoricalAsync()
-        {
-            try { await _hub!.InvokeAsync("RequestHistoricalDataAsync", "radec", DeviceNumber); }
-            catch (TaskCanceledException) { }
-        }
-
-        private async Task ExportPngAsync()
-        {
-        }
-
-        private async Task ExportCsvAsync()
-        {
-            var filename = $"radec-{DateTime.Now:yyyyMMdd-HHmmss}.csv";
-            try { await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", filename); }
-            catch (TaskCanceledException) { }
-        }
         #endregion
 
         #region Chart options builder
@@ -245,7 +222,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <summary>
         /// Builds the chart options based on the current settings.
         /// </summary>
-        private void BuildChartOptions()
+        private void BuildChartOptions(string chartId)
         {
             var yTitle = _settings.RaDecScale switch
             {
@@ -254,7 +231,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 _ => "Steps"
             };
 
-            // The formatter function for the y-axis labels, based on the selected scale.
             var yFormatter = _settings.RaDecScale switch
             {
                 "Degrees" => "function(val) { return Number(val).toFixed(2); }",
@@ -262,12 +238,41 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 _ => "function(val) { return Math.round(Number(val)).toString(); }"
             };
 
+            var isHistorical = IsHistoricalMode;
+
             _chartOptions = new ApexChartOptions<RaDecChartData>
             {
                 Chart = new Chart
                 {
-                    Toolbar = new Toolbar { Show = true, Tools = new Tools { Download = true, Zoom = true, Pan = true, Reset = true } },
-                    Zoom = new Zoom { Enabled = true, Type = AxisType.X, AutoScaleYaxis = true },
+                    Id = chartId,
+                    Toolbar = new Toolbar
+                    {
+                        Show = isHistorical,
+                        Tools = new Tools
+                        {
+                            Download = isHistorical,
+                            Zoom = isHistorical,
+                            Pan = isHistorical,
+                            Reset = isHistorical
+                        },
+                        Export = new ExportOptions
+                        {
+                            Csv = new ExportCSV
+                            {
+                                ColumnDelimiter = "|",
+                                HeaderCategory = "Timestamp",
+                                HeaderValue = "Value",
+                                CategoryFormatter = "function(val) { return new Date(val).toISOString().slice(0,-1); }",
+                                ValueFormatter = "function(val) { return val.toFixed(4); }"
+                            }
+                        }
+                    },
+                    Zoom = new Zoom
+                    {
+                        Enabled = isHistorical,
+                        Type = AxisType.X,
+                        AutoScaleYaxis = true
+                    },
                     ParentHeightOffset = 0,
                     RedrawOnParentResize = true,
                     RedrawOnWindowResize = true,
@@ -281,7 +286,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 },
 
                 Tooltip = new Tooltip { Enabled = false },
-
                 Xaxis = new XAxis
                 {
                     Type = XAxisType.Datetime,
@@ -298,20 +302,26 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 Yaxis =
                 [
                     new YAxis
-                {
-                    Title = new AxisTitle { Text = yTitle },
-                    Labels = new YAxisLabels { Formatter = yFormatter }
-                }
+            {
+                Title = new AxisTitle { Text = yTitle },
+                Labels = new YAxisLabels { Formatter = yFormatter }
+            }
                 ]
             };
         }
 
-        private void BuildHistoricalOptions(string yTitle, string yFormatter)
-        {
-        }
         #endregion
 
         #region Helpers
+        /// <summary>
+        /// Rebuilds the chart options and updates the chart key based on the current display mode, scale, and other settings.
+        /// </summary>
+        private void RebuildChartForCurrentMode()
+        {
+            BuildChartOptions(ChartId);
+            _chartKey = $"radec-{_displayMode}-{_settings.RaDecScale}-{_settings.RealtimeWindowSeconds}s-a1{_settings.ShowAxis1}-a2{_settings.ShowAxis2}";
+        }
+
         // -- Value conversion & buffer helpers ----------------------------------
 
         /// <summary>Converts a raw point to a new ChartPointDto with the scaled Y value.</summary>

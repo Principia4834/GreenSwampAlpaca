@@ -21,6 +21,8 @@ using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace GreenSwamp.Alpaca.Server.Pages.Charts
 {
@@ -33,6 +35,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private readonly CancellationTokenSource _disposeCts = new();
         private int _chartUpdateInFlight;
         private volatile bool _forceNonAnimatedRefresh;
+        private string ChartId { get; set; } = null;
         private bool CanAcceptWork()
             => !_disposed && !_disposeCts.IsCancellationRequested;
         private bool CanPushChartUpdate()
@@ -142,7 +145,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _settings = SettingsService.GetChartSettings();   // ← load BEFORE BuildChartOptions
             _displayMode = "Realtime"; // enforce session default, non-persisted
             _axisLabels = AxisLabels(AlignmentMode);
-            BuildChartOptions();
+            ChartId = string.IsNullOrEmpty(Label) ? "Unknown" : Regex.Replace(Label, @"[^\w]+", string.Empty);
+            ChartId += $"_{DeviceNumber.ToString()}_{DateTime.Now.ToString("yyyy-MM-dd")}";
+            BuildChartOptions(ChartId);
             _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
 
             return Task.CompletedTask;

@@ -500,4 +500,102 @@ code {
             color: var(--mud-palette-primary-text);
             border-color: var(--mud-palette-primary-darken);
         }
+
+/* ============================================================
+   ApexCharts toolbar + export menu (global override)
+   NOTE: Unscoped because Apex toolbar/menu are not under
+         .gs-radec-chart in live DOM.
+   ============================================================ */
+
+/* Toolbar shell */
+.apexcharts-theme-dark .apexcharts-toolbar,
+.apexcharts-toolbar {
+    background: #1b1f24 !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .42) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    padding: 4px !important;
+    gap: 2px !important;
+}
+
+/* Toolbar icons */
+.apexcharts-theme-dark .apexcharts-menu-icon,
+.apexcharts-theme-dark .apexcharts-measure-icon,
+.apexcharts-theme-dark .apexcharts-pan-icon,
+.apexcharts-theme-dark .apexcharts-reset-icon,
+.apexcharts-theme-dark .apexcharts-selection-icon,
+.apexcharts-theme-dark .apexcharts-toolbar-custom-icon,
+.apexcharts-theme-dark .apexcharts-zoom-icon,
+.apexcharts-theme-dark .apexcharts-zoomin-icon,
+.apexcharts-theme-dark .apexcharts-zoomout-icon,
+.apexcharts-menu-icon,
+.apexcharts-measure-icon,
+.apexcharts-pan-icon,
+.apexcharts-reset-icon,
+.apexcharts-selection-icon,
+.apexcharts-toolbar-custom-icon,
+.apexcharts-zoom-icon,
+.apexcharts-zoomin-icon,
+.apexcharts-zoomout-icon {
+    color: #e8edf3 !important;
+    border-radius: 7px !important;
+}
+
+.apexcharts-menu-icon:hover,
+.apexcharts-measure-icon:hover,
+.apexcharts-pan-icon:hover,
+.apexcharts-reset-icon:hover,
+.apexcharts-selection-icon:hover,
+.apexcharts-toolbar-custom-icon:hover,
+.apexcharts-zoom-icon:hover,
+.apexcharts-zoomin-icon:hover,
+.apexcharts-zoomout-icon:hover {
+    color: var(--gs-text-primary) !important;
+    background: rgba(var(--gs-accent-500-rgb), .14) !important;
+}
+
+/* Selected tool state */
+.apexcharts-canvas .apexcharts-selection-icon.apexcharts-selected,
+.apexcharts-canvas .apexcharts-zoom-icon.apexcharts-selected,
+.apexcharts-canvas .apexcharts-pan-icon.apexcharts-selected {
+    color: var(--gs-accent-300) !important;
+    background: rgba(var(--gs-accent-500-rgb), .22) !important;
+}
+
+/* Export dropdown shell */
+.apexcharts-theme-dark .apexcharts-menu,
+.apexcharts-menu {
+    background: var(--gs-bg-paper) !important;
+    border: 1px solid var(--gs-divider) !important;
+    color: var(--gs-text-primary) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .34) !important;
+    min-width: 150px !important;
+    padding: 6px !important;
+}
+
+/* Export dropdown items */
+.apexcharts-theme-dark .apexcharts-menu-item,
+.apexcharts-menu-item {
+    color: var(--gs-text-primary) !important;
+    border-radius: 7px !important;
+    padding: 7px 10px !important;
+}
+
+.apexcharts-theme-dark .apexcharts-menu-item:hover,
+.apexcharts-menu-item:hover {
+    background: rgba(var(--gs-accent-500-rgb), .16) !important;
+}
+
+/* Focus visibility */
+.apexcharts-menu-item:focus-visible,
+.apexcharts-menu-icon:focus-visible,
+.apexcharts-zoom-icon:focus-visible,
+.apexcharts-pan-icon:focus-visible,
+.apexcharts-selection-icon:focus-visible,
+.apexcharts-reset-icon:focus-visible {
+    outline: 2px solid var(--gs-accent-500) !important;
+    outline-offset: 1px !important;
 }
