@@ -58,6 +58,11 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private bool _loggingActive;
         private bool _loggingBusy;
         private bool _ready;
+        private string _displayMode = "Realtime"; // session-only; not persisted
+        private List<RaDecChartData> _pausedSnapshot = [];
+        private IEnumerable<RaDecChartData> _chartItems => IsHistoricalMode ? _pausedSnapshot : _raDecChartDataSubList;
+        private bool IsRealtimeMode => _displayMode == "Realtime";
+        private bool IsHistoricalMode => _displayMode == "Historical";
         private bool _disposed;
 
 
@@ -75,12 +80,12 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <summary>Switches between Realtime and Historical display modes.</summary>
         private async Task OnModeChangedAsync(string? newMode)
         {
-            if (newMode is null || newMode == _settings.DisplayMode) return;
-            _settings.DisplayMode = newMode;
-            await SettingsService.SaveChartSettingsAsync(_settings);
-            BuildChartOptions();
-            _chartKey = $"radec-{_settings.DisplayMode}-{_settings.RealtimeWindowSeconds}";
-            StateHasChanged();
+            if (string.IsNullOrWhiteSpace(newMode) || newMode == _displayMode) return;
+
+            if (newMode == "Historical")
+                await PauseDisplayAsync();
+            else
+                await ResumeDisplayAsync();
         }
 
         /// <summary>
@@ -90,15 +95,14 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task OnWindowChangedAsync(int seconds)
         {
+            if (IsHistoricalMode) return; // dropdown disabled, hard guard
             _settings.RealtimeWindowSeconds = seconds;
             await SettingsService.SaveChartSettingsAsync(_settings);
 
             SetRaDecChartDataToRollingWindow();
-
             BuildChartOptions();
-            _chartKey = $"radec-{_settings.DisplayMode}-{seconds}s";
-
-            RequestFullSeriesRefresh(animate: false); // inserted
+            _chartKey = $"radec-{_displayMode}-{seconds}s";
+            RequestFullSeriesRefresh(animate: false);
         }
 
         /// <summary>Changes the per-series buffer cap (5,000 / 10,000 / 20,000 points).</summary>
@@ -146,9 +150,52 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
 
         /// <summary>
-        /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
+        /// Toggles between pausing and resuming the display of the RA/Dec chart.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
+        private Task TogglePauseResumeAsync()
+            => IsRealtimeMode ? PauseDisplayAsync() : ResumeDisplayAsync();
+
+        /// <summary>
+        /// Pauses the display of the RA/Dec chart, taking a snapshot of the current visible window and switching to Historical mode.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private Task PauseDisplayAsync()
+        {
+            if (IsHistoricalMode) return Task.CompletedTask;
+
+            _pausedSnapshot = _raDecChartDataSubList.ToList(); // static snapshot of current visible window
+            _displayMode = "Historical";
+
+            _pendingAppendPoints.Clear();
+            RequestFullSeriesRefresh(animate: false); // redraw from snapshot + historical viewport
+            StateHasChanged();
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Resumes the display of the RA/Dec chart, clearing the paused snapshot and switching back to Realtime mode.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private Task ResumeDisplayAsync()
+        {
+            if (IsRealtimeMode) return Task.CompletedTask;
+
+            _displayMode = "Realtime";
+            _pausedSnapshot.Clear();
+
+            SetRaDecChartDataToRollingWindow();       // include accumulated points
+            RequestFullSeriesRefresh(animate: false); // redraw from rolling window + realtime viewport
+            StateHasChanged();
+
+            return Task.CompletedTask;
+        }
+        
+        /// <summary>
+                 /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
+                 /// </summary>
+                 /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ToggleLoggingAsync(bool v)
         {
             if (_loggingBusy || _disposed) return;
@@ -219,7 +266,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             {
                 Chart = new Chart
                 {
-                    Toolbar = new Toolbar { Show = false },
+                    Toolbar = new Toolbar { Show = true, Tools = new Tools { Download = true, Zoom = true, Pan = true, Reset = true } },
+                    Zoom = new Zoom { Enabled = true, Type = AxisType.X, AutoScaleYaxis = true },
                     ParentHeightOffset = 0,
                     RedrawOnParentResize = true,
                     RedrawOnWindowResize = true,

@@ -64,12 +64,14 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 if (!CanAcceptWork()) return Task.CompletedTask;
 
                 AddToRaDecChartData(points[0], points[1]);
-                RequestChartUpdate(animate: true);
+
+                // Realtime pushes only; Historical remains frozen
+                if (IsRealtimeMode)
+                    RequestChartUpdate(animate: true);
 
                 return Task.CompletedTask;
             });
         }
-
         /// <summary>
         /// Adds the given RA and Dec points to the RA/Dec chart data buffers, maintaining the rolling window and history limits.
         /// </summary>
@@ -115,7 +117,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             };
 
             _raDecChartData.Add(chartPoint);
-            _pendingAppendPoints.Add(chartPoint);
+            if (IsRealtimeMode)
+                _pendingAppendPoints.Add(chartPoint);
 
             // Find the index of the first point that is within the rolling window and update the sublist's start index accordingly
             var rollingStartIndex = _raDecChartData.FindIndex(p => p.TimestampMs >= rollingCutoffMs);
@@ -134,14 +137,16 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// from the SettingsService.
         /// </summary>
         /// <returns></returns>
-        protected override async Task OnInitializedAsync()
+        protected override Task OnInitializedAsync()
         {
             _settings = SettingsService.GetChartSettings();   // ← load BEFORE BuildChartOptions
+            _displayMode = "Realtime"; // enforce session default, non-persisted
             _axisLabels = AxisLabels(AlignmentMode);
             BuildChartOptions();
             _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
-        }
 
+            return Task.CompletedTask;
+        }
         /// <summary>
         /// Called only after the interactive SignalR circuit is established — never during
         /// the static prerender pass. All SignalR hub construction is done here to prevent
@@ -280,8 +285,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 while (_pendingChartUpdate && CanPushChartUpdate())
                 {
                     _pendingChartUpdate = false;
-                    var animate = !_forceNonAnimatedRefresh
-                                  && _settings.DisplayMode == "Realtime";
+                    var animate = !_forceNonAnimatedRefresh && IsRealtimeMode;
                     _forceNonAnimatedRefresh = false;
                     try
                     {
@@ -292,8 +296,19 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
                             await _chart!.UpdateSeriesAsync(animate);
 
-                            if (_raDecChartData.Count > 0) await ApplyRollingWindowViewportAsync(_raDecChartData[^1].TimestampMs);
-
+                            if (IsHistoricalMode)
+                            {
+                                await ApplyHistoricalViewportAsync();
+                            }
+                            else if (_raDecChartData.Count > 0)
+                            {
+                                await ApplyRollingWindowViewportAsync(_raDecChartData[^1].TimestampMs);
+                            }
+                            continue;
+                        }
+                        if (IsHistoricalMode)
+                        {
+                            _pendingAppendPoints.Clear();
                             continue;
                         }
                         if (_pendingAppendPoints.Count == 0) continue;
@@ -327,6 +342,31 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
 
         /// <summary>
+        /// Applies a historical viewport to the RA/Dec chart based on the paused snapshot of data. If the
+        /// chart is null, the display mode is not "Historical", or the component cannot accept work, 
+        /// the method returns without making any changes.
+        /// </summary>
+        /// <returns></returns>
+        private async Task ApplyHistoricalViewportAsync()
+        {
+            if (_chart is null || !IsHistoricalMode || !CanPushChartUpdate()) return;
+            if (_pausedSnapshot.Count == 0) return;
+
+            var minMs = _pausedSnapshot[0].TimestampMs;
+            var maxMs = _pausedSnapshot[^1].TimestampMs;
+            if (maxMs <= minMs) maxMs = minMs + 1;
+
+            try
+            {
+                await _chart.ZoomXAsync((decimal)minMs, (decimal)maxMs);
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException || ex is JSDisconnectedException)
+            {
+            }
+        }
+
+
+        /// <summary>
         /// Applies a rolling window viewport to the RA/Dec chart based on the latest timestamp. If the 
         /// chart is null or the display mode is not "Realtime", the method returns without making any changes.
         /// </summary>
@@ -334,7 +374,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ApplyRollingWindowViewportAsync(long latestTimestampMs)
         {
-            if (_chart is null || _settings.DisplayMode != "Realtime" || !CanPushChartUpdate()) return;
+            if (_chart is null || !IsRealtimeMode || !CanPushChartUpdate()) return;
 
             var windowStartMs = latestTimestampMs - RaDecRollingWindowMs;
             try

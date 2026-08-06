@@ -37,6 +37,7 @@ Rules (must follow)
 ## MudBlazor UI creation, editing and debugging
 
 - When answering MudBlazor UI behavior questions in this workspace, consult the MudBlazor MCP docs before responding.
+- When scoping or proposing chart UI changes, use both MudBlazor MCP and ApexCharts MCP references.
 
 ## Razor file creation, editing and debugging
 

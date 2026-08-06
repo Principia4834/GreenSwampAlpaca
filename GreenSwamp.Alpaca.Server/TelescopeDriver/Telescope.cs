@@ -73,17 +73,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"  {r}" };
                 LogMonitor(monitorItem);
 
-                switch (r)
+                return r switch
                 {
-                    case AlignmentMode.AltAz:
-                        return AlignmentMode.AltAz;
-                    case AlignmentMode.GermanPolar:
-                        return AlignmentMode.GermanPolar;
-                    case AlignmentMode.Polar:
-                        return AlignmentMode.Polar;
-                    default:
-                        return AlignmentMode.GermanPolar;
-                }
+                    AlignmentMode.AltAz => AlignmentMode.AltAz,
+                    AlignmentMode.GermanPolar => AlignmentMode.GermanPolar,
+                    AlignmentMode.Polar => AlignmentMode.Polar,
+                    _ => AlignmentMode.GermanPolar,
+                };
             }
         }
 
@@ -1232,17 +1228,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"   {Axis}" };
             LogMonitor(monitorItem);
 
-            switch (Axis)
+            return Axis switch
             {
-                case TelescopeAxis.Primary:
-                    return new AxisRates(TelescopeAxis.Primary, _mount);
-                case TelescopeAxis.Secondary:
-                    return new AxisRates(TelescopeAxis.Secondary, _mount);
-                case TelescopeAxis.Tertiary:
-                    return new AxisRates(TelescopeAxis.Tertiary, _mount);
-                default:
-                    return null;
-            }
+                TelescopeAxis.Primary => new AxisRates(TelescopeAxis.Primary, _mount),
+                TelescopeAxis.Secondary => new AxisRates(TelescopeAxis.Secondary, _mount),
+                TelescopeAxis.Tertiary => new AxisRates(TelescopeAxis.Tertiary, _mount),
+                _ => null,
+            };
         }
 
         public bool CanMoveAxis(TelescopeAxis Axis)
@@ -1701,7 +1693,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Unparking - AtPark was: {_mount.AtPark}"  // âœ… Log before
+                Message = $"Unparking - AtPark was: {_mount.AtPark}"  // Log before
             };
             LogMonitor(monitorItem);
 
@@ -1716,7 +1708,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 Type = MonitorType.Data,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"Unparked - AtPark now: {_mount.AtPark}"    // âœ… Log after
+                Message = $"Unparked - AtPark now: {_mount.AtPark}"    // Log after
             };
             LogMonitor(monitorItem);
         }
@@ -2001,19 +1993,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         /// <exception cref="InvalidOperationException">Thrown if the target coordinates are outside the hardware limits for the specified slew type.</exception>
         private void CheckReachable(double axisX, double axisY, SlewType slewType)
         {
-            string method;
-            switch (slewType)
+            string method = slewType switch
             {
-                case SlewType.SlewAltAz:
-                    method = "SlewToAltAz";
-                    break;
-                case SlewType.SlewRaDec:
-                    method = "SlewToCoordinates";
-                    break;
-                default:
-                    method = "Unknown Slew Type";
-                    break;
-            }
+                SlewType.SlewAltAz => "SlewToAltAz",
+                SlewType.SlewRaDec => "SlewToCoordinates",
+                _ => "Unknown Slew Type",
+            };
             // Only check for polar alignment mode
             if (_mount.Settings.AlignmentMode != AlignmentMode.Polar ||
                 _mount.IsTargetReachable([axisX, axisY], slewType)) return;

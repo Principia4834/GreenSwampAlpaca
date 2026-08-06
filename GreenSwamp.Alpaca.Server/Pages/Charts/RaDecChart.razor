@@ -42,29 +42,18 @@
         </MudToggleGroup>
  *@
         @* Window duration — only visible in Realtime mode *@
-        @if (_settings.DisplayMode == "Realtime")
-        {
-            <MudSelect T="int" Label="Window" Value="@_settings.RealtimeWindowSeconds"
-                       ValueChanged="@OnWindowChangedAsync"
-                       Variant="Variant.Outlined" Margin="Margin.Dense"
-                       Style="min-width:100px;">
-                <MudSelectItem Value="10">10 s</MudSelectItem>
-                <MudSelectItem Value="30">30 s</MudSelectItem>
-                <MudSelectItem Value="120">2 m</MudSelectItem>
-                <MudSelectItem Value="300">5 m</MudSelectItem>
-                <MudSelectItem Value="900">15 m</MudSelectItem>
-                <MudSelectItem Value="1800">30 m</MudSelectItem>
-            </MudSelect>
-
-@*             <MudSelect T="int" Label="Max pts" Value="@_settings.RaDecMaxPoints"
-                       ValueChanged="@OnMaxPointsChangedAsync"
-                       Variant="Variant.Outlined" Margin="Margin.Dense"
-                       Style="min-width:110px;">
-                <MudSelectItem Value="5000">5 000</MudSelectItem>
-                <MudSelectItem Value="10000">10 000</MudSelectItem>
-                <MudSelectItem Value="20000">20 000</MudSelectItem>
-            </MudSelect>
- *@        }
+        <MudSelect T="int" Label="Data Window" Value="@_settings.RealtimeWindowSeconds"
+                   ValueChanged="@OnWindowChangedAsync"
+                   Disabled="@(IsHistoricalMode)"
+                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                   Style="min-width:110px;">
+            <MudSelectItem Value="10">10 s</MudSelectItem>
+            <MudSelectItem Value="30">30 s</MudSelectItem>
+            <MudSelectItem Value="120">2 m</MudSelectItem>
+            <MudSelectItem Value="300">5 m</MudSelectItem>
+            <MudSelectItem Value="900">15 m</MudSelectItem>
+            <MudSelectItem Value="1800">30 m</MudSelectItem>
+        </MudSelect>
 
         <MudSelect T="string" Label="Scale" Value="@_settings.RaDecScale"
                    ValueChanged="@OnScaleChangedAsync"
@@ -74,6 +63,15 @@
             <MudSelectItem Value="@("Degrees")">Degrees</MudSelectItem>
             <MudSelectItem Value="@("ArcSeconds")">Arc Seconds</MudSelectItem>
         </MudSelect>
+
+        <MudTooltip Text="@(IsRealtimeMode ? "Pause (freeze to historical snapshot)" : "Resume realtime scrolling")" Placement="Placement.Left">
+            <MudIconButton Icon="@(IsRealtimeMode ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                           Color="@(IsRealtimeMode ? MudBlazor.Color.Warning : MudBlazor.Color.Success)"
+                           Variant="Variant.Outlined"
+                           Size="MudBlazor.Size.Small"
+                           OnClick="TogglePauseResumeAsync"
+                           aria-label="@(IsRealtimeMode ? "Pause chart updates" : "Resume chart updates")" />
+        </MudTooltip>
 
         <MudSwitch T="bool" Label="@_axisLabels[0]" Value="@_settings.ShowAxis1"
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 1))"
@@ -126,22 +124,22 @@
                    Width="@("100%")">
 
             <ApexPointSeries TItem="RaDecChartData"
-                             Items="@_raDecChartDataSubList"
+                             Items="@_chartItems"
                              Name="@(_axisLabels[0])"
                              SeriesType="SeriesType.Line"
                              XValue="@(p => p.TimestampMs)"
                              YValue="@(p => (decimal)p.Ra)"
                              Hidden="@(!_settings.ShowAxis1)"
-                             Stroke="@(new SeriesStroke { Width = 2, Color = "#f44336" })"/>
+                             Stroke="@(new SeriesStroke { Width = 2, Color = "#f44336" })" />
 
             <ApexPointSeries TItem="RaDecChartData"
-                             Items="@_raDecChartDataSubList"
+                             Items="@_chartItems"
                              Name="@(_axisLabels[1])"
                              SeriesType="SeriesType.Line"
                              XValue="@(p => p.TimestampMs)"
                              YValue="@(p => (decimal)p.Dec)"
                              Hidden="@(!_settings.ShowAxis2)"
-                             Stroke="@(new SeriesStroke { Width = 2, Color = "#2196f3" })"/>    
+                             Stroke="@(new SeriesStroke { Width = 2, Color = "#2196f3" })" />
 
         </ApexChart>
     </div>
