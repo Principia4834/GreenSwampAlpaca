@@ -1,4 +1,4 @@
- /* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿ /* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published
@@ -67,7 +67,10 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!IsWithinFlipLimits(position)) { return null; }
             var alt = Axes.GetAltAxisPosition(position, Settings);
             if (!IsWithinFlipLimits(alt)) { return null; }
-            var cl = ChooseClosestPosition(_actualAxisX, position, alt);
+            double currentX = _actualAxisX;
+            double currentY = _actualAxisY;
+            TryGetRawAxisSnapshot(out currentX, out currentY);
+            var cl = ChooseClosestPosition(currentX, position, alt);
             if (_flipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
@@ -79,7 +82,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"flip|{cl}|{_actualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                    Message = $"flip|{cl}|{currentX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
             if (cl != "b") { return null; }
@@ -91,7 +94,10 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsWithinFlipLimits(position)) { return null; }
             var alt = Axes.GetAltAxisPosition(position, Settings);
-            var cl = ChooseClosestPosition(_actualAxisX, position, alt);
+            double currentX = _actualAxisX;
+            double currentY = _actualAxisY;
+            TryGetRawAxisSnapshot(out currentX, out currentY);
+            var cl = ChooseClosestPosition(currentX, position, alt);
             if (_flipOnNextGoto)
             {
                 cl = cl == "a" ? "b" : "a";
@@ -103,7 +109,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     Type = MonitorType.Information,
                     Method = MethodBase.GetCurrentMethod()?.Name,
                     Thread = Environment.CurrentManagedThreadId,
-                    Message = $"flip|{cl}|{_actualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                    Message = $"flip|{cl}|{currentX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                 });
             }
             if (cl != "b") { return null; }
@@ -120,7 +126,10 @@ namespace GreenSwamp.Alpaca.MountControl
             if (!altOk) return null;
             if (posOk && altOk)
             {
-                var cl = ChooseClosestPositionPolar([_actualAxisX, _actualAxisY], position, alt);
+                double currentX = _actualAxisX;
+                double currentY = _actualAxisY;
+                TryGetRawAxisSnapshot(out currentX, out currentY);
+                var cl = ChooseClosestPositionPolar([currentX, currentY], position, alt);
                 if (_flipOnNextGoto)
                 {
                     cl = cl == "a" ? "b" : "a";
@@ -132,7 +141,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
                         Thread = Environment.CurrentManagedThreadId,
-                        Message = $"flip|{cl}|{_actualAxisX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
+                        Message = $"flip|{cl}|{currentX}|{position[0]}|{position[1]}|{alt[0]}|{alt[1]}"
                     });
                 }
                 if (cl != "b") { return null; }

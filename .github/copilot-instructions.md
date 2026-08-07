@@ -194,6 +194,7 @@ When I report a bug in code from the current session — read the affected file,
 4. Edit ONE file at a time
 5. run_build after EACH edit           # Incremental verification
 6. If build breaks: REVERT immediately
+
 ---
 
 ## ?? ANTI-PATTERNS (NEVER DO THIS)
@@ -229,6 +230,7 @@ try
 **WRONG:**edit_file ? edit_file ? edit_file ? run_build
 **CORRECT:**
 run_build ? edit_file ? run_build ? edit_file ? run_build
+
 ---
 
 ## ?? Commit Message Guidelines
@@ -304,6 +306,7 @@ If you break the build:
 
 # 3. Suggest recovery action
 "Please revert the commit or I can attempt a surgical fix by..."
+
 ---
 
 ## ?? Remember

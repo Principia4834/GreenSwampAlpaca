@@ -751,6 +751,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 _loopCounter++;
                 CheckAxisLimits();
                 CheckPecTraining();
+                // Keep cached position state fresh even when UI is inactive.
+                UpdateSteps();
 
                 // Refresh controller voltage on every tick for SkyWatcher mounts
                 if (Settings.Mount == MountType.SkyWatcher && SkyQueue != null)

@@ -39,6 +39,10 @@ namespace GreenSwamp.Alpaca.MountControl
         internal int SimGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
         {
             const int success = 0;
+            double axisX = _actualAxisX;
+            double axisY = _actualAxisY;
+            TryGetRawAxisSnapshot(out axisX, out axisY);
+
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -47,7 +51,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
+                Message = $"from|{axisX}|{axisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}"
             };
             LogMount(monitorItem);
 
@@ -165,6 +169,9 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         private int SimPrecisionGoto(double[] target, SlewType slewType, CancellationToken token)
         {
+            double axisX = _actualAxisX;
+            double axisY = _actualAxisY;
+            TryGetRawAxisSnapshot(out axisX, out axisY);
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -173,7 +180,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
+                Message = $"from|({axisX},{axisY})|to|({target[0]},{target[1]})"
             };
             LogMount(monitorItem);
 
@@ -400,6 +407,9 @@ namespace GreenSwamp.Alpaca.MountControl
         internal int SkyGoTo(double[] target, bool trackingState, SlewType slewType, CancellationToken token)
         {
             const int success = 0;
+            double axisX = _actualAxisX;
+            double axisY = _actualAxisY;
+            TryGetRawAxisSnapshot(out axisX, out axisY);
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -408,7 +418,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"from|{_actualAxisX}|{_actualAxisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
+                Message = $"from|{axisX}|{axisY}|to|{target[0]}|{target[1]}|tracking|{trackingState}|slewing|{slewType}"
             };
             LogMount(monitorItem);
             token.ThrowIfCancellationRequested();
@@ -590,6 +600,10 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <exception cref="TimeoutException">Thrown when mount position update does not arrive within 5 seconds.</exception>
         private int SkyPrecisionGoto(double[] target, SlewType slewType, CancellationToken token)
         {
+            double axisX = _actualAxisX;
+            double axisY = _actualAxisY;
+            TryGetRawAxisSnapshot(out axisX, out axisY);
+
             var monitorItem = new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
@@ -598,7 +612,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 Type = MonitorType.Information,
                 Method = MethodBase.GetCurrentMethod()?.Name,
                 Thread = Environment.CurrentManagedThreadId,
-                Message = $"from|({_actualAxisX},{_actualAxisY})|to|({target[0]},{target[1]})"
+                Message = $"from|({axisX},{axisY})|to|({target[0]},{target[1]})"
             };
             LogMount(monitorItem);
 

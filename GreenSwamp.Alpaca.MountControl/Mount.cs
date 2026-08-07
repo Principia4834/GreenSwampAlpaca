@@ -786,7 +786,11 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Set SideOfPier (triggers pier flip).</summary>
         public void SetSideOfPier(PointingState value)
         {
-            var axes = new[] { _actualAxisX, _actualAxisY };
+            double axisX = _actualAxisX;
+            double axisY = _actualAxisY;
+            TryGetRawAxisSnapshot(out axisX, out axisY);
+            var axes = new[] { axisX, axisY };
+            
             if (IsWithinFlipLimits(Axes.AxesMountToApp(axes, Settings)))
             {
                 _flipOnNextGoto = true;
@@ -794,7 +798,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _ = SlewRaDecAsync(RightAscensionXForm, DeclinationXForm, true);
                 else
                     _ = SlewAltAzAsync(Altitude, Azimuth);
-                LogMount($"SetSideOfPier|{value}|limit:{Settings.HourAngleLimit}|{axes[0]}|{axes[1]}");
+                LogMount($"SetSideOfPier|{value}|limit:{Settings.HourAngleLimit}|{axisX}|{axisY}");
             }
             else
             {
@@ -1188,30 +1192,51 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal double[]? GetRawDegrees()
         {
-            var actualDegrees = new[] { double.NaN, double.NaN };
-            if (!IsMountRunning) { return actualDegrees; }
+            if (!IsMountRunning) { return null; }
 
             switch (Settings.Mount)
             {
                 case MountType.Simulator:
-                    var simPositions = new CmdAxesDegrees(SimQueue!.NewId, SimQueue);
-                    actualDegrees = (double[])SimQueue.GetCommandResult(simPositions).Result;
-                    break;
+                    {
+                        var simPositions = new CmdAxesDegrees(SimQueue!.NewId, SimQueue);
+                        var simResult = SimQueue.GetCommandResult(simPositions);
+                        if (!simResult.Successful || simResult.Exception != null || simResult.Result is not double[] simDegrees)
+                            return null;
+                        return simDegrees;
+                    }
 
                 case MountType.SkyWatcher:
-                    var skyPositions = new SkyGetPositionsInDegrees(SkyQueue!.NewId, SkyQueue);
-                    actualDegrees = (double[])SkyQueue.GetCommandResult(skyPositions).Result;
-                    if (!skyPositions.Successful || skyPositions.Exception != null)
-                        return null;
-                    break;
+                    {
+                        var skyPositions = new SkyGetPositionsInDegrees(SkyQueue!.NewId, SkyQueue);
+                        var skyResult = SkyQueue.GetCommandResult(skyPositions);
+                        if (!skyResult.Successful || skyResult.Exception != null || skyResult.Result is not double[] skyDegrees)
+                            return null;
+                        return skyDegrees;
+                    }
 
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            return actualDegrees;
         }
 
+        /// <summary>
+        /// Returns a fresh axis snapshot from the mount queue (independent of cached _actualAxis fields).
+        /// Falls back to current cached values if the read fails.
+        /// </summary>
+        internal bool TryGetRawAxisSnapshot(out double axisX, out double axisY)
+        {
+            axisX = _actualAxisX;
+            axisY = _actualAxisY;
+
+            var raw = GetRawDegrees();
+            if (raw == null || raw.Length< 2 || double.IsNaN(raw[0]) || double.IsNaN(raw[1]))
+                return false;
+
+            axisX = raw[0];
+            axisY = raw[1];
+            return true;
+        }
+            
         /// <summary>
         /// Convert steps to degrees
         /// Migrated from SkyServer.ConvertStepsToDegrees()
