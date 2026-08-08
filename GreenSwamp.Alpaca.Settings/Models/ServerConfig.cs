@@ -59,7 +59,12 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Open the default browser automatically when the server starts.</summary>
         public bool AutoStartBrowser { get; set; } = true;
 
-        /// <summary>Expose the OpenAPI / Swagger UI at /swagger.</summary>
+        /// <summary>
+        /// Windows console startup visibility: StartNormally, StartMinimized, or NoConsole.
+        /// Ignored on non-Windows platforms.
+        /// </summary>
+        public string ConsoleDisplayDefault { get; set; } = "NoConsole";        /// <summary>Expose the OpenAPI / Swagger UI at /swagger.</summary>
+
         public bool RunSwagger { get; set; } = true;
 
         // -- Authentication ----------------------------------------------------

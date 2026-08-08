@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
+using H.NotifyIcon.Core;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
 using System.Reflection;
@@ -42,6 +44,35 @@ namespace GreenSwamp.Alpaca.Server
         /// <summary>Bootstrap server configuration read before the DI container is built.</summary>
         internal static ServerConfig BootstrapConfig { get; private set; } = new ServerConfig();
 
+        private static TrayIconWithContextMenu? _trayIcon;
+
+        private static Icon? _trayIconImage;
+        
+        private enum ConsoleDisplayOption
+        {
+            StartNormally = 0,
+            StartMinimized = 1,
+            NoConsole = 2
+        }
+
+        private const int SW_RESTORE = 9;
+        private const int SW_MINIMIZE = 6;
+        private const int SW_HIDE = 0;
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsIconic(IntPtr hWnd);
         internal static string ServerVersion => serverVersion;
 
         public static async Task Main(string[] args)
@@ -74,7 +105,18 @@ namespace GreenSwamp.Alpaca.Server
             // on first run without needing to read appsettings.json before the host is built.
             // VersionedSettingsService seeds the file on its first GetServerConfig() call.
             BootstrapConfig = ServerConfig.LoadBootstrap(bootstrapConfigPath);
+            
             Logger.LogInformation($"Bootstrap server config loaded from: {bootstrapConfigPath}");
+
+            if (OperatingSystem.IsWindows() && !isService)
+            {
+                if (!Enum.TryParse(BootstrapConfig.ConsoleDisplayDefault, true, out ConsoleDisplayOption startupConsoleMode))
+                {
+                    startupConsoleMode = ConsoleDisplayOption.NoConsole;
+                }
+
+                ShowConsole(startupConsoleMode);
+            }
 
             // Add custom Command Line arguments here
             #region Startup and Logging
@@ -542,26 +584,61 @@ namespace GreenSwamp.Alpaca.Server
 
             Lifetime = app.Lifetime;
 
+            // Replace the tray icon creation block (lines ~585-623)
+            if (OperatingSystem.IsWindows() && !isService)
+            {
+                try
+                {
+                    var extracted = !string.IsNullOrWhiteSpace(Environment.ProcessPath)
+                        ? Icon.ExtractAssociatedIcon(Environment.ProcessPath!)
+                        : null;
+
+                    _trayIconImage = extracted is not null
+                        ? (Icon)extracted.Clone()
+                        : (Icon)SystemIcons.Application.Clone();
+
+                    extracted?.Dispose();
+
+                    _trayIcon = new TrayIconWithContextMenu
+                    {
+                        Icon = _trayIconImage.Handle,
+                        ToolTip = "Green Swamp Alpaca Server",
+                        ContextMenu = new PopupMenu
+                        {
+                            Items =
+                {
+                    new PopupMenuItem("Show Browser UI", (_, _) => StartBrowser(startupConfig.ServerPort)),
+                    new PopupMenuSeparator(),
+                    new PopupMenuItem("Show Console", (_, _) => ShowConsole(ConsoleDisplayOption.StartNormally)),
+                    new PopupMenuItem("Hide Console", (_, _) => ShowConsole(ConsoleDisplayOption.NoConsole)),
+                    new PopupMenuSeparator(),
+                    new PopupMenuItem("Exit", (_, _) =>
+                    {
+                        _trayIcon?.Dispose();
+                        _trayIconImage?.Dispose();
+                        Lifetime?.StopApplication();
+                    }),
+                }
+                        }
+                    };
+
+                    _trayIcon.Create();
+                    Logger?.LogInformation("Tray icon created.");
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogWarning(ex, "Failed to initialize tray icon.");
+                }
+            }
+
             //Put code here that should run at shutdown
             Lifetime.ApplicationStopping.Register(() =>
             {
                 Logger.LogInformation($"{ServerName} Stopping");
+                _trayIcon?.Dispose();
+                _trayIconImage?.Dispose();
             });
 
-#if WINDOWS
-            // Placeholder for Windows-specific code that minimises the console window when not in service mode.
-            [LibraryImport("kernel32.dll")]
-            internal static partial IntPtr GetConsoleWindow();
-
-            [LibraryImport("user32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            internal static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-            private const int SW_SHOWMINIMIZED = 2;
-
-            // Minimise the console window
-            ShowWindow(GetConsoleWindow(), SW_SHOWMINIMIZED);
-#endif
             //Start the Alpaca Server
             app.Run();
         }
@@ -584,6 +661,54 @@ namespace GreenSwamp.Alpaca.Server
                 UseShellExecute = true
             };
             Process.Start(psi);
+        }
+
+        private static void ShowConsole(ConsoleDisplayOption newConsoleState)
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
+            var hWnd = GetConsoleWindow();
+            if (hWnd == IntPtr.Zero)
+            {
+                return;
+            }
+
+            var currentState = GetConsoleWindowState(hWnd);
+            if (currentState == newConsoleState)
+            {
+                return;
+            }
+
+            switch (newConsoleState)
+            {
+                case ConsoleDisplayOption.StartNormally:
+                    ShowWindow(hWnd, SW_RESTORE);
+                    break;
+                case ConsoleDisplayOption.StartMinimized:
+                    ShowWindow(hWnd, SW_MINIMIZE);
+                    break;
+                case ConsoleDisplayOption.NoConsole:
+                    ShowWindow(hWnd, SW_HIDE);
+                    break;
+            }
+        }
+
+        private static ConsoleDisplayOption GetConsoleWindowState(IntPtr hWnd)
+        {
+            if (!IsWindowVisible(hWnd))
+            {
+                return ConsoleDisplayOption.NoConsole;
+            }
+
+            if (IsIconic(hWnd))
+            {
+                return ConsoleDisplayOption.StartMinimized;
+            }
+
+            return ConsoleDisplayOption.StartNormally;
         }
     }
 }
