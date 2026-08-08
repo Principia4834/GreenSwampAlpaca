@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Models;
 
@@ -52,9 +53,10 @@ namespace GreenSwamp.Alpaca.Server.Services
             bool IsConnected,
             bool Tracking,
             long LimitWarningSequence,
+            PointingState SideOfPier,
             string? LastConnectionError);
 
-        private readonly Dictionary<int, DeviceNotificationState> _lastState = new();
+        private readonly Dictionary<int, DeviceNotificationState> _lastState = [];
 
         /// <summary>
         /// Raised on a background thread whenever a noteworthy state transition occurs.
@@ -85,7 +87,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     // Prime state on first tick — no events fired.
                     _lastState[dn] = new DeviceNotificationState(
                         state.AtPark, state.Slewing, state.AtHome,
-                        state.ConnectedClientCount > 0, state.Tracking, state.LimitWarningSequence, connectionError);
+                        state.ConnectedClientCount > 0, state.Tracking, state.LimitWarningSequence, state.SideOfPier, connectionError);
                     continue;
                 }
 
@@ -103,6 +105,8 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                 var atHomeUp = !last.AtHome && state.AtHome;
                 var atHomeDn = last.AtHome && !state.AtHome;
+
+                var pierSideChange = state.SideOfPier != last.SideOfPier;
 
                 // Silence when autohomne is in progress
                 var voiceEnabled = state.VoiceActive && !state.IsAutoHomeRunning;
@@ -127,6 +131,9 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                 CheckAndNotify(atHomeUp,
                     "At Home", dn, voiceEnabled, state);
+
+                CheckAndNotify(pierSideChange,
+                    $"Pier side {state.SideOfPier}", dn, voiceEnabled, state);
 
                 CheckAndNotify(connectedDn,
                     "Mount Disconnected", dn, voiceEnabled, state);
@@ -184,7 +191,7 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                 _lastState[dn] = new DeviceNotificationState(
                     state.AtPark, state.Slewing, state.AtHome,
-                    state.ConnectedClientCount > 0, state.Tracking, state.LimitWarningSequence, connectionError);
+                    state.ConnectedClientCount > 0, state.Tracking, state.LimitWarningSequence, state.SideOfPier, connectionError);
             }
 
 
