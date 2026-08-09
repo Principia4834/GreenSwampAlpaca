@@ -199,7 +199,6 @@ jobs:
     name: Build DMG (${{ matrix.rid }})
     needs: publish
     runs-on: macos-latest
-    if: startsWith(github.ref, 'refs/tags/v') # optional but recommended
     strategy:
       fail-fast: false
       matrix:
