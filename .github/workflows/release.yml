@@ -308,10 +308,27 @@ jobs:
 
       - name: Sign .app bundle (hardened runtime)
         run: |
-          codesign --force --deep --options runtime --timestamp \
+          APP_PATH="dist/${APP_NAME}.app"
+          MACOS_DIR="$APP_PATH/Contents/MacOS"
+
+          # Sign executable/native binaries only
+          while IFS= read -r -d '' f; do
+            if file "$f" | grep -q "Mach-O"; then
+              codesign --force --timestamp --options runtime \
+                --entitlements "$RUNNER_TEMP/entitlements.plist" \
+                --sign "$APPLE_SIGN_IDENTITY" \
+                "$f"
+            fi
+          done < <(find "$MACOS_DIR" -type f -print0)
+
+          # Then sign the app bundle wrapper (no --deep)
+          codesign --force --timestamp --options runtime \
             --entitlements "$RUNNER_TEMP/entitlements.plist" \
             --sign "$APPLE_SIGN_IDENTITY" \
-            "dist/${APP_NAME}.app"
+            "$APP_PATH"
+
+          # Verify
+          codesign --verify --strict --verbose=2 "$APP_PATH"
 
       - name: Create DMG
         run: |
