@@ -268,16 +268,32 @@ jobs:
 
       - name: Build .app bundle
         run: |
-          APP_DIR="dist/${APP_NAME}.app"
-          CONTENTS="$APP_DIR/Contents"
+          APP_PATH="dist/${APP_NAME}.app"
+          CONTENTS="$APP_PATH/Contents"
           MACOS_DIR="$CONTENTS/MacOS"
+          RES_DIR="$CONTENTS/Resources"
+          PAYLOAD_DIR="$RES_DIR/app"
+          LAUNCHER_NAME="GreenSwampAlpacaLauncher"
 
-          mkdir -p "$MACOS_DIR"
-          cp -R "publish/${{ matrix.rid }}/." "$MACOS_DIR/"
-          chmod +x "$MACOS_DIR/$APP_EXECUTABLE"
+          mkdir -p "$MACOS_DIR" "$PAYLOAD_DIR"
 
-          # Remove debug symbols from app payload (not for distribution signing)
-          find "$MACOS_DIR" -type f -name "*.pdb" -delete
+          # Put full publish payload in Resources (not MacOS)
+          cp -R "publish/${{ matrix.rid }}/." "$PAYLOAD_DIR/"
+
+          # Remove debug/docs artifacts not needed at runtime
+          find "$PAYLOAD_DIR" -type f \( -name "*.pdb" -o -name "*.xml" \) -delete
+
+          # Launcher in MacOS
+          cat > "$MACOS_DIR/$LAUNCHER_NAME" <<'SH'
+          #!/bin/bash
+          set -euo pipefail
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          APP_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+          PAYLOAD_DIR="$APP_ROOT/Resources/app"
+          cd "$PAYLOAD_DIR"
+          exec "./GreenSwamp.Alpaca.Server" "$@"
+          SH
+          chmod +x "$MACOS_DIR/$LAUNCHER_NAME"
 
           cat > "$CONTENTS/Info.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
@@ -290,7 +306,7 @@ jobs:
               <key>CFBundleVersion</key><string>${{ needs.publish.outputs.msi_version }}</string>
               <key>CFBundleShortVersionString</key><string>${{ needs.publish.outputs.msi_version }}</string>
               <key>CFBundlePackageType</key><string>APPL</string>
-              <key>CFBundleExecutable</key><string>${APP_EXECUTABLE}</string>
+              <key>CFBundleExecutable</key><string>${LAUNCHER_NAME}</string>
               <key>LSMinimumSystemVersion</key><string>12.0</string>
             </dict>
           </plist>
@@ -312,9 +328,8 @@ jobs:
       - name: Sign .app bundle (hardened runtime)
         run: |
           APP_PATH="dist/${APP_NAME}.app"
-          MACOS_DIR="$APP_PATH/Contents/MacOS"
 
-          # Sign executable/native binaries only
+          # Sign nested Mach-O binaries first
           while IFS= read -r -d '' f; do
             if file "$f" | grep -q "Mach-O"; then
               codesign --force --timestamp --options runtime \
@@ -322,15 +337,14 @@ jobs:
                 --sign "$APPLE_SIGN_IDENTITY" \
                 "$f"
             fi
-          done < <(find "$MACOS_DIR" -type f -print0)
+          done < <(find "$APP_PATH" -type f -print0)
 
-          # Then sign the app bundle wrapper (no --deep)
+          # Sign app wrapper last
           codesign --force --timestamp --options runtime \
             --entitlements "$RUNNER_TEMP/entitlements.plist" \
             --sign "$APPLE_SIGN_IDENTITY" \
             "$APP_PATH"
 
-          # Verify
           codesign --verify --strict --verbose=2 "$APP_PATH"
 
       - name: Create DMG
@@ -347,7 +361,9 @@ jobs:
 
       - name: Notarize DMG (fail workflow on any notarization error)
         run: |
-          echo "${{ secrets.APPLE_NOTARY_API_KEY_B64 }}" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
+          if ! printf '%s' "${{ secrets.APPLE_NOTARY_API_KEY_B64 }}" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8" 2>/dev/null; then
+            printf '%s' "${{ secrets.APPLE_NOTARY_API_KEY_B64 }}" | base64 -D > "$RUNNER_TEMP/AuthKey.p8"
+          fi
           xcrun notarytool submit "$DMG_NAME" \
             --key "$RUNNER_TEMP/AuthKey.p8" \
             --key-id "${{ secrets.APPLE_NOTARY_KEY_ID }}" \
