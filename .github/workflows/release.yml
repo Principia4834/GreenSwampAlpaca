@@ -276,6 +276,9 @@ jobs:
           cp -R "publish/${{ matrix.rid }}/." "$MACOS_DIR/"
           chmod +x "$MACOS_DIR/$APP_EXECUTABLE"
 
+          # Remove debug symbols from app payload (not for distribution signing)
+          find "$MACOS_DIR" -type f -name "*.pdb" -delete
+
           cat > "$CONTENTS/Info.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
