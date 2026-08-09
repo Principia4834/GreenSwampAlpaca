@@ -213,6 +213,20 @@ jobs:
       APPLE_CERT_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_APP_CERT_PASSWORD }}
 
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: greenswamp-alpaca-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}
+
+      - name: Verify published payload exists
+        run: |
+          test -d "publish/${{ matrix.rid }}" || { echo "::error::Missing publish/${{ matrix.rid }}"; exit 1; }
+          ls -la "publish/${{ matrix.rid }}"
+ 
       - name: Restore Developer ID cert to temporary keychain
         run: |
           set -euo pipefail
@@ -270,8 +284,8 @@ jobs:
               <key>CFBundleName</key><string>${APP_NAME}</string>
               <key>CFBundleDisplayName</key><string>${APP_NAME}</string>
               <key>CFBundleIdentifier</key><string>${APP_BUNDLE_ID}</string>
-              <key>CFBundleVersion</key><string>${{ needs.publish.outputs.app_version }}</string>
-              <key>CFBundleShortVersionString</key><string>${{ needs.publish.outputs.app_version }}</string>
+              <key>CFBundleVersion</key><string>${{ needs.publish.outputs.msi_version }}</string>
+              <key>CFBundleShortVersionString</key><string>${{ needs.publish.outputs.msi_version }}</string>
               <key>CFBundlePackageType</key><string>APPL</string>
               <key>CFBundleExecutable</key><string>${APP_EXECUTABLE}</string>
               <key>LSMinimumSystemVersion</key><string>12.0</string>
