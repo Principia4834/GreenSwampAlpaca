@@ -158,9 +158,12 @@ namespace GreenSwamp.Alpaca.MountControl
                 _connectType = ConnectType.None;
 
                 var readTimeout = TimeSpan.FromMilliseconds(Settings.ReadTimeout);
-                if (Settings.Port.StartsWith("COM") ||              // Windows
-                    Settings.Port.StartsWith("/dev/ttyUSB") ||      // Linux USB serial
-                    Settings.Port.StartsWith("/dev/ttyS"))          // Linux serial
+                if (Settings.Port.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||   // Windows
+                    Settings.Port.StartsWith("/dev/ttyUSB", StringComparison.Ordinal) ||      // Linux USB serial
+                    Settings.Port.StartsWith("/dev/ttyS", StringComparison.Ordinal) ||         // Linux serial
+                    Settings.Port.StartsWith("/dev/ttyACM", StringComparison.Ordinal) ||         // Linux serial
+                    Settings.Port.StartsWith("/dev/tty.", StringComparison.Ordinal) ||         // macOS tty devices
+                    Settings.Port.StartsWith("/dev/cu.", StringComparison.Ordinal))            // macOS callout devices
                 {
                     var options = SerialOptions.DiscardNull
                         | (Settings.DtrEnable ? SerialOptions.DtrEnable : SerialOptions.None)

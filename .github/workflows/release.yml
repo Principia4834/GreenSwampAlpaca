@@ -26,7 +26,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rid: [ win-x64, win-x86, linux-x64, linux-arm64, linux-arm, osx-x64, osx-arm64 ]
+        include:
+          - rid: win-x64
+            self_contained: false
+          - rid: win-x86
+            self_contained: false
+          - rid: linux-x64
+            self_contained: true
+          - rid: linux-arm64
+            self_contained: true
+          - rid: linux-arm
+            self_contained: true
+          - rid: osx-x64
+            self_contained: true
+          - rid: osx-arm64
+            self_contained: true
     steps:
       - uses: actions/checkout@v5
         with:
@@ -52,7 +66,7 @@ jobs:
           dotnet publish GreenSwamp.Alpaca.Server/GreenSwamp.Alpaca.Server.csproj
           -c Release
           -r ${{ matrix.rid }}
-          --self-contained true
+          --self-contained ${{ matrix.self_contained }}
           -p:PublishSingleFile=true
           -p:PublishTrimmed=false
           -o publish/${{ matrix.rid }}
@@ -347,14 +361,36 @@ jobs:
 
           codesign --verify --strict --verbose=2 "$APP_PATH"
 
-      - name: Create DMG
+      - name: Create DMG (create-dmg with hdiutil fallback)
         run: |
-          mkdir -p dmg-root
-          cp -R "dist/${APP_NAME}.app" dmg-root/
-          DMG_NAME="GreenSwamp-Alpaca-${{ needs.publish.outputs.app_version }}-${{ matrix.rid }}.dmg"
-          hdiutil create -volname "$APP_NAME" -srcfolder dmg-root -ov -format UDZO "$DMG_NAME"
-          echo "DMG_NAME=$DMG_NAME" >> "$GITHUB_ENV"
+          set -euo pipefail
 
+          APP_PATH="dist/${APP_NAME}.app"
+          DMG_NAME="GreenSwamp-Alpaca-${{ needs.publish.outputs.app_version }}-${{ matrix.rid }}.dmg"
+          STAGE_DIR="$RUNNER_TEMP/dmg-root"
+
+          rm -rf "$STAGE_DIR"
+          mkdir -p "$STAGE_DIR"
+          cp -R "$APP_PATH" "$STAGE_DIR/"
+          ln -s /Applications "$STAGE_DIR/Applications"
+
+          if brew list create-dmg >/dev/null 2>&1 || brew install create-dmg; then
+            echo "Using create-dmg"
+            create-dmg \
+              --volname "$APP_NAME" \
+              --window-pos 200 120 \
+              --window-size 800 400 \
+              --icon-size 100 \
+              --icon "${APP_NAME}.app" 200 190 \
+              --app-drop-link 600 185 \
+              "$DMG_NAME" \
+              "$STAGE_DIR"
+          else
+            echo "create-dmg unavailable; falling back to hdiutil"
+            hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE_DIR" -ov -format UDZO "$DMG_NAME"
+          fi
+
+          echo "DMG_NAME=$DMG_NAME" >> "$GITHUB_ENV"
       - name: Sign DMG
         run: |
           codesign --force --timestamp --sign "$APPLE_SIGN_IDENTITY" "$DMG_NAME"

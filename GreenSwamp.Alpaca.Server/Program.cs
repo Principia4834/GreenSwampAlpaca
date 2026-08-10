@@ -35,8 +35,31 @@ namespace GreenSwamp.Alpaca.Server
         internal const string Manufacturer = "Green Swamp Software";
         internal const string ServerName = "Green Swamp Alpaca Server";
 
-        internal static readonly string serverVersion = FileVersionInfo.GetVersionInfo(Environment.ProcessPath).FileVersion.ToString();
+        internal static readonly string serverVersion = ResolveServerVersion();
 
+        private static string ResolveServerVersion()
+        {
+            try
+            {
+                var processPath = Environment.ProcessPath;
+                if (!string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath))
+                {
+                    var fileVersion = FileVersionInfo.GetVersionInfo(processPath).FileVersion;
+                    if (!string.IsNullOrWhiteSpace(fileVersion))
+                    {
+                        return fileVersion;
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore and fall back
+            }
+
+            return Assembly.GetEntryAssembly()?.GetName().Version?.ToString()
+                ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
+                ?? "0.0.0";
+        }
         internal static ILogger? Logger;
 
         internal static IHostApplicationLifetime? Lifetime;
