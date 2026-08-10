@@ -71,6 +71,10 @@ jobs:
           -p:PublishTrimmed=false
           -o publish/${{ matrix.rid }}
 
+      - name: Ensure executable bit for Unix RIDs
+        if: startsWith(matrix.rid, 'linux-') || startsWith(matrix.rid, 'osx-')
+        run: chmod +x "publish/${{ matrix.rid }}/GreenSwamp.Alpaca.Server"
+
       # minver-cli runs MinVer directly against the git repo — unlike
       # `dotnet msbuild -getProperty:Version` it actually executes the MinVer
       # target rather than reading the Version property statically (which would
@@ -293,6 +297,7 @@ jobs:
 
           # Put full publish payload in Resources (not MacOS)
           cp -R "publish/${{ matrix.rid }}/." "$PAYLOAD_DIR/"
+          chmod +x "$PAYLOAD_DIR/GreenSwamp.Alpaca.Server"
 
           # Remove debug/docs artifacts not needed at runtime
           find "$PAYLOAD_DIR" -type f \( -name "*.pdb" -o -name "*.xml" \) -delete
