@@ -75,6 +75,12 @@ jobs:
         if: startsWith(matrix.rid, 'linux-') || startsWith(matrix.rid, 'osx-')
         run: chmod +x "publish/${{ matrix.rid }}/GreenSwamp.Alpaca.Server"
 
+      - name: Include macOS app icon in publish payload
+        if: startsWith(matrix.rid, 'osx-')
+        run: |
+          cp "GreenSwamp.Alpaca.Server/Resources/greenswamp.icns" "publish/${{ matrix.rid }}/greenswamp.icns"
+          test -f "publish/${{ matrix.rid }}/greenswamp.icns"
+
       # minver-cli runs MinVer directly against the git repo — unlike
       # `dotnet msbuild -getProperty:Version` it actually executes the MinVer
       # target rather than reading the Version property statically (which would
@@ -292,12 +298,16 @@ jobs:
           RES_DIR="$CONTENTS/Resources"
           PAYLOAD_DIR="$RES_DIR/app"
           LAUNCHER_NAME="GreenSwampAlpacaLauncher"
+          ICON_BASE_NAME="greenswamp"
 
-          mkdir -p "$MACOS_DIR" "$PAYLOAD_DIR"
+          mkdir -p "$MACOS_DIR" "$PAYLOAD_DIR" "$RES_DIR"
 
           # Put full publish payload in Resources (not MacOS)
           cp -R "publish/${{ matrix.rid }}/." "$PAYLOAD_DIR/"
           chmod +x "$PAYLOAD_DIR/GreenSwamp.Alpaca.Server"
+
+          # Copy app icon into bundle resources
+          cp "$PAYLOAD_DIR/greenswamp.icns" "$RES_DIR/greenswamp.icns"
 
           # Remove debug/docs artifacts not needed at runtime
           find "$PAYLOAD_DIR" -type f \( -name "*.pdb" -o -name "*.xml" \) -delete
@@ -326,6 +336,7 @@ jobs:
               <key>CFBundleShortVersionString</key><string>${{ needs.publish.outputs.msi_version }}</string>
               <key>CFBundlePackageType</key><string>APPL</string>
               <key>CFBundleExecutable</key><string>${LAUNCHER_NAME}</string>
+              <key>CFBundleIconFile</key><string>${ICON_BASE_NAME}</string>
               <key>LSMinimumSystemVersion</key><string>12.0</string>
             </dict>
           </plist>
