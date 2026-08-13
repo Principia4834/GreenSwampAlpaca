@@ -70,7 +70,7 @@ namespace GreenSwamp.Alpaca.Server
         private static TrayIconWithContextMenu? _trayIcon;
 
         private static Icon? _trayIconImage;
-        
+
         private enum ConsoleDisplayOption
         {
             StartNormally = 0,
@@ -108,15 +108,18 @@ namespace GreenSwamp.Alpaca.Server
                  .SetMinimumLevel(LogLevel.Debug));
             Logger = bootstrapLoggerFactory.CreateLogger<Program>();
 
-            // Detect service mode before any path is resolved — covers both Windows SCM and Linux systemd.
+            // Detect service mode before any path is resolved — covers Windows SCM, Linux systemd and macOS launchd.
             // Detection is done here (not in SettingsPathResolver) to avoid pulling platform packages into the Settings project.
             var isWindowsService = OperatingSystem.IsWindows()
                 && Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService();
             var isLinuxSystemd = OperatingSystem.IsLinux()
                 && Microsoft.Extensions.Hosting.Systemd.SystemdHelpers.IsSystemdService();
-            var isService = isWindowsService || isLinuxSystemd;
-            SettingsPathResolver.ApplyCommandLineArgs(args ?? [], isService);
+            var isMacLaunchd = OperatingSystem.IsMacOS() && IsMacLaunchdProcess();
 
+            var isService = isWindowsService || isLinuxSystemd || isMacLaunchd;
+            var canLaunchBrowser = Environment.UserInteractive && !isService;
+
+            SettingsPathResolver.ApplyCommandLineArgs(args ?? [], isService);
             // Bootstrap: read ServerConfig from disk before the DI container exists.
             // Used for port-collision detection and --urls binding below.
             var bootstrapConfigPath = Path.Combine(
@@ -128,7 +131,7 @@ namespace GreenSwamp.Alpaca.Server
             // on first run without needing to read appsettings.json before the host is built.
             // VersionedSettingsService seeds the file on its first GetServerConfig() call.
             BootstrapConfig = ServerConfig.LoadBootstrap(bootstrapConfigPath);
-            
+
             Logger.LogInformation($"Bootstrap server config loaded from: {bootstrapConfigPath}");
 
             if (OperatingSystem.IsWindows() && !isService)
@@ -147,13 +150,12 @@ namespace GreenSwamp.Alpaca.Server
             Logger.LogInformation($"{ServerName} version {ServerVersion}");
             Logger.LogInformation($"Running on: {RuntimeInformation.OSDescription}.");
 
-            // If already running start browser
-            // When running as a managed service (Windows SCM or Linux systemd), the process manager
+            // When running as a managed service (Windows SCM, Linux systemd, or macOS launchd), the process manager
             // guarantees a single instance and there is no desktop to launch a browser into,
             // so skip duplicate-instance detection entirely.
             try
-             {
-                if (!isService && OperatingSystem.IsWindows())
+            {
+                if (canLaunchBrowser)
                 {
                     //Already running, start the browser, detects based on port in use
                     if (IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections().Any(con => con.LocalEndPoint.Port == BootstrapConfig.ServerPort && (con.State == TcpState.Listen || con.State == TcpState.Established)))
@@ -163,7 +165,7 @@ namespace GreenSwamp.Alpaca.Server
                         return;
                     }
                 }
-                else if (!isService)
+                if (canLaunchBrowser)
                 {
                     // Environment.ProcessPath works correctly for single-file published executables;
                     // Assembly.Location returns "" in that scenario, causing false-positive detection.
@@ -297,7 +299,7 @@ namespace GreenSwamp.Alpaca.Server
             });
 
             // Register Settings Backup Service
-            builder.Services.AddScoped<GreenSwamp.Alpaca.Settings.Services.ISettingsExportService, 
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Settings.Services.ISettingsExportService,
                 GreenSwamp.Alpaca.Settings.Services.SettingsExportService>();
             Logger.LogInformation("SkySettings registered in DI container");
             Logger.LogInformation("Settings services registered: VersionedSettings, Template");
@@ -332,7 +334,7 @@ namespace GreenSwamp.Alpaca.Server
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureAuthentication(builder.Services);
             // Add User Service
             builder.Services.AddScoped<IUserService, Data.UserService>();
-            
+
             // Register TelescopeStateService for real-time state updates
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
             Logger.LogInformation("TelescopeStateService registered for real-time state updates");
@@ -356,7 +358,7 @@ namespace GreenSwamp.Alpaca.Server
                 app.UseResponseCompression();
                 app.UsePreCompressedStaticFiles();
             }
-            
+
             // Replace bootstrap logger with the DI-resolved logger so the host's configured
             // log levels (from appsettings.json "Logging" section) take effect from this point.
             Logger = app.Services.GetRequiredService<ILogger<Program>>();
@@ -538,8 +540,8 @@ namespace GreenSwamp.Alpaca.Server
                 Logger.LogError($"Exception type: {ex.GetType().Name}");
 
                 // Check if this is a settings-related error that should allow graceful degradation
-                bool isSettingsError = ex.Message.Contains("settings") || 
-                                       ex.Message.Contains("validation") || 
+                bool isSettingsError = ex.Message.Contains("settings") ||
+                                       ex.Message.Contains("validation") ||
                                        ex.Message.Contains("device") ||
                                        ex.Message.Contains("configuration");
 
@@ -591,7 +593,7 @@ namespace GreenSwamp.Alpaca.Server
             // not lazily on first hub connection. Safe: it is a singleton registered above.
             _ = app.Services.GetRequiredService<ChartDataService>();
             Logger.LogInformation("ChartDataService initialized — MonitorQueue subscriptions active.");
-            if (startupConfig.AutoStartBrowser && OperatingSystem.IsWindows() && !isWindowsService)
+            if (startupConfig.AutoStartBrowser && canLaunchBrowser)
             {
                 try
                 {
@@ -629,19 +631,19 @@ namespace GreenSwamp.Alpaca.Server
                         ContextMenu = new PopupMenu
                         {
                             Items =
-                {
-                    new PopupMenuItem("Show Browser UI", (_, _) => StartBrowser(startupConfig.ServerPort)),
-                    new PopupMenuSeparator(),
-                    new PopupMenuItem("Show Console", (_, _) => ShowConsole(ConsoleDisplayOption.StartNormally)),
-                    new PopupMenuItem("Hide Console", (_, _) => ShowConsole(ConsoleDisplayOption.NoConsole)),
-                    new PopupMenuSeparator(),
-                    new PopupMenuItem("Exit", (_, _) =>
-                    {
-                        _trayIcon?.Dispose();
-                        _trayIconImage?.Dispose();
-                        Lifetime?.StopApplication();
-                    }),
-                }
+                        {
+                            new PopupMenuItem("Show Browser UI", (_, _) => StartBrowser(startupConfig.ServerPort)),
+                            new PopupMenuSeparator(),
+                            new PopupMenuItem("Show Console", (_, _) => ShowConsole(ConsoleDisplayOption.StartNormally)),
+                            new PopupMenuItem("Hide Console", (_, _) => ShowConsole(ConsoleDisplayOption.NoConsole)),
+                            new PopupMenuSeparator(),
+                            new PopupMenuItem("Exit", (_, _) =>
+                            {
+                                _trayIcon?.Dispose();
+                                _trayIconImage?.Dispose();
+                                Lifetime?.StopApplication();
+                            }),
+                        }
                         }
                     };
 
@@ -667,23 +669,52 @@ namespace GreenSwamp.Alpaca.Server
         }
 
         /// <summary>
-        /// Starts the system default handler (normally a browser) for local host and the current port.
-        /// On Linux/Raspberry Pi the UI is accessed via a network browser, so this is a no-op.
+        /// Starts the system default handler (normally a browser) for localhost and the current port.
         /// </summary>
         /// <param name="port"></param>
         internal static void StartBrowser(int port)
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                return;
-            }
+            string url = $"http://localhost:{port}/";
 
-            ProcessStartInfo psi = new()
+            if (OperatingSystem.IsWindows())
             {
-                FileName = $"http://localhost:{port}",
-                UseShellExecute = true
-            };
-            Process.Start(psi);
+                ProcessStartInfo psi = new()
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                Process.Start("xdg-open", url);
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("open", url);
+            }
+            else
+            {
+                Logger?.LogWarning(
+                    "Unknown OS platform, cannot start browser. Framework: {FrameworkDescription}, Process architecture: {ProcessArchitecture}, OS architecture: {OSArchitecture}, Runtime identifier: {RuntimeIdentifier}",
+                    RuntimeInformation.FrameworkDescription,
+                    RuntimeInformation.ProcessArchitecture,
+                    RuntimeInformation.OSArchitecture,
+                    RuntimeInformation.RuntimeIdentifier);
+            }
+        }
+        /// <summary>
+        /// Detects if the current process is running as a launchd-managed job on macOS.
+        /// </summary>
+        /// <returns>True if the process is managed by launchd; otherwise, false.</returns>
+        private static bool IsMacLaunchdProcess()
+        {
+            // launchd-managed jobs (agents/daemons) commonly expose one or both of these variables.
+            var launchJobName = Environment.GetEnvironmentVariable("LAUNCH_JOB_NAME");
+            var xpcServiceName = Environment.GetEnvironmentVariable("XPC_SERVICE_NAME");
+
+            return !string.IsNullOrWhiteSpace(launchJobName)
+                || !string.IsNullOrWhiteSpace(xpcServiceName);
         }
 
         private static void ShowConsole(ConsoleDisplayOption newConsoleState)
