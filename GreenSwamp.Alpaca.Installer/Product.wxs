@@ -96,7 +96,8 @@
 			Type="ownProcess"
 			Start="auto"
 			ErrorControl="normal"
-			Account="LocalSystem" />
+			Account="LocalSystem" 
+			Arguments="--service"/>
 		<ServiceControl
 			Id="ControlServiceAuto"
 			Name="GreenSwampAlpacaServer"
@@ -121,7 +122,8 @@
 			Type="ownProcess"
 			Start="demand"
 			ErrorControl="normal"
-			Account="LocalSystem" />
+			Account="LocalSystem"
+			Arguments="--service"/>
 		<ServiceControl
 			Id="ControlServiceManual"
 			Name="GreenSwampAlpacaServer"

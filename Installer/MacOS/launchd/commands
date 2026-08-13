@@ -1,0 +1,18 @@
+﻿# unload if already loaded (ignore error if not loaded)
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.greenswamp.alpaca.server.plist
+
+# load/start
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.greenswamp.alpaca.server.plist
+
+# enable at login/session
+launchctl enable gui/$(id -u)/com.greenswamp.alpaca.server
+
+# kick immediately
+launchctl kickstart -k gui/$(id -u)/com.greenswamp.alpaca.server
+
+# check status
+launchctl print gui/$(id -u)/com.greenswamp.alpaca.server
+
+# unload / load later
+launchctl disable gui/$(id -u)/com.greenswamp.alpaca.server
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.greenswamp.alpaca.server.plist

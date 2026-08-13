@@ -1,4 +1,4 @@
-[Unit]
+﻿[Unit]
 Description=GreenSwamp Alpaca Server
 Documentation=https://github.com/Principia4834/GreenSwampAlpaca
 After=network.target
@@ -8,7 +8,7 @@ Wants=network.target
 Type=simple
 User=greenswamp
 Group=greenswamp
-ExecStart=/opt/greenswamp/alpaca-server/GreenSwamp.Alpaca.Server
+ExecStart=/opt/greenswamp/alpaca-server/GreenSwamp.Alpaca.Server --service
 WorkingDirectory=/opt/greenswamp/alpaca-server
 StateDirectory=greenswamp-alpaca
 Restart=on-failure

@@ -110,16 +110,11 @@ namespace GreenSwamp.Alpaca.Server
 
             // Detect service mode before any path is resolved — covers Windows SCM, Linux systemd and macOS launchd.
             // Detection is done here (not in SettingsPathResolver) to avoid pulling platform packages into the Settings project.
-            var isWindowsService = OperatingSystem.IsWindows()
-                && Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService();
-            var isLinuxSystemd = OperatingSystem.IsLinux()
-                && Microsoft.Extensions.Hosting.Systemd.SystemdHelpers.IsSystemdService();
-            var isMacLaunchd = OperatingSystem.IsMacOS() && IsMacLaunchdProcess();
-
-            var isService = isWindowsService || isLinuxSystemd || isMacLaunchd;
+            var isService = args?.Any(a => string.Equals(a, "--service", StringComparison.OrdinalIgnoreCase)) == true;
             var canLaunchBrowser = Environment.UserInteractive && !isService;
 
             SettingsPathResolver.ApplyCommandLineArgs(args ?? [], isService);
+
             // Bootstrap: read ServerConfig from disk before the DI container exists.
             // Used for port-collision detection and --urls binding below.
             var bootstrapConfigPath = Path.Combine(
@@ -702,19 +697,6 @@ namespace GreenSwamp.Alpaca.Server
                     RuntimeInformation.OSArchitecture,
                     RuntimeInformation.RuntimeIdentifier);
             }
-        }
-        /// <summary>
-        /// Detects if the current process is running as a launchd-managed job on macOS.
-        /// </summary>
-        /// <returns>True if the process is managed by launchd; otherwise, false.</returns>
-        private static bool IsMacLaunchdProcess()
-        {
-            // launchd-managed jobs (agents/daemons) commonly expose one or both of these variables.
-            var launchJobName = Environment.GetEnvironmentVariable("LAUNCH_JOB_NAME");
-            var xpcServiceName = Environment.GetEnvironmentVariable("XPC_SERVICE_NAME");
-
-            return !string.IsNullOrWhiteSpace(launchJobName)
-                || !string.IsNullOrWhiteSpace(xpcServiceName);
         }
 
         private static void ShowConsole(ConsoleDisplayOption newConsoleState)
