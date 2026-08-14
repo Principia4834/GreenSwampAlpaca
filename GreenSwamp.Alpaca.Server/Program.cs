@@ -8,6 +8,7 @@ using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Extensions;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
+using H.NotifyIcon.Core;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
@@ -206,38 +207,30 @@ namespace GreenSwamp.Alpaca.Server
                 Console.WriteLine($"http://localhost:{BootstrapConfig.ServerPort}");
             }
 
-            if (!args?.Any(str => str.Contains("--urls")) ?? true)
+            // Build host args separately so internal app flags (for example --service)
+            // aren't passed into ASP.NET Core host configuration parsing.
+            args ??= [];
+
+            var hostArgs = args
+                .Where(a => !string.Equals(a, "--service", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!hostArgs.Any(str => str.Contains("--urls", StringComparison.OrdinalIgnoreCase)))
             {
-                args ??= [];
-
                 Logger.LogInformation("No startup url args detected, binding to saved server settings.");
-
-                var temparray = new string[args.Length + 1];
-
-                args.CopyTo(temparray, 0);
 
                 string startupUrlArg = "--urls=http://";
 
-                //If set to allow remote access bind to all local ips, otherwise bind only to localhost
-                if (BootstrapConfig.AllowRemoteAccess)
-                {
-                    startupUrlArg += "*";
-                }
-                else
-                {
-                    startupUrlArg += "localhost";
-                }
-
+                // If set to allow remote access bind to all local IPs, otherwise localhost only
+                startupUrlArg += BootstrapConfig.AllowRemoteAccess ? "*" : "localhost";
                 startupUrlArg += ":" + BootstrapConfig.ServerPort;
 
                 Logger.LogInformation("Startup URL args: " + startupUrlArg);
 
-                temparray[args.Length] = startupUrlArg;
-
-                args = temparray;
+                hostArgs.Add(startupUrlArg);
             }
 
-            var builder = WebApplication.CreateBuilder(args ?? []);
+            var builder = WebApplication.CreateBuilder(hostArgs.ToArray());
 
             // Configure response compression with Brotli and Gzip providers, enabling for HTTPS
             builder.Services.AddResponseCompression(options =>
