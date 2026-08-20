@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
-using H.NotifyIcon.Core;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO.Compression;
@@ -597,6 +596,7 @@ namespace GreenSwamp.Alpaca.Server
 
             Lifetime = app.Lifetime;
 
+#pragma warning disable CA1416 // Validate platform compatibility
             // Replace the tray icon creation block (lines ~585-623)
             if (OperatingSystem.IsWindows() && !isService)
             {
