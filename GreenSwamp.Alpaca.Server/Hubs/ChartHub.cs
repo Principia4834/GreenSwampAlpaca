@@ -63,7 +63,7 @@ namespace GreenSwamp.Alpaca.Server.Hubs
         public async Task JoinPulseGroupAsync(int deviceNumber)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"PulseChart-{deviceNumber}");
-            if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add("pulse"))
+            if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add($"pulse:{deviceNumber}"))
                 _chartData.OnPulseClientJoined();
         }
 
@@ -71,7 +71,7 @@ namespace GreenSwamp.Alpaca.Server.Hubs
         public async Task LeavePulseGroupAsync(int deviceNumber)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"PulseChart-{deviceNumber}");
-            if (_connectionGroups.TryGetValue(Context.ConnectionId, out var groups) && groups.Remove("pulse"))
+            if (_connectionGroups.TryGetValue(Context.ConnectionId, out var groups) && groups.Remove($"pulse:{deviceNumber}"))
                 _chartData.OnPulseClientLeft();
         }
 
@@ -107,7 +107,7 @@ namespace GreenSwamp.Alpaca.Server.Hubs
                 {
                     if (g.StartsWith("radec:") && int.TryParse(g["radec:".Length..], out var dn))
                         _chartData.OnRaDecClientLeft(dn);
-                    else if (g == "pulse")
+                    else if (g.StartsWith("pulse:"))
                         _chartData.OnPulseClientLeft();
                 }
             }

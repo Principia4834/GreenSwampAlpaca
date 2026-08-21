@@ -5,7 +5,6 @@
 
 @inject IVersionedSettingsService SettingsService
 @inject ChartLoggingService Logger
-@inject TelescopeStateService StateService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
@@ -19,36 +18,70 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-                <b style="color:var(--gs-accent-500);">Pulse</b> Guide &mdash; Device @DeviceNumber
-            </MudText>
+            <b style="color:var(--gs-accent-500);">Pulse</b> Guide &mdash; Device @DeviceNumber
+        </MudText>
 
         <MudSpacer />
 
-        @if (_hubState != HubConnectionState.Connected)
+        @if (_hubInitialised && _hubState != HubConnectionState.Connected)
         {
-            <MudChip T="string" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="@Icons.Material.Filled.SignalWifiOff">
+            <MudChip T="string" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small"
+                     Icon="@Icons.Material.Filled.SignalWifiOff">
                 @(_hubState == HubConnectionState.Reconnecting ? "Reconnecting…" : "Disconnected")
             </MudChip>
         }
 
+        @* Data Window — disabled in Historical mode *@
+        <MudSelect T="int" Label="Data Window" Value="@_settings.PulseWindowSeconds"
+                   ValueChanged="@OnWindowChangedAsync"
+                   Disabled="@IsHistoricalMode"
+                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                   Style="min-width:110px;">
+            <MudSelectItem Value="10">10 s</MudSelectItem>
+            <MudSelectItem Value="30">30 s</MudSelectItem>
+            <MudSelectItem Value="120">2 m</MudSelectItem>
+            <MudSelectItem Value="300">5 m</MudSelectItem>
+            <MudSelectItem Value="900">15 m</MudSelectItem>
+            <MudSelectItem Value="1800">30 m</MudSelectItem>
+        </MudSelect>
+
         <MudSelect T="string" Label="Scale" Value="@_settings.PulseScale"
                    ValueChanged="@OnScaleChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                   Style="min-width:150px;">
+                   Style="min-width:140px;">
             <MudSelectItem Value="@("Milliseconds")">Milliseconds</MudSelectItem>
             <MudSelectItem Value="@("ArcSeconds")">Arc-seconds</MudSelectItem>
             <MudSelectItem Value="@("Steps")">Steps</MudSelectItem>
         </MudSelect>
 
+        <MudSelect T="string" Label="Display" Value="@_settings.PulseSeriesType"
+                   ValueChanged="@OnSeriesTypeChangedAsync"
+                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                   Style="min-width:105px;">
+            <MudSelectItem Value="@("Bars")">Bars</MudSelectItem>
+            <MudSelectItem Value="@("Points")">Points</MudSelectItem>
+            <MudSelectItem Value="@("Line")">Line</MudSelectItem>
+        </MudSelect>
+
+        <MudTooltip Text="@(IsRealtimeMode ? "Pause (freeze to historical snapshot)" : "Resume realtime scrolling")"
+                    Placement="Placement.Left">
+            <MudIconButton Icon="@(IsRealtimeMode ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
+                           Color="@(IsRealtimeMode ? MudBlazor.Color.Warning : MudBlazor.Color.Success)"
+                           Variant="Variant.Outlined"
+                           Size="MudBlazor.Size.Small"
+                           OnClick="TogglePauseResumeAsync"
+                           aria-label="@(IsRealtimeMode ? "Pause chart updates" : "Resume chart updates")" />
+        </MudTooltip>
+
         <MudSwitch T="bool" Label="RA"       Value="@_settings.ShowRaPulse"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowRaPulse), v))"
-                   Color="MudBlazor.Color.Primary" />
+                   Color="MudBlazor.Color.Success" />
         <MudSwitch T="bool" Label="RA rej."  Value="@_settings.ShowRaRejected"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowRaRejected), v))"
                    Color="MudBlazor.Color.Warning" />
         <MudSwitch T="bool" Label="Dec"      Value="@_settings.ShowDecPulse"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecPulse), v))"
-                   Color="MudBlazor.Color.Secondary" />
+                   Color="MudBlazor.Color.Info" />
         <MudSwitch T="bool" Label="Dec rej." Value="@_settings.ShowDecRejected"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecRejected), v))"
                    Color="MudBlazor.Color.Error" />
@@ -56,7 +89,8 @@
         <MudTooltip Text="@(_loggingActive ? "Stop logging" : "Start logging")" Placement="Placement.Left">
             <MudIconButton Icon="@(_loggingActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.FiberManualRecord)"
                            Color="@(_loggingActive ? MudBlazor.Color.Error : MudBlazor.Color.Default)"
-                           OnClick="ToggleLoggingAsync" Size="MudBlazor.Size.Small" />
+                           OnClick="@(() => ToggleLoggingAsync(!_loggingActive))"
+                           Size="MudBlazor.Size.Small" />
         </MudTooltip>
 
         <MudMenu Icon="@Icons.Material.Filled.Download"
@@ -65,7 +99,7 @@
                  TransformOrigin="Origin.TopRight"
                  Dense="true"
                  AriaLabel="Export chart">
-            <MudMenuItem Icon="@Icons.Material.Filled.Image" OnClick="ExportPngAsync">Export PNG</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Image"      OnClick="ExportPngAsync">Export PNG</MudMenuItem>
             <MudMenuItem Icon="@Icons.Material.Filled.TableChart" OnClick="ExportCsvAsync">Export CSV</MudMenuItem>
         </MudMenu>
 
@@ -77,71 +111,62 @@
     </MudStack>
 
     @* -- Chart ------------------------------------------------------------- *@
-    <div style="flex:1;min-height:0;">
+    <div style="flex:1;min-height:0;overflow:hidden;">
         <ErrorBoundary>
             <ChildContent>
-        @if (_raData.Count > 0 || _raRejData.Count > 0 || _decData.Count > 0 || _decRejData.Count > 0 || _ready)
-        {
-            <ApexChart TItem="PulsePointDto"
-                       @key="@_settings.PulseScale"
-                       Title=""
-                       Options="@_chartOptions"
-                       @ref="_chart"
-                       Height="@("100%")"
-                       Width="@("100%")">
-
-                @if (_settings.ShowRaPulse)
+                @if (_ready)
                 {
-                    <ApexPointSeries TItem="PulsePointDto"
-                                     Items="@_raData"
-                                     Name="RA"
-                                     SeriesType="SeriesType.Line"
-                                     XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)GetValue(p))"
-                                     Color="#4caf50" />
-                }
+                    <ApexChart TItem="PulsePointDto"
+                               @key="@_chartKey"
+                               Options="@_chartOptions"
+                               @ref="_chart"
+                               Height="@("100%")"
+                               Width="@("100%")">
 
-                @if (_settings.ShowRaRejected)
+                        <ApexPointSeries TItem="PulsePointDto"
+                                         Items="@ChartItemsRa"
+                                         Name="RA"
+                                         SeriesType="@AcceptedSeriesType"
+                                         XValue="@(p => p.TimestampMs)"
+                                         YValue="@(p => (decimal)GetValue(p))"
+                                         Hidden="@(!_settings.ShowRaPulse)"
+                                         Color="#4caf50" />
+
+                        <ApexPointSeries TItem="PulsePointDto"
+                                         Items="@ChartItemsRaRej"
+                                         Name="RA rej."
+                                         SeriesType="SeriesType.Scatter"
+                                         XValue="@(p => p.TimestampMs)"
+                                         YValue="@(p => (decimal)GetValue(p))"
+                                         Hidden="@(!_settings.ShowRaRejected)"
+                                         Color="#ff9800" />
+
+                        <ApexPointSeries TItem="PulsePointDto"
+                                         Items="@ChartItemsDec"
+                                         Name="Dec"
+                                         SeriesType="@AcceptedSeriesType"
+                                         XValue="@(p => p.TimestampMs)"
+                                         YValue="@(p => (decimal)GetValue(p))"
+                                         Hidden="@(!_settings.ShowDecPulse)"
+                                         Color="#2196f3" />
+
+                        <ApexPointSeries TItem="PulsePointDto"
+                                         Items="@ChartItemsDecRej"
+                                         Name="Dec rej."
+                                         SeriesType="SeriesType.Scatter"
+                                         XValue="@(p => p.TimestampMs)"
+                                         YValue="@(p => (decimal)GetValue(p))"
+                                         Hidden="@(!_settings.ShowDecRejected)"
+                                         Color="#f44336" />
+
+                    </ApexChart>
+                }
+                else
                 {
-                    <ApexPointSeries TItem="PulsePointDto"
-                                     Items="@_raRejData"
-                                     Name="RA rej."
-                                     SeriesType="SeriesType.Scatter"
-                                     XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)GetValue(p))"
-                                     Color="#ff9800" />
+                    <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-4">
+                        Waiting for pulse guide data…
+                    </MudText>
                 }
-
-                @if (_settings.ShowDecPulse)
-                {
-                    <ApexPointSeries TItem="PulsePointDto"
-                                     Items="@_decData"
-                                     Name="Dec"
-                                     SeriesType="SeriesType.Line"
-                                     XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)GetValue(p))"
-                                     Color="#2196f3" />
-                }
-
-                @if (_settings.ShowDecRejected)
-                {
-                    <ApexPointSeries TItem="PulsePointDto"
-                                     Items="@_decRejData"
-                                     Name="Dec rej."
-                                     SeriesType="SeriesType.Scatter"
-                                     XValue="@(p => p.TimestampMs)"
-                                     YValue="@(p => (decimal)GetValue(p))"
-                                     Color="#f44336" />
-                }
-
-            </ApexChart>
-        }
-        else
-        {
-            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-4">
-                Waiting for pulse guide data…
-            </MudText>
-        }
             </ChildContent>
             <ErrorContent>
                 <MudAlert Severity="Severity.Error" Class="ma-2">

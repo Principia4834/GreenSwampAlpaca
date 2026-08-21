@@ -56,6 +56,19 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Show rejected Dec pulse series.</summary>
         public bool ShowDecRejected { get; set; } = true;
 
+        /// <summary>
+        /// Rolling window duration for the Pulse chart in seconds.
+        /// Valid values: 10, 30 (default), 120, 300, 900, 1800.
+        /// </summary>
+        public int PulseWindowSeconds { get; set; } = 30;
+
+        /// <summary>
+        /// Display type for the accepted RA and Dec pulse series.
+        /// Valid values: "Bars" (default), "Points", "Line".
+        /// Rejected series always render as Scatter regardless of this setting.
+        /// </summary>
+        public string PulseSeriesType { get; set; } = "Bars";
+        
         // -- Shared --------------------------------------------------------------------
 
         /// <summary>
