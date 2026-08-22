@@ -19,8 +19,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\Charts\PulseChartDev.razor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="appsettings.json" />
     <Content Remove="appsettings.schema.json" />
+    <Content Remove="Pages\Charts\PulseChartDev.razor" />
   </ItemGroup>
 
   <ItemGroup>

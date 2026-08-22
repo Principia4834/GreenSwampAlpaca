@@ -108,7 +108,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 OnLowVoltageEvent();
             }
         }
-        internal bool MonitorPulse { private get; set; }
+        internal bool MonitorPulse { private get; set; } = true;
         internal string MountType { get; private set; }
         private int MountNum { get; set; }
         internal string[] MountVersion { get; private set; } = { string.Empty, string.Empty };

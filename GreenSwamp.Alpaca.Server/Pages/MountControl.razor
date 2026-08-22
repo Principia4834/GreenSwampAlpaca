@@ -255,7 +255,7 @@ else
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
-                        <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                        <MudStack Spacing="2" AlignItems="AlignItems.Center" Row="false">
                             @* Park..Limits vertical, centered *@
                             <MountButtonBar State="@s"
                                             DeviceNumber="@dn"
@@ -263,16 +263,19 @@ else
                                             Vertical="true"
                                             ShowPrimaryButtons="true"
                                             ShowStopButton="false" />
+                            <MudDivider />
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Outlined"
+                                       OnClick="@(() => OpenChartWindowAsync(dn,"radec", ms))">
+                                Axes Chart
+                            </MudButton>
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Outlined"
+                                       OnClick="@(() => OpenChartWindowAsync(dn,"pulse", ms))">
+                                Pulse Chart
+                            </MudButton>
                         </MudStack>
-                        <MudDivider />
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Outlined"
-                                   OnClick="@(()=>
-                            OpenChartWindowAsync($"/charts/radec/{dn}?type={ms.AlignmentMode}&label={TabLabel(dn)}", $"gs-radec-chart-{dn}"))">
-                            Axes Plot
-                        </MudButton>
                     </MudPaper>
-
                 </MudStack>
 
                 @* -- Bottom action bar ------------------------------------- *@

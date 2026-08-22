@@ -17,6 +17,7 @@
 using ApexCharts;
 using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
+using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -27,114 +28,118 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     {
         [Parameter] public int DeviceNumber { get; set; }
 
+        [SupplyParameterFromQuery(Name = "type")]
+        public string? AlignmentMode { get; set; }
+
+        [SupplyParameterFromQuery(Name = "label")]
+        public string? Label { get; set; }
+
         // -- State --------------------------------------------------------------
+
         private ChartSettings _settings = new();
-        private readonly List<PulsePointDto> _raData = [];
+
+        // Four backing lists — one per logical series
+        private readonly List<PulsePointDto> _raData    = [];
         private readonly List<PulsePointDto> _raRejData = [];
-        private readonly List<PulsePointDto> _decData = [];
+        private readonly List<PulsePointDto> _decData   = [];
         private readonly List<PulsePointDto> _decRejData = [];
+
+        // Rolling-window views over the backing lists
+        private SubList<PulsePointDto>? _raSubList;
+        private SubList<PulsePointDto>? _raRejSubList;
+        private SubList<PulsePointDto>? _decSubList;
+        private SubList<PulsePointDto>? _decRejSubList;
+
+        // Paused snapshots used in Historical mode
+        private List<PulsePointDto> _pausedRa    = [];
+        private List<PulsePointDto> _pausedRaRej = [];
+        private List<PulsePointDto> _pausedDec   = [];
+        private List<PulsePointDto> _pausedDecRej = [];
+
+        // Chart item sources: SubList in Realtime, snapshot in Historical
+        // SubLists are guaranteed non-null after OnInitializedAsync; ! suppresses nullable warning.
+        private IEnumerable<PulsePointDto> ChartItemsRa     => IsHistoricalMode ? _pausedRa     : (IEnumerable<PulsePointDto>)_raSubList!;
+        private IEnumerable<PulsePointDto> ChartItemsRaRej  => IsHistoricalMode ? _pausedRaRej  : (IEnumerable<PulsePointDto>)_raRejSubList!;
+        private IEnumerable<PulsePointDto> ChartItemsDec    => IsHistoricalMode ? _pausedDec    : (IEnumerable<PulsePointDto>)_decSubList!;
+        private IEnumerable<PulsePointDto> ChartItemsDecRej => IsHistoricalMode ? _pausedDecRej : (IEnumerable<PulsePointDto>)_decRejSubList!;
+
+        // Display mode — session-only, not persisted
+        private string _displayMode   = "Realtime";
+        private bool IsRealtimeMode   => _displayMode == "Realtime";
+        private bool IsHistoricalMode => _displayMode == "Historical";
+
+        // Hub
+        private HubConnection? _hub;
+        private HubConnectionState _hubState = HubConnectionState.Disconnected;
+        private bool _hubInitialised;
+
+        // Chart
         private ApexChart<PulsePointDto>? _chart;
         private ApexChartOptions<PulsePointDto> _chartOptions = new();
-        private HubConnection? _hub;
+        private string _chartKey = "pulse-init";
+        private string _chartId  = "pulse";
+        private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
+
+        // Logging
         private bool _loggingActive;
+        private bool _loggingBusy;
+
+        // Lifecycle guards
         private bool _ready;
-        private HubConnectionState _hubState = HubConnectionState.Disconnected;
         private bool _disposed;
+        private readonly CancellationTokenSource _disposeCts = new();
+
+        // Chart update synchronisation
         private volatile bool _pendingChartUpdate;
+        private int _chartUpdateInFlight;
         private System.Threading.Timer? _refreshTimer;
 
-        // -- Lifecycle ----------------------------------------------------------
+        // Rolling window
+        private long PulseRollingWindowMs => Math.Max(1, _settings.PulseWindowSeconds) * 1000L;
 
-        protected override async Task OnInitializedAsync()
+        private bool CanAcceptWork()      => !_disposed && !_disposeCts.IsCancellationRequested;
+        private bool CanPushChartUpdate() => CanAcceptWork() && _ready && _hubState == HubConnectionState.Connected && _chart is not null;
+
+        /// <summary>Accepted pulse series type derived from the current PulseSeriesType setting.</summary>
+        private SeriesType AcceptedSeriesType => _settings.PulseSeriesType switch
         {
-            _settings = SettingsService.GetChartSettings();
-            BuildChartOptions();
-
-            var hubUrl = Nav.ToAbsoluteUri("/charthub");
-            _hub = new HubConnectionBuilder()
-                .WithUrl(hubUrl)
-                .WithAutomaticReconnect()
-                .Build();
-
-            _hub.On<PulsePointDto>("ReceivePulsePoint", OnPulsePoint);
-            _hub.On<IReadOnlyList<PulsePointDto>, IReadOnlyList<PulsePointDto>>("ReceivePulseHistory", OnHistory);
-
-            _hub.Reconnecting += _ => { _hubState = HubConnectionState.Reconnecting; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-            _hub.Reconnected += _ => { _hubState = HubConnectionState.Connected; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-            _hub.Closed += _ => { _hubState = HubConnectionState.Disconnected; InvokeAsync(StateHasChanged); return Task.CompletedTask; };
-
-            await _hub.StartAsync();
-            _hubState = _hub.State;
-            await _hub.InvokeAsync("JoinPulseGroupAsync", DeviceNumber);
-            await _hub.InvokeAsync("RequestHistoricalDataAsync", "pulse", DeviceNumber);
-
-            if (_settings.AutoStartLogging)
-            {
-                await Logger.StartPulseLoggingAsync();
-                _loggingActive = true;
-            }
-
-            _ready = true;
-            _refreshTimer = new System.Threading.Timer(_ => FlushChartUpdate(), null,
-                TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-        }
-
-        // -- SignalR handlers ---------------------------------------------------
-
-        private void OnPulsePoint(PulsePointDto point)
-        {
-            if (_disposed) return;
-            InvokeAsync(async () =>
-            {
-                AddToBuffer(point);
-                if (_loggingActive) await Logger.LogPulsePointAsync(point);
-                _pendingChartUpdate = true;
-            });
-        }
-
-        private void OnHistory(IReadOnlyList<PulsePointDto> ra, IReadOnlyList<PulsePointDto> dec)
-        {
-            if (_disposed) return;
-            InvokeAsync(async () =>
-            {
-                _raData.Clear();
-                _raRejData.Clear();
-                _decData.Clear();
-                _decRejData.Clear();
-
-                var maxPts = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-                foreach (var p in ra.TakeLast(maxPts))
-                {
-                    if (p.Rejected) _raRejData.Add(p);
-                    else _raData.Add(p);
-                }
-                foreach (var p in dec.TakeLast(maxPts))
-                {
-                    if (p.Rejected) _decRejData.Add(p);
-                    else _decData.Add(p);
-                }
-
-                if (_chart is not null)
-                {
-                    try { await _chart.UpdateSeriesAsync(animate: false); }
-                    catch (TaskCanceledException) { }
-                }
-                StateHasChanged();
-            });
-        }
+            "Line" => SeriesType.Line,
+            "Bars" => SeriesType.Bar,
+            _      => SeriesType.Scatter  // "Points"
+        };
 
         // -- Toolbar handlers ---------------------------------------------------
 
-        private async Task OnScaleChangedAsync(string scale)
+        /// <summary>Changes the rolling window duration. Disabled in Historical mode.</summary>
+        private async Task OnWindowChangedAsync(int seconds)
         {
-            _settings.PulseScale = scale;
+            if (IsHistoricalMode) return;
+            _settings.PulseWindowSeconds = seconds;
             await SettingsService.SaveChartSettingsAsync(_settings);
-            BuildChartOptions();
-            // @key="@_settings.PulseScale" on <ApexChart> causes Blazor to recreate the
-            // component with the new options, including the correct y-axis title.
-            StateHasChanged();
+            SetAllSubListsToRollingWindow();
+            RebuildChartForCurrentMode();
+            RequestChartUpdate();
         }
 
+        /// <summary>Changes the Y-axis scale (Milliseconds / ArcSeconds / Steps).</summary>
+        private async Task OnScaleChangedAsync(string scale)
+        {
+            if (scale == _settings.PulseScale) return;
+            _settings.PulseScale = scale;
+            await SettingsService.SaveChartSettingsAsync(_settings);
+            RebuildChartForCurrentMode();
+        }
+
+        /// <summary>Changes the accepted series display type (Bars / Points / Line).</summary>
+        private async Task OnSeriesTypeChangedAsync(string seriesType)
+        {
+            if (seriesType == _settings.PulseSeriesType) return;
+            _settings.PulseSeriesType = seriesType;
+            await SettingsService.SaveChartSettingsAsync(_settings);
+            RebuildChartForCurrentMode();
+        }
+
+        /// <summary>Toggles visibility of a named series without recreating the chart.</summary>
         private async Task OnSeriesToggleAsync(string propertyName, bool value)
         {
             switch (propertyName)
@@ -145,174 +150,236 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 case nameof(ChartSettings.ShowDecRejected): _settings.ShowDecRejected = value; break;
             }
             await SettingsService.SaveChartSettingsAsync(_settings);
+            _chartKey = $"pulse-{_displayMode}-{_settings.PulseScale}-{_settings.PulseSeriesType}-{_settings.PulseWindowSeconds}s-ra{_settings.ShowRaPulse}-rarej{_settings.ShowRaRejected}-dec{_settings.ShowDecPulse}-decrej{_settings.ShowDecRejected}";
             StateHasChanged();
         }
 
-        private async Task ToggleLoggingAsync()
+        private Task TogglePauseResumeAsync() => IsRealtimeMode ? PauseDisplayAsync() : ResumeDisplayAsync();
+
+        private async Task PauseDisplayAsync()
         {
-            if (_loggingActive)
+            if (IsHistoricalMode) return;
+
+            _pausedRa    = _raSubList?.ToList()    ?? [];
+            _pausedRaRej = _raRejSubList?.ToList() ?? [];
+            _pausedDec   = _decSubList?.ToList()   ?? [];
+            _pausedDecRej = _decRejSubList?.ToList() ?? [];
+
+            _displayMode        = "Historical";
+            _pendingChartUpdate = false;
+
+            RebuildChartForCurrentMode();
+
+            if (_chart is not null)
             {
-                await Logger.StopPulseLoggingAsync();
-                _loggingActive = false;
+                try
+                {
+                    await _chart.UpdateSeriesAsync(animate: false);
+                    await ApplyHistoricalViewportAsync();
+                }
+                catch (Exception ex) when (ex is TaskCanceledException or OperationCanceledException or JSDisconnectedException) { }
             }
-            else
+            StateHasChanged();
+        }
+
+        private Task ResumeDisplayAsync()
+        {
+            if (IsRealtimeMode) return Task.CompletedTask;
+
+            _displayMode = "Realtime";
+            _pausedRa.Clear(); _pausedRaRej.Clear();
+            _pausedDec.Clear(); _pausedDecRej.Clear();
+
+            SetAllSubListsToRollingWindow();
+            RebuildChartForCurrentMode();
+            RequestChartUpdate();
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>Starts or stops disk logging of pulse guide points.</summary>
+        private async Task ToggleLoggingAsync(bool value)
+        {
+            if (_loggingBusy || _disposed) return;
+            _loggingBusy   = true;
+            _loggingActive = value;
+            try
             {
-                await Logger.StartPulseLoggingAsync();
-                _loggingActive = true;
+                if (_loggingActive) await Logger.StartPulseLoggingAsync();
+                else                await Logger.StopPulseLoggingAsync();
             }
+            finally { _loggingBusy = false; }
         }
 
         private async Task ClearChartAsync()
         {
-            _raData.Clear();
-            _raRejData.Clear();
-            _decData.Clear();
-            _decRejData.Clear();
+            _raData.Clear(); _raRejData.Clear();
+            _decData.Clear(); _decRejData.Clear();
+
+            // Lists are now empty — SetStartIndex(0) is valid on empty SubLists
+            _raSubList!.SetStartIndex(0);
+            _raRejSubList!.SetStartIndex(0);
+            _decSubList!.SetStartIndex(0);
+            _decRejSubList!.SetStartIndex(0);
+
             if (_chart is not null)
-                await _chart.UpdateSeriesAsync(animate: false);
+                try { await _chart.UpdateSeriesAsync(animate: false); }
+                catch (TaskCanceledException) { }
         }
 
-        private async Task ExportPngAsync()
-        {
-            if (_chart is null) return;
-            var imgUri = await _chart.GetDataUriAsync(new DataUriOptions());
-            await JS.InvokeVoidAsync("chartWindowInterop.downloadDataUri", imgUri, "pulse-chart.png");
-        }
-
-        private async Task ExportCsvAsync()
-        {
-            await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", "pulse-chart");
-        }
-
-        // -- Helpers ------------------------------------------------------------
+        // -- Chart options builder ----------------------------------------------
 
         /// <summary>
-        /// Returns the Y value for a pulse point in the user-selected unit.
-        /// Rate is in degrees/sec; Duration is in milliseconds.
-        /// ArcSeconds = duration_s × |rate| × 3600 (arc-seconds of correction applied).
+        /// Rebuilds ApexChart options from current settings.
+        /// Must be called before bumping _chartKey so the new options are applied on recreation.
         /// </summary>
-        private double GetValue(PulsePointDto p) => _settings.PulseScale switch
-        {
-            "ArcSeconds" => p.Duration / 1000.0 * Math.Abs(p.Rate) * 3600.0,
-            "Steps" => p.Duration,
-            _ => p.Duration  // Milliseconds
-        };
-
         private void BuildChartOptions()
         {
             var yTitle = _settings.PulseScale switch
             {
-                "ArcSeconds" => "Arc-seconds/sec",
-                "Steps" => "Steps",
-                _ => "ms"
+                "ArcSeconds" => "Arc Seconds",
+                "Steps"      => "Steps",
+                _            => "mS"
             };
+
+            var yFormatter = _settings.PulseScale switch
+            {
+                "ArcSeconds" => "function(val) { return Number(val).toFixed(1); }",
+                _            => "function(val) { return Math.round(Number(val)).toString(); }"
+            };
+
+            // Stroke widths per series — order matches razor: RA(0), RA-rej(1), Dec(2), Dec-rej(3).
+            // Rejected series (1, 3) are always Scatter → width 0. Accepted: 1 if Line, 0 otherwise.
+            // Marker sizes: all 4 if Points mode; only rejected (1, 3) otherwise.
+            var isHistorical = IsHistoricalMode;
 
             _chartOptions = new ApexChartOptions<PulsePointDto>
             {
                 Chart = new Chart
                 {
-                    Background = "#1e1e1e",
-                    ForeColor = "rgba(255,255,255,0.87)",
-                    Animations = new Animations { Enabled = false },
+                    Id = _chartId,
                     Toolbar = new Toolbar
                     {
-                        Show = true,
-                        AutoSelected = AutoSelected.Zoom,
+                        Show = isHistorical,
                         Tools = new Tools
                         {
-                            Zoom = true,
-                            Zoomin = true,
-                            Zoomout = true,
-                            Pan = true,
-                            Reset = true,
-                            Download = false  // export handled by the Blazor toolbar MudMenu
+                            Download = isHistorical,
+                            Zoom = isHistorical,
+                            Pan = isHistorical,
+                            Reset = isHistorical
+                        },
+                        Export = new ExportOptions
+                        {
+                            Csv = new ExportCSV
+                            {
+                                ColumnDelimiter = "|",
+                                HeaderCategory = "Timestamp",
+                                HeaderValue = "Value",
+                                CategoryFormatter = "function(val) { return new Date(val).toISOString().slice(0,-1); }",
+                                ValueFormatter = "function(val) { return Number(val).toFixed(3); }"
+                            }
                         }
                     },
-                    Zoom = new Zoom { Enabled = true }
+                    Zoom = new Zoom
+                    {
+                        Enabled        = isHistorical,
+                        Type           = AxisType.X,
+                        AutoScaleYaxis = true
+                    },
+                    Animations           = new Animations { Enabled = false },
+                    ParentHeightOffset   = 0,
+                    RedrawOnParentResize = true,
+                    RedrawOnWindowResize = true,
+                    ForeColor            = MudDefaultAxisLabelColor
                 },
-                Theme = new ApexCharts.Theme { Mode = Mode.Dark },
+                PlotOptions = new PlotOptions
+                {
+                    // columnWidth is only meaningful in Bars mode but is harmless otherwise
+                    Bar = new PlotOptionsBar { ColumnWidth = "4px" }
+                },
+                Stroke = new Stroke
+                {
+                    Curve = Curve.Straight,
+                    Width = _settings.PulseSeriesType == "Line"
+                        ? [1, 0, 1, 0]
+                        : [0, 0, 0, 0]
+                },
+                Markers = new Markers
+                {
+                    Size = _settings.PulseSeriesType == "Points"
+                        ? [4, 4, 4, 4]
+                        : [0, 4, 0, 4]
+                },
                 Xaxis = new XAxis
                 {
                     Type = XAxisType.Datetime,
                     Labels = new XAxisLabels
                     {
-                        DatetimeUTC = true,
-                        Show = true,
-                        HideOverlappingLabels = false,
-                        Format = "HH:mm:ss",
-                        Style = new AxisLabelStyle { Colors = "rgba(255,255,255,0.87)" }
-                    }
+                        Show                  = true,
+                        HideOverlappingLabels = true,
+                        Format                = "HH:mm:ss",
+                        DatetimeUTC           = false
+                    },
+                    AxisTicks  = new AxisTicks  { Show = true },
+                    AxisBorder = new AxisBorder { Show = true }
                 },
                 Yaxis =
                 [
                     new YAxis
                     {
-                        Title = new AxisTitle { Text = yTitle },
-                        Labels = new YAxisLabels
-                        {
-                            Formatter = _settings.PulseScale switch
-                            {
-                                "ArcSeconds" => "function(val) { return parseFloat(val).toFixed(1); }",
-                                _            => "function(val) { return Math.round(val).toString(); }"
-                            }
-                        }
+                        Title  = new AxisTitle   { Text = yTitle },
+                        Labels = new YAxisLabels { Formatter = yFormatter }
                     }
                 ],
-                Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 0, 1, 0] },
-                Markers = new Markers { Size = [0, 4, 0, 4] },
-                Legend = new Legend { Show = true },
-                Grid = new Grid { BorderColor = "rgba(255,255,255,0.12)" }
+                Legend  = new Legend  { Show = true },
+                Grid    = new Grid    { BorderColor = "rgba(255,255,255,0.12)" },
+                Tooltip = new Tooltip { Enabled = false }
             };
         }
 
-        private void AddToBuffer(PulsePointDto p)
+        /// <summary>Rebuilds options and bumps _chartKey to force ApexChart recreation.</summary>
+        private void RebuildChartForCurrentMode()
         {
-            var max = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-            if (p.Axis == 0)
-            {
-                var list = p.Rejected ? _raRejData : _raData;
-                if (list.Count >= max) list.RemoveAt(0);
-                list.Add(p);
-            }
-            else
-            {
-                var list = p.Rejected ? _decRejData : _decData;
-                if (list.Count >= max) list.RemoveAt(0);
-                list.Add(p);
-            }
+            BuildChartOptions();
+            _chartKey = $"pulse-{_displayMode}-{_settings.PulseScale}-{_settings.PulseSeriesType}-{_settings.PulseWindowSeconds}s";
         }
 
-        /// <summary>Flushed by the 1-second timer; calls UpdateSeriesAsync once per tick if data arrived.</summary>
-        private void FlushChartUpdate()
+        // -- Value helpers ------------------------------------------------------
+
+        /// <summary>
+        /// Returns the signed Y-axis value for a pulse point in the selected scale.
+        /// • Milliseconds : duration_ms × sign(rate)
+        /// • ArcSeconds   : (duration_ms / 1000) × rate_deg_s × 3600  (sign from rate)
+        /// • Steps        : arcSeconds × (StepsPerRevolution[axis] / 360 / 3600)
+        ///                  — reads live StepsPerRevolution from StateService, matching
+        ///                  the same pattern used by RaDecChart.ScaleValue().
+        /// Falls back to signed milliseconds when mount state is unavailable.
+        /// </summary>
+        private double GetValue(PulsePointDto p)
         {
-            if (!_pendingChartUpdate || _disposed) return;
-            _pendingChartUpdate = false;
-            InvokeAsync(async () =>
+            var arcSeconds = p.Duration / 1000.0 * p.Rate * 3600.0;
+
+            return _settings.PulseScale switch
             {
-                if (_chart is null || _disposed) return;
-                try
-                {
-                    await _chart.UpdateSeriesAsync(animate: false);
-                }
-                catch (TaskCanceledException) { }
-            });
+                "ArcSeconds" => arcSeconds,
+                "Steps" => ArcSecondsToSteps(arcSeconds, p.Axis),
+                _ => p.Duration * Math.Sign(p.Rate)  // Milliseconds — signed duration
+            };
         }
 
-        // -- Dispose ------------------------------------------------------------
-
-        public async ValueTask DisposeAsync()
+        /// <summary>
+        /// Converts a signed arc-second value to steps using the mount's live
+        /// StepsPerRevolution for the given axis — same source as RaDecChart.ScaleValue().
+        /// Returns the arc-second value unchanged if the mount state is unavailable.
+        /// </summary>
+        private double ArcSecondsToSteps(double arcSeconds, int axisIndex)
         {
-            _disposed = true;
-            if (_refreshTimer is not null) await _refreshTimer.DisposeAsync();
-            if (_loggingActive)
-            {
-                try { await Logger.StopPulseLoggingAsync(); } catch { }
-            }
-            if (_hub is not null)
-            {
-                try { await _hub.InvokeAsync("LeavePulseGroupAsync", DeviceNumber); } catch { }
-                await _hub.DisposeAsync();
-            }
+            var stepsPerRev = StateService.GetCurrentState(DeviceNumber).StepsPerRevolution;
+            var spr = stepsPerRev is { Length: > 0 }
+                ? stepsPerRev[Math.Min(axisIndex, stepsPerRev.Length - 1)]
+                : 0L;
+            if (spr <= 0) return arcSeconds; // mount not connected — show arc-seconds
+            return arcSeconds * spr / (360.0 * 3600.0);
         }
     }
 }

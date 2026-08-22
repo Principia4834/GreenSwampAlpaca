@@ -35,12 +35,12 @@
                    Disabled="@(IsHistoricalMode)"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
                    Style="min-width:110px;">
-            <MudSelectItem Value="10">10 s</MudSelectItem>
-            <MudSelectItem Value="30">30 s</MudSelectItem>
-            <MudSelectItem Value="120">2 m</MudSelectItem>
-            <MudSelectItem Value="300">5 m</MudSelectItem>
-            <MudSelectItem Value="900">15 m</MudSelectItem>
-            <MudSelectItem Value="1800">30 m</MudSelectItem>
+            <MudSelectItem Value="10">10 sec</MudSelectItem>
+            <MudSelectItem Value="30">30 sec</MudSelectItem>
+            <MudSelectItem Value="120">2 min</MudSelectItem>
+            <MudSelectItem Value="300">5 min</MudSelectItem>
+            <MudSelectItem Value="900">15 min</MudSelectItem>
+            <MudSelectItem Value="1800">30 min</MudSelectItem>
         </MudSelect>
 
         <MudSelect T="string" Label="Scale" Value="@_settings.RaDecScale"
@@ -65,39 +65,44 @@
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 1))"
                    Color="MudBlazor.Color.Error" />
 
-            <MudSwitch T="bool" Label="@_axisLabels[1]" Value="@_settings.ShowAxis2"
-                   ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 2))"
-                   Color="MudBlazor.Color.Info" />
+        <MudSwitch T="bool" Label="@_axisLabels[1]" Value="@_settings.ShowAxis2"
+                ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 2))"
+                Color="MudBlazor.Color.Info" />
+
+        <MudTooltip Text="Clear chart" Placement="Placement.Left">
+            <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Color="MudBlazor.Color.Warning"
+                           OnClick="ClearChartAsync" Size="MudBlazor.Size.Medium" />
+        </MudTooltip>
 
     </MudStack>
 
     @* -- Chart ------------------------------------------------------------- *@
     <div style="flex:1;min-height:0;overflow:hidden;">
         <ApexChart TItem="RaDecChartData"
-                   @key="@_chartKey"
-                   XAxisType="XAxisType.Datetime"
-                   Options="@_chartOptions"
-                   @ref="_chart"
-                   Height="@("100%")"
-                   Width="@("100%")">
+                    @key="@_chartKey"
+                    XAxisType="XAxisType.Datetime"
+                    Options="@_chartOptions"
+                    @ref="_chart"
+                    Height="@("100%")"
+                    Width="@("100%")">
 
             <ApexPointSeries TItem="RaDecChartData"
-                             Items="@_chartItems"
-                             Name="@(_axisLabels[0])"
-                             SeriesType="SeriesType.Line"
-                             XValue="@(p => p.TimestampMs)"
-                             YValue="@(p => (decimal)p.Ra)"
-                             Hidden="@(!_settings.ShowAxis1)"
-                             Stroke="@(new SeriesStroke { Width = 2, Color = "#f44336" })" />
+                                Items="@_chartItems"
+                                Name="@(_axisLabels[0])"
+                                SeriesType="SeriesType.Line"
+                                XValue="@(p => p.TimestampMs)"
+                                YValue="@(p => (decimal)p.Ra)"
+                                Hidden="@(!_settings.ShowAxis1)"
+                                Stroke="@(new SeriesStroke { Width = 2, Color = "#f44336" })" />
 
             <ApexPointSeries TItem="RaDecChartData"
-                             Items="@_chartItems"
-                             Name="@(_axisLabels[1])"
-                             SeriesType="SeriesType.Line"
-                             XValue="@(p => p.TimestampMs)"
-                             YValue="@(p => (decimal)p.Dec)"
-                             Hidden="@(!_settings.ShowAxis2)"
-                             Stroke="@(new SeriesStroke { Width = 2, Color = "#2196f3" })" />
+                                Items="@_chartItems"
+                                Name="@(_axisLabels[1])"
+                                SeriesType="SeriesType.Line"
+                                XValue="@(p => p.TimestampMs)"
+                                YValue="@(p => (decimal)p.Dec)"
+                                Hidden="@(!_settings.ShowAxis2)"
+                                Stroke="@(new SeriesStroke { Width = 2, Color = "#2196f3" })" />
 
         </ApexChart>
     </div>
