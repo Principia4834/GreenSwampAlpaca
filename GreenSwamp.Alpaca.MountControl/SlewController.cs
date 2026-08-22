@@ -910,7 +910,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool CanProceed { get; }
         public string? ErrorMessage { get; }
 
-        private SlewResult(bool canProceed, string? errorMessage = null)
+        public SlewResult(bool canProceed, string? errorMessage = null)
         {
             CanProceed = canProceed;
             ErrorMessage = errorMessage;

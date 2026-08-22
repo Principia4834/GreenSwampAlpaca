@@ -145,7 +145,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _settings = SettingsService.GetChartSettings();   // ← load BEFORE BuildChartOptions
             _displayMode = "Realtime"; // enforce session default, non-persisted
             _axisLabels = AxisLabels(AlignmentMode);
-            ChartId = string.IsNullOrEmpty(Label) ? "Unknown" : Regex.Replace(Label, @"[^\w]+", string.Empty);
+            ChartId = string.IsNullOrEmpty(Label) ? "Position" : Regex.Replace(Label, @"[^\w]+", string.Empty);
             ChartId += $"_{DeviceNumber.ToString()}_{DateTime.Now.ToString("yyyy-MM-dd")}";
             BuildChartOptions(ChartId);
             _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);

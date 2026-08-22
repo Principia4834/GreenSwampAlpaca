@@ -145,7 +145,7 @@ namespace GreenSwamp.Alpaca.Shared
         /// <summary>
         /// Turns on charting for pulses
         /// </summary>
-        public static bool GetPulses { get; set; }
+        public static bool GetPulses { get; set; } = true;
 
         #endregion
 

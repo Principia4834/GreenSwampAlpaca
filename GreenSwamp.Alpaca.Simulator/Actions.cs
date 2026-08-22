@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -42,7 +42,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         #region Properties
         internal static bool IsConnected => IoSerial.IsConnected;
         internal MountInfo MountInfo { get; private set; }
-        internal bool MonitorPulse { private get; set; }
+        internal bool MonitorPulse { private get; set; } = true;
 
         /// <summary>Alpaca device number stamped onto every MonitorEntry/PulseEntry this instance creates.</summary>
         internal int DeviceNumber { get; set; }

@@ -187,33 +187,32 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         }
 
         /// <summary>
-        /// Toggles Ra/Dec logging on or off. If logging is already in progress, this method does nothing.
+        /// Clears the RA/Dec chart data, resets the backing list and pending batch, and updates the chart to 
+        /// reflect the cleared state. If in Historical mode, it also switches back to Realtime mode.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task ToggleLoggingAsync(bool v)
+        /// <returns></returns>
+        private async Task ClearChartAsync()
         {
-            if (_loggingBusy || _disposed) return;
+            // Clear the backing list and pending batch
+            _raDecChartData.Clear();
+            _pendingAppendPoints.Clear();
 
-            _loggingBusy = true;
-            _loggingActive = v;
+            // Reset the SubList start index — safe to call on an empty list
+            _raDecChartDataSubList.SetStartIndex(0);
 
-            try
+            // If paused, also clear the snapshot so Historical mode shows nothing
+            _pausedSnapshot.Clear();
+
+            if (_chart is not null)
+                try { await _chart.UpdateSeriesAsync(animate: false); }
+                catch (TaskCanceledException) { }
+
+            if (IsHistoricalMode)
             {
-                if (_loggingActive)
-                {
-                    await Logger.StopRaDecLoggingAsync();
-                }
-                else
-                {
-                    await Logger.StartRaDecLoggingAsync();
-                }
-            }
-            finally
-            {
-                _loggingBusy = false;
+                _displayMode = "Realtime";
+                RebuildChartForCurrentMode();
             }
         }
-
         #endregion
 
         #region Chart options builder

@@ -297,14 +297,17 @@ namespace GreenSwamp.Alpaca.Server.Pages
             Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
         }
 
-        // -- RA/Dec Plot -------------------------------------------------------
-        private async Task OpenChartWindowAsync(string url, string windowKey)
+        // -- Plot ------------------------------------------------------------
+        private async Task OpenChartWindowAsync(int deviceNumber, string chartType, Settings.Models.SkySettings ms)
         {
+            var mount = MountRegistry.GetInstance(deviceNumber);
+            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
+            var path = $"/charts/{chartType}/{deviceNumber}?type={ms.AlignmentMode}&label={TabLabel(deviceNumber)}";
             await JS.InvokeVoidAsync(
                 "chartWindowInterop.open",
                 DotNetObjectReference.Create(this),
-                url,
-                windowKey,
+                path,
+                $"gs-{chartType}-chart-{deviceNumber}",
                 1200,
                 700);
         }

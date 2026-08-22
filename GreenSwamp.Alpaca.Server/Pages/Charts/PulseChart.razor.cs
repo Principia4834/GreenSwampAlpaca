@@ -28,6 +28,12 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     {
         [Parameter] public int DeviceNumber { get; set; }
 
+        [SupplyParameterFromQuery(Name = "type")]
+        public string? AlignmentMode { get; set; }
+
+        [SupplyParameterFromQuery(Name = "label")]
+        public string? Label { get; set; }
+
         // -- State --------------------------------------------------------------
 
         private ChartSettings _settings = new();
@@ -51,10 +57,11 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private List<PulsePointDto> _pausedDecRej = [];
 
         // Chart item sources: SubList in Realtime, snapshot in Historical
-        private IEnumerable<PulsePointDto> ChartItemsRa    => IsHistoricalMode ? _pausedRa    : (IEnumerable<PulsePointDto>)(_raSubList    ?? _raData);
-        private IEnumerable<PulsePointDto> ChartItemsRaRej => IsHistoricalMode ? _pausedRaRej : (IEnumerable<PulsePointDto>)(_raRejSubList ?? _raRejData);
-        private IEnumerable<PulsePointDto> ChartItemsDec   => IsHistoricalMode ? _pausedDec   : (IEnumerable<PulsePointDto>)(_decSubList   ?? _decData);
-        private IEnumerable<PulsePointDto> ChartItemsDecRej => IsHistoricalMode ? _pausedDecRej : (IEnumerable<PulsePointDto>)(_decRejSubList ?? _decRejData);
+        // SubLists are guaranteed non-null after OnInitializedAsync; ! suppresses nullable warning.
+        private IEnumerable<PulsePointDto> ChartItemsRa     => IsHistoricalMode ? _pausedRa     : (IEnumerable<PulsePointDto>)_raSubList!;
+        private IEnumerable<PulsePointDto> ChartItemsRaRej  => IsHistoricalMode ? _pausedRaRej  : (IEnumerable<PulsePointDto>)_raRejSubList!;
+        private IEnumerable<PulsePointDto> ChartItemsDec    => IsHistoricalMode ? _pausedDec    : (IEnumerable<PulsePointDto>)_decSubList!;
+        private IEnumerable<PulsePointDto> ChartItemsDecRej => IsHistoricalMode ? _pausedDecRej : (IEnumerable<PulsePointDto>)_decRejSubList!;
 
         // Display mode — session-only, not persisted
         private string _displayMode   = "Realtime";
@@ -101,279 +108,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             _      => SeriesType.Scatter  // "Points"
         };
 
-        // -- Lifecycle ----------------------------------------------------------
-
-        protected override Task OnInitializedAsync()
-        {
-            _settings    = SettingsService.GetChartSettings();
-            _displayMode = "Realtime";
-            _chartId     = $"pulse_{DeviceNumber}_{DateTime.Now:yyyy-MM-dd}";
-
-            BuildChartOptions();
-
-            _raSubList    = new SubList<PulsePointDto>(_raData,    0);
-            _raRejSubList = new SubList<PulsePointDto>(_raRejData, 0);
-            _decSubList   = new SubList<PulsePointDto>(_decData,   0);
-            _decRejSubList = new SubList<PulsePointDto>(_decRejData, 0);
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Hub construction and timer are deferred to first-render to avoid the prerender
-        /// double-initialisation that Blazor Server causes when placed in OnInitializedAsync.
-        /// </summary>
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (!firstRender) return;
-
-            _refreshTimer ??= new System.Threading.Timer(
-                _ => FlushChartUpdate(), null,
-                TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-
-            if (_hub is not null) return; // safety guard against double-init
-
-            var hubUrl = Nav.ToAbsoluteUri("/charthub");
-            _hub = new HubConnectionBuilder()
-                .WithUrl(hubUrl)
-                .WithAutomaticReconnect()
-                .Build();
-
-            _hub.On<PulsePointDto>("ReceivePulsePoint", OnPulsePoint);
-            _hub.On<IReadOnlyList<PulsePointDto>, IReadOnlyList<PulsePointDto>>("ReceivePulseHistory", OnHistory);
-
-            _hub.Reconnecting += _ =>
-            {
-                _hubState = HubConnectionState.Reconnecting;
-                return InvokeAsync(StateHasChanged);
-            };
-
-            _hub.Reconnected += async _ =>
-            {
-                if (!CanAcceptWork()) return;
-                _hubState = HubConnectionState.Connected;
-                try
-                {
-                    await _hub!.InvokeAsync("JoinPulseGroupAsync", DeviceNumber);
-                    RequestChartUpdate();
-                }
-                catch (OperationCanceledException) when (_disposeCts.IsCancellationRequested || _disposed) { }
-                await InvokeAsync(StateHasChanged);
-            };
-
-            _hub.Closed += _ =>
-            {
-                _hubState = HubConnectionState.Disconnected;
-                return InvokeAsync(StateHasChanged);
-            };
-
-            await _hub.StartAsync();
-            _hubState     = _hub.State;
-            _hubInitialised = true;
-
-            await _hub.InvokeAsync("JoinPulseGroupAsync", DeviceNumber);
-            await _hub.InvokeAsync("RequestHistoricalDataAsync", "pulse", DeviceNumber);
-
-            if (_settings.AutoStartLogging)
-            {
-                await Logger.StartPulseLoggingAsync();
-                _loggingActive = true;
-            }
-
-            _ready = true;
-        }
-
-        // -- SignalR handlers ---------------------------------------------------
-
-        private void OnPulsePoint(PulsePointDto point)
-        {
-            if (!CanAcceptWork()) return;
-            _ = InvokeAsync(async () =>
-            {
-                if (!CanAcceptWork()) return;
-                AddToPulseData(point);
-                if (_loggingActive) await Logger.LogPulsePointAsync(point);
-                if (IsRealtimeMode) RequestChartUpdate();
-            });
-        }
-
-        private void OnHistory(IReadOnlyList<PulsePointDto> ra, IReadOnlyList<PulsePointDto> dec)
-        {
-            if (!CanAcceptWork()) return;
-            _ = InvokeAsync(async () =>
-            {
-                if (!CanAcceptWork()) return;
-
-                _raData.Clear(); _raRejData.Clear();
-                _decData.Clear(); _decRejData.Clear();
-
-                var maxPts = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-                foreach (var p in ra.TakeLast(maxPts))
-                {
-                    if (p.Rejected) _raRejData.Add(p);
-                    else            _raData.Add(p);
-                }
-                foreach (var p in dec.TakeLast(maxPts))
-                {
-                    if (p.Rejected) _decRejData.Add(p);
-                    else            _decData.Add(p);
-                }
-
-                SetAllSubListsToRollingWindow();
-
-                if (_chart is not null)
-                {
-                    try
-                    {
-                        await _chart.UpdateSeriesAsync(animate: false);
-                        if (IsRealtimeMode) await ApplyRollingWindowViewportAsync();
-                    }
-                    catch (Exception ex) when (ex is TaskCanceledException or OperationCanceledException or JSDisconnectedException) { }
-                }
-                StateHasChanged();
-            });
-        }
-
-        // -- Data management ----------------------------------------------------
-
-        /// <summary>
-        /// Routes an incoming pulse point to the correct backing list, applies the MaxPoints cap,
-        /// then recomputes the SubList rolling-window start index from the current timestamp.
-        /// </summary>
-        private void AddToPulseData(PulsePointDto p)
-        {
-            var maxPts = _settings.MaxPoints > 0 ? _settings.MaxPoints : 5000;
-
-            List<PulsePointDto> list;
-            SubList<PulsePointDto> subList;
-
-            if (p.Axis == 0)
-            {
-                list    = p.Rejected ? _raRejData    : _raData;
-                subList = p.Rejected ? _raRejSubList! : _raSubList!;
-            }
-            else
-            {
-                list    = p.Rejected ? _decRejData    : _decData;
-                subList = p.Rejected ? _decRejSubList! : _decSubList!;
-            }
-
-            // Cap — remove oldest if at limit (no SubList access until after SetStartIndex below)
-            if (list.Count >= maxPts) list.RemoveAt(0);
-            list.Add(p);
-
-            // Recompute rolling window start from scratch — authoritative regardless of cap trim
-            var cutoffMs = p.TimestampMs - PulseRollingWindowMs;
-            var idx = list.FindIndex(x => x.TimestampMs >= cutoffMs);
-            if (idx < 0) idx = list.Count - 1;
-            subList.SetStartIndex(idx);
-        }
-
-        /// <summary>Recomputes all four SubList start indices using the latest overall timestamp.</summary>
-        private void SetAllSubListsToRollingWindow()
-        {
-            var latestMs = GetLatestTimestampMs();
-            SetSubListWindow(_raData,     _raSubList!,    latestMs);
-            SetSubListWindow(_raRejData,  _raRejSubList!, latestMs);
-            SetSubListWindow(_decData,    _decSubList!,   latestMs);
-            SetSubListWindow(_decRejData, _decRejSubList!, latestMs);
-        }
-
-        private void SetSubListWindow(List<PulsePointDto> list, SubList<PulsePointDto> subList, long latestMs)
-        {
-            if (list.Count == 0 || latestMs == 0) { subList.SetStartIndex(0); return; }
-            var cutoffMs = latestMs - PulseRollingWindowMs;
-            var idx = list.FindIndex(p => p.TimestampMs >= cutoffMs);
-            if (idx < 0) idx = list.Count - 1;
-            subList.SetStartIndex(idx);
-        }
-
-        private long GetLatestTimestampMs()
-        {
-            long max = 0;
-            if (_raData.Count    > 0) max = Math.Max(max, _raData[^1].TimestampMs);
-            if (_raRejData.Count > 0) max = Math.Max(max, _raRejData[^1].TimestampMs);
-            if (_decData.Count   > 0) max = Math.Max(max, _decData[^1].TimestampMs);
-            if (_decRejData.Count > 0) max = Math.Max(max, _decRejData[^1].TimestampMs);
-            return max;
-        }
-
-        // -- Chart update -------------------------------------------------------
-
-        private void RequestChartUpdate() => _pendingChartUpdate = true;
-
-        private void FlushChartUpdate()
-        {
-            if (!_pendingChartUpdate || !CanAcceptWork()) return;
-            _ = InvokeAsync(FlushChartUpdateCoreAsync);
-        }
-
-        private async Task FlushChartUpdateCoreAsync()
-        {
-            if (System.Threading.Interlocked.Exchange(ref _chartUpdateInFlight, 1) == 1) return;
-            try
-            {
-                while (_pendingChartUpdate && CanPushChartUpdate())
-                {
-                    _pendingChartUpdate = false;
-                    try
-                    {
-                        await _chart!.UpdateSeriesAsync(animate: false);
-                        if (IsRealtimeMode) await ApplyRollingWindowViewportAsync();
-                    }
-                    catch (Exception ex) when (ex is TaskCanceledException or OperationCanceledException or JSDisconnectedException)
-                    {
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await DispatchExceptionAsync(ex);
-            }
-            finally
-            {
-                System.Threading.Interlocked.Exchange(ref _chartUpdateInFlight, 0);
-                if (_pendingChartUpdate && CanPushChartUpdate()) _ = InvokeAsync(FlushChartUpdateCoreAsync);
-            }
-        }
-
-        /// <summary>Scrolls the X viewport to keep the latest rolling window visible.</summary>
-        private async Task ApplyRollingWindowViewportAsync()
-        {
-            if (_chart is null || !IsRealtimeMode || !CanPushChartUpdate()) return;
-            var latestMs = GetLatestTimestampMs();
-            if (latestMs == 0) return;
-            var windowStartMs = latestMs - PulseRollingWindowMs;
-            try
-            {
-                await _chart.ZoomXAsync((decimal)windowStartMs, (decimal)latestMs);
-            }
-            catch (Exception ex) when (ex is TaskCanceledException or OperationCanceledException or JSDisconnectedException) { }
-        }
-
-        /// <summary>Fits the X viewport to the full extent of the paused Historical snapshot.</summary>
-        private async Task ApplyHistoricalViewportAsync()
-        {
-            if (_chart is null || !IsHistoricalMode || !CanPushChartUpdate()) return;
-
-            long minMs = long.MaxValue, maxMs = long.MinValue;
-            foreach (var list in (List<PulsePointDto>[])[_pausedRa, _pausedRaRej, _pausedDec, _pausedDecRej])
-            {
-                if (list.Count == 0) continue;
-                minMs = Math.Min(minMs, list[0].TimestampMs);
-                maxMs = Math.Max(maxMs, list[^1].TimestampMs);
-            }
-            if (maxMs == long.MinValue) return; // all snapshots empty
-            if (maxMs <= minMs) maxMs = minMs + 1;
-
-            try
-            {
-                await _chart.ZoomXAsync((decimal)minMs, (decimal)maxMs);
-            }
-            catch (Exception ex) when (ex is TaskCanceledException or OperationCanceledException or JSDisconnectedException) { }
-        }
-
         // -- Toolbar handlers ---------------------------------------------------
 
         /// <summary>Changes the rolling window duration. Disabled in Historical mode.</summary>
@@ -410,12 +144,13 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             switch (propertyName)
             {
-                case nameof(ChartSettings.ShowRaPulse):    _settings.ShowRaPulse    = value; break;
+                case nameof(ChartSettings.ShowRaPulse): _settings.ShowRaPulse = value; break;
                 case nameof(ChartSettings.ShowRaRejected): _settings.ShowRaRejected = value; break;
-                case nameof(ChartSettings.ShowDecPulse):   _settings.ShowDecPulse   = value; break;
-                case nameof(ChartSettings.ShowDecRejected):_settings.ShowDecRejected = value; break;
+                case nameof(ChartSettings.ShowDecPulse): _settings.ShowDecPulse = value; break;
+                case nameof(ChartSettings.ShowDecRejected): _settings.ShowDecRejected = value; break;
             }
             await SettingsService.SaveChartSettingsAsync(_settings);
+            _chartKey = $"pulse-{_displayMode}-{_settings.PulseScale}-{_settings.PulseSeriesType}-{_settings.PulseWindowSeconds}s-ra{_settings.ShowRaPulse}-rarej{_settings.ShowRaRejected}-dec{_settings.ShowDecPulse}-decrej{_settings.ShowDecRejected}";
             StateHasChanged();
         }
 
@@ -492,16 +227,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 catch (TaskCanceledException) { }
         }
 
-        private async Task ExportPngAsync()
-        {
-            if (_chart is null) return;
-            var imgUri = await _chart.GetDataUriAsync(new DataUriOptions());
-            await JS.InvokeVoidAsync("chartWindowInterop.downloadDataUri", imgUri, "pulse-chart.png");
-        }
-
-        private async Task ExportCsvAsync()
-            => await JS.InvokeVoidAsync("chartWindowInterop.exportChartCsv", "pulse-chart");
-
         // -- Chart options builder ----------------------------------------------
 
         /// <summary>
@@ -512,9 +237,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             var yTitle = _settings.PulseScale switch
             {
-                "ArcSeconds" => "Arc-seconds",
+                "ArcSeconds" => "Arc Seconds",
                 "Steps"      => "Steps",
-                _            => "ms"
+                _            => "mS"
             };
 
             var yFormatter = _settings.PulseScale switch
@@ -535,13 +260,24 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     Id = _chartId,
                     Toolbar = new Toolbar
                     {
-                        Show  = isHistorical,
+                        Show = isHistorical,
                         Tools = new Tools
                         {
                             Download = isHistorical,
-                            Zoom     = isHistorical,
-                            Pan      = isHistorical,
-                            Reset    = isHistorical
+                            Zoom = isHistorical,
+                            Pan = isHistorical,
+                            Reset = isHistorical
+                        },
+                        Export = new ExportOptions
+                        {
+                            Csv = new ExportCSV
+                            {
+                                ColumnDelimiter = "|",
+                                HeaderCategory = "Timestamp",
+                                HeaderValue = "Value",
+                                CategoryFormatter = "function(val) { return new Date(val).toISOString().slice(0,-1); }",
+                                ValueFormatter = "function(val) { return Number(val).toFixed(3); }"
+                            }
                         }
                     },
                     Zoom = new Zoom
@@ -559,7 +295,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 PlotOptions = new PlotOptions
                 {
                     // columnWidth is only meaningful in Bars mode but is harmless otherwise
-                    Bar = new PlotOptionsBar { ColumnWidth = "1%" }
+                    Bar = new PlotOptionsBar { ColumnWidth = "4px" }
                 },
                 Stroke = new Stroke
                 {
@@ -592,8 +328,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     new YAxis
                     {
                         Title  = new AxisTitle   { Text = yTitle },
-                        Labels = new YAxisLabels { Formatter = yFormatter },
-                        Min    = 0
+                        Labels = new YAxisLabels { Formatter = yFormatter }
                     }
                 ],
                 Legend  = new Legend  { Show = true },
@@ -612,34 +347,39 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         // -- Value helpers ------------------------------------------------------
 
         /// <summary>
-        /// Returns the Y-axis value for a pulse point in the user-selected scale.
-        /// ArcSeconds = (duration_ms / 1000) × |rate_deg_s| × 3600.
+        /// Returns the signed Y-axis value for a pulse point in the selected scale.
+        /// • Milliseconds : duration_ms × sign(rate)
+        /// • ArcSeconds   : (duration_ms / 1000) × rate_deg_s × 3600  (sign from rate)
+        /// • Steps        : arcSeconds × (StepsPerRevolution[axis] / 360 / 3600)
+        ///                  — reads live StepsPerRevolution from StateService, matching
+        ///                  the same pattern used by RaDecChart.ScaleValue().
+        /// Falls back to signed milliseconds when mount state is unavailable.
         /// </summary>
-        private double GetValue(PulsePointDto p) => _settings.PulseScale switch
+        private double GetValue(PulsePointDto p)
         {
-            "ArcSeconds" => p.Duration / 1000.0 * Math.Abs(p.Rate) * 3600.0,
-            "Steps"      => p.Duration,
-            _            => p.Duration  // Milliseconds
-        };
+            var arcSeconds = p.Duration / 1000.0 * p.Rate * 3600.0;
 
-        // -- Dispose ------------------------------------------------------------
-
-        public async ValueTask DisposeAsync()
-        {
-            _disposed = true;
-            await _disposeCts.CancelAsync();
-            _disposeCts.Dispose();
-
-            if (_refreshTimer is not null) await _refreshTimer.DisposeAsync();
-
-            if (_loggingActive)
-                try { await Logger.StopPulseLoggingAsync(); } catch { }
-
-            if (_hub is not null)
+            return _settings.PulseScale switch
             {
-                try { await _hub.InvokeAsync("LeavePulseGroupAsync", DeviceNumber); } catch { }
-                await _hub.DisposeAsync();
-            }
+                "ArcSeconds" => arcSeconds,
+                "Steps" => ArcSecondsToSteps(arcSeconds, p.Axis),
+                _ => p.Duration * Math.Sign(p.Rate)  // Milliseconds — signed duration
+            };
+        }
+
+        /// <summary>
+        /// Converts a signed arc-second value to steps using the mount's live
+        /// StepsPerRevolution for the given axis — same source as RaDecChart.ScaleValue().
+        /// Returns the arc-second value unchanged if the mount state is unavailable.
+        /// </summary>
+        private double ArcSecondsToSteps(double arcSeconds, int axisIndex)
+        {
+            var stepsPerRev = StateService.GetCurrentState(DeviceNumber).StepsPerRevolution;
+            var spr = stepsPerRev is { Length: > 0 }
+                ? stepsPerRev[Math.Min(axisIndex, stepsPerRev.Length - 1)]
+                : 0L;
+            if (spr <= 0) return arcSeconds; // mount not connected — show arc-seconds
+            return arcSeconds * spr / (360.0 * 3600.0);
         }
     }
 }
