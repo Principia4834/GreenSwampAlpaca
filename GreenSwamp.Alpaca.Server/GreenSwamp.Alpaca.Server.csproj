@@ -61,6 +61,7 @@
 
   <ItemGroup>
     <Folder Include="Logging\" />
+    <Folder Include="wwwroot\models\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,6 +104,9 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\js\tts.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\models\telescope.obj">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
   </ItemGroup>

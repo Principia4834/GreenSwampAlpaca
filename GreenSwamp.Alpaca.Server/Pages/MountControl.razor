@@ -274,6 +274,11 @@ else
                                        OnClick="@(() => OpenChartWindowAsync(dn,"pulse", ms))">
                                 Pulse Chart
                             </MudButton>
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Outlined"
+                                       OnClick="@(() => OpenTelescopeViewAsync(dn))">
+                                3D View
+                            </MudButton>
                         </MudStack>
                     </MudPaper>
                 </MudStack>

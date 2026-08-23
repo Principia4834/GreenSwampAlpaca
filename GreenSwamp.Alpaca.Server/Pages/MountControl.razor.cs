@@ -312,6 +312,21 @@ namespace GreenSwamp.Alpaca.Server.Pages
                 700);
         }
 
+        // -- 3D View ------------------------------------------------------------
+        private async Task OpenTelescopeViewAsync(int deviceNumber)
+        {
+            var mount = MountRegistry.GetInstance(deviceNumber);
+            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
+
+            await JS.InvokeVoidAsync(
+                "chartWindowInterop.open",
+                DotNetObjectReference.Create(this),
+                $"/telescope-view/{deviceNumber}",
+                $"gs-telescope-view-{deviceNumber}",
+                900,
+                700);
+        }
+
         [JSInvokable]
         public void OnPopupBlocked(string url)
         {

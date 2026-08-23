@@ -560,8 +560,15 @@ namespace GreenSwamp.Alpaca.Server
             // Allow authentication, either Cookie or Basic HTTP Auth
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureAuthentication(app);
 
-            app.UseStaticFiles();
+            // Allow static files to be served from wwwroot, including .obj and .mtl for 3D models
+            var contentTypeProvider = new FileExtensionContentTypeProvider();
+            contentTypeProvider.Mappings[".obj"] = "model/obj";
+            contentTypeProvider.Mappings[".mtl"] = "model/mtl";   // needed if .obj references a .mtl
 
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = contentTypeProvider
+            });
             app.UseRouting();
 
             app.MapBlazorHub();
