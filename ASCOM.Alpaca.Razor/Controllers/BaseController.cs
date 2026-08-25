@@ -1,4 +1,5 @@
-﻿using ASCOM.Alpaca.Razor;
+﻿using ASCOM.Alpaca.Discovery;
+using ASCOM.Alpaca.Razor;
 using ASCOM.Common;
 using ASCOM.Common.Alpaca;
 using ASCOM.Common.DeviceInterfaces;
@@ -121,7 +122,7 @@ namespace ASCOM.Alpaca
             bool isConnected = DeviceManager.DeviceDrivers.TryGetValue((deviceType, deviceNumber), out var driver) && driver.Connected;
             if (isConnected)
                 return false;
-            List<string> allowedList = ["connect", "disconnect", "connected", "connecting", "interfaceversion", "driverversion", "driverinfo", "name"];
+            List<string> allowedList = ["connect", "disconnect", "connected", "connecting", "interfaceversion", "driverversion", "driverinfo", "name", "description"];
             ;
             return !(allowedList.Contains(operation));
         }
@@ -170,9 +171,29 @@ namespace ASCOM.Alpaca
                     }
                 }
 
+                // /api/v1/{deviceType}/{deviceNumber}/{operation}/...
+                var pathElements = HttpContext.Request.Path.ToString().Split('/');
+                if (pathElements.Length < 6 || !pathElements[1].Equals("api") || !pathElements[2].Equals("v1"))
+                {
+                    return BadRequest($"Bad request: {HttpContext.Request.Path.ToString()}");
+                }
+
+                // Check device exists
+                string deviceType = pathElements[3].ToLowerInvariant();
+                AlpacaConfiguredDevice device = null;
+                if (int.TryParse(pathElements[4], out int deviceNumber))
+                {
+                    device = DeviceManager.GetDevices().FirstOrDefault(x => x.DeviceType.ToLower().Equals(deviceType) && x.DeviceNumber == deviceNumber);
+                }
+
+                if (device == null)
+                {
+                    return BadRequest($"Unknown device in Alpaca request: {HttpContext.Request.Path.ToString()}");
+                }
+
                 //if (DeviceManager.Configuration.RequireConnect)
                 //{
-                    if (DeviceCannotAcceptOperation())
+                if (DeviceCannotAcceptOperation())
                     {
                         return Ok(ResponseHelpers.ExceptionResponseBuilder<TResponse>(new NotConnectedException(),
                             clientTransactionID, transactionID));
