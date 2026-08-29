@@ -5,17 +5,17 @@
 
 // ── Module-level state ────────────────────────────────────────────────────────
 
-let _engine        = null;
-let _scene         = null;
-let _primaryNode   = null;   // Stage 3 — rotates by primaryAngle each frame
+let _engine = null;
+let _scene = null;
+let _primaryNode = null;   // Stage 3 — rotates by primaryAngle each frame
 let _secondaryNode = null;   // Stage 4 — rotates by secondaryAngle each frame
 
-let _primaryAngle   = 0;     // radians, updated by setAxes()
+let _primaryAngle = 0;     // radians, updated by setAxes()
 let _secondaryAngle = 0;     // radians, updated by setAxes()
 
-let _latitude      = 51.5;   // observer latitude in degrees
+let _latitude = 51.5;   // observer latitude in degrees
 let _alignmentMode = 'GermanPolar';
-let _mountType     = 'Simulator';
+let _mountType = 'Simulator';
 
 // Babylon coordinate vectors set during init, shared with render loop
 let _Zp_bab = null;   // celestial pole direction in Babylon world space
@@ -27,26 +27,26 @@ let _resizeHandler = null;   // kept so we can remove it on dispose
 // Representative cylinder proportions for the prototype.
 // Replaced by bounding-box-derived values in Phase 3.
 
-const PILLAR_HEIGHT  = 1000;    // Stage 1 support pillar height
-const PILLAR_RADIUS  = 30;     // Stage 1 support pillar radius
+const PILLAR_HEIGHT = 80;    // Stage 1 support pillar height
+const PILLAR_RADIUS = 15;     // Stage 1 support pillar radius
 
-const STRUCT_LENGTH  = 100;    // Stage 2 structural axis length
-const STRUCT_RADIUS  = 20;     // Stage 2 structural axis radius
+const STRUCT_LENGTH = 10;    // Stage 2 structural axis length
+const STRUCT_RADIUS = 2.5;     // Stage 2 structural axis radius
 
-const PRIMARY_LENGTH = 160;    // Stage 3 primary axis span
-const PRIMARY_RADIUS = 25;     // Stage 3 primary axis radius
+const PRIMARY_LENGTH = 30;    // Stage 3 primary axis span
+const PRIMARY_RADIUS = 5;     // Stage 3 primary axis radius
 
-const SECONDARY_LENGTH = 300;  // Stage 4 secondary axis span
-const SECONDARY_RADIUS = 20;   // Stage 4 secondary axis radius
+const SECONDARY_LENGTH = 30;  // Stage 4 secondary axis span
+const SECONDARY_RADIUS = 5;   // Stage 4 secondary axis radius
 
-const OTA_LENGTH   = 800;      // Stage 5 OTA tube length
-const OTA_RADIUS   = 35;       // Stage 5 OTA tube radius
-const OTA_SPHERE_R = 45;       // Stage 5 OTA front-element sphere radius
+const OTA_LENGTH = 40;      // Stage 5 OTA tube length
+const OTA_RADIUS = 10;       // Stage 5 OTA tube radius
+const OTA_SPHERE_R = 7.5;       // Stage 5 OTA front-element sphere radius
 
 // Stage connection offsets
 const o_m0 = PILLAR_HEIGHT;         // M0: top of support pillar
 const o_m1 = STRUCT_LENGTH;         // M1: tip of structural axis from M0
-const o_s  = SECONDARY_LENGTH / 2;  // half-span: S0 to T0
+const o_s = SECONDARY_LENGTH / 2;  // half-span: S0 to T0
 
 // ── Exported public API ───────────────────────────────────────────────────────
 
@@ -66,27 +66,27 @@ export function init(canvasId, latitude, alignmentMode, mountType, models, camer
         return;
     }
 
-    _latitude      = isFinite(latitude) ? latitude : 51.5;
+    _latitude = isFinite(latitude) ? latitude : 51.5;
     _alignmentMode = alignmentMode || 'GermanPolar';
-    _mountType     = mountType     || 'Simulator';
+    _mountType = mountType || 'Simulator';
 
     _engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
-    _scene  = new BABYLON.Scene(_engine);
+    _scene = new BABYLON.Scene(_engine);
     _scene.useRightHandedSystem = true;
     _scene.clearColor = new BABYLON.Color4(0.08, 0.08, 0.12, 1);
 
     // ── Camera ────────────────────────────────────────────────────────────────
     // Defaults: alpha=135°, beta=60°, radius=300 mm, target=(0,40,0)
-    const defAlpha  = 3 * Math.PI / 4;
-    const defBeta   = Math.PI / 3;
+    const defAlpha = 3 * Math.PI / 4;
+    const defBeta = Math.PI / 3;
     const defRadius = 300;
     const defTarget = new BABYLON.Vector3(0, 40, 0);
 
     const cam = new BABYLON.ArcRotateCamera('cam', defAlpha, defBeta, defRadius, defTarget, _scene);
 
     if (camera && isFinite(camera.alpha) && isFinite(camera.beta) && isFinite(camera.radius)) {
-        cam.alpha  = camera.alpha;
-        cam.beta   = camera.beta;
+        cam.alpha = camera.alpha;
+        cam.beta = camera.beta;
         cam.radius = camera.radius;
         if (camera.target) {
             cam.target = new BABYLON.Vector3(
@@ -98,7 +98,7 @@ export function init(canvasId, latitude, alignmentMode, mountType, models, camer
     }
 
     cam.attachControl(canvas, true);
-    cam.lowerRadiusLimit =   50;
+    cam.lowerRadiusLimit = 50;
     cam.upperRadiusLimit = 2000;
 
     // ── Lighting ──────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export function init(canvasId, latitude, alignmentMode, mountType, models, camer
  */
 export function setAxes(primaryDeg, secondaryDeg) {
     if (!isFinite(primaryDeg) || !isFinite(secondaryDeg)) return;
-    _primaryAngle   = BABYLON.Tools.ToRadians(primaryDeg)   * primaryAxisSign(_latitude, _alignmentMode, _mountType);
+    _primaryAngle = BABYLON.Tools.ToRadians(primaryDeg) * primaryAxisSign(_latitude, _alignmentMode, _mountType);
     _secondaryAngle = BABYLON.Tools.ToRadians(secondaryDeg) * secondaryAxisSign(_latitude, _alignmentMode, _mountType);
 }
 
@@ -138,8 +138,8 @@ export function getCameraState() {
     const cam = _scene.activeCamera;
     if (!cam) return null;
     return {
-        alpha:  cam.alpha,
-        beta:   cam.beta,
+        alpha: cam.alpha,
+        beta: cam.beta,
         radius: cam.radius,
         target: { x: cam.target.x, y: cam.target.y, z: cam.target.z }
     };
@@ -151,19 +151,19 @@ export function dispose() {
         _resizeHandler = null;
     }
     if (_engine) _engine.stopRenderLoop();
-    if (_scene)  { _scene.dispose();  _scene  = null; }
+    if (_scene) { _scene.dispose(); _scene = null; }
     if (_engine) { _engine.dispose(); _engine = null; }
-    _primaryNode   = null;
+    _primaryNode = null;
     _secondaryNode = null;
-    _Zp_bab        = null;
-    _Yp_bab        = null;
+    _Zp_bab = null;
+    _Yp_bab = null;
 }
 
 // ── Sign convention stubs ─────────────────────────────────────────────────────
 // Return +1 until hardware testing determines correct sign for each
 // combination of alignment mode, hemisphere, and mount type (OQ-5).
 
-function primaryAxisSign(latitude, alignmentMode, mountType)   { return +1; }
+function primaryAxisSign(latitude, alignmentMode, mountType) { return +1; }
 function secondaryAxisSign(latitude, alignmentMode, mountType) { return +1; }
 
 // ── Scene construction ────────────────────────────────────────────────────────
@@ -190,67 +190,59 @@ function _buildScene() {
     // ── Stage 2 — Structural axis (tilted to polar axis) ─────────────────────
     const latNode = new BABYLON.TransformNode('latNode', _scene);
     latNode.position = M0.clone();
-    _alignNodeY(latNode, _Zp_bab);
+    latNode.rotationQuaternion = quaternionAlignTo(_Zp_bab);
 
     const M1 = M0.add(_Zp_bab.scale(o_m1));
 
     const structMesh = _makeCylinder('structural', STRUCT_RADIUS, STRUCT_LENGTH, latNode);
     structMesh.position = new BABYLON.Vector3(0, STRUCT_LENGTH / 2, 0);
-    _setColor(structMesh, new BABYLON.Color3(0.45, 0.45, 0.5));
+    _setColor(structMesh, new BABYLON.Color3(0.0, 0.0, 0.0));
 
     // ── Stage 3 — Primary axis assembly ──────────────────────────────────────
     const S0 = M1.clone();
 
     _primaryNode = new BABYLON.TransformNode('primaryNode', _scene);
     _primaryNode.position = S0.clone();
-    _alignNodeY(_primaryNode, _Zp_bab);
 
     const primaryMesh = _makeCylinder('primaryAxis', PRIMARY_RADIUS, PRIMARY_LENGTH, _primaryNode);
     primaryMesh.position = BABYLON.Vector3.Zero();
-    _setColor(primaryMesh, new BABYLON.Color3(0.5, 0.35, 0.2));
+    _setColor(primaryMesh, new BABYLON.Color3(1.0, 0.0, 0.0));
 
     // ── Stage 4 — Secondary axis assembly ────────────────────────────────────
     _secondaryNode = new BABYLON.TransformNode('secondaryNode', _scene);
-    _secondaryNode.parent   = _primaryNode;
+    _secondaryNode.parent = _primaryNode;
     _secondaryNode.position = BABYLON.Vector3.Zero();  // coincides with S0 in parent space
-    _alignNodeY(_secondaryNode, _Yp_bab);
 
     const secondaryMesh = _makeCylinder('secondaryAxis', SECONDARY_RADIUS, SECONDARY_LENGTH, _secondaryNode);
     secondaryMesh.position = BABYLON.Vector3.Zero();
-    _setColor(secondaryMesh, new BABYLON.Color3(0.2, 0.45, 0.55));
+    _setColor(secondaryMesh, new BABYLON.Color3(0.0, 0.0, 1.0));
 
     // ── Stage 5 — OTA tube ───────────────────────────────────────────────────
     // T0 is offset from S0 along +Y of secondaryNode by o_s
     const tubeNode = new BABYLON.TransformNode('tubeNode', _scene);
-    tubeNode.parent   = _secondaryNode;
+    tubeNode.parent = _secondaryNode;
     tubeNode.position = new BABYLON.Vector3(0, o_s, 0);
 
     // Scope tube extends along local +X of the secondary node (east at hour angle 0)
     const otaTube = _makeCylinder('ota', OTA_RADIUS, OTA_LENGTH, tubeNode);
     otaTube.rotation.z = Math.PI / 2;   // rotate cylinder long-axis from Y to X
-    otaTube.position   = new BABYLON.Vector3(OTA_LENGTH / 2, 0, 0);
-    _setColor(otaTube, new BABYLON.Color3(0.25, 0.55, 0.3));
+    otaTube.position = new BABYLON.Vector3(OTA_LENGTH / 2, 0, 0);
+    _setColor(otaTube, new BABYLON.Color3(0.8, 0.8, 0.8));
 
     const otaSphere = BABYLON.MeshBuilder.CreateSphere('otaSphere',
         { diameter: OTA_SPHERE_R * 2 }, _scene);
-    otaSphere.parent   = tubeNode;
+    otaSphere.parent = tubeNode;
     otaSphere.position = new BABYLON.Vector3(OTA_LENGTH, 0, 0);
-    _setColor(otaSphere, new BABYLON.Color3(0.3, 0.6, 0.35));
+    _setColor(otaSphere, new BABYLON.Color3(1, 1, 0));
 
     // ── Render loop: apply axis rotations via quaternions each frame ──────────
     // Matches prototype's onBeforeRenderObservable pattern exactly.
     _scene.onBeforeRenderObservable.add(() => {
         if (_primaryNode) {
-            _primaryNode.rotationQuaternion = BABYLON.Quaternion.RotationAxis(
-                new BABYLON.Vector3(0, 1, 0),   // local +Y = polar axis
-                _primaryAngle
-            );
+            _primaryNode.rotationQuaternion = BABYLON.Quaternion.RotationAxis(_Zp_bab, _primaryAngle);
         }
         if (_secondaryNode) {
-            _secondaryNode.rotationQuaternion = BABYLON.Quaternion.RotationAxis(
-                new BABYLON.Vector3(0, 1, 0),   // local +Y = _Yp_bab
-                _secondaryAngle
-            );
+            _secondaryNode.rotationQuaternion = BABYLON.Quaternion.RotationAxis(_Yp_bab, _secondaryAngle);
         }
     });
 }
@@ -259,17 +251,17 @@ function _buildScene() {
 
 function _buildGrid() {
     const ground = BABYLON.MeshBuilder.CreateGround('grid',
-        { width: 400, height: 400, subdivisions: 20 }, _scene);
+        { width: 400, height: 400, subdivisions: 40 }, _scene);
 
-    const mat = new BABYLON.GridMaterial('gridMat', _scene);
-    mat.majorUnitFrequency  = 5;
-    mat.minorUnitVisibility = 0.3;
-    mat.gridRatio           = 40;
-    mat.backFaceCulling     = false;
-    mat.mainColor           = new BABYLON.Color3(0.15, 0.15, 0.2);
-    mat.lineColor           = new BABYLON.Color3(0.3, 0.3, 0.4);
-    mat.opacity             = 0.7;
-    ground.material = mat;
+    const gridMat = new BABYLON.GridMaterial('gridMat', _scene);
+    gridMat.majorUnitFrequency = 5;
+    gridMat.minorUnitVisibility = 0.45;
+    gridMat.gridRatio = 1;
+    gridMat.backFaceCulling = false;
+    gridMat.mainColor = new BABYLON.Color3(0.7, 0.7, 0.7);
+    gridMat.lineColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+    gridMat.opacity = 0.7;
+    ground.material = gridMat;
     ground.position.y = -1;
 }
 
@@ -278,7 +270,7 @@ function _buildWorldAxes(size) {
         new BABYLON.Color3(1, 0.2, 0.2), 'E');
     _makeAxisLine('axisY', BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, size, 0),
         new BABYLON.Color3(0.2, 1, 0.2), 'U');
-    _makeAxisLine('axisZ', BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, size),
+    _makeAxisLine('axisZ', BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, -size),
         new BABYLON.Color3(0.2, 0.4, 1), 'N');
 }
 
@@ -287,7 +279,7 @@ function _makeAxisLine(name, from, to, color, label) {
     axis.color = color;
 
     const plane = BABYLON.MeshBuilder.CreatePlane(name + 'Label', { size: 18 }, _scene);
-    plane.position     = to.scale(1.15);
+    plane.position = to.scale(1.15);
     plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
     const tex = new BABYLON.DynamicTexture(name + 'Tex', { width: 64, height: 64 }, _scene, false);
@@ -296,7 +288,7 @@ function _makeAxisLine(name, from, to, color, label) {
         'transparent', true);
 
     const mat = new BABYLON.StandardMaterial(name + 'TexMat', _scene);
-    mat.diffuseTexture  = tex;
+    mat.diffuseTexture = tex;
     mat.emissiveTexture = tex;
     mat.backFaceCulling = false;
     mat.disableLighting = true;
@@ -322,19 +314,23 @@ function _setColor(mesh, color3) {
  * Rotates a TransformNode so its local +Y aligns with the given world-space direction.
  * Used to orient each axis node without touching the geometry.
  */
-function _alignNodeY(node, direction) {
-    const dir = direction.normalize();
-    const up  = new BABYLON.Vector3(0, 1, 0);
-    const ref = Math.abs(BABYLON.Vector3.Dot(dir, up)) > 0.999
-        ? new BABYLON.Vector3(0, 0, 1) : up;
-    const right   = BABYLON.Vector3.Cross(ref, dir).normalize();
-    const forward = BABYLON.Vector3.Cross(dir, right).normalize();
-    node.rotationQuaternion = BABYLON.Quaternion.FromRotationMatrix(
-        BABYLON.Matrix.FromValues(
-            right.x,   right.y,   right.z,   0,
-            dir.x,     dir.y,     dir.z,     0,
-            forward.x, forward.y, forward.z, 0,
-            0,         0,         0,         1
-        )
+function quaternionFromBasis(X, Y, Z) {
+    const m = BABYLON.Matrix.FromValues(
+        X.x, X.y, X.z, 0,
+        Y.x, Y.y, Y.z, 0,
+        Z.x, Z.y, Z.z, 0,
+        0, 0, 0, 1
     );
+    return BABYLON.Quaternion.FromRotationMatrix(m);
+}
+
+function quaternionAlignTo(dir) {
+    const Y = dir.normalize();
+    let X = BABYLON.Vector3.Cross(BABYLON.Vector3.Forward(), Y);
+    if (X.lengthSquared() < 1e-6) {
+        X = BABYLON.Vector3.Cross(BABYLON.Vector3.Right(), Y);
+    }
+    X.normalize();
+    const Z = BABYLON.Vector3.Cross(X, Y).normalize();
+    return quaternionFromBasis(X, Y, Z);
 }
