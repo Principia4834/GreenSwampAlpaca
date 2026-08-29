@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Settings.Attributes;
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.Extensions.Configuration;

@@ -160,7 +160,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     // Both axes are already written by the caller (SetRateRa/SetRateDec) before
                     // posting, so the consumer only needs rc's values for the predictor seed (D2).
                     // SetTracking posts the hardware command immediately (D1).
-                    if (_mount.Settings.AlignmentMode == ASCOM.Common.DeviceInterfaces.AlignmentMode.AltAz)
+                    if (_mount.Settings.AlignmentMode == AlignmentMode.AltAz)
                     {
                         if (_mount.Tracking)
                         {

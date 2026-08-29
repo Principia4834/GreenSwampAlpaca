@@ -1,4 +1,5 @@
 ﻿using ASCOM.Alpaca;
+using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
 using GreenSwamp.Alpaca.Server.Models;
@@ -134,9 +135,9 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
 
             if (flipResult.DoFlip)
             {
-                var oppositeSide = State.SideOfPier == ASCOM.Common.DeviceInterfaces.PointingState.Normal
-                    ? ASCOM.Common.DeviceInterfaces.PointingState.ThroughThePole
-                    : ASCOM.Common.DeviceInterfaces.PointingState.Normal;
+                var oppositeSide = State.SideOfPier == PointingState.Normal
+                    ? PointingState.ThroughThePole
+                    : PointingState.Normal;
 
                 try
                 {

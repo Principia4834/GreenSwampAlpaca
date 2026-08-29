@@ -17,27 +17,6 @@
 namespace GreenSwamp.Alpaca.Settings.Models
 {
     /// <summary>
-    /// Telescope alignment modes
-    /// </summary>
-    public enum AlignmentMode
-    {
-        /// <summary>
-        /// German Equatorial Mount (GEM) - Counterweight design with meridian flip
-        /// </summary>
-        GermanPolar = 0,
-        
-        /// <summary>
-        /// Polar/Fork Equatorial Mount - No counterweight, fork design
-        /// </summary>
-        Polar = 1,
-        
-        /// <summary>
-        /// Alt-Azimuth Mount - Altitude/Azimuth axes, no polar alignment
-        /// </summary>
-        AltAz = 2
-    }
-
-    /// <summary>
     /// Telescope mount types
     /// </summary>
     public enum MountType

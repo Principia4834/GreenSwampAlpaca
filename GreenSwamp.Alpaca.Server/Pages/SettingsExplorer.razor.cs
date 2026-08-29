@@ -1,4 +1,5 @@
-﻿using GreenSwamp.Alpaca.MountControl;
+﻿using ASCOM.Common.DeviceInterfaces;
+using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Components;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
 using GreenSwamp.Alpaca.Server.Models;
@@ -14,7 +15,6 @@ using ObservatorySettings = GreenSwamp.Alpaca.Settings.Models.ObservatorySetting
 using ServerConfig = GreenSwamp.Alpaca.Settings.Models.ServerConfig;
 using SkySettings = GreenSwamp.Alpaca.Settings.Models.SkySettings;
 using MountType = GreenSwamp.Alpaca.Settings.Models.MountType;
-using AlignmentMode = GreenSwamp.Alpaca.Settings.Models.AlignmentMode;
 
 namespace GreenSwamp.Alpaca.Server.Pages;
 

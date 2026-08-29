@@ -17,8 +17,6 @@
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Shared;
-using SettingsAlignmentMode = GreenSwamp.Alpaca.Settings.Models.AlignmentMode;
-using SettingsMountType     = GreenSwamp.Alpaca.Settings.Models.MountType;
 
 namespace GreenSwamp.Alpaca.Server.Models
 {
@@ -123,8 +121,8 @@ namespace GreenSwamp.Alpaca.Server.Models
 
         // 3D view configuration (read once at scene init; not updated on every tick)
         public double SiteLatitude { get; set; }
-        public SettingsAlignmentMode AlignmentMode { get; set; }
-        public SettingsMountType MountType { get; set; }
+        public AlignmentMode AlignmentMode { get; set; }
+        public MountType MountType { get; set; }
 
         /// <summary>
         /// Constructor initializes with default/invalid values
@@ -180,8 +178,8 @@ namespace GreenSwamp.Alpaca.Server.Models
             StepsWormPerRevolution = new [] { 0.0, 0.0 };
             StepsTimeFreq = new [] { 0L, 0L };
             SiteLatitude = double.NaN;
-            AlignmentMode = SettingsAlignmentMode.GermanPolar;
-            MountType     = SettingsMountType.Simulator;
+            AlignmentMode = AlignmentMode.GermanPolar;
+            MountType     = MountType.Simulator;
     }
 }
 }

@@ -164,7 +164,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     VoiceVolume = mount.Settings.VoiceVolume,
                     IsAutoHomeRunning = mount.IsAutoHomeRunning,
                     AutoHomeProgressBar = mount.AutoHomeProgressBar,
-                    IsGermanPolarMode = mount.Settings.AlignmentMode == ASCOM.Common.DeviceInterfaces.AlignmentMode.GermanPolar,
+                    IsGermanPolarMode = mount.Settings.AlignmentMode == AlignmentMode.GermanPolar,
                     FlipOnNextGoto = mount.FlipOnNextGoto,
                     AutoHomeAxisX = mount.Settings.AutoHomeAxisX,
                     AutoHomeAxisY = mount.Settings.AutoHomeAxisY,
@@ -180,8 +180,8 @@ namespace GreenSwamp.Alpaca.Server.Services
                     MountVersion = mount.MountVersion,
                     Capabilities = mount.Capabilities,
                     SiteLatitude  = mount.Settings.Latitude,
-                    AlignmentMode = (GreenSwamp.Alpaca.Settings.Models.AlignmentMode)(int)mount.Settings.AlignmentMode,
-                    MountType     = (GreenSwamp.Alpaca.Settings.Models.MountType)(int)mount.Settings.Mount
+                    AlignmentMode = mount.Settings.AlignmentMode,
+                    MountType     = mount.Settings.Mount
                 };
             }
             catch (Exception)

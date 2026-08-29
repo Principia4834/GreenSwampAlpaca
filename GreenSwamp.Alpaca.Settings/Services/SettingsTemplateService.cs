@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Settings.Models;
 using System.Reflection;
 using System.Text.Json;
