@@ -179,9 +179,9 @@ namespace GreenSwamp.Alpaca.Server.Services
                     MountName = mount.MountName,
                     MountVersion = mount.MountVersion,
                     Capabilities = mount.Capabilities,
-                    SiteLatitude = mount.Settings.Latitude,
-                    AlignmentMode = mount.Settings.AlignmentMode,
-                    MountType = mount.Settings.Mount
+                    SiteLatitude  = mount.Settings.Latitude,
+                    AlignmentMode = (GreenSwamp.Alpaca.Settings.Models.AlignmentMode)(int)mount.Settings.AlignmentMode,
+                    MountType     = (GreenSwamp.Alpaca.Settings.Models.MountType)(int)mount.Settings.Mount
                 };
             }
             catch (Exception)
