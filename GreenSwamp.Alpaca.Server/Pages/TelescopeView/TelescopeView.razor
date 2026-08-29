@@ -5,10 +5,10 @@
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Settings.Services
 @inject TelescopeStateService StateService
+@inject ActiveDeviceViewRegistry ActiveViews
 @inject IVersionedSettingsService SettingsService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
-@implements IAsyncDisposable
 
 <PageTitle>Telescope View — Device @DeviceNumber</PageTitle>
 
@@ -30,118 +30,3 @@
     <canvas id="telescopeCanvas"
             style="flex:1; width:100%; display:block; touch-action:none;" />
 </div>
-
-@code {
-    [Parameter] public int DeviceNumber { get; set; }
-
-    private IJSObjectReference? _module;
-    private double _axisX;
-    private double _axisY;
-    private string _activeModelSetName = string.Empty;
-    private bool _savingView;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-
-        // Resolve active model set (asset paths + persisted camera state)
-        var modelSet = SettingsService.GetModelSets();
-        var activeEntry = modelSet.ModelSets
-            .FirstOrDefault(s => s.Name == modelSet.ActiveModelSet)
-            ?? new GreenSwamp.Alpaca.Settings.Models.ModelSetEntry { Name = "Prototype", Models = new GreenSwamp.Alpaca.Settings.Models.ModelFiles() };
-        _activeModelSetName = activeEntry.Name;
-
-        // Resolve model paths to absolute URLs
-        var baseUri = Nav.BaseUri.TrimEnd('/');
-        object modelsObj = new
-        {
-            support       = ResolveUrl(baseUri, activeEntry.Models.Support),
-            structural    = ResolveUrl(baseUri, activeEntry.Models.Structural),
-            primaryAxis   = ResolveUrl(baseUri, activeEntry.Models.PrimaryAxis),
-            secondaryAxis = ResolveUrl(baseUri, activeEntry.Models.SecondaryAxis),
-            ota           = ResolveUrl(baseUri, activeEntry.Models.Ota),
-            otaSecondary  = ResolveUrl(baseUri, activeEntry.Models.OtaSecondary),
-            counterWeight = ResolveUrl(baseUri, activeEntry.Models.CounterWeight)
-        };
-
-        // Read scene-init state from snapshot (read once; not refreshed per tick)
-        var s = StateService.GetCurrentState(DeviceNumber);
-        var effectiveLatitude = s.AlignmentMode == AlignmentMode.AltAz ? 90.0 : s.SiteLatitude;
-        var alignmentModeStr  = s.AlignmentMode.ToString();
-        var mountTypeStr      = s.MountType.ToString();
-
-        // Ensure Babylon.js CDN scripts are loaded before importing the ES module
-        await JS.InvokeVoidAsync("ensureBabylonLoaded");
-        _module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/telescopeViewer.js");
-        await _module.InvokeVoidAsync("init",
-            "telescopeCanvas",
-            effectiveLatitude,
-            alignmentModeStr,
-            mountTypeStr,
-            modelsObj,
-            (object?)activeEntry.Camera);
-
-        StateService.StateChanged += OnStateChanged;
-        await PushStateAsync();
-    }
-
-    private void OnStateChanged(object? sender, EventArgs e)
-        => InvokeAsync(async () => await PushStateAsync());
-
-    private async Task PushStateAsync()
-    {
-        if (_module is null) return;
-        var s = StateService.GetCurrentState(DeviceNumber);
-        _axisX = s.ActualAxisX;
-        _axisY = s.ActualAxisY;
-        try
-        {
-            await _module.InvokeVoidAsync("setAxes", _axisX, _axisY);
-            StateHasChanged();
-        }
-        catch (JSDisconnectedException) { }
-        catch (TaskCanceledException) { }
-    }
-
-    private async Task SaveViewAsync()
-    {
-        if (_module is null || _savingView) return;
-        _savingView = true;
-        try
-        {
-            var cameraState = await _module.InvokeAsync<GreenSwamp.Alpaca.Settings.Models.CameraState?>("getCameraState");
-            if (cameraState is null) return;
-
-            var modelSets = SettingsService.GetModelSets();
-            var entry = modelSets.ModelSets.FirstOrDefault(s => s.Name == _activeModelSetName);
-            if (entry is null) return;
-
-            entry.Camera = cameraState;
-            await SettingsService.SaveModelSetsAsync(modelSets);
-        }
-        catch (JSDisconnectedException) { }
-        catch (TaskCanceledException) { }
-        finally
-        {
-            _savingView = false;
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        StateService.StateChanged -= OnStateChanged;
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.InvokeVoidAsync("dispose");
-                await _module.DisposeAsync();
-            }
-            catch (JSDisconnectedException) { }
-            catch (TaskCanceledException) { }
-        }
-    }
-
-    private static string? ResolveUrl(string baseUri, string? relativePath)
-        => relativePath is null ? null : $"{baseUri}/{relativePath.TrimStart('/')}"; 
-}
