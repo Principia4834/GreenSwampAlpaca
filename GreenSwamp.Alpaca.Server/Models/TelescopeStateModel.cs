@@ -119,6 +119,11 @@ namespace GreenSwamp.Alpaca.Server.Models
         public string[] MountVersion { get; set; } = { string.Empty, string.Empty };
         public string Capabilities { get; set; } = string.Empty;
 
+        // 3D view configuration (read once at scene init; not updated on every tick)
+        public double SiteLatitude { get; set; }
+        public AlignmentMode AlignmentMode { get; set; }
+        public MountType MountType { get; set; }
+
         /// <summary>
         /// Constructor initializes with default/invalid values
         /// </summary>
@@ -172,6 +177,9 @@ namespace GreenSwamp.Alpaca.Server.Models
             StepsPerRevolution = new [] { 0L, 0L };
             StepsWormPerRevolution = new [] { 0.0, 0.0 };
             StepsTimeFreq = new [] { 0L, 0L };
+            SiteLatitude = double.NaN;
+            AlignmentMode = AlignmentMode.GermanPolar;
+            MountType = MountType.Simulator;
     }
 }
 }

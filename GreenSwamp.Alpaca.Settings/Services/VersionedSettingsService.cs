@@ -62,6 +62,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private readonly SemaphoreSlim _chartFileLock = new(1, 1);
         public string ChartSettingsPath => Path.Combine(_currentVersionPath, "chart.settings.user.json");
 
+        private readonly SemaphoreSlim _modelSetsFileLock = new(1, 1);
+        public string ModelSetsSettingsPath => Path.Combine(_currentVersionPath, "modelsets.settings.json");
+
+        public event EventHandler<ModelSetCollection>? ModelSetsChanged;
+
         public VersionedSettingsService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -1130,6 +1135,64 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 return new Dictionary<string, JsonElement>();
             }
         }
+
+
+        // -- Model-set settings ------------------------------------------------
+
+        public ModelSetCollection GetModelSets()
+        {
+            if (!File.Exists(ModelSetsSettingsPath))
+                return DefaultModelSetCollection();
+
+            try
+            {
+                var json = File.ReadAllText(ModelSetsSettingsPath);
+                return JsonSerializer.Deserialize<ModelSetCollection>(json, _jsonReadOptions)
+                    ?? DefaultModelSetCollection();
+            }
+            catch
+            {
+                return DefaultModelSetCollection();
+            }
+        }
+
+        public async Task SaveModelSetsAsync(ModelSetCollection modelSets)
+        {
+            ArgumentNullException.ThrowIfNull(modelSets);
+
+            if (!await _modelSetsFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Timeout acquiring model-sets settings lock.");
+
+            try
+            {
+                var json = JsonSerializer.Serialize(modelSets, _jsonOptions);
+                var tempPath = ModelSetsSettingsPath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json, Encoding.UTF8);
+                File.Move(tempPath, ModelSetsSettingsPath, overwrite: true);
+                LogSafe("INFO", $"Model-set settings saved for version {CurrentVersion}");
+            }
+            finally
+            {
+                _modelSetsFileLock.Release();
+            }
+
+            ModelSetsChanged?.Invoke(this, modelSets);
+        }
+
+        private static ModelSetCollection DefaultModelSetCollection() => new()
+        {
+            ActiveModelSet = "Prototype",
+            ModelSets =
+            [
+                new ModelSetEntry
+                {
+                    Name        = "Prototype",
+                    Description = "Cylinder placeholders — no .glb files required",
+                    Models      = new ModelFiles(),
+                    Camera      = null
+                }
+            ]
+        };
 
 
         private void LogSafe(string level, string message)

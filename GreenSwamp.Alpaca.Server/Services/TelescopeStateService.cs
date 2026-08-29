@@ -178,7 +178,10 @@ namespace GreenSwamp.Alpaca.Server.Services
                     CanAdvancedCmdSupport = mount.CanAdvancedCmdSupport,
                     MountName = mount.MountName,
                     MountVersion = mount.MountVersion,
-                    Capabilities = mount.Capabilities
+                    Capabilities = mount.Capabilities,
+                    SiteLatitude = mount.Settings.Latitude,
+                    AlignmentMode = mount.Settings.AlignmentMode,
+                    MountType = mount.Settings.Mount
                 };
             }
             catch (Exception)

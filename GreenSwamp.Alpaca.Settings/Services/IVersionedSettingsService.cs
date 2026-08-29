@@ -144,5 +144,25 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         /// <summary>Event raised when chart settings are changed via SaveChartSettingsAsync.</summary>
         event EventHandler<ChartSettings>? ChartSettingsChanged;
+
+        // -- Model-set settings (modelsets.settings.json) ---------------------
+
+        /// <summary>Gets the path to modelsets.settings.json for the current version.</summary>
+        string ModelSetsSettingsPath { get; }
+
+        /// <summary>
+        /// Gets the current model-set collection. Returns a default Prototype-only
+        /// collection if the file is absent.
+        /// </summary>
+        ModelSetCollection GetModelSets();
+
+        /// <summary>
+        /// Saves the model-set collection to modelsets.settings.json atomically.
+        /// Use this to persist camera state changes or active-set selection.
+        /// </summary>
+        Task SaveModelSetsAsync(ModelSetCollection modelSets);
+
+        /// <summary>Event raised when model-set settings are changed via SaveModelSetsAsync.</summary>
+        event EventHandler<ModelSetCollection>? ModelSetsChanged;
     }
 }
