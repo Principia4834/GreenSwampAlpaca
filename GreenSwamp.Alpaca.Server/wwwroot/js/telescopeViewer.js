@@ -338,4 +338,3 @@ function _alignNodeY(node, direction) {
         )
     );
 }
-}

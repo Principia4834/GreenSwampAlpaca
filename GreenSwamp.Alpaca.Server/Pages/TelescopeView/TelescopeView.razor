@@ -12,14 +12,7 @@
 
 <PageTitle>Telescope View — Device @DeviceNumber</PageTitle>
 
-@* -- Babylon.js from CDN (pinned version) -- *@
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
-<script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-
 <div style="display:flex; flex-direction:column; height:100vh; overflow:hidden; padding:8px; box-sizing:border-box;">
-
-    @* -- Toolbar -- *@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
         <MudText Typo="Typo.subtitle1">
             <b style="color:var(--gs-accent-500);">Telescope 3D View</b>
@@ -34,8 +27,6 @@
                        Title="Save View"
                        OnClick="SaveViewAsync" />
     </MudStack>
-
-    @* -- Canvas -- *@
     <canvas id="telescopeCanvas"
             style="flex:1; width:100%; display:block; touch-action:none;" />
 </div>
@@ -79,7 +70,8 @@
         var alignmentModeStr  = s.AlignmentMode.ToString();
         var mountTypeStr      = s.MountType.ToString();
 
-        // Load ES module and initialise Babylon scene
+        // Ensure Babylon.js CDN scripts are loaded before importing the ES module
+        await JS.InvokeVoidAsync("ensureBabylonLoaded");
         _module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/telescopeViewer.js");
         await _module.InvokeVoidAsync("init",
             "telescopeCanvas",

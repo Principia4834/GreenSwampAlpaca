@@ -43,11 +43,11 @@ Rules (must follow)
 
 ## Razor file creation, editing and debugging
 
-When editing, creating or debugging a .razor file always refer to Microsoft Learn MCP, use:
-
-- [Razor syntax reference for ASP.NET Core | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-10.0) 
-- [Introduction to ASP.NET Web Programming Using the Razor Syntax (C#) | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/web-pages/overview/getting-started/introducing-razor-syntax-c) 
-- [ASP.NET Core Razor components | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-10.0)
+- Always consult the Microsoft Learn MCP before writing or editing any .razor file — especially any code involving JavaScript loading, interop, or Blazor-specific behaviour. Do not rely on training knowledge alone.
+- When editing, creating or debugging a .razor file always refer to Microsoft Learn MCP, use:
+  - [Razor syntax reference for ASP.NET Core | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/mvc/views/razor?view=aspnetcore-10.0) 
+  - [Introduction to ASP.NET Web Programming Using the Razor Syntax (C#) | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/web-pages/overview/getting-started/introducing-razor-syntax-c) 
+  - [ASP.NET Core Razor components | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/blazor/components/?view=aspnetcore-10.0)
 
 ## ?? CRITICAL: ALWAYS FOLLOW THIS WORKFLOW
 
