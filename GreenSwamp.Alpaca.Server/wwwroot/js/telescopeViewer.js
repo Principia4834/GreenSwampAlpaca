@@ -253,11 +253,13 @@ function _buildScene() {
     _setColor(otaSphere, new BABYLON.Color3(1, 1, 0));
 
     const tubeDir = Xp_bab.scale(-1).normalize();
-    const tubeMid = T0.add(tubeDir.scale(OTA_LENGTH / 2));
+    const tubeCenter = T0;
 
     const tubeNode = new BABYLON.TransformNode('tubeNode', _scene);
     tubeNode.parent = _secondaryNode;
-    tubeNode.position = tubeMid.subtract(S0);
+
+    // Position at centre
+    tubeNode.position = tubeCenter.subtract(S0);
     tubeNode.rotationQuaternion = quaternionAlignTo(tubeDir);
 
     const otaTube = _makeCylinder('ota', OTA_RADIUS, OTA_LENGTH, tubeNode);

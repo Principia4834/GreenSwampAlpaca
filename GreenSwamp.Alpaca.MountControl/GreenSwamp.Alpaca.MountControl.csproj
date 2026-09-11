@@ -27,7 +27,7 @@
     <PackageReference Include="ASCOM.AstrometryTools" Version="4.0.0" />
     <PackageReference Include="ASCOM.Tools" Version="4.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.IO.Ports" Version="10.0.11" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="MinVer" Version="7.0.0" />
+    <PackageReference Update="MinVer" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

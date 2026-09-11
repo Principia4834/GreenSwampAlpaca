@@ -21,13 +21,13 @@
     <PackageReference Include="ASCOM.Common.Components" Version="4.0.0" />
     <PackageReference Include="ASCOM.Exception.Library" Version="7.1.2" />
     <PackageReference Include="ASCOM.Tools" Version="4.0.0" />
-    <PackageReference Include="MudBlazor" Version="9.8.0" />
+    <PackageReference Include="MudBlazor" Version="9.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="MinVer" Version="7.0.0" />
+    <PackageReference Update="MinVer" Version="8.0.0" />
   </ItemGroup>
 
   <PropertyGroup>

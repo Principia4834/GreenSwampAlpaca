@@ -606,18 +606,38 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
+        /// <summary>
+        /// Return the file version of the driver assembly, or the entry assembly if the driver file assembly version is not available
+        /// </summary>
         public string DriverVersion
         {
             get
             {
-                var asm = Assembly.GetExecutingAssembly();
-                var r = asm.GetName().Version.ToString();
+                string driverVersion = string.Empty;
+                try
+                {
+                    var processPath = Environment.ProcessPath;
+                    if (!string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath))
+                    {
+                        var fileVersion = FileVersionInfo.GetVersionInfo(processPath).FileVersion;
+                        if (!string.IsNullOrWhiteSpace(fileVersion))
+                        {
+                            driverVersion = fileVersion;
+                        }
+                    }
+                }
+                catch
+                {
+                    driverVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString()
+                        ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
+                        ?? "0.0.0";
+                }
 
                 var monitorItem = new MonitorEntry
-                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{driverVersion}" };
                 LogMonitor(monitorItem);
 
-                return r;
+                return driverVersion;
             }
         }
 
@@ -625,7 +645,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         {
             get
             {
-
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{_mount.Settings.EquatorialCoordinateType}" };
                 LogMonitor(monitorItem);

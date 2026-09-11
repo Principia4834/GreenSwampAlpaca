@@ -43,12 +43,12 @@
     <PackageReference Include="ASCOM.AstrometryTools" Version="4.0.0" />
     <PackageReference Include="Blazor-ApexCharts" Version="7.0.0" />
     <PackageReference Include="H.NotifyIcon" Version="2.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
     <!-- Windows Service host lifetime support — no-op on Linux/RPi at runtime -->
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.11" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" Condition="'$(TargetFramework)' == 'net10.0'" />
     <!-- Linux systemd service lifetime support — no-op on Windows/RPi at runtime -->
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.11" />
-    <PackageReference Include="MudBlazor" Version="9.8.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.12" />
+    <PackageReference Include="MudBlazor" Version="9.9.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -119,7 +119,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="MinVer" Version="7.0.0" />
+    <PackageReference Update="MinVer" Version="8.0.0" />
   </ItemGroup>
 
   <Target Name="_ResolveCopyLocalNuGetPkgXmls" AfterTargets="ResolveReferences">
