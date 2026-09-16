@@ -9,6 +9,8 @@ using GreenSwamp.Alpaca.Settings.Extensions;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using H.NotifyIcon.Core;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
@@ -589,16 +591,31 @@ namespace GreenSwamp.Alpaca.Server
             Logger.LogInformation("ChartDataService initialized — MonitorQueue subscriptions active.");
             if (startupConfig.AutoStartBrowser && canLaunchBrowser)
             {
-                try
+                app.Lifetime.ApplicationStarted.Register(() =>
                 {
-                    StartBrowser(startupConfig.ServerPort);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex.Message);
-                }
-            }
+                    _ = Task.Run(async () =>
+                        {
+                            var url = GetLocalServerUrl(app, startupConfig.ServerPort);
 
+                            if (await WaitForLocalHttpReadyAsync(url, TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(250)))
+                            {
+                                try
+                                {
+                                    Logger?.LogInformation("Application started and HTTP endpoint is responding. Launching browser at {Url}", url);
+                                    StartBrowser(new Uri(url).Port);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger?.LogWarning(ex.Message);
+                                }
+                            }
+                            else
+                            {
+                                Logger?.LogWarning("Application started but the local HTTP endpoint did not respond before timeout: {Url}", url);
+                            }
+                        });
+                });
+            }
             #endregion Finish Building and Start server
 
             Lifetime = app.Lifetime;
@@ -699,6 +716,89 @@ namespace GreenSwamp.Alpaca.Server
             }
         }
 
+        /// <summary>
+        /// Waits for the local HTTP server to be ready by repeatedly sending GET requests to the specified URL until a successful 
+        /// response is received or the timeout expires.
+        /// </summary>
+        /// <param name="url">The URL of the local HTTP server to check.</param>
+        /// <param name="timeout">The maximum amount of time to wait for the server to be ready.</param>
+        /// <param name="retryDelay">The delay between successive retry attempts.</param>
+        /// <returns>True if the server becomes ready within the timeout period; otherwise, false.</returns>
+        private static async Task<bool> WaitForLocalHttpReadyAsync(
+            string url,
+            TimeSpan timeout,
+            TimeSpan retryDelay)
+        {
+            using var httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(2)
+            };
+
+            using var cts = new CancellationTokenSource(timeout);
+
+            while (!cts.IsCancellationRequested)
+            {
+                try
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                    using var response = await httpClient.SendAsync(
+                        request,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        cts.Token);
+
+                    return true;
+                }
+                catch (HttpRequestException)
+                {
+                    // Server is not accepting connections yet.
+                }
+                catch (TaskCanceledException) when (!cts.IsCancellationRequested)
+                {
+                    // Single probe timed out; keep retrying until overall timeout expires.
+                }
+
+                await Task.Delay(retryDelay, cts.Token);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the local server URL from the IServerAddressesFeature, falling back to a default localhost URL with the specified port 
+        /// if no suitable address is found.
+        /// </summary>
+        /// <param name="app">The WebApplication instance.</param>
+        /// <param name="fallbackPort">The port to use if no suitable local address is found.</param>
+        /// <returns>The local server URL.</returns>
+        private static string GetLocalServerUrl(WebApplication app, int fallbackPort)
+        {
+            var addresses = app.Services
+                .GetRequiredService<IServer>()
+                .Features
+                .Get<IServerAddressesFeature>()?
+                .Addresses;
+
+            var localAddress = addresses?
+                .Select(address => new Uri(address))
+                .FirstOrDefault(uri =>
+                    uri.Scheme is "http" or "https" &&
+                    (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                     uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                     uri.Host.Equals("::1", StringComparison.OrdinalIgnoreCase) ||
+                     uri.Host.Equals("[::1]", StringComparison.OrdinalIgnoreCase)));
+
+            if (localAddress is not null)
+            {
+                return localAddress.ToString().TrimEnd('/');
+            }
+
+            return $"http://localhost:{fallbackPort}";
+        }
+
+        /// <summary>
+        /// Shows or hides the console window based on the specified ConsoleDisplayOption.
+        /// </summary>
+        /// <param name="newConsoleState">The desired console display option.</param>
         private static void ShowConsole(ConsoleDisplayOption newConsoleState)
         {
             if (!OperatingSystem.IsWindows())
@@ -732,6 +832,11 @@ namespace GreenSwamp.Alpaca.Server
             }
         }
 
+        /// <summary>
+        /// Gets the current state of the console window (visible, minimized, or hidden).
+        /// </summary>
+        /// <param name="hWnd">The handle to the console window.</param>
+        /// <returns>The current console display option.</returns>
         private static ConsoleDisplayOption GetConsoleWindowState(IntPtr hWnd)
         {
             if (!IsWindowVisible(hWnd))

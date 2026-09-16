@@ -5,42 +5,38 @@
 
 /* --- CSS Custom Properties ---------------------------------- */
 :root {
+    /* Global font scale */
+    --gs-global-font-scale: 1.0;
     /* Base surfaces */
-    --gs-bg-app:         #121212;
-    --gs-bg-paper:       #1e1e1e;
-    --gs-bg-elevated:    #2a2a2a;
-    --gs-bg-sidebar:     #0d1117;
-
+    --gs-bg-app: #121212;
+    --gs-bg-paper: #1e1e1e;
+    --gs-bg-elevated: #2a2a2a;
+    --gs-bg-sidebar: #0d1117;
     /* Primary: Material Grey */
-    --gs-grey-50:        #fafafa;
-    --gs-grey-100:       #f5f5f5;
-    --gs-grey-300:       #e0e0e0;
-    --gs-grey-500:       #9e9e9e;
-    --gs-grey-700:       #616161;
-    --gs-grey-900:       #212121;
-
+    --gs-grey-50: #fafafa;
+    --gs-grey-100: #f5f5f5;
+    --gs-grey-300: #e0e0e0;
+    --gs-grey-500: #9e9e9e;
+    --gs-grey-700: #616161;
+    --gs-grey-900: #212121;
     /* Accent: Material Green */
-    --gs-accent-300:     #81c784;
-    --gs-accent-500:     #4caf50;
+    --gs-accent-300: #81c784;
+    --gs-accent-500: #4caf50;
     --gs-accent-500-rgb: 76, 175, 80;
-    --gs-accent-700:     #388e3c;
-    --gs-accent-a200:    #69f0ae;
-
+    --gs-accent-700: #388e3c;
+    --gs-accent-a200: #69f0ae;
     /* Text */
-    --gs-text-primary:   rgba(255, 255, 255, 0.87);
+    --gs-text-primary: rgba(255, 255, 255, 0.87);
     --gs-text-secondary: rgba(255, 255, 255, 0.60);
-    --gs-text-disabled:  rgba(255, 255, 255, 0.38);
-    --gs-text-hint:      rgba(255, 255, 255, 0.38);
-
+    --gs-text-disabled: rgba(255, 255, 255, 0.38);
+    --gs-text-hint: rgba(255, 255, 255, 0.38);
     /* Dividers */
-    --gs-divider:        rgba(255, 255, 255, 0.12);
-
+    --gs-divider: rgba(255, 255, 255, 0.12);
     /* Status / Semantic */
-    --gs-success:        #66bb6a;
-    --gs-warning:        #ffa726;
-    --gs-error:          #f44336;
-    --gs-info:           #42a5f5;
-
+    --gs-success: #66bb6a;
+    --gs-warning: #ffa726;
+    --gs-error: #f44336;
+    --gs-info: #42a5f5;
     /* Spacing (8dp grid) */
     --gs-space-1: 4px;
     --gs-space-2: 8px;
@@ -48,26 +44,46 @@
     --gs-space-4: 16px;
     --gs-space-6: 24px;
     --gs-space-8: 32px;
-
     /* Typography */
     --gs-font-sans: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --gs-font-mono: 'Roboto Mono', 'Courier New', monospace;
+}
+
+html {
+    font-size: 14px;
+}
+
+/* Selected value text + free text input text */
+
+.mud-select-input,
+.mud-select .mud-input-slot,
+.mud-input-slot.mud-input-root-input,
+.mud-input-slot,
+.mud-input-root-input,
+.mud-input > input,
+.mud-textfield .mud-input-slot,
+.mud-input-label,
+
+/* Dropdown / combo popup items rendered via MudPopoverProvider */
+.mud-popover .mud-select-item,
+.mud-popover .mud-list-item,
+.mud-popover .mud-list-item-text {
+    font-size: inherit !important;
 }
 
 /* --- Telescope State — panel group heading ------------------ */
 .gs-panel-heading {
     color:          var(--gs-text-secondary);
     letter-spacing: 0.08em;
-    font-size:      0.70rem;
+    font-size:      0.70em;
     text-transform: uppercase;
 }
 
 /* --- Base --------------------------------------------------- */
-html, body {
-    font-family:      var(--gs-font-sans) !important;
-    font-size:        14px;
-    font-weight:      400;
-    color:            var(--gs-text-primary) !important;
+body {
+    font-family: var(--gs-font-sans) !important;
+    font-weight: 400;
+    color: var(--gs-text-primary) !important;
     background-color: var(--gs-bg-app) !important;
 }
 
@@ -76,13 +92,6 @@ main, .content, article {
     background-color: var(--gs-bg-app) !important;
     color:            var(--gs-text-primary);
 }
-
-h1 { font-size: 1.5rem;    font-weight: 300; color: var(--gs-text-primary); }
-h2 { font-size: 1.125rem;  font-weight: 400; color: var(--gs-text-primary); }
-h3 { font-size: 1rem;      font-weight: 500; color: var(--gs-text-primary); }
-h4 { font-size: 0.9375rem; font-weight: 500; color: var(--gs-text-primary); }
-
-h1:focus { outline: none; }
 
 a, .btn-link {
     color: var(--gs-accent-500);
@@ -98,7 +107,7 @@ a:hover {
 
 /* --- Material Symbols sizing -------------------------------- */
 .material-symbols-outlined {
-    font-size:   1.25rem;
+    font-size:   1.25em;
     line-height: 1;
     vertical-align: middle;
     margin-right: var(--gs-space-2);
@@ -117,7 +126,7 @@ a:hover {
 /* --- Monospace / telemetry ---------------------------------- */
 .gs-monospace {
     font-family:    var(--gs-font-mono);
-    font-size:      13px;
+    font-size:      0.8125em;
     font-weight:    500;
     letter-spacing: 0.03em;
     color:          var(--gs-text-primary);
@@ -134,7 +143,7 @@ a:hover {
 }
 
 .gs-card-header {
-    font-size:      18px;
+    font-size:      1.125em;
     font-weight:    400;
     color:          var(--gs-text-primary);
     border-bottom:  1px solid var(--gs-divider);
@@ -164,7 +173,7 @@ a:hover {
     align-items:    center;
     padding:        2px 10px;
     border-radius:  12px;
-    font-size:      12px;
+    font-size:      0.75em;
     font-weight:    500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -181,7 +190,7 @@ a:hover {
     background:    #000;
     color:         var(--gs-text-primary);
     font-family:   var(--gs-font-mono);
-    font-size:     13px;
+    font-size:     0.8125em;
     padding:       var(--gs-space-2);
     border-radius: 4px;
     border:        1px solid var(--gs-divider);
@@ -208,7 +217,7 @@ a:hover {
 .gs-table {
     width:           100%;
     border-collapse: collapse;
-    font-size:       14px;
+    font-size:       1em;
 }
 
 /* --- TelescopeSetup tables: align labels and values consistently --- */
@@ -220,7 +229,7 @@ a:hover {
 .ts-table th {
     width: 50%;
     color: var(--gs-text-secondary);
-    font-size: 13px;
+    font-size: 0.8125em;
     font-weight: 500;
     padding: 6px 12px;
     text-align: left;
@@ -236,7 +245,7 @@ a:hover {
 
 .gs-table th {
     color:          var(--gs-text-secondary);
-    font-size:      12px;
+    font-size:      0.75em;
     font-weight:    500;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -251,7 +260,7 @@ a:hover {
     border-bottom: 1px solid var(--gs-divider);
 }
 
-.gs-table td.gs-value { font-family: var(--gs-font-mono); font-size: 13px; }
+.gs-table td.gs-value { font-family: var(--gs-font-mono); font-size: 0.8125em; }
 
 .gs-table tbody tr:hover { background: var(--gs-bg-elevated); }
 
@@ -266,7 +275,7 @@ a:hover {
 
 .validation-message {
     color:     var(--gs-error);
-    font-size: 12px;
+    font-size: 0.75em;
 }
 
 /* --- Live / animated values -------------------------------- */
@@ -375,6 +384,12 @@ code {
     font-weight: 700;
 }
 
+/* Suppress Blazor's temporary focus ring on the home hero title (non-interactive heading) */
+h1.gs-home-title[tabindex="-1"]:focus,
+h1.gs-home-title[tabindex="-1"]:focus-visible {
+    outline: none !important;
+}
+
 .gs-home-bullets {
     list-style:  none;
     padding:     0;
@@ -428,7 +443,20 @@ code {
     color:        #fff;
 }
 
-.gs-home-footer {
+    /* Home links: remove default focus ring for pointer focus */
+    .gs-home-links a:focus {
+        outline: none;
+}
+
+/* Home links: explicit keyboard focus style */
+    .gs-home-links a:focus-visible {
+        outline: 2px solid var(--gs-accent-500);
+        outline-offset: 2px;
+        border-color: var(--gs-accent-300);
+        box-shadow: 0 0 0 3px rgba(var(--gs-accent-500-rgb), 0.25);
+}
+    
+    .gs-home-footer {
     position:    relative;
     z-index:     1;
     text-align:  center;

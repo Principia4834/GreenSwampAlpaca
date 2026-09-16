@@ -61,27 +61,27 @@ public static class GsTheme
             Default = new DefaultTypography
             {
                 FontFamily = ["Roboto", "Helvetica Neue", "Arial", "sans-serif"],
-                FontSize   = "0.875rem",
+                FontSize   = "0.875em",
                 FontWeight = "400",
                 LineHeight = "1.43",
                 LetterSpacing = "0.01em",
             },
-            H1 = new H1Typography { FontSize = "1.5rem",    FontWeight = "300", LineHeight = "1.2" },
-            H2 = new H2Typography { FontSize = "1.125rem",  FontWeight = "400", LineHeight = "1.3" },
-            H3 = new H3Typography { FontSize = "1rem",      FontWeight = "500", LineHeight = "1.3" },
-            H4 = new H4Typography { FontSize = "0.9375rem", FontWeight = "500", LineHeight = "1.4" },
-            H5 = new H5Typography { FontSize = "0.875rem",  FontWeight = "500", LineHeight = "1.4" },
-            H6 = new H6Typography { FontSize = "0.8125rem", FontWeight = "500", LineHeight = "1.4" },
-            Body1 = new Body1Typography { FontSize = "0.875rem",  LineHeight = "1.5" },
-            Body2 = new Body2Typography { FontSize = "0.8125rem", LineHeight = "1.43" },
+            H1 = new H1Typography { FontSize = "1.5em",    FontWeight = "300", LineHeight = "1.2" },
+            H2 = new H2Typography { FontSize = "1.125em",  FontWeight = "400", LineHeight = "1.3" },
+            H3 = new H3Typography { FontSize = "1em",      FontWeight = "500", LineHeight = "1.3" },
+            H4 = new H4Typography { FontSize = "0.9375em", FontWeight = "500", LineHeight = "1.4" },
+            H5 = new H5Typography { FontSize = "0.875em",  FontWeight = "500", LineHeight = "1.4" },
+            H6 = new H6Typography { FontSize = "0.8125em", FontWeight = "500", LineHeight = "1.4" },
+            Body1 = new Body1Typography { FontSize = "0.875em",  LineHeight = "1.5" },
+            Body2 = new Body2Typography { FontSize = "0.8125em", LineHeight = "1.43" },
             Button = new ButtonTypography
             {
-                FontSize      = "0.8125rem",
+                FontSize      = "0.8125em",
                 FontWeight    = "500",
                 TextTransform = "uppercase",
                 LetterSpacing = "0.06em",
             },
-            Caption = new CaptionTypography { FontSize = "0.75rem", LineHeight = "1.4" },
+            Caption = new CaptionTypography { FontSize = "0.75em", LineHeight = "1.4" },
         },
 
         LayoutProperties = new LayoutProperties

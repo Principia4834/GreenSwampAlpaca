@@ -60,11 +60,18 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public bool AutoStartBrowser { get; set; } = true;
 
         /// <summary>
+        /// Global UI font scaling factor applied by the server UI.
+        /// A value of 1.0 preserves the current default sizing.
+        /// </summary>
+        public double GlobalFontScale { get; set; } = 1.0;
+
+        /// <summary>
         /// Windows console startup visibility: StartNormally, StartMinimized, or NoConsole.
         /// Ignored on non-Windows platforms.
         /// </summary>
-        public string ConsoleDisplayDefault { get; set; } = "NoConsole";        /// <summary>Expose the OpenAPI / Swagger UI at /swagger.</summary>
+        public string ConsoleDisplayDefault { get; set; } = "NoConsole";
 
+        /// <summary>Expose the OpenAPI / Swagger UI at /swagger.</summary>
         public bool RunSwagger { get; set; } = true;
 
         // -- Authentication ----------------------------------------------------

@@ -1,13 +1,61 @@
-﻿@using GreenSwamp.Alpaca.Server.Theme
+﻿@using System.Globalization
+@using GreenSwamp.Alpaca.Server.Theme
+@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Settings.Services
 
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject IVersionedSettingsService SettingsService
 
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
+<MudLayout Style="@LayoutStyle">
     <MudMainContent Style="padding:0;">
         @Body
     </MudMainContent>
 </MudLayout>
+
+@code {
+    private const double DefaultGlobalFontScale = 1.0;
+    private const double MinGlobalFontScale = 0.75;
+    private const double MaxGlobalFontScale = 1.5;
+
+    private string LayoutStyle { get; set; } = BuildLayoutStyle(DefaultGlobalFontScale);
+
+    protected override void OnInitialized()
+    {
+        SettingsService.ServerConfigChanged += OnServerConfigChanged;
+        ApplyServerConfig(SettingsService.GetServerConfig());
+        base.OnInitialized();
+    }
+
+    private void ApplyServerConfig(ServerConfig config)
+    {
+        LayoutStyle = BuildLayoutStyle(config.GlobalFontScale);
+    }
+
+    private const double BaseFontSizePx = 14.0;
+
+    private static string BuildLayoutStyle(double fontScale)
+    {
+        var normalizedScale = Math.Clamp(fontScale, MinGlobalFontScale, MaxGlobalFontScale);
+        var effectiveFontSizePx = BaseFontSizePx * normalizedScale;
+        return string.Create(CultureInfo.InvariantCulture, $"font-size:{effectiveFontSizePx:0.##}px;--gs-global-font-scale:{normalizedScale:0.##};");
+    }
+
+    private void OnServerConfigChanged(object? sender, ServerConfig config)
+    {
+        _ = InvokeAsync(() =>
+        {
+            ApplyServerConfig(config);
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        SettingsService.ServerConfigChanged -= OnServerConfigChanged;
+    }
+}

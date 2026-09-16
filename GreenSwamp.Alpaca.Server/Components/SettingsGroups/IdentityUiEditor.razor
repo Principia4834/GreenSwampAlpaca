@@ -1,10 +1,21 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Global UI zoom level applied across the server UI." Placement="Placement.Right" Arrow="true">
+        <MudSelect T="int"
+                   Value="ZoomPercent"
+                   ValueChanged="OnZoomPercentChanged"
+                   Label="Zoom">
+            @foreach (var zoom in ZoomOptions)
+            {
+                <MudSelectItem T="int" Value="@zoom">@($"{zoom}%")</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Human-readable location shown in Alpaca discovery and the setup page." Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Config.Location"
-                      @bind-Value:after="NotifyChanged"
-                      Label="Location" Immediate="true" />
+                        @bind-Value:after="NotifyChanged"
+                        Label="Location" Immediate="true" />
     </MudTooltip>
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Open the default browser automatically when the server starts." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.AutoStartBrowser"
@@ -19,8 +30,35 @@
 </MudStack>
 
 @code {
+    private const int MinZoomPercent = 75;
+    private const int MaxZoomPercent = 150;
+    private const int ZoomStepPercent = 5;
+
     [Parameter] public ServerConfig Config { get; set; } = default!;
     [Parameter] public EventCallback OnChanged { get; set; }
+
+    private static IEnumerable<int> ZoomOptions => Enumerable.Range(0, ((MaxZoomPercent - MinZoomPercent) / ZoomStepPercent) + 1)
+        .Select(index => MinZoomPercent + (index * ZoomStepPercent));
+
+    private int ZoomPercent
+    {
+        get => NormalizeZoomPercent((int)Math.Round(Config.GlobalFontScale * 100.0));
+        set => Config.GlobalFontScale = NormalizeZoomPercent(value) / 100.0;
+    }
+
+    private async Task OnZoomPercentChanged(int value)
+    {
+        ZoomPercent = value;
+        await NotifyChanged();
+    }
+
+    private static int NormalizeZoomPercent(int value)
+    {
+        var clamped = Math.Clamp(value, MinZoomPercent, MaxZoomPercent);
+        var snapped = (int)Math.Round((clamped - MinZoomPercent) / (double)ZoomStepPercent) * ZoomStepPercent + MinZoomPercent;
+
+        return Math.Clamp(snapped, MinZoomPercent, MaxZoomPercent);
+    }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();
 }
