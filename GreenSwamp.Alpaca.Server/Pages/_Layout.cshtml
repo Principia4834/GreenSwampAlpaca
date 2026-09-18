@@ -35,26 +35,68 @@
     <script src="js/chartWindowInterop.js" asp-append-version="true"></script>
     <script src="js/gsChartBuffer.js" asp-append-version="true"></script>
     <script>
-        // Lazily injects Babylon.js CDN scripts on demand (telescope view only).
-        // Skips any script already present in the DOM to handle Blazor re-navigation.
-        window.ensureBabylonLoaded = async function () {
-            const urls = [
-                'https://cdn.babylonjs.com/babylon.js',
-                'https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js',
-                'https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js'
-            ];
-            for (const src of urls) {
-                if (!document.querySelector(`script[src="${src}"]`)) {
-                    await new Promise((resolve, reject) => {
-                        const s = document.createElement('script');
-                        s.src = src;
-                        s.onload = resolve;
-                        s.onerror = () => reject(new Error('Failed to load: ' + src));
-                        document.head.appendChild(s);
-                    });
+            // Lazily inject Babylon scripts once, and ensure all callers await the same load.
+            window._babylonLoadPromise = window._babylonLoadPromise || null;
+
+            window.ensureBabylonLoaded = function() {
+                if (window._babylonLoadPromise) {
+                    return window._babylonLoadPromise;
                 }
-            }
-        };
+
+                const urls = [
+                    '/lib/babylon/babylon.js',
+                    '/lib/babylon/materialsLibrary/babylonjs.materials.min.js',
+                    '/lib/babylon/loaders/babylonjs.loaders.min.js'
+                ];
+
+                const loadScript = (src) => new Promise((resolve, reject) => {
+                    let s = document.querySelector(`script[src="${src}"]`);
+
+                    if (!s) {
+                        s = document.createElement('script');
+                        s.src = src;
+                        s.async = false;
+                        s.dataset.gsBabylon = 'pending';
+                        document.head.appendChild(s);
+                    }
+
+                    if (s.dataset.gsBabylon === 'loaded') {
+                        resolve();
+                        return;
+                    }
+
+                    const onLoad = () => {
+                        s.dataset.gsBabylon = 'loaded';
+                        cleanup();
+                        resolve();
+                    };
+
+                    const onError = () => {
+                        cleanup();
+                        reject(new Error('Failed to load: ' + src));
+                    };
+
+                    const cleanup = () => {
+                        s.removeEventListener('load', onLoad);
+                        s.removeEventListener('error', onError);
+                    };
+
+                    s.addEventListener('load', onLoad, { once: true });
+                    s.addEventListener('error', onError, { once: true });
+                });
+
+                window._babylonLoadPromise = (async () => {
+                    for (const src of urls) {
+                        await loadScript(src);
+                    }
+
+                    if (!window.BABYLON || !window.BABYLON.Engine) {
+                        throw new Error('Babylon runtime loaded scripts but BABYLON global is unavailable.');
+                    }
+                })();
+
+                return window._babylonLoadPromise;
+            };
     </script>
 </body>
 </html>
