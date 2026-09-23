@@ -16,6 +16,7 @@
 
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 
 namespace GreenSwamp.Alpaca.Server.Models

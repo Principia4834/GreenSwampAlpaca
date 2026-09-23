@@ -5,6 +5,7 @@ using ASCOM.Tools;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.MountControl;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;

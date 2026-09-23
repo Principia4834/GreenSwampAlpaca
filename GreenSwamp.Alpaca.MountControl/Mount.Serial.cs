@@ -19,6 +19,7 @@ using GreenSwamp.Alpaca.Mount.Commands;
 using GreenSwamp.Alpaca.Mount.Simulator;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using GreenSwamp.Alpaca.Shared.Transport;
 using System.ComponentModel;

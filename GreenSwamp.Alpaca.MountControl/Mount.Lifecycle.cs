@@ -16,6 +16,7 @@
 
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using System.Diagnostics;
 using System.Reflection;

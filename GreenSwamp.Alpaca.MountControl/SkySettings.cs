@@ -29,6 +29,7 @@ using Handshake = System.IO.Ports.Handshake;
 using Parity = System.IO.Ports.Parity;
 using StopBits = System.IO.Ports.StopBits;
 using Range = GreenSwamp.Alpaca.Principles.Range;
+using GreenSwamp.Alpaca.Settings.Models;
 
 namespace GreenSwamp.Alpaca.MountControl
 {

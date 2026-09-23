@@ -1,5 +1,6 @@
 ﻿using ASCOM;
 using GreenSwamp.Alpaca.MountControl;
+using GreenSwamp.Alpaca.Settings.Models;
 
 namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 {

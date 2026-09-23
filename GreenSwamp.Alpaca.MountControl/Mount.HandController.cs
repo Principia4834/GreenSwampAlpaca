@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -24,6 +24,7 @@ using GreenSwamp.Alpaca.Mount.Simulator;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.MountControl.Pulses;
 using GreenSwamp.Alpaca.Principles;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using System.Diagnostics;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace GreenSwamp.Alpaca.MountControl
         /// Mirrors the former static SkyServer.HcMoves(), converted to instance-based.
         /// Anti-backlash and mode settings are read from <see cref="SkySettings"/>.
         /// </summary>
-        /// <param name="speed">HC speed (1–8)</param>
+        /// <param name="speed">HC speed (1â€“8)</param>
         /// <param name="direction">Direction of move</param>
         public void HcMoves(SlewSpeed speed, SlewDirection direction)
         {
@@ -118,7 +119,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
             _slewState = Math.Abs(change[0]) + Math.Abs(change[1]) > 0 ? SlewType.SlewHandpad : SlewType.SlewNone;
 
-            // Anti-backlash — Dec axis
+            // Anti-backlash â€” Dec axis
             long stepsNeededDec = 0;
             bool hcAntiDec = Settings.HcAntiDec;
             int decBacklash = Settings.DecBacklash;
@@ -145,7 +146,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
 
-            // Anti-backlash — RA axis
+            // Anti-backlash â€” RA axis
             long stepsNeededRa = 0;
             bool hcAntiRa = Settings.HcAntiRa;
             int raBacklash = Settings.RaBacklash;
@@ -443,7 +444,7 @@ namespace GreenSwamp.Alpaca.MountControl
         }
 
         /// <summary>
-        /// Synchronous pulse loop — fires one pulse per iteration until the token is cancelled.
+        /// Synchronous pulse loop â€” fires one pulse per iteration until the token is cancelled.
         /// Returns 0 on clean cancellation, 2 on invalid settings, 3 on error.
         /// </summary>
         private int HcPulseMove(HcPulseGuide hcPulseGuide, GuideDirection pulseDirection, CancellationToken token)

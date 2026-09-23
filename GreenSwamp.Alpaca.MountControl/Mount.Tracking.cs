@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+ï»¿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -24,6 +24,7 @@ using GreenSwamp.Alpaca.Mount.Simulator;
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.MountControl;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using System.Reflection;
 using Range = GreenSwamp.Alpaca.Principles.Range;
@@ -34,9 +35,9 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Represents a per-device instance of a telescope mount controller, implementing the
     /// <see cref="IMountController"/> interface for both SkyWatcher hardware and the built-in simulator.
     /// <para>
-    /// Each <see cref="Mount"/> owns its full lifecycle — serial/UDP connection, hardware command
+    /// Each <see cref="Mount"/> owns its full lifecycle â€” serial/UDP connection, hardware command
     /// queues (<see cref="SkyQueue"/> / <see cref="SimQueue"/>), coordinate pipeline,
-    /// tracking timers, slew controller, and all associated cancellation tokens — so that multiple
+    /// tracking timers, slew controller, and all associated cancellation tokens â€” so that multiple
     /// physical devices can operate concurrently without shared state.
     /// </para>
     /// <para>
@@ -54,7 +55,7 @@ namespace GreenSwamp.Alpaca.MountControl
     ///   <item><description>Enforces meridian and horizon axis limits and reacts with configurable
     ///   stop-tracking or auto-park responses.</description></item>
     ///   <item><description>Exposes ASCOM-compliant properties and bridge methods consumed by
-    ///   <c>Telescope.cs</c> and the Blazor UI without routing through the static <c>SkyServer</c> façade.</description></item>
+    ///   <c>Telescope.cs</c> and the Blazor UI without routing through the static <c>SkyServer</c> faÃ§ade.</description></item>
     /// </list>
     /// </para>
     /// <para>

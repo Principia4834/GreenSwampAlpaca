@@ -18,6 +18,7 @@ using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Shared;
 using System.Reflection;
 using Range = GreenSwamp.Alpaca.Principles.Range;
+using GreenSwamp.Alpaca.Settings.Models;
 
 namespace GreenSwamp.Alpaca.MountControl
 {

@@ -15,6 +15,7 @@
  */
 
 using GreenSwamp.Alpaca.Mount.SkyWatcher;
+using GreenSwamp.Alpaca.Settings.Models;
 
 namespace GreenSwamp.Alpaca.MountControl
 {

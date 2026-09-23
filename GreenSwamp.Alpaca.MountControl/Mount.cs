@@ -21,6 +21,7 @@ using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.MountControl.Interfaces;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.MountControl;
+using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using GreenSwamp.Alpaca.Shared.Transport;
 using Newtonsoft.Json.Linq;
