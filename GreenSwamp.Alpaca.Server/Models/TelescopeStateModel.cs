@@ -122,6 +122,8 @@ namespace GreenSwamp.Alpaca.Server.Models
 
         // 3D view configuration (read once at scene init; not updated on every tick)
         public double SiteLatitude { get; set; }
+        public double SiteLongitude { get; set; }
+        public double SiteElevation { get; set; }
         public AlignmentMode AlignmentMode { get; set; }
         public MountType MountType { get; set; }
 
@@ -179,6 +181,8 @@ namespace GreenSwamp.Alpaca.Server.Models
             StepsWormPerRevolution = new [] { 0.0, 0.0 };
             StepsTimeFreq = new [] { 0L, 0L };
             SiteLatitude = double.NaN;
+            SiteLongitude = double.NaN;
+            SiteElevation = double.NaN;
             AlignmentMode = AlignmentMode.GermanPolar;
             MountType     = MountType.Simulator;
     }

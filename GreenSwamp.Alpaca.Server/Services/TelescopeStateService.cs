@@ -150,7 +150,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     AppAxisX = mount.AppAxisX,
                     AppAxisY = mount.AppAxisY,
                     AxisSteps = mount.Steps ?? new double[2],
-                    TrackingRate = DriveRate.Sidereal,
+                    TrackingRate = mount.Settings.TrackingRate,
                     IsPulseGuidingRa = mount.IsPulseGuidingRa,
                     IsPulseGuidingDec = mount.IsPulseGuidingDec,
                     SlewState = mount.SlewState,
@@ -180,6 +180,8 @@ namespace GreenSwamp.Alpaca.Server.Services
                     MountVersion = mount.MountVersion,
                     Capabilities = mount.Capabilities,
                     SiteLatitude  = mount.Settings.Latitude,
+                    SiteLongitude = mount.Settings.Longitude,
+                    SiteElevation = mount.Settings.Elevation,
                     AlignmentMode = mount.Settings.AlignmentMode,
                     MountType     = mount.Settings.Mount
                 };
