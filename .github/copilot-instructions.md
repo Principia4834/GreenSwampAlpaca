@@ -14,6 +14,7 @@
 - The workspace is Windows/PowerShell-only. Flag any tool usage that looks Unix-like (e.g., grep-named search tools) even when it's an internal IDE tool rather than an actual shell command. Continue defaulting to PowerShell syntax for all real terminal commands, and briefly clarify when a non-terminal tool has a Unix-sounding name.
 - Workspace commands and shell examples must assume Windows/PowerShell syntax; avoid Unix-style shell patterns/flags unless explicitly requested.
 - When Andy says a file view is outdated, re-read the exact workspace file and cite current line numbers before concluding.
+- Once a spec/requirements doc plus the single closest existing code pattern have been read, stop exploring and implement — do not search for corroborating precedent unless the build fails or a specific ambiguity remains
 
 ## SVG Icon Compositions
 - Revise SVG icon compositions to avoid additive-looking overlap.

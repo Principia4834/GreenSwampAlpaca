@@ -18,6 +18,7 @@ using MudBlazor.Services;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO.Compression;
+using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -256,8 +257,17 @@ namespace GreenSwamp.Alpaca.Server
             // Register FloatingWindowManager for DI injection
             builder.Services.AddScoped<FloatingWindowManager>();
 
-            // SignalR is used by ChartHub for real-time chart data streaming
-            builder.Services.AddSignalR();
+            // SignalR is used by ChartHub for real-time chart data streaming and by
+            // TelescopeStateHub for full telescope-state broadcasts. JsonStringEnumConverter
+            // is registered so enum fields (PointingState, DriveRate, SlewType, MountType,
+            // AlignmentMode) serialize as string member names, not integer ordinals — per the
+            // TelescopeState SignalR spec §11.3.
+            builder.Services.AddSignalR()
+                .AddJsonProtocol(o =>
+                {
+                    o.PayloadSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                    o.PayloadSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
+                });
 
             // ApexCharts Blazor wrapper service (manages global options and chart instances)
             builder.Services.AddApexCharts();
@@ -327,6 +337,10 @@ namespace GreenSwamp.Alpaca.Server
             // Register TelescopeStateService for real-time state updates
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateService>();
             Logger.LogInformation("TelescopeStateService registered for real-time state updates");
+
+            // TelescopeStateBroadcastService is singleton so its TelescopeStateService subscription
+            // and per-connection keep-alive timers persist across hub connection lifetimes.
+            builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeStateBroadcastService>();
 
             // Register UnifiedDeviceRegistry as singleton for DI injection
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry>();
@@ -578,6 +592,9 @@ namespace GreenSwamp.Alpaca.Server
             // Chart data streaming endpoint
             app.MapHub<ChartHub>("/charthub");
 
+            // Telescope state streaming endpoint (full TelescopeStateModel broadcast per device)
+            app.MapHub<GreenSwamp.Alpaca.Server.Hubs.TelescopeStateHub>("/telescopestatehub");
+
             app.MapControllers();
 
             app.MapFallbackToPage("/_Host");
@@ -589,6 +606,11 @@ namespace GreenSwamp.Alpaca.Server
             // not lazily on first hub connection. Safe: it is a singleton registered above.
             _ = app.Services.GetRequiredService<ChartDataService>();
             Logger.LogInformation("ChartDataService initialized — MonitorQueue subscriptions active.");
+
+            // Eagerly resolve TelescopeStateBroadcastService so its TelescopeStateService
+            // subscription is active from startup, not lazily on first hub connection.
+            _ = app.Services.GetRequiredService<GreenSwamp.Alpaca.Server.Services.TelescopeStateBroadcastService>();
+            Logger.LogInformation("TelescopeStateBroadcastService initialized — telescope state broadcasting active.");
             if (startupConfig.AutoStartBrowser && canLaunchBrowser)
             {
                 app.Lifetime.ApplicationStarted.Register(() =>

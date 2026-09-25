@@ -115,12 +115,6 @@ namespace GreenSwamp.Alpaca.MountControl
         CanAdvancedCmdSupport
     }
 
-    //public enum MountType
-    //{
-    //    Simulator,
-    //    SkyWatcher
-    //}
-
     public enum ErrorCode
     {
         ErrMount = 1,

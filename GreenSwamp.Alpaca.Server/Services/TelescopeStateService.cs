@@ -81,7 +81,8 @@ namespace GreenSwamp.Alpaca.Server.Services
                 await Task.Delay(250, ct).ConfigureAwait(false);
 
                 var active = _activeViews.GetActiveDeviceNumbers(TimeSpan.FromSeconds(10));
-                if (active.Count == 0) continue;
+                if (active.Count == 0)
+                    continue;
 
                 var next = new Dictionary<int, TelescopeStateModel>(active.Count);
                 foreach (var dn in active)
