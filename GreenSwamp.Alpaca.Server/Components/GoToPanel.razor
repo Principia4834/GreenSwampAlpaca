@@ -3,6 +3,7 @@
 @inject ISnackbar Snackbar
 @inject TelescopeStateService StateService
 @inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 
 <fieldset disabled="@(!IsEnabled)" style="border:none;padding:0;margin:0">
 <MudStack Spacing="3" Class="mt-1">
@@ -56,6 +57,55 @@
                     <MudNumericField T="double" @bind-Value="_altFloat"
                                     Label="Alt (°)" Format="F4"
                                     Min="@_horizonLimit" Max="90.0" Immediate="true" />
+                }
+            }
+            else if (_entryMode == EntryMode.Smart)
+            {
+                @if (_coordMode == CoordMode.RaDec)
+                {
+                    <MudTextField T="string" Value="_raSmart"
+                                  ValueChanged="@(v => OnRaSmartChanged(v))"
+                                  Disabled="@(!IsEnabled)"
+                                  Error="@(!string.IsNullOrEmpty(_raSmartError))"
+                                  ErrorText="@_raSmartError"
+                                  Label="RA (SMART)"
+                                  InputId="goto-smart-ra"
+                                  Placeholder="23 15 12.55, 23h1512.55s"
+                                  Immediate="true"
+                                  OnBlur="@(() => OnRaSmartBlur())" />
+                    <MudTextField T="string" Value="_decSmart"
+                                  ValueChanged="@(v => OnDecSmartChanged(v))"
+                                  Disabled="@(!IsEnabled)"
+                                  Error="@(!string.IsNullOrEmpty(_decSmartError))"
+                                  ErrorText="@_decSmartError"
+                                  Label="Dec (SMART)"
+                                  InputId="goto-smart-dec"
+                                  Placeholder="+56 19 25.57, -56:19:25.34"
+                                  Immediate="true"
+                                  OnBlur="@(() => OnDecSmartBlur())" />
+                }
+                else
+                {
+                    <MudTextField T="string" Value="_azSmart"
+                                  ValueChanged="@(v => OnAzSmartChanged(v))"
+                                  Disabled="@(!IsEnabled)"
+                                  Error="@(!string.IsNullOrEmpty(_azSmartError))"
+                                  ErrorText="@_azSmartError"
+                                  Label="Az (SMART)"
+                                  InputId="goto-smart-az"
+                                  Placeholder="23° 24’ 54.23”, 23:24:54.23"
+                                  Immediate="true"
+                                  OnBlur="@(() => OnAzSmartBlur())" />
+                    <MudTextField T="string" Value="_altSmart"
+                                  ValueChanged="@(v => OnAltSmartChanged(v))"
+                                  Disabled="@(!IsEnabled)"
+                                  Error="@(!string.IsNullOrEmpty(_altSmartError))"
+                                  ErrorText="@_altSmartError"
+                                  Label="Alt (SMART)"
+                                  InputId="goto-smart-alt"
+                                  Placeholder="-12° 24m 54.23s"
+                                  Immediate="true"
+                                  OnBlur="@(() => OnAltSmartBlur())" />
                 }
             }
             else
@@ -132,6 +182,7 @@
                         Disabled="@(!IsEnabled)">
             <MudToggleItem Value="EntryMode.HmsDms" Text="HMS / DMS" />
             <MudToggleItem Value="EntryMode.Float" Text="Float" />
+            <MudToggleItem Value="EntryMode.Smart" Text="SMART" />
         </MudToggleGroup>
     </MudStack>
 
