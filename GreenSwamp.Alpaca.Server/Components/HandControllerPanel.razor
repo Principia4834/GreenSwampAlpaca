@@ -11,41 +11,65 @@
 <div>
     <MudStack Spacing="3">
         <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
-            @* 3x3 Direction Grid *@
-            <div class="hc-grid" @ref="_gridElement">
-                @* Row 1: NW, N, NE *@
-                <MudButton class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="North-West" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.NorthWest" />
-                </MudButton>
-                <MudButton class="@(GetButtonClass("North"))" data-hc-dir="North" title="North" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.North" />
-                </MudButton>
-                <MudButton class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="North-East" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.NorthEast" />
-                </MudButton>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                @* 3x3 Direction Grid *@
+                <div class="hc-grid" @ref="_gridElement">
+                    @* Row 1: NW, N, NE *@
+                    <MudButton class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="North-West" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.NorthWest" />
+                    </MudButton>
+                    <MudButton class="@(GetButtonClass("North"))" data-hc-dir="North" title="North" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.North" />
+                    </MudButton>
+                    <MudButton class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="North-East" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.NorthEast" />
+                    </MudButton>
 
-                @* Row 2: W, Stop, E *@
-                <MudButton class="@(GetButtonClass("West"))" data-hc-dir="West" title="West" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.West" />
-                </MudButton>
-                <MudButton class="hc-btn hc-stop" data-hc-stop="true" title="Stop" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" Size="Size.Large" />
-                </MudButton>
-                <MudButton class="@(GetButtonClass("East"))" data-hc-dir="East" title="East" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.East" />
-                </MudButton>
+                    @* Row 2: W, Stop, E *@
+                    <MudButton class="@(GetButtonClass("West"))" data-hc-dir="West" title="West" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.West" />
+                    </MudButton>
+                    <MudButton class="hc-btn hc-stop" data-hc-stop="true" title="Stop" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" Size="Size.Large" />
+                    </MudButton>
+                    <MudButton class="@(GetButtonClass("East"))" data-hc-dir="East" title="East" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.East" />
+                    </MudButton>
 
-                @* Row 3: SW, S, SE *@
-                <MudButton class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="South-West" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.SouthWest" />
-                </MudButton>
-                <MudButton class="@(GetButtonClass("South"))" data-hc-dir="South" title="South" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.South" />
-                </MudButton>
-                <MudButton class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="South-East" disabled="@(!IsEnabled)">
-                    <MudIcon Icon="@Icons.Material.Filled.SouthEast" />
-                </MudButton>
-            </div>
+                    @* Row 3: SW, S, SE *@
+                    <MudButton class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="South-West" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.SouthWest" />
+                    </MudButton>
+                    <MudButton class="@(GetButtonClass("South"))" data-hc-dir="South" title="South" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.South" />
+                    </MudButton>
+                    <MudButton class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="South-East" disabled="@(!IsEnabled)">
+                        <MudIcon Icon="@Icons.Material.Filled.SouthEast" />
+                    </MudButton>
+                </div>
+
+                @* Speed Slider — vertical, beside direction grid *@
+                <MudStack Class="hc-speed-column"
+                          Spacing="0"
+                          AlignItems="AlignItems.Center"
+                          Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.caption" Align="Align.Center" Style="width: 100%;">Speed</MudText>
+                    <div class="hc-speed-slider-slot">
+                        <MudSlider @bind-Value="_speed"
+                                   @bind-Value:after="OnSpeedChanged"
+                                   T="int"
+                                   Min="1"
+                                   Max="8"
+                                   Step="1"
+                                   TickMarks="true"
+                                   Size="Size.Medium"
+                                   Vertical="true"
+                                   Disabled="@(!IsEnabled)"
+                                   Class="hc-speed-slider" />
+                    </div>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Style="width: 100%;">@_speed</MudText>
+                </MudStack>
+            </MudStack>
 
             @* Options panel — Flip and Anti-Backlash *@
             <MudStack Spacing="1">
@@ -63,15 +87,6 @@
             </MudStack>
         </MudStack>
 
-        @* Speed Slider — horizontal, own row *@
-        <MudSlider @bind-Value="_speed"
-                   @bind-Value:after="OnSpeedChanged"
-                   T="int"
-                   Min="1"
-                   Max="8"
-                   Step="1"
-                   TickMarks="true"
-                   Disabled="@(!IsEnabled)">Speed: @_speed</MudSlider>
 
         @* Mode Selector + Pulse Guides gear button on one row *@
         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
