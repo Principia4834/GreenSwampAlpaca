@@ -53,7 +53,7 @@
                           Spacing="0"
                           AlignItems="AlignItems.Center"
                           Justify="Justify.SpaceBetween">
-                    <MudText Typo="Typo.caption" Align="Align.Center" Style="width: 100%;">Speed</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="hc-speed-label">Speed</MudText>
                     <div class="hc-speed-slider-slot">
                         <MudSlider @bind-Value="_speed"
                                    @bind-Value:after="OnSpeedChanged"
@@ -67,7 +67,7 @@
                                    Disabled="@(!IsEnabled)"
                                    Class="hc-speed-slider" />
                     </div>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Style="width: 100%;">@_speed</MudText>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="hc-speed-value">@_speed</MudText>
                 </MudStack>
             </MudStack>
 

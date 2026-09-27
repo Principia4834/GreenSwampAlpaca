@@ -15,7 +15,6 @@ namespace GreenSwamp.Alpaca.Server.Components
         [Parameter] public bool IsEnabled { get; set; }
 
         private enum CoordMode { RaDec, AltAz }
-        private enum EntryMode { HmsDms, Float, Smart }
 
         private GreenSwamp.Alpaca.MountControl.Mount? _mount;
         private bool _isMountRunning;
@@ -24,25 +23,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         private bool _canSync;
 
         private CoordMode _coordMode = CoordMode.RaDec;
-        private EntryMode _entryMode = EntryMode.Smart;
 
-        // DMS / HMS backing fields
-        private int _raH, _raM;
-        private double _raS;
-        private int _decD, _decM;
-        private double _decS;
-        private int _azD, _azM;
-        private double _azS;
-        private int _altD, _altM;
-        private double _altS;
-
-        // Float backing fields
-        private double _raFloat;
-        private double _decFloat;
-        private double _azFloat;
-        private double _altFloat;
-
-        // Smart free-text backing fields
         private string _raSmart = string.Empty;
         private string _decSmart = string.Empty;
         private string _azSmart = string.Empty;
@@ -62,65 +43,6 @@ namespace GreenSwamp.Alpaca.Server.Components
             _canSync = _mount?.Settings.CanSync ?? false;
         }
 
-        /// <summary>Converts between HMS/DMS, float and SMART representations when the entry mode changes.</summary>
-        private void OnEntryModeChanged(EntryMode newMode)
-        {
-            if (_entryMode == newMode) return;
-
-            if (_coordMode == CoordMode.RaDec)
-            {
-                if (newMode == EntryMode.Float)
-                {
-                    if (!TryGetRaDecCoordinates(out var ra, out var dec, out var error))
-                    {
-                        Snackbar.Add(error, Severity.Warning);
-                        return;
-                    }
-
-                    _raFloat = ra;
-                    _decFloat = dec;
-                }
-                else if (newMode == EntryMode.HmsDms)
-                {
-                    (_raH, _raM, _raS) = HoursToHms(_raFloat);
-                    (_decD, _decM, _decS) = DegsToDegs(_decFloat);
-                }
-                else
-                {
-                    _raSmart = FormatRaSmart(_raFloat);
-                    _decSmart = FormatAngleSmart(_decFloat);
-                }
-            }
-            else
-            {
-                if (newMode == EntryMode.Float)
-                {
-                    if (!TryGetAltAzCoordinates(out var az, out var alt, out var error))
-                    {
-                        Snackbar.Add(error, Severity.Warning);
-                        return;
-                    }
-
-                    _azFloat = az;
-                    _altFloat = alt;
-                }
-                else if (newMode == EntryMode.HmsDms)
-                {
-                    (_azD, _azM, _azS) = DegsToDegs(_azFloat);
-                    (_altD, _altM, _altS) = DegsToDegs(_altFloat);
-                }
-                else
-                {
-                    _azSmart = FormatAngleSmart(_azFloat);
-                    _altSmart = FormatAngleSmart(_altFloat);
-                }
-            }
-
-            _entryMode = newMode;
-        }
-
-        /// <summary>Commands the mount to slew to the entered coordinates.</summary>
-        /// <summary>Shows a confirmation dialog then commands the mount to slew to the entered coordinates.</summary>
         private async Task OnGoTo()
         {
             _isMountRunning = _mount?.IsMountRunning ?? false;
@@ -211,20 +133,10 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             var state = StateService.GetCurrentState(DeviceNumber);
 
-            (_raH, _raM, _raS) = HoursToHms(state.RightAscension);
-            (_decD, _decM, _decS) = DegsToDegs(state.Declination);
-            (_azD, _azM, _azS) = DegsToDegs(state.Azimuth);
-            (_altD, _altM, _altS) = DegsToDegs(state.Altitude);
-
-            _raFloat = state.RightAscension;
-            _decFloat = state.Declination;
-            _azFloat = state.Azimuth;
-            _altFloat = state.Altitude;
-
-            _raSmart = FormatRaSmart(_raFloat);
-            _decSmart = FormatAngleSmart(_decFloat);
-            _azSmart = FormatAngleSmart(_azFloat);
-            _altSmart = FormatAngleSmart(_altFloat);
+            _raSmart = FormatRaSmart(state.RightAscension);
+            _decSmart = FormatAngleSmart(state.Declination);
+            _azSmart = FormatAngleSmart(state.Azimuth);
+            _altSmart = FormatAngleSmart(state.Altitude);
 
             _raSmartError = null;
             _decSmartError = null;
@@ -294,80 +206,13 @@ namespace GreenSwamp.Alpaca.Server.Components
             }
         }
 
-        // -- Coordinate conversion helpers ---------------------------------------
-
-        private static double HmsToHours(int h, int m, double s) =>
-            h + m / 60.0 + s / 3600.0;
-
-        private static (int h, int m, double s) HoursToHms(double hours)
-        {
-            hours = Math.Max(0.0, hours);
-            var h = (int)hours;
-            var rem = (hours - h) * 60.0;
-            var m = (int)rem;
-            var s = (rem - m) * 60.0;
-            return (h, m, s);
-        }
-
-        /// <summary>
-        /// Converts DMS to decimal degrees. The sign is carried in <paramref name="d"/>;
-        /// minutes and seconds are always positive. E.g. d=-45, m=30, s=0 → -45.5°.
-        /// </summary>
-        private static double DmsToDegs(int d, int m, double s)
-        {
-            var neg = d < 0;
-            var total = Math.Abs(d) + m / 60.0 + s / 3600.0;
-            return neg ? -total : total;
-        }
-
-        private static (int d, int m, double s) DegsToDegs(double degrees)
-        {
-            var neg = degrees < 0;
-            degrees = Math.Abs(degrees);
-            var d = (int)degrees;
-            var rem = (degrees - d) * 60.0;
-            var m = (int)rem;
-            var s = (rem - m) * 60.0;
-            return (neg ? -d : d, m, s);
-        }
-
         private bool TryGetRaDecCoordinates(out double ra, out double dec, out string error)
         {
             ra = 0;
             dec = 0;
             error = string.Empty;
-
-            switch (_entryMode)
-            {
-                case EntryMode.Float:
-                    ra = _raFloat;
-                    dec = _decFloat;
-                    break;
-                case EntryMode.HmsDms:
-                    ra = HmsToHours(_raH, _raM, _raS);
-                    dec = DmsToDegs(_decD, _decM, _decS);
-                    break;
-                case EntryMode.Smart:
-                    if (!TryParseSmartRa(_raSmart, out ra, out error)) return false;
-                    if (!TryParseSmartAngle(_decSmart, out dec, out error)) return false;
-                    break;
-                default:
-                    error = "Unknown entry mode.";
-                    return false;
-            }
-
-            if (ra < 0 || ra >= 24)
-            {
-                error = "RA must be in the range [0..24).";
-                return false;
-            }
-
-            if (dec < -90 || dec > 90)
-            {
-                error = "Declination must be in the range [-90..90].";
-                return false;
-            }
-
+            if (!TryParseSmartRa(_raSmart, out ra, out error)) return false;
+            if (!TryParseSmartAngle(_decSmart, out dec, out error)) return false;
             return true;
         }
 
@@ -376,52 +221,30 @@ namespace GreenSwamp.Alpaca.Server.Components
             az = 0;
             alt = 0;
             error = string.Empty;
-
-            switch (_entryMode)
-            {
-                case EntryMode.Float:
-                    az = _azFloat;
-                    alt = _altFloat;
-                    break;
-                case EntryMode.HmsDms:
-                    az = DmsToDegs(_azD, _azM, _azS);
-                    alt = DmsToDegs(_altD, _altM, _altS);
-                    break;
-                case EntryMode.Smart:
-                    if (!TryParseSmartAngle(_azSmart, out az, out error)) return false;
-                    if (!TryParseSmartAngle(_altSmart, out alt, out error)) return false;
-                    break;
-                default:
-                    error = "Unknown entry mode.";
-                    return false;
-            }
-
-            if (az < 0 || az > 360)
-            {
-                error = "Azimuth must be in the range [0..360].";
-                return false;
-            }
-
-            if (alt < -90 || alt > 90)
-            {
-                error = "Altitude must be in the range [-90..90].";
-                return false;
-            }
-
+            if (!TryParseSmartAngle(_azSmart, out az, out error)) return false;
+            if (!TryParseSmartAngle(_altSmart, out alt, out error)) return false;
             return true;
         }
 
         private static string FormatRaSmart(double hours)
         {
-            var (h, m, s) = HoursToHms(hours);
+            hours = Math.Max(0.0, hours);
+            var h = (int)hours;
+            var rem = (hours - h) * 60.0;
+            var m = (int)rem;
+            var s = (rem - m) * 60.0;
             return $"{h:00}h {m:00}m {s:00.##}s";
         }
 
         private static string FormatAngleSmart(double degrees)
         {
             var sign = degrees < 0 ? "-" : "+";
-            var (d, m, s) = DegsToDegs(Math.Abs(degrees));
-            return $"{sign}{Math.Abs(d):00}° {m:00}′ {s:00.##}″";
+            degrees = Math.Abs(degrees);
+            var d = (int)degrees;
+            var rem = (degrees - d) * 60.0;
+            var m = (int)rem;
+            var s = (rem - m) * 60.0;
+            return $"{sign}{d:00}° {m:00}′ {s:00.##}″";
         }
 
         private static bool TryParseSmartRa(string input, out double hours, out string error)

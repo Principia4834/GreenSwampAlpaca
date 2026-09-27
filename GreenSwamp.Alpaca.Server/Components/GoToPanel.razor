@@ -35,154 +35,62 @@
 
         @* Right: coordinate entry fields *@
         <MudStack Spacing="2" Style="min-width:320px">
-            @if (_entryMode == EntryMode.Float)
+            @if (_coordMode == CoordMode.RaDec)
             {
-                @if (_coordMode == CoordMode.RaDec)
-                {
-                    <MudNumericField T="double" @bind-Value="_raFloat"
-                                    Disabled="@(!IsEnabled)"
-                                    Label="RA (h)" Format="F4"
-                                    Min="0.0" Max="23.9999" Immediate="true" />
-                    <MudNumericField T="double" @bind-Value="_decFloat"
-                                    Disabled="@(!IsEnabled)"
-                                    Label="Dec (°)" Format="F4"
-                                    Min="-90.0" Max="90.0" Immediate="true" />
-                }
-                else
-                {
-                    <MudNumericField T="double" @bind-Value="_azFloat"
-                                    Disabled="@(!IsEnabled)"
-                                    Label="Az (°)" Format="F4"
-                                    Min="0.0" Max="359.999" Immediate="true" />
-                    <MudNumericField T="double" @bind-Value="_altFloat"
-                                    Label="Alt (°)" Format="F4"
-                                    Min="@_horizonLimit" Max="90.0" Immediate="true" />
-                }
-            }
-            else if (_entryMode == EntryMode.Smart)
-            {
-                @if (_coordMode == CoordMode.RaDec)
-                {
-                    <MudTextField T="string" Value="_raSmart"
-                                  ValueChanged="@(v => OnRaSmartChanged(v))"
-                                  Disabled="@(!IsEnabled)"
-                                  Error="@(!string.IsNullOrEmpty(_raSmartError))"
-                                  ErrorText="@_raSmartError"
-                                  Label="RA (SMART)"
-                                  InputId="goto-smart-ra"
-                                  Placeholder="23 15 12.55, 23h1512.55s"
-                                  Immediate="true"
-                                  OnBlur="@(() => OnRaSmartBlur())" />
-                    <MudTextField T="string" Value="_decSmart"
-                                  ValueChanged="@(v => OnDecSmartChanged(v))"
-                                  Disabled="@(!IsEnabled)"
-                                  Error="@(!string.IsNullOrEmpty(_decSmartError))"
-                                  ErrorText="@_decSmartError"
-                                  Label="Dec (SMART)"
-                                  InputId="goto-smart-dec"
-                                  Placeholder="+56 19 25.57, -56:19:25.34"
-                                  Immediate="true"
-                                  OnBlur="@(() => OnDecSmartBlur())" />
-                }
-                else
-                {
-                    <MudTextField T="string" Value="_azSmart"
-                                  ValueChanged="@(v => OnAzSmartChanged(v))"
-                                  Disabled="@(!IsEnabled)"
-                                  Error="@(!string.IsNullOrEmpty(_azSmartError))"
-                                  ErrorText="@_azSmartError"
-                                  Label="Az (SMART)"
-                                  InputId="goto-smart-az"
-                                  Placeholder="23° 24’ 54.23”, 23:24:54.23"
-                                  Immediate="true"
-                                  OnBlur="@(() => OnAzSmartBlur())" />
-                    <MudTextField T="string" Value="_altSmart"
-                                  ValueChanged="@(v => OnAltSmartChanged(v))"
-                                  Disabled="@(!IsEnabled)"
-                                  Error="@(!string.IsNullOrEmpty(_altSmartError))"
-                                  ErrorText="@_altSmartError"
-                                  Label="Alt (SMART)"
-                                  InputId="goto-smart-alt"
-                                  Placeholder="-12° 24m 54.23s"
-                                  Immediate="true"
-                                  OnBlur="@(() => OnAltSmartBlur())" />
-                }
+                <MudTextField T="string" Value="_raSmart"
+                              ValueChanged="@(v => OnRaSmartChanged(v))"
+                              Disabled="@(!IsEnabled)"
+                              Error="@(!string.IsNullOrEmpty(_raSmartError))"
+                              ErrorText="@_raSmartError"
+                              Label="RA (SMART)"
+                              InputId="goto-smart-ra"
+                              Placeholder="23 15 12.55, 23.75"
+                              Immediate="true"
+                              OnBlur="@(() => OnRaSmartBlur())" />
+                <MudTextField T="string" Value="_decSmart"
+                              ValueChanged="@(v => OnDecSmartChanged(v))"
+                              Disabled="@(!IsEnabled)"
+                              Error="@(!string.IsNullOrEmpty(_decSmartError))"
+                              ErrorText="@_decSmartError"
+                              Label="Dec (SMART)"
+                              InputId="goto-smart-dec"
+                              Placeholder="+56 19 25.57, -56.32"
+                              Immediate="true"
+                              OnBlur="@(() => OnDecSmartBlur())" />
             }
             else
             {
-                @if (_coordMode == CoordMode.RaDec)
-                {
-                    @* RA: hours [0..23], minutes [0..59], seconds [0..59.99] *@
-                    <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
-                        <MudNumericField T="int" @bind-Value="_raH" Label="RA hours"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0" Max="23" Immediate="true" Style="width:80px" />
-                        <MudNumericField T="int" @bind-Value="_raM" Label="minutes"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
-                        <MudNumericField T="double" @bind-Value="_raS" Label="seconds"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
-                    </MudStack>
-                    @* Dec: degrees [-90..90], minutes [0..59], seconds [0..59.99] *@
-                    <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
-                        <MudNumericField T="int" @bind-Value="_decD" Label="Dec degrees"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="-90" Max="90" Immediate="true" Style="width:80px" />
-                        <MudNumericField T="int" @bind-Value="_decM" Label="minutes"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
-                        <MudNumericField T="double" @bind-Value="_decS" Label="seconds"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
-                    </MudStack>
-                }
-                else
-                {
-                    @* Az: degrees [0..359], minutes [0..59], seconds [0..59.99] *@
-                    <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
-                        <MudNumericField T="int" @bind-Value="_azD" Label="Az degrees"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0" Max="359" Immediate="true" Style="width:80px" />
-                        <MudNumericField T="int" @bind-Value="_azM" Label="minutes"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
-                        <MudNumericField T="double" @bind-Value="_azS" Label="seconds"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
-                    </MudStack>
-                    @* Alt: degrees [HorizonLimit..90], minutes [0..59], seconds [0..59.99] *@
-                    <MudStack Row="true" AlignItems="AlignItems.End" Spacing="1">
-                        <MudNumericField T="int" @bind-Value="_altD" Label="Alt degrees"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="@_altDMin" Max="90" Immediate="true" Style="width:80px" />
-                        <MudNumericField T="int" @bind-Value="_altM" Label="minutes"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0" Max="59" Immediate="true" Style="width:68px" />
-                        <MudNumericField T="double" @bind-Value="_altS" Label="seconds"
-                                    Disabled="@(!IsEnabled)"
-                                    Min="0.0" Max="59.99" Format="F2" Immediate="true" Style="width:80px" />
-                    </MudStack>
-                }
+                <MudTextField T="string" Value="_azSmart"
+                              ValueChanged="@(v => OnAzSmartChanged(v))"
+                              Disabled="@(!IsEnabled)"
+                              Error="@(!string.IsNullOrEmpty(_azSmartError))"
+                              ErrorText="@_azSmartError"
+                              Label="Az (SMART)"
+                              InputId="goto-smart-az"
+                              Placeholder="23° 24’ 54.23”, 23.4"
+                              Immediate="true"
+                              OnBlur="@(() => OnAzSmartBlur())" />
+                <MudTextField T="string" Value="_altSmart"
+                              ValueChanged="@(v => OnAltSmartChanged(v))"
+                              Disabled="@(!IsEnabled)"
+                              Error="@(!string.IsNullOrEmpty(_altSmartError))"
+                              ErrorText="@_altSmartError"
+                              Label="Alt (SMART)"
+                              InputId="goto-smart-alt"
+                              Placeholder="-12° 24m 54.23s, -12.4"
+                              Immediate="true"
+                              OnBlur="@(() => OnAltSmartBlur())" />
             }
         </MudStack>
     </MudStack>
 
-    @* Coordinate system + entry format selectors *@
+    @* Coordinate system selector *@
     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
         <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
                         SelectionMode="SelectionMode.SingleSelection"
                         Disabled="@(!IsEnabled)">
             <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
             <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
-        </MudToggleGroup>
-        <MudToggleGroup T="EntryMode" Value="_entryMode" ValueChanged="OnEntryModeChanged"
-                        Size="Size.Small" Color="Color.Primary"
-                        SelectionMode="SelectionMode.SingleSelection"
-                        Disabled="@(!IsEnabled)">
-            <MudToggleItem Value="EntryMode.HmsDms" Text="HMS / DMS" />
-            <MudToggleItem Value="EntryMode.Float" Text="Float" />
-            <MudToggleItem Value="EntryMode.Smart" Text="SMART" />
         </MudToggleGroup>
     </MudStack>
 

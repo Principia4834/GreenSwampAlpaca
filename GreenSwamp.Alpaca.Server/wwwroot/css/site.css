@@ -529,25 +529,57 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
             border-color: var(--mud-palette-primary-darken);
         }
 
-.hc-speed-column {
-    height: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
-    width: 72px;
-}
+        .hc-speed-column {
+            --hc-speed-cell-size: 50px;
+            --hc-speed-gap: 8px;
+            --hc-speed-column-height: calc(var(--hc-speed-cell-size) * 3 + var(--hc-speed-gap) * 2);
+            --hc-speed-label-height: 20px;
+            --hc-speed-slider-gap: 15px;
+            --hc-speed-slider-length: calc(var(--hc-speed-column-height) - (var(--hc-speed-label-height) * 2) - (var(--hc-speed-slider-gap) * 2));
+            height: var(--hc-speed-column-height);
+            width: 72px;
+        }
 
-.hc-speed-slider-slot {
-    position: relative;
-    flex: 1 1 auto;
-    width: 100%;
-    min-height: 0;
-}
+        .hc-speed-column > .mud-typography {
+            width: 100%;
+            min-height: var(--hc-speed-label-height);
+            margin: 0;
+            text-align: center;
+        }
+
+        .hc-speed-column > .mud-typography.hc-speed-label,
+        .hc-speed-column > .mud-typography.hc-speed-value {
+            display: flex;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .hc-speed-column > .mud-typography.hc-speed-label {
+            align-items: flex-start;
+        }
+
+        .hc-speed-column > .mud-typography.hc-speed-value {
+            align-items: flex-end;
+        }
+
+        .hc-speed-slider-slot {
+            position: relative;
+            flex: 1 1 auto;
+            width: 100%;
+            min-height: var(--hc-speed-slider-length);
+            padding: var(--hc-speed-slider-gap) 0;
+            box-sizing: border-box;
+            overflow: visible;
+        }
 
     .hc-speed-slider-slot > .mud-slider.hc-speed-slider.mud-slider-vertical {
         position: absolute;
         top: 50%;
         left: 50%;
-        width: calc(var(--hc-cell-size) * 2 + var(--hc-gap));
+        width: var(--hc-speed-slider-length);
         height: auto;
         transform: translate(-50%, -50%) rotate(270deg);
+        transform-origin: center;
     }
 
 /* ============================================================
