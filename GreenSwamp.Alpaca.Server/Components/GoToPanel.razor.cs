@@ -210,16 +210,22 @@ namespace GreenSwamp.Alpaca.Server.Components
             ra = 0;
             dec = 0;
             error = string.Empty;
+            if (string.IsNullOrWhiteSpace(_raSmart)) _raSmartError = RequiredMessage;
+            if (string.IsNullOrWhiteSpace(_decSmart)) _decSmartError = RequiredMessage;
             if (!TryParseSmartRa(_raSmart, out ra, out error)) return false;
             if (!TryParseSmartAngle(_decSmart, out dec, out error)) return false;
             return true;
         }
+
+        private const string RequiredMessage = "Value is required.";
 
         private bool TryGetAltAzCoordinates(out double az, out double alt, out string error)
         {
             az = 0;
             alt = 0;
             error = string.Empty;
+            if (string.IsNullOrWhiteSpace(_azSmart)) _azSmartError = RequiredMessage;
+            if (string.IsNullOrWhiteSpace(_altSmart)) _altSmartError = RequiredMessage;
             if (!TryParseSmartAngle(_azSmart, out az, out error)) return false;
             if (!TryParseSmartAngle(_altSmart, out alt, out error)) return false;
             return true;
@@ -286,7 +292,8 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             if (string.IsNullOrWhiteSpace(input))
             {
-                return "Value is required.";
+                // Empty is not an error while editing; "required" is only reported on GoTo / Sync.
+                return string.Empty;
             }
 
             var trimmed = input.Trim();
@@ -304,7 +311,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             var tokens = TokenizeSmartInput(input);
             if (tokens.Length == 0)
             {
-                return "Value is required.";
+                return string.Empty;
             }
 
             if (!TryParseIntegerToken(tokens[0], out var major))
