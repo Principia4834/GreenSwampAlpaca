@@ -257,6 +257,15 @@ else
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount Info</MudText>
+                        <MountInfo State="@s"
+                                   DeviceNumber="@dn"
+                                   IsConnected="@isUiClientConnected"
+                                   AlignmentMode="@ms?.AlignmentMode"
+                                   DeviceLabel="@TabLabel(dn)" />
+                    </MudPaper>
+
+                    <MudPaper Elevation="1" Class="pa-3">
                         <MudStack Spacing="2" AlignItems="AlignItems.Center" Row="false">
                             @* Park..Limits vertical, centered *@
                             <MountButtonBar State="@s"

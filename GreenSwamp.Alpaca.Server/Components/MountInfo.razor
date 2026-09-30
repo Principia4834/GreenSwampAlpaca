@@ -1,0 +1,61 @@
+﻿@using GreenSwamp.Alpaca.Server.Models
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<MudStack Spacing="2">
+
+    @* -- Axis dials ------------------------------------------------------- *@
+    <MudStack Row="true" Justify="Justify.FlexStart" Spacing="4" Wrap="Wrap.Wrap" Class="mt-1">
+        @if (_coordMode == CoordMode.AltAz)
+        {
+            <AxisDial Angle="@State.Azimuth" Label="Azimuth" Size="@DialSize" />
+            <AxisDial Angle="@State.Altitude" Label="Altitude" Size="@DialSize" />
+        }
+        @if (_coordMode == CoordMode.RaDec)
+        {
+            <AxisDial Angle="@(State.RightAscension * 15)" Label="Right Ascension"
+                      DisplayUnits="DialDisplayUnits.Hours" Size="@DialSize" />
+            <AxisDial Angle="@State.Declination" Label="Declination" Size="@DialSize" />
+        }
+        @if (_coordMode == CoordMode.Optics)
+        {
+            <AxisDial Angle="@State.ActualAxisX" Label="X Axis" Size="@DialSize" />
+            <AxisDial Angle="@State.ActualAxisY" Label="Y Axis" Size="@DialSize" />
+        }
+    </MudStack>
+
+    @* -- Dial type selection ---------------------------------------------- *@
+    <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
+                    SelectionMode="SelectionMode.SingleSelection">
+        <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
+        <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
+        <MudToggleItem Value="CoordMode.Optics" Text="Optics" />
+    </MudToggleGroup>
+
+    @* -- Chart / view buttons: one full-width row -------------------------- *@
+    <MudStack Row="true" Spacing="2" Style="width:100%">
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Outlined"
+                   Class="flex-grow-1"
+                   Disabled="@(!IsConnected)"
+                   OnClick="@(() => OpenChartWindowAsync("radec"))">
+            Axes Chart
+        </MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Outlined"
+                   Class="flex-grow-1"
+                   Disabled="@(!IsConnected)"
+                   OnClick="@(() => OpenChartWindowAsync("pulse"))">
+            Pulse Chart
+        </MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Outlined"
+                   Class="flex-grow-1"
+                   Disabled="@(!IsConnected)"
+                   OnClick="OpenTelescopeViewAsync">
+            3D View
+        </MudButton>
+    </MudStack>
+
+</MudStack>
