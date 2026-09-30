@@ -23,7 +23,6 @@ using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Utilities;
 
@@ -42,8 +41,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
         private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
-        private enum CoordMode { RaDec, AltAz, Optics }
-        private CoordMode _coordMode = CoordMode.RaDec;
 
         private const long UiClientId = GreenSwamp.Alpaca.MountControl.Mount.UiInternalClientId;
 
@@ -295,50 +292,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
             mount.ParkSelected = position;
             Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
-        }
-
-        // -- Plot ------------------------------------------------------------
-        private async Task OpenChartWindowAsync(int deviceNumber, string chartType, Settings.Models.SkySettings ms)
-        {
-            var mount = MountRegistry.GetInstance(deviceNumber);
-            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
-            var path = $"/charts/{chartType}/{deviceNumber}?type={ms.AlignmentMode}&label={TabLabel(deviceNumber)}";
-            await JS.InvokeVoidAsync(
-                "chartWindowInterop.open",
-                DotNetObjectReference.Create(this),
-                path,
-                $"gs-{chartType}-chart-{deviceNumber}",
-                1200,
-                700);
-        }
-
-        // -- 3D View ------------------------------------------------------------
-        private async Task OpenTelescopeViewAsync(int deviceNumber)
-        {
-            var mount = MountRegistry.GetInstance(deviceNumber);
-            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
-
-            await JS.InvokeVoidAsync(
-                "chartWindowInterop.open",
-                DotNetObjectReference.Create(this),
-                $"/telescope-view/{deviceNumber}",
-                $"gs-telescope-view-{deviceNumber}",
-                900,
-                700);
-        }
-
-        [JSInvokable]
-        public void OnPopupBlocked(string url)
-        {
-            Snackbar.Add(
-                "Chart window was blocked. Please allow pop-ups for this site.",
-                Severity.Warning);
-        }
-
-        [JSInvokable]
-        public void OnChartWindowClosed(string windowKey)
-        {
-            // Chart window closed externally — no nav-menu state to update.
         }
     }
 }

@@ -2,7 +2,6 @@
 @page "/mount-control/{DeviceNumber:int}"
 @using ASCOM.Common.DeviceInterfaces;
 @using GreenSwamp.Alpaca.Server.Components
-@using GreenSwamp.Alpaca.Server.Components.ButtonBar
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Settings.Services
 @using GreenSwamp.Alpaca.MountControl
@@ -11,7 +10,6 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject TelescopeStateService StateService
-@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Mount Control</PageTitle>
