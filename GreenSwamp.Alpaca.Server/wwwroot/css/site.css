@@ -479,9 +479,14 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 }
 
 /* --- Hand Controller grid ---------------------------------- */
-.hc-grid {
-    --hc-cell-size: 50px; /* change only this */
+.hc-primary-controls {
+    --hc-cell-size: 50px;
     --hc-gap: 8px;
+    --hc-grid-width: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
+    --hc-speed-column-width: 72px;
+}
+
+.hc-grid {
     display: grid;
     grid-template-columns: repeat(3, var(--hc-cell-size));
     grid-template-rows: repeat(3, var(--hc-cell-size));
@@ -530,14 +535,12 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         }
 
         .hc-speed-column {
-            --hc-speed-cell-size: 50px;
-            --hc-speed-gap: 8px;
-            --hc-speed-column-height: calc(var(--hc-speed-cell-size) * 3 + var(--hc-speed-gap) * 2);
-            --hc-speed-label-height: 20px;
-            --hc-speed-slider-gap: 15px;
-            --hc-speed-slider-length: calc(var(--hc-speed-column-height) - (var(--hc-speed-label-height) * 2) - (var(--hc-speed-slider-gap) * 2));
+            --hc-speed-column-height: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
+            --hc-speed-label-height: 16px;
+            --hc-speed-slider-gap: 16px;
+            --hc-speed-slider-length: calc(var(--hc-speed-column-height) - var(--hc-speed-label-height) - var(--hc-speed-slider-gap));
             height: var(--hc-speed-column-height);
-            width: 72px;
+            width: var(--hc-speed-column-width);
         }
 
         .hc-speed-column > .mud-typography {
@@ -581,6 +584,21 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         transform: translate(-50%, -50%) rotate(270deg);
         transform-origin: center;
     }
+
+.hc-secondary-controls {
+    width: calc(var(--hc-grid-width) + var(--hc-speed-column-width) + var(--hc-gap));
+}
+
+.hc-secondary-options {
+    width: var(--hc-grid-width);
+}
+
+.hc-secondary-settings {
+    width: var(--hc-speed-column-width);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
 
 /* ============================================================
    ApexCharts toolbar + export menu (global override)

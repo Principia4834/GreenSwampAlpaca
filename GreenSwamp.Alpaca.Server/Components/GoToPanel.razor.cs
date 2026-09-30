@@ -1,18 +1,17 @@
 ﻿using GreenSwamp.Alpaca.MountControl;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
-using ASCOM.Tools.Novas31;
-using GreenSwamp.Alpaca.Mount.Simulator;
-using Microsoft.JSInterop;
+using GreenSwamp.Alpaca.Server.Models;
+using Microsoft.AspNetCore.Components;
+using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Components
 {
     public partial class GoToPanel
     {
+        [Parameter, EditorRequired] public TelescopeStateModel State { get; set; } = new();
         [Parameter] public int DeviceNumber { get; set; }
-        [Parameter] public bool IsEnabled { get; set; }
+        [Parameter] public bool IsUiClientConnected { get; set; }
 
         private enum CoordMode { RaDec, AltAz }
 

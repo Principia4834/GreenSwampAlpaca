@@ -1,36 +1,49 @@
-﻿@using GreenSwamp.Alpaca.MountControl
-@using GreenSwamp.Alpaca.Server.Services
+﻿@using GreenSwamp.Alpaca.Server.Services
+@using GreenSwamp.Alpaca.Server.Components.ButtonBar
 @inject ISnackbar Snackbar
 @inject TelescopeStateService StateService
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
 
-<fieldset disabled="@(!IsEnabled)" style="border:none;padding:0;margin:0">
-<MudStack Spacing="3" Class="mt-1">
+<fieldset disabled="@(!IsUiClientConnected)" style="border:none;padding:0;margin:0">
+    <MudStack Spacing="3" Class="mt-1">
+        <MountButtonBar State="@State"
+                        DeviceNumber="@DeviceNumber"
+                        IsConnected="@IsUiClientConnected"
+                        Vertical="true"
+                        ShowPrimaryButtons="true"
+                        ShowStopButton="false" />
+    <MudDivider />
 
     @* Action buttons (left) + coordinate fields (right) *@
     <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
 
         @* Left column: GoTo / Copy / Sync *@
         <MudStack Spacing="4" Style="min-width:72px">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Size="Size.Small"
-                       FullWidth="true"
-                       Disabled="@(!IsEnabled)"
-                       OnClick="OnGoTo">GoTo</MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Size="Size.Small"
-                       FullWidth="true"
-                       Disabled="@(!IsEnabled)"
-                       OnClick="OnCopy">Copy</MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Size="Size.Small"
-                       FullWidth="true"
-                       Disabled="@(!IsEnabled|| _coordMode != CoordMode.RaDec || !_canSync)"
-                       OnClick="OnSync">Sync</MudButton>
+            <MudTooltip Text="Go to coordinates">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               FullWidth="true"
+                               Disabled="@(!IsUiClientConnected)"
+                               OnClick="OnGoTo">GoTo</MudButton>
+            </MudTooltip>
+            <MudTooltip Text="Copy from current position">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               FullWidth="true"
+                               Disabled="@(!IsUiClientConnected)"
+                               OnClick="OnCopy">Copy</MudButton>
+            </MudTooltip>
+            <MudTooltip Text="Sync to coordinates">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               FullWidth="true"
+                               Disabled="@(!IsUiClientConnected|| _coordMode != CoordMode.RaDec || !_canSync)"
+                               OnClick="OnSync">Sync</MudButton>
+                </MudTooltip>
         </MudStack>
 
         @* Right: coordinate entry fields *@
@@ -39,20 +52,20 @@
             {
                 <MudTextField T="string" Value="_raSmart"
                               ValueChanged="@(v => OnRaSmartChanged(v))"
-                              Disabled="@(!IsEnabled)"
+                              Disabled="@(!IsUiClientConnected)"
                               Error="@(!string.IsNullOrEmpty(_raSmartError))"
                               ErrorText="@_raSmartError"
-                              Label="RA (SMART)"
+                              Label="RA"
                               InputId="goto-smart-ra"
                               Placeholder="23 15 12.55, 23.75"
                               Immediate="true"
                               OnBlur="@(() => OnRaSmartBlur())" />
                 <MudTextField T="string" Value="_decSmart"
                               ValueChanged="@(v => OnDecSmartChanged(v))"
-                              Disabled="@(!IsEnabled)"
+                              Disabled="@(!IsUiClientConnected)"
                               Error="@(!string.IsNullOrEmpty(_decSmartError))"
                               ErrorText="@_decSmartError"
-                              Label="Dec (SMART)"
+                              Label="Dec"
                               InputId="goto-smart-dec"
                               Placeholder="+56 19 25.57, -56.32"
                               Immediate="true"
@@ -62,20 +75,20 @@
             {
                 <MudTextField T="string" Value="_azSmart"
                               ValueChanged="@(v => OnAzSmartChanged(v))"
-                              Disabled="@(!IsEnabled)"
+                              Disabled="@(!IsUiClientConnected)"
                               Error="@(!string.IsNullOrEmpty(_azSmartError))"
                               ErrorText="@_azSmartError"
-                              Label="Az (SMART)"
+                              Label="Az"
                               InputId="goto-smart-az"
                               Placeholder="23° 24’ 54.23”, 23.4"
                               Immediate="true"
                               OnBlur="@(() => OnAzSmartBlur())" />
                 <MudTextField T="string" Value="_altSmart"
                               ValueChanged="@(v => OnAltSmartChanged(v))"
-                              Disabled="@(!IsEnabled)"
+                              Disabled="@(!IsUiClientConnected)"
                               Error="@(!string.IsNullOrEmpty(_altSmartError))"
                               ErrorText="@_altSmartError"
-                              Label="Alt (SMART)"
+                              Label="Alt"
                               InputId="goto-smart-alt"
                               Placeholder="-12° 24m 54.23s, -12.4"
                               Immediate="true"
@@ -88,9 +101,13 @@
     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
         <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
                         SelectionMode="SelectionMode.SingleSelection"
-                        Disabled="@(!IsEnabled)">
-            <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
-            <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
+                        Disabled="@(!IsUiClientConnected)">
+            <MudTooltip Text="Use RA / Dec coordinates">
+                <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
+            </MudTooltip>
+            <MudTooltip Text="Use Alt / Az coordinates">
+                <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
+            </MudTooltip>
         </MudToggleGroup>
     </MudStack>
 

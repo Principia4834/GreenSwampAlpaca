@@ -20,10 +20,6 @@ namespace GreenSwamp.Alpaca.Server.Components
         private int _speed = 4;
         private HcMode _mode = HcMode.Axes;
         private string _statusMessage = string.Empty;
-        private bool _flipEw;
-        private bool _flipNs;
-        private bool _antiRa;
-        private bool _antiDec;
         private bool _oneClickStart;
         private bool _disableKeysOnGoTo;
         private string? _activeOneClickDir;
@@ -67,11 +63,8 @@ namespace GreenSwamp.Alpaca.Server.Components
             {
                 _speed = (int)_mount.Settings.HcSpeed;
                 _mode = _mount.Settings.HcMode;
-                _flipEw = _mount.Settings.HcFlipEw;
-                _flipNs = _mount.Settings.HcFlipNs;
-                _antiRa = _mount.Settings.HcAntiRa;
-                _antiDec = _mount.Settings.HcAntiDec;
                 _oneClickStart = _mount.Settings.HcOneClickStart;
+                _disableKeysOnGoTo = _mount.Settings.DisableKeysOnGoTo;
             }
         }
 
@@ -215,30 +208,6 @@ namespace GreenSwamp.Alpaca.Server.Components
             }
         }
 
-        private async Task OnFlipEwChanged()
-        {
-            if (_mount != null) _mount.Settings.HcFlipEw = _flipEw;
-            await PersistHcFlags();
-        }
-
-        private async Task OnFlipNsChanged()
-        {
-            if (_mount != null) _mount.Settings.HcFlipNs = _flipNs;
-            await PersistHcFlags();
-        }
-
-        private async Task OnAntiRaChanged()
-        {
-            if (_mount != null) _mount.Settings.HcAntiRa = _antiRa;
-            await PersistHcFlags();
-        }
-
-        private async Task OnAntiDecChanged()
-        {
-            if (_mount != null) _mount.Settings.HcAntiDec = _antiDec;
-            await PersistHcFlags();
-        }
-
         private async Task OnOneClickStartChanged()
         {
             if (!_oneClickStart && _activeOneClickDir != null)
@@ -288,17 +257,6 @@ namespace GreenSwamp.Alpaca.Server.Components
 
         private string GetButtonClass(string direction) =>
             _oneClickStart && _activeOneClickDir == direction ? "hc-btn hc-active" : "hc-btn";
-
-        private async Task PersistHcFlags()
-        {
-            var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
-            if (persisted == null) return;
-            persisted.HcFlipEW = _flipEw;
-            persisted.HcFlipNS = _flipNs;
-            persisted.HcAntiRa = _antiRa;
-            persisted.HcAntiDec = _antiDec;
-            await SettingsService.SaveDeviceSettingsAsync(DeviceNumber, persisted);
-        }
 
         /// <summary>Opens the HC Pulse Guides editor dialog for this device.</summary>
         private async Task OpenHcPulseGuidesDialogAsync()

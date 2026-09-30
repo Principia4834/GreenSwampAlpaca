@@ -10,7 +10,7 @@
 
 <div>
     <MudStack Spacing="3">
-        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
+        <MudStack Class="hc-primary-controls" Spacing="2">
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
                 @* 3x3 Direction Grid *@
                 <div class="hc-grid" @ref="_gridElement">
@@ -49,41 +49,47 @@
                 </div>
 
                 @* Speed Slider — vertical, beside direction grid *@
-                <MudStack Class="hc-speed-column"
-                          Spacing="0"
-                          AlignItems="AlignItems.Center"
-                          Justify="Justify.SpaceBetween">
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="hc-speed-label">Speed</MudText>
-                    <div class="hc-speed-slider-slot">
-                        <MudSlider @bind-Value="_speed"
-                                   @bind-Value:after="OnSpeedChanged"
-                                   T="int"
-                                   Min="1"
-                                   Max="8"
-                                   Step="1"
-                                   TickMarks="true"
-                                   Size="Size.Medium"
-                                   Vertical="true"
-                                   Disabled="@(!IsEnabled)"
-                                   Class="hc-speed-slider" />
-                    </div>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="hc-speed-value">@_speed</MudText>
-                </MudStack>
+                <MudTooltip Text="Hand controller motion speed">
+                    <MudStack Class="hc-speed-column"
+                              Spacing="0"
+                              AlignItems="AlignItems.Center"
+                              Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.body1" Align="Align.Center" Class="hc-speed-label">Speed: @_speed</MudText>
+                        <div class="hc-speed-slider-slot">
+                            <MudSlider @bind-Value="_speed"
+                                       @bind-Value:after="OnSpeedChanged"
+                                       T="int"
+                                       Min="1"
+                                       Max="8"
+                                       Step="1"
+                                       TickMarks="true"
+                                       Size="Size.Large"
+                                       Vertical="true"
+                                       Disabled="@(!IsEnabled)"
+                                       Class="hc-speed-slider" />
+                        </div>
+                    </MudStack>
+                </MudTooltip>
             </MudStack>
 
-            @* Options panel — Flip and Anti-Backlash *@
-            <MudStack Spacing="1">
-                <MudText Typo="Typo.caption">Options</MudText>
-                <MudCheckBox @bind-Value="_flipEw"  @bind-Value:after="OnFlipEwChanged"  T="bool" Dense="true" Label="Flip RA/Az" Disabled="@(!IsEnabled)" />
-                <MudCheckBox @bind-Value="_flipNs"  @bind-Value:after="OnFlipNsChanged"  T="bool" Dense="true" Label="Flip Dec/Alt" Disabled="@(!IsEnabled)" />
-                @if (_mode != HcMode.Pulse)
-                {
-                    <MudCheckBox @bind-Value="_antiRa"  @bind-Value:after="OnAntiRaChanged"  T="bool" Dense="true" Label="Anti-backlash RA/Az" Disabled="@(!IsEnabled)" />
-                    <MudCheckBox @bind-Value="_antiDec" @bind-Value:after="OnAntiDecChanged" T="bool" Dense="true" Label="Anti-backlash Dec/Alt" Disabled="@(!IsEnabled)" />
-                }
-                <MudDivider Class="my-1" />
-                <MudCheckBox @bind-Value="_oneClickStart" @bind-Value:after="OnOneClickStartChanged" T="bool" Dense="true" Label="One Click Start" Disabled="@(!IsEnabled)" />
-                <MudCheckBox @bind-Value="_disableKeysOnGoTo" @bind-Value:after="OnDisableKeysOnGoToChanged" T="bool" Dense="true" Label="Direction Keys Off for Go To" Disabled="@(!IsEnabled)" />
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Start" Class="hc-secondary-controls">
+                <MudStack Spacing="1" Class="hc-secondary-options">
+                    <MudTooltip Text="One click starts and stops motion">
+                        <MudCheckBox @bind-Value="_oneClickStart" @bind-Value:after="OnOneClickStartChanged" T="bool" Dense="true" Label="One Click Start" Disabled="@(!IsEnabled)" />
+                    </MudTooltip>
+                    <MudTooltip Text="Keys disabled while slewing">
+                        <MudCheckBox @bind-Value="_disableKeysOnGoTo" @bind-Value:after="OnDisableKeysOnGoToChanged" T="bool" Dense="true" Label="Keys Off for Go To" Disabled="@(!IsEnabled)" />
+                    </MudTooltip>
+                </MudStack>
+                <div class="hc-secondary-settings">
+                    <MudTooltip Text="Edit hand controller settings" Placement="Placement.Right" Arrow="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                                       Color="Color.Primary"
+                                       Size="Size.Large"
+                                       OnClick="OpenHcPulseGuidesDialogAsync"
+                                       Disabled="@(!IsEnabled)" />
+                    </MudTooltip>
+                </div>
             </MudStack>
         </MudStack>
 
@@ -100,13 +106,6 @@
                 <MudToggleItem Value="@HcMode.Guiding" Text="Guiding" />
                 <MudToggleItem Value="@HcMode.Pulse" Text="Pulse" />
             </MudToggleGroup>
-            <MudTooltip Text="Edit HC Pulse Guides" Placement="Placement.Right" Arrow="true">
-                <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                               Color="Color.Primary"
-                               Size="Size.Large"
-                               OnClick="OpenHcPulseGuidesDialogAsync"
-                               Disabled="@(!IsEnabled)" />
-            </MudTooltip>
         </MudStack>
 
         @if (!string.IsNullOrEmpty(_statusMessage))

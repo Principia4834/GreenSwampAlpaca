@@ -9,16 +9,17 @@
 
 @if (ShowPrimaryButtons)
 {
-    @* Fixed 2×4 grid: columns size to icon content *@
-    <div style="display:inline-grid; grid-template-columns: repeat(2, auto);">
+    @* Fixed 4×2 grid: columns size to icon content *@
+    <div style="display:inline-grid; grid-template-columns: repeat(4, auto);">
 
         @* -- Park --------------------------------------------------------------- *@
         <MudTooltip Text="@(State.AtPark ? "Unpark the mount" : "Park the mount at the selected position")"
                     Placement="Placement.Top" Arrow="true">
-            <MudIconButton Variant="Variant.Text"
-                           Icon="@Icons.Material.Filled.LocalParking"
+            <MudIconButton Icon="@Icons.Material.Filled.LocalParking"
                            Color="@(State.AtPark ? Color.Warning : Color.Primary)"
+                           Variant="Variant.Outlined"
                            Size="Size.Large"
+                           Class="ma-2"
                            Disabled="@(!IsConnected || (State.AtPark
                                                                      ? !(Mount?.Settings.CanUnPark ?? false)
                                                                      : !(Mount?.Settings.CanPark ?? false)))"
@@ -27,9 +28,11 @@
 
         @* -- Home --------------------------------------------------------------- *@
         <MudTooltip Text="Slew to the home position" Placement="Placement.Top" Arrow="true">
-            <MudIconButton Color="Color.Primary" Variant="Variant.Text"
-                           Icon="@Icons.Material.Filled.Home"
+            <MudIconButton Icon="@Icons.Material.Filled.Home"
+                           Color="Color.Primary"
+                           Variant="Variant.Outlined"
                            Size="Size.Large"
+                           Class="ma-2"
                            Disabled="@(!IsConnected || State.AtPark || !(Mount?.Settings.CanFindHome ?? false))"
                            OnClick="OnHomeClickAsync" />
         </MudTooltip>
@@ -37,20 +40,13 @@
         @* -- Tracking ----------------------------------------------------------- *@
         <MudTooltip Text="@(State.Tracking ? "Turn tracking off" : "Turn tracking on")"
                     Placement="Placement.Top" Arrow="true">
-            <MudIconButton Color="Color.Primary" Variant="Variant.Text"
-                           Icon="@Icons.Material.Filled.TrackChanges"
+            <MudIconButton Icon="@Icons.Material.Filled.TrackChanges"
+                           Color="Color.Primary"
+                           Variant="Variant.Outlined"
                            Size="Size.Large"
+                           Class="ma-2"
                            Disabled="@(!IsConnected)"
                            OnClick="OnTrackingClickAsync" />
-        </MudTooltip>
-
-        @* -- ReSync ------------------------------------------------------------- *@
-        <MudTooltip Text="Resync axes to a reference position" Placement="Placement.Top" Arrow="true">
-            <MudIconButton Variant="Variant.Text" Color="Color.Primary"
-                           Icon="@Icons.Material.Filled.SettingsEthernet"
-                           Size="Size.Large"
-                           Disabled="@(!IsConnected || State.Slewing)"
-                           OnClick="OnReSyncClickAsync" />
         </MudTooltip>
 
         @* -- Flip SOP (GEM only) ------------------------------------------------ *@
@@ -58,21 +54,35 @@
         {
             <MudTooltip Text="Flip the telescope to the opposite pier side"
                         Placement="Placement.Top" Arrow="true">
-                <MudIconButton Variant="Variant.Text" Color="Color.Primary"
-                               Icon="@Icons.Material.Filled.FlipCameraAndroid"
+                <MudIconButton Icon="@Icons.Material.Filled.FlipCameraAndroid"
+                               Color="Color.Primary"
+                               Variant="Variant.Outlined"
                                Size="Size.Large"
+                               Class="ma-2"
                                Disabled="@(!IsConnected || State.Slewing)"
                                OnClick="OnFlipSopClickAsync" />
             </MudTooltip>
         }
 
+        @* -- ReSync ------------------------------------------------------------- *@
+        <MudTooltip Text="Resync axes to a reference position" Placement="Placement.Top" Arrow="true">
+            <MudIconButton Icon="@Icons.Material.Filled.SettingsEthernet"
+                           Color="Color.Primary"
+                           Variant="Variant.Outlined"
+                           Size="Size.Large"
+                           Class="ma-2"
+                           Disabled="@(!IsConnected || State.Slewing)"
+                           OnClick="OnReSyncClickAsync" />
+        </MudTooltip>
+
         @* -- AutoHome ----------------------------------------------------------- *@
         <MudTooltip Text="@(State.IsAutoHomeRunning ? "AutoHome running…" : "Search for home sensor and reset axes")"
                     Placement="Placement.Top" Arrow="true">
-            <MudIconButton Variant="Variant.Text"
+            <MudIconButton Icon="@HomeSearchIcon"
                            Color="@(State.IsAutoHomeRunning ? Color.Warning : Color.Primary)"
-                           Icon="@HomeSearchIcon"
+                           Variant="Variant.Outlined"
                            Size="Size.Large"
+                           Class="ma-2"
                            Disabled="@(!IsConnected || State.AtPark)"
                            OnClick="OnAutoHomeClickAsync" />
         </MudTooltip>
@@ -80,9 +90,11 @@
         @* -- Limits ------------------------------------------------------------- *@
         <MudTooltip Text="@(State.LimitsOn ? "Disable angle limits" : "Enable angle limits")"
                     Placement="Placement.Top" Arrow="true">
-            <MudIconButton Variant="Variant.Text" Color="Color.Primary"
-                           Icon="@LimitsOnIcon"
+            <MudIconButton Icon="@LimitsOnIcon"
+                           Color="Color.Primary"
+                           Variant="Variant.Outlined"
                            Size="Size.Large"
+                           Class="ma-2"
                            Disabled="@(!IsConnected)"
                            OnClick="OnLimitsClickAsync" />
         </MudTooltip>
@@ -90,9 +102,11 @@
         @* -- Voice -------------------------------------------------------------- *@
         <MudTooltip Text="@(!State.VoiceActive ? "Enable voice announcements" : "Disable voice announcements")"
                     Placement="Placement.Top" Arrow="true">
-            <MudIconButton Color="Color.Primary" Variant="Variant.Text"
-                           Icon="@(!State.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
+            <MudIconButton Icon="@(!State.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
+                           Color="Color.Primary"
+                           Variant="Variant.Outlined"
                            Size="Size.Large"
+                           Class="ma-2"
                            OnClick="OnVoiceActiveSetAsync" />
         </MudTooltip>
 
@@ -103,7 +117,7 @@
 {
     @* -- Stop (kept for any future ShowStopButton=true usage) ------------------- *@
     <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
-        <MudIconButton Variant="Variant.Text" Color="Color.Error"
+        <MudIconButton Variant="Variant.Outlined" Color="Color.Error"
                        Icon="@Icons.Material.Filled.StopCircle"
                        Size="Size.Large"
                        Disabled="@(!State.HasEverBeenConnected && !IsConnected)"
