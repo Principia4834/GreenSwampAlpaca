@@ -223,32 +223,6 @@ else
                         <GoToPanel State="@s"
                                    DeviceNumber="@dn"
                                    IsUiClientConnected="@isUiClientConnected" />
-                        <MudDivider DividerType="DividerType.Middle" Class="my-6" />
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Dials</MudText>
-                        <MudStack Row="true" Justify="Justify.FlexStart" Spacing="4" Wrap="Wrap.Wrap" Class="mt-1">
-                            @if (_coordMode == CoordMode.AltAz)
-                            {
-                                <AxisDial Angle="@s.Azimuth" Label="Azimuth" Size="160" />
-                                <AxisDial Angle="@s.Altitude" Label="Altitude" Size="160" />
-                            }
-                            @if (_coordMode == CoordMode.RaDec)
-                            {
-                                <AxisDial Angle="@(s.RightAscension * 15)" Label="Right Ascension"
-                                          DisplayUnits="DialDisplayUnits.Hours" Size="160" />
-                                <AxisDial Angle="@s.Declination" Label="Declination" Size="160" />
-                            }
-                            @if (_coordMode == CoordMode.Optics)
-                            {
-                                <AxisDial Angle="@s.ActualAxisX" Label="X Axis" Size="160" />
-                                <AxisDial Angle="@s.ActualAxisY" Label="Y Axis" Size="160" />
-                            }
-                        </MudStack>
-                        <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
-                                        SelectionMode="SelectionMode.SingleSelection">
-                            <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
-                            <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
-                            <MudToggleItem Value="CoordMode.Optics" Text="Optics" />
-                        </MudToggleGroup>
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
@@ -263,34 +237,6 @@ else
                                    IsConnected="@isUiClientConnected"
                                    AlignmentMode="@ms?.AlignmentMode"
                                    DeviceLabel="@TabLabel(dn)" />
-                    </MudPaper>
-
-                    <MudPaper Elevation="1" Class="pa-3">
-                        <MudStack Spacing="2" AlignItems="AlignItems.Center" Row="false">
-                            @* Park..Limits vertical, centered *@
-                            <MountButtonBar State="@s"
-                                            DeviceNumber="@dn"
-                                            IsConnected="@isUiClientConnected"
-                                            Vertical="true"
-                                            ShowPrimaryButtons="true"
-                                            ShowStopButton="false" />
-                            <MudDivider />
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       OnClick="@(() => OpenChartWindowAsync(dn,"radec", ms))">
-                                Axes Chart
-                            </MudButton>
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       OnClick="@(() => OpenChartWindowAsync(dn,"pulse", ms))">
-                                Pulse Chart
-                            </MudButton>
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       OnClick="@(() => OpenTelescopeViewAsync(dn))">
-                                3D View
-                            </MudButton>
-                        </MudStack>
                     </MudPaper>
                 </MudStack>
 
