@@ -1,9 +1,9 @@
 ﻿# Home Page Redesign – Requirements
 
-**Document status:** Draft for offline review by Andy
-**Last updated:** 2026-10-01 08:16
+**Document status:** Updated for Andy's decision 1: carousel settings are one first-class JSON settings file (`carousel.settings.json`); there is no separate manifest
+**Last updated:** 2026-10-01 09:03
 **Target:** `GreenSwamp.Alpaca.Server` (Blazor Server, .NET 10, MudBlazor 9.11.0)
-**Primary files affected:** `Pages/Index.razor`, `wwwroot/css/site.css`, `GreenSwamp.Alpaca.Settings` (`ServerConfig`, new manifest model/service)
+**Primary files affected:** `Pages/Index.razor`, `wwwroot/css/site.css`, `GreenSwamp.Alpaca.Settings` (new `CarouselSettings` model, service members and `carousel.settings.json`)
 
 ---
 
@@ -21,10 +21,10 @@ Replace the content of the default home page (`/`) while retaining the existing 
 | # | Question | Decision |
 |---|----------|----------|
 | D1 | Bullet list and link buttons on current page | **Remove the bullet list. Keep the two link buttons** (Online Documentation, ASCOM Standards). |
-| D2 | Where images/manifest live | **Images in `wwwroot/images/...` (deployed content, replaceable without a rebuild); slide manifest in the versioned settings folder.** |
+| D2 | Where images and slide data live | **Images in `wwwroot/images/carousel/{folder}/` (deployed content, replaceable without a rebuild). Shows, slides, captions, dwell time and the active show all live in `carousel.settings.json` in the versioned settings folder.** |
 | D3 | Who supplies images and captions | **Andy supplies the jpg files and captions.** None exist in the repo today. |
-| D4 | Dwell-time setting storage | **Property on `ServerConfig` (`appsettings.server.user.json`), with no editor field, so Settings Explorer never shows it.** |
-| D5 | Show selection | **Toggle on the carousel; the selected show is persisted in settings (`ServerConfig`) across restarts.** |
+| D4 | Dwell-time setting storage | **`DwellSeconds` in `carousel.settings.json`, a first-class settings file handled like the other settings files. It has no Settings Explorer editor, so it is never shown there. `ServerConfig` is not changed.** |
+| D5 | Show selection | **Toggle on the carousel; the selected show is persisted as `ActiveShow` in `carousel.settings.json` across restarts.** |
 | D6 | Devices with `Enabled = false` | **Show a tile for every defined device; dim/mark disabled ones.** |
 | D7 | Tile settings-cog target | **`/mount-settings/{n}`** (existing per-device Mount Settings page). |
 | D8 | Carousel placement | **Fills the hero area between the title/link buttons and the bottom bar.** |
@@ -113,59 +113,61 @@ Replace the content of the default home page (`/`) while retaining the existing 
 |----|-------------|
 | HP-SH1 | Two shows are available: **Green Swamp Server reference screenshots** and **Astronomical images**. The user selects between them with a toggle control on the carousel (for example `MudToggleGroup`). |
 | HP-SH2 | Individual images are not user-selectable apart from carousel navigation (arrows and bullets). |
-| HP-SH3 | The selected show is persisted in `ServerConfig` (D5) and restored on the next visit and server restart. Default is the Server reference show. |
+| HP-SH3 | The selected show is persisted as `ActiveShow` in `carousel.settings.json` (D5) and restored on the next visit and server restart. Default is the Server reference show. |
 | HP-SH4 | Changing show restarts the carousel at slide 1. |
-| HP-SH5 | The toggle is built from the manifest (HP-M1). If only one show has slides, the toggle is hidden. |
+| HP-SH5 | The toggle is built from the shows in `carousel.settings.json` (HP-M1). If only one show has slides, the toggle is hidden. |
 
-### 4.7 Settings
+### 4.7 Settings (`carousel.settings.json`)
 
-| ID | Requirement |
-|----|-------------|
-| HP-S1 | New `ServerConfig.CarouselDwellSeconds` (default `5`). Values outside **2-60 s** are clamped on read (minimum chosen so dwell always exceeds the 0.5 s fade). |
-| HP-S2 | New `ServerConfig.CarouselActiveShow` (string show id, default `"reference"`). An unknown id falls back to the first show in the manifest. |
-| HP-S3 | Neither property is displayed in Settings Explorer (D4). No editor control is added. Their values are preserved when Settings Explorer saves `ServerConfig` (the working copy is a full deserialised `ServerConfig`). |
-| HP-S4 | Defaults are added to `appsettings.json` (`ServerConfig` section) and `appsettings.schema.json` so first-run seeding works. |
-| HP-S5 | A developer changes the dwell time by editing `appsettings.server.user.json`. The page picks up the change via `ServerConfigChanged` or on the next page load. |
-
-### 4.8 Developer-managed content (manifest)
+There is a single settings file. It holds the dwell time, the active show, and the shows with their slides, so no separate manifest exists.
 
 | ID | Requirement |
 |----|-------------|
-| HP-M1 | A JSON manifest in the versioned settings folder defines the shows, slide order, image file names and captions. Nothing about images or captions is hardcoded in C#, Razor or CSS. Proposed file: `carousel.settings.json`. |
-| HP-M2 | Images are jpg files in `wwwroot/images/carousel/{showFolder}/` and are served by the existing static-file middleware. Adding, removing, reordering or re-captioning slides requires only file and manifest edits, with no rebuild. |
-| HP-M3 | Image file names in the manifest must be plain file names (no path separators or `..`). Anything else is rejected and logged. |
-| HP-M4 | The manifest is read through the settings service (new `GetCarouselManifest()` and `CarouselManifestChanged` on `IVersionedSettingsService`, following the `ChartSettings` pattern) so there is one access route to settings files. |
-| HP-M5 | If the manifest is absent on first run, it is seeded from a factory default shipped with the build, in the same way `ServerConfig` seeds from `appsettings.json`. |
-| HP-M6 | A corrupt or invalid manifest does not break the home page. The carousel is hidden or shows the placeholder, and the error is logged. |
+| HP-S1 | `carousel.settings.json` is a first-class JSON settings file in the versioned settings folder, handled like the other settings files: read and written through `IVersionedSettingsService` with its own lock and atomic write, a change event, migration from the previous version, and inclusion in settings export/import. |
+| HP-S2 | `DwellSeconds` (default `5`). Values outside **2-60 s** are clamped on read (the minimum keeps the dwell above the 0.5 s fade). |
+| HP-S3 | `ActiveShow` (show id, default `"reference"`). An unknown id falls back to the first show. |
+| HP-S4 | The file is never shown in Settings Explorer (no editor or tree node). `ServerConfig`, `appsettings.json` and `appsettings.schema.json` are unchanged. |
+| HP-S5 | A developer changes the dwell time by editing `carousel.settings.json`. The page reads the file on each page load. |
 
-**Proposed manifest shape**
+### 4.8 Developer-managed content (shows and slides)
+
+| ID | Requirement |
+|----|-------------|
+| HP-M1 | The `Shows` array of `carousel.settings.json` defines each show (`Id`, `Title`, `Folder`) and its slides (`File`, `Caption`) in order. Nothing about images or captions is hardcoded in C#, Razor or CSS. |
+| HP-M2 | Images are jpg files in `wwwroot/images/carousel/{Folder}/` and are served by the existing static-file middleware. Adding, removing, reordering or re-captioning slides requires only file and JSON edits, with no rebuild. |
+| HP-M3 | Folder and file names must be plain names (no path separators, drive or `..`). Anything else is dropped and logged. |
+| HP-M4 | The file is read through `GetCarouselSettings()`. `SaveCarouselSettingsAsync()` writes the whole file. `SetCarouselActiveShowAsync()` changes only `ActiveShow`. `CarouselSettingsChanged` is raised on each save. |
+| HP-M5 | If the file is absent on first run, it is seeded with factory defaults (two shows, no slides). An existing or migrated file is never overwritten. |
+| HP-M6 | A corrupt or invalid file does not break the home page. Defaults are used and the problem is logged. If no show has slides, the carousel shows a placeholder message. |
+
+**`carousel.settings.json` shape**
 
 ```json
 {
-  "SchemaVersion": 1,
+  "DwellSeconds": 5,
+  "ActiveShow": "reference",
   "Shows": [
-	{
-	  "Id": "reference",
-	  "Title": "Server reference",
-	  "Folder": "reference",
-	  "Slides": [
-		{ "File": "mount-control.jpg", "Caption": "Mount Control - hand controller and GoTo" }
-	  ]
-	},
-	{
-	  "Id": "astronomy",
-	  "Title": "Astronomical images",
-	  "Folder": "astronomy",
-	  "Slides": [
-		{ "File": "m31.jpg", "Caption": "M31 - Andromeda Galaxy" }
-	  ]
-	}
+    {
+      "Id": "reference",
+      "Title": "Server Reference",
+      "Folder": "reference",
+      "Slides": [
+        { "File": "mount-control.jpg", "Caption": "Mount Control - hand controller and GoTo" }
+      ]
+    },
+    {
+      "Id": "astronomy",
+      "Title": "Astronomical Images",
+      "Folder": "astronomy",
+      "Slides": [
+        { "File": "m31.jpg", "Caption": "M31 - Andromeda Galaxy" }
+      ]
+    }
   ]
 }
 ```
 
 ---
-
 ## 5. Non-functional requirements
 
 | ID | Requirement |
@@ -186,7 +188,7 @@ These are verified against MudBlazor 9.x source (MudCarousel / MudCarouselItem) 
 
 1. **Fade timing:** `Transition.Fade` in MudBlazor uses `0.5s` keyframes for both fade-in and fade-out, which exactly matches the requirement. No custom CSS keyframes are needed. The outgoing and incoming slides cross-fade at the same time (exit slide held at z-index 1, entering at z-index 2).
 2. **`ItemsSource` cannot be used:** when `ItemsSource` is set, MudCarousel creates `<MudCarouselItem>` with defaults (**`Transition = Slide`**), so per-item `Transition.Fade` cannot be applied. The carousel must therefore be built with explicit `<MudCarouselItem Transition="Transition.Fade">` children generated by a `@foreach` over the slides, with `TData="object"`.
-3. **Dwell time:** `AutoCycleTime` (`TimeSpan`, default 5 s) is a native parameter, so `TimeSpan.FromSeconds(config.CarouselDwellSeconds)` is bound directly. The timer is reset whenever the selection changes (including arrow or bullet clicks), which satisfies HP-C6.
+3. **Dwell time:** `AutoCycleTime` (`TimeSpan`, default 5 s) is a native parameter, so `TimeSpan.FromSeconds(settings.DwellSeconds)` is bound directly. The timer is reset whenever the selection changes (including arrow or bullet clicks), which satisfies HP-C6.
 4. **Wrap-around:** MudCarousel `Next()` restarts at index 0, giving continuous looping.
 5. **Show switching:** to guarantee a clean rebuild when the show changes, put `@key="activeShowId"` on the carousel (items register themselves on initialisation and only unregister on dispose).
 6. **Item background:** `MudCarouselItem` with the default colour can paint a theme background (`mud-carousel-item-default`). Override with a transparent item class so the hero image shows through. Verify in browser DevTools during implementation.
@@ -207,12 +209,12 @@ These are verified against MudBlazor 9.x source (MudCarousel / MudCarouselItem) 
 | `Pages/Index.razor` | Rewrite markup (hero + link buttons + carousel + bottom bar). May split into components. |
 | New components (proposed) | `Components/Home/DeviceTile.razor`, `DeviceInfoDialog.razor` (in `Components/Dialogs`), `HomeCarousel.razor`. |
 | `wwwroot/css/site.css` | Update/remove `gs-home-bullets` and `gs-home-footer` rules; add bottom bar, tile and carousel slide styles. Remove the remote hero URL only if Andy wants it localised (not requested; left unchanged). |
-| `GreenSwamp.Alpaca.Settings` | `ServerConfig` + 2 properties. New `CarouselManifest` model(s). `IVersionedSettingsService` + `VersionedSettingsService`: `GetCarouselManifest()`, path property, change event, seeding. |
-| `appsettings.json`, `appsettings.schema.json` | Add the two new `ServerConfig` keys. |
-| Settings migration | `TryMigrateFromPreviousVersion` copies top-level `*.json` from the previous version, so the manifest will migrate automatically (see Risk R1). |
+| `GreenSwamp.Alpaca.Settings` | New `CarouselSettings` model. `IVersionedSettingsService` + `VersionedSettingsService`: `CarouselSettingsPath`, `GetCarouselSettings()`, `SaveCarouselSettingsAsync()`, `SetCarouselActiveShowAsync()`, `CarouselSettingsChanged`, first-run seeding. `ServerConfig` is unchanged. |
+| `appsettings.json`, `appsettings.schema.json` | No change. |
+| Settings migration | `TryMigrateFromPreviousVersion` copies top-level `*.json` from the previous version, so `carousel.settings.json` migrates automatically (see Risk R1). |
 | Installer (`ProductFiles.wxs`) | Lists wwwroot files individually; new image files and folders must be included or the images will not be deployed (see Risk R2). |
 | Server `.csproj` | Follow the existing `Content Update ... CopyToOutputDirectory` pattern for the new image folder, if needed for local runs. |
-| Tests | Unit tests for manifest parsing, validation (HP-M3), dwell clamping (HP-S1), and show fallback (HP-S2), if a suitable test project exists in the solution. |
+| Tests | Unit tests (in `GreenSwamp.Alpaca.MountControl.Tests`, which already references Settings) for name validation (HP-M3), dwell clamping (HP-S2), show fallback (HP-S3), seeding, round trip and corrupt-file fallback. |
 
 ---
 
@@ -220,12 +222,12 @@ These are verified against MudBlazor 9.x source (MudCarousel / MudCarouselItem) 
 
 | ID | Risk / observation | Proposed handling |
 |----|--------------------|-------------------|
-| R1 | **Manifest vs version migration.** Existing migration copies the previous version's JSON files only when the new version folder has no device files, and never overwrites existing files. A manifest edited for a new release could be shadowed by an older migrated copy. | Include `SchemaVersion` in the manifest. Consider exempting the manifest from migration (always seeded from the build's factory default) or having the loader prefer the shipped default when the schema version is older. **Needs Andy's decision before implementation.** |
-| R2 | **Installer enumerates files explicitly.** New image files will not be installed unless added (or harvested). Also, the manifest filenames and images must stay consistent. | Add `images\carousel\**` to the installer as a dedicated, non-versioned component. Out of scope for the page itself; track as a follow-up task. |
-| R3 | **Stale `ServerConfig` overwrite.** Settings Explorer holds a working copy of `ServerConfig`. If Andy changes the carousel show on the home page while the Explorer is open elsewhere and then saves, the Explorer's older copy could overwrite `CarouselActiveShow`. | Low likelihood. Accept (document), or have the home page save via a read-modify-write of the latest `ServerConfig`. The latter is planned. |
-| R4 | **Persisted show is server-wide.** `ServerConfig` is shared by all browser sessions. One user changing the show changes it for everyone's next visit. | Consistent with D5. Noted for awareness. |
+| R1 | **Settings file vs version migration.** Existing migration copies the previous version's JSON files only when the new version folder has no device files, and never overwrites existing files. A `carousel.settings.json` edited for a new release could be shadowed by an older migrated copy. | **Decided:** treat it like every other settings file. A migrated copy is kept, and the developer edits the file on disk. |
+| R2 | **Installer enumerates files explicitly.** New image files will not be installed unless added (or harvested). Also, the file names in `carousel.settings.json` and the images must stay consistent. | Add `images\carousel\**` to the installer as a dedicated, non-versioned component. Out of scope for the page itself; track as a follow-up task. |
+| R3 | **Stale `ServerConfig` overwrite.** | **No longer applies.** The carousel settings are not in `ServerConfig`. |
+| R4 | **Persisted show is server-wide.** `carousel.settings.json` is shared by all browser sessions. One user changing the show changes it for everyone's next visit. | Consistent with D5. Noted for awareness. |
 | R5 | **Many bullets.** One bullet per slide. A show with a very large number of slides makes the indicator row wide. | NF6 guidance (about 20 slides or fewer). |
-| R6 | **Deviation from original wording.** The original brief said images are "stored in the settings folder"; D2 places them in `wwwroot/images`. The manifest is in the settings folder. | Confirm acceptable (this is what Andy selected). |
+| R6 | **Deviation from original wording.** The original brief said images are "stored in the settings folder"; D2 places them in `wwwroot/images`. The settings file is in the settings folder. | Confirm acceptable (this is what Andy selected). |
 | R7 | **First-frame load.** Fade-in of a not-yet-downloaded image can show blank. | HP-C8 preloading of the next slide. |
 | R8 | **Hot reload of devices.** Devices can be added or deleted at runtime. The interface has `DeviceSettingsChanged` but no add/remove event. | Tiles refresh on page load and on `DeviceSettingsChanged`. Add/remove flows navigate through Settings Explorer, so the home page reloads when returning. |
 
@@ -237,9 +239,9 @@ These are verified against MudBlazor 9.x source (MudCarousel / MudCarouselItem) 
 2. **Disabled device tiles** are dimmed but still navigable (the brief said "dim/mark" only).
 3. **Information display** is a small modal dialog rather than a popover.
 4. **Dwell** includes the 0.5 s fade; clamped to 2-60 s.
-5. Property names `CarouselDwellSeconds` and `CarouselActiveShow`, manifest file name `carousel.settings.json`, and image folder `wwwroot/images/carousel/{showFolder}/` are acceptable.
+5. Property names `DwellSeconds` and `ActiveShow`, file name `carousel.settings.json`, and image folder `wwwroot/images/carousel/{showFolder}/` are acceptable.
 6. Hero background URL remains the remote `greenswamp.org` image (unchanged).
-7. The two shows are fixed in purpose (reference and astronomy) but the toggle is generated from the manifest.
+7. The two shows are fixed in purpose (reference and astronomy) but the toggle is generated from `carousel.settings.json`.
 
 ---
 
@@ -261,17 +263,17 @@ These are verified against MudBlazor 9.x source (MudCarousel / MudCarouselItem) 
 3. Tile click goes to `/mount-control/{n}`; cog goes to `/mount-settings/{n}`; info lists device number, name, description, mount type and alignment mode. Cog and info clicks do not also navigate to the control page.
 4. A disabled device tile is visibly dimmed.
 5. The carousel auto-advances every 5 s by default, loops, shows a caption below each image, fades over 0.5 s, has working left/right arrows and bullets, and restarts the timer after manual navigation.
-6. Changing `CarouselDwellSeconds` in `appsettings.server.user.json` changes the dwell time. The setting does not appear in Settings Explorer. Saving other Settings Explorer changes does not reset it.
+6. Changing `DwellSeconds` in `carousel.settings.json` changes the dwell time. The setting does not appear in Settings Explorer.
 7. Switching show restarts at slide 1 and the choice survives a server restart.
 8. Editing `carousel.settings.json` and replacing jpg files changes the carousel with no rebuild.
-9. Missing image, missing or corrupt manifest, zero devices, and a show with no slides all render without exceptions.
+9. Missing image, missing or corrupt `carousel.settings.json`, zero devices, and a show with no slides all render without exceptions.
 10. The solution builds with no new errors or warnings.
 
 ---
 
 ## 12. Proposed implementation phases (for planning only)
 
-1. Settings: `ServerConfig` properties, appsettings and schema, manifest model and service, seeding, validation (plus tests).
+1. Settings: `CarouselSettings` model, service members, seeding, validation (plus tests).
 2. Carousel component (`HomeCarousel`) with fade, bullets, arrows, preload, show toggle, persistence.
 3. Device tiles and info dialog component(s).
 4. `Index.razor` and CSS restructure (hero, bottom bar, wordmark).
