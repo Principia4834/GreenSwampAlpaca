@@ -13,16 +13,6 @@
             Welcome to <span>Green Swamp Alpaca</span> Server <small>(v@(ServerConfig.GetVersion()))</small>
         </h1>
 
-            <ul class="gs-home-bullets">
-            <li>ASCOM Alpaca-compliant mount driver server for SkyWatcher and compatible mounts</li>
-            <li>Supports German Equatorial (GEM), Polar / Fork Equatorial and Alt-Az mounts</li>
-            <li>Provides simulator for all mount types for testing and development</li>
-            <li>Parallel control of multiple mounts by multiple ASCOM clients</li>
-            <li>Blazor-based web UI for real-time mount status, tracking, and configuration</li>
-            <li>Supports custom tracking rates, pulse guiding, and park/unpark sequences</li>
-            <li>Runs as a local network service — connect any Alpaca-aware planetarium or imaging app</li>
-        </ul>
-
         <div class="gs-home-links">
                 <a href="https://github.com/Principia4834/GreenSwampAlpaca/wiki" target="_blank" rel="noopener">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -39,8 +29,13 @@
         </div>
     </div>
 
-    <footer class="gs-home-footer">
+    <div class="gs-home-carousel-area">
+        <HomeCarousel />
+    </div>
+
+    <div class="gs-home-bottom-bar">
+        <HomeDeviceBar />
         <p class="gs-home-footer-text">Green Swamp Alpaca Server</p>
-    </footer>
+    </div>
 </div>
 </div>
