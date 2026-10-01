@@ -102,9 +102,15 @@
                             Size="Size.Small"
                             SelectionMode="SelectionMode.SingleSelection"
                             Disabled="@(!IsEnabled)">
-                <MudToggleItem Value="@HcMode.Axes" Text="Axes" />
-                <MudToggleItem Value="@HcMode.Guiding" Text="Guiding" />
-                <MudToggleItem Value="@HcMode.Pulse" Text="Pulse" />
+            <MudTooltip Text="Axes motion control">
+                    <MudToggleItem Value="@HcMode.Axes" Text="Axes" Class="mud-width-full rounded-0" />
+            </MudTooltip>
+            <MudTooltip Text="Guiding motion control">
+                    <MudToggleItem Value="@HcMode.Guiding" Text="Guiding" Class="mud-width-full rounded-0" />
+            </MudTooltip>
+            <MudTooltip Text="Pulse motion control">
+                    <MudToggleItem Value="@HcMode.Pulse" Text="Pulse" Class="mud-width-full rounded-0" />
+            </MudTooltip>
             </MudToggleGroup>
         </MudStack>
 

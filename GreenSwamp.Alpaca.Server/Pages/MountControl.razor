@@ -42,6 +42,7 @@
 else
 {
     <MudTabs Rounded="true" Elevation="1" Class="mb-4 gs-tabs-no-transform"
+             TabPanelsClass="pt-2"
              ActivePanelIndex="@ActiveTabIndex"
              ActivePanelIndexChanged="OnDeviceTabChanged">
         @foreach (var dn in GetConfiguredDeviceNumbers())
@@ -81,7 +82,7 @@ else
                 </MudPaper>
 
                 @* -- State icon row ----------------------------------------- *@
-                <MudPaper Elevation="0" Class="pa-1 mb-2">
+                <MudPaper Elevation="1" Class="pa-1 mb-2">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
 
                         @* -- Status indicators (left) *@
@@ -216,7 +217,7 @@ else
                 @* -- Inline control panels and buttons ---------------------- *@
                 <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="3" Wrap="Wrap.Wrap" Class="mb-3">
 
-                    <MudPaper Elevation="1" Class="pa-3">
+                    <MudPaper Elevation="1" Class="pa-3" Style="min-width:420px">
                         <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo / Slew</MudText>
                         <GoToPanel State="@s"
                                    DeviceNumber="@dn"
@@ -258,7 +259,7 @@ else
                                            Color="Color.Error"
                                            Size="Size.Large"
                                            Variant="Variant.Text"
-                                           Disabled="@(!s.HasEverBeenConnected && !isUiClientConnected)"
+                                           Disabled="@(!s.HasEverBeenConnected)"
                                            OnClick="@(() => OnStopClickAsync(dn))" />
                         </MudTooltip>
 

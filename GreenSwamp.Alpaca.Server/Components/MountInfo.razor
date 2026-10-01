@@ -28,34 +28,46 @@
     @* -- Dial type selection ---------------------------------------------- *@
     <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
                     SelectionMode="SelectionMode.SingleSelection">
-        <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
-        <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
-        <MudToggleItem Value="CoordMode.Optics" Text="Optics" />
+            <MudTooltip Text="Show right ascension and declination">
+                <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" Class="mud-width-full rounded-0" />
+            </MudTooltip>
+            <MudTooltip Text="Show altitude and azimuth">
+                <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" Class="mud-width-full rounded-0" />
+            </MudTooltip>
+            <MudTooltip Text="Show telescope optics angles">
+                <MudToggleItem Value="CoordMode.Optics" Text="Optics" Class="mud-width-full rounded-0" />
+            </MudTooltip>
     </MudToggleGroup>
 
     @* -- Chart / view buttons: one full-width row -------------------------- *@
     <MudStack Row="true" Spacing="2" Style="width:100%">
-        <MudButton Color="Color.Primary"
-                   Variant="Variant.Outlined"
-                   Class="flex-grow-1"
-                   Disabled="@(!IsConnected)"
-                   OnClick="@(() => OpenChartWindowAsync("radec"))">
-            Axes Chart
-        </MudButton>
-        <MudButton Color="Color.Primary"
+       <MudTooltip Text="Open axes chart in new window">
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Outlined"
+                       Class="flex-grow-1"
+                       Disabled="@(!IsConnected)"
+                       OnClick="@(() => OpenChartWindowAsync("radec"))">
+                Axes Chart
+            </MudButton>
+       </MudTooltip>
+        <MudTooltip Text="Open pulse chart in new window">
+           <MudButton Color="Color.Primary"
                    Variant="Variant.Outlined"
                    Class="flex-grow-1"
                    Disabled="@(!IsConnected)"
                    OnClick="@(() => OpenChartWindowAsync("pulse"))">
             Pulse Chart
-        </MudButton>
-        <MudButton Color="Color.Primary"
+            </MudButton>
+       </MudTooltip>
+        <MudTooltip Text="Open 3D view in new window">
+            <MudButton Color="Color.Primary"
                    Variant="Variant.Outlined"
                    Class="flex-grow-1"
                    Disabled="@(!IsConnected)"
                    OnClick="OpenTelescopeViewAsync">
             3D View
-        </MudButton>
+            </MudButton>
+       </MudTooltip>
     </MudStack>
 
 </MudStack>

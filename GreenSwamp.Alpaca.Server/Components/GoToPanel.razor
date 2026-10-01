@@ -50,6 +50,7 @@
         <MudStack Spacing="2" Style="width:220px">
             @if (_coordMode == CoordMode.RaDec)
             {
+            <MudTooltip Text="Enter right ascension value">
                 <MudTextField T="string" Value="_raSmart"
                               ValueChanged="@(v => OnRaSmartChanged(v))"
                               Disabled="@(!IsUiClientConnected)"
@@ -60,6 +61,8 @@
                               Placeholder="23 15 12.55, 23.75"
                               Immediate="true"
                               OnBlur="@(() => OnRaSmartBlur())" />
+            </MudTooltip>
+            <MudTooltip Text="Enter declination value">
                 <MudTextField T="string" Value="_decSmart"
                               ValueChanged="@(v => OnDecSmartChanged(v))"
                               Disabled="@(!IsUiClientConnected)"
@@ -70,9 +73,11 @@
                               Placeholder="+56 19 25.57, -56.32"
                               Immediate="true"
                               OnBlur="@(() => OnDecSmartBlur())" />
+            </MudTooltip>
             }
             else
             {
+            <MudTooltip Text="Enter azimuth value">
                 <MudTextField T="string" Value="_azSmart"
                               ValueChanged="@(v => OnAzSmartChanged(v))"
                               Disabled="@(!IsUiClientConnected)"
@@ -83,6 +88,8 @@
                               Placeholder="23° 24’ 54.23”, 23.4"
                               Immediate="true"
                               OnBlur="@(() => OnAzSmartBlur())" />
+            </MudTooltip>
+            <MudTooltip Text="Enter altitude value">
                 <MudTextField T="string" Value="_altSmart"
                               ValueChanged="@(v => OnAltSmartChanged(v))"
                               Disabled="@(!IsUiClientConnected)"
@@ -93,6 +100,7 @@
                               Placeholder="-12° 24m 54.23s, -12.4"
                               Immediate="true"
                               OnBlur="@(() => OnAltSmartBlur())" />
+            </MudTooltip>
             }
         </MudStack>
     </MudStack>
@@ -103,10 +111,10 @@
                         SelectionMode="SelectionMode.SingleSelection"
                         Disabled="@(!IsUiClientConnected)">
             <MudTooltip Text="Use RA / Dec coordinates">
-                <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
+                <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" Class="mud-width-full rounded-0" />
             </MudTooltip>
             <MudTooltip Text="Use Alt / Az coordinates">
-                <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
+                    <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" Class="mud-width-full rounded-0" />
             </MudTooltip>
         </MudToggleGroup>
     </MudStack>
