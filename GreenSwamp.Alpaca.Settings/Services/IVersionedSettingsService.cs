@@ -165,5 +165,22 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         /// <summary>Event raised when model-set settings are changed via SaveModelSetsAsync.</summary>
         event EventHandler<ModelSetCollection>? ModelSetsChanged;
+
+        // -- Carousel settings (carousel.settings.json) -----------------------
+
+        /// <summary>Gets the path to carousel.settings.json for the current version.</summary>
+        string CarouselSettingsPath { get; }
+
+        /// <summary>
+        /// Gets the home page carousel settings, sanitised (dwell clamped, invalid names removed).
+        /// Returns factory defaults if the file is absent or corrupt.
+        /// </summary>
+        CarouselSettings GetCarouselSettings();
+
+        /// <summary>Saves carousel settings to carousel.settings.json atomically.</summary>
+        Task SaveCarouselSettingsAsync(CarouselSettings settings);
+
+        /// <summary>Event raised when carousel settings are changed via SaveCarouselSettingsAsync.</summary>
+        event EventHandler<CarouselSettings>? CarouselSettingsChanged;
     }
 }

@@ -68,6 +68,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public event EventHandler<ModelSetCollection>? ModelSetsChanged;
 
+        private readonly SemaphoreSlim _carouselFileLock = new(1, 1);
+        public string CarouselSettingsPath => Path.Combine(_currentVersionPath, "carousel.settings.json");
+
+        public event EventHandler<CarouselSettings>? CarouselSettingsChanged;
+
         public VersionedSettingsService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -86,8 +91,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
             // Ensure device files exist before anything else (e.g. discovery, DeviceManager).
             // After migration this creates only the files that were not copied.
             RunFirstRunDeviceInit();
+
+            EnsureCarouselSettingsFile();
         }
-        
+
         // -- Path helpers ------------------------------------------------------
 
         public string GetDeviceSettingsPath(int deviceNumber)
@@ -1195,6 +1202,67 @@ namespace GreenSwamp.Alpaca.Settings.Services
             ]
         };
 
+
+        // -- Carousel settings -------------------------------------------------
+
+        // Seeds carousel.settings.json with factory defaults so the developer has a file to edit.
+        // Never overwrites an existing (possibly migrated) file.
+        private void EnsureCarouselSettingsFile()
+        {
+            try
+            {
+                if (File.Exists(CarouselSettingsPath)) return;
+                var json = JsonSerializer.Serialize(CarouselSettings.CreateDefault(), _jsonOptions);
+                File.WriteAllText(CarouselSettingsPath, json, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                LogSafe("WARNING", $"Could not create carousel settings file: {ex.Message}");
+            }
+        }
+
+        public CarouselSettings GetCarouselSettings()
+        {
+            if (!File.Exists(CarouselSettingsPath))
+                return CarouselSettings.CreateDefault();
+
+            try
+            {
+                var json = File.ReadAllText(CarouselSettingsPath);
+                var settings = JsonSerializer.Deserialize<CarouselSettings>(json, _jsonReadOptions);
+                if (settings == null)
+                    return CarouselSettings.CreateDefault();
+                return settings.Sanitize(msg => LogSafe("WARNING", msg));
+            }
+            catch (Exception ex)
+            {
+                LogSafe("WARNING", $"Carousel settings unreadable, using defaults: {ex.Message}");
+                return CarouselSettings.CreateDefault();
+            }
+        }
+
+        public async Task SaveCarouselSettingsAsync(CarouselSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+
+            if (!await _carouselFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Timeout acquiring carousel settings lock.");
+
+            try
+            {
+                var json = JsonSerializer.Serialize(settings, _jsonOptions);
+                var tempPath = CarouselSettingsPath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json, Encoding.UTF8);
+                File.Move(tempPath, CarouselSettingsPath, overwrite: true);
+                LogSafe("INFO", $"Carousel settings saved for version {CurrentVersion}");
+            }
+            finally
+            {
+                _carouselFileLock.Release();
+            }
+
+            CarouselSettingsChanged?.Invoke(this, settings);
+        }
 
         private void LogSafe(string level, string message)
         {
