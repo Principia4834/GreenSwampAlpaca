@@ -1,0 +1,40 @@
+﻿@using GreenSwamp.Alpaca.Settings.Services
+@inject IVersionedSettingsService SettingsService
+
+<div class="gs-tile-row" role="list" aria-label="Telescope devices">
+    @foreach (var device in _devices)
+    {
+        <div role="listitem" @key="device.DeviceNumber">
+            <DeviceTile Device="device" />
+        </div>
+    }
+    @if (_devices.Count == 0)
+    {
+        <span class="gs-tile-empty">No telescope devices are configured.</span>
+    }
+</div>
+
+@code {
+    private List<HomeDeviceInfo> _devices = [];
+
+    protected override void OnInitialized()
+    {
+        var settingsByNumber = SettingsService.GetAllDeviceSettings()
+            .ToDictionary(s => s.DeviceNumber);
+
+        _devices = SettingsService.GetAlpacaDevices()
+            .OrderBy(d => d.DeviceNumber)
+            .Select(d =>
+            {
+                settingsByNumber.TryGetValue(d.DeviceNumber, out var s);
+                return new HomeDeviceInfo(
+                    d.DeviceNumber,
+                    string.IsNullOrWhiteSpace(d.DeviceName) ? $"Device {d.DeviceNumber}" : d.DeviceName,
+                    s?.DeviceDescription ?? string.Empty,
+                    s?.Mount ?? "Unknown",
+                    s?.AlignmentMode ?? "Unknown",
+                    s?.Enabled ?? true);
+            })
+            .ToList();
+    }
+}

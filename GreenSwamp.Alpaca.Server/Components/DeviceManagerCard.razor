@@ -119,11 +119,5 @@
             await OnHotReload.InvokeAsync();
     }
 
-    private static string FriendlyAlignment(string? mode) => mode?.ToLowerInvariant() switch
-    {
-        "germanpolar" => "German Equatorial (GEM)",
-        "polar" => "Polar / Fork",
-        "altaz" => "Alt-Azimuth",
-        _ => mode ?? "Unknown"
-    };
+    private static string FriendlyAlignment(string? mode) => DeviceDisplay.FriendlyAlignment(mode);
 }

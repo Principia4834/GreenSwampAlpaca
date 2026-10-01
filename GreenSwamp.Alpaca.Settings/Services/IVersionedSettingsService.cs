@@ -180,6 +180,12 @@ namespace GreenSwamp.Alpaca.Settings.Services
         /// <summary>Saves carousel settings to carousel.settings.json atomically.</summary>
         Task SaveCarouselSettingsAsync(CarouselSettings settings);
 
+        /// <summary>
+        /// Persists only the ActiveShow value, leaving every other entry in the file exactly as the
+        /// developer wrote it (no sanitising). Does nothing if the file is unreadable.
+        /// </summary>
+        Task SetCarouselActiveShowAsync(string showId);
+
         /// <summary>Event raised when carousel settings are changed via SaveCarouselSettingsAsync.</summary>
         event EventHandler<CarouselSettings>? CarouselSettingsChanged;
     }

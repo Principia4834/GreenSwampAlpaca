@@ -1264,6 +1264,46 @@ namespace GreenSwamp.Alpaca.Settings.Services
             CarouselSettingsChanged?.Invoke(this, settings);
         }
 
+        public async Task SetCarouselActiveShowAsync(string showId)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(showId);
+
+            if (!await _carouselFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Timeout acquiring carousel settings lock.");
+
+            CarouselSettings raw;
+            try
+            {
+                if (!File.Exists(CarouselSettingsPath)) return;
+
+                try
+                {
+                    var current = await File.ReadAllTextAsync(CarouselSettingsPath);
+                    raw = JsonSerializer.Deserialize<CarouselSettings>(current, _jsonReadOptions)
+                          ?? throw new JsonException("Empty carousel settings");
+                }
+                catch (Exception ex)
+                {
+                    LogSafe("WARNING", $"Carousel active show not saved, file unreadable: {ex.Message}");
+                    return;
+                }
+
+                if (string.Equals(raw.ActiveShow, showId, StringComparison.Ordinal)) return;
+
+                raw.ActiveShow = showId;
+                var json = JsonSerializer.Serialize(raw, _jsonOptions);
+                var tempPath = CarouselSettingsPath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json, Encoding.UTF8);
+                File.Move(tempPath, CarouselSettingsPath, overwrite: true);
+            }
+            finally
+            {
+                _carouselFileLock.Release();
+            }
+
+            CarouselSettingsChanged?.Invoke(this, raw);
+        }
+
         private void LogSafe(string level, string message)
         {
             try

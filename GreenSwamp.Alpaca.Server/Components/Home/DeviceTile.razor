@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+
+@* The tile body is a native button; the info and settings buttons are siblings (not children)
+   so no interactive element is nested inside another. *@
+<div class="gs-tile @(Device.Enabled ? string.Empty : "gs-tile-disabled")">
+    <button type="button" class="gs-tile-main"
+            title="Open control page for @Device.Name"
+            aria-label="Open control page for @Device.Name"
+            @onclick="OpenControl">
+        <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Size="Size.Large" />
+        <span class="gs-tile-name">@Device.Name</span>
+        @if (!Device.Enabled)
+        {
+            <span class="gs-tile-state">Disabled</span>
+        }
+    </button>
+
+    <MudIconButton Class="gs-tile-info" Icon="@Icons.Material.Filled.Info" Size="Size.Small"
+                   aria-label="@($"Device information for {Device.Name}")"
+                   OnClick="ShowInfo" />
+    <MudIconButton Class="gs-tile-cog" Icon="@Icons.Material.Filled.Settings" Size="Size.Small"
+                   aria-label="@($"Settings for {Device.Name}")"
+                   OnClick="OpenSettings" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public HomeDeviceInfo Device { get; set; } = default!;
+
+    private void OpenControl() => Navigation.NavigateTo($"mount-control/{Device.DeviceNumber}");
+
+    private void OpenSettings() => Navigation.NavigateTo($"mount-settings/{Device.DeviceNumber}");
+
+    private Task ShowInfo()
+    {
+        var parameters = new DialogParameters<DeviceInfoDialog> { { x => x.Device, Device } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
+        return DialogService.ShowAsync<DeviceInfoDialog>($"Device {Device.DeviceNumber} – {Device.Name}", parameters, options);
+    }
+}

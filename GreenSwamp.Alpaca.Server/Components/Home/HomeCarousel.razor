@@ -1,0 +1,104 @@
+﻿@using GreenSwamp.Alpaca.Settings.Services
+@inject IVersionedSettingsService SettingsService
+
+@* Reads carousel.settings.json once per page load. Edits to the file appear on the next visit. *@
+
+<div class="gs-carousel-host">
+    @if (_shows.Count > 1)
+    {
+        <div class="gs-carousel-toggle">
+            <MudToggleGroup T="string" Value="_activeId" ValueChanged="OnShowChanged"
+                            Color="Color.Primary" Size="Size.Small" Outlined="true" Delimiters="true">
+                @foreach (var show in _shows)
+                {
+                    <MudToggleItem Value="@show.Id" Text="@show.Title" />
+                }
+            </MudToggleGroup>
+        </div>
+    }
+
+    @if (_active is null)
+    {
+        <div class="gs-carousel-empty">No carousel images are configured.</div>
+    }
+    else
+    {
+        @* @key forces a clean rebuild of the carousel (selection, timer, items) when the show changes. *@
+        <MudCarousel @key="_active.Id" TData="object" Class="gs-carousel"
+                     @bind-SelectedIndex="_index"
+                     AutoCycle="true"
+                     AutoCycleTime="TimeSpan.FromSeconds(_dwellSeconds)"
+                     ShowArrows="true" ShowBullets="true"
+                     EnableSwipeGesture="true">
+            @foreach (var slide in _active.Slides)
+            {
+                <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
+                    <figure class="gs-slide">
+                        <div class="gs-slide-media">
+                            <img class="gs-slide-img" src="@ImageUrl(_active, slide)" alt="@slide.Caption"
+                                 onerror="this.parentElement.classList.add('gs-slide-missing')" />
+                            <span class="gs-slide-fallback">Image not found: @slide.File</span>
+                        </div>
+                        <figcaption class="gs-slide-caption">@slide.Caption</figcaption>
+                    </figure>
+                </MudCarouselItem>
+            }
+        </MudCarousel>
+
+        @if (_nextUrl is not null)
+        {
+            <img class="gs-slide-preload" src="@_nextUrl" alt="" aria-hidden="true" />
+        }
+    }
+</div>
+
+@code {
+    private List<CarouselShow> _shows = [];
+    private CarouselShow? _active;
+    private string _activeId = string.Empty;
+    private int _dwellSeconds = CarouselSettings.DefaultDwellSeconds;
+    private int _index;
+
+    private string? _nextUrl =>
+        _active is { Slides.Count: > 1 }
+            ? ImageUrl(_active, _active.Slides[(Math.Max(_index, 0) + 1) % _active.Slides.Count])
+            : null;
+
+    protected override void OnInitialized()
+    {
+        var settings = SettingsService.GetCarouselSettings();
+        _dwellSeconds = settings.DwellSeconds;
+
+        // Only shows that actually have slides are offered.
+        _shows = settings.Shows.Where(s => s.Slides.Count > 0).ToList();
+        SelectShow(settings.ActiveShow);
+    }
+
+    private void SelectShow(string? id)
+    {
+        _active = _shows.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase))
+                  ?? _shows.FirstOrDefault();
+        _activeId = _active?.Id ?? string.Empty;
+        _index = 0;
+    }
+
+    private async Task OnShowChanged(string? id)
+    {
+        SelectShow(id);
+        if (_active is not null)
+        {
+            try
+            {
+                await SettingsService.SetCarouselActiveShowAsync(_active.Id);
+            }
+            catch (Exception ex)
+            {
+                // Persisting the choice is best effort; the selection still works for this visit.
+                ASCOM.Alpaca.Logging.LogWarning($"Carousel active show not saved: {ex.Message}");
+            }
+        }
+    }
+
+    private static string ImageUrl(CarouselShow show, CarouselSlide slide) =>
+        $"images/carousel/{Uri.EscapeDataString(show.Folder)}/{Uri.EscapeDataString(slide.File)}";
+}

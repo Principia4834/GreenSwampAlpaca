@@ -1,0 +1,30 @@
+﻿@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudSimpleTable Dense="true" Hover="false" Elevation="0">
+            <tbody>
+                <tr><th scope="row">Device number</th><td>@Device.DeviceNumber</td></tr>
+                <tr><th scope="row">Name</th><td>@Device.Name</td></tr>
+                <tr><th scope="row">Description</th><td>@Device.Description</td></tr>
+                <tr><th scope="row">Mount type</th><td>@Device.MountType</td></tr>
+                <tr><th scope="row">Alignment mode</th><td>@DeviceDisplay.FriendlyAlignment(Device.AlignmentMode)</td></tr>
+                @if (!Device.Enabled)
+                {
+                    <tr><th scope="row">Status</th><td>Disabled</td></tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public HomeDeviceInfo Device { get; set; } = default!;
+
+    private void Close() => MudDialog.Close();
+}
