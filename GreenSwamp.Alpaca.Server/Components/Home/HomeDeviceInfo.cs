@@ -7,5 +7,6 @@
         string Description,
         string MountType,
         string AlignmentMode,
+        bool Connected,
         bool Enabled);
 }

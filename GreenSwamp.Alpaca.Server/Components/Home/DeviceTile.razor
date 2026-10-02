@@ -2,28 +2,41 @@
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 
-@* The tile body is a native button; the info and settings buttons are siblings (not children)
-   so no interactive element is nested inside another. *@
-<div class="gs-tile @(Device.Enabled ? string.Empty : "gs-tile-disabled")">
-    <button type="button" class="gs-tile-main"
-            title="Open control page for @Device.Name"
-            aria-label="Open control page for @Device.Name"
-            @onclick="OpenControl">
-        <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Size="Size.Large" />
-        <span class="gs-tile-name">@Device.Name</span>
-        @if (!Device.Enabled)
-        {
-            <span class="gs-tile-state">Disabled</span>
-        }
-    </button>
+@* The main button, info button and settings button are siblings inside the paper (not nested),
+   so no interactive element is inside another. Each is wrapped in a MudTooltip whose root
+   element (RootClass) carries the positioning. *@
+<MudPaper Elevation="0" Outlined="true" Class="@($"gs-tile {(Device.Enabled ? string.Empty : "gs-tile-disabled")}")">
+    <MudTooltip Text="@($"Open control page for {Device.Name}")" Placement="Placement.Top" Arrow="true"
+                RootClass="gs-tile-main-tip">
+        <MudButton Class="gs-tile-main" FullWidth="true" Variant="Variant.Text" Color="Color.Inherit"
+                   aria-label="@($"Open control page for {Device.Name}")"
+                   OnClick="OpenControl">
+            <MudIcon Icon="@TelescopeIcon" Size="Size.Large" />
+            <MudText Typo="Typo.h2" Class="gs-tile-name">@Device.Name</MudText>
+            @if (!Device.Enabled)
+            {
+                <MudText Typo="Typo.caption" Class="gs-tile-state">Disabled</MudText>
+            }
+        </MudButton>
+    </MudTooltip>
 
-    <MudIconButton Class="gs-tile-info" Icon="@Icons.Material.Filled.Info" Size="Size.Small"
-                   aria-label="@($"Device information for {Device.Name}")"
-                   OnClick="ShowInfo" />
-    <MudIconButton Class="gs-tile-cog" Icon="@Icons.Material.Filled.Settings" Size="Size.Small"
-                   aria-label="@($"Settings for {Device.Name}")"
-                   OnClick="OpenSettings" />
-</div>
+    <MudTooltip Text="Device information" Placement="Placement.Top" Arrow="true" RootClass="gs-tile-info">
+        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Medium" Color="Color.Inherit"
+                       aria-label="@($"Device information for {Device.Name}")"
+                       OnClick="ShowInfo" />
+    </MudTooltip>
+    <MudTooltip Text="@(Device.Connected ? "Device connected" : "Device not connected")" Placement="Placement.Top"
+                Arrow="true" RootClass="gs-tile-connected">
+        <MudIcon Icon="@(Device.Connected ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
+                 Size="Size.Large" Color="@(Device.Connected ? Color.Success : Color.Default)"
+                 aria-label="@(Device.Connected ? "Connected" : "Not connected")" />
+    </MudTooltip>
+    <MudTooltip Text="Device settings" Placement="Placement.Top" Arrow="true" RootClass="gs-tile-cog">
+        <MudIconButton Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" Color="Color.Inherit"
+                       aria-label="@($"Settings for {Device.Name}")"
+                       OnClick="OpenSettings" />
+    </MudTooltip>
+</MudPaper>
 
 @code {
     [Parameter, EditorRequired] public HomeDeviceInfo Device { get; set; } = default!;
@@ -35,7 +48,13 @@
     private Task ShowInfo()
     {
         var parameters = new DialogParameters<DeviceInfoDialog> { { x => x.Device, Device } };
-        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true };
-        return DialogService.ShowAsync<DeviceInfoDialog>($"Device {Device.DeviceNumber} – {Device.Name}", parameters, options);
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, CloseOnEscapeKey = true };
+        return DialogService.ShowAsync<DeviceInfoDialog>(null, parameters, options);
     }
+
+    private const string TelescopeIcon = 
+        @"<svg viewBox=""0 0 24 24"" xmlns=""http://www.w3.org/2000/svg"">
+            <path d=""M21.9,8.9L20.2,9.9L16.2,3L17.9,2L21.9,8.9M9.8,7.9L12.8,13.1L18.9,9.6L15.9,4.4L9.8,7.9M11.4,12.7L9.4,9.2L5.1,11.7L7.1,15.2L11.4,12.7M2.1,14.6L3.1,16.3L5.7,14.8L4.7,13.1L2.1,14.6M12.1,14L11.8,13.6L7.5,16.1L7.8,16.5C8,16.8 8.3,17.1 8.6,17.3L7,22H9L10.4,17.7H10.5L12,22H14L12.1,16.4C12.6,15.7 12.6,14.8 12.1,14Z"" />
+        </svg>";
+
 }

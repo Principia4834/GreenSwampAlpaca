@@ -4,24 +4,35 @@
     <DialogContent>
         <MudSimpleTable Dense="true" Hover="false" Elevation="0">
             <tbody>
-                <tr><th scope="row">Device number</th><td>@Device.DeviceNumber</td></tr>
-                <tr><th scope="row">Name</th><td>@Device.Name</td></tr>
-                <tr><th scope="row">Description</th><td>@Device.Description</td></tr>
-                <tr><th scope="row">Mount type</th><td>@Device.MountType</td></tr>
-                <tr><th scope="row">Alignment mode</th><td>@DeviceDisplay.FriendlyAlignment(Device.AlignmentMode)</td></tr>
+                @DeviceRow("Device number", Device.DeviceNumber)
+                @DeviceRow("Name", Device.Name)
+                @DeviceRow("Description", Device.Description)
+                @DeviceRow("Mount type", Device.MountType)
+                @DeviceRow("Alignment mode", DeviceDisplay.FriendlyAlignment(Device.AlignmentMode))
+
                 @if (!Device.Enabled)
                 {
-                    <tr><th scope="row">Status</th><td>Disabled</td></tr>
+                    @DeviceRow("Status", "Disabled")
                 }
             </tbody>
         </MudSimpleTable>
     </DialogContent>
+
     <DialogActions>
         <MudButton Color="Color.Primary" OnClick="Close">Close</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
+    private RenderFragment DeviceRow(string label, object? value) => @<tr>
+        <th scope="row">
+            <MudText Typo="Typo.body1">@label</MudText>
+        </th>
+        <td>
+            <MudText Typo="Typo.h1">@value</MudText>
+        </td>
+    </tr>;
+
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter, EditorRequired] public HomeDeviceInfo Device { get; set; } = default!;

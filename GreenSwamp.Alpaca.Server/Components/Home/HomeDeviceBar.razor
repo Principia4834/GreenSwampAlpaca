@@ -1,4 +1,6 @@
-﻿@using GreenSwamp.Alpaca.Settings.Services
+﻿@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Settings.Services
+@implements IDisposable
 @inject IVersionedSettingsService SettingsService
 
 <div class="gs-tile-row" role="list" aria-label="Telescope devices">
@@ -15,6 +17,7 @@
 </div>
 
 @code {
+    private readonly CancellationTokenSource _cts = new();
     private List<HomeDeviceInfo> _devices = [];
 
     protected override void OnInitialized()
@@ -33,8 +36,46 @@
                     s?.DeviceDescription ?? string.Empty,
                     s?.Mount ?? "Unknown",
                     s?.AlignmentMode ?? "Unknown",
+                    IsConnected(d.DeviceNumber),
                     s?.Enabled ?? true);
             })
             .ToList();
+
+        _ = RefreshLoopAsync(_cts.Token);
+    }
+
+    // Mount.IsConnected is a lock-free O(1) check; no mount hardware is touched.
+    private static bool IsConnected(int deviceNumber) =>
+        MountRegistry.GetInstance(deviceNumber)?.IsConnected ?? false;
+
+    private async Task RefreshLoopAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                var changed = false;
+                for (var i = 0; i < _devices.Count; i++)
+                {
+                    var connected = IsConnected(_devices[i].DeviceNumber);
+                    if (connected == _devices[i].Connected) continue;
+                    _devices[i] = _devices[i] with { Connected = connected };
+                    changed = true;
+                }
+
+                if (changed) await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Component disposed
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

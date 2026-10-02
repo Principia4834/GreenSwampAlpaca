@@ -97,6 +97,18 @@
 	  <Content Update="wwwroot\fonts\SwampWitch.ttf">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\M33.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\M42.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\NGC6992.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\Orion.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="wwwroot\js\profileUtils.js">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

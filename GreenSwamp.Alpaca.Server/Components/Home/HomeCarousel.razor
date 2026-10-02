@@ -24,26 +24,29 @@
     else
     {
         @* @key forces a clean rebuild of the carousel (selection, timer, items) when the show changes. *@
-        <MudCarousel @key="_active.Id" TData="object" Class="gs-carousel"
-                     @bind-SelectedIndex="_index"
-                     AutoCycle="true"
-                     AutoCycleTime="TimeSpan.FromSeconds(_dwellSeconds)"
-                     ShowArrows="true" ShowBullets="true"
-                     EnableSwipeGesture="true">
-            @foreach (var slide in _active.Slides)
-            {
-                <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
-                    <figure class="gs-slide">
-                        <div class="gs-slide-media">
-                            <img class="gs-slide-img" src="@ImageUrl(_active, slide)" alt="@slide.Caption"
-                                 onerror="this.parentElement.classList.add('gs-slide-missing')" />
-                            <span class="gs-slide-fallback">Image not found: @slide.File</span>
-                        </div>
-                        <figcaption class="gs-slide-caption">@slide.Caption</figcaption>
-                    </figure>
-                </MudCarouselItem>
-            }
-        </MudCarousel>
+        <MudTooltip Text="Click image to stop and start auto-scrolling" Placement="Placement.Top" Inline="false" RootClass="gs-carousel-tip">
+            <MudCarousel @key="_active.Id" TData="object" Class="gs-carousel"
+                         @bind-SelectedIndex="_index"
+                         AutoCycle="@_isAutoCycling"
+                         @onclick="HandleClick"
+                         AutoCycleTime="TimeSpan.FromSeconds(_dwellSeconds)"
+                         ShowArrows="true" ShowBullets="true"
+                         EnableSwipeGesture="true">
+                @foreach (var slide in _active.Slides)
+                {
+                    <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
+                        <figure class="gs-slide">
+                            <div class="gs-slide-media">
+                                <img class="gs-slide-img" src="@ImageUrl(_active, slide)" alt="@slide.Caption"
+                                     onerror="this.parentElement.classList.add('gs-slide-missing')" />
+                                <span class="gs-slide-fallback">Image not found: @slide.File</span>
+                            </div>
+                            <figcaption class="gs-slide-caption">@slide.Caption</figcaption>
+                        </figure>
+                    </MudCarouselItem>
+                }
+            </MudCarousel>
+        </MudTooltip>
 
         @if (_nextUrl is not null)
         {
@@ -58,6 +61,7 @@
     private string _activeId = string.Empty;
     private int _dwellSeconds = CarouselSettings.DefaultDwellSeconds;
     private int _index;
+    private bool _isAutoCycling = true;
 
     private string? _nextUrl =>
         _active is { Slides.Count: > 1 }
@@ -97,6 +101,11 @@
                 ASCOM.Alpaca.Logging.LogWarning($"Carousel active show not saved: {ex.Message}");
             }
         }
+    }
+
+    private void HandleClick()
+    {
+        _isAutoCycling = !_isAutoCycling;
     }
 
     private static string ImageUrl(CarouselShow show, CarouselSlide slide) =>

@@ -375,6 +375,7 @@ code {
     font-weight: 300;
     color:       #fff;
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    text-align: center;
     margin-bottom: 1.5rem;
     letter-spacing: 0.02em;
 }
@@ -473,6 +474,19 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     }
 
+    /* Tooltip root wrapper takes over the flex-child role of the carousel */
+    .gs-carousel-tip {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .gs-carousel-tip > .gs-carousel {
+        flex: 1 1 auto;
+    }    
+    
     /* Each slide fills the (absolutely positioned) carousel item. The bottom padding
        keeps the caption clear of MudBlazor's overlaid bullet row. */
     .gs-slide {
@@ -554,47 +568,64 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         color: rgba(255,255,255,0.75);
     }
 
-    .gs-tile {
+    .mud-paper.gs-tile {
         position:      relative;
         flex:          0 0 auto;
         width:         150px;
         height:        120px;
-        border:        1px solid var(--gs-accent-500);
-        border-radius: 6px;
+        border:        3px solid var(--gs-accent-500);
+        border-radius: 8px;
         background:    rgba(0,0,0,0.55);
         color:         #fff;
         transition:    background 0.2s;
     }
 
-    .gs-tile:hover {
+    .mud-paper.gs-tile:hover {
         background: rgba(76,175,80,0.25);
     }
 
-    .gs-tile-disabled {
+    .mud-paper.gs-tile-disabled {
         opacity: 0.55;
     }
 
-    .gs-tile-main {
-        position:        absolute;
-        inset:           0;
-        width:           100%;
-        display:         flex;
+    .gs-tile-info,
+    .gs-tile-connected,
+    .gs-tile-cog {
+        position: absolute;
+        bottom:   2px;
+    }
+
+    .gs-tile-info { left:  2px; }
+    .gs-tile-cog  { right: 2px; }
+    .gs-tile-connected {
+        left:      50%;
+        transform: translateX(-50%);
+    }
+
+    /* Tooltip root wrapper around the main button fills the tile */
+    .gs-tile-main-tip {
+        position: absolute;
+        inset:    0;
+        display:  block;
+    }
+
+    /* MudButton upper-cases its label; keep the device name as typed and clear the bottom icons */
+    .gs-tile-main.mud-button-root {
+        width:          100%;
+        height:         100%;
+        min-width:      0;
+        padding:        0.5rem 0.5rem 2.75rem;
+        border-radius:  6px;
+        text-transform: none;
+    }
+
+    .gs-tile-main .mud-button-label {
         flex-direction:  column;
         align-items:     center;
         justify-content: center;
         gap:             0.25rem;
-        padding:         0.5rem 0.5rem 2.25rem;
-        border:          0;
-        border-radius:   6px;
-        background:      transparent;
-        color:           inherit;
-        font:            inherit;
-        cursor:          pointer;
-    }
-
-    .gs-tile-main:focus-visible {
-        outline:        2px solid var(--gs-accent-500);
-        outline-offset: 2px;
+        max-width:       100%;
+        min-width:       0;
     }
 
     .gs-tile-name {
@@ -606,19 +637,8 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     }
 
     .gs-tile-state {
-        font-size: 0.7rem;
-        opacity:   0.8;
+        opacity: 0.8;
     }
-
-    .gs-tile-info,
-    .gs-tile-cog {
-        position: absolute !important;
-        bottom:   2px;
-        color:    #fff !important;
-    }
-
-    .gs-tile-info { left:  2px; }
-    .gs-tile-cog  { right: 2px; }
 
     .gs-home-footer-text {
     font-family: 'Swamp Witch', cursive;
