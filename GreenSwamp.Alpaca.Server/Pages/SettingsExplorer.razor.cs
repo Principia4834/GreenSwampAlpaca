@@ -120,7 +120,7 @@ public partial class SettingsExplorer : IDisposable
         ["Observatory"]       = "Latitude, longitude, elevation and UTC offset for this observatory site.",
 
         // Server Config group descriptions
-        ["Network"]           = "Core Alpaca server settings, including server identity, port, network access and compatibility behaviour.",
+        ["Alpaca Settings"]   = "Core Alpaca server settings, including server identity, port, network access and compatibility behaviour.",
         ["User Interface"]    = "Display zoom and frontend user-preference settings.",
         ["Security"]          = "HTTP Basic authentication settings and account security.",
 
@@ -293,7 +293,7 @@ public partial class SettingsExplorer : IDisposable
             Source   = SettingsNodeSource.ServerConfig,
             Children =
             [
-                Leaf("Alpaca Settings", Icons.Material.Filled.NetworkCheck,     SettingsNodeSource.ServerConfig, "Network"),
+                Leaf("Alpaca Settings", Icons.Material.Filled.NetworkCheck,     SettingsNodeSource.ServerConfig, "Alpaca Settings"),
                 Leaf("User Interface",   Icons.Material.Filled.DisplaySettings, SettingsNodeSource.ServerConfig, "User Interface"),
                 Leaf("Security",         Icons.Material.Filled.Lock,            SettingsNodeSource.ServerConfig, "Security"),
             ]

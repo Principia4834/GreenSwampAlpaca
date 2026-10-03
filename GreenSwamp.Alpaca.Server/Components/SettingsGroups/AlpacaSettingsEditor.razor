@@ -57,7 +57,7 @@
                     {
                         @foreach (var address in ASCOM.Alpaca.DiscoveryManager.AdapterAddress)
                         {
-                            <MudText Typo="Typo.caption">@address</MudText>
+                            <MudText Typo="Typo.body1">@address</MudText>
                         }
                     }
                     catch { }
@@ -65,7 +65,7 @@
             }
             else
             {
-                <MudText Typo="Typo.caption">localhost</MudText>
+                <MudText Typo="Typo.body1">localhost</MudText>
             }
         </MudPaper>
     </MudItem>
