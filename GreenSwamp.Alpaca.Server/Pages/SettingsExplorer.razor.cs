@@ -120,9 +120,10 @@ public partial class SettingsExplorer : IDisposable
         ["Observatory"]       = "Latitude, longitude, elevation and UTC offset for this observatory site.",
 
         // Server Config group descriptions
-        ["Network"]           = "TCP port, remote access and Alpaca UDP discovery settings.",
-        ["Alpaca Behaviour"]  = "Strict mode, remote disconnects and image-bytes download options.",
-        ["Identity & UI"]     = "Location label, browser auto-start and Swagger UI options.",
+        ["Network"]           = "Core Alpaca server settings, including server identity, port, network access and compatibility behaviour.",
+        ["Alpaca Behaviour"]  = "Additional compatibility and transport behaviour, including image-bytes download options.",
+        ["Identity & UI"]     = "Browser auto-start and Swagger UI options.",
+        ["User Interface"]    = "Display zoom and frontend user-preference settings.",
         ["Authentication"]    = "HTTP Basic authentication settings (username only — use Server Settings to change the password).",
 
         // Monitor groups
@@ -294,10 +295,11 @@ public partial class SettingsExplorer : IDisposable
             Source   = SettingsNodeSource.ServerConfig,
             Children =
             [
-                Leaf("Network",          Icons.Material.Filled.NetworkCheck,   SettingsNodeSource.ServerConfig, "Network"),
-                Leaf("Alpaca Behaviour", Icons.Material.Filled.Tune,           SettingsNodeSource.ServerConfig, "Alpaca Behaviour"),
-                Leaf("Identity & UI",    Icons.Material.Filled.Person,         SettingsNodeSource.ServerConfig, "Identity & UI"),
-                Leaf("Authentication",   Icons.Material.Filled.Lock,           SettingsNodeSource.ServerConfig, "Authentication"),
+                Leaf("Alpaca Settings", Icons.Material.Filled.NetworkCheck,      SettingsNodeSource.ServerConfig, "Network"),
+                Leaf("Alpaca Behaviour", Icons.Material.Filled.Tune,             SettingsNodeSource.ServerConfig, "Alpaca Behaviour"),
+                Leaf("Identity & UI",    Icons.Material.Filled.Person,           SettingsNodeSource.ServerConfig, "Identity & UI"),
+                Leaf("User Interface",   Icons.Material.Filled.DisplaySettings,  SettingsNodeSource.ServerConfig, "User Interface"),
+                Leaf("Authentication",   Icons.Material.Filled.Lock,             SettingsNodeSource.ServerConfig, "Authentication"),
             ]
         });
 

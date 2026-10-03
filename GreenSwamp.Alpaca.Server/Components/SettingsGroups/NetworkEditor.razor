@@ -1,11 +1,16 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Human-readable server name shown in Alpaca discovery and the setup page." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="Config.Location"
+                      @bind-Value:after="NotifyChanged"
+                      Label="Server Name" Immediate="true" />
+    </MudTooltip>
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="TCP port the Alpaca server listens on." Placement="Placement.Right" Arrow="true">
         <MudNumericField T="ushort" @bind-Value="Config.ServerPort"
-                         @bind-Value:after="NotifyChanged"
-                         Label="Server Port"
-                         Min="1" Max="65535" Class="mb-1" Immediate="true" />
+                          @bind-Value:after="NotifyChanged"
+                          Label="Server Port"
+                          Min="1" Max="65535" Class="mb-1" Immediate="true" />
     </MudTooltip>
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Bind to all network interfaces when enabled; localhost-only when disabled." Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.AllowRemoteAccess"
@@ -21,6 +26,21 @@
         <MudCheckBox @bind-Value="Config.AllowDiscovery"
                      @bind-Value:after="NotifyChanged"
                      Label="Allow Alpaca Discovery" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Reject non-compliant Alpaca requests when enabled." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.RunInStrictAlpacaMode"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Run in Strict Alpaca Mode" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Prevent remote clients from disconnecting devices." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.PreventRemoteDisconnects"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Prevent Remote Disconnects" Color="Color.Primary" />
+    </MudTooltip>
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Expose the OpenAPI / Swagger UI at /swagger." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.RunSwagger"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Enable Swagger UI" Color="Color.Primary" />
     </MudTooltip>
 </MudStack>
 
