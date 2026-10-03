@@ -108,20 +108,12 @@ namespace GreenSwamp.Alpaca.Server.Pages
         }
 
         // -- Shutdown (replaces checkbox + plain button) -----------------------
-        private async Task ShutdownAsync()
+        private async Task OpenShutdownDialogAsync()
         {
-            var confirmed = await ConfirmAsync(
-                "Gracefully stops the server process. Use only when all mounts are parked and disconnected.",
-                "Shutdown");
-            if (!confirmed) return;
-            try
-            {
-                Program.Lifetime?.StopApplication();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Shutdown failed: {ex.Message}", Severity.Error);
-            }
+            await ShutdownDialogHelper.ShowShutdownDialogAsync(
+                DialogService,
+                Snackbar,
+                Program.Lifetime);
         }
 
         // -- Stop (inline bottom bar) ------------------------------------------
@@ -144,18 +136,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
             MaxWidth = MaxWidth.ExtraSmall,
             CloseOnEscapeKey = true
         };
-
-        private async Task<bool> ConfirmAsync(string message, string confirmText)
-        {
-            var parameters = new DialogParameters<ConfirmDialog>
-            {
-                { x => x.ContentText, message },
-                { x => x.ConfirmText, confirmText }
-            };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog>(string.Empty, parameters, _confirmOptions);
-            var result = await dialog.Result;
-            return result is { Canceled: false };
-        }
 
         public void Dispose()
         {

@@ -1,8 +1,10 @@
-﻿@inject IJSRuntime JS
+﻿@using GreenSwamp.Alpaca.Server.Components.Dialogs
+@using GreenSwamp.Alpaca.MountControl;
+@inject IJSRuntime JS
 @inject ISnackbar Snackbar
 
 <MudNavMenu>
-
+    @* Mount actions*@
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 
     <MudNavLink Href="/mount-control" Icon="@Icons.Material.Filled.Navigation">Control</MudNavLink>
@@ -12,12 +14,32 @@
 
     <MudDivider Class="my-2" />
 
+    @* Settings actions *@
     <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">Settings Explorer</MudNavLink>
     <MudNavLink Href="/setup" Icon="@Icons.Material.Filled.Settings">Alpaca Settings</MudNavLink>
     <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">Check Settings</MudNavLink>
+
+    <MudDivider Class="my-2" />
+
+    @* Shutdown action *@
+    <MudNavLink Icon="@Icons.Material.Filled.PowerSettingsNew"
+                IconColor="Color.Error"
+                Class="shutdown-nav-link"
+                OnClick="OpenShutdownDialogAsync">Shutdown</MudNavLink>
+
 </MudNavMenu>
 
 @code {
+    [Inject] private IDialogService DialogService { get; set; } = default!;
+
+    private async Task OpenShutdownDialogAsync()
+    {
+        await ShutdownDialogHelper.ShowShutdownDialogAsync(
+            DialogService,
+            Snackbar,
+            Program.Lifetime);
+    }
+
     private async Task OpenChartWindowAsync(string url, string windowKey)
     {
         await JS.InvokeVoidAsync(

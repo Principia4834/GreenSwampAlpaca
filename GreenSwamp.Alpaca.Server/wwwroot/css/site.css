@@ -118,6 +118,18 @@ a:hover {
     color: inherit;
 }
 
+.shutdown-nav-link.mud-nav-link-active {
+    color: inherit !important;
+    background-color: transparent !important;
+}
+
+/* Restore normal nav hover behavior */
+.shutdown-nav-link:hover,
+.shutdown-nav-link:focus-visible {
+    color: var(--mud-palette-primary) !important;
+    background-color: var(--mud-palette-action-default-hover) !important;
+}
+
 /* --- MudTabs: suppress uppercase on tab labels -------------- */
 .gs-tabs-no-transform .mud-tab {
     text-transform: none;
