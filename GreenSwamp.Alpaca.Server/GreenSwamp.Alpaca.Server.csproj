@@ -73,6 +73,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <EmbeddedResource Include="Resources\About.txt" />
+	  <EmbeddedResource Include="Resources\Credits.txt" />
+	  <EmbeddedResource Include="Resources\License.txt" />
+  </ItemGroup>
+	
+	<ItemGroup>
     <Content Update="wwwroot\css\fonts.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -107,6 +113,9 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\images\CarouselAstronomy\Orion.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\GreenSwamp1.webp">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\js\profileUtils.js">

@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using GreenSwamp.Alpaca.Server.Components.About
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Settings.Services
 
@@ -8,6 +9,7 @@
 @inject NavigationManager NavigationManager
 @inject TelescopeStateService TelescopeStateService
 @inject IVersionedSettingsService SettingsService
+@inject IDialogService DialogService
 
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -29,8 +31,11 @@
         <MudText Typo="Typo.h6" Color="Color.Primary">@CurrentDateTimeString</MudText>
 
         <MudSpacer />
-        <MudLink Href="https://greenswamp.org/" Target="_blank" Color="Color.Inherit"
-                 Typo="Typo.caption" Style="opacity:0.6;">About</MudLink>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" 
+                   StartIcon="@Icons.Material.Filled.Help" 
+                   OnClick="OpenAboutDialog">
+                   Help
+        </MudButton>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive"
@@ -61,6 +66,19 @@
 
     private bool _drawerOpen = true;
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task OpenAboutDialog()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = false,
+            CloseOnEscapeKey = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+        await DialogService.ShowAsync<AboutDialog>("", options);
+    }
 
     private string CurrentDateTimeString { get; set; } = string.Empty;
     private Timer? _timer;

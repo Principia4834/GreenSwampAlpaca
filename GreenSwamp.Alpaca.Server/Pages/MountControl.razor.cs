@@ -203,9 +203,9 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private async Task OpenExportDialog()
         {
             var parameters = new DialogParameters();
-            var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+            var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true};
 
-            await DialogService.ShowAsync<SettingsExportDialog>("", parameters, options);
+            await DialogService.ShowAsync<SettingsExportDialog>(null, parameters, options);
         }
 
         /// <summary>Returns true when the UI's internal client is registered as connected.</summary>

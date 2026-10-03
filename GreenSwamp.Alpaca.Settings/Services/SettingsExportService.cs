@@ -207,7 +207,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                             exportInfo.FileCount++;
                             try
                             {
-                                exportInfo.EstimatedSizeBytes += new FileInfo(file).Length;
+                                exportInfo.EstimatedSizeBytes += new FileInfo(file).Length / 4; // Text compression estimate
                             }
                             catch (IOException)
                             {

@@ -338,17 +338,17 @@ code {
 }
 
 .gs-home-hero {
-    position:        relative;
-    min-height:      calc(100vh - 48px);
-    display:         flex;
-    flex-direction:  column;
+    position: relative;
+    min-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    background-image:    url('https://greenswamp.org/wp-content/uploads/2022/03/GreenSwamp1.jpg');
-    background-size:     cover;
+    background-image: url('/images/GreenSwamp1.webp');
+    background-size: cover;
     background-position: center;
-    background-repeat:   no-repeat;
-    border-radius:   4px;
-    overflow:        hidden;
+    background-repeat: no-repeat;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .gs-home-overlay {

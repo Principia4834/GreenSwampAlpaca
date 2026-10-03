@@ -1,0 +1,20 @@
+﻿GreenSwamp Alpaca Server
+
+Project leads and primary authors:
+• Andy Watson
+• Rob Morgan
+
+Technology and libraries:
+• ASCOM Alpaca
+• .NET
+• ASP.NET Core
+• MudBlazor
+
+Special thanks:
+• The ASCOM Foundation, especially Bob Denny, Peter Simpson and Daniel van Noord
+• The SkyWatcher technical support team
+• The astronomy and observatory automation community, especially Andrew Johansen
+• Open-source contributors and testers
+• The broader ASCOM ecosystem
+
+This application builds on the work of many people in the astronomy software community.
