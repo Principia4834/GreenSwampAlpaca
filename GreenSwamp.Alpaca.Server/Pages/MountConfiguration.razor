@@ -1,5 +1,5 @@
-﻿@page "/mount-settings"
-@page "/mount-settings/{DeviceNumber:int}"
+﻿@page "/mount-configuration"
+@page "/mount-configuration/{DeviceNumber:int}"
 @using System.Linq
 @using GreenSwamp.Alpaca.Server.Components
 @using GreenSwamp.Alpaca.Server.Pages.Devices
@@ -9,10 +9,10 @@
 @inject IDialogService DialogService
 
 
-<PageTitle>Mount Settings</PageTitle>
+<PageTitle>Mount Configuration</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h5">Mount Settings</MudText>
+    <MudText Typo="Typo.h5">Mount Configuration</MudText>
 
     @if (IsActiveMountSimulator)
     {

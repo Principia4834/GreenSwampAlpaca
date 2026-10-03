@@ -5,63 +5,9 @@
 
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
 
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.Cameras)
-    {
-        <MudNavLink Href="@($"/setup/v1/Camera/{device.Key}/setup")" Icon="@Icons.Material.Filled.PhotoCamera">
-            Camera @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.CoverCalibrators)
-    {
-        <MudNavLink Href="@($"/setup/v1/covercalibrator/{device.Key}/setup")" Icon="@Icons.Material.Filled.Contrast">
-            CoverCalibrator @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.Domes)
-    {
-        <MudNavLink Href="@($"/setup/v1/dome/{device.Key}/setup")" Icon="@Icons.Material.Filled.Circle">
-            Dome @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.FilterWheels)
-    {
-        <MudNavLink Href="@($"/setup/v1/filterwheel/{device.Key}/setup")" Icon="@Icons.Material.Filled.FilterCenterFocus">
-            Filter Wheel @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.Focusers)
-    {
-        <MudNavLink Href="@($"/setup/v1/focuser/{device.Key}/setup")" Icon="@Icons.Material.Filled.Adjust">
-            Focuser @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.ObservingConditions)
-    {
-        <MudNavLink Href="@($"/setup/v1/ObservingConditions/{device.Key}/setup")" Icon="@Icons.Material.Filled.Cloud">
-            ObservingConditions @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.Rotators)
-    {
-        <MudNavLink Href="@($"/setup/v1/rotator/{device.Key}/setup")" Icon="@Icons.Material.Filled.RotateRight">
-            Rotator @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.SafetyMonitors)
-    {
-        <MudNavLink Href="@($"/setup/v1/SafetyMonitor/{device.Key}/setup")" Icon="@Icons.Material.Filled.Shield">
-            SafetyMonitor @device.Key
-        </MudNavLink>
-    }
-    @foreach (var device in ASCOM.Alpaca.DeviceManager.Switches)
-    {
-        <MudNavLink Href="@($"/setup/v1/switch/{device.Key}/setup")" Icon="@Icons.Material.Filled.ToggleOn">
-            Switch @device.Key
-        </MudNavLink>
-    }
     <MudNavLink Href="/mount-control" Icon="@Icons.Material.Filled.Navigation">Control</MudNavLink>
     <MudNavLink Href="/mount-status" Icon="@Icons.Material.Filled.DisplaySettings">Status</MudNavLink>
-    <MudNavLink Href="/mount-settings" Icon="@Icons.Material.Filled.TravelExplore">Settings</MudNavLink>
+    <MudNavLink Href="/mount-configuration" Icon="@Icons.Material.Filled.TravelExplore">Configuration</MudNavLink>
     <MudNavLink Href="/monitor" Icon="@Icons.Material.Filled.ListAlt">Monitor</MudNavLink>
 
     <MudDivider Class="my-2" />

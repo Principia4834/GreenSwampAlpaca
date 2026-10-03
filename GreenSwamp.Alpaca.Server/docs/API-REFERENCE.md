@@ -515,7 +515,7 @@ GET /setup/v1/telescope/{DeviceNumber}/setup
 
 Redirects to the Blazor Mount Settings UI page, pre-selecting the tab for the given `DeviceNumber`. This endpoint provides backwards compatibility with ASCOM Alpaca clients that navigate to the setup page via the standard Alpaca setup URL.
 
-**Response:** `302 Found` → `/mount-settings/{DeviceNumber}`
+**Response:** `302 Found` → `/mount-configuration/{DeviceNumber}`
 
 ---
 
