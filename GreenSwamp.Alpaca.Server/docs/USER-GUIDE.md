@@ -410,8 +410,7 @@ Four groups, each covering a different aspect of the Alpaca HTTP server:
 | Group | Key Settings |
 |---|---|
 | **Network** | Port, remote access, UDP discovery, loopback discovery |
-| **Alpaca Behaviour** | Strict mode, remote disconnects, image-bytes |
-| **Identity & UI** | Location label, browser auto-start, Swagger |
+| **User Interface** | Zoom, browser auto-start, display theme, language |
 | **Authentication** | Enable auth, username |
 
 ### 6.5 Logging Settings

@@ -15,16 +15,10 @@
     case "Network":
         <NetworkEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
-    case "Alpaca Behaviour":
-        <AlpacaBehaviourEditor Config="ServerConfig" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
-        break;
-    case "Identity & UI":
-        <IdentityUiEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
-        break;
     case "User Interface":
         <UserInterfaceEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
-    case "Authentication":
+    case "Security":
         <AuthenticationEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
 
