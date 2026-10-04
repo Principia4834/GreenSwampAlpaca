@@ -1930,9 +1930,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _hcFlipNs = settings.HcFlipNS;
                 _disableKeysOnGoTo = settings.DisableKeysOnGoTo;
                 _hcOneClickStart = settings.HcOneClickStart;
-                _hcPulseGuides = settings.HcPulseGuides
-                    .Select(g => new HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })
-                    .ToList();
+                _hcPulseGuides = [.. settings.HcPulseGuides.Select(g => new HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })];
 
                 // Miscellaneous
                 _temperature = settings.Temperature;
@@ -2115,9 +2113,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.HcFlipEW = _hcFlipEw;
                 settings.HcFlipNS = _hcFlipNs;
                 settings.DisableKeysOnGoTo = _disableKeysOnGoTo;
-                settings.HcPulseGuides = _hcPulseGuides
-                    .Select(g => new Settings.Models.SkySettings.HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })
-                    .ToList();
+                settings.HcPulseGuides = [.. _hcPulseGuides.Select(g => new Settings.Models.SkySettings.HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })];
 
                 settings.Temperature = _temperature;
 

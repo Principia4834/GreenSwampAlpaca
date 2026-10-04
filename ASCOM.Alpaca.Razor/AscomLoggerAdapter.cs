@@ -46,13 +46,13 @@ namespace ASCOM.Alpaca
             }
         }
 
-        public void LogError(string message)                                         => MelLoggerExtensions.LogError(_inner, message);
-        public void LogWarning(string message)                                        => MelLoggerExtensions.LogWarning(_inner, message);
-        public void LogMessage(string identifier, string message)                     => MelLoggerExtensions.LogInformation(_inner, "{Identifier} {Message}", identifier, message);
-        public void LogInformation(string message)                                    => MelLoggerExtensions.LogInformation(_inner, message);
-        public void LogDebug(string message)                                          => MelLoggerExtensions.LogDebug(_inner, message);
-        public void LogTrace(string message)                                          => MelLoggerExtensions.LogTrace(_inner, message);
-        public void LogVerbose(string message)                                        => MelLoggerExtensions.LogTrace(_inner, message);
-        public void SetMinimumLoggingLevel(LogLevel level)                            => LoggingLevel = level;
+        public void LogError(string message) => MelLoggerExtensions.LogError(_inner, message);
+        public void LogWarning(string message) => MelLoggerExtensions.LogWarning(_inner, message);
+        public void LogMessage(string identifier, string message) => MelLoggerExtensions.LogInformation(_inner, "{Identifier} {Message}", identifier, message);
+        public void LogInformation(string message) => MelLoggerExtensions.LogInformation(_inner, message);
+        public void LogDebug(string message) => MelLoggerExtensions.LogDebug(_inner, message);
+        public void LogTrace(string message) => MelLoggerExtensions.LogTrace(_inner, message);
+        public void LogVerbose(string message) => MelLoggerExtensions.LogTrace(_inner, message);
+        public void SetMinimumLoggingLevel(LogLevel level) => LoggingLevel = level;
     }
 }

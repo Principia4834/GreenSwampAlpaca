@@ -36,21 +36,14 @@ namespace GreenSwamp.Alpaca.Server.Controllers
     [ApiController]
     [Route("setup")]
     [Produces(MediaTypeNames.Application.Json)]
-    public class SetupDevicesController : ControllerBase
+    public class SetupDevicesController(
+        IVersionedSettingsService settingsService,
+        ILogger<SetupDevicesController> logger,
+        UnifiedDeviceRegistry deviceRegistry) : ControllerBase
     {
-        private readonly IVersionedSettingsService _settingsService;
-        private readonly ILogger<SetupDevicesController> _logger;
-        private readonly UnifiedDeviceRegistry _deviceRegistry;
-
-        public SetupDevicesController(
-            IVersionedSettingsService settingsService,
-            ILogger<SetupDevicesController> logger,
-            UnifiedDeviceRegistry deviceRegistry)
-        {
-            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _deviceRegistry = deviceRegistry ?? throw new ArgumentNullException(nameof(deviceRegistry));
-        }
+        private readonly IVersionedSettingsService _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        private readonly ILogger<SetupDevicesController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly UnifiedDeviceRegistry _deviceRegistry = deviceRegistry ?? throw new ArgumentNullException(nameof(deviceRegistry));
 
         /// <summary>
         /// Lists all configured telescope devices with detailed information.

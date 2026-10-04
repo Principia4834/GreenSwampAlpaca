@@ -64,7 +64,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         SkyTasks(MountTaskName.StopAxes);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException();
                 }
             }
             _slewState = SlewType.SlewNone;
@@ -129,7 +129,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyTasks(MountTaskName.StopAxes);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
             if (Settings.AlignmentMode == AlignmentMode.AltAz)
             {
@@ -212,7 +212,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         decResult = await Task.Run(() => autoHomeSky.StartAutoHome(Axis.Axis2, degreeLimit, offSetDec));
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException();
                 }
                 Settings.Encoders = encoderTemp;
                 StopAxes();
@@ -269,16 +269,16 @@ namespace GreenSwamp.Alpaca.MountControl
 
         private static string GetAutoHomeResultMessage(AutoHomeResult result, string axisName)
         {
-            switch (result)
+            return result switch
             {
-                case AutoHomeResult.Success: return $"{axisName} homed successfully";
-                case AutoHomeResult.FailedHomeSensorReset: return $"{axisName} failed home sensor reset";
-                case AutoHomeResult.HomeSensorNotFound: return $"{axisName} home sensor not found";
-                case AutoHomeResult.TooManyRestarts: return $"{axisName} too many restarts";
-                case AutoHomeResult.HomeCapabilityCheckFailed: return $"{axisName} home capability check failed";
-                case AutoHomeResult.StopRequested: return $"{axisName} auto home stopped";
-                default: return $"{axisName} unknown error";
-            }
+                AutoHomeResult.Success => $"{axisName} homed successfully",
+                AutoHomeResult.FailedHomeSensorReset => $"{axisName} failed home sensor reset",
+                AutoHomeResult.HomeSensorNotFound => $"{axisName} home sensor not found",
+                AutoHomeResult.TooManyRestarts => $"{axisName} too many restarts",
+                AutoHomeResult.HomeCapabilityCheckFailed => $"{axisName} home capability check failed",
+                AutoHomeResult.StopRequested => $"{axisName} auto home stopped",
+                _ => $"{axisName} unknown error",
+            };
         }
 
         /// <summary>Public wrapper — resets axes to home or a named park position.</summary>
@@ -323,7 +323,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     _ = new SkySetAxisPosition(sq.NewId, sq, Axis.Axis2, position[1]);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
             if (parkPosition != null && saveParkPosition)
             {
@@ -388,7 +388,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
         /// <summary>Get stored park position from settings — instance version.</summary>
         private ParkPosition GetStoredParkPosition()
-            => new ParkPosition(Settings.ParkName, Settings.ParkAxes[0], Settings.ParkAxes[1]);
+            => new(Settings.ParkName, Settings.ParkAxes[0], Settings.ParkAxes[1]);
 
         /// <summary>Set park axis by coordinates — private instance helper.</summary>
         private void SetParkAxis(string name, double x, double y)
@@ -416,12 +416,10 @@ namespace GreenSwamp.Alpaca.MountControl
             if (Settings.ParkPositions?.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)) == true)
                 throw new ArgumentException($"A park position named '{name}' already exists.");
 
-            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y);
-            if (park == null) throw new InvalidOperationException("Could not compute mount axis position.");
-
+            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y) ?? throw new InvalidOperationException("Could not compute mount axis position.");
             var list = new List<ParkPosition>(Settings.ParkPositions ?? [])
             {
-                new ParkPosition(name, Math.Round(park[0], 6), Math.Round(park[1], 6))
+                new(name, Math.Round(park[0], 6), Math.Round(park[1], 6))
             };
             Settings.ParkPositions = list;
             await Settings.SaveAsync();
@@ -433,9 +431,7 @@ namespace GreenSwamp.Alpaca.MountControl
         {
             if (!IsMountRunning) throw new InvalidOperationException("Mount is not running.");
 
-            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y);
-            if (park == null) throw new InvalidOperationException("Could not compute mount axis position.");
-
+            var park = Axes.MountAxis2Mount(Settings, _appAxes.X, _appAxes.Y) ?? throw new InvalidOperationException("Could not compute mount axis position.");
             var list = new List<ParkPosition>(Settings.ParkPositions ?? []);
             var idx = list.FindIndex(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
             if (idx < 0) throw new ArgumentException($"Park position '{name}' not found.");

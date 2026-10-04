@@ -184,8 +184,7 @@ namespace GreenSwamp.Alpaca.Server.Components
 
         private async Task OnSpeedChanged()
         {
-            if (_mount != null)
-                _mount.Settings.HcSpeed = (SlewSpeed)_speed;
+            _mount?.Settings.HcSpeed = (SlewSpeed)_speed;
 
             var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
             if (persisted != null)
@@ -197,8 +196,7 @@ namespace GreenSwamp.Alpaca.Server.Components
 
         private async Task OnModeChanged()
         {
-            if (_mount != null)
-                _mount.Settings.HcMode = _mode;
+            _mount?.Settings.HcMode = _mode;
 
             var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
             if (persisted != null)
@@ -216,8 +214,7 @@ namespace GreenSwamp.Alpaca.Server.Components
                 _activeOneClickDir = null;
             }
 
-            if (_mount != null)
-                _mount.Settings.HcOneClickStart = _oneClickStart;
+            _mount?.Settings.HcOneClickStart = _oneClickStart;
 
             var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
             if (persisted != null)
@@ -229,8 +226,7 @@ namespace GreenSwamp.Alpaca.Server.Components
 
         private async Task OnDisableKeysOnGoToChanged()
         {
-            if (_mount != null)
-                _mount.Settings.DisableKeysOnGoTo = _disableKeysOnGoTo;
+            _mount?.Settings.DisableKeysOnGoTo = _disableKeysOnGoTo;
 
             var persisted = SettingsService.GetDeviceSettings(DeviceNumber);
             if (persisted != null)

@@ -8,16 +8,11 @@ using System.Text;
 
 namespace ASCOM.Alpaca
 {
-    public class AuthorizationFilter : IAuthorizationFilter
+    public class AuthorizationFilter(IUserService _userService) : IAuthorizationFilter
     {
         public string BasicRealm { get; set; }
 
-        private IUserService userService;
-
-        public AuthorizationFilter(IUserService _userService)
-        {
-            userService = _userService;
-        }
+        private IUserService userService = _userService;
 
         public void OnAuthorization(AuthorizationFilterContext filterContext)
         {
@@ -45,7 +40,7 @@ namespace ASCOM.Alpaca
             {
                 var authHeader = AuthenticationHeaderValue.Parse(auth);
                 var credentialBytes = Convert.FromBase64String(authHeader.Parameter);
-                var credentials = Encoding.UTF8.GetString(credentialBytes).Split(new[] { ':' }, 2);
+                var credentials = Encoding.UTF8.GetString(credentialBytes).Split([':'], 2);
                 var username = credentials[0];
                 var password = credentials[1];
 

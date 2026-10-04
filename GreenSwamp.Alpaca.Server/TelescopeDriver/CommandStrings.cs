@@ -22,17 +22,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                     switch (command.Substring(2, 1))
                     {
                         case "1": //Port 1
-                            switch (command.Substring(3, 1))
+                            mount.SnapPort1 = command.Substring(3, 1) switch
                             {
-                                case "0": // Off
-                                    mount.SnapPort1 = false;
-                                    break;
-                                case "1": // On
-                                    mount.SnapPort1 = true;
-                                    break;
-                                default:
-                                    throw new DriverException("Param error");
-                            }
+                                // Off
+                                "0" => false,
+                                // On
+                                "1" => true,
+                                _ => throw new DriverException("Param error"),
+                            };
                             switch (mount.Settings.Mount)
                             {
                                 case MountType.Simulator:
@@ -46,17 +43,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                             }
                             return mount.SnapPort1Result ? "1" : "0";
                         case "2"://Port 2
-                            switch (command.Substring(3, 1))
+                            mount.SnapPort2 = command.Substring(3, 1) switch
                             {
-                                case "0": // Off
-                                    mount.SnapPort2 = false;
-                                    break;
-                                case "1": // On
-                                    mount.SnapPort2 = true;
-                                    break;
-                                default:
-                                    throw new DriverException("Param 2 error");
-                            }
+                                // Off
+                                "0" => false,
+                                // On
+                                "1" => true,
+                                _ => throw new DriverException("Param 2 error"),
+                            };
                             switch (mount.Settings.Mount)
                             {
                                 case MountType.Simulator:

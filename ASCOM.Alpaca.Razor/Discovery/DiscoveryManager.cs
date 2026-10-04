@@ -1,4 +1,4 @@
-// Ignore Spelling: ipv
+﻿// Ignore Spelling: ipv
 
 using ASCOM.Alpaca.Discovery;
 using ASCOM.Common.Interfaces;
@@ -27,7 +27,7 @@ namespace ASCOM.Alpaca
         {
             get
             {
-                List<IPAddress> Addresses = new List<IPAddress>();
+                List<IPAddress> Addresses = [];
                 NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
                 foreach (NetworkInterface adapter in adapters)
                 {

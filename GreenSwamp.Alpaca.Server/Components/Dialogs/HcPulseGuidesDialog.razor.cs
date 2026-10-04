@@ -55,15 +55,14 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
                 if (_mount.Settings.HcPulseGuides is { Count: > 0 } guides)
                 {
                     // Deep copy so edits don't mutate the live settings until Save is confirmed.
-                    _working = guides
+                    _working = [.. guides
                         .Select(g => new SkySettings.HcPulseGuide
                         {
                             Speed = g.Speed,
                             Duration = g.Duration,
                             Interval = g.Interval,
                             Rate = g.Rate
-                        })
-                        .ToList();
+                        })];
                 }
             }
         }
@@ -85,23 +84,23 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
             switch (option)
             {
                 case HcOption.FlipEw:
-                    if (_mount != null) _mount.Settings.HcFlipEw = _flipEw;
-                    if (persisted != null) persisted.HcFlipEW = _flipEw;
+                    _mount?.Settings.HcFlipEw = _flipEw;
+                    persisted?.HcFlipEW = _flipEw;
                     break;
 
                 case HcOption.FlipNs:
-                    if (_mount != null) _mount.Settings.HcFlipNs = _flipNs;
-                    if (persisted != null) persisted.HcFlipNS = _flipNs;
+                    _mount?.Settings.HcFlipNs = _flipNs;
+                    persisted?.HcFlipNS = _flipNs;
                     break;
 
                 case HcOption.AntiRa:
-                    if (_mount != null) _mount.Settings.HcAntiRa = _antiRa;
-                    if (persisted != null) persisted.HcAntiRa = _antiRa;
+                    _mount?.Settings.HcAntiRa = _antiRa;
+                    persisted?.HcAntiRa = _antiRa;
                     break;
 
                 case HcOption.AntiDec:
-                    if (_mount != null) _mount.Settings.HcAntiDec = _antiDec;
-                    if (persisted != null) persisted.HcAntiDec = _antiDec;
+                    _mount?.Settings.HcAntiDec = _antiDec;
+                    persisted?.HcAntiDec = _antiDec;
                     break;
             }
 
@@ -134,15 +133,14 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
                 mount.Settings.HcFlipNs = _flipNs;
                 mount.Settings.HcAntiRa = _antiRa;
                 mount.Settings.HcAntiDec = _antiDec;
-                mount.Settings.HcPulseGuides = _working
+                mount.Settings.HcPulseGuides = [.. _working
                     .Select(g => new GreenSwamp.Alpaca.MountControl.Pulses.HcPulseGuide
                     {
                         Speed = g.Speed,
                         Duration = g.Duration,
                         Interval = g.Interval,
                         Rate = g.Rate
-                    })
-                    .ToList();
+                    })];
             }
 
             MudDialog.Close(DialogResult.Ok(true));

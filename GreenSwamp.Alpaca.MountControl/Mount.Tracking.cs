@@ -96,7 +96,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     rateChange = -CurrentTrackingRate();
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             switch (Settings.Mount)
@@ -163,7 +163,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
 
                     if (waitForQueueCompletion && SimQueue != null)
@@ -198,7 +198,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             _skyTrackingRate = new Vector(rateChange, 0);
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
                     rate = SkyGetRate();
                     {
@@ -232,7 +232,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             var monitorItem = new MonitorEntry
@@ -357,7 +357,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 DriveRate.Solar    => Settings.SolarRate,
                 DriveRate.Lunar    => Settings.LunarRate,
                 DriveRate.King     => Settings.KingRate,
-                _                  => throw new ArgumentOutOfRangeException()
+                _                  => throw new InvalidOperationException()
             };
 
             if (rate < SiderealRate * 2 & rate != 0)
@@ -470,7 +470,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             if (invert) rate = -rate;
@@ -598,7 +598,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
                         }
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
                     break;
                 case GuideDirection.East:
@@ -655,7 +655,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             }
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
                     break;
                 default:

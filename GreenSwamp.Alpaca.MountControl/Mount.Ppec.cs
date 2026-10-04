@@ -59,7 +59,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 

@@ -115,7 +115,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
 
         // Pulse Guide Settings
         [CommonSetting]
-        public List<HcPulseGuide> HcPulseGuides { get; set; } = new();
+        public List<HcPulseGuide> HcPulseGuides { get; set; } = [];
         [CommonSetting]
         public int MinPulseRa { get; set; }
         [CommonSetting]
@@ -163,7 +163,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public string ParkLimitName { get; set; } = null!;
         [UniqueSetting]
-        public List<ParkPosition> ParkPositions { get; set; } = new();
+        public List<ParkPosition> ParkPositions { get; set; } = [];
         [UniqueSetting]
         public double[] ParkAxes { get; set; } = Array.Empty<double>();
 

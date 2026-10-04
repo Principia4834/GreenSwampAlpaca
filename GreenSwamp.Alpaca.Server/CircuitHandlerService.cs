@@ -34,7 +34,7 @@ namespace GreenSwamp.Alpaca.Server
             {
                 lock (connectionsLockObject)
                 {
-                    connections = new();
+                    connections = [];
                 }
             }
         }

@@ -18,10 +18,9 @@ public static class SerialPortDiscovery
     {
         try
         {
-            return SerialPort.GetPortNames()
+            return [.. SerialPort.GetPortNames()
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)];
         }
         catch
         {

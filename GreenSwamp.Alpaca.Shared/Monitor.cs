@@ -34,9 +34,9 @@ namespace GreenSwamp.Alpaca.Shared
 
         static MonitorLog()
         {
-            CategoryCheckList = new List<MonitorCategory>();
-            TypesCheckList = new List<MonitorType>();
-            DeviceCheckList = new List<MonitorDevice>();
+            CategoryCheckList = [];
+            TypesCheckList = [];
+            DeviceCheckList = [];
             //Load_Settings();
         }
 
@@ -304,7 +304,7 @@ namespace GreenSwamp.Alpaca.Shared
                     break;
                 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 

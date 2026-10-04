@@ -32,7 +32,7 @@ public class SettingsTreeItemData : TreeItemData<SettingsNode>
         Icon  = node.Icon;
 
         if (node.Children.Count > 0)
-            Children = node.Children.Select(c => (ITreeItemData<SettingsNode>)new SettingsTreeItemData(c)).ToList();
+            Children = [.. node.Children.Select(c => (ITreeItemData<SettingsNode>)new SettingsTreeItemData(c))];
     }
 }
 
@@ -42,16 +42,16 @@ public partial class SettingsExplorer : IDisposable
     private ObservatorySettings       _observatoryWork  = new();
     private ServerConfig              _serverConfigWork = new();
     private MonitorSettingsModel      _monitorWork      = new();
-    private Dictionary<int, SkySettings> _deviceWork   = new();
+    private Dictionary<int, SkySettings> _deviceWork   = [];
 
     // -- Originals for dirty detection / reset ------------------------------
     private string _observatoryOrigJson  = string.Empty;
     private string _serverConfigOrigJson = string.Empty;
     private string _monitorOrigJson      = string.Empty;
-    private Dictionary<int, string> _deviceOrigJson = new();
+    private Dictionary<int, string> _deviceOrigJson = [];
 
     // -- Tree state ----------------------------------------------------------
-    private List<ITreeItemData<SettingsNode>> _treeItems = new();
+    private List<ITreeItemData<SettingsNode>> _treeItems = [];
     private MudTreeView<SettingsNode>? _treeView;
     private SettingsNode? _selectedNode;
     private SettingsNode? _treeSelectedValue;
@@ -299,7 +299,7 @@ public partial class SettingsExplorer : IDisposable
             ]
         });
 
-        _treeItems = root.Select(n => (ITreeItemData<SettingsNode>)new SettingsTreeItemData(n)).ToList();
+        _treeItems = [.. root.Select(n => (ITreeItemData<SettingsNode>)new SettingsTreeItemData(n))];
     }
 
     private List<SettingsNode> BuildDeviceNodes()
@@ -319,13 +319,13 @@ public partial class SettingsExplorer : IDisposable
             if (IsGroupVisible("Optics"))
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "Optics", Icons.Material.Filled.PhotoCamera, "Optics"));
 
-            deviceLeaves.AddRange(new[]
-            {
+            deviceLeaves.AddRange(
+            [
                 DeviceLeaf(deviceNumber, "Tracking & Guiding",   Icons.Material.Filled.Speed,            "Tracking & Guiding"),
                 DeviceLeaf(deviceNumber, "Home and Park",        Icons.Material.Filled.Home,             "Home and Park"),
                 DeviceLeaf(deviceNumber, "Limits",               Icons.Material.Filled.Block,            "Limits"),
                 DeviceLeaf(deviceNumber, "Voice",                Icons.Material.Filled.RecordVoiceOver,  "Voice"),
-            });
+            ]);
 
             if (IsGroupVisible("Performance & Tuning"))
                 deviceLeaves.Add(DeviceLeaf(deviceNumber, "Performance & Tuning", Icons.Material.Filled.Loop, "Performance & Tuning"));
@@ -349,7 +349,7 @@ public partial class SettingsExplorer : IDisposable
     }
 
     private List<SettingsNode> BuildObservatoryNodes() =>
-        _observatoryWork.Observatories.Select(obs => new SettingsNode
+        [.. _observatoryWork.Observatories.Select(obs => new SettingsNode
         {
             Label         = obs.Name,
             Icon          = Icons.Material.Filled.Terrain,
@@ -359,7 +359,7 @@ public partial class SettingsExplorer : IDisposable
             GroupKey      = "Observatory",
             ObservatoryId = obs.Id,
             DeviceNumber  = -1
-        }).ToList();
+        })];
 
     private static SettingsNode Leaf(string label, string icon,
         SettingsNodeSource source, string groupKey) => new()
@@ -577,10 +577,7 @@ public partial class SettingsExplorer : IDisposable
             n.Source == SettingsNodeSource.Monitor && 
             n.Level == SettingsNodeLevel.Section);
 
-        if (monitorSectionNode is not null)
-        {
-            monitorSectionNode.IsDirty = IsNodeDirty(monitorSectionNode);
-        }
+        monitorSectionNode?.IsDirty = IsNodeDirty(monitorSectionNode);
 
         StateHasChanged();
 
@@ -601,10 +598,7 @@ public partial class SettingsExplorer : IDisposable
                 n.Level == SettingsNodeLevel.Group &&
                 n.GroupKey == groupKey);
 
-            if (leafNode is not null)
-            {
-                leafNode.IsDirty = IsNodeDirty(leafNode);
-            }
+            leafNode?.IsDirty = IsNodeDirty(leafNode);
         }
     }
 
@@ -616,10 +610,10 @@ public partial class SettingsExplorer : IDisposable
         // Determine which leaf nodes are affected by this action
         var affectedGroupKeys = actionName switch
         {
-            "SelectAllDevices" => new[] { "Device Filters" },
-            "SelectAllCategories" => new[] { "Category Filters" },
-            "SelectAllTypes" => new[] { "Message Type Filters" },
-            "ClearAllFilters" => new[] { "Device Filters", "Category Filters", "Message Type Filters" },
+            "SelectAllDevices" => ["Device Filters"],
+            "SelectAllCategories" => ["Category Filters"],
+            "SelectAllTypes" => ["Message Type Filters"],
+            "ClearAllFilters" => ["Device Filters", "Category Filters", "Message Type Filters"],
             _ => Array.Empty<string>()
         };
 
@@ -677,10 +671,7 @@ public partial class SettingsExplorer : IDisposable
             n.Source == SettingsNodeSource.Monitor && 
             n.Level == SettingsNodeLevel.Section);
 
-        if (monitorSectionNode is not null)
-        {
-            monitorSectionNode.IsDirty = IsNodeDirty(monitorSectionNode);
-        }
+        monitorSectionNode?.IsDirty = IsNodeDirty(monitorSectionNode);
 
         StateHasChanged();
     }

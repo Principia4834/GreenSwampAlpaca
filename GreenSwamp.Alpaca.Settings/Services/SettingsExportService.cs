@@ -66,14 +66,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
     /// <summary>
     /// Implementation of ISettingsExportService.
     /// </summary>
-    public class SettingsExportService : ISettingsExportService
+    public class SettingsExportService(IVersionedSettingsService settingsService) : ISettingsExportService
     {
-        private readonly IVersionedSettingsService _settingsService;
-
-        public SettingsExportService(IVersionedSettingsService settingsService)
-        {
-            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-        }
+        private readonly IVersionedSettingsService _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
         public string CurrentVersion => _settingsService.CurrentVersion;
 

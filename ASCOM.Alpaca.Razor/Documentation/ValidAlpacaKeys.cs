@@ -5,7 +5,7 @@ namespace ASCOM.Alpaca
 {
     internal class ValidAlpacaKeys
     {
-        internal static List<string> ValidParameterKeys = new List<string>{
+        internal static List<string> ValidParameterKeys = [
             "clientid" ,
             "clienttransactionid",
             "rightascension",
@@ -13,15 +13,15 @@ namespace ASCOM.Alpaca
             "id",
             "sensorname",
             "axis"
-        };
+        ];
 
-        private static List<string> OptionalFormKeys = new List<string>
-        {
+        private static List<string> OptionalFormKeys =
+        [
             "ClientID",
             "ClientTransactionID"
-        };
+        ];
 
-        private static List<string> ValidFormKeys = new List<string> {
+        private static List<string> ValidFormKeys = [
             "ClientID",
             "ClientTransactionID",
             "BinX",
@@ -77,13 +77,13 @@ namespace ASCOM.Alpaca
             "Tracking",
             "TrackingRate",
             "UTCDate",
-        };
+        ];
 
-        internal static List<AlpacaKeyValidator> AlpacaFormValidators = new List<AlpacaKeyValidator>();
+        internal static List<AlpacaKeyValidator> AlpacaFormValidators = [];
 
         static ValidAlpacaKeys()
         {
-            foreach(var key in ValidFormKeys) 
+            foreach (var key in ValidFormKeys)
             {
                 AlpacaFormValidators.Add(new AlpacaKeyValidator(key, OptionalFormKeys.Contains(key)));
             }
@@ -115,5 +115,5 @@ namespace ASCOM.Alpaca
             Key = key;
             IsOptional = is_optional;
         }
-    } 
+    }
 }

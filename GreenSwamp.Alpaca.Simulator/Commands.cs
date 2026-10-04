@@ -107,10 +107,8 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         }
     }
 
-    public class CmdAxesSteps : MountActionCommand
+    public class CmdAxesSteps(long id, ICommandQueue<Actions> queue) : MountActionCommand(id, queue)
     {
-        public CmdAxesSteps(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override void ExecuteAction(Actions actions)
         {
             actions.AxesSteps();
@@ -278,20 +276,16 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
     }
 
     // Query Commands (return results)
-    public class CmdAxesDegrees : MountQueryCommand
+    public class CmdAxesDegrees(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public CmdAxesDegrees(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.AxesDegrees();
         }
     }
 
-    public class CmdAxisSteps : MountQueryCommand
+    public class CmdAxisSteps(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public CmdAxisSteps(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.AxisSteps();
@@ -330,10 +324,8 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         }
     }
 
-    public class GetHomeSensorCapability : MountQueryCommand
+    public class GetHomeSensorCapability(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public GetHomeSensorCapability(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.MountInfo.CanHomeSensors;
@@ -356,20 +348,16 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         }
     }
 
-    public class CmdFactorSteps : MountQueryCommand
+    public class CmdFactorSteps(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public CmdFactorSteps(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.FactorSteps();
         }
     }
 
-    public class CmdMountName : MountQueryCommand
+    public class CmdMountName(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public CmdMountName(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.MountName();
@@ -392,20 +380,16 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         }
     }
 
-    public class CmdSpr : MountQueryCommand
+    public class CmdSpr(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public CmdSpr(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.Spr();
         }
     }
 
-    public class CmdSpw : MountQueryCommand
+    public class CmdSpw(long id, ICommandQueue<Actions> queue) : MountQueryCommand(id, queue)
     {
-        public CmdSpw(long id, ICommandQueue<Actions> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(Actions actions)
         {
             return actions.Spw();

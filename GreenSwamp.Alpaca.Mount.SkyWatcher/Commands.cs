@@ -888,15 +888,12 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             {
                 var response = CmdToMount(axis, 'X', "000B");    // Read 32-bit axis home index position
                 var position = String32ToInt(response, true, 1);
-                switch (position)
+                return position switch
                 {
-                    case MinSteps:
-                        return 100000000000;
-                    case MaxSteps:
-                        return 200000000000;
-                    default:
-                        return Convert.ToInt32(position / _resolutionFactor[(int)axis]);
-                }
+                    MinSteps => 100000000000,
+                    MaxSteps => 200000000000,
+                    _ => Convert.ToInt32(position / _resolutionFactor[(int)axis]),
+                };
             }
             else
             {

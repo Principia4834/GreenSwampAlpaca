@@ -69,7 +69,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal double[] _stepsWormPerRevolution = new double[2];
 
         // Mount capabilities
-        internal string[] _mountVersion = { string.Empty, string.Empty };
+        internal string[] _mountVersion = [string.Empty, string.Empty];
 
         // Mount state
         private bool _atPark;
@@ -146,7 +146,7 @@ namespace GreenSwamp.Alpaca.MountControl
         // HC anti-backlash direction state
         internal HcPrevMove? _hcPrevMoveRa;
         internal HcPrevMove? _hcPrevMoveDec;
-        internal readonly IList<double> _hcPrevMovesDec = new List<double>();
+        internal readonly IList<double> _hcPrevMovesDec = [];
 
         // Custom tracking rate offset
         internal Vector _trackingOffsetRate;
@@ -880,7 +880,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyTasks(MountTaskName.StopAxes);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
             if (Settings.AlignmentMode == AlignmentMode.AltAz)
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
@@ -1011,7 +1011,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyTasks(MountTaskName.SyncAltAz);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
             WaitUpdateMountPosition(5000);
             if (trackingstate)
@@ -1050,7 +1050,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SkyTasks(MountTaskName.SyncTarget);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
             if (!WaitUpdateMountPosition(5000)) throw new TimeoutException("Timeout waiting for mount position update after SyncToTargetRaDec");
             if (trackingstate)
@@ -1216,7 +1216,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 
@@ -1244,20 +1244,12 @@ namespace GreenSwamp.Alpaca.MountControl
         /// </summary>
         internal double ConvertStepsToDegrees(double steps, int axis)
         {
-            double degrees;
-            switch (Settings.Mount)
+            var degrees = Settings.Mount switch
             {
-                case MountType.Simulator:
-                    degrees = steps / _factorStep[axis];
-                    break;
-
-                case MountType.SkyWatcher:
-                    degrees = Principles.Units.Rad2Deg1(steps * _factorStep[axis]);
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                MountType.Simulator => steps / _factorStep[axis],
+                MountType.SkyWatcher => Principles.Units.Rad2Deg1(steps * _factorStep[axis]),
+                _ => throw new InvalidOperationException(),
+            };
             return degrees;
         }
 
@@ -1287,7 +1279,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             return steps;
@@ -1309,16 +1301,12 @@ namespace GreenSwamp.Alpaca.MountControl
                     var simPositions = new CmdAxisSteps(SimQueue!.NewId, SimQueue);
                     var a = (int[])SimQueue.GetCommandResult(simPositions).Result;
 
-                    switch (axis)
+                    return axis switch
                     {
-                        case 0:
-                            return Convert.ToDouble(a[0]);
-                        case 1:
-                            return Convert.ToDouble(a[1]);
-                        default:
-                            return null;
-                    }
-
+                        0 => Convert.ToDouble(a[0]),
+                        1 => Convert.ToDouble(a[1]),
+                        _ => null,
+                    };
                 case MountType.SkyWatcher:
                     switch (axis)
                     {

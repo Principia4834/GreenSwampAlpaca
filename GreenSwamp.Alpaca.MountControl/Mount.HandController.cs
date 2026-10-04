@@ -274,7 +274,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     SendHcMoveSkyWatcher(stepsNeededDec, stepsNeededRa, change);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             // AltAz mode: when motion stops, re-seed predictor and resume tracking
@@ -690,7 +690,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
 
-            if (_hcPrevMoveDec != null) _hcPrevMoveDec.StepStart = GetRawSteps(1);
+            _hcPrevMoveDec?.StepStart = GetRawSteps(1);
 
             // RA anti-lash
             if (Math.Abs(stepsNeededRa) > 0)
@@ -735,7 +735,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
 
-            if (_hcPrevMoveDec != null) _hcPrevMoveDec.StepStart = GetRawSteps(1);
+            _hcPrevMoveDec?.StepStart = GetRawSteps(1);
 
             // RA anti-lash
             if (Math.Abs(stepsNeededRa) > 0)

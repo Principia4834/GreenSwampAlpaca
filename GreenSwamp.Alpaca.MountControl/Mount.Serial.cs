@@ -469,7 +469,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             msg = positionsSet ? $"SetPositions|{positions[0]}|{positions[1]}" : $"PositionsNotSet";
@@ -555,8 +555,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 case MountType.Simulator:
                     Alpaca.Mount.Simulator.Settings.AutoHomeAxisX = (int)Settings.AutoHomeAxisX;
                     Alpaca.Mount.Simulator.Settings.AutoHomeAxisY = (int)Settings.AutoHomeAxisY;
-                    var mqImpl = new GreenSwamp.Alpaca.Mount.Simulator.MountQueueImplementation();
-                    mqImpl.DeviceNumber = DeviceNumber;
+                    var mqImpl = new GreenSwamp.Alpaca.Mount.Simulator.MountQueueImplementation
+                    {
+                        DeviceNumber = DeviceNumber
+                    };
                     mqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
                         v => { IsPulseGuidingRa = v; },
@@ -590,8 +592,10 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
 
                     // Create queue for SkyWatcher.
-                    var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation();
-                    sqImpl.DeviceNumber = DeviceNumber;
+                    var sqImpl = new GreenSwamp.Alpaca.Mount.SkyWatcher.SkyQueueImplementation
+                    {
+                        DeviceNumber = DeviceNumber
+                    };
                     sqImpl.SetupCallbacks(
                         steps => ReceiveSteps(steps),
                         v => { IsPulseGuidingRa = v; },
@@ -604,7 +608,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             // Run mount default commands and start the UI updates
@@ -657,7 +661,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _trackingProcessor = null;
             // N6: Stop timers BEFORE AxesStopValidate
             //     after the stop commands, which would leave the motor running after Disconnect.
-            if (_altAzTrackingTimer != null) { _altAzTrackingTimer.Tick -= AltAzTrackingTimerTick; } // J4 / N6: moved before AxesStopValidate
+            _altAzTrackingTimer?.Tick -= AltAzTrackingTimerTick; // J4 / N6: moved before AxesStopValidate
             _altAzTrackingTimer?.Stop();
             _altAzTrackingTimer?.Dispose();
             _altAzTrackingTimer = null;  // N6: null the field — was missing, causing IsRunning check on disposed timer after reconnect

@@ -36,7 +36,7 @@ namespace GreenSwamp.Alpaca.Principles
         private volatile int _resolution = 1;
         private volatile TimerMode _mode = TimerMode.Periodic;
         private Thread? _thread;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         /// <inheritdoc/>
         public event EventHandler? Tick;

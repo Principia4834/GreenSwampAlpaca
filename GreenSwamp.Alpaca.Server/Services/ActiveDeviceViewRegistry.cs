@@ -28,9 +28,8 @@ public sealed class ActiveDeviceViewRegistry
                 _views.TryRemove(kvp.Key, out _);
         }
 
-        return _views.Values
+        return [.. _views.Values
             .Select(v => v.DeviceNumber)
-            .Distinct()
-            .ToList();
+            .Distinct()];
     }
 }

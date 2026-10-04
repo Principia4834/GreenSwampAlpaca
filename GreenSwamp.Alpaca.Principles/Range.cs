@@ -84,7 +84,7 @@ namespace GreenSwamp.Alpaca.Principles
 
         public static double[] Range180(double[] d)
         {
-            return new[] { Range180(d[0]), Range180(d[1]) };
+            return [Range180(d[0]), Range180(d[1])];
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace GreenSwamp.Alpaca.Principles
         /// <returns></returns>
         public static double[] RangeAltAz(double[] altAz)
         {
-            double[] a = { Range90(altAz[0]), Range360(altAz[1]) };
+            double[] a = [Range90(altAz[0]), Range360(altAz[1])];
             return a;
         }
 
@@ -138,7 +138,7 @@ namespace GreenSwamp.Alpaca.Principles
         /// <returns></returns>
         public static double[] RangeAz360Alt90(double[] axes)
         {
-            double[] a = { Range360(axes[0]), Range90(axes[1]) };
+            double[] a = [Range360(axes[0]), Range90(axes[1])];
             return a;
         }
 
@@ -149,7 +149,7 @@ namespace GreenSwamp.Alpaca.Principles
         /// <returns></returns>
         public static double[] RangeRaDec(double[] raDec)
         {
-            double[] a = { Range24(raDec[0]), Range90(raDec[1]) };
+            double[] a = [Range24(raDec[0]), Range90(raDec[1])];
             return a;
         }
 
@@ -160,7 +160,7 @@ namespace GreenSwamp.Alpaca.Principles
         /// <returns></returns>
         public static double[] RangeAxesXy(double[] axes)
         {
-            double[] xy = { Range360(axes[0]), Range270(axes[1]) };
+            double[] xy = [Range360(axes[0]), Range270(axes[1])];
             return xy;
         }
 
@@ -171,7 +171,7 @@ namespace GreenSwamp.Alpaca.Principles
         /// <returns></returns>
         public static double[] RangeAxesYx(double[] axes)
         {
-            double[] xy = { Range270(axes[1]), Range360(axes[0]) };
+            double[] xy = [Range270(axes[1]), Range360(axes[0])];
             return xy;
         }
 

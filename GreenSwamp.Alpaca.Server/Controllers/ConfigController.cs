@@ -51,20 +51,14 @@ namespace GreenSwamp.Alpaca.Server.Controllers
     [ApiController]
     [Route("api/config")]
     [Produces(MediaTypeNames.Application.Json)]
-    public class ConfigController : ControllerBase
+    public class ConfigController(
+        IVersionedSettingsService settingsService,
+        ILogger<ConfigController> logger) : ControllerBase
     {
         private const long MaxUploadBytes = 1 * 1024 * 1024; // 1 MB
 
-        private readonly IVersionedSettingsService _settingsService;
-        private readonly ILogger<ConfigController> _logger;
-
-        public ConfigController(
-            IVersionedSettingsService settingsService,
-            ILogger<ConfigController> logger)
-        {
-            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly IVersionedSettingsService _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        private readonly ILogger<ConfigController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // -- Monitor settings --------------------------------------------------
 

@@ -136,7 +136,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                         Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server,
                         Category = MonitorCategory.Server, Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"[GGA {ggaCount}/{MaxPerType}] {sentence}"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
@@ -154,7 +154,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                         Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server,
                         Category = MonitorCategory.Server, Type = MonitorType.Information,
                         Method = MethodBase.GetCurrentMethod()?.Name,
-                        Thread = Thread.CurrentThread.ManagedThreadId,
+                        Thread = Environment.CurrentManagedThreadId,
                         Message = $"[RMC {rmcCount}/{MaxPerType}] {sentence}"
                     };
                     MonitorLog.LogToMonitor(monitorItem);
@@ -222,7 +222,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             catch (Exception ex) when (ex is IndexOutOfRangeException or FormatException)
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ex.Message}|{ex.StackTrace}" };
+                { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{ex.Message}|{ex.StackTrace}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return false;
             }
@@ -254,7 +254,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             catch (Exception ex) when (ex is IndexOutOfRangeException or FormatException)
             {
                 var monitorItem = new MonitorEntry
-                { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{ex.Message}|{ex.StackTrace}" };
+                { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Error, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{ex.Message}|{ex.StackTrace}" };
                 MonitorLog.LogToMonitor(monitorItem);
                 return false;
             }
@@ -275,7 +275,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     Category = MonitorCategory.Server,
                     Type = MonitorType.Error,
                     Method = MethodBase.GetCurrentMethod()?.Name,
-                    Thread = Thread.CurrentThread.ManagedThreadId,
+                    Thread = Environment.CurrentManagedThreadId,
                     Message = $"Failed Conversion|{num}|{dir}"
                 };
                 MonitorLog.LogToMonitor(monitorItem);
@@ -341,7 +341,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             if (string.Equals(checkChar, checkSum.ToString("X2"), StringComparison.Ordinal))
                 return true;
             var monitorItem = new MonitorEntry
-            { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Thread.CurrentThread.ManagedThreadId, Message = $"{receivedData}" };
+            { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{receivedData}" };
             MonitorLog.LogToMonitor(monitorItem);
             return false;
         }

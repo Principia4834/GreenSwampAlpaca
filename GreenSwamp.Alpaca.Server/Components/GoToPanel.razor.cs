@@ -79,7 +79,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             }
             else
             {
-                AltAz = new double[] { coord2, coord1 }; // signature: (alt, az)
+                AltAz = [coord2, coord1]; // signature: (alt, az)
             }
 
             // Check if the target coordinates are below the mount's horizon limit

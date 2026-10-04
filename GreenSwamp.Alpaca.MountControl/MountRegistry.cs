@@ -23,8 +23,8 @@ namespace GreenSwamp.Alpaca.MountControl
     /// </summary>
     public static class MountRegistry
     {
-        private static readonly Dictionary<int, Mount> _instances = new Dictionary<int, Mount>();
-        private static readonly object _lock = new object();
+        private static readonly Dictionary<int, Mount> _instances = [];
+        private static readonly object _lock = new();
 
         /// <summary>
         /// Creates and registers a new mount instance.

@@ -44,7 +44,7 @@ namespace GreenSwamp.Alpaca.MountControl
 
             var totalMeridianLimit = Settings.HourAngleLimit + Settings.AxisTrackingLimit;
             var sh = Settings.Latitude < 0;
-            Dictionary<LimitType, bool> limitState = new Dictionary<LimitType, bool>()
+            Dictionary<LimitType, bool> limitState = new()
             {
                 { LimitType.Hardware, _limitStatus.AtLowerLimitAxisX || _limitStatus.AtUpperLimitAxisX
                                         || _limitStatus.AtLowerLimitAxisY || _limitStatus.AtUpperLimitAxisY },

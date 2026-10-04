@@ -696,13 +696,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public async Task<int> ExecuteMovementAsync(CancellationToken ct)
         {
             // Direct access to SkyServer settings (no reflection needed)
-            var settings = Mount.Settings;
-
-            if (settings == null)
-            {
-                throw new InvalidOperationException("Mount settings not initialized");
-            }
-
+            var settings = Mount.Settings ?? throw new InvalidOperationException("Mount settings not initialized");
             int returnCode = settings.Mount switch
             {
                 MountType.Simulator => await Task.Run(
@@ -905,16 +899,10 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Result of the slew setup phase.
     /// Indicates whether the slew can proceed to movement phase.
     /// </summary>
-    public readonly struct SlewResult
+    public readonly struct SlewResult(bool canProceed, string? errorMessage = null)
     {
-        public bool CanProceed { get; }
-        public string? ErrorMessage { get; }
-
-        public SlewResult(bool canProceed, string? errorMessage = null)
-        {
-            CanProceed = canProceed;
-            ErrorMessage = errorMessage;
-        }
+        public bool CanProceed { get; } = canProceed;
+        public string? ErrorMessage { get; } = errorMessage;
 
         public static SlewResult Success() => new(true);
         public static SlewResult Failed(string reason) => new(false, reason);
@@ -924,16 +912,10 @@ namespace GreenSwamp.Alpaca.MountControl
     /// Result of the slew movement phase.
     /// Indicates success/failure and return code from mount-specific GoTo.
     /// </summary>
-    public readonly struct MoveResult
+    public readonly struct MoveResult(bool success, int code)
     {
-        public bool Success { get; }
-        public int Code { get; }
-
-        public MoveResult(bool success, int code)
-        {
-            Success = success;
-            Code = code;
-        }
+        public bool Success { get; } = success;
+        public int Code { get; } = code;
     }
 
     #endregion

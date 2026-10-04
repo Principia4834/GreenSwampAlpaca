@@ -488,15 +488,12 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         private double Pulse(Axis axis)
         {
-            switch (axis)
+            return axis switch
             {
-                case Axis.Axis1:
-                    return _pulseX;
-                case Axis.Axis2:
-                    return _pulseY;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
-            }
+                Axis.Axis1 => _pulseX,
+                Axis.Axis2 => _pulseY,
+                _ => throw new ArgumentOutOfRangeException(nameof(axis), axis, null),
+            };
         }
 
         /// <summary>
@@ -781,15 +778,12 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         private static Axis ParseAxis(string axis)
         {
-            switch (axis)
+            return axis switch
             {
-                case "axis1":
-                    return Axis.Axis1;
-                case "axis2":
-                    return Axis.Axis2;
-                default:
-                    throw new ArgumentException();
-            }
+                "axis1" => Axis.Axis1,
+                "axis2" => Axis.Axis2,
+                _ => throw new ArgumentException(),
+            };
         }
 
         /// <summary>

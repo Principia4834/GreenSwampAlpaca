@@ -48,9 +48,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private const double LowSpeedMargin = (128 * Constant.SiderealRate);
         //private readonly double[] _slewingSpeed = { 0, 0 }; // store for last used speed in radians
         //private readonly double[] _targetPositions = { 0, 0 }; //  Store for last used target coordinate 
-        private readonly double[] _trackingRates = { 0, 0 };
-        private readonly long[] _trackingSpeeds = { 0, 0 };
-        private double[] _factorRadRateToInt = { 0, 0 };
+        private readonly double[] _trackingRates = [0, 0];
+        private readonly long[] _trackingSpeeds = [0, 0];
+        private double[] _factorRadRateToInt = [0, 0];
         private long[] _highSpeedRatio = new long[2];
         private long[] _axisVersion = new long[2];
         private long[] _lowSpeedGotoMargin = new long[2];
@@ -111,7 +111,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal bool MonitorPulse { private get; set; } = true;
         internal string MountType { get; private set; }
         private int MountNum { get; set; }
-        internal string[] MountVersion { get; private set; } = { string.Empty, string.Empty };
+        internal string[] MountVersion { get; private set; } = [string.Empty, string.Empty];
         internal bool SouthernHemisphere { private get; set; }
         internal int MinPulseDurationRa { get; set; }
         internal int MinPulseDurationDec { get; set; }
@@ -704,7 +704,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 if ((movingSteps < 19) && (model[(int)axis] == (int)McModel.StarDiscovery))
                 {
                     {
-                        int[] lookup = { 0, 10, 10, 10, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18 };
+                        int[] lookup = [0, 10, 10, 10, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18];
                         movingSteps = lookup[movingSteps];
                     }
                 }
@@ -829,7 +829,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 if ((movingSteps < 19) && (model[(int)axis] == (int)McModel.StarDiscovery))
                 {
                     {
-                        int[] lookup = { 0, 10, 10, 10, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18 };
+                        int[] lookup = [0, 10, 10, 10, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18];
                         movingSteps = lookup[movingSteps];
                     }
                 }
@@ -1103,17 +1103,14 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <returns></returns>
         internal Tuple<double?, DateTime> GetAxisPositionDate(Axis axis)
         {
-            switch (axis)
+            return axis switch
             {
-                case Axis.Axis1:
-                    return new Tuple<double?, DateTime>(_commands.GetAxisPositionCounter(axis),
-                        _commands.LastJ1RunTime);
-                case Axis.Axis2:
-                    return new Tuple<double?, DateTime>(_commands.GetAxisPositionCounter(axis),
-                        _commands.LastJ2ARunTime);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
-            }
+                Axis.Axis1 => new Tuple<double?, DateTime>(_commands.GetAxisPositionCounter(axis),
+                                        _commands.LastJ1RunTime),
+                Axis.Axis2 => new Tuple<double?, DateTime>(_commands.GetAxisPositionCounter(axis),
+                                        _commands.LastJ2ARunTime),
+                _ => throw new ArgumentOutOfRangeException(nameof(axis), axis, null),
+            };
         }
 
         internal double GetControllerVoltage(Axis axis)
@@ -1172,7 +1169,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             }
             catch (Exception)
             {
-                MountVersion = new string[] { "99", "99" };
+                MountVersion = ["99", "99"];
             }
 
             var monitorItem = new MonitorEntry
@@ -1235,28 +1232,15 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         /// <param name="rate"> 0..4 (1.0, 0.75, 0.50, 0.25, 0.125)</param>
         internal void SetSt4GuideRate(int rate)
         {
-            int cmd;
-            switch (rate)
+            var cmd = rate switch
             {
-                case 0:
-                    cmd = 0;
-                    break;
-                case 1:
-                    cmd = 1;
-                    break;
-                case 2:
-                    cmd = 2;
-                    break;
-                case 3:
-                    cmd = 3;
-                    break;
-                case 4:
-                    cmd = 4;
-                    break;
-                default:
-                    cmd = 2;
-                    break;
-            }
+                0 => 0,
+                1 => 1,
+                2 => 2,
+                3 => 3,
+                4 => 4,
+                _ => 2,
+            };
             _commands.SetSt4GuideRate(cmd);
         }
 

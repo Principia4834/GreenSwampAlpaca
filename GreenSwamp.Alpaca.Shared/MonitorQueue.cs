@@ -36,7 +36,7 @@ namespace GreenSwamp.Alpaca.Shared
         private static int _sessionIndex;
         private static int _monitorIndex;
         private static readonly string FileName;
-        private static readonly SemaphoreSlim LockFile = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim LockFile = new(1);
         private const string Fmt = "0000#";
         #endregion
 
@@ -140,7 +140,7 @@ namespace GreenSwamp.Alpaca.Shared
             DeleteFiles("GSFastMonitorLog", 7, GsFile.GetLogPath());
 
 
-            MonitorBlockingCollection = new BlockingCollection<MonitorEntry>();
+            MonitorBlockingCollection = [];
             Task.Factory.StartNew(() =>
             {
                 foreach (var monitorentry in MonitorBlockingCollection.GetConsumingEnumerable())
@@ -149,7 +149,7 @@ namespace GreenSwamp.Alpaca.Shared
                 }
             });
 
-            PulseBlockingCollection = new BlockingCollection<PulseEntry>();
+            PulseBlockingCollection = [];
             Task.Factory.StartNew(() =>
             {
                 foreach (var pulseEntry in PulseBlockingCollection.GetConsumingEnumerable())

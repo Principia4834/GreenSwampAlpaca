@@ -30,17 +30,13 @@ namespace GreenSwamp.Alpaca.MountControl
         /// <summary>Get alternate position based on alignment mode.</summary>
         public double[] GetAlternatePosition(double[] position)
         {
-            switch (Settings.AlignmentMode)
+            return Settings.AlignmentMode switch
             {
-                case AlignmentMode.AltAz:
-                    return GetAlternatePositionAltAz(position);
-                case AlignmentMode.Polar:
-                    return GetAlternatePositionPolar(position);
-                case AlignmentMode.GermanPolar:
-                    return GetAlternatePositionGEM(position);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(Settings.AlignmentMode), Settings.AlignmentMode, "Unsupported alignment mode for alternate position calculation.");
-            }
+                AlignmentMode.AltAz => GetAlternatePositionAltAz(position),
+                AlignmentMode.Polar => GetAlternatePositionPolar(position),
+                AlignmentMode.GermanPolar => GetAlternatePositionGEM(position),
+                _ => throw new ArgumentOutOfRangeException(nameof(Settings.AlignmentMode), Settings.AlignmentMode, "Unsupported alignment mode for alternate position calculation."),
+            };
         }
 
         /// <summary>Calculates which pair of axis positions is closer to a given position.</summary>
@@ -172,18 +168,14 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool IsWithinFlipLimits(IReadOnlyList<double> position)
         {
             var absPos0 = Math.Abs(position[0]);
-            switch (Settings.AlignmentMode)
+            return Settings.AlignmentMode switch
             {
-                case AlignmentMode.AltAz:
-                    return (Settings.AxisLimitX >= absPos0) && (absPos0 >= 360.0 - Settings.AxisLimitX);
-                case AlignmentMode.Polar:
-                    return (180.0 - Settings.AxisLimitX <= absPos0) && (absPos0 <= Settings.AxisLimitX);
-                case AlignmentMode.GermanPolar:
-                    return -Settings.HourAngleLimit < absPos0 && absPos0 < Settings.HourAngleLimit ||
-                           180 - Settings.HourAngleLimit < absPos0 && absPos0 < 180 + Settings.HourAngleLimit;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                AlignmentMode.AltAz => (Settings.AxisLimitX >= absPos0) && (absPos0 >= 360.0 - Settings.AxisLimitX),
+                AlignmentMode.Polar => (180.0 - Settings.AxisLimitX <= absPos0) && (absPos0 <= Settings.AxisLimitX),
+                AlignmentMode.GermanPolar => -Settings.HourAngleLimit < absPos0 && absPos0 < Settings.HourAngleLimit ||
+                                           180 - Settings.HourAngleLimit < absPos0 && absPos0 < 180 + Settings.HourAngleLimit,
+                _ => throw new InvalidOperationException(),
+            };
         }
 
         /// <summary>Checks if the target is within the defined limits.</summary>

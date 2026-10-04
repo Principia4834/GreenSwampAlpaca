@@ -3,16 +3,11 @@ using GreenSwamp.Alpaca.Settings.Services;
 
 namespace GreenSwamp.Alpaca.Server.Data
 {
-	internal class UserService : IUserService
+	internal class UserService(IVersionedSettingsService settings) : IUserService
 	{
-		private readonly IVersionedSettingsService _settings;
+		private readonly IVersionedSettingsService _settings = settings;
 
-		public UserService(IVersionedSettingsService settings)
-		{
-			_settings = settings;
-		}
-
-		public async Task<bool> Authenticate(string username, string password)
+        public async Task<bool> Authenticate(string username, string password)
 		{
 			return await Task.Run(() =>
 			{

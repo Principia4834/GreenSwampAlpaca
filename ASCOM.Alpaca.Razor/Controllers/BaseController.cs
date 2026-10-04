@@ -158,9 +158,9 @@ namespace ASCOM.Alpaca
             {
                 using var _ = AlpacaRequestContext.BeginClientRefIdScope(clientID, HttpContext.Connection.RemoteIpAddress?.ToString(), (uint)HttpContext.Connection.RemotePort);
 
-                LogAPICall(HttpContext.Connection.RemoteIpAddress, 
-                           HttpContext.Request.Path.ToString(), 
-                           AlpacaRequestContext.CurrentClientId, 
+                LogAPICall(HttpContext.Connection.RemoteIpAddress,
+                           HttpContext.Request.Path.ToString(),
+                           AlpacaRequestContext.CurrentClientId,
                            clientTransactionID, transactionID, payload);
 
                 if (DeviceManager.Configuration.RunInStrictAlpacaMode)
@@ -194,10 +194,10 @@ namespace ASCOM.Alpaca
                 //if (DeviceManager.Configuration.RequireConnect)
                 //{
                 if (DeviceCannotAcceptOperation())
-                    {
-                        return Ok(ResponseHelpers.ExceptionResponseBuilder<TResponse>(new NotConnectedException(),
-                            clientTransactionID, transactionID));
-                    }
+                {
+                    return Ok(ResponseHelpers.ExceptionResponseBuilder<TResponse>(new NotConnectedException(),
+                        clientTransactionID, transactionID));
+                }
                 //}
 
                 TValue value = operation.Invoke();
@@ -294,9 +294,10 @@ namespace ASCOM.Alpaca
         public ActionResult<AxisRatesResponse> ProcessRequest(Func<IAxisRates> operation, uint transactionID, uint clientID = 0, uint clientTransactionID = 0, string payload = "")
         {
             return ExecuteRequest<AxisRatesResponse, IList<AxisRate>>(
-                () => {
+                () =>
+                {
                     var rates = operation.Invoke();
-                    IList<AxisRate> res = new List<AxisRate>();
+                    IList<AxisRate> res = [];
                     foreach (IRate rate in rates)
                         res.Add(new AxisRate(rate.Minimum, rate.Maximum));
                     return res;
@@ -391,9 +392,10 @@ namespace ASCOM.Alpaca
         public ActionResult<DeviceStateResponse> ProcessRequest(Func<IList<IStateValue>> operation, uint transactionID, uint clientID = 0, uint clientTransactionID = 0, string payload = "")
         {
             return ExecuteRequest<DeviceStateResponse, List<StateValue>>(
-                () => {
+                () =>
+                {
                     IList<IStateValue> stateValues = operation.Invoke();
-                    List<StateValue> response = new();
+                    List<StateValue> response = [];
                     foreach (var stateValue in stateValues)
                         response.Add(new StateValue(stateValue.Name, stateValue.Value));
                     return response;

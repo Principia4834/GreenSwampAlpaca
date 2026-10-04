@@ -156,7 +156,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     result.Add(settings);
             }
 
-            return result.OrderBy(d => d.DeviceNumber).ToList();
+            return [.. result.OrderBy(d => d.DeviceNumber)];
         }
 
         public async Task SaveDeviceSettingsAsync(int deviceNumber, SkySettings settings)
@@ -384,7 +384,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 _configuration.GetSection("DeviceTemplates:GermanPolar").Bind(defaults);
             }
 
-            return JsonNode.Parse(JsonSerializer.Serialize(defaults, _jsonOptions))?.AsObject() ?? new JsonObject();
+            return JsonNode.Parse(JsonSerializer.Serialize(defaults, _jsonOptions))?.AsObject() ?? [];
         }
 
         private Dictionary<string, JsonNode?> LoadLegacyCommonSkySettings(string previousVersionPath)
@@ -514,9 +514,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
             List<AlpacaDevice> alpacaDevices;
 
             if (alpacaSection.Exists())
-                alpacaDevices = alpacaSection.Get<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                alpacaDevices = alpacaSection.Get<List<AlpacaDevice>>() ?? [];
             else
-                alpacaDevices = new List<AlpacaDevice>();
+                alpacaDevices = [];
 
             // Replace any placeholder / well-known fixed GUID with a freshly generated one.
             // This ensures that every first-run installation receives a unique ASCOM discovery identity
@@ -557,14 +557,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var json = File.ReadAllText(AlpacaDevicesSettingsPath);
                 var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
                 if (doc != null && doc.TryGetValue("AlpacaDevices", out var element))
-                    return element.Deserialize<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                    return element.Deserialize<List<AlpacaDevice>>() ?? [];
             }
             catch (Exception ex)
             {
                 LogSafe("ERROR", $"Error reading AlpacaDevices from devices.alpaca.user.json: {ex.Message}");
             }
 
-            return new List<AlpacaDevice>();
+            return [];
         }
 
         public async Task SaveAlpacaDevicesAsync(List<AlpacaDevice> devices)
@@ -625,18 +625,18 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         private List<AlpacaDevice> ReadAlpacaDevicesUnlocked()
         {
-            if (!File.Exists(AlpacaDevicesSettingsPath)) return new List<AlpacaDevice>();
+            if (!File.Exists(AlpacaDevicesSettingsPath)) return [];
 
             try
             {
                 var json = File.ReadAllText(AlpacaDevicesSettingsPath);
                 var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
                 if (doc != null && doc.TryGetValue("AlpacaDevices", out var element))
-                    return element.Deserialize<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                    return element.Deserialize<List<AlpacaDevice>>() ?? [];
             }
             catch { }
 
-            return new List<AlpacaDevice>();
+            return [];
         }
 
         private async Task WriteAlpacaDevicesUnlockedAsync(List<AlpacaDevice> devices)
@@ -790,7 +790,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     });
                     return result;
                 }
-                devices = element.Deserialize<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                devices = element.Deserialize<List<AlpacaDevice>>() ?? [];
             }
             catch (Exception ex)
             {
@@ -1130,17 +1130,17 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private async Task<Dictionary<string, JsonElement>> ReadSettingsFileAsync(string path)
         {
             if (!File.Exists(path))
-                return new Dictionary<string, JsonElement>();
+                return [];
 
             try
             {
                 var json = await File.ReadAllTextAsync(path);
                 return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
-                       ?? new Dictionary<string, JsonElement>();
+                       ?? [];
             }
             catch
             {
-                return new Dictionary<string, JsonElement>();
+                return [];
             }
         }
 

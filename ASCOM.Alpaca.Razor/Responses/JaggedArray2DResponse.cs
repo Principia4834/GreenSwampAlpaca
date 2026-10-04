@@ -13,7 +13,7 @@ namespace ASCOM.Alpaca.Razor.Responses
         {
             get
             {
-                if(typeof(T) == typeof(int))
+                if (typeof(T) == typeof(int))
                 {
                     return ArrayType.Int;
                 }
@@ -31,8 +31,8 @@ namespace ASCOM.Alpaca.Razor.Responses
                 }
             }
         }
-            
-            
+
+
 
         public int Rank => 2;
 
@@ -43,7 +43,7 @@ namespace ASCOM.Alpaca.Razor.Responses
         //     Create a new IntArray2DResponse with default values
         public JaggedArray2DResponse()
         {
-            Value = new T[0][];
+            Value = [];
         }
 
         //

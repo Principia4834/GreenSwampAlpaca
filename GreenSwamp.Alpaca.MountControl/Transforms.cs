@@ -27,7 +27,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
     {
         #region Transform
 
-        private static readonly Transform xForm = new Transform();
+        private static readonly Transform xForm = new();
 
         /// <summary>
         /// Convert RA and DEC from "from type" to "to type" using Transform
@@ -59,7 +59,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     xForm.SetApparent(rightAscension, declination);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             var r = new Vector(0, 0);
@@ -79,7 +79,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
                     r.Y = xForm.DECApparent;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
             if (log)
             {

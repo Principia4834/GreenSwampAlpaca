@@ -35,9 +35,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     /// <summary>
     /// Abstract base class for all Sky commands providing common functionality
     /// </summary>
-    public abstract class SkyCommandBase : CommandBase<SkyWatcher>, ISkyCommand
+    public abstract class SkyCommandBase(long id, ICommandQueue<SkyWatcher> queue) : CommandBase<SkyWatcher>(id, queue), ISkyCommand
     {
-        protected SkyCommandBase(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
     }
 
     /// <summary>
@@ -167,10 +166,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyInitializeAxes : SkyActionCommand
+    public class SkyInitializeAxes(long id, ICommandQueue<SkyWatcher> queue) : SkyActionCommand(id, queue)
     {
-        public SkyInitializeAxes(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
             skyWatcher.InitializeAxes();
@@ -534,10 +531,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyLoadDefaultMountSettings : SkyActionCommand
+    public class SkyLoadDefaultMountSettings(long id, ICommandQueue<SkyWatcher> queue) : SkyActionCommand(id, queue)
     {
-        public SkyLoadDefaultMountSettings(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
             skyWatcher.LoadDefaultMountSettings();
@@ -562,10 +557,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyUpdateSteps : SkyActionCommand
+    public class SkyUpdateSteps(long id, ICommandQueue<SkyWatcher> queue) : SkyActionCommand(id, queue)
     {
-        public SkyUpdateSteps(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override void ExecuteAction(SkyWatcher skyWatcher)
         {
             skyWatcher.UpdateSteps();
@@ -573,80 +566,64 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
     }
 
     // Query Commands (return results)
-    public class SkyCanAxisSlewsIndependent : SkyQueryCommand
+    public class SkyCanAxisSlewsIndependent(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanAxisSlewsIndependent(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanAxisSlewsIndependent;
         }
     }
 
-    public class SkyCanAzEq : SkyQueryCommand
+    public class SkyCanAzEq(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanAzEq(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanAzEq;
         }
     }
 
-    public class SkyCanDualEncoders : SkyQueryCommand
+    public class SkyCanDualEncoders(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanDualEncoders(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanDualEncoders;
         }
     }
 
-    public class SkyCanHalfTrack : SkyQueryCommand
+    public class SkyCanHalfTrack(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanHalfTrack(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanHalfTrack;
         }
     }
 
-    public class SkyCanHomeSensors : SkyQueryCommand
+    public class SkyCanHomeSensors(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanHomeSensors(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanHomeSensors;
         }
     }
 
-    public class SkyCanPolarLed : SkyQueryCommand
+    public class SkyCanPolarLed(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanPolarLed(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanPolarLed;
         }
     }
 
-    public class SkyCanPPec : SkyQueryCommand
+    public class SkyCanPPec(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanPPec(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanPPec;
         }
     }
 
-    public class SkyCanWifi : SkyQueryCommand
+    public class SkyCanWifi(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyCanWifi(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.CanWifi;
@@ -675,10 +652,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyGetAdvancedCmdSupport : SkyQueryCommand
+    public class SkyGetAdvancedCmdSupport(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetAdvancedCmdSupport(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetAdvancedCmdSupport();
@@ -785,10 +760,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyGetCapabilities : SkyQueryCommand
+    public class SkyGetCapabilities(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetCapabilities(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetCapabilities();
@@ -925,20 +898,16 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyGetPositionsInDegrees : SkyQueryCommand
+    public class SkyGetPositionsInDegrees(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetPositionsInDegrees(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetPositionsInDegrees();
         }
     }
 
-    public class SkyGetSteps : SkyQueryCommand
+    public class SkyGetSteps(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetSteps(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetSteps();
@@ -979,24 +948,17 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyMountType : SkyQueryCommand
+    public class SkyMountType(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyMountType(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.MountType;
         }
     }
 
-    public class SkyMountVersion : SkyQueryCommand
+    public class SkyMountVersion(long id, ICommandQueue<SkyWatcher> queue, Axis axis) : SkyQueryCommand(id, queue)
     {
-        private readonly Axis _axis;
-
-        public SkyMountVersion(long id, ICommandQueue<SkyWatcher> queue, Axis axis) : base(id, queue)
-        {
-            _axis = axis;
-        }
+        private readonly Axis _axis = axis;
 
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
@@ -1047,10 +1009,8 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyIsConnected : SkyQueryCommand
+    public class SkyIsConnected(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyIsConnected(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.IsConnected;
@@ -1073,20 +1033,16 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyIsPPecOn : SkyQueryCommand
+    public class SkyIsPPecOn(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyIsPPecOn(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.IsPPecOn;
         }
     }
 
-    public class SkyIsPPecInTrainingOn : SkyQueryCommand
+    public class SkyIsPPecInTrainingOn(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyIsPPecInTrainingOn(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.IsPPecInTrainingOn;
@@ -1141,20 +1097,16 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyGetAxisVersions : SkyQueryCommand
+    public class SkyGetAxisVersions(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetAxisVersions(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetAxisVersions();
         }
     }
 
-    public class SkyGetAxisStringVersions : SkyQueryCommand
+    public class SkyGetAxisStringVersions(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetAxisStringVersions(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetAxisStringVersions();
@@ -1197,60 +1149,48 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         }
     }
 
-    public class SkyGetStepsPerRevolution : SkyQueryCommand
+    public class SkyGetStepsPerRevolution(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetStepsPerRevolution(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetStepsPerRevolution();
         }
     }
 
-    public class SkyGetStepTimeFreq : SkyQueryCommand
+    public class SkyGetStepTimeFreq(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetStepTimeFreq(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetStepTimeFreq();
         }
     }
 
-    public class SkyGetHighSpeedRatio : SkyQueryCommand
+    public class SkyGetHighSpeedRatio(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetHighSpeedRatio(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetHighSpeedRatio();
         }
     }
 
-    public class SkyGetLowSpeedGotoMargin : SkyQueryCommand
+    public class SkyGetLowSpeedGotoMargin(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetLowSpeedGotoMargin(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetLowSpeedGotoMargin();
         }
     }
 
-    public class SkyGetFactorRadRateToInt : SkyQueryCommand
+    public class SkyGetFactorRadRateToInt(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetFactorRadRateToInt(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetFactorRadRateToInt();
         }
     }
 
-    public class SkyGetFactorStepToRad : SkyQueryCommand
+    public class SkyGetFactorStepToRad(long id, ICommandQueue<SkyWatcher> queue) : SkyQueryCommand(id, queue)
     {
-        public SkyGetFactorStepToRad(long id, ICommandQueue<SkyWatcher> queue) : base(id, queue) { }
-
         protected override dynamic ExecuteQuery(SkyWatcher skyWatcher)
         {
             return skyWatcher.GetFactorStepToRad();

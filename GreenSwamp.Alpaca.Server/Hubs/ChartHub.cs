@@ -29,19 +29,14 @@ namespace GreenSwamp.Alpaca.Server.Hubs
     /// Tracks per-connection group membership so that OnDisconnectedAsync can close the
     /// MonitorQueue data gates when the last subscriber disconnects without a clean leave.
     /// </summary>
-    public class ChartHub : Hub
+    public class ChartHub(ChartDataService chartData) : Hub
     {
-        private readonly ChartDataService _chartData;
+        private readonly ChartDataService _chartData = chartData;
 
         // Tracks which chart type ("radec" | "pulse") each connection has joined.
         // Key = connectionId, Value = set of chart-type strings.
         // Static so it survives across the transient hub instances SignalR creates per call.
         private static readonly ConcurrentDictionary<string, HashSet<string>> _connectionGroups = new();
-
-        public ChartHub(ChartDataService chartData)
-        {
-            _chartData = chartData;
-        }
 
         /// <summary>Subscribes the caller to RA/Dec position chart broadcasts for the given device.</summary>
         public async Task JoinRaDecGroupAsync(int deviceNumber)

@@ -248,7 +248,7 @@ namespace GreenSwamp.Alpaca.Server
                 hostArgs.Add(startupUrlArg);
             }
 
-            var builder = WebApplication.CreateBuilder(hostArgs.ToArray());
+            var builder = WebApplication.CreateBuilder([.. hostArgs]);
 
             // Configure response compression with Brotli and Gzip providers, enabling for HTTPS
             builder.Services.AddResponseCompression(options =>

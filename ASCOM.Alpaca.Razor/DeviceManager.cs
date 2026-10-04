@@ -32,22 +32,13 @@ namespace ASCOM.Alpaca
 
         // These store the actual instance of the device drivers. They are keyed to the Device Number
 
-        public static readonly Dictionary<int, ICameraV4> Cameras = new Dictionary<int, ICameraV4>();
-        public static readonly Dictionary<int, ICoverCalibratorV2> CoverCalibrators = new Dictionary<int, ICoverCalibratorV2>();
-        public static readonly Dictionary<int, IDomeV3> Domes = new Dictionary<int, IDomeV3>();
-        public static readonly Dictionary<int, IFilterWheelV3> FilterWheels = new Dictionary<int, IFilterWheelV3>();
-        public static readonly Dictionary<int, IFocuserV4> Focusers = new Dictionary<int, IFocuserV4>();
-        public static readonly Dictionary<int, IObservingConditionsV2> ObservingConditions = new Dictionary<int, IObservingConditionsV2>();
-        public static readonly Dictionary<int, IRotatorV4> Rotators = new Dictionary<int, IRotatorV4>();
-        public static readonly Dictionary<int, ISafetyMonitorV3> SafetyMonitors = new Dictionary<int, ISafetyMonitorV3>();
-        public static readonly Dictionary<int, ISwitchV3> Switches = new Dictionary<int, ISwitchV3>();
-        public static readonly Dictionary<int, ITelescopeV4> Telescopes = new Dictionary<int, ITelescopeV4>();
+        public static readonly Dictionary<int, ITelescopeV4> Telescopes = [];
 
         // This is a master list of all device drivers, keyed by (deviceType, deviceID)
 
-        public static Dictionary<(string deviceType, int deviceID), IAscomDeviceV2> DeviceDrivers = new Dictionary<(string deviceType, int deviceID), IAscomDeviceV2>();
+        public static Dictionary<(string deviceType, int deviceID), IAscomDeviceV2> DeviceDrivers = [];
 
-        static List<AlpacaConfiguredDevice> AlpacaDevices = new List<AlpacaConfiguredDevice>();
+        static List<AlpacaConfiguredDevice> AlpacaDevices = [];
 
         public static void LoadConfiguration(IAlpacaConfiguration configuration)
         {

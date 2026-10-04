@@ -35,7 +35,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         private readonly CancellationTokenSource _cts = new();
 
         // Keyed by device number. Replaced atomically each tick; never mutated in place.
-        private Dictionary<int, TelescopeStateModel> _cache = new();
+        private Dictionary<int, TelescopeStateModel> _cache = [];
 
         /// <summary>
         /// Fired every ~200 ms after the internal snapshot cache has been refreshed.
@@ -43,18 +43,11 @@ namespace GreenSwamp.Alpaca.Server.Services
         public event EventHandler? StateChanged;
         private readonly ActiveDeviceViewRegistry _activeViews;
 
-        public sealed class TelescopeStateChangedEventArgs : EventArgs
+        public sealed class TelescopeStateChangedEventArgs(int deviceNumber, string propertyName, TelescopeStateModel state) : EventArgs
         {
-            public int DeviceNumber { get; }
-            public string PropertyName { get; }
-            public TelescopeStateModel State { get; }
-
-            public TelescopeStateChangedEventArgs(int deviceNumber, string propertyName, TelescopeStateModel state)
-            {
-                DeviceNumber = deviceNumber;
-                PropertyName = propertyName;
-                State = state;
-            }
+            public int DeviceNumber { get; } = deviceNumber;
+            public string PropertyName { get; } = propertyName;
+            public TelescopeStateModel State { get; } = state;
         }
 
         public event EventHandler<TelescopeStateChangedEventArgs>? DeviceStateChanged;
@@ -143,7 +136,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     ConnectedClientCount = mount.ConnectedClientCount,
                     HasEverBeenConnected = mount.HasEverBeenConnected,
                     ParkSelectedName = mount.ParkSelected?.Name,
-                    ParkPositionNames = mount.Settings.ParkPositions?.Select(p => p.Name).ToList() ?? new List<string>(),
+                    ParkPositionNames = mount.Settings.ParkPositions?.Select(p => p.Name).ToList() ?? [],
                     TargetRightAscension = mount.TargetRa,
                     TargetDeclination = mount.TargetDec,
                     ActualAxisX = mount.ActualAxisX,

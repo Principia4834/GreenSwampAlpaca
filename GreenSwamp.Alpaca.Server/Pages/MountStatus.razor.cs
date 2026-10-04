@@ -41,7 +41,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
-        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
+        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = [];
 
         protected override void OnInitialized()
         {
@@ -125,10 +125,9 @@ namespace GreenSwamp.Alpaca.Server.Pages
         }
 
         private List<int> GetConfiguredDeviceNumbers() =>
-            _alpacaDevices
+            [.. _alpacaDevices
                 .Select(d => d.DeviceNumber)
-                .OrderBy(d => d)
-                .ToList();
+                .OrderBy(d => d)];
 
         private string TabLabel(int deviceNumber)
         {

@@ -40,7 +40,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private CancellationTokenSource? _hbCts;
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
-        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
+        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = [];
 
         private const long UiClientId = GreenSwamp.Alpaca.MountControl.Mount.UiInternalClientId;
 
@@ -211,10 +211,9 @@ namespace GreenSwamp.Alpaca.Server.Pages
         }
 
         private List<int> GetConfiguredDeviceNumbers() =>
-            _alpacaDevices
+            [.. _alpacaDevices
                 .Select(d => d.DeviceNumber)
-                .OrderBy(d => d)
-                .ToList();
+                .OrderBy(d => d)];
 
         private string TabLabel(int deviceNumber)
         {
