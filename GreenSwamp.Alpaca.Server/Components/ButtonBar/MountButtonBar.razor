@@ -19,7 +19,7 @@
                            Color="@(State.AtPark ? Color.Warning : Color.Primary)"
                            Variant="Variant.Outlined"
                            Size="Size.Large"
-                           Class="ma-2"
+                           Class="ma-2 gs-icon-button-rounded"
                            Disabled="@(!IsConnected || (State.AtPark
                                                                      ? !(Mount?.Settings.CanUnPark ?? false)
                                                                      : !(Mount?.Settings.CanPark ?? false)))"
@@ -32,7 +32,7 @@
                            Color="Color.Primary"
                            Variant="Variant.Outlined"
                            Size="Size.Large"
-                           Class="ma-2"
+                           Class="ma-2 gs-icon-button-rounded"
                            Disabled="@(!IsConnected || State.AtPark || !(Mount?.Settings.CanFindHome ?? false))"
                            OnClick="OnHomeClickAsync" />
         </MudTooltip>
@@ -44,7 +44,7 @@
                            Color="Color.Primary"
                            Variant="Variant.Outlined"
                            Size="Size.Large"
-                           Class="ma-2"
+                           Class="ma-2 gs-icon-button-rounded"
                            Disabled="@(!IsConnected)"
                            OnClick="OnTrackingClickAsync" />
         </MudTooltip>
@@ -58,7 +58,7 @@
                                Color="Color.Primary"
                                Variant="Variant.Outlined"
                                Size="Size.Large"
-                               Class="ma-2"
+                               Class="ma-2 gs-icon-button-rounded"
                                Disabled="@(!IsConnected || State.Slewing)"
                                OnClick="OnFlipSopClickAsync" />
             </MudTooltip>
@@ -70,7 +70,7 @@
                            Color="Color.Primary"
                            Variant="Variant.Outlined"
                            Size="Size.Large"
-                           Class="ma-2"
+                           Class="ma-2 gs-icon-button-rounded"
                            Disabled="@(!IsConnected || State.Slewing)"
                            OnClick="OnReSyncClickAsync" />
         </MudTooltip>
@@ -82,32 +82,32 @@
                            Color="@(State.IsAutoHomeRunning ? Color.Warning : Color.Primary)"
                            Variant="Variant.Outlined"
                            Size="Size.Large"
-                           Class="ma-2"
+                           Class="ma-2 gs-icon-button-rounded"
                            Disabled="@(!IsConnected || State.AtPark)"
                            OnClick="OnAutoHomeClickAsync" />
         </MudTooltip>
 
         @* -- Limits ------------------------------------------------------------- *@
-        <MudTooltip Text="@(State.LimitsOn ? "Disable angle limits" : "Enable angle limits")"
+        <MudTooltip Text="@(State.LimitsOn ? "Disable slewing and tracking limits" : "Enable slewing and tracking limits")"
                     Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@LimitsOnIcon"
                            Color="Color.Primary"
                            Variant="Variant.Outlined"
                            Size="Size.Large"
-                           Class="ma-2"
+                           Class="ma-2 gs-icon-button-rounded"
                            Disabled="@(!IsConnected)"
                            OnClick="OnLimitsClickAsync" />
         </MudTooltip>
 
-        @* -- Voice -------------------------------------------------------------- *@
-        <MudTooltip Text="@(!State.VoiceActive ? "Enable voice announcements" : "Disable voice announcements")"
+        @* -- Settings ----------------------------------------------------------- *@
+        <MudTooltip Text="Set park positions and slew limits"
                     Placement="Placement.Top" Arrow="true">
-            <MudIconButton Icon="@(!State.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
+            <MudIconButton Icon="@Icons.Material.Filled.Settings"
                            Color="Color.Primary"
-                           Variant="Variant.Outlined"
+                           Variant="Variant.Text"
                            Size="Size.Large"
-                           Class="ma-2"
-                           OnClick="OnVoiceActiveSetAsync" />
+                           Class="mt-1 ml-1"
+                           OnClick="OnSettingsClickAsync" />
         </MudTooltip>
 
     </div>
@@ -120,6 +120,7 @@
         <MudIconButton Variant="Variant.Outlined" Color="Color.Error"
                        Icon="@Icons.Material.Filled.StopCircle"
                        Size="Size.Large"
+                       Class="gs-icon-button-rounded"
                        Disabled="@(!State.HasEverBeenConnected && !IsConnected)"
                        OnClick="OnStopClickAsync" />
     </MudTooltip>

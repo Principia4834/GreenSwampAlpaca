@@ -32,6 +32,19 @@ namespace GreenSwamp.Alpaca.Server.Components
         private string? _decSmartError;
         private string? _azSmartError;
         private string? _altSmartError;
+        private bool _isSettingsPanelOpen;
+        private bool _isSettingsDirty;
+        private string _initialParkPositionName = "—";
+        private bool _initialVoiceActive;
+        private string _workingParkPositionName = "—";
+        private bool _workingVoiceActive;
+        private bool IsParkSelectorDisabled => !IsUiClientConnected || !(_mount?.Settings.CanPark ?? false);
+        private string EffectiveParkPositionName =>
+            (State.ParkPositionNames.Count > 0 && State.ParkPositionNames.Contains(State.ParkSelectedName))
+                ? State.ParkSelectedName!
+                : State.ParkPositionNames.FirstOrDefault(p => string.Equals(p, "Default", StringComparison.OrdinalIgnoreCase))
+                    ?? State.ParkPositionNames.FirstOrDefault()
+                    ?? "—";
 
         protected override void OnInitialized()
         {
@@ -125,6 +138,108 @@ namespace GreenSwamp.Alpaca.Server.Components
             {
                 Snackbar.Add($"GoTo failed: {ex.Message}", Severity.Error);
             }
+        }
+
+        private void OpenSettingsPanel()
+        {
+            _initialParkPositionName = EffectiveParkPositionName;
+            _initialVoiceActive = State.VoiceActive;
+            _workingParkPositionName = _initialParkPositionName;
+            _workingVoiceActive = _initialVoiceActive;
+            _isSettingsDirty = false;
+            _isSettingsPanelOpen = true;
+        }
+
+        private void CloseSettingsPanelWithoutSave()
+        {
+            _isSettingsPanelOpen = false;
+        }
+
+        private void CancelSettingsChanges()
+        {
+            _workingParkPositionName = _initialParkPositionName;
+            _workingVoiceActive = _initialVoiceActive;
+            _isSettingsDirty = false;
+            _isSettingsPanelOpen = false;
+        }
+
+        private Task SaveSettingsChangesAsync()
+        {
+            if (_mount == null)
+            {
+                Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error);
+                return Task.CompletedTask;
+            }
+
+            if (!string.Equals(_workingParkPositionName, _initialParkPositionName, StringComparison.Ordinal))
+            {
+                var selectedPosition = _mount.Settings.ParkPositions?.Find(p => p.Name == _workingParkPositionName);
+                if (selectedPosition == null)
+                {
+                    Snackbar.Add($"Park position '{_workingParkPositionName}' not found", Severity.Warning);
+                    return Task.CompletedTask;
+                }
+
+                _mount.ParkSelected = selectedPosition;
+            }
+
+            if (_workingVoiceActive != _initialVoiceActive)
+            {
+                _mount.Settings.VoiceActive = _workingVoiceActive;
+            }
+
+            _initialParkPositionName = _workingParkPositionName;
+            _initialVoiceActive = _workingVoiceActive;
+            _isSettingsDirty = false;
+            _isSettingsPanelOpen = false;
+            Snackbar.Add("GoTo settings saved.", Severity.Success);
+            return Task.CompletedTask;
+        }
+
+        private void OnParkPositionDraftSelected(string positionName)
+        {
+            _workingParkPositionName = positionName;
+            UpdateSettingsDirtyState();
+        }
+
+        private async Task OpenManageParkPositionsDialogFromPanelAsync()
+        {
+            var parameters = new DialogParameters
+            {
+                [nameof(ManageParkPositionsDialog.DeviceNumber)] = DeviceNumber
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseOnEscapeKey = true,
+                CloseButton = true
+            };
+            await DialogService.ShowAsync<ManageParkPositionsDialog>(string.Empty, parameters, options);
+        }
+
+        private Task ToggleWorkingVoice()
+        {
+            _workingVoiceActive = !_workingVoiceActive;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
+        private Task OnSettingsPrimaryActionClicked()
+        {
+            if (_isSettingsDirty)
+            {
+                return SaveSettingsChangesAsync();
+            }
+
+            CloseSettingsPanelWithoutSave();
+            return Task.CompletedTask;
+        }
+
+        private void UpdateSettingsDirtyState()
+        {
+            _isSettingsDirty = !string.Equals(_workingParkPositionName, _initialParkPositionName, StringComparison.Ordinal)
+                || _workingVoiceActive != _initialVoiceActive;
         }
 
         /// <summary>Copies the current live mount position into all entry fields.</summary>

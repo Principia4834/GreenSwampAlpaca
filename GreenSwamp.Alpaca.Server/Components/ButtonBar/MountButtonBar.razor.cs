@@ -20,6 +20,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         [Parameter] public bool Vertical { get; set; } = false;
         [Parameter] public bool ShowPrimaryButtons { get; set; } = true;
         [Parameter] public bool ShowStopButton { get; set; } = true;
+        [Parameter] public EventCallback OnSettingsClick { get; set; }
 
         private GreenSwamp.Alpaca.MountControl.Mount? Mount => MountRegistry.GetInstance(DeviceNumber);
 
@@ -191,14 +192,13 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         private const string LimitsOnIcon = "<path d=\"M0 0h24v24H0z\" fill=\"none\"/>" +
             "<path d=\"M12 21 0 9q2.4-2.45 5.5-3.725t6.5-1.275q3.425 0 6.525 1.275T24 9l-2.525 2.525q-.55-.25-1.125-.375t-1.2-.15l1.95-1.95q-1.95-1.475-4.2625-2.2625T12 6q-2.525 0-4.8375.7875T2.9 9.05l5.8 5.8q1.05-.625 2.45-.8125t2.55.1625q-.35.625-.525 1.3875t-.175 1.4375q0 .65.125 1.2625t.4 1.1875l-1.525 1.525ZM17 21q-.425 0-.7125-.2875T16 20v-3q0-.425.2875-.7125T17 16v-1q0-.825.5875-1.4125T19 13q.825 0 1.4125.5875T21 15v1q.425 0 .7125.2875T22 17v3q0 .425-.2875.7125T21 21h-4Zm1-5h2v-1q0-.425-.2875-.7125T19 14q-.425 0-.7125.2875T18 15v1Z\"/>";
 
-        // -- Voice Enable ------------------------------------------------------
-
-        /// <summary>Sets VoiceActive for the given device and persists the change to JSON.</summary>
-        private async Task OnVoiceActiveSetAsync()
+        // -- Settings -----------------------------------------------------------
+        private Task OnSettingsClickAsync()
         {
-            Mount.Settings.VoiceActive = !Mount.Settings.VoiceActive;
+            return OnSettingsClick.HasDelegate
+                ? OnSettingsClick.InvokeAsync()
+                : Task.CompletedTask;
         }
-
 
 
         // -- Stop --------------------------------------------------------------

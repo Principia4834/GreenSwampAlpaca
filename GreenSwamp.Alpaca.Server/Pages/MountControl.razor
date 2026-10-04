@@ -82,11 +82,11 @@ else
                 </MudPaper>
 
                 @* -- State icon row ----------------------------------------- *@
-                <MudPaper Elevation="1" Class="pa-1 mb-2">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudPaper Elevation="1" Class="px-2 py-2 mb-3" Style="height:64px;">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
 
                         @* -- Status indicators (left) *@
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
 
                             <MudTooltip Text="@(s.AtHome ? "At Home" : "Not at Home")" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.Home"
@@ -157,60 +157,6 @@ else
 
                         </MudStack>
 
-                        @* -- Park position controls (right) *@
-                        @{
-                            var effectiveParkName = (s.ParkPositionNames.Count > 0 && s.ParkPositionNames.Contains(s.ParkSelectedName))
-                                ? s.ParkSelectedName!
-                                : s.ParkPositionNames.FirstOrDefault(p => string.Equals(p, "Default", StringComparison.OrdinalIgnoreCase))
-                                  ?? s.ParkPositionNames.FirstOrDefault()
-                                  ?? "—";
-                            var selectorDisabled = !isUiClientConnected || !(mount?.Settings.CanPark ?? false);
-                        }
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-
-                            @* Display only: currently selected park position name *@
-                            <MudText Typo="Typo.body1" Color="Color.Primary"
-                                     Style="padding: 0 8px; white-space: nowrap; font-size: 1.1rem; font-weight: 500;">
-                                @effectiveParkName
-                            </MudText>
-
-                            @* Park position selector — ActivatorContent gives identical Size.Large rendering to the gear *@
-                            <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
-                                <MudMenu Disabled="@selectorDisabled">
-                                    <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Large"
-                                                       Disabled="@selectorDisabled"
-                                                       OnClick="@context.ToggleAsync" />
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        @if (s.ParkPositionNames.Count > 0)
-                                        {
-                                            @foreach (var posName in s.ParkPositionNames)
-                                            {
-                                                <MudMenuItem OnClick="@(() => OnParkPositionSelectedInStatusBar(dn, posName))">@posName</MudMenuItem>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <MudMenuItem Disabled="true">No positions configured</MudMenuItem>
-                                        }
-                                    </ChildContent>
-                                </MudMenu>
-                            </MudTooltip>
-
-                            @* Manage park positions *@
-                            <MudTooltip Text="Create, update or delete park positions" Placement="Placement.Top" Arrow="true">
-                                <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                                               Size="Size.Large"
-                                               Color="Color.Primary"
-                                               Disabled="@(!isUiClientConnected)"
-                                               OnClick="@(() => OpenManageParkPositionsDialogAsync(dn))" />
-                            </MudTooltip>
-
-                        </MudStack>
-
                     </MudStack>
                 </MudPaper>
 
@@ -218,7 +164,6 @@ else
                 <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap" Class="mb-3">
 
                     <MudPaper Elevation="1" Class="pa-3" Style="min-width:300px">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo / Slew</MudText>
                         <GoToPanel State="@s"
                                    DeviceNumber="@dn"
                                    IsUiClientConnected="@isUiClientConnected" />
@@ -240,7 +185,7 @@ else
                 </MudStack>
 
                 @* -- Bottom action bar ------------------------------------- *@
-                <MudPaper Elevation="1" Class="pa-2 mt-3">
+                <MudPaper Elevation="1" Class="px-2 py-2 mt-3" Style="height:64px;">
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
                         @* Far left: Shutdown *@

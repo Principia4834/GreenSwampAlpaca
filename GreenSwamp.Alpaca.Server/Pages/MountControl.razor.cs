@@ -242,35 +242,5 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private static string FormatHMS(double hours) => CoordinateFormatter.FormatHMS(hours);
         private static string FormatDMS(double degrees) => CoordinateFormatter.FormatDMS(degrees);
-
-        // -- Manage Park Positions (status bar) --------------------------------
-        private async Task OpenManageParkPositionsDialogAsync(int deviceNumber)
-        {
-            var parameters = new DialogParameters
-            {
-                [nameof(ManageParkPositionsDialog.DeviceNumber)] = deviceNumber
-            };
-            var options = new DialogOptions
-            {
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true,
-                CloseOnEscapeKey = true,
-                CloseButton = true
-            };
-            await DialogService.ShowAsync<ManageParkPositionsDialog>("", parameters, options);
-        }
-
-        // -- Park Position Selection (status bar) ------------------------------
-        private void OnParkPositionSelectedInStatusBar(int deviceNumber, string positionName)
-        {
-            var mount = MountRegistry.GetInstance(deviceNumber);
-            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
-
-            var position = mount.Settings.ParkPositions?.Find(p => p.Name == positionName);
-            if (position == null) { Snackbar.Add($"Park position '{positionName}' not found", Severity.Warning); return; }
-
-            mount.ParkSelected = position;
-            Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
-        }
     }
 }
