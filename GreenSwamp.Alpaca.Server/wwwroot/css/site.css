@@ -45,24 +45,6 @@
     font-size: 16px;
 }
 
-/* Selected value text + free text input text */
-
-.mud-select-input,
-.mud-select .mud-input-slot,
-.mud-input-slot.mud-input-root-input,
-.mud-input-slot,
-.mud-input-root-input,
-.mud-input > input,
-.mud-textfield .mud-input-slot,
-.mud-input-label,
-
-/* Dropdown / combo popup items rendered via MudPopoverProvider */
-.mud-popover .mud-select-item,
-.mud-popover .mud-list-item,
-.mud-popover .mud-list-item-text {
-    font-size: inherit !important;
-}
-
 /* --- AppBar brand: weight and tracking only; size comes from Typo --- */
 .gs-brand {
     font-weight:    300;
