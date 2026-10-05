@@ -34,7 +34,7 @@
                     @* Device filter row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <span class="mud-text-secondary" style="font-size:0.75rem; font-weight:500;">Device</span>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Device</MudText>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.ServerDevice" @bind-Value:after="NotifyChanged"
                                          Label="Server Device" Dense="true" Color="Color.Primary" /></td>
@@ -49,7 +49,7 @@
                     @* Category filter row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <span class="mud-text-secondary" style="font-size:0.75rem; font-weight:500;">Category</span>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Category</MudText>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.Driver" @bind-Value:after="NotifyChanged"
                                          Label="Driver" Dense="true" Color="Color.Primary" /></td>
@@ -65,7 +65,7 @@
                     @* Message type filter row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <span class="mud-text-secondary" style="font-size:0.75rem; font-weight:500;">Type</span>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Type</MudText>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.Information" @bind-Value:after="NotifyChanged"
                                          Label="Information" Dense="true" Color="Color.Primary" /></td>
@@ -81,7 +81,7 @@
                     @* Logging control row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <span class="mud-text-secondary" style="font-size:0.75rem; font-weight:500;">Logging</span>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Logging</MudText>
                         </td>
                         <td>
                             <MudTooltip Text="Must be ON for any log files to be written."
@@ -117,7 +117,7 @@
                         @* Log path row (hidden) *@
                         <tr>
                             <td style="padding:4px 8px 2px 4px; vertical-align:middle; white-space:nowrap;">
-                                <span class="mud-text-secondary" style="font-size:0.75rem; font-weight:500;">Log Path</span>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Log Path</MudText>
                             </td>
                             <td colspan="5" style="padding-top:4px;">
                                 <MudTooltip Text="Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GreenSwamp\Server)."

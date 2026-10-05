@@ -9,17 +9,17 @@
 
             @if (_state == ExportState.Initial)
             {
-                <MudText Typo="Typo.h2" Color="Color.Default">
+                <MudText Typo="Typo.body1" Color="Color.Default">
                     Preparing export of all settings and user logs...
                 </MudText>
 
                 @if (_exportInfo != null)
                 {
                     <MudStack Spacing="1" Class="mud-paper pa-3" Style="background-color: rgba(63, 81, 181, 0.1);">
-                        <MudText Typo="Typo.h2">
+                        <MudText Typo="Typo.body1">
                             <strong>Files:</strong> @_exportInfo.FileCount
                         </MudText>
-                        <MudText Typo="Typo.h2">
+                        <MudText Typo="Typo.body1">
                             <strong>Estimated download size:</strong> @_exportInfo.EstimatedSizeFormatted
                         </MudText>
                     </MudStack>
@@ -27,7 +27,7 @@
             }
             else if (_state == ExportState.InProgress)
             {
-                <MudText Typo="Typo.h2" Color="Color.Default">
+                <MudText Typo="Typo.body1" Color="Color.Default">
                     Creating export file...
                 </MudText>
 
@@ -49,7 +49,7 @@
                     Backup created successfully! Download started.
                 </MudAlert>
 
-                <MudText Typo="Typo.h2" Color="Color.Default">
+                <MudText Typo="Typo.body1" Color="Color.Default">
                     Your export file contains all JSON settings files and logs.
                 </MudText>
             }

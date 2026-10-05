@@ -15,14 +15,14 @@
 <PageTitle>Mount Control</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h5">Mount Control</MudText>
+    <MudText Typo="Typo.h3">Mount Control</MudText>
 
     @if (IsActiveMountSimulator)
     {
         <MudPaper Elevation="0"
                   Class="d-flex align-center justify-center pa-1"
                   Style="background-color: var(--mud-palette-success); border-radius: 8px; flex: 0 0 33%; max-width: 33%;">
-            <MudText Typo="Typo.h4" Color="Color.Default">Simulator</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Default">Simulator</MudText>
         </MudPaper>
     }
 
@@ -60,23 +60,23 @@ else
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4" Wrap="Wrap.Wrap">
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">RA</MudText>
-                            <MudText Typo="Typo.h2" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
+                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">Dec</MudText>
-                            <MudText Typo="Typo.h2" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
+                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">Az</MudText>
-                            <MudText Typo="Typo.h2" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
+                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">Alt</MudText>
-                            <MudText Typo="Typo.h2" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
+                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">LHA</MudText>
-                            <MudText Typo="Typo.h2" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
+                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
                         </MudStack>
                     </MudStack>
                 </MudPaper>
@@ -147,9 +147,8 @@ else
                                     <MudIcon Icon="@(s.ConnectedClientCount > 0 ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
                                              Color="@(s.ConnectedClientCount > 0 ? Color.Success : Color.Default)"
                                              Size="Size.Large" />
-                                    <MudText Typo="Typo.h1"
-                                             Color="@(s.ConnectedClientCount > 0 ? Color.Success : (s.HasEverBeenConnected ? Color.Warning : Color.Default))"
-                                             Style="line-height: 1;">
+                                    <MudText Typo="Typo.h4"
+                                             Color="@(s.ConnectedClientCount > 0 ? Color.Success : (s.HasEverBeenConnected ? Color.Warning : Color.Default))">
                                         : @s.ConnectedClientCount
                                     </MudText>
                                 </MudStack>

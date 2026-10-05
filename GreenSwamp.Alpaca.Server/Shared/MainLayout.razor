@@ -29,7 +29,7 @@
                Style="background-color:var(--gs-bg-sidebar); border-bottom:1px solid var(--gs-divider);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
                        Edge="Edge.Start" OnClick="ToggleDrawer" />
-        <MudText Typo="Typo.h6" Style="font-weight:300; letter-spacing:0.01em; font-size:1.4rem;">
+        <MudText Typo="Typo.h5" Class="gs-brand">
             <span style="font-weight:700; color:var(--gs-accent-500);">GS</span>Alpaca
         </MudText>
 
@@ -51,7 +51,7 @@
                Width="200px"
                Style="background-color:var(--gs-bg-sidebar); border-right:1px solid rgba(var(--gs-accent-500-rgb),0.2);">
         <NavMenu />
-        <MudText Typo="Typo.h3" Class="mt-auto pa-3">
+        <MudText Typo="Typo.caption" Class="mt-auto pa-3">
             Version @(ServerConfig.GetVersion())
         </MudText>
     </MudDrawer>

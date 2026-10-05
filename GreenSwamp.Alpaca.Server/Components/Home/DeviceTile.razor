@@ -12,7 +12,7 @@
                    aria-label="@($"Open control page for {Device.Name}")"
                    OnClick="OpenControl">
             <MudIcon Icon="@TelescopeIcon" Size="Size.Large" />
-            <MudText Typo="Typo.h2" Class="gs-tile-name">@Device.Name</MudText>
+            <MudText Typo="Typo.subtitle1" Class="gs-tile-name">@Device.Name</MudText>
             @if (!Device.Enabled)
             {
                 <MudText Typo="Typo.caption" Class="gs-tile-state">Disabled</MudText>
