@@ -1,9 +1,9 @@
 ﻿# GreenSwamp Alpaca Server – UI Typography & Font-Size Review
 
 **Prepared for:** Andy
-**Date/time:** 2026-10-05 10:15 (rev 2: all [verify] items resolved against MudBlazor v9.11.0 source)
+**Date/time:** 2026-10-05 13:33 (rev 3: decisions recorded, phases 1-8 implemented; sections 1-9 are the original analysis, section 10 records the outcome)
 **Scope:** `GreenSwamp.Alpaca.Server` UI only – `Components\**`, `Pages\**`, `Shared\**`, `Theme\GsTheme.cs`, `App.razor`, `Pages\_Layout.cshtml`, `wwwroot\css\site.css`, `wwwroot\css\fonts.css`. No markdown files, mount, settings or driver code were used as evidence.
-**Type:** Review and recommendations only. **No code has been changed.**
+**Type:** Review and recommendations (sections 1-9, written before any change), plus implementation record (section 10). Line numbers and counts in sections 1-9 describe the code **before** phases 1-7.
 
 ---
 
@@ -430,33 +430,35 @@ Add to the UI conventions (your preferred location):
 
 ## 7. Suggested implementation sequence
 
-| Phase | Work | Risk | Verify (DevTools + eyeball) |
-|---|---|---|---|
-| 0 | Already confirmed from MudBlazor v9.11.0 source (§9). Remaining optional DevTools sanity checks only | None | Computed `font-size` on dialog `MudText` vs page `MudText`; `.ts-table th` computed size (specificity) |
-| 1 | `GsZoom` shared helper; root-level zoom via `HeadContent`; remove `html{14px}` and layout-level `Style`; unify base to 16px | Low-medium (dialogs and chart windows grow) | Zoom 75/100/150 on main page, dialog, select popup, snackbar, chart window |
-| 2 | Theme: em→rem, define all variants, new scale | Medium (visible re-flow) | Page titles, dialogs, tiles, status page |
-| 3 | Replace `h2/h1/h3` workarounds and inline `font-size` (R3) | Low (mechanical) | Each file in §5.4 |
-| 4 | Monospace fix (R4) and `.gs-panel-heading` size removal | Low | `MountStatus`, `MountControl` readouts now actually monospace |
-| 5 | Table normalisation (R5) | Medium | `MountStatus`, `TelescopeSetup`, `CdcDialog`, `GpsFixDialog`, monitor panel |
-| 6 | `site.css` pruning (R6) | Low if dead-list verified | Home, hand controller, nav, charts |
-| 7 | px→rem conversions (R7/R8) | Medium | 150% zoom on settings dialogs and HC panel |
-
+| Phase | Work | Risk | Verify (DevTools + eyeball) | Status |
+|---|---|---|---|---|
+| 0 | Already confirmed from MudBlazor v9.11.0 source (§9). Remaining optional DevTools sanity checks only | None | Computed `font-size` on dialog `MudText` vs page `MudText`; `.ts-table th` computed size (specificity) | Done |
+| 1 | `GsZoom` shared helper; root-level zoom via `HeadContent`; remove `html{14px}` and layout-level `Style`; unify base to 16px | Low-medium (dialogs and chart windows grow) | Zoom 75/100/150 on main page, dialog, select popup, snackbar, chart window | Done (`aca4642`) |
+| 2 | Theme: em→rem, define all variants, new scale | Medium (visible re-flow) | Page titles, dialogs, tiles, status page | Done (`aca4642`) |
+| 2b | Review fixes: invariant-culture `BuildRootStyle`, shared `GsZoom.ZoomPercentOptions`/`NormalizePercent`, unused `--gs-global-font-scale` and `using` removed | Low | Zoom picker, build | Done (`aca4642`) |
+| 3 | Replace `h2/h1/h3` workarounds and inline `font-size` (R3) | Low (mechanical) | Each file in §5.4 | Done (`f7c2837`) |
+| 4 | Monospace fix (R4) and `.gs-panel-heading` size removal | Low | `MountStatus`, `MountControl` readouts now actually monospace | Done (`588c5e6`) |
+| 5 | Table normalisation (R5) | Medium | `MountStatus`, `TelescopeSetup`, `CdcDialog`, `GpsFixDialog`, monitor panel | Done (`809b904`) |
+| 6 | `site.css` pruning (R6) | Low if dead-list verified | Home, hand controller, nav, charts | Done (`0bab31b` dead rules, `2da59ba` inherit block) |
+| 7 | px→rem conversions (R7/R8) | Medium | 150% zoom on settings dialogs and HC panel | Done (`3a5b46f`) |
+| 8 | Contributor conventions (R9) and this record | None | - | Done |
 Commit after each phase.
 
 ---
 
-## 8. Open decisions for Andy
+## 8. Decisions (Andy, 2026-10-05)
 
-1. **Heading scale (R2):** adopt the proposed larger conventional scale (visible change to page/section titles), or retune the theme to **keep today's pixel sizes** and only fix the semantics/units? The latter is lower visual risk but keeps headings ≈ body size.
-2. **Base size:** is 16px at 100% zoom (so body1 = 14px) acceptable as the root base? This preserves the current main-page look; dialogs and chart windows will change.
-3. **Telemetry readouts (`MountControl`):** which variant should represent "readout" (proposed `h4`, 18px)?
-4. **Home page:** should the hero (vw-based) follow zoom?
-5. **Tables:** accept MudBlazor's native `td` = `body2` / `th` = `subtitle2` (confirmed) instead of per-cell `MudText body1`? `MountStatus` would shrink from `body1` to `body2` unless a class (R5) restores it.
-6. **Chart window:** same root zoom (recommended), but note ApexCharts text is configured separately and will not zoom.
-7. **px items that root zoom cannot scale** (spacing utilities, tooltip 12px, chip text): accept, override a short list in `site.css`, or use CSS `zoom` instead of root font-size (R1)?
+| # | Question | Decision |
+|---|---|---|
+| 1 | Heading scale (R2) | Adopt the larger conventional scale (h1 28, h2 24, h3 20, h4 18, h5 16, h6 15px at 100%). |
+| 2 | Base size | 16px at 100% (body1 = 14px) is acceptable. |
+| 3 | Telemetry readouts | `h4` (18px), with `gs-font-mono`. |
+| 4 | Home hero | The hero (vw-based) does **not** follow zoom. |
+| 5 | Tables | Accept MudBlazor native `td` = `body2`, `th` = `subtitle2` instead of per-cell `MudText body1`. |
+| 6 | Chart window | Same root zoom. ApexCharts text is configured separately and does not zoom. |
+| 7 | px items root zoom cannot scale | Accepted: spacing utilities, tooltip 12px text, chip text stay fixed. |
 
 ---
-
 ## 9. Verification results (MudBlazor v9.11.0 source)
 
 All four rev 1 unknowns are now answered from the MudBlazor repository (tag `v9.11.0`). No markdown files were used.
@@ -479,4 +481,43 @@ The Phase 1 root-zoom plan does not depend on these checks.
 
 ---
 
-*Report revised 2026-10-05 10:15 (rev 2, MudBlazor v9.11.0 source verification). No source files were modified.*
+## 10. Implementation record (rev 3)
+
+### 10.1 What was built
+
+- **Root zoom.** `Theme\GsZoom.cs` holds the constants (`BaseFontSizePx` 16, 75-150%, 5% steps), `NormalizeScale`/`NormalizePercent`, `ZoomPercentOptions` and an invariant-culture `BuildRootStyle`. `MainLayout` and `ChartWindowLayout` emit `:root { font-size: Npx; }` through `HeadContent`, so dialogs, popovers and snackbars (which sit outside `.mud-layout`) zoom with the page. `site.css` keeps a 16px `:root` fallback for the pre-render moment; keep it in sync with `GsZoom.BaseFontSizePx`. `UserInterfaceEditor` uses the same helper.
+- **Theme.** `GsTheme` typography is all `rem`: h1 1.75, h2 1.5, h3 1.25, h4 1.125, h5 1, h6 0.9375, subtitle1 1, subtitle2 0.875, body1 0.875, body2 0.8125, button 0.8125, caption 0.75, overline 0.75. Layout: `AppbarHeight` 3.5rem, drawer 15.625rem.
+- **Typo clean-up.** No `font-size` remains in any Razor `style=` attribute. Page titles are `h3`, readouts `h4`, banners `h5`, dialog body text `body1`, tile names `subtitle1`, the brand `h5` + `.gs-brand` (weight and tracking only), small labels `caption`.
+- **Monospace.** `.gs-font-mono` now exists (family only). Before, ~45 uses had no rule.
+- **Tables.** `MountStatus` cells use native `td`/`th` typography; `.gs-kv-label` colours labels; `.gs-kv-spacer` replaces repeated inline border/padding in `CdcDialog`; `.ts-table th` no longer sets a size. `MonitorSettingsCombinedPanel` keeps its raw layout table (it holds checkboxes and inputs, not text values) and labels it with `MudText caption`.
+- **`site.css`.** 926 → about 720 lines. Dead rules removed (cards, badges, monitor, `.gs-table` family, validation, `.gs-live`, `.gs-home-links`, `.material-symbols-outlined` in both CSS files and its `@font-face`, unused `--gs-space-*`, `.hc-speed-value`). The `font-size: inherit !important` block was removed so inputs, labels and popup items follow the theme and zoom.
+- **px → rem.** Text-bearing widths and heights (tile 9.375×7.5rem, hand-controller cell/gap/column, `gs-icon-button-rounded`, dialog and chart-select min-widths, `MountControl` rows, `AboutDialog` panes, drawer) are rem. Hero title and footer `clamp()` endpoints are px (decision 4). The hero `min-height` is `calc(100vh - 3.5rem)`, tied to `AppbarHeight`. `.gs-home-hero-wrap` keeps `margin: -16px` because it cancels the fixed-px `pa-4`.
+
+### 10.2 Intentionally left as px / not zooming
+
+- Home hero title and footer (viewport-relative by design).
+- MudBlazor spacing utilities (`pa-*`, `mb-*`), tooltip text (12px) and the 113 tooltip `max-width:260px`-style values, chip text.
+- Borders, radii, shadows, the 1px preload element, the 8px and 15px elements in `SettingsExplorer` and `PersistentFloatingWindow`.
+- `AxisDial` SVG size and ApexCharts text.
+
+### 10.3 Behaviour changes to be aware of
+
+- Rem-based sizing is about 14% larger at 100% than the old 14px root for everything that was already rem (icons, appbar 56px, inline rem values).
+- `MountStatus` values are 13px monospace (was 14px proportional); table label cells are `body2`.
+- Page titles are 20px (was 14px).
+- Panel headings are 12px (was 0.70em, about 8.4px).
+
+### 10.4 Contributor rules
+
+Recorded in `GreenSwamp.Alpaca.Server\docs\DEVELOPER-GUIDE.md` §13.6 and summarised in `.github\copilot-instructions.md`.
+
+### 10.5 Remaining optional work
+
+- Add explicit `Typo` to the ~37 bare `MudText` (they default to `body1`).
+- Tooltip `max-width` values (113 uses) could move to one shared class if tooltip text ever becomes zoomable.
+- `AxisDial` size and ApexCharts font sizes could be tied to the zoom value if charts should scale.
+- Andy has reported browser verification of the earlier phases; phase 7 (and phase 8, docs only) still need a pass at 75/100/150% zoom: appbar/hero gap, drawer width, hand controller, tile fit.
+
+---
+
+*Report revised 2026-10-05 13:33 (rev 3, implementation record).*

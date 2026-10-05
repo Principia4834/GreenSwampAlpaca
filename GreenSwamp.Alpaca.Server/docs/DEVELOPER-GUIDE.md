@@ -1,6 +1,6 @@
 ﻿# GreenSwamp Alpaca Developer Guide
 
-**2026-06-16 08:15**
+**2026-10-05 13:33**
 
 ## Table of Contents
 
@@ -675,6 +675,32 @@ Reviewers should look for:
 
 If you change a user-facing workflow, configuration setting, build step, or release step, update this guide or the user guide at the same time.
 
+### 13.6 UI typography and zoom conventions
+
+The UI zoom is a **root font-size**: `GsZoom.BuildRootStyle` emits `:root { font-size: Npx; }` from `MainLayout` and `ChartWindowLayout`, with 16px as 100%. The theme (`Theme\GsTheme.cs`) defines every typography variant in `rem`, so changing the root size scales text, dialogs, popups and snackbars together. Follow these rules so that continues to work:
+
+1. Visible text uses `MudText Typo="..."`. Omit `Typo` only deliberately (it defaults to `body1`).
+2. No `font-size`, `em`, `px` or `rem` text sizing in `style=` attributes. A size change is a `Typo` change.
+3. Raw `th`/`td` inside `MudSimpleTable` take their size from MudBlazor (`th` = `subtitle2`, `td` = `body2`). Do not wrap cells in `MudText` to resize them. Use a shared CSS class that references `--mud-typography-*` variables if a different size is required.
+4. Heading variants express hierarchy, never "make this bigger". Use these:
+
+   | Purpose | Variant |
+   |---|---|
+   | Page title | `h3` |
+   | Telemetry readout / large value | `h4` (with `gs-font-mono` for numeric values) |
+   | Banner, brand | `h5` |
+   | Card or dialog title | `h6` |
+   | Dialog or body copy | `body1` |
+   | Panel group heading | `overline` + `gs-panel-heading` |
+   | Small label or hint | `caption` |
+
+5. New dimensions that contain text (widths, heights, min-widths, gaps around text) use `rem`. Keep `px` for borders, radii, shadows, 1-2px hairlines and intrinsic image sizes.
+6. `site.css` must not set `font-size` on `.mud-*` internals. Do not reintroduce `font-size: inherit !important`.
+7. Monospace values use the `gs-font-mono` class. It sets the family only, so size still comes from `Typo`.
+
+Known exceptions that do **not** follow zoom: the home hero title and footer (`clamp()` in px, viewport-relative by design), MudBlazor spacing utilities (`pa-*`, `mb-*`, fixed px), tooltip text (12px) and `max-width`, chip text, the `AxisDial` SVG size, and ApexCharts text (set in chart options).
+
+See `docs\UI-Typography-Review.md` for the evidence and the decisions behind these rules.
 ---
 
 ## 14. Appendix
