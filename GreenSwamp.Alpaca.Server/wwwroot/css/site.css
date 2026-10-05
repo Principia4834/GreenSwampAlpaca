@@ -80,7 +80,6 @@
 .gs-panel-heading {
     color:          var(--gs-text-secondary);
     letter-spacing: 0.08em;
-    font-size:      0.70em;
     text-transform: uppercase;
 }
 
@@ -141,12 +140,8 @@ a:hover {
 }
 
 /* --- Monospace / telemetry ---------------------------------- */
-.gs-monospace {
-    font-family:    var(--gs-font-mono);
-    font-size:      0.8125em;
-    font-weight:    500;
-    letter-spacing: 0.03em;
-    color:          var(--gs-text-primary);
+.gs-font-mono {
+    font-family: var(--gs-font-mono);
 }
 
 /* --- Cards / panels ---------------------------------------- */
