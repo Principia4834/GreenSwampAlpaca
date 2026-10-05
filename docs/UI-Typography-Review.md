@@ -1,7 +1,7 @@
 ﻿# GreenSwamp Alpaca Server – UI Typography & Font-Size Review
 
 **Prepared for:** Andy
-**Date/time:** 2026-10-05 13:33 (rev 3: decisions recorded, phases 1-8 implemented; sections 1-9 are the original analysis, section 10 records the outcome)
+**Date/time:** 2026-10-05 13:49 (rev 4: follow-ups done; rev 3: decisions recorded, phases 1-8 implemented; sections 1-9 are the original analysis, section 10 records the outcome)
 **Scope:** `GreenSwamp.Alpaca.Server` UI only – `Components\**`, `Pages\**`, `Shared\**`, `Theme\GsTheme.cs`, `App.razor`, `Pages\_Layout.cshtml`, `wwwroot\css\site.css`, `wwwroot\css\fonts.css`. No markdown files, mount, settings or driver code were used as evidence.
 **Type:** Review and recommendations (sections 1-9, written before any change), plus implementation record (section 10). Line numbers and counts in sections 1-9 describe the code **before** phases 1-7.
 
@@ -498,7 +498,7 @@ The Phase 1 root-zoom plan does not depend on these checks.
 - Home hero title and footer (viewport-relative by design).
 - MudBlazor spacing utilities (`pa-*`, `mb-*`), tooltip text (12px) and the 113 tooltip `max-width:260px`-style values, chip text.
 - Borders, radii, shadows, the 1px preload element, the 8px and 15px elements in `SettingsExplorer` and `PersistentFloatingWindow`.
-- `AxisDial` SVG size and ApexCharts text.
+- ApexCharts text (chart axis/title/legend use ApexCharts px defaults). Decision (Andy): leave as is; see §10.5 for how it could be implemented.
 
 ### 10.3 Behaviour changes to be aware of
 
@@ -511,13 +511,27 @@ The Phase 1 root-zoom plan does not depend on these checks.
 
 Recorded in `GreenSwamp.Alpaca.Server\docs\DEVELOPER-GUIDE.md` §13.6 and summarised in `.github\copilot-instructions.md`.
 
-### 10.5 Remaining optional work
+### 10.5 Follow-ups and remaining optional work
 
-- Add explicit `Typo` to the ~37 bare `MudText` (they default to `body1`).
-- Tooltip `max-width` values (113 uses) could move to one shared class if tooltip text ever becomes zoomable.
-- `AxisDial` size and ApexCharts font sizes could be tied to the zoom value if charts should scale.
-- Andy has reported browser verification of the earlier phases; phase 7 (and phase 8, docs only) still need a pass at 75/100/150% zoom: appbar/hero gap, drawer width, hand controller, tile fit.
+Done (rev 4):
+
+- All 10 bare `MudText` now have an explicit `Typo="Typo.body1"` (behaviour-neutral): `ObservatorySingleEditor`, `SettingsHealthStatus`, `SettingsHealthCheck`.
+- `AxisDial` width is now rem-based (`Size` px at 100% zoom divided by `GsZoom.BaseFontSizePx`, emitted as `style="width:Nrem"`), so the dial and its SVG text follow zoom. Callers are unchanged (`MountStatus` Size 180, `MountInfo.DialSize` 160).
+
+Deliberately deferred:
+
+- Tooltip `max-width` values (113 uses): tooltip text does not zoom, so a shared class is not needed.
+- ApexCharts text does not follow zoom (decision: leave as is). Charts set no `FontSize`, so ApexCharts uses its px defaults (about 12px labels, 14px title and legend, 12px tooltip).
+
+#### How ApexCharts could follow zoom
+
+1. Expose the root size to the chart code: inject `IVersionedSettingsService`, read `GsZoom.NormalizeScale(config.GlobalFontScale)` and compute `GsZoom.GetRootFontSizePx(scale) / GsZoom.BaseFontSizePx` as a text factor.
+2. In `BuildChartOptions` (`RaDecChart.razor.cs`, `PulseChart.razor.cs`, `PulseChartDev.razor.cs`) set explicit sizes, e.g. `Xaxis.Labels.Style.FontSize`, `Yaxis[].Labels.Style.FontSize`, `AxisTitle.Style.FontSize`, `Title.Style.FontSize`, `Legend.FontSize`, each as `$"{base * factor}px"` (base 12px labels, 14px title/legend). Alternatively set `Chart.FontFamily` and rely on one CSS rule such as `.apexcharts-text { font-size: 0.75rem; }`, which is simpler but is overridden by per-element ApexCharts attributes unless they are left unset.
+3. Subscribe to `ServerConfigChanged` in each chart page (the layouts already do), rebuild the options and change `_chartKey` so ApexCharts re-renders with the new sizes.
+4. Verify at 75/100/150% zoom in both the main window and the chart window.
+
+Still to verify in the browser: phase 7 (and phase 8, docs only) at 75/100/150% zoom (appbar/hero gap, drawer width, hand controller, tile fit), plus the `AxisDial` size at 75/100/150%.
 
 ---
 
-*Report revised 2026-10-05 13:33 (rev 3, implementation record).*
+*Report revised 2026-10-05 13:49 (rev 4, follow-ups).*

@@ -9,7 +9,7 @@
 <PageTitle>Settings Health Check</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Settings Health Check</MudText>
-<MudText Class="mb-4">
+<MudText Typo="Typo.body1" Class="mb-4">
     Validate and repair your settings configuration. This tool checks the integrity of your settings file
     and can automatically fix common configuration issues.
 </MudText>
@@ -26,7 +26,7 @@
                 {
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                        <MudText>Validating settings...</MudText>
+                        <MudText Typo="Typo.body1">Validating settings...</MudText>
                     </MudStack>
                 }
                 else if (_validationResult != null)
@@ -69,7 +69,7 @@
                                         <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
                                     }
                                 </MudStack>
-                                <MudText>@error.Message</MudText>
+                                <MudText Typo="Typo.body1">@error.Message</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @error.Resolution</MudText>
                             </MudPaper>
                         }
@@ -96,7 +96,7 @@
                                         <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
                                     }
                                 </MudStack>
-                                <MudText>@warning.Message</MudText>
+                                <MudText Typo="Typo.body1">@warning.Message</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @warning.Resolution</MudText>
                             </MudPaper>
                         }
@@ -193,7 +193,7 @@
                             </MudStack>
                         </TitleContent>
                         <ChildContent>
-                            <MudText Class="mb-1">The repair function can automatically fix:</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-1">The repair function can automatically fix:</MudText>
                             <MudList T="string" Dense="true">
                                 <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing or corrupted Devices array (regenerates from defaults)</MudListItem>
                                 <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing device names (generates "Telescope X" names)</MudListItem>
@@ -229,7 +229,7 @@
                             </MudStack>
                         </TitleContent>
                         <ChildContent>
-                            <MudText Class="mb-1">For issues that cannot be automatically fixed:</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-1">For issues that cannot be automatically fixed:</MudText>
                             <MudList T="string" Dense="true">
                                 <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Use the <strong>Open Settings Folder</strong> button above</MudListItem>
                                 <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Edit <code>appsettings.user.json</code> in a text editor</MudListItem>

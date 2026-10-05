@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using GreenSwamp.Alpaca.Server.Theme
 
 @*
     AxisDial — Inline SVG dial gauge for a single telescope axis angle.
@@ -15,7 +16,7 @@
     Angle 0°     : 12 o'clock (top), increases clockwise
 *@
 
-<svg viewBox="0 0 240 260" width="@Size" style="overflow:visible;display:block" aria-label="@Label dial showing @Angle.ToString("F1", CultureInfo.InvariantCulture) degrees">
+<svg viewBox="0 0 240 260" style="width:@WidthRem;overflow:visible;display:block" aria-label="@Label dial showing @Angle.ToString("F1", CultureInfo.InvariantCulture) degrees">
 
     @* -- Outer ring ------------------------------------------------------- *@
     <circle cx="120" cy="115" r="92"
@@ -86,8 +87,11 @@
     /// <summary>Label displayed beneath the dial, e.g. "Axis X".</summary>
     [Parameter] public string Label { get; set; } = string.Empty;
 
-    /// <summary>Rendered pixel width. Height scales proportionally via the viewBox.</summary>
+    /// <summary>Dial width in px at 100% zoom (rendered as rem, so it scales with the root zoom). Height scales proportionally via the viewBox.</summary>
     [Parameter] public int Size { get; set; } = 180;
+
+    // Rem width keeps the dial, and the SVG text inside it, in step with the UI zoom.
+    private string WidthRem => $"{(Size / GsZoom.BaseFontSizePx).ToString("0.####", CultureInfo.InvariantCulture)}rem";
 
     // Normalise the raw angle to [0, 360) so the needle always falls within the ring.
     private double NeedleAngle => ((Angle % 360) + 360) % 360;
