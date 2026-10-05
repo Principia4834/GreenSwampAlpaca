@@ -58,12 +58,7 @@
                         <div class="hc-speed-slider-slot">
                             <MudSlider @bind-Value="_speed"
                                        @bind-Value:after="OnSpeedChanged"
-                                       T="int"
-                                       Min="1"
-                                       Max="8"
-                                       Step="1"
-                                       TickMarks="true"
-                                       Size="Size.Large"
+                                       T="int" Min="1" Max="8" Step="1" TickMarks="true" Size="Size.Large"
                                        Vertical="true"
                                        Disabled="@(!IsEnabled)"
                                        Class="hc-speed-slider" />
@@ -113,11 +108,5 @@
             </MudTooltip>
             </MudToggleGroup>
         </MudStack>
-
-        @if (!string.IsNullOrEmpty(_statusMessage))
-        {
-            <MudAlert Severity="Severity.Info" Dense="true">@_statusMessage</MudAlert>
-        }
-
     </MudStack>
 </div>
