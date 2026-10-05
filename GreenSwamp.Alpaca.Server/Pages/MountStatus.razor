@@ -65,28 +65,28 @@ else
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td style="width:50px"><MudText Typo="Typo.body1" Color="Color.Primary">RA</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText></td>
+                                        <td style="width:3.125rem" class="gs-kv-label">RA</td>
+                                        <td class="gs-font-mono">@FormatHMS(s.RightAscension)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Dec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText></td>
+                                        <td class="gs-kv-label">Dec</td>
+                                        <td class="gs-font-mono">@FormatDMS(s.Declination)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Alt</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText></td>
+                                        <td class="gs-kv-label">Alt</td>
+                                        <td class="gs-font-mono">@FormatDMS(s.Altitude)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Az</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText></td>
+                                        <td class="gs-kv-label">Az</td>
+                                        <td class="gs-font-mono">@FormatDMS(s.Azimuth)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">LHA</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText></td>
+                                        <td class="gs-kv-label">LHA</td>
+                                        <td class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Pier</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.SideOfPier</MudText></td>
+                                        <td class="gs-kv-label">Pier</td>
+                                        <td class="gs-font-mono">@s.SideOfPier</td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -99,28 +99,28 @@ else
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td style="width:90px"><MudText Typo="Typo.body1" Color="Color.Primary">Actual X</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDegrees(s.ActualAxisX)</MudText></td>
+                                        <td style="width:5.625rem" class="gs-kv-label">Actual X</td>
+                                        <td class="gs-font-mono">@FormatDegrees(s.ActualAxisX)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Actual Y</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDegrees(s.ActualAxisY)</MudText></td>
+                                        <td class="gs-kv-label">Actual Y</td>
+                                        <td class="gs-font-mono">@FormatDegrees(s.ActualAxisY)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">App X</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDegrees(s.AppAxisX)</MudText></td>
+                                        <td class="gs-kv-label">App X</td>
+                                        <td class="gs-font-mono">@FormatDegrees(s.AppAxisX)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">App Y</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@FormatDegrees(s.AppAxisY)</MudText></td>
+                                        <td class="gs-kv-label">App Y</td>
+                                        <td class="gs-font-mono">@FormatDegrees(s.AppAxisY)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Steps X</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.AxisSteps[0].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Steps X</td>
+                                        <td class="gs-font-mono">@s.AxisSteps[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Steps Y</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.AxisSteps[1].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Steps Y</td>
+                                        <td class="gs-font-mono">@s.AxisSteps[1].ToString("N0")</td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -163,32 +163,32 @@ else
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td style="width:150px"><MudText Typo="Typo.body1" Color="Color.Primary">Type</MudText></td>
-                                        <td><MudText Typo="Typo.body1">@(mountSettings?.Mount ?? "—")</MudText></td>
+                                        <td style="width:9.375rem" class="gs-kv-label">Type</td>
+                                        <td>@(mountSettings?.Mount ?? "—")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Mode</MudText></td>
-                                        <td><MudText Typo="Typo.body1">@(mountSettings?.AlignmentMode ?? "—")</MudText></td>
+                                        <td class="gs-kv-label">Mode</td>
+                                        <td>@(mountSettings?.AlignmentMode ?? "—")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Mount Model</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.MountName</MudText></td>
+                                        <td class="gs-kv-label">Mount Model</td>
+                                        <td class="gs-font-mono">@s.MountName</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Mount Firmware</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.MountVersion[0] / @s.MountVersion[1]</MudText></td>
+                                        <td class="gs-kv-label">Mount Firmware</td>
+                                        <td class="gs-font-mono">@s.MountVersion[0] / @s.MountVersion[1]</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Advanced Commands</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@BoolToSupported(s.CanAdvancedCmdSupport)</MudText></td>
+                                        <td class="gs-kv-label">Advanced Commands</td>
+                                        <td class="gs-font-mono">@BoolToSupported(s.CanAdvancedCmdSupport)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Home Sensor</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@BoolToSupported(s.CanHomeSensor)</MudText></td>
+                                        <td class="gs-kv-label">Home Sensor</td>
+                                        <td class="gs-font-mono">@BoolToSupported(s.CanHomeSensor)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">PPEC</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@BoolToSupported(s.CanPPec)</MudText></td>
+                                        <td class="gs-kv-label">PPEC</td>
+                                        <td class="gs-font-mono">@BoolToSupported(s.CanPPec)</td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -203,29 +203,29 @@ else
                                     @if (mountSettings?.Mount == "SkyWatcher")
                                     {
                                         <tr>
-                                            <td><MudText Typo="Typo.body1" Color="Color.Primary">Voltage</MudText></td>
-                                            <td><MudText Typo="Typo.body1" Class="gs-font-mono">@(double.IsNaN(s.ControllerVoltage) ? "—" : $"{s.ControllerVoltage:F2} V")</MudText></td>
+                                            <td class="gs-kv-label">Voltage</td>
+                                            <td class="gs-font-mono">@(double.IsNaN(s.ControllerVoltage) ? "—" : $"{s.ControllerVoltage:F2} V")</td>
                                         </tr>
                                         <tr>
-                                            <td><MudText Typo="Typo.body1" Color="Color.Primary">Power Event</MudText></td>
+                                            <td class="gs-kv-label">Power Event</td>
                                             <td>@BoolIcon(s.LowVoltageEvent, Color.Error)</td>
                                         </tr>
                                     }
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Polar LED</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@BoolToSupported(s.CanPolarLed)</MudText></td>
+                                        <td class="gs-kv-label">Polar LED</td>
+                                        <td class="gs-font-mono">@BoolToSupported(s.CanPolarLed)</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Capabilities</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.Capabilities</MudText></td>
+                                        <td class="gs-kv-label">Capabilities</td>
+                                        <td class="gs-font-mono">@s.Capabilities</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Custom Offset RA</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.TrackingOffsetRate.X.ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Custom Offset RA</td>
+                                        <td class="gs-font-mono">@s.TrackingOffsetRate.X.ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Custom Offset Dec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.TrackingOffsetRate.Y.ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Custom Offset Dec</td>
+                                        <td class="gs-font-mono">@s.TrackingOffsetRate.Y.ToString("N0")</td>
                                     </tr>
 
                                 </tbody>
@@ -239,36 +239,36 @@ else
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Steps RA</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.StepsPerRevolution[0].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Steps RA</td>
+                                        <td class="gs-font-mono">@s.StepsPerRevolution[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Steps Dec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.StepsPerRevolution[1].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Steps Dec</td>
+                                        <td class="gs-font-mono">@s.StepsPerRevolution[1].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Worm Steps RA</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.StepsWormPerRevolution[0].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Worm Steps RA</td>
+                                        <td class="gs-font-mono">@s.StepsWormPerRevolution[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Worm Steps Dec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.StepsWormPerRevolution[1].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Worm Steps Dec</td>
+                                        <td class="gs-font-mono">@s.StepsWormPerRevolution[1].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Frequency RA</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.StepsTimeFreq[0].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Frequency RA</td>
+                                        <td class="gs-font-mono">@s.StepsTimeFreq[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Frequency Dec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@s.StepsTimeFreq[1].ToString("N0")</MudText></td>
+                                        <td class="gs-kv-label">Frequency Dec</td>
+                                        <td class="gs-font-mono">@s.StepsTimeFreq[1].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">RA Steps/ArcSec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@StepsToArcSecs(s.StepsPerRevolution[0])</MudText></td>
+                                        <td class="gs-kv-label">RA Steps/ArcSec</td>
+                                        <td class="gs-font-mono">@StepsToArcSecs(s.StepsPerRevolution[0])</td>
                                     </tr>
                                     <tr>
-                                        <td><MudText Typo="Typo.body1" Color="Color.Primary">Dec Steps/ArcSec</MudText></td>
-                                        <td><MudText Typo="Typo.body1" Class="gs-font-mono">@StepsToArcSecs(s.StepsPerRevolution[1])</MudText></td>
+                                        <td class="gs-kv-label">Dec Steps/ArcSec</td>
+                                        <td class="gs-font-mono">@StepsToArcSecs(s.StepsPerRevolution[1])</td>
                                     </tr>
 
                                 </tbody>
@@ -312,7 +312,7 @@ else
             <td>
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                     @BoolIcon(value, trueColor)
-                    <MudText Typo="Typo.body1">@label</MudText>
+                    <MudText Typo="Typo.body2">@label</MudText>
                 </MudStack>
             </td>
             <td></td>
@@ -326,13 +326,13 @@ else
             <td>
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                     @BoolIcon(value, trueColor)
-                    <MudText Typo="Typo.body1">@label</MudText>
+                    <MudText Typo="Typo.body2">@label</MudText>
                 </MudStack>
             </td>
             <td>
                 @if (!string.IsNullOrWhiteSpace(detail))
                 {
-                    <MudText Typo="Typo.body1" Color="Color.Success" Class="gs-font-mono">@detail</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Success" Class="gs-font-mono">@detail</MudText>
                 }
             </td>
         </tr>
@@ -349,11 +349,11 @@ else
                     <MudIcon Icon="@Icons.Material.Filled.People"
                              Color="@(count > 0 ? Color.Success : Color.Default)"
                              Size="Size.Small" />
-                    <MudText Typo="Typo.body1">Active clients</MudText>
+                    <MudText Typo="Typo.body2">Active clients</MudText>
                 </MudStack>
             </td>
             <td>
-                <MudText Typo="Typo.body1" Class="gs-font-mono" Color="@countColor">@count</MudText>
+                <MudText Typo="Typo.body2" Class="gs-font-mono" Color="@countColor">@count</MudText>
             </td>
         </tr>
         ;

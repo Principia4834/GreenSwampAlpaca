@@ -28,14 +28,14 @@
                     <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                                     <tbody>
-                                        <tr><th>Device Number</th><td><MudText>@InstanceID</MudText></td></tr>
+                                        <tr><th>Device Number</th><td>@InstanceID</td></tr>
                                         <tr><th>Device Name</th><td>@instance.DeviceName</td></tr>
                                         <tr><th>Mount Type</th><td>@settings.Mount</td></tr>
                                         <tr><th>Alignment Mode</th><td>@settings.AlignmentMode</td></tr>
                                         <tr>
                                             <th>Connection Status</th>
                                             <td>
-                                                <MudText Color="@(instance.IsConnected ? Color.Success : Color.Default)">@(instance.IsConnected ? "Connected" : "Disconnected")</MudText>
+                                                <MudText Typo="Typo.body2" Color="@(instance.IsConnected ? Color.Success : Color.Default)">@(instance.IsConnected ? "Connected" : "Disconnected")</MudText>
                                             </td>
                                         </tr>
                                     </tbody>

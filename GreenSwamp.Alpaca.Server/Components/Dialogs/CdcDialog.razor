@@ -42,9 +42,9 @@
                 <MudSimpleTable Dense="true">
                     <thead>
                         <tr>
-                            <th style="border-bottom: none; border-top: none;"></th>
+                            <th class="gs-kv-spacer"></th>
                             <th>CdC</th>
-                            <th style="border-bottom: none; border-top: none;"></th>
+                            <th class="gs-kv-spacer"></th>
                             <th>Local</th>
                         </tr>
                     </thead>
@@ -52,7 +52,7 @@
                         <tr>
                             <td>Latitude</td>
                             <td>@_cdcResult!.Latitude.ToString("F6")&deg;</td>
-                            <td style="border-bottom: none; border-top: none; text-align: center; padding: 0 2px;">
+                            <td class="gs-kv-spacer">
                                 <MudTooltip Text="Copy Local → CdC" Placement="Placement.Left">
                                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
                                                    Size="Size.Large"
@@ -66,7 +66,7 @@
                         <tr>
                             <td>Longitude</td>
                             <td>@_cdcResult!.Longitude.ToString("F6")&deg;</td>
-                            <td style="border-bottom: none; border-top: none; text-align: center; padding: 0 2px;">
+                            <td class="gs-kv-spacer">
                                 <MudTooltip Text="Copy CdC → Local" Placement="Placement.Right">
                                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
                                                    Size="Size.Large"
@@ -80,7 +80,7 @@
                         <tr>
                             <td>Altitude</td>
                             <td>@_cdcResult!.Altitude.ToString("F1") m</td>
-                            <td style="border-bottom: none; border-top: none;"></td>
+                            <td class="gs-kv-spacer"></td>
                             <td>@LocalAltitude.ToString("F1") m</td>
                         </tr>
                     </tbody>

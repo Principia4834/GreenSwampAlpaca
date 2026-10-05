@@ -232,6 +232,19 @@ a:hover {
     font-size:       1em;
 }
 
+/* --- Key/value tables inside MudSimpleTable: size comes from MudBlazor (td=body2, th=subtitle2) --- */
+.gs-kv-label {
+    color: var(--mud-palette-primary);
+}
+
+/* Borderless centre column holding copy buttons (CdcDialog) */
+.gs-kv-spacer {
+    border-top:    none !important;
+    border-bottom: none !important;
+    padding:       0 2px !important;
+    text-align:    center;
+}
+
 /* --- TelescopeSetup tables: align labels and values consistently --- */
 .ts-table {
     width: 100%;
@@ -241,8 +254,6 @@ a:hover {
 .ts-table th {
     width: 50%;
     color: var(--gs-text-secondary);
-    font-size: 0.8125em;
-    font-weight: 500;
     padding: 6px 12px;
     text-align: left;
     vertical-align: top;
