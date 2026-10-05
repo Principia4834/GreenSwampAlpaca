@@ -1,7 +1,7 @@
 ﻿# GreenSwamp Alpaca Server – UI Typography & Font-Size Review
 
 **Prepared for:** Andy
-**Date/time:** 2026-10-05 09:38
+**Date/time:** 2026-10-05 10:15 (rev 2: all [verify] items resolved against MudBlazor v9.11.0 source)
 **Scope:** `GreenSwamp.Alpaca.Server` UI only – `Components\**`, `Pages\**`, `Shared\**`, `Theme\GsTheme.cs`, `App.razor`, `Pages\_Layout.cshtml`, `wwwroot\css\site.css`, `wwwroot\css\fonts.css`. No markdown files, mount, settings or driver code were used as evidence.
 **Type:** Review and recommendations only. **No code has been changed.**
 
@@ -13,25 +13,26 @@
 |---|---|
 | Code in scope above | All counts, line numbers and findings (evidence-based) |
 | MudBlazor MCP (v9.10.0, per your instruction) | `Typo` enum (`h1`–`h6`, `subtitle1/2`, `body1/2`, `button`, `caption`, `overline`); `MudText` (`Typo` default `body1`, `HtmlTag`, `Inline`, `GutterBottom`, `Color`); `MudLink.Typo` (default `inherit`); `MudSimpleTable`/`MudTable`/`MudTh`/`MudTd` parameters (none control font size); `Size` enum |
-| Microsoft Learn MCP | `HeadContent`/`HeadOutlet` for injecting head content from a component (used in recommendation R1) |
+| MudBlazor GitHub source, tag `v9.11.0` (authorised by Andy; used to resolve every former **[verify]** item) | `MudThemeProvider.razor.cs` (variable generation, scope), `Typography.cs`/`Typo.cs` (defaults, variants), `_base.scss`, `_typography.scss`, `_simpletable.scss`, `_table.scss`, `_input.scss`, `_inputcontrol.scss`, `_icons.scss`, `_spacing.scss`, `_tooltip.scss`, `_chip.scss`, `_button.scss`, `MudListItem.razor.cs`, `MudDialogProvider.razor`, `MudPopoverProvider.razor`, `MudSnackbarProvider.razor`, `MudDialogContainer.razor` |
+| Microsoft Learn MCP | `HeadContent`/`HeadOutlet`
 
-**Limits of the MudBlazor MCP.** It does not expose the theme `Typography` class model, the generated CSS variables (`--mud-typography-*`), or the internal CSS of table cells, inputs, buttons, tabs and nav links. Statements below about those internals are marked **[verify]**. They come from general MudBlazor knowledge and should be confirmed with browser DevTools (computed `font-size` and the `--mud-typography-*` variables on `:root`) before the change is implemented. This matches your usual DevTools-first practice.
+**Limits of the MudBlazor MCP and how they were closed.** The MCP does not expose the theme `Typography` class model, the generated CSS variables (`--mud-typography-*`), or the internal CSS of table cells, inputs, buttons, tabs and nav links. In revision 1 those statements were marked **[verify]**. In this revision each one has been checked against the MudBlazor **v9.11.0** source on GitHub (per your instruction, the 9.10.0/9.11.0 difference is ignored). Findings are labelled **Confirmed (source)**. Two residual items are *derived* from the source plus `site.css` rather than observed in a browser; they are listed in §9 as optional DevTools checks (computed pixel values; specificity of `.ts-table th`).
 
 ---
 
 ## 2. Executive summary
 
 1. **Zoom is applied at the wrong level.** `MainLayout` and `ChartWindowLayout` put `font-size:{px}` and `--gs-global-font-scale` on the `<MudLayout>` element only (`MainLayout.razor:20,108-115`). `site.css` independently hard-codes `html { font-size: 14px }` (line 53). The result is two different font bases in one page. Anything rendered **outside** `<MudLayout>`, or sized in **rem**, does not follow zoom.
-2. **Dialogs, dropdown popups, menus, tooltips and snackbars are outside the zoom scope.** `MudPopoverProvider`, `MudDialogProvider` and `MudSnackbarProvider` are siblings of `<MudLayout>` (`MainLayout.razor:14-18`), not children. **[verify in DevTools]** They inherit the 14px `html` base, while the page inherits 16px × scale. This is the most likely cause of the "`Typo.h2` used where `body1` should be" workaround. Dialog body text at `body1` (0.875em × 14px = 12.25px) looked too small next to page text (0.875em × 16px = 14px), so `h2` (1.125em) was used to compensate. This is a hypothesis consistent with the code. Please confirm it by checking the computed size of a dialog `MudText` against a page `MudText`.
-3. **The theme mixes units.** `GsTheme.cs` defines every size in `em` (compounds through nesting). `subtitle1`, `subtitle2` and `overline` are not defined in the theme, so they fall back to MudBlazor defaults (rem **[verify]**), which come from a different base again.
+**Confirmed (source):** `MudDialogProvider`, `MudPopoverProvider` and `MudSnackbarProvider` render their own containers and are not children of `.mud-layout`. They therefore do not receive the layout's inline `font-size`; they inherit from `body`, which MudBlazor sets to `--mud-typography-default-size` (`_base.scss`). In `GsTheme` that is `0.875em` against `html` 14px, i.e. about 12.25px, while page text is 0.875em × 16px × scale = 14px at 100%. This is the most likely cause of the "`Typo.h2` used where `body1` should be" workaround: dialog body text at `body1` looked too small next to page text, so `h2` (1.125em) was used to compensate. The mechanism is confirmed by source; the causal link to the workaround is still an inference from the code (the pixel values can be confirmed in DevTools, §9).
+`subtitle1`, `subtitle2` and `overline` are not defined in the theme, so they fall back to MudBlazor's defaults, which are **rem** (1rem, 0.875rem, 0.75rem; **confirmed**, `Typography.cs`). Those resolve against `html` (14px, not zoomed), a different base again.
 4. **The theme's heading scale is inverted.** At 16px base, `h5` = 14px (same as `body1`), `h6` = 13px (smaller than `body1`), `h4` = 15px, `h3` = 16px, `h2` = 18px, `h1` = 24px. Headings are barely larger than body text, so authors reach for `h2`/`h1` to get "bigger text" (body copy, telemetry readouts, a count badge).
-5. **Raw HTML tables bypass Typo.** There are 42 `<th>`, 165 `<td>`, and 87 `<tr>` raw elements across 8 files; 18 `MudSimpleTable` and only 1 `MudTable`. Cell text is either unstyled (inherits MudBlazor table CSS **[verify]**), wrapped in `MudText Typo="body1"` (72 `<td>` in `MountStatus.razor` alone), or sized by `site.css` `em` rules (`.ts-table th`).
+Cell text is either unstyled (and then styled by MudBlazor's own `MudSimpleTable` rules: raw `td` = `body2`, raw `th` = `subtitle2`, **confirmed**, `_simpletable.scss`), wrapped
 6. **`site.css` has substantial dead and conflicting content.**
    - About 40% of the 915 lines are unused Bootstrap-era or speculative styles.
    - `gs-font-mono` is used 38 times in Razor but is **never defined** in any CSS. The monospace readouts are not actually monospace. `.gs-monospace` (unused) is the intended-but-misnamed rule.
    - `--gs-global-font-scale` is set but never read by any CSS or Razor.
    - `.gs-panel-heading` overrides the font size of `Typo.overline` with `0.70em`, a direct overlap.
-7. **Hard-coded px/rem sizes defeat zoom.** There are 10 inline `font-size` declarations (8 in rem), 18 `font-size` declarations in `site.css`, and 149 fixed px width/height values in Razor. With a root-based zoom these could all follow zoom; with the current layout-level zoom, rem and px values do not.
+With a root-based zoom the rem values would follow zoom; with the current layout-level zoom they do not. **px values never follow a root font-size change** (see §3.2 and the R1 caveat).
 8. **The Zoom setting duplicates its constants** (min 0.75 / max 1.5 / step 5%) in `MainLayout`, `ChartWindowLayout` and `UserInterfaceEditor`, and the base size differs (16 vs 14 vs css 14).
 
 **Recommended direction (detail in §6):** zoom the **root** (`:root`/`html` font-size) from one shared helper. Convert the theme to a monotonic **rem** scale with every Typo variant defined explicitly. Replace raw font sizes with `Typo` or with `var(--mud-typography-*-size)` references. Delete roughly 400 lines of dead CSS.
@@ -57,12 +58,19 @@
 | Element type | Follows zoom today? | Reason |
 |---|---|---|
 | `MudText` on pages inside `MudLayout` using em-based Typo | **Yes** | `em` resolves against the layout's `font-size` |
-| `MudText` with `Typo.subtitle1/2`, `overline` (not in theme) | **Probably not** **[verify]** | MudBlazor default rem resolves against `html` (14px, not zoomed) |
+| `MudText` with `Typo.subtitle1/2`, `overline` (not in theme) | **No** (confirmed, source) | MudBlazor default is rem (1rem / 0.875rem / 0.75rem), which resolves against `html` (14px, not zoomed) |
 | Inline `font-size: x rem` (8 places) and `site.css` rem/clamp values (home hero, slide caption, `.gs-home-links`) | **No** | rem is relative to `html`, not the layout |
-| Dialog content (`MudDialogProvider`) | **No** **[verify]** | Rendered outside `MudLayout`; base is `html` 14px |
-| Select/menu/autocomplete popup items (`MudPopoverProvider`) | **No** **[verify]** | Same. `site.css:58-72` forces `font-size: inherit !important`, so they inherit the unzoomed popover host |
-| Snackbars, tooltips | **No** **[verify]** | Provider/popover-hosted |
-| Padding/margins (`pa-*`, `mb-*`), icon sizes (`Size.Large` etc.), button heights | **No** **[verify]** | MudBlazor spacing and sizes are rem-based, so they scale only if `html` changes |
+| Dialog content (`MudDialogProvider`) | **No** (confirmed, source) | Rendered outside `.mud-layout`; text takes `body` size (0.875em × html 14px ≈ 12.25px). Dialog title is a fixed `Typo.h6` (`MudDialogContainer`) |
+| Select/menu/autocomplete popup items (`MudPopoverProvider`) | **No** (confirmed, source) | Same. `site.css:58-72` forces `font-size: inherit !important`, so they inherit the unzoomed popover host |
+| Snackbars | **No** (confirmed, source) | `#mud-snackbar-container` is outside `.mud-layout` |
+| Tooltips | **No, even with root zoom** | Fixed `font-size: 12px` in `_tooltip.scss` |
+| Chips | **No, even with root zoom** | Fixed 12/14/16px by size (`_chip.scss`) |
+| Padding/margins (`pa-*`, `mb-*`, `mx-*` …) | **No, even with root zoom** (confirmed, source) | Utility classes are fixed px (4px × n, `!important`) in `_spacing.scss`. **Correction to rev 1, which said they were rem-based.** |
+| Icons (`MudIcon`/`Size.*`) | Only with root zoom | `Small/Medium/Large` = 1.25/1.5/2.25rem; default icon `1em`. Snackbar/alert icons fixed 22px; table sort icon 18px |
+| Buttons | Only with root zoom | Text uses `--mud-typography-button-size` (theme, 0.8125em today). `Size.Small`/`Size.Large` use fixed 0.8125rem / 0.9375rem and ignore the `Button` variant |
+| Inputs (text, numeric, select) | Follows the nearest ancestor | `.mud-input > input` and `.mud-input-slot` use `font: inherit` (`_input.scss`). Label uses `--mud-typography-subtitle1-size`; helper text is fixed 0.75rem |
+| List/menu/select items | Follows the ancestor | `MudListItem` text is `mud-typography-body1` (`body2` when dense), secondary text `subtitle2`. Menu, tab and nav link set no font-size and inherit |
+| Layout metrics (`LayoutProperties`) | **Partly** | MudBlazor defaults are px (AppBar 64px, drawer 240px). `GsTheme` sets `AppbarHeight` 3.5rem (zooms with `html`) but drawer width 250px (does not zoom) |
 | Fixed px dimensions (149 occurrences, e.g. `min-width:380px`, `hc-cell-size:50px`, tile 150×120) | **No** | px is never zoomed by font-size |
 | `AxisDial` SVG text (`fontSize "12"/"16"/"18"`) | **No** | SVG user units scaled by the px `Size` parameter (default 160) |
 | ApexCharts text (separate library) | **No** | Not driven by Typo; out of scope except noting it is independent |
@@ -79,13 +87,13 @@ The pattern is **not adequate** as a single global zoom lever. The idea (one set
 
 | # | Method | Count | Where | Zooms? |
 |---|---|---|---|---|
-| 1 | `MudText Typo=…` (264 `<MudText>`, 227 with Typo) | 227 | 48 files | Yes for theme-defined variants, **[verify]** for undefined ones |
+| Yes for theme-defined (em) variants inside `MudLayout`; **No** for undefined ones (`subtitle1/2`, `overline`: rem fallback, confirmed) |
 | 2 | `MudText` with **no** Typo (defaults to `body1`) | 37 | `SettingsHealthCheck` 6, `GoToPanel` 4, `ObservatorySingleEditor` 4, `MountConfigurationEditor` 4, `AuthenticationEditor` 3, `SettingsHealthStatus` 3, others | Yes (works, but implicit) |
-| 3 | Raw `<td>/<th>` with unstyled text | ~180 | `MountStatus`, `TelescopeSetup`, `CdcDialog`, `GpsFixDialog`, `MonitorSettingsCombinedPanel`, `HomeAndParkEditor`, `HcPulseGuidesEditor`, `DeviceInfoDialog` | Depends on MudBlazor table CSS **[verify]** |
+| Follows MudBlazor `MudSimpleTable` rules: `td` = theme `body2`, `th` = theme `subtitle2` (confirmed, `_simpletable.scss`). The raw `<table>` in `MonitorSettingsCombinedPanel` is **not** inside a `MudSimpleTable`, so it gets no MudBlazor table typography |
 | 4 | `.ts-table th { font-size: .8125em }` | 1 rule, 6 uses | `TelescopeSetup` | Yes, but em-compounds |
 | 5 | Inline `style="font-size:…rem"` | 8 | `MonitorSettingsCombinedPanel` ×5 (0.75rem), `GoToPanel:139` (1.1rem), `MonitorSettings:35` (1.00rem), `MainLayout:25` (1.4rem) | **No** (rem vs html) |
 | 6 | `site.css` `font-size` declarations | 18 | em, rem, px, clamp, `inherit !important` | Mixed |
-| 7 | `font-size: inherit !important` on MudBlazor input/list selectors | 1 block | `site.css:58-72` | Inherits unzoomed in popups **[verify]** |
+| Inherits unzoomed in popups (confirmed). Mostly redundant for inputs (MudBlazor already uses `font: inherit`), and it breaks the label's `subtitle1` size and list-item `body1/body2` |
 | 8 | Raw HTML tags (`<strong>` 33, `<span>` 13, `<p>` 3, `<code>` 3, `<pre>` 1, `<h1>` 1, `<figcaption>`) | ~55 | dialogs, `Index.razor`, `HomeCarousel`, `SettingsHealth*` | Inherits |
 | 9 | SVG attribute `font-size` | 3 | `AxisDial.razor` (via `SvgText`) | Not via Typo |
 | 10 | Fixed px width/height | 149 | 29 files; worst: `ObservatoryConfigurationEditor` 19, `MountConfigurationEditor` 19, `ObservatorySingleEditor` 17, `TrackingAndGuidingEditor` 14, `LimitsEditor` 11 | **No** |
@@ -103,8 +111,8 @@ The pattern is **not adequate** as a single global zoom lever. The idea (one set
 | `h4` | 3 | "Simulator" banner on `MountConfiguration`, `MountControl`, `MountStatus` | Banner text |
 | `h5` | 6 | Page titles | Reasonable semantics, but 14px = body size |
 | `h6` | 27 | 22 files: dialog titles (~15), card/section titles (~10), AppBar clock and brand | Reasonable semantics, but 13px < body |
-| `subtitle1` | 4 | Chart window headers, `TelescopeView` | Not in theme → MudBlazor default |
-| `subtitle2` | 17 | Sub-section labels (9 files) | Not in theme → MudBlazor default |
+| Not in theme → MudBlazor default 1rem (confirmed) |
+| `subtitle2` | 17 | Sub-section labels (9 files) | Not in theme → MudBlazor default 0.875rem, weight 500 (confirmed) |
 | `body1` | 97 | 16 files (70 in `MountStatus` table cells) | Correct, but verbose in tables |
 | `body2` | 21 | 13 files | OK |
 | `caption` | 21 | 10 files | OK |
@@ -185,7 +193,9 @@ Files with no typography markers (not tabulated): `AxisDial` (SVG text, see §5.
 The same `Typo.body1` renders at 14px on a main page, 12.25px in a dialog, and 12.25px in a chart window (at 100%). **Impact:** inconsistent sizes and the `h2` workarounds. All three must collapse to one base.
 
 ### 5.2 Providers sit outside the zoom scope
-`MainLayout.razor:14-18` renders `MudThemeProvider`, `MudPopoverProvider`, `MudDialogProvider`, `MudSnackbarProvider` and `GlobalNotificationsHost` **before** `<MudLayout Style=…>`. Anything these render does not inherit the zoomed `font-size`. `PersistentFloatingWindow` (line 60) is also outside `MudLayout`. **[verify]** with DevTools: `$0.closest('.mud-layout')` on a dialog, a select popup and a snackbar should return `null`.
+Anything these render does not inherit the zoomed `font-size`. `PersistentFloatingWindow` (line 60) is also outside `MudLayout`.
+
+**Confirmed (source):** `MudDialogProvider.razor` renders the dialog container directly, `MudPopoverProvider.razor` renders its own `<div class="@ContainerClass">`, and `MudSnackbarProvider` renders `#mud-snackbar-container`. None is a descendant of `.mud-layout`. `MudThemeProvider` emits its variables on `:root` (default `PseudoCss.Scope`), so the variables are available everywhere, but the theme's `em` values resolve against the consuming element's parent. For these providers the parent chain is `body` → `html`, not the zoomed layout. Optional DevTools confirmation: `$0.closest('.mud-layout')` returns `null` on a dialog, a select popup and a snackbar.
 
 ### 5.3 Theme: em units, missing variants, inverted scale
 `Theme\GsTheme.cs:59-85`:
@@ -203,9 +213,11 @@ The same `Typo.body1` renders at 14px on a main page, 12.25px in a dialog, and 1
 | body2 | 0.8125em | 13 | |
 | button | 0.8125em | 13 | |
 | caption | 0.75em | 12 | |
-| subtitle1 / subtitle2 / overline | *not defined* | MudBlazor default **[verify]** | rem-based **[verify]** |
+| subtitle1 | *not defined* | 1rem = 14px (html) | MudBlazor default, **rem** (confirmed); ignores zoom |
+| subtitle2 | *not defined* | 0.875rem = 12.25px (html), w500 | MudBlazor default, **rem** (confirmed) |
+| overline | *not defined* | 0.75rem = 10.5px (html), lineheight 2.66, tracking .08333em | MudBlazor default, **rem** (confirmed) |
 
-`em` units compound: a `MudText` nested inside another element that has its own em-sized font (for example `.ts-table th` at 0.8125em, or `.gs-panel-heading` at 0.70em) shrinks multiplicatively. `rem` is anchored to `html` and is the right unit for a root-based zoom.
+`rem` is anchored to `html` and is the right unit for a root-based zoom. **Confirmed (source):** MudBlazor's own default typography (`Typography.cs`) is entirely rem-based (Default .875rem; h1 6rem … h6 1.25rem; body1 1rem; body2 .875rem; button .875rem; caption .75rem), and variables are emitted on `:root` as `--mud-typography-{variant}-{family|size|weight|lineheight|letterspacing|text-transform}`. Moving `GsTheme` from em to rem therefore aligns with the library rather than fighting it. `.mud-typography-{variant}` (`_typography.scss`) simply applies those six variables, so an `em` value resolves against the parent element's font-size at the point of use, which is why nested em Typo elements compound.
 
 ### 5.4 Typo used as a size workaround
 Most of the cases you suspected, all confirmed in the code:
@@ -218,12 +230,12 @@ Most of the cases you suspected, all confirmed in the code:
 - **AppBar:** `MainLayout.razor:25` is `h6` with inline `font-size:1.4rem; font-weight:300; letter-spacing:0.01em`. This overrides almost the entire variant, so it is a custom style masquerading as a Typo.
 
 ### 5.5 Raw tables
-- `MountStatus.razor` (72 `<td>`) wraps every cell value in `<MudText Typo="Typo.body1" …>` and every label in `<MudText Typo.body1 Color.Primary>`. This is verbose, bloats the render tree (~79 MudText components) and sets a Typo that may differ from the table's native cell typography **[verify]**. Column widths are set inline (`width:50px`, `90px`, `150px`), which do not zoom.
-- `TelescopeSetup.razor` uses raw `<th>` and `<td>` with `.ts-table`. `site.css:241-249` gives `th` `0.8125em` but `td` has no size, so label and value sizes differ by design or by accident, and there are 5 `MudText` with no Typo mixed in.
-- `MonitorSettingsCombinedPanel.razor` uses 5 inline-styled `<span>` labels (`font-size:0.75rem; font-weight:500`) inside raw `<td>` (26 cells). These are `caption`-equivalent and do not zoom (rem).
+sets a Typo (`body1`) that is larger than the table's native cell typography (`body2` for `td`, confirmed), so the wrapper is a deliberate-or-accidental size bump rather than a no-op.
+- `TelescopeSetup.razor` uses raw `<th>` and `<td>` with `.ts-table`. `site.css:241-249` gives `th` `0.8125em` but `td` has no size. Inside a `MudSimpleTable`, MudBlazor already styles `.mud-simple-table table * tr > th` with `subtitle2` and `> td` with `body2` (`_simpletable.scss`, size, family, weight, line-height, letter-spacing). That selector is more specific than `.ts-table th`, so the custom `th` font-size is **probably dead or partly dead** (not measured; see §9). 5 `MudText` with no Typo are mixed in.
+- `MonitorSettingsCombinedPanel.razor` uses a raw `<table>` (line 24, `table-layout:fixed`) that is **not** inside a `MudSimpleTable`, so it receives **no** MudBlazor table typography and its cells inherit the surrounding font-size. It has 5 inline-styled `<span>` labels (`font-size:0.75rem; font-weight:500`) inside raw `<td>` (26 cells). These are `caption`-equivalent and do not zoom today (rem against an unzoomed `html`).
 - `CdcDialog.razor` and `GpsFixDialog.razor`: 12 and 14 raw `<td>`, with inline `style="border-bottom:none; border-top:none; padding:0 2px"`.
 - `HcPulseGuidesEditor.razor` uses `<th>` with `MudText Typo.caption` (correct pattern; headers via Typo).
-- `ObservatorySectionCard.razor` is the only `MudTable` (with `MudTh`). Note that `MudTh`/`MudTd` have no typography parameters; table cell typography is a MudBlazor CSS concern.
+`MudTh`/`MudTd` have no typography parameters. **Confirmed (source, `_table.scss`):** `.mud-table-head .mud-table-cell` uses `subtitle2`, `.mud-table-body .mud-table-cell` uses `body2`, pagination is 0.875rem and the footer cell 0.75rem.
 
 ### 5.6 `site.css` – redundant, overlapping, dead
 
@@ -252,7 +264,7 @@ Most of the cases you suspected, all confirmed in the code:
 
 **Overlapping/redundant:**
 - `.gs-panel-heading` (75-80) sets `font-size: 0.70em` on top of `Typo.overline` (10 uses). Typo is then partly overridden: a direct conflict with the goal.
-- Lines 58-72: one comma-list of 12 selectors (`.mud-input-slot` appears twice; `.mud-input-root-input` overlaps `.mud-input-slot.mud-input-root-input`; `.mud-textfield .mud-input-slot` overlaps `.mud-input-slot`) forcing `font-size: inherit !important`. This blanket override disables MudBlazor's own input typography and is the reason inputs need no Typo. It is also what stops popup list items from zooming.
+**Confirmed (source):** it is largely **redundant for inputs**, because MudBlazor already sets `font: inherit` on `.mud-input > input` and `.mud-input-slot` (`_input.scss`). Where it does have an effect it is harmful: it replaces the input label's `subtitle1` size (`_inputcontrol.scss`) and the list item's `body1`/`body2` class (`MudListItem`) with whatever the popover host inherits (the unzoomed `body` size). It is what stops popup items from zooming. The trailing comma after `.mud-input-label,` followed by a comment is valid CSS; leave it alone or delete the whole block.
 - `--gs-global-font-scale` (line 9): defined and set inline, **never consumed**.
 - `--gs-text-*`, `--gs-bg-*`, `--gs-accent-*`, `--gs-success/warning/error/info`, `--gs-divider`: duplicated in `GsTheme.cs` palette (acknowledged in its comments). Only `--gs-accent-500`, `--gs-accent-500-rgb`, `--gs-bg-sidebar`, `--gs-divider` are referenced from Razor; the rest are referenced only inside `site.css` itself.
 - Spacing tokens `--gs-space-*` (40-46): referenced only by dead rules.
@@ -283,7 +295,23 @@ Estimated removable: ≈ 300-350 lines (dead + Bootstrap leftovers + duplicate f
 Ordered by impact. Each item notes the files affected.
 
 ### R1. Move zoom to the root and make it the only zoom lever (highest impact)
-**What:** Set the zoom on `:root`/`html` (`font-size: calc(16px * scale)`), not on `<MudLayout>`. Because everything (theme typography, MudBlazor spacing, icons, dialogs, popovers, snackbars, tooltips) resolves rem against `html`, one value scales the whole UI, including the providers rendered outside `MudLayout` **[verify]**.
+Because the theme typography (after R2), MudBlazor icons (1.25/1.5/2.25rem), buttons, dialogs, popovers and snackbars resolve against `html`/`body`, one value scales all text including the providers rendered outside `MudLayout` (**confirmed**: `html` is the only common ancestor of the layout and the providers).
+
+**Caveat: what a root font-size does *not* scale (confirmed, source).** Rev 1 overstated this. These stay fixed:
+
+| Item | Fixed value | Source |
+|---|---|---|
+| Spacing utilities `pa-*`, `ma-*`, `mb-*`… | px (4px × n) | `_spacing.scss` |
+| Tooltip text | 12px | `_tooltip.scss` |
+| Chip text | 12/14/16px | `_chip.scss` |
+| Dialog container padding | 32px | MudBlazor dialog styles |
+| Snackbar/alert icons | 22px | MudBlazor snackbar/alert styles |
+| Table sort icon | 18px | `_table.scss` |
+| `Size.Small`/`Size.Large` button text | 0.8125rem / 0.9375rem (scales with root, but ignores the `Button` variant) | `_button.scss` |
+| Input helper text | 0.75rem (scales with root, but ignores `caption`) | `_inputcontrol.scss` |
+| `LayoutProperties` (drawer 250px in `GsTheme`; MudBlazor defaults are px) | px | `GsTheme.cs`, `LayoutProperties` |
+
+Text that is px (tooltip, chip) stays the same size while everything around it grows. Options: (a) accept it; (b) override these few selectors in `site.css` with `rem` (a small, justified exception list, e.g. `.mud-tooltip { font-size: var(--mud-typography-caption-size) }` and chip sizes) ; (c) use CSS `zoom` (see below), which scales px as well.
 
 **How (Blazor-native, no JS needed):** Use `<HeadContent>` from `MainLayout` and `ChartWindowLayout` to emit `<style>:root{font-size:Npx}</style>` (Microsoft Learn: `HeadContent` + `HeadOutlet`; `HeadOutlet` is already in `_Layout.cshtml:15`). Because `HeadOutlet` is `ServerPrerendered`, confirm the `<style>` updates on interactive re-render when the setting changes. If it does not, fall back to a one-line JS interop setting `document.documentElement.style.fontSize`, which is a UI-only helper alongside `profileUtils.js`.
 
@@ -293,12 +321,12 @@ Ordered by impact. Each item notes the files affected.
 - Create **one** shared helper (e.g. a static `GsZoom` class beside `GsTheme`) holding `Min/Max/Step/Default/BasePx` and `BuildRootStyle(scale)`. Reference it from `MainLayout`, `ChartWindowLayout` and `UserInterfaceEditor`. This removes three copies of the constants and two copies of `BuildLayoutStyle`.
 - Decision for Andy: browsers' own zoom (Ctrl +/-) is unaffected by this; root font-size is cumulative with it.
 
-**Alternative considered:** CSS `zoom:` on `body`/`#app`. It would zoom px dimensions too (solving §5.7 without edits), but it behaves inconsistently with fixed-position popovers/dialogs, and it is a non-standard-until-recently property. Not recommended as the primary mechanism, but it is a possible fallback for the chart window.
+Not recommended as the primary mechanism, but it is a possible fallback for the chart window. *Note:* because spacing utilities and tooltip/chip text are px (see caveat above), CSS `zoom` is the only single-lever way to scale them. This trade-off is listed in §8 as a decision for Andy. (The behaviour of `zoom` with fixed-position popovers is general browser knowledge, not verified here.)
 
 ### R2. Rebuild the theme typography in rem, define every variant, restore a monotonic scale
 In `GsTheme.cs`:
 - Change all `em` to `rem`.
-- Explicitly define `Subtitle1`, `Subtitle2`, `Overline` (currently implicit MudBlazor defaults).
+- Explicitly define `Subtitle1`, `Subtitle2`, `Overline` (currently implicit MudBlazor defaults, rem: 1rem / 0.875rem / 0.75rem, confirmed). Note `Overline` has `lineheight 2.66`, `letter-spacing .08333em` and uppercase by default, so set these explicitly if you want to keep them. Any variant whose `FontFamily` is null uses `Default.FontFamily`.
 - Make the heading scale descend monotonically and sit **above** `body1`, so that nobody needs a "bigger body" workaround.
 
 Proposed scale (**Andy to confirm; see Open Decisions**):
@@ -350,12 +378,14 @@ Replace the missing `gs-font-mono` and the unused `.gs-monospace` with one rule 
 No `font-size` (inherits from the `MudText` Typo). Delete `.gs-monospace`. If tabular figures help alignment, add `font-variant-numeric: tabular-nums` here, not a size.
 
 ### R5. Tables: one approach per table type
-- **Key/value tables** (`MountStatus`, `TelescopeSetup`, `CdcDialog`, `GpsFixDialog`): remove the per-cell `MudText` wrapper and let the table cell inherit typography, then (a) verify that MudBlazor cell font size matches your intended `body1`/`body2` **[verify]**, and (b) where it does not, set it once per table with a class that **references the theme variable**:
+- **Key/value tables inside `MudSimpleTable`** (`MountStatus`, `TelescopeSetup`, `CdcDialog`, `GpsFixDialog`): **Confirmed (source):** MudBlazor already styles raw `td` as theme `body2` and raw `th` as theme `subtitle2`, including family, weight, line-height and letter-spacing, via `--mud-typography-*` variables. So the simplest, most MudBlazor-native approach is: (a) delete the per-cell `MudText` wrappers where `body2` is acceptable; (b) delete `.ts-table th { font-size }`; (c) where a table needs a different size, either keep a `MudText Typo=…` on that cell or add one class that references the confirmed variable names:
   ```css
-  .gs-kv-table th, .gs-kv-table td { font-size: var(--mud-typography-body1-size); }
-  .gs-kv-table th               { font-size: var(--mud-typography-caption-size); }
+  .gs-kv-table td { font-size: var(--mud-typography-body1-size); }
+  .gs-kv-table th { font-size: var(--mud-typography-caption-size); }
   ```
-  The `--mud-typography-*` names must be confirmed in DevTools **[verify]**. This keeps a single source of truth (the theme) and zooms automatically, replacing `.ts-table th { 0.8125em }`.
+  Match or exceed MudBlazor's specificity (`.mud-simple-table table * tr > td`), e.g. `.gs-kv-table.mud-simple-table table * tr > td`, rather than using `!important`. Variable names `--mud-typography-{variant}-{size|weight|lineheight|family|letterspacing|text-transform}` are confirmed from `MudThemeProvider.razor.cs`.
+  `MountStatus` currently wraps every cell in `body1`, i.e. a size bump over the native `body2`; decide whether that is wanted (Open Decision 5).
+- **`MonitorSettingsCombinedPanel`** uses a raw `<table>` outside `MudSimpleTable` and so gets nothing from MudBlazor: either switch it to `MudSimpleTable` (gaining `body2`/`subtitle2`) or give it the `gs-kv-table` class.
 - Alternatively, introduce a tiny `GsValue`/`GsKeyValueRow` component (label as `caption`, value as `body1` + mono) used by `MountStatus` to remove ~140 repeated `MudText` lines. This is a refactor suggestion and optional.
 - Replace inline column widths (`width:50px/90px/150px`) with `rem` or percent widths.
 - Replace `border-bottom:none; border-top:none; padding:0 2px` repeated inline styles (`CdcDialog`) with one scoped class.
@@ -377,7 +407,7 @@ Delete: all items in the §5.6 "Dead" table, the 12-selector `font-size: inherit
 Where a non-MudText element needs typography (home hero title/caption, `figcaption`, `pre`), use `var(--mud-typography-*-size)` or a `rem` value, never `em` and never `px`.
 
 ### R7. Make px dimensions zoom-friendly where text lives
-Convert intrinsic component dimensions to `rem` where they must grow with text: dialog `min-width` (`380px/320px` → `23.75rem/20rem`), tooltip `max-width:260px` (also: move to one shared class instead of 8+ inline repeats), `AboutDialog` `height:400px`, hand-controller cell/column sizes, tile 150×120, `MountControl` `height:64px` bars. Keep px for 1-2px borders and for icon/image intrinsic assets.
+Keep px for 1-2px borders and for icon/image intrinsic assets. Also convert `GsTheme` `DrawerWidthLeft/Right` (250px) to rem; `AppbarHeight` is already `3.5rem`. MudBlazor's own defaults for these are px, so they only zoom if the theme sets rem. Spacing utilities (`pa-*`, `mb-*`) cannot be converted; they are fixed px in MudBlazor (see R1 caveat). Dialog container padding is fixed 32px.
 
 ### R8. Decide how the home page and special surfaces zoom
 `vw`-based `clamp()` on the hero title and footer is deliberately viewport-relative. Options: leave as is (documented exception) or replace with `clamp(…rem, …vw, …rem)` so zoom still affects min/max. `AxisDial`: make `DialSize` = `rem * 10` equivalent or accept it as a fixed visual. ApexCharts font sizes are configured in C# chart options; leave out of this scope but note they do not follow zoom.
@@ -402,7 +432,7 @@ Add to the UI conventions (your preferred location):
 
 | Phase | Work | Risk | Verify (DevTools + eyeball) |
 |---|---|---|---|
-| 0 | Confirm §5.2 and the `--mud-typography-*` variable names, and MudBlazor's table-cell, input, and button font sizes | None | `$0.closest('.mud-layout')` on dialog/popup/snackbar; computed `font-size` on dialog `MudText`, `td`, `th`, input |
+| 0 | Already confirmed from MudBlazor v9.11.0 source (§9). Remaining optional DevTools sanity checks only | None | Computed `font-size` on dialog `MudText` vs page `MudText`; `.ts-table th` computed size (specificity) |
 | 1 | `GsZoom` shared helper; root-level zoom via `HeadContent`; remove `html{14px}` and layout-level `Style`; unify base to 16px | Low-medium (dialogs and chart windows grow) | Zoom 75/100/150 on main page, dialog, select popup, snackbar, chart window |
 | 2 | Theme: em→rem, define all variants, new scale | Medium (visible re-flow) | Page titles, dialogs, tiles, status page |
 | 3 | Replace `h2/h1/h3` workarounds and inline `font-size` (R3) | Low (mechanical) | Each file in §5.4 |
@@ -421,20 +451,32 @@ Commit after each phase.
 2. **Base size:** is 16px at 100% zoom (so body1 = 14px) acceptable as the root base? This preserves the current main-page look; dialogs and chart windows will change.
 3. **Telemetry readouts (`MountControl`):** which variant should represent "readout" (proposed `h4`, 18px)?
 4. **Home page:** should the hero (vw-based) follow zoom?
-5. **Tables:** accept letting MudBlazor cell typography apply (plus a `--mud-typography-*` class) instead of per-cell `MudText`, after DevTools confirms the cell sizes?
+5. **Tables:** accept MudBlazor's native `td` = `body2` / `th` = `subtitle2` (confirmed) instead of per-cell `MudText body1`? `MountStatus` would shrink from `body1` to `body2` unless a class (R5) restores it.
 6. **Chart window:** same root zoom (recommended), but note ApexCharts text is configured separately and will not zoom.
+7. **px items that root zoom cannot scale** (spacing utilities, tooltip 12px, chip text): accept, override a short list in `site.css`, or use CSS `zoom` instead of root font-size (R1)?
 
 ---
 
-## 9. Items I could not confirm from the MudBlazor MCP
+## 9. Verification results (MudBlazor v9.11.0 source)
 
-- Whether `.mud-table` cells, `.mud-input`, `.mud-button`, `.mud-tab`, `.mud-nav-link` and `.mud-list-item` take their size from the Typography theme variables or from fixed rem.
-- The exact CSS variable names emitted by `MudThemeProvider` for typography (`--mud-typography-<variant>-size/weight/lineheight/family`).
-- The exact rem defaults for `subtitle1`, `subtitle2` and `overline` when absent from the theme.
-- Whether `MudPopoverProvider`/`MudDialogProvider` DOM output is outside `.mud-layout` in this app (the Razor order in `MainLayout.razor` strongly suggests it).
+All four rev 1 unknowns are now answered from the MudBlazor repository (tag `v9.11.0`). No markdown files were used.
 
-All four are quick DevTools checks (Phase 0) and should be done before Phase 1.
+| Former [verify] item | Result | Source file(s) |
+|---|---|---|
+| Table cells, inputs, buttons, tabs, nav links, list items: theme variables or fixed? | **Mixed.** `MudSimpleTable` td=body2, th=subtitle2 and `MudTable` body=body2, head=subtitle2 (theme variables). Buttons use `--mud-typography-button-size` (except `Size.Small`/`Large`, fixed rem). Inputs `font: inherit`; labels subtitle1; helper 0.75rem. List items `mud-typography-body1` (`body2` dense). Tabs, menus, nav links inherit. Tooltip 12px and chips 12/14/16px are fixed px | `_simpletable.scss`, `_table.scss`, `_button.scss`, `_input.scss`, `_inputcontrol.scss`, `MudListItem.razor.cs`, `_tooltip.scss`, `_chip.scss` |
+| CSS variable names | `--mud-typography-{default,h1..h6,subtitle1,subtitle2,body1,body2,button,caption,overline}-{family,size,weight,lineheight,letterspacing,text-transform}`, emitted on `:root` by default | `MudThemeProvider.razor.cs` |
+| Defaults for `subtitle1`/`subtitle2`/`overline` | 1rem / 0.875rem (w500) / 0.75rem (lineheight 2.66, tracking .08333em) | `Typography.cs` |
+| Providers outside `.mud-layout`? | **Yes**; dialog, popover and snackbar containers are not descendants of the layout; text takes `body` size (`--mud-typography-default-size`) | `MudDialogProvider.razor`, `MudPopoverProvider.razor`, `MudSnackbarProvider.razor`, `_base.scss` |
+
+**Corrections to rev 1:** (1) spacing utilities are fixed px, not rem; (2) raw `td`/`th` in `MudSimpleTable` are *not* unstyled; they get body2/subtitle2; (3) the `font-size: inherit !important` block is mostly redundant for inputs, not the reason inputs work; (4) tooltips and chips do not follow root font-size.
+
+**Residual optional DevTools checks** (derived from source plus `site.css`, not observed in a browser):
+1. Computed `font-size` of a dialog `MudText` (expected ≈ 12.25px at 100%) vs a page `MudText` (expected 14px).
+2. Whether `.ts-table th { font-size: .8125em }` is overridden by `.mud-simple-table table * tr > th`. Specificity was not computed precisely.
+3. Optional: `getComputedStyle(document.documentElement).getPropertyValue('--mud-typography-body1-size')` to see the em value passed through unchanged.
+
+The Phase 1 root-zoom plan does not depend on these checks.
 
 ---
 
-*Report generated 2026-10-05 09:38. No source files were modified.*
+*Report revised 2026-10-05 10:15 (rev 2, MudBlazor v9.11.0 source verification). No source files were modified.*
