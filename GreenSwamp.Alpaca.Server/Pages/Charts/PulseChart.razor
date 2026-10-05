@@ -37,7 +37,7 @@
                    ValueChanged="@OnWindowChangedAsync"
                    Disabled="@IsHistoricalMode"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                   Style="min-width:110px;">
+                   Style="min-width:6.875rem;">
             <MudSelectItem Value="10">10 sec</MudSelectItem>
             <MudSelectItem Value="30">30 sec</MudSelectItem>
             <MudSelectItem Value="120">2 min</MudSelectItem>
@@ -49,7 +49,7 @@
         <MudSelect T="string" Label="Pulse Units" Value="@_settings.PulseScale"
                    ValueChanged="@OnScaleChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                   Style="min-width:140px;">
+                   Style="min-width:8.75rem;">
             <MudSelectItem Value="@("Milliseconds")">milliSeconds</MudSelectItem>
             <MudSelectItem Value="@("ArcSeconds")">Arc Seconds</MudSelectItem>
             <MudSelectItem Value="@("Steps")">Steps</MudSelectItem>
@@ -58,7 +58,7 @@
         <MudSelect T="string" Label="Chart Type" Value="@_settings.PulseSeriesType"
                    ValueChanged="@OnSeriesTypeChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                   Style="min-width:105px;">
+                   Style="min-width:6.5625rem;">
             <MudSelectItem Value="@("Bars")">Bars</MudSelectItem>
             <MudSelectItem Value="@("Points")">Points</MudSelectItem>
             <MudSelectItem Value="@("Line")">Line</MudSelectItem>

@@ -184,7 +184,7 @@ code {
 /* --- Home / Welcome page ------------------------------------ */
 /* Remove container padding so the hero fills wall-to-wall      */
 .gs-home-hero-wrap {
-    margin: -1rem;  /* cancel MudContainer pa-4 (16px)          */
+    margin: -16px;  /* cancel MudContainer pa-4 (fixed 16px; must stay px so it matches at any zoom) */
 }
 
 .gs-home-hero {
@@ -221,7 +221,7 @@ code {
 }
 
 .gs-home-title {
-    font-size:   clamp(1.75rem, 4vw, 3rem);
+    font-size:   clamp(28px, 4vw, 48px);
     font-weight: 300;
     color:       #fff;
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
@@ -380,8 +380,8 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     .mud-paper.gs-tile {
         position:      relative;
         flex:          0 0 auto;
-        width:         150px;
-        height:        120px;
+        width:         9.375rem;
+        height:        7.5rem;
         border:        3px solid var(--gs-accent-500);
         border-radius: 8px;
         background:    rgba(0,0,0,0.55);
@@ -451,7 +451,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-home-footer-text {
     font-family: 'Swamp Witch', cursive;
-    font-size:   clamp(1.1rem, 2.5vw, 1.8rem);
+    font-size:   clamp(17.6px, 2.5vw, 28.8px);
     color:       var(--gs-accent-500);
     letter-spacing: 0.06em;
     text-shadow: 0 0 18px rgba(76,175,80,0.5), 0 2px 6px rgba(0,0,0,0.8);
@@ -465,10 +465,10 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
 /* --- Hand Controller grid ---------------------------------- */
 .hc-primary-controls {
-    --hc-cell-size: 50px;
-    --hc-gap: 8px;
+    --hc-cell-size: 3.125rem;
+    --hc-gap: 0.5rem;
     --hc-grid-width: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
-    --hc-speed-column-width: 72px;
+    --hc-speed-column-width: 4.5rem;
 }
 
 .hc-grid {
@@ -521,8 +521,8 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
         .hc-speed-column {
             --hc-speed-column-height: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
-            --hc-speed-label-height: 16px;
-            --hc-speed-slider-gap: 16px;
+            --hc-speed-label-height: 1rem;
+            --hc-speed-slider-gap: 1rem;
             --hc-speed-slider-length: calc(var(--hc-speed-column-height) - var(--hc-speed-label-height) - var(--hc-speed-slider-gap));
             height: var(--hc-speed-column-height);
             width: var(--hc-speed-column-width);
@@ -578,10 +578,10 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 }
 
 .mud-button-root.gs-icon-button-rounded {
-    width: 50px;
-    height: 50px;
-    min-width: 50px;
-    min-height: 50px;
+    width: 3.125rem;
+    height: 3.125rem;
+    min-width: 3.125rem;
+    min-height: 3.125rem;
     border-radius: 8px;
     border-width: 2px;
     border-style: solid;

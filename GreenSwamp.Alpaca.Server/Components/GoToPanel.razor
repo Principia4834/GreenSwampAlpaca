@@ -23,7 +23,7 @@
             <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
 
                 @* Left column: GoTo / Copy / Sync *@
-                <MudStack Spacing="4" Style="min-width:72px">
+                <MudStack Spacing="4" Style="min-width:4.5rem">
                     <MudTooltip Text="Go to coordinates">
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
@@ -51,7 +51,7 @@
                 </MudStack>
 
                 @* Right: coordinate entry fields *@
-                <MudStack Spacing="2" Style="width:180px">
+                <MudStack Spacing="2" Style="width:11.25rem">
                     @if (_coordMode == CoordMode.RaDec)
                     {
                         <MudTooltip Text="Enter right ascension value">

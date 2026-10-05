@@ -34,7 +34,7 @@
                    ValueChanged="@OnWindowChangedAsync"
                    Disabled="@(IsHistoricalMode)"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                   Style="min-width:110px;">
+                   Style="min-width:6.875rem;">
             <MudSelectItem Value="10">10 sec</MudSelectItem>
             <MudSelectItem Value="30">30 sec</MudSelectItem>
             <MudSelectItem Value="120">2 min</MudSelectItem>
@@ -46,7 +46,7 @@
         <MudSelect T="string" Label="Scale" Value="@_settings.RaDecScale"
                    ValueChanged="@OnScaleChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
-                   Style="min-width:130px;">
+                   Style="min-width:8.125rem;">
             <MudSelectItem Value="@("Steps")">Steps</MudSelectItem>
             <MudSelectItem Value="@("Degrees")">Degrees</MudSelectItem>
             <MudSelectItem Value="@("ArcSeconds")">Arc Seconds</MudSelectItem>

@@ -96,8 +96,8 @@ public static class GsTheme
 
         LayoutProperties = new LayoutProperties
         {
-            DrawerWidthLeft  = "250px",
-            DrawerWidthRight = "250px",
+            DrawerWidthLeft  = "15.625rem",
+            DrawerWidthRight = "15.625rem",
             AppbarHeight     = "3.5rem",
         }
     };
