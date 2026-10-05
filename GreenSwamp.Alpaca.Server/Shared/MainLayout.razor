@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using GreenSwamp.Alpaca.Server.Components.About
 @using GreenSwamp.Alpaca.Server.Services
+@using GreenSwamp.Alpaca.Server.Theme
 @using GreenSwamp.Alpaca.Settings.Services
 
 @inherits LayoutComponentBase
@@ -11,13 +12,19 @@
 @inject IVersionedSettingsService SettingsService
 @inject IDialogService DialogService
 
+<HeadContent>
+    <style>
+        @RootFontSizeStyle
+    </style>
+</HeadContent>
+
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <GlobalNotificationsHost />
 
-<MudLayout Style="@LayoutStyle">
+<MudLayout>
     <MudAppBar Elevation="0" Dense="true"
                Style="background-color:var(--gs-bg-sidebar); border-bottom:1px solid var(--gs-divider);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
@@ -60,11 +67,11 @@
 <PersistentFloatingWindow />
 
 @code {
-    private const double DefaultGlobalFontScale = 1.0;
-    private const double MinGlobalFontScale = 0.75;
-    private const double MaxGlobalFontScale = 1.5;
-
     private bool _drawerOpen = true;
+    private double _fontScale = GsZoom.DefaultScale;
+
+    private string RootFontSizeStyle => GsZoom.BuildRootStyle(_fontScale);
+
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
     private async Task OpenAboutDialog()
@@ -82,7 +89,6 @@
 
     private string CurrentDateTimeString { get; set; } = string.Empty;
     private Timer? _timer;
-    private string LayoutStyle { get; set; } = BuildLayoutStyle(DefaultGlobalFontScale);
 
     protected override void OnInitialized()
     {
@@ -100,18 +106,7 @@
 
     private void ApplyServerConfig(GreenSwamp.Alpaca.Settings.Models.ServerConfig config)
     {
-        LayoutStyle = BuildLayoutStyle(config.GlobalFontScale);
-    }
-
-    private const double BaseFontSizePx = 16.0;
-
-    private static string BuildLayoutStyle(double fontScale)
-    {
-        var normalizedScale = Math.Clamp(fontScale, MinGlobalFontScale, MaxGlobalFontScale);
-        var effectiveFontSizePx = BaseFontSizePx * normalizedScale;
-        return string.Create(
-            CultureInfo.InvariantCulture,
-            $"font-size:{effectiveFontSizePx:0.##}px;--gs-global-font-scale:{normalizedScale:0.##};");
+        _fontScale = GsZoom.NormalizeScale(config.GlobalFontScale);
     }
 
     private void OnServerConfigChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.ServerConfig config)

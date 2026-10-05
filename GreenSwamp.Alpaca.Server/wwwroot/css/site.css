@@ -5,8 +5,6 @@
 
 /* --- CSS Custom Properties ---------------------------------- */
 :root {
-    /* Global font scale */
-    --gs-global-font-scale: 1.0;
     /* Base surfaces */
     --gs-bg-app: #121212;
     --gs-bg-paper: #1e1e1e;
@@ -49,8 +47,9 @@
     --gs-font-mono: 'Roboto Mono', 'Courier New', monospace;
 }
 
-html {
-    font-size: 14px;
+/* Fallback root size before the server-rendered zoom style loads; keep in sync with GsZoom.BaseFontSizePx. */
+:root {
+    font-size: 16px;
 }
 
 /* Selected value text + free text input text */
