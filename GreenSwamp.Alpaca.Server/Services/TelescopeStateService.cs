@@ -120,6 +120,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     RightAscension = mount.RightAscension,
                     SideOfPier = mount.SideOfPier,
                     LocalHourAngle = mount.Lha,
+                    LocalSiderealTime = mount.SiderealTime,
                     UTCDate = HiResDateTime.UtcNow,
                     LocalDate = DateTime.Now,
                     Slewing = mount.IsSlewing,

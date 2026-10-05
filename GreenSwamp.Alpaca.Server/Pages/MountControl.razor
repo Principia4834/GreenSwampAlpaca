@@ -57,26 +57,30 @@ else
 
                 @* -- Compact position header ------------------------------- *@
                 <MudPaper Elevation="1" Class="pa-2 mb-2">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4" Wrap="Wrap.Wrap">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">RA</MudText>
-                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">Dec</MudText>
-                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">Az</MudText>
-                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">Alt</MudText>
-                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
                             <MudText Typo="Typo.body1" Color="Color.Primary">LHA</MudText>
-                            <MudText Typo="Typo.h4" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
+                        </MudStack>
+                        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+                            <MudText Typo="Typo.body1" Color="Color.Primary">LST</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.LocalSiderealTime)</MudText>
                         </MudStack>
                     </MudStack>
                 </MudPaper>
