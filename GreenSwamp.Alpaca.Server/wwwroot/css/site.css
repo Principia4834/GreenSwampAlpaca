@@ -45,6 +45,18 @@
     font-size: 16px;
 }
 
+/* collapsed (and default header) height tuning */
+.gs-panel .mud-expand-panel-header {
+    min-height: 24px; /* default is larger */
+    height: 24px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.gs-panel .mud-expand-panel-content {
+    min-height: 24px; /* keeps header/content alignment */
+}
+
 /* --- AppBar brand: weight and tracking only; size comes from Typo --- */
 .gs-brand {
     font-weight:    300;

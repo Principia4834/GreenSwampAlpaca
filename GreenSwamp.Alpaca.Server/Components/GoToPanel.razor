@@ -8,7 +8,7 @@
 <fieldset disabled="@(!IsUiClientConnected)" style="border:none;padding:0;margin:0">
     <MudPaper Elevation="0" Class="gs-goto-overlay-host">
         <MudStack Spacing="0" Class="@(_isSettingsPanelOpen ? "gs-goto-content-hidden" : null)">
-            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo / Slew</MudText>
+            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo & Slew</MudText>
             <MudStack Spacing="3" Class="mt-1">
                 <MountButtonBar State="@State"
                                 DeviceNumber="@DeviceNumber"
@@ -129,63 +129,80 @@
         {
             <MudPaper Elevation="0" Class="gs-goto-settings-overlay pa-2">
                 <MudStack Spacing="2" Style="height:100%">
-                    <MudText Typo="Typo.overline" Color="Color.Default">Settings</MudText>
-                    <MudDivider />
-
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.body1" Color="Color.Default">Park Position Management</MudText>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Default"
-                                     Style="padding: 0 8px; white-space: nowrap;">
-                                @_workingParkPositionName
-                            </MudText>
-                            <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
-                                <MudMenu Disabled="@IsParkSelectorDisabled">
-                                    <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown"
-                                                       Color="Color.Primary"
+                    <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo & Slew Settings</MudText>
+                    <MudExpansionPanels >
+                        <MudExpansionPanel Class="mb-2 gs-panel" Text="Park Positions" Gutters="false" Dense="true">
+                            <MudStack Spacing="1">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Default"
+                                             Style="padding: 0 8px; white-space: nowrap;">
+                                        @_workingParkPositionName
+                                    </MudText>
+                                    <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
+                                        <MudMenu Disabled="@IsParkSelectorDisabled">
+                                            <ActivatorContent>
+                                                <MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown"
+                                                               Color="Color.Primary"
+                                                               Size="Size.Large"
+                                                               Disabled="@IsParkSelectorDisabled"
+                                                               OnClick="@context.ToggleAsync" />
+                                            </ActivatorContent>
+                                            <ChildContent>
+                                                @if (State.ParkPositionNames.Count > 0)
+                                                {
+                                                    @foreach (var posName in State.ParkPositionNames)
+                                                    {
+                                                        <MudMenuItem OnClick="@(() => OnParkPositionDraftSelected(posName))">@posName</MudMenuItem>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <MudMenuItem Disabled="true">No positions configured</MudMenuItem>
+                                                }
+                                            </ChildContent>
+                                        </MudMenu>
+                                    </MudTooltip>
+                                    <MudTooltip Text="Create, update or delete park positions" Placement="Placement.Top" Arrow="true">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                        Size="Size.Large"
-                                                       Disabled="@IsParkSelectorDisabled"
-                                                       OnClick="@context.ToggleAsync" />
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        @if (State.ParkPositionNames.Count > 0)
-                                        {
-                                            @foreach (var posName in State.ParkPositionNames)
-                                            {
-                                                <MudMenuItem OnClick="@(() => OnParkPositionDraftSelected(posName))">@posName</MudMenuItem>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <MudMenuItem Disabled="true">No positions configured</MudMenuItem>
-                                        }
-                                    </ChildContent>
-                                </MudMenu>
-                            </MudTooltip>
-                            <MudTooltip Text="Create, update or delete park positions" Placement="Placement.Top" Arrow="true">
-                                <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                                               Size="Size.Large"
-                                               Color="Color.Primary"
-                                               Disabled="@(!IsUiClientConnected)"
-                                               OnClick="OpenManageParkPositionsDialogFromPanelAsync" />
-                            </MudTooltip>
-                        </MudStack>
-                    </MudStack>
-
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                        <MudText Typo="Typo.body1" Color="Color.Default">Voice Announcements</MudText>
+                                                       Color="Color.Primary"
+                                                       Disabled="@(!IsUiClientConnected)"
+                                                       OnClick="OpenManageParkPositionsDialogFromPanelAsync" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </MudStack>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Class="mb-2 gs-panel" Text="Tracking Limits" Gutters="false" Dense="true">
+                            <MudStack Row="false" AlignItems="AlignItems.Start" Spacing="0" Justify="Justify.SpaceEvenly" Class="ml-n2">
+                                <MudRadioGroup T="LimitAction">
+                                    <MudRadio Value="LimitAction.NoAction">No action</MudRadio>
+                                    <MudRadio Value="LimitAction.StopTrackng">Stop tracking</MudRadio>
+                                    <MudRadio Value="LimitAction.Park">Park</MudRadio>
+                                </MudRadioGroup>
+                            </MudStack>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Class="mb-2 gs-panel" Text="Horizon Limits" Gutters="false" Dense="true">
+                            <MudStack Row="false" AlignItems="AlignItems.Start" Spacing="0" Justify="Justify.SpaceEvenly" Class="ml-n2">
+                                <MudRadioGroup T="LimitAction">
+                                    <MudRadio Value="1">No action</MudRadio>
+                                    <MudRadio Value="2">Stop tracking</MudRadio>
+                                    <MudRadio Value="3">Park</MudRadio>
+                                </MudRadioGroup>
+                            </MudStack>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                    <MudStack Class="ml-n2">
                         <MudTooltip Text="@(!_workingVoiceActive ? "Enable voice announcements" : "Disable voice announcements")"
                                     Placement="Placement.Top" Arrow="true">
-                            <MudIconButton Icon="@(!_workingVoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
-                                           Color="Color.Primary"
-                                           Variant="Variant.Outlined"
-                                           Size="Size.Large"
-                                           Class="gs-icon-button-rounded"
-                                           OnClick="ToggleWorkingVoice" />
+                            <MudSwitch T="bool"
+                                       Label="Voice announcements"
+                                       LabelPlacement="Placement.Right"
+                                       Value="@_workingVoiceActive"
+                                       ValueChanged="UpdateVoiceActive"
+                                       Color="Color.Primary"
+                                       Disabled="@(!IsUiClientConnected)" />
                         </MudTooltip>
                     </MudStack>
-
                     <MudSpacer />
 
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="justify-end">

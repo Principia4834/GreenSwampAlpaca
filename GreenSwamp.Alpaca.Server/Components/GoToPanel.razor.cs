@@ -1,4 +1,5 @@
-﻿using GreenSwamp.Alpaca.MountControl;
+﻿using ASCOM;
+using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
 using GreenSwamp.Alpaca.Server.Models;
@@ -37,7 +38,6 @@ namespace GreenSwamp.Alpaca.Server.Components
         private string _initialParkPositionName = "—";
         private bool _initialVoiceActive;
         private string _workingParkPositionName = "—";
-        private bool _workingVoiceActive;
         private bool IsParkSelectorDisabled => !IsUiClientConnected || !(_mount?.Settings.CanPark ?? false);
         private string EffectiveParkPositionName =>
             (State.ParkPositionNames.Count > 0 && State.ParkPositionNames.Contains(State.ParkSelectedName))
@@ -45,6 +45,13 @@ namespace GreenSwamp.Alpaca.Server.Components
                 : State.ParkPositionNames.FirstOrDefault(p => string.Equals(p, "Default", StringComparison.OrdinalIgnoreCase))
                     ?? State.ParkPositionNames.FirstOrDefault()
                     ?? "—";
+        private LimitAction _workingHorizonAction;
+        private LimitAction _workingTrackingAction;
+        private bool _workingSyncLimitOn;
+
+        private bool _workingVoiceActive;
+
+        enum LimitAction {NoAction, StopTrackng, Park }
 
         protected override void OnInitialized()
         {
@@ -146,6 +153,23 @@ namespace GreenSwamp.Alpaca.Server.Components
             _initialVoiceActive = State.VoiceActive;
             _workingParkPositionName = _initialParkPositionName;
             _workingVoiceActive = _initialVoiceActive;
+
+            var settings = MountRegistry.GetInstance(DeviceNumber).Settings;
+
+            _workingTrackingAction = settings?.LimitPark == true
+                ? LimitAction.Park
+                : settings?.LimitTracking == true
+                    ? LimitAction.StopTrackng
+                    : LimitAction.NoAction;
+
+            _workingHorizonAction = settings?.HzLimitPark == true
+                ? LimitAction.Park
+                : settings?.HzLimitTracking == true
+                    ? LimitAction.StopTrackng
+                    : LimitAction.NoAction;
+
+            _workingSyncLimitOn = settings?.SyncLimitOn ?? false;
+
             _isSettingsDirty = false;
             _isSettingsPanelOpen = true;
         }
@@ -218,9 +242,9 @@ namespace GreenSwamp.Alpaca.Server.Components
             await DialogService.ShowAsync<ManageParkPositionsDialog>(string.Empty, parameters, options);
         }
 
-        private Task ToggleWorkingVoice()
+        private Task UpdateVoiceActive(bool value)
         {
-            _workingVoiceActive = !_workingVoiceActive;
+            _workingVoiceActive = value;
             UpdateSettingsDirtyState();
             return Task.CompletedTask;
         }

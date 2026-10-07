@@ -50,7 +50,7 @@ public static class GsTheme
             Error            = "#f44336",          // --gs-error
             Info             = "#42a5f5",          // --gs-info
 
-            // -- Action states --------------------------------------------
+            // -- LimitAction states --------------------------------------------
             ActionDefault    = "rgba(255,255,255,0.60)",
             ActionDisabled   = "rgba(255,255,255,0.26)",
             ActionDisabledBackground = "rgba(255,255,255,0.12)",
