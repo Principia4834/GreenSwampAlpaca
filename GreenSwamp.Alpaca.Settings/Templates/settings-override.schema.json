@@ -111,25 +111,13 @@
           "type": "number",
           "description": "Axis tracking limit in degrees (0.0 = disabled)"
         },
-        "LimitTracking": {
-          "type": "boolean",
-          "description": "Enable tracking limits"
-        },
         "LimitsOn": {
           "type": "boolean",
           "description": "Enable tracking-limit checking and actions"
         },
-        "LimitPark": {
-          "type": "boolean",
-          "description": "Enable park limits"
-        },
         "ParkLimitName": {
           "type": "string",
           "description": "Name of park limit"
-        },
-        "HzLimitTracking": {
-          "type": "boolean",
-          "description": "Enable horizontal tracking limits"
         },
         "HorizonTrackingAction": {
           "type": "string",
@@ -140,10 +128,6 @@
           "type": "string",
           "enum": [ "None", "StopTracking", "Park" ],
           "description": "Action to take when meridian tracking limit is reached"
-        },
-        "HzLimitPark": {
-          "type": "boolean",
-          "description": "Enable horizontal park limits"
         },
         "ParkHzLimitName": {
           "type": "string",

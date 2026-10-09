@@ -129,7 +129,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private string _parkName = "Default";
         private double[] _parkAxes = [0.0, 0.0];
         private List<ParkPosition> _parkPositions = [];
-        private bool _limitPark = false;
         private string _parkLimitName = string.Empty;
 
         // Limits
@@ -139,10 +138,7 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _axisLowerLimitY = -90.0;
         private double _horizonLimit = 0.0;
         private bool _limitsOn = false;
-        private bool _limitTracking = false;
         private bool _syncLimitOn = false;
-        private bool _hzLimitTracking = false;
-        private bool _hzLimitPark = false;
         private LimitAction _horizonTrackingAction = LimitAction.None;
         private LimitAction _meridianTrackingAction = LimitAction.None;
         private string _parkHzLimitName = string.Empty;
@@ -1353,19 +1349,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        public bool LimitPark
-        {
-            get => _limitPark;
-            set
-            {
-                if (_limitPark != value)
-                {
-                    _limitPark = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public string ParkLimitName
         {
             get => _parkLimitName;
@@ -1461,19 +1444,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        public bool LimitTracking
-        {
-            get => _limitTracking;
-            set
-            {
-                if (_limitTracking != value)
-                {
-                    _limitTracking = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public bool SyncLimitOn
         {
             get => _syncLimitOn;
@@ -1482,32 +1452,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (_syncLimitOn != value)
                 {
                     _syncLimitOn = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public bool HzLimitTracking
-        {
-            get => _hzLimitTracking;
-            set
-            {
-                if (_hzLimitTracking != value)
-                {
-                    _hzLimitTracking = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public bool HzLimitPark
-        {
-            get => _hzLimitPark;
-            set
-            {
-                if (_hzLimitPark != value)
-                {
-                    _hzLimitPark = value;
                     OnPropertyChanged();
                 }
             }
@@ -1930,7 +1874,6 @@ namespace GreenSwamp.Alpaca.MountControl
                         new ParkPosition ( p.Name, p.X, p.Y )).ToList() ?? [];
                 }
 
-                _limitPark = settings.LimitPark;
                 _parkLimitName = settings.ParkLimitName ?? string.Empty;
 
                 // Limits
@@ -1940,14 +1883,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 _axisLimitX = settings.AxisLimitX;
                 _axisUpperLimitY = settings.AxisUpperLimitY;
                 _axisLowerLimitY = settings.AxisLowerLimitY;
-                _limitTracking = settings.LimitTracking;
                 _syncLimitOn = settings.SyncLimitOn;
                 if (Enum.TryParse<LimitAction>(settings.HorizonTrackingAction, true, out var horizonAction))
                     _horizonTrackingAction = horizonAction;
                 if (Enum.TryParse<LimitAction>(settings.MeridianTrackingAction, true, out var meridianAction))
                     _meridianTrackingAction = meridianAction;
-                _hzLimitTracking = settings.HzLimitTracking;
-                _hzLimitPark = settings.HzLimitPark;
                 _parkHzLimitName = settings.ParkHzLimitName ?? string.Empty;
                 _syncLimit = settings.SyncLimit;
 
@@ -2122,7 +2062,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
                 // For Polar mode, settings.ParkPositions already has correct Az/Alt from property setter, don't overwrite
 
-                settings.LimitPark = _limitPark;
                 settings.ParkLimitName = _parkLimitName;
 
                 settings.LimitsOn = _limitsOn;
@@ -2131,10 +2070,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.AxisLimitX = _axisLimitX;
                 settings.AxisUpperLimitY = _axisUpperLimitY;
                 settings.AxisLowerLimitY = _axisLowerLimitY;
-                settings.LimitTracking = _limitTracking;
                 settings.SyncLimitOn = _syncLimitOn;
-                settings.HzLimitTracking = _hzLimitTracking;
-                settings.HzLimitPark = _hzLimitPark;
                 settings.ParkHzLimitName = _parkHzLimitName;
                 settings.HorizonTrackingAction = _horizonTrackingAction.ToString();
                 settings.MeridianTrackingAction = _meridianTrackingAction.ToString();

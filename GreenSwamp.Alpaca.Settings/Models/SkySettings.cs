@@ -159,8 +159,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public bool TrackAfterUnpark { get; set; } = false;
         [UniqueSetting]
-        public bool LimitPark { get; set; }
-        [UniqueSetting]
         public string ParkLimitName { get; set; } = null!;
         [UniqueSetting]
         public List<ParkPosition> ParkPositions { get; set; } = [];
@@ -170,8 +168,6 @@ namespace GreenSwamp.Alpaca.Settings.Models
         // Limit Settings
         [UniqueSetting]
         public bool LimitsOn { get; set; }
-        [UniqueSetting]
-        public bool LimitTracking { get; set; }
         [UniqueSetting]
         public double HourAngleLimit { get; set; }
         [UniqueSetting]
@@ -189,11 +185,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public String MeridianTrackingAction { get; set; } = null!;
         [UniqueSetting]
-        public bool HzLimitTracking { get; set; }
-        [UniqueSetting]
         public string ParkHzLimitName { get; set; } = null!;
-        [UniqueSetting]
-        public bool HzLimitPark { get; set; }
         [UniqueSetting]
         public double AxisHzTrackingLimit { get; set; }
         [UniqueSetting]

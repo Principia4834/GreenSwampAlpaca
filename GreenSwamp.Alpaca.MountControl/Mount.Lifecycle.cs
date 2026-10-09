@@ -87,11 +87,11 @@ namespace GreenSwamp.Alpaca.MountControl
             if (primaryLimit)
             {
                 var source = Settings.AlignmentMode == AlignmentMode.GermanPolar ? "Meridian Limit" : "Hardware Limit";
-                HandleLimitAction(source, Settings.LimitTracking, Settings.LimitPark, Settings.ParkLimitName);
+                HandleLimitAction(source, Settings.MeridianTrackingAction, Settings.ParkLimitName);
                 return;
             }
 
-            HandleLimitAction("Horizon Limit", Settings.HzLimitTracking, Settings.HzLimitPark, Settings.ParkHzLimitName);
+            HandleLimitAction("Horizon Limit", Settings.HorizonTrackingAction, Settings.ParkHzLimitName);
         }
 
         private void ClearLimitWarningState()
@@ -101,19 +101,19 @@ namespace GreenSwamp.Alpaca.MountControl
             LimitTriggered = false;
         }
 
-        private void HandleLimitAction(string source, bool stopTracking, bool parkAtLimit, string parkPositionName)
+        private void HandleLimitAction(string source, LimitAction limitAction, string parkPositionName)
         {
             var action = "Warning only";
             var warningStaysOn = true;
 
-            if (stopTracking && TrackingMode != TrackingMode.Off)
+            if (limitAction == LimitAction.StopTracking && TrackingMode != TrackingMode.Off)
             {
                 TrackingMode = TrackingMode.Off;
                 ApplyTracking(false);
                 action = "Stopped tracking";
             }
 
-            if (parkAtLimit && _slewState != SlewType.SlewPark)
+            if (limitAction == LimitAction.Park && _slewState != SlewType.SlewPark)
             {
                 var found = Settings.ParkPositions.Find(x => x.Name == parkPositionName);
                 if (found == null)
