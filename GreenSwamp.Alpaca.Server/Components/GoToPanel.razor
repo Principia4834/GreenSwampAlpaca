@@ -25,7 +25,7 @@
                 @* Left column: GoTo / Copy / Sync *@
                 <MudStack Spacing="4" Style="min-width:4.5rem">
                     <MudTooltip Text="Go to coordinates">
-                        <MudButton Variant="Variant.Filled"
+                        <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
                                    Size="Size.Small"
                                    FullWidth="true"
@@ -33,7 +33,7 @@
                                    OnClick="OnGoTo">GoTo</MudButton>
                     </MudTooltip>
                     <MudTooltip Text="Copy from current position">
-                        <MudButton Variant="Variant.Filled"
+                        <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
                                    Size="Size.Small"
                                    FullWidth="true"
@@ -41,7 +41,7 @@
                                    OnClick="OnCopy">Copy</MudButton>
                     </MudTooltip>
                     <MudTooltip Text="Sync to coordinates">
-                        <MudButton Variant="Variant.Filled"
+                        <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
                                    Size="Size.Small"
                                    FullWidth="true"
@@ -174,19 +174,22 @@
                         </MudExpansionPanel>
                         <MudExpansionPanel Class="mb-2 gs-panel" Text="Tracking Limits" Gutters="false" Dense="true">
                             <MudStack Row="false" AlignItems="AlignItems.Start" Spacing="0" Justify="Justify.SpaceEvenly" Class="ml-n2">
-                                <MudRadioGroup T="LimitAction">
-                                    <MudRadio Value="LimitAction.NoAction">No action</MudRadio>
-                                    <MudRadio Value="LimitAction.StopTrackng">Stop tracking</MudRadio>
-                                    <MudRadio Value="LimitAction.Park">Park</MudRadio>
+                                <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction" Value="@_workingMeridianTrackingAction"
+                                               ValueChanged="UpdateMeridianLimitAction">
+                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None">No action</MudRadio>
+                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop tracking</MudRadio>
+                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudRadio>
                                 </MudRadioGroup>
                             </MudStack>
                         </MudExpansionPanel>
                         <MudExpansionPanel Class="mb-2 gs-panel" Text="Horizon Limits" Gutters="false" Dense="true">
                             <MudStack Row="false" AlignItems="AlignItems.Start" Spacing="0" Justify="Justify.SpaceEvenly" Class="ml-n2">
-                                <MudRadioGroup T="LimitAction">
-                                    <MudRadio Value="1">No action</MudRadio>
-                                    <MudRadio Value="2">Stop tracking</MudRadio>
-                                    <MudRadio Value="3">Park</MudRadio>
+                                <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction" 
+                                               Value="@_workingHorizonTrackingAction" 
+                                               ValueChanged="UpdateHorizonLimitAction">
+                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None">No action</MudRadio>
+                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop tracking</MudRadio>
+                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudRadio>
                                 </MudRadioGroup>
                             </MudStack>
                         </MudExpansionPanel>

@@ -131,6 +131,16 @@
           "type": "boolean",
           "description": "Enable horizontal tracking limits"
         },
+        "HorizonTrackingAction": {
+          "type": "string",
+          "enum": [ "None", "StopTracking", "Park" ],
+          "description": "Action to take when horizon tracking limit is reached"
+        },
+        "MeridianTrackingAction": {
+          "type": "string",
+          "enum": [ "None", "StopTracking", "Park" ],
+          "description": "Action to take when meridian tracking limit is reached"
+        },
         "HzLimitPark": {
           "type": "boolean",
           "description": "Enable horizontal park limits"

@@ -143,6 +143,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _syncLimitOn = false;
         private bool _hzLimitTracking = false;
         private bool _hzLimitPark = false;
+        private LimitAction _horizonTrackingAction = LimitAction.None;
+        private LimitAction _meridianTrackingAction = LimitAction.None;
         private string _parkHzLimitName = string.Empty;
         private int _syncLimit = 45;
 
@@ -1511,6 +1513,32 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
+        public LimitAction HorizonTrackingAction
+        {
+            get => _horizonTrackingAction;
+            set
+            {
+                if (_horizonTrackingAction != value)
+                {
+                    _horizonTrackingAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public LimitAction MeridianTrackingAction
+        {
+            get => _meridianTrackingAction;
+            set
+            {
+                if (_meridianTrackingAction != value)
+                {
+                    _meridianTrackingAction = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public string ParkHzLimitName
         {
             get => _parkHzLimitName;
@@ -1914,6 +1942,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 _axisLowerLimitY = settings.AxisLowerLimitY;
                 _limitTracking = settings.LimitTracking;
                 _syncLimitOn = settings.SyncLimitOn;
+                if (Enum.TryParse<LimitAction>(settings.HorizonTrackingAction, true, out var horizonAction))
+                    _horizonTrackingAction = horizonAction;
+                if (Enum.TryParse<LimitAction>(settings.MeridianTrackingAction, true, out var meridianAction))
+                    _meridianTrackingAction = meridianAction;
                 _hzLimitTracking = settings.HzLimitTracking;
                 _hzLimitPark = settings.HzLimitPark;
                 _parkHzLimitName = settings.ParkHzLimitName ?? string.Empty;
@@ -2104,6 +2136,8 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.HzLimitTracking = _hzLimitTracking;
                 settings.HzLimitPark = _hzLimitPark;
                 settings.ParkHzLimitName = _parkHzLimitName;
+                settings.HorizonTrackingAction = _horizonTrackingAction.ToString();
+                settings.MeridianTrackingAction = _meridianTrackingAction.ToString();
 
                 settings.PpecOn = _pPecOn;
                 settings.PolarLedLevel = _polarLedLevel;

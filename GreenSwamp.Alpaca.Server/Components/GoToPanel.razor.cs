@@ -37,6 +37,8 @@ namespace GreenSwamp.Alpaca.Server.Components
         private bool _isSettingsDirty;
         private string _initialParkPositionName = "—";
         private bool _initialVoiceActive;
+        private LimitAction _initialHorizonTrackingAction;
+        private LimitAction _initialMeridianTrackingAction;
         private string _workingParkPositionName = "—";
         private bool IsParkSelectorDisabled => !IsUiClientConnected || !(_mount?.Settings.CanPark ?? false);
         private string EffectiveParkPositionName =>
@@ -45,13 +47,11 @@ namespace GreenSwamp.Alpaca.Server.Components
                 : State.ParkPositionNames.FirstOrDefault(p => string.Equals(p, "Default", StringComparison.OrdinalIgnoreCase))
                     ?? State.ParkPositionNames.FirstOrDefault()
                     ?? "—";
-        private LimitAction _workingHorizonAction;
-        private LimitAction _workingTrackingAction;
+        private LimitAction _workingMeridianTrackingAction;
+        private LimitAction _workingHorizonTrackingAction;
         private bool _workingSyncLimitOn;
 
         private bool _workingVoiceActive;
-
-        enum LimitAction {NoAction, StopTrackng, Park }
 
         protected override void OnInitialized()
         {
@@ -60,6 +60,8 @@ namespace GreenSwamp.Alpaca.Server.Components
             _horizonLimit = _mount?.Settings.HorizonLimit ?? 0.0;
             _altDMin = (int)Math.Floor(_horizonLimit);
             _canSync = _mount?.Settings.CanSync ?? false;
+            _initialHorizonTrackingAction = _mount?.Settings.HorizonTrackingAction ?? LimitAction.None;
+            _initialMeridianTrackingAction = _mount?.Settings.MeridianTrackingAction ?? LimitAction.None;
         }
 
         private async Task OnGoTo()
@@ -154,21 +156,11 @@ namespace GreenSwamp.Alpaca.Server.Components
             _workingParkPositionName = _initialParkPositionName;
             _workingVoiceActive = _initialVoiceActive;
 
-            var settings = MountRegistry.GetInstance(DeviceNumber).Settings;
+            _workingMeridianTrackingAction = _mount.Settings?.MeridianTrackingAction ?? LimitAction.None;
 
-            _workingTrackingAction = settings?.LimitPark == true
-                ? LimitAction.Park
-                : settings?.LimitTracking == true
-                    ? LimitAction.StopTrackng
-                    : LimitAction.NoAction;
+            _workingHorizonTrackingAction = _mount.Settings?.HorizonTrackingAction ?? LimitAction.None;
 
-            _workingHorizonAction = settings?.HzLimitPark == true
-                ? LimitAction.Park
-                : settings?.HzLimitTracking == true
-                    ? LimitAction.StopTrackng
-                    : LimitAction.NoAction;
-
-            _workingSyncLimitOn = settings?.SyncLimitOn ?? false;
+            _workingSyncLimitOn = _mount.Settings?.SyncLimitOn ?? false;
 
             _isSettingsDirty = false;
             _isSettingsPanelOpen = true;
@@ -212,8 +204,20 @@ namespace GreenSwamp.Alpaca.Server.Components
                 _mount.Settings.VoiceActive = _workingVoiceActive;
             }
 
+            if (_workingMeridianTrackingAction != _initialMeridianTrackingAction)
+            {
+                _mount.Settings.MeridianTrackingAction = _workingMeridianTrackingAction;
+            }
+
+            if (_workingHorizonTrackingAction != _initialHorizonTrackingAction)
+            {
+                _mount.Settings.HorizonTrackingAction = _workingHorizonTrackingAction;
+            }
+
             _initialParkPositionName = _workingParkPositionName;
             _initialVoiceActive = _workingVoiceActive;
+            _initialMeridianTrackingAction = _workingMeridianTrackingAction;
+            _initialHorizonTrackingAction = _workingHorizonTrackingAction;
             _isSettingsDirty = false;
             _isSettingsPanelOpen = false;
             Snackbar.Add("GoTo settings saved.", Severity.Success);
@@ -249,6 +253,20 @@ namespace GreenSwamp.Alpaca.Server.Components
             return Task.CompletedTask;
         }
 
+        private Task UpdateMeridianLimitAction(LimitAction value)
+        {
+            _workingMeridianTrackingAction = value;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
+        private Task UpdateHorizonLimitAction(LimitAction value)
+        {
+            _workingHorizonTrackingAction = value;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
         private Task OnSettingsPrimaryActionClicked()
         {
             if (_isSettingsDirty)
@@ -263,7 +281,9 @@ namespace GreenSwamp.Alpaca.Server.Components
         private void UpdateSettingsDirtyState()
         {
             _isSettingsDirty = !string.Equals(_workingParkPositionName, _initialParkPositionName, StringComparison.Ordinal)
-                || _workingVoiceActive != _initialVoiceActive;
+                || _workingVoiceActive != _initialVoiceActive
+                || _initialHorizonTrackingAction != _workingHorizonTrackingAction
+                || _initialMeridianTrackingAction != _workingMeridianTrackingAction;
         }
 
         /// <summary>Copies the current live mount position into all entry fields.</summary>

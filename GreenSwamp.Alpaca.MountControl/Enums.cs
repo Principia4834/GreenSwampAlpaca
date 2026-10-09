@@ -76,6 +76,13 @@ namespace GreenSwamp.Alpaca.MountControl
         EqS
     }
 
+    public enum LimitAction
+    {
+        None,
+        StopTracking,
+        Park
+    }
+
     public enum MountTaskName
     {
         AllowAdvancedCommandSet,

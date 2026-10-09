@@ -185,6 +185,10 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public double AxisTrackingLimit { get; set; }
         [UniqueSetting]
+        public String HorizonTrackingAction { get; set; } = null!;
+        [UniqueSetting]
+        public String MeridianTrackingAction { get; set; } = null!;
+        [UniqueSetting]
         public bool HzLimitTracking { get; set; }
         [UniqueSetting]
         public string ParkHzLimitName { get; set; } = null!;
