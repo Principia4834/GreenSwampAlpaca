@@ -173,29 +173,34 @@
                             </MudStack>
                         </MudExpansionPanel>
                         <MudExpansionPanel Class="mb-2 gs-panel" Text="Tracking Limits" Gutters="false" Dense="true">
-                            <MudStack Row="false" AlignItems="AlignItems.Start" Spacing="1" Class="ml-n2">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd" Style="width:100%;">
-                                    <MudSpacer />
-                                    <MudTooltip Text="Edit tracking limit values" Placement="Placement.Top" Arrow="true">
+                            <MudStack AlignItems="AlignItems.Start" Spacing="1">
+                                <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction"
+                                                   Value="@_workingMeridianTrackingAction"
+                                                   ValueChanged="UpdateMeridianLimitAction"
+                                                   InputStyle="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;">
+                                        <ChildContent>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None">No action</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop tracking</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudRadio>
+                                        </ChildContent>
+                                    </MudRadioGroup>
+                                    <MudTooltip Text="Edit tracking limit values" Placement="Placement.Top" Arrow="true" Inline="false">
                                         <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                        Size="Size.Small"
                                                        Color="Color.Primary"
                                                        OnClick="ToggleTrackingLimitSettings" />
                                     </MudTooltip>
                                 </MudStack>
-                                <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction" Value="@_workingMeridianTrackingAction"
-                                               ValueChanged="UpdateMeridianLimitAction">
-                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None">No action</MudRadio>
-                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop tracking</MudRadio>
-                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudRadio>
-                                </MudRadioGroup>
                                 @if (_showTrackingLimitSettings)
                                 {
-                                    <MudStack Spacing="1" Style="width:100%;">
+                                    <MudStack Spacing="2" StretchItems="StretchItems.All">
                                         <MudNumericField T="double"
                                                          Value="@_workingFlipAngle"
                                                          ValueChanged="OnFlipAngleChanged"
                                                          Label="Flip Angle (°)"
+                                                         Variant="Variant.Outlined"
+                                                         FullWidth="true"
                                                          Min="0"
                                                          Max="30"
                                                          Immediate="true"
@@ -204,6 +209,8 @@
                                                          Value="@_workingTrackingLimitAfterFlipAngle"
                                                          ValueChanged="OnTrackingLimitAfterFlipAngleChanged"
                                                          Label="Tracking Limit After Flip Angle (°)"
+                                                         Variant="Variant.Outlined"
+                                                         FullWidth="true"
                                                          Min="0"
                                                          Max="15"
                                                          Immediate="true"
@@ -213,36 +220,42 @@
                             </MudStack>
                         </MudExpansionPanel>
                         <MudExpansionPanel Class="mb-2 gs-panel" Text="Horizon Limits" Gutters="false" Dense="true">
-                            <MudStack Row="false" AlignItems="AlignItems.Start" Spacing="1" Class="ml-n2">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd" Style="width:100%;">
-                                    <MudSpacer />
-                                    <MudTooltip Text="Edit horizon limit values" Placement="Placement.Top" Arrow="true">
+                            <MudStack AlignItems="AlignItems.Start" Spacing="1">
+                                <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction"
+                                                   Value="@_workingHorizonTrackingAction"
+                                                   ValueChanged="UpdateHorizonLimitAction"
+                                                   InputStyle="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;">
+                                        <ChildContent>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None">No action</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop tracking</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudRadio>
+                                        </ChildContent>
+                                    </MudRadioGroup>
+                                    <MudTooltip Text="Edit horizon limit values" Placement="Placement.Top" Arrow="true" Inline="false">
                                         <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                        Size="Size.Small"
                                                        Color="Color.Primary"
                                                        OnClick="ToggleHorizonLimitSettings" />
                                     </MudTooltip>
                                 </MudStack>
-                                <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction" 
-                                               Value="@_workingHorizonTrackingAction" 
-                                               ValueChanged="UpdateHorizonLimitAction">
-                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None">No action</MudRadio>
-                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop tracking</MudRadio>
-                                    <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudRadio>
-                                </MudRadioGroup>
                                 @if (_showHorizonLimitSettings)
                                 {
-                                    <MudStack Spacing="1" Style="width:100%;">
+                                    <MudStack Spacing="2" StretchItems="StretchItems.All">
                                         <MudNumericField T="double"
                                                          Value="@_workingHorizonTrackingLimit"
                                                          ValueChanged="OnHorizonTrackingLimitChanged"
                                                          Label="Horizon Tracking Limit (°)"
+                                                         Variant="Variant.Outlined"
+                                                         FullWidth="true"
                                                          Immediate="true"
                                                          Format="F2" />
                                         <MudNumericField T="double"
                                                          Value="@_workingHorizonGoToLimit"
                                                          ValueChanged="OnHorizonGoToLimitChanged"
                                                          Label="Horizon Go To Limit (°)"
+                                                         Variant="Variant.Outlined"
+                                                         FullWidth="true"
                                                          Min="-20"
                                                          Max="30"
                                                          Immediate="true"
