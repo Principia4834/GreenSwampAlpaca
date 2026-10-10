@@ -18,6 +18,14 @@
                 <MudNumericField T="double" @bind-Value="Device!.AxisLimitX" @bind-Value:after="NotifyChanged"
                                  Label="RA/Az Hardware Limit (°)" Format="F2" Immediate="true" />
             </MudTooltip>
+        </MudStack>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="Tracking-Limit Actions (controlled by Limits On)" Icon="@Icons.Material.Filled.WarningAmber" Expanded="false">
+        <MudStack Spacing="3">
+            <MudCheckBox @bind-Value="Device!.LimitsOn" @bind-Value:after="NotifyChanged"
+                         Label="Limits On" Color="Color.Primary" />
+
             @if (IsGem)
             {
                 <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GEM safety limit in degrees around meridian." Placement="Placement.Right" Arrow="true">
@@ -35,15 +43,8 @@
             }
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Horizon go to limit angle in degrees." Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.HorizonLimit" @bind-Value:after="NotifyChanged"
-                                 Label="Horizon Go To Limit (°)" Format="F2" Min="-20" Max="30" Immediate="true" />
+                                  Label="Horizon Go To Limit (°)" Format="F2" Min="-20" Max="30" Immediate="true" />
             </MudTooltip>
-        </MudStack>
-    </MudExpansionPanel>
-
-    <MudExpansionPanel Text="Tracking-Limit Actions (controlled by Limits On)" Icon="@Icons.Material.Filled.WarningAmber" Expanded="false">
-        <MudStack Spacing="3">
-            <MudCheckBox @bind-Value="Device!.LimitsOn" @bind-Value:after="NotifyChanged"
-                         Label="Limits On" Color="Color.Primary" />
 
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@PrimaryActionHelpText" Placement="Placement.Right" Arrow="true">
                 <MudSelect T="GreenSwamp.Alpaca.MountControl.LimitAction" Value="@PrimaryAction" ValueChanged="OnPrimaryActionChanged" Label="@PrimaryActionLabel">
