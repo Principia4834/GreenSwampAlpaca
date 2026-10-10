@@ -46,18 +46,18 @@
                          Label="Limits On" Color="Color.Primary" />
 
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@PrimaryActionHelpText" Placement="Placement.Right" Arrow="true">
-                <MudSelect T="string" Value="@PrimaryAction" ValueChanged="OnPrimaryActionChanged" Label="@PrimaryActionLabel">
-                    <MudSelectItem Value="@ActionWarningOnly">Warning Only</MudSelectItem>
-                    <MudSelectItem Value="@ActionStopTracking">Stop Tracking</MudSelectItem>
-                    <MudSelectItem Value="@ActionPark">Park</MudSelectItem>
+                <MudSelect T="GreenSwamp.Alpaca.MountControl.LimitAction" Value="@PrimaryAction" ValueChanged="OnPrimaryActionChanged" Label="@PrimaryActionLabel">
+                    <MudSelectItem Value="@GreenSwamp.Alpaca.MountControl.LimitAction.None">Warning Only</MudSelectItem>
+                    <MudSelectItem Value="@GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop Tracking</MudSelectItem>
+                    <MudSelectItem Value="@GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
 
             <MudSelect T="string"
-                       Value="@Device!.ParkLimitName"
-                       ValueChanged="OnPrimaryParkPositionChanged"
-                       Label="Primary Action Park Position"
-                       Disabled="@(PrimaryAction != ActionPark)">
+                        Value="@Device!.ParkLimitName"
+                        ValueChanged="OnPrimaryParkPositionChanged"
+                        Label="Primary Action Park Position"
+                        Disabled="@(PrimaryAction != GreenSwamp.Alpaca.MountControl.LimitAction.Park)">
                 @foreach (var name in ParkPositionNames)
                 {
                     <MudSelectItem Value="@name">@name</MudSelectItem>
@@ -69,17 +69,17 @@
                 <MudDivider />
                 <MudText Typo="Typo.subtitle2">GEM Horizon Action</MudText>
 
-                <MudSelect T="string" Value="@HorizonAction" ValueChanged="OnHorizonActionChanged" Label="Horizon Trigger Action">
-                    <MudSelectItem Value="@ActionWarningOnly">Warning Only</MudSelectItem>
-                    <MudSelectItem Value="@ActionStopTracking">Stop Tracking</MudSelectItem>
-                    <MudSelectItem Value="@ActionPark">Park</MudSelectItem>
+                <MudSelect T="GreenSwamp.Alpaca.MountControl.LimitAction" Value="@HorizonAction" ValueChanged="OnHorizonActionChanged" Label="Horizon Trigger Action">
+                    <MudSelectItem Value="@GreenSwamp.Alpaca.MountControl.LimitAction.None">Warning Only</MudSelectItem>
+                    <MudSelectItem Value="@GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking">Stop Tracking</MudSelectItem>
+                    <MudSelectItem Value="@GreenSwamp.Alpaca.MountControl.LimitAction.Park">Park</MudSelectItem>
                 </MudSelect>
 
                 <MudSelect T="string"
-                           Value="@Device!.ParkHzLimitName"
-                           ValueChanged="OnHorizonParkPositionChanged"
-                           Label="Horizon Action Park Position"
-                           Disabled="@(HorizonAction != ActionPark)">
+                            Value="@Device!.ParkHzLimitName"
+                            ValueChanged="OnHorizonParkPositionChanged"
+                            Label="Horizon Action Park Position"
+                            Disabled="@(HorizonAction != GreenSwamp.Alpaca.MountControl.LimitAction.Park)">
                     @foreach (var name in ParkPositionNames)
                     {
                         <MudSelectItem Value="@name">@name</MudSelectItem>
@@ -113,10 +113,6 @@
     [Parameter] public SkySettings? Device { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
 
-    private const string ActionWarningOnly = "WarningOnly";
-    private const string ActionStopTracking = "StopTracking";
-    private const string ActionPark = "Park";
-
     private bool IsGem => Device?.AlignmentMode?.Equals("GermanPolar", StringComparison.OrdinalIgnoreCase) ?? false;
 
     private string PrimaryActionLabel => IsGem
@@ -131,17 +127,16 @@
         Device?.ParkPositions?.Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().OrderBy(n => n).ToList()
         ?? [];
 
-    private string PrimaryAction =>
-        Device is null ? ActionWarningOnly
-        : Device.LimitPark ? ActionPark
-        : Device.LimitTracking ? ActionStopTracking
-        : ActionWarningOnly;
+    private GreenSwamp.Alpaca.MountControl.LimitAction PrimaryAction =>
+        ParseLimitAction(Device?.MeridianTrackingAction);
 
-    private string HorizonAction =>
-        Device is null ? ActionWarningOnly
-        : Device.HzLimitPark ? ActionPark
-        : Device.HzLimitTracking ? ActionStopTracking
-        : ActionWarningOnly;
+    private GreenSwamp.Alpaca.MountControl.LimitAction HorizonAction =>
+        ParseLimitAction(Device?.HorizonTrackingAction);
+
+    private static GreenSwamp.Alpaca.MountControl.LimitAction ParseLimitAction(string? value)
+        => Enum.TryParse<GreenSwamp.Alpaca.MountControl.LimitAction>(value, true, out var action)
+            ? action
+            : GreenSwamp.Alpaca.MountControl.LimitAction.None;
 
     private bool _initialized;
 
@@ -150,19 +145,17 @@
         if (firstRender) _initialized = true;
     }
 
-    private async Task OnPrimaryActionChanged(string value)
+    private async Task OnPrimaryActionChanged(GreenSwamp.Alpaca.MountControl.LimitAction value)
     {
         if (Device is null) return;
-        Device.LimitTracking = value == ActionStopTracking;
-        Device.LimitPark = value == ActionPark;
+        Device.MeridianTrackingAction = value.ToString();
         await NotifyChanged();
     }
 
-    private async Task OnHorizonActionChanged(string value)
+    private async Task OnHorizonActionChanged(GreenSwamp.Alpaca.MountControl.LimitAction value)
     {
         if (Device is null) return;
-        Device.HzLimitTracking = value == ActionStopTracking;
-        Device.HzLimitPark = value == ActionPark;
+        Device.HorizonTrackingAction = value.ToString();
         await NotifyChanged();
     }
 
