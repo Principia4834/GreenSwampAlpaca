@@ -35,11 +35,21 @@ namespace GreenSwamp.Alpaca.Server.Components
         private string? _altSmartError;
         private bool _isSettingsPanelOpen;
         private bool _isSettingsDirty;
+        private bool _showTrackingLimitSettings;
+        private bool _showHorizonLimitSettings;
         private string _initialParkPositionName = "—";
         private bool _initialVoiceActive;
         private LimitAction _initialHorizonTrackingAction;
         private LimitAction _initialMeridianTrackingAction;
+        private double _initialFlipAngle;
+        private double _initialTrackingLimitAfterFlipAngle;
+        private double _initialHorizonTrackingLimit;
+        private double _initialHorizonGoToLimit;
         private string _workingParkPositionName = "—";
+        private double _workingFlipAngle;
+        private double _workingTrackingLimitAfterFlipAngle;
+        private double _workingHorizonTrackingLimit;
+        private double _workingHorizonGoToLimit;
         private bool IsParkSelectorDisabled => !IsUiClientConnected || !(_mount?.Settings.CanPark ?? false);
         private string EffectiveParkPositionName =>
             (State.ParkPositionNames.Count > 0 && State.ParkPositionNames.Contains(State.ParkSelectedName))
@@ -153,14 +163,24 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             _initialParkPositionName = EffectiveParkPositionName;
             _initialVoiceActive = State.VoiceActive;
+            _initialHorizonTrackingAction = _mount.Settings?.HorizonTrackingAction ?? LimitAction.None;
+            _initialMeridianTrackingAction = _mount.Settings?.MeridianTrackingAction ?? LimitAction.None;
+            _initialFlipAngle = _mount.Settings?.HourAngleLimit ?? 0;
+            _initialTrackingLimitAfterFlipAngle = _mount.Settings?.AxisTrackingLimit ?? 0;
+            _initialHorizonTrackingLimit = _mount.Settings?.AxisHzTrackingLimit ?? 0;
+            _initialHorizonGoToLimit = _mount.Settings?.HorizonLimit ?? 0;
+
             _workingParkPositionName = _initialParkPositionName;
             _workingVoiceActive = _initialVoiceActive;
-
-            _workingMeridianTrackingAction = _mount.Settings?.MeridianTrackingAction ?? LimitAction.None;
-
-            _workingHorizonTrackingAction = _mount.Settings?.HorizonTrackingAction ?? LimitAction.None;
-
+            _workingMeridianTrackingAction = _initialMeridianTrackingAction;
+            _workingHorizonTrackingAction = _initialHorizonTrackingAction;
+            _workingFlipAngle = _initialFlipAngle;
+            _workingTrackingLimitAfterFlipAngle = _initialTrackingLimitAfterFlipAngle;
+            _workingHorizonTrackingLimit = _initialHorizonTrackingLimit;
+            _workingHorizonGoToLimit = _initialHorizonGoToLimit;
             _workingSyncLimitOn = _mount.Settings?.SyncLimitOn ?? false;
+            _showTrackingLimitSettings = false;
+            _showHorizonLimitSettings = false;
 
             _isSettingsDirty = false;
             _isSettingsPanelOpen = true;
@@ -175,6 +195,14 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             _workingParkPositionName = _initialParkPositionName;
             _workingVoiceActive = _initialVoiceActive;
+            _workingMeridianTrackingAction = _initialMeridianTrackingAction;
+            _workingHorizonTrackingAction = _initialHorizonTrackingAction;
+            _workingFlipAngle = _initialFlipAngle;
+            _workingTrackingLimitAfterFlipAngle = _initialTrackingLimitAfterFlipAngle;
+            _workingHorizonTrackingLimit = _initialHorizonTrackingLimit;
+            _workingHorizonGoToLimit = _initialHorizonGoToLimit;
+            _showTrackingLimitSettings = false;
+            _showHorizonLimitSettings = false;
             _isSettingsDirty = false;
             _isSettingsPanelOpen = false;
         }
@@ -214,10 +242,37 @@ namespace GreenSwamp.Alpaca.Server.Components
                 _mount.Settings.HorizonTrackingAction = _workingHorizonTrackingAction;
             }
 
+            if (!NearlyEqual(_workingFlipAngle, _initialFlipAngle))
+            {
+                _mount.Settings.HourAngleLimit = _workingFlipAngle;
+            }
+
+            if (!NearlyEqual(_workingTrackingLimitAfterFlipAngle, _initialTrackingLimitAfterFlipAngle))
+            {
+                _mount.Settings.AxisTrackingLimit = _workingTrackingLimitAfterFlipAngle;
+            }
+
+            if (!NearlyEqual(_workingHorizonTrackingLimit, _initialHorizonTrackingLimit))
+            {
+                _mount.Settings.AxisHzTrackingLimit = _workingHorizonTrackingLimit;
+            }
+
+            if (!NearlyEqual(_workingHorizonGoToLimit, _initialHorizonGoToLimit))
+            {
+                _mount.Settings.HorizonLimit = _workingHorizonGoToLimit;
+                _horizonLimit = _workingHorizonGoToLimit;
+            }
+
             _initialParkPositionName = _workingParkPositionName;
             _initialVoiceActive = _workingVoiceActive;
             _initialMeridianTrackingAction = _workingMeridianTrackingAction;
             _initialHorizonTrackingAction = _workingHorizonTrackingAction;
+            _initialFlipAngle = _workingFlipAngle;
+            _initialTrackingLimitAfterFlipAngle = _workingTrackingLimitAfterFlipAngle;
+            _initialHorizonTrackingLimit = _workingHorizonTrackingLimit;
+            _initialHorizonGoToLimit = _workingHorizonGoToLimit;
+            _showTrackingLimitSettings = false;
+            _showHorizonLimitSettings = false;
             _isSettingsDirty = false;
             _isSettingsPanelOpen = false;
             Snackbar.Add("GoTo settings saved.", Severity.Success);
@@ -253,6 +308,18 @@ namespace GreenSwamp.Alpaca.Server.Components
             return Task.CompletedTask;
         }
 
+        private Task ToggleTrackingLimitSettings()
+        {
+            _showTrackingLimitSettings = !_showTrackingLimitSettings;
+            return Task.CompletedTask;
+        }
+
+        private Task ToggleHorizonLimitSettings()
+        {
+            _showHorizonLimitSettings = !_showHorizonLimitSettings;
+            return Task.CompletedTask;
+        }
+
         private Task UpdateMeridianLimitAction(LimitAction value)
         {
             _workingMeridianTrackingAction = value;
@@ -263,6 +330,34 @@ namespace GreenSwamp.Alpaca.Server.Components
         private Task UpdateHorizonLimitAction(LimitAction value)
         {
             _workingHorizonTrackingAction = value;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
+        private Task OnFlipAngleChanged(double value)
+        {
+            _workingFlipAngle = value;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
+        private Task OnTrackingLimitAfterFlipAngleChanged(double value)
+        {
+            _workingTrackingLimitAfterFlipAngle = value;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
+        private Task OnHorizonTrackingLimitChanged(double value)
+        {
+            _workingHorizonTrackingLimit = value;
+            UpdateSettingsDirtyState();
+            return Task.CompletedTask;
+        }
+
+        private Task OnHorizonGoToLimitChanged(double value)
+        {
+            _workingHorizonGoToLimit = value;
             UpdateSettingsDirtyState();
             return Task.CompletedTask;
         }
@@ -283,8 +378,15 @@ namespace GreenSwamp.Alpaca.Server.Components
             _isSettingsDirty = !string.Equals(_workingParkPositionName, _initialParkPositionName, StringComparison.Ordinal)
                 || _workingVoiceActive != _initialVoiceActive
                 || _initialHorizonTrackingAction != _workingHorizonTrackingAction
-                || _initialMeridianTrackingAction != _workingMeridianTrackingAction;
+                || _initialMeridianTrackingAction != _workingMeridianTrackingAction
+                || !NearlyEqual(_workingFlipAngle, _initialFlipAngle)
+                || !NearlyEqual(_workingTrackingLimitAfterFlipAngle, _initialTrackingLimitAfterFlipAngle)
+                || !NearlyEqual(_workingHorizonTrackingLimit, _initialHorizonTrackingLimit)
+                || !NearlyEqual(_workingHorizonGoToLimit, _initialHorizonGoToLimit);
         }
+
+        private static bool NearlyEqual(double left, double right)
+            => Math.Abs(left - right) < 0.0001d;
 
         /// <summary>Copies the current live mount position into all entry fields.</summary>
         private void OnCopy()
