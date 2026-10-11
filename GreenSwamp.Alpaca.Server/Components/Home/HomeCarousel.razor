@@ -3,10 +3,10 @@
 
 @* Reads carousel.settings.json once per page load. Edits to the file appear on the next visit. *@
 
-<div class="gs-carousel-host">
+<MudStack Spacing="0" Class="flex-grow-1" Style="min-height:0;">
     @if (_shows.Count > 1)
     {
-        <div class="gs-carousel-toggle">
+        <MudStack Row="true" Justify="Justify.Center" Class="gs-carousel-toggle mb-2">
             <MudToggleGroup T="string" Value="_activeId" ValueChanged="OnShowChanged"
                             Color="Color.Primary" Size="Size.Small" Outlined="true" Delimiters="true">
                 @foreach (var show in _shows)
@@ -14,18 +14,19 @@
                     <MudToggleItem Value="@show.Id" Text="@show.Title" />
                 }
             </MudToggleGroup>
-        </div>
+        </MudStack>
     }
 
     @if (_active is null)
     {
-        <div class="gs-carousel-empty">No carousel images are configured.</div>
+        <MudText Align="Align.Center" Class="gs-carousel-empty ma-auto">No carousel images are configured.</MudText>
     }
     else
     {
         @* @key forces a clean rebuild of the carousel (selection, timer, items) when the show changes. *@
-        <MudTooltip Text="Click image to stop and start auto-scrolling" Placement="Placement.Top" Inline="false" RootClass="gs-carousel-tip">
-            <MudCarousel @key="_active.Id" TData="object" Class="gs-carousel"
+        <MudTooltip Text="Click image to stop and start auto-scrolling" Placement="Placement.Top" Inline="false"
+                    RootClass="d-flex flex-column flex-grow-1" RootStyle="min-height:0; width:100%;">
+            <MudCarousel @key="_active.Id" TData="object" Class="gs-carousel rounded flex-grow-1"
                          @bind-SelectedIndex="_index"
                          AutoCycle="@_isAutoCycling"
                          @onclick="HandleClick"
@@ -35,14 +36,15 @@
                 @foreach (var slide in _active.Slides)
                 {
                     <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
-                        <figure class="gs-slide">
-                            <div class="gs-slide-media">
+                        <MudStack HtmlTag="figure" Spacing="0" Class="gs-slide pt-2 px-14 pb-11">
+                            <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center" Justify="Justify.Center"
+                                      Class="flex-grow-1" Style="min-height:0;">
                                 <img class="gs-slide-img" src="@ImageUrl(_active, slide)" alt="@slide.Caption"
                                      onerror="this.parentElement.classList.add('gs-slide-missing')" />
                                 <span class="gs-slide-fallback">Image not found: @slide.File</span>
-                            </div>
-                            <figcaption class="gs-slide-caption">@slide.Caption</figcaption>
-                        </figure>
+                            </MudStack>
+                            <MudText Typo="Typo.body1" HtmlTag="figcaption" Align="Align.Center" Class="gs-slide-caption pt-2">@slide.Caption</MudText>
+                        </MudStack>
                     </MudCarouselItem>
                 }
             </MudCarousel>
@@ -53,7 +55,7 @@
             <img class="gs-slide-preload" src="@_nextUrl" alt="" aria-hidden="true" />
         }
     }
-</div>
+</MudStack>
 
 @code {
     private List<CarouselShow> _shows = [];
