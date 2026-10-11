@@ -2,10 +2,10 @@
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
 
-@* The main button, info button and settings button are siblings inside the paper (not nested),
+@* The main button and the MudCardActions row (info, connected, settings) are siblings inside the card,
    so no interactive element is inside another. Each is wrapped in a MudTooltip whose root
    element (RootClass) carries the positioning. *@
-<MudPaper Elevation="0" Outlined="true" Class="@($"gs-tile {(Device.Enabled ? string.Empty : "gs-tile-disabled")}")">
+<MudCard Elevation="0" Outlined="true" Class="@($"gs-tile {(Device.Enabled ? string.Empty : "gs-tile-disabled")}")">
     <MudTooltip Text="@($"Open control page for {Device.Name}")" Placement="Placement.Top" Arrow="true"
                 RootClass="gs-tile-main-tip">
         <MudButton Class="gs-tile-main" FullWidth="true" Variant="Variant.Text" Color="Color.Inherit"
@@ -20,23 +20,25 @@
         </MudButton>
     </MudTooltip>
 
-    <MudTooltip Text="Device information" Placement="Placement.Top" Arrow="true" RootClass="gs-tile-info">
-        <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Medium" Color="Color.Inherit"
-                       aria-label="@($"Device information for {Device.Name}")"
-                       OnClick="ShowInfo" />
-    </MudTooltip>
-    <MudTooltip Text="@(Device.Connected ? "Device connected" : "Device not connected")" Placement="Placement.Top"
-                Arrow="true" RootClass="gs-tile-connected">
-        <MudIcon Icon="@(Device.Connected ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
-                 Size="Size.Large" Color="@(Device.Connected ? Color.Success : Color.Default)"
-                 aria-label="@(Device.Connected ? "Connected" : "Not connected")" />
-    </MudTooltip>
-    <MudTooltip Text="Device settings" Placement="Placement.Top" Arrow="true" RootClass="gs-tile-cog">
-        <MudIconButton Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" Color="Color.Inherit"
-                       aria-label="@($"Settings for {Device.Name}")"
-                       OnClick="OpenSettings" />
-    </MudTooltip>
-</MudPaper>
+    <MudCardActions>
+        <MudTooltip Text="Device information" Placement="Placement.Top" Arrow="true" RootClass="gs-tile-info">
+            <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Medium" Color="Color.Inherit"
+                           aria-label="@($"Device information for {Device.Name}")"
+                           OnClick="ShowInfo" />
+        </MudTooltip>
+        <MudTooltip Text="@(Device.Connected ? "Device connected" : "Device not connected")" Placement="Placement.Top"
+                    Arrow="true" RootClass="gs-tile-connected">
+            <MudIcon Icon="@(Device.Connected ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
+                     Size="Size.Large" Color="@(Device.Connected ? Color.Success : Color.Default)"
+                     aria-label="@(Device.Connected ? "Connected" : "Not connected")" />
+        </MudTooltip>
+        <MudTooltip Text="Device settings" Placement="Placement.Top" Arrow="true" RootClass="gs-tile-cog">
+            <MudIconButton Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" Color="Color.Inherit"
+                           aria-label="@($"Settings for {Device.Name}")"
+                           OnClick="OpenSettings" />
+        </MudTooltip>
+    </MudCardActions>
+</MudCard>
 
 @code {
     [Parameter, EditorRequired] public HomeDeviceInfo Device { get; set; } = default!;

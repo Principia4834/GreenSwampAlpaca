@@ -3,7 +3,10 @@
 @implements IDisposable
 @inject IVersionedSettingsService SettingsService
 
-<div class="gs-tile-row" role="list" aria-label="Telescope devices">
+@* Row of tiles that scrolls horizontally when it is wider than the bar. The stack shrinks to its
+   content in the centred bottom bar, so max-width keeps it inside the bar and the overflow scrolls. *@
+<MudStack Row="true" Class="pa-1" Style="max-width:100%; overflow-x:auto;"
+          role="list" aria-label="Telescope devices">
     @foreach (var device in _devices)
     {
         <div role="listitem" @key="device.DeviceNumber">
@@ -12,9 +15,9 @@
     }
     @if (_devices.Count == 0)
     {
-        <span class="gs-tile-empty">No telescope devices are configured.</span>
+        <MudText Typo="Typo.body1" Class="gs-tile-empty">No telescope devices are configured.</MudText>
     }
-</div>
+</MudStack>
 
 @code {
     private readonly CancellationTokenSource _cts = new();
