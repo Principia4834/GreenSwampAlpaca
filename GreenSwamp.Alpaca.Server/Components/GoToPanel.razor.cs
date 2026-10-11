@@ -294,11 +294,11 @@ namespace GreenSwamp.Alpaca.Server.Components
             var options = new DialogOptions
             {
                 MaxWidth = MaxWidth.Small,
-                FullWidth = true,
+                FullWidth = false,
                 CloseOnEscapeKey = true,
                 CloseButton = true
             };
-            await DialogService.ShowAsync<ManageParkPositionsDialog>(string.Empty, parameters, options);
+            await DialogService.ShowAsync<ManageParkPositionsDialog>("Manage Park Positions", parameters, options);
         }
 
         private Task UpdateVoiceActive(bool value)
@@ -385,6 +385,12 @@ namespace GreenSwamp.Alpaca.Server.Components
                 || !NearlyEqual(_workingHorizonGoToLimit, _initialHorizonGoToLimit);
         }
 
+        /// <summary>
+        /// Determines if two double values are nearly equal, within a small tolerance.
+        /// </summary>
+        /// <param name="left">The first double value to compare.</param>
+        /// <param name="right">The second double value to compare.</param>
+        /// <returns>True if the values are nearly equal; otherwise, false.</returns>
         private static bool NearlyEqual(double left, double right)
             => Math.Abs(left - right) < 0.0001d;
 

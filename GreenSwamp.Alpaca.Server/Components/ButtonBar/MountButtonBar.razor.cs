@@ -218,7 +218,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             { x => x.ContentText, message },
             { x => x.ConfirmText, confirmText }
         };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog>(string.Empty, parameters, _confirmOptions);
+            var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm", parameters, _confirmOptions);
             var result = await dialog.Result;
             return result is { Canceled: false };
         }

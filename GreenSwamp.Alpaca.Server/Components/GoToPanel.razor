@@ -10,6 +10,7 @@
         <MudStack Spacing="0" Class="@(_isSettingsPanelOpen ? "gs-goto-content-hidden" : null)">
             <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo & Slew</MudText>
             <MudStack Spacing="3" Class="mt-1">
+                @* Mount control buttons: Park, Home, Tracking etc *@
                 <MountButtonBar State="@State"
                                 DeviceNumber="@DeviceNumber"
                                 IsConnected="@IsUiClientConnected"
@@ -19,7 +20,7 @@
                                 OnSettingsClick="OpenSettingsPanel" />
                 <MudDivider />
 
-            @* Action buttons (left) + coordinate fields (right) *@
+            @* Go To Action buttons (left) + coordinate fields (right) *@
             <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
 
                 @* Left column: GoTo / Copy / Sync *@
@@ -125,6 +126,7 @@
             </MudStack>
         </MudStack>
 
+        @* Settings panel for GoTo and Slew *@
         @if (_isSettingsPanelOpen)
         {
             <MudPaper Elevation="0" Class="gs-goto-settings-overlay pa-2">
@@ -162,9 +164,10 @@
                                             </ChildContent>
                                         </MudMenu>
                                     </MudTooltip>
+                                    <MudSpacer/>
                                     <MudTooltip Text="Create, update or delete park positions" Placement="Placement.Top" Arrow="true">
                                         <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                                                       Size="Size.Large"
+                                                       Size="Size.Small"
                                                        Color="Color.Primary"
                                                        Disabled="@(!IsUiClientConnected)"
                                                        OnClick="OpenManageParkPositionsDialogFromPanelAsync" />
@@ -182,6 +185,7 @@
                                             <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None" Dense="true">No action</MudRadio>
                                             <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking" Dense="true">Stop tracking</MudRadio>
                                             <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park" Dense="true">Park</MudRadio>
+                                            <MudSpacer/>
                                             <MudTooltip Text="Edit tracking limit values" Placement="Placement.Top" Arrow="true" Inline="false">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                                Size="Size.Small"
@@ -224,6 +228,7 @@
                                             <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None" Dense="true">No action</MudRadio>
                                             <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking" Dense="true">Stop tracking</MudRadio>
                                             <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park" Dense="true">Park</MudRadio>
+                                            <MudSpacer />
                                             <MudTooltip Text="Edit horizon limit values" Placement="Placement.Top" Arrow="true" Inline="false">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                                Size="Size.Small"

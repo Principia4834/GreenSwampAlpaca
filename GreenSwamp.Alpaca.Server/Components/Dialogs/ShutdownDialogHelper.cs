@@ -72,7 +72,7 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
                 FullWidth = false
             };
 
-            var dialog = await dialogService.ShowAsync<ConfirmDialog>(string.Empty, parameters, options);
+            var dialog = await dialogService.ShowAsync<ConfirmDialog>("Confirm", parameters, options);
             var result = await dialog.Result;
 
             return result is { Canceled: false };
