@@ -24,10 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ASCOM.AstrometryTools" Version="4.0.0" />
-    <PackageReference Include="ASCOM.Tools" Version="4.0.0" />
+    <PackageReference Include="ASCOM.AstrometryTools" Version="4.1.0" />
+    <PackageReference Include="ASCOM.Tools" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.IO.Ports" Version="10.0.12" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>
