@@ -18,7 +18,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         /// <summary>Device name shown in the chart window label.</summary>
         [Parameter] public string? DeviceLabel { get; set; }
 
-        /// <summary>Diameter of each axis dial in pixels.</summary>
+        /// <summary>Width of each axis dial in px at 100% zoom; AxisDial renders it in rem so it follows the UI zoom.</summary>
         [Parameter] public int DialSize { get; set; } = 160;
 
         private enum CoordMode { RaDec, AltAz, Optics }
