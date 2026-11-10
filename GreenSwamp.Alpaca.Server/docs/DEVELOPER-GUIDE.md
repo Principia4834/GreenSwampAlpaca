@@ -1,6 +1,6 @@
 ﻿# GreenSwamp Alpaca Developer Guide
 
-**2026-10-05 13:33**
+**2026-11-10 19:07**
 
 ## Table of Contents
 
@@ -694,11 +694,13 @@ The UI zoom is a **root font-size**: `GsZoom.BuildRootStyle` emits `:root { font
    | Panel group heading | `overline` + `gs-panel-heading` |
    | Small label or hint | `caption` |
 
+   Deliberate exceptions (Andy, 2026-11-10): the compact `MountControl` header readouts use `h6` + `gs-font-mono` instead of `h4`, and the `Index.razor` hero title and footer use `h1`/`h2` because the hero is a viewport-relative display surface. Do not copy either pattern elsewhere.
+
 5. New dimensions that contain text (widths, heights, min-widths, gaps around text) use `rem`. Keep `px` for borders, radii, shadows, 1-2px hairlines and intrinsic image sizes.
 6. `site.css` must not set `font-size` on `.mud-*` internals. Do not reintroduce `font-size: inherit !important`.
 7. Monospace values use the `gs-font-mono` class. It sets the family only, so size still comes from `Typo`.
 
-Known exceptions that do **not** follow zoom: the home hero title and footer (`clamp()` in px, viewport-relative by design), MudBlazor spacing utilities (`pa-*`, `mb-*`, fixed px), tooltip text (12px) and `max-width`, chip text, the `AxisDial` SVG size, and ApexCharts text (set in chart options).
+Known exceptions that do **not** follow zoom: the home hero title and footer (`clamp()` in px, viewport-relative by design), MudBlazor spacing utilities (`pa-*`, `mb-*`, fixed px), tooltip text (12px) and `max-width`, chip text, and ApexCharts text (set in chart options). `AxisDial` does follow zoom: its width is `Size` px at 100% converted to rem.
 
 See `docs\UI-Typography-Review.md` for the evidence and the decisions behind these rules.
 ---

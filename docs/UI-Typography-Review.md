@@ -1,7 +1,7 @@
 ﻿# GreenSwamp Alpaca Server – UI Typography & Font-Size Review
 
 **Prepared for:** Andy
-**Date/time:** 2026-10-05 13:49 (rev 4: follow-ups done; rev 3: decisions recorded, phases 1-8 implemented; sections 1-9 are the original analysis, section 10 records the outcome)
+**Date/time:** 2026-11-10 19:07 (rev 5: R7/R8 and R9 re-checked against the code; rev 4: follow-ups done; rev 3: decisions recorded, phases 1-8 implemented; sections 1-9 are the original analysis, section 10 records the outcome)
 **Scope:** `GreenSwamp.Alpaca.Server` UI only – `Components\**`, `Pages\**`, `Shared\**`, `Theme\GsTheme.cs`, `App.razor`, `Pages\_Layout.cshtml`, `wwwroot\css\site.css`, `wwwroot\css\fonts.css`. No markdown files, mount, settings or driver code were used as evidence.
 **Type:** Review and recommendations (sections 1-9, written before any change), plus implementation record (section 10). Line numbers and counts in sections 1-9 describe the code **before** phases 1-7.
 
@@ -452,7 +452,7 @@ Commit after each phase.
 |---|---|---|
 | 1 | Heading scale (R2) | Adopt the larger conventional scale (h1 28, h2 24, h3 20, h4 18, h5 16, h6 15px at 100%). |
 | 2 | Base size | 16px at 100% (body1 = 14px) is acceptable. |
-| 3 | Telemetry readouts | `h4` (18px), with `gs-font-mono`. |
+| 3 | Telemetry readouts | `h4` (18px), with `gs-font-mono`. Exception (Andy, 2026-11-10): the compact `MountControl` header readouts stay at `h6` + `gs-font-mono`. |
 | 4 | Home hero | The hero (vw-based) does **not** follow zoom. |
 | 5 | Tables | Accept MudBlazor native `td` = `body2`, `th` = `subtitle2` instead of per-cell `MudText body1`. |
 | 6 | Chart window | Same root zoom. ApexCharts text is configured separately and does not zoom. |
@@ -490,12 +490,13 @@ The Phase 1 root-zoom plan does not depend on these checks.
 - **Typo clean-up.** No `font-size` remains in any Razor `style=` attribute. Page titles are `h3`, readouts `h4`, banners `h5`, dialog body text `body1`, tile names `subtitle1`, the brand `h5` + `.gs-brand` (weight and tracking only), small labels `caption`.
 - **Monospace.** `.gs-font-mono` now exists (family only). Before, ~45 uses had no rule.
 - **Tables.** `MountStatus` cells use native `td`/`th` typography; `.gs-kv-label` colours labels; `.gs-kv-spacer` replaces repeated inline border/padding in `CdcDialog`; `.ts-table th` no longer sets a size. `MonitorSettingsCombinedPanel` keeps its raw layout table (it holds checkboxes and inputs, not text values) and labels it with `MudText caption`.
-- **`site.css`.** 926 → about 720 lines. Dead rules removed (cards, badges, monitor, `.gs-table` family, validation, `.gs-live`, `.gs-home-links`, `.material-symbols-outlined` in both CSS files and its `@font-face`, unused `--gs-space-*`, `.hc-speed-value`). The `font-size: inherit !important` block was removed so inputs, labels and popup items follow the theme and zoom.
-- **px → rem.** Text-bearing widths and heights (tile 9.375×7.5rem, hand-controller cell/gap/column, `gs-icon-button-rounded`, dialog and chart-select min-widths, `MountControl` rows, `AboutDialog` panes, drawer) are rem. Hero title and footer `clamp()` endpoints are px (decision 4). The hero `min-height` is `calc(100vh - 3.5rem)`, tied to `AppbarHeight`. `.gs-home-hero-wrap` keeps `margin: -16px` because it cancels the fixed-px `pa-4`.
+- **`site.css`.** 926 → 611 lines. Dead rules removed (cards, badges, monitor, `.gs-table` family, validation, `.gs-live`, `.gs-home-links`, `.material-symbols-outlined` in both CSS files and its `@font-face`, unused `--gs-space-*`, the unused `--gs-grey-*`, `--gs-text-disabled/hint` and `--gs-accent-a200` tokens, `.hc-speed-value`). The `font-size: inherit !important` block was removed so inputs, labels and popup items follow the theme and zoom.
+- **px → rem.** Text-bearing widths and heights (tile 9.375×7.5rem, hand-controller cell/gap/column, `gs-icon-button-rounded`, dialog and chart-select min-widths, `MountControl` rows, `AboutDialog` panes, `.gs-panel` expansion-panel header, drawer) are rem. Hero title and footer `clamp()` endpoints are px (decision 4). The hero `min-height` is `calc(100vh - 3.5rem)`, tied to `AppbarHeight`. `.gs-home-hero-wrap` keeps `margin: -16px` because it cancels the fixed-px `pa-4`.
 
 ### 10.2 Intentionally left as px / not zooming
 
 - Home hero title and footer (viewport-relative by design).
+- Deliberate heading-variant exceptions (Andy, 2026-11-10): `MountControl` readouts stay `h6`; the `Index.razor` hero title/footer keep `h1`/`h2`.
 - MudBlazor spacing utilities (`pa-*`, `mb-*`), tooltip text (12px) and the 113 tooltip `max-width:260px`-style values, chip text.
 - Borders, radii, shadows, the 1px preload element, the 8px and 15px elements in `SettingsExplorer` and `PersistentFloatingWindow`.
 - ApexCharts text (chart axis/title/legend use ApexCharts px defaults). Decision (Andy): leave as is; see §10.5 for how it could be implemented.
@@ -534,4 +535,4 @@ Still to verify in the browser: phase 7 (and phase 8, docs only) at 75/100/150% 
 
 ---
 
-*Report revised 2026-10-05 13:49 (rev 4, follow-ups).*
+*Report revised 2026-11-10 19:07 (rev 5, R7/R8 and R9 re-checked).*
