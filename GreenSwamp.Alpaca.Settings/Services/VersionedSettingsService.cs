@@ -19,6 +19,7 @@ using GreenSwamp.Alpaca.Settings.Attributes;
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -149,7 +150,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var stem = Path.GetFileNameWithoutExtension(file);         // "device-00.settings"
                 var stem2 = Path.GetFileNameWithoutExtension(stem);        // "device-00"
                 var nnStr = stem2.Length >= 9 ? stem2.Substring(7) : null; // "00"
-                if (nnStr == null || !int.TryParse(nnStr, out var nn)) continue;
+                if (nnStr == null || !int.TryParse(nnStr, NumberStyles.None, CultureInfo.InvariantCulture, out var nn)) continue;
 
                 var settings = GetDeviceSettings(nn);
                 if (settings != null)

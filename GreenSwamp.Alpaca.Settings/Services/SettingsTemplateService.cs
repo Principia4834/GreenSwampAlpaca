@@ -16,6 +16,7 @@
 
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Settings.Models;
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
@@ -295,7 +296,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             if (underlyingType != null)
                 targetType = underlyingType;
             
-            return Convert.ChangeType(value, targetType);
+            return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
         
         /// <summary>
