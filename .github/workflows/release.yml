@@ -28,9 +28,9 @@ jobs:
       matrix:
         include:
           - rid: win-x64
-            self_contained: false
+            self_contained: true
           - rid: win-x86
-            self_contained: false
+            self_contained: true
           - rid: linux-x64
             self_contained: true
           - rid: linux-arm64
