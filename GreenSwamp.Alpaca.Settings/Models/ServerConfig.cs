@@ -59,6 +59,12 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>Open the default browser automatically when the server starts.</summary>
         public bool AutoStartBrowser { get; set; } = true;
 
+        /// <summary>Fallback UI language for browsers without a supported saved culture preference.</summary>
+        public string DefaultDisplayLanguage { get; set; } = "en-US";
+
+        /// <summary>Fallback regional formatting culture for browsers without a saved culture preference.</summary>
+        public string DefaultRegionalFormat { get; set; } = "en-US";
+
         /// <summary>
         /// Global UI font scaling factor applied by the server UI.
         /// A value of 1.0 preserves the current default sizing.

@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using Microsoft.AspNetCore.WebUtilities
 @using GreenSwamp.Alpaca.Server.Components.About
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Server.Theme
@@ -11,6 +12,8 @@
 @inject TelescopeStateService TelescopeStateService
 @inject IVersionedSettingsService SettingsService
 @inject IDialogService DialogService
+@inject BrowserCultureService BrowserCultureService
+@inject BrowserTtsService BrowserTtsService
 
 <HeadContent>
     <style>
@@ -102,6 +105,28 @@
         _timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || await BrowserCultureService.HasCulturePreferenceAsync())
+        {
+            return;
+        }
+
+        await BrowserCultureService.MarkInitializationAttemptedAsync();
+
+        var browserCulture = await BrowserTtsService.GetLanguageAsync();
+        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
+        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
+        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
+        {
+            ["initialize"] = "true",
+            ["browserCulture"] = browserCulture,
+            ["returnUrl"] = returnUrl
+        });
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
     }
 
     private void ApplyServerConfig(GreenSwamp.Alpaca.Settings.Models.ServerConfig config)

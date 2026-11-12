@@ -16,6 +16,7 @@
 
 using ApexCharts;
 using ASCOM.Alpaca;
+using GreenSwamp.Alpaca.Server.Configuration;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Hubs;
 using GreenSwamp.Alpaca.Server.Middleware;
@@ -27,12 +28,14 @@ using GreenSwamp.Alpaca.Settings.Services;
 using H.NotifyIcon.Core;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
 using System.Net.NetworkInformation;
@@ -302,6 +305,13 @@ namespace GreenSwamp.Alpaca.Server
             // Load versioned user settings support
             builder.Configuration.AddVersionedUserSettings();
 
+            var supportedCultureSettings = builder.Configuration
+                .GetSection(SupportedCultureSettings.SectionName)
+                .Get<SupportedCultureSettings>()
+                ?? throw new InvalidOperationException($"Missing configuration section '{SupportedCultureSettings.SectionName}'.");
+            supportedCultureSettings.Validate();
+            builder.Services.AddSingleton(supportedCultureSettings);
+
             // Register all settings services (VersionedSettings, Template, Profile)
             builder.Services.AddVersionedSettings(builder.Configuration);
 
@@ -330,6 +340,7 @@ namespace GreenSwamp.Alpaca.Server
 
             // Add Text To Speech browser service
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserTtsService>();
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserCultureService>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();
@@ -583,6 +594,26 @@ namespace GreenSwamp.Alpaca.Server
                 app.UseExceptionHandler("/Error");
             }
 
+            var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
+            supportedCultureSettings.ValidateServerDefaults(startupConfig);
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture(
+                    startupConfig.DefaultRegionalFormat,
+                    startupConfig.DefaultDisplayLanguage),
+                SupportedCultures = supportedCultureSettings.SupportedRegionalFormats
+                    .Select(cultureName => CultureInfo.GetCultureInfo(cultureName))
+                    .ToList(),
+                SupportedUICultures = supportedCultureSettings.SupportedDisplayLanguages
+                    .Select(cultureName => CultureInfo.GetCultureInfo(cultureName))
+                    .ToList(),
+                RequestCultureProviders =
+                [
+                    new CookieRequestCultureProvider(),
+                    new AcceptLanguageHeaderRequestCultureProvider()
+                ]
+            });
+
             // Start Swagger on the Swagger endpoints if enabled.
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureSwagger(app);
 
@@ -613,10 +644,9 @@ namespace GreenSwamp.Alpaca.Server
 
             app.MapControllers();
 
-            app.MapFallbackToPage("/_Host");
+            app.MapGet("/culture/set", SetCultureCookie);
 
-            // Re-read server config post-build so any first-run seed is reflected
-            var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
+            app.MapFallbackToPage("/_Host");
 
             // Eagerly resolve ChartDataService so its MonitorQueue subscription is active from startup,
             // not lazily on first hub connection. Safe: it is a singleton registered above.
@@ -831,6 +861,84 @@ namespace GreenSwamp.Alpaca.Server
             }
 
             return $"http://localhost:{fallbackPort}";
+        }
+
+        private static IResult SetCultureCookie(
+            HttpContext context,
+            SupportedCultureSettings supportedCultures,
+            IVersionedSettingsService settingsService,
+            bool? initialize,
+            string? browserCulture,
+            string? displayLanguage,
+            string? regionalFormat,
+            string? returnUrl)
+        {
+            var safeReturnUrl = GetSafeReturnUrl(returnUrl);
+            var cookieName = CookieRequestCultureProvider.DefaultCookieName;
+            var isInitialization = initialize == true;
+
+            if (isInitialization && context.Request.Cookies.ContainsKey(cookieName))
+            {
+                return Results.LocalRedirect(safeReturnUrl);
+            }
+
+            string selectedDisplayLanguage;
+            string selectedRegionalFormat;
+            if (isInitialization)
+            {
+                var serverDefaults = settingsService.GetServerConfig();
+                if (supportedCultures.IsSupportedDisplayLanguage(browserCulture) &&
+                    supportedCultures.IsSupportedRegionalFormat(browserCulture))
+                {
+                    selectedDisplayLanguage = browserCulture!;
+                    selectedRegionalFormat = browserCulture!;
+                }
+                else
+                {
+                    selectedDisplayLanguage = serverDefaults.DefaultDisplayLanguage;
+                    selectedRegionalFormat = serverDefaults.DefaultRegionalFormat;
+                }
+            }
+            else
+            {
+                if (!supportedCultures.IsSupportedDisplayLanguage(displayLanguage) ||
+                    !supportedCultures.IsSupportedRegionalFormat(regionalFormat))
+                {
+                    return Results.BadRequest("The requested culture is not supported.");
+                }
+
+                selectedDisplayLanguage = displayLanguage!;
+                selectedRegionalFormat = regionalFormat!;
+            }
+
+            var requestCulture = new RequestCulture(selectedRegionalFormat, selectedDisplayLanguage);
+            context.Response.Cookies.Append(
+                cookieName,
+                CookieRequestCultureProvider.MakeCookieValue(requestCulture),
+                new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddYears(1),
+                    IsEssential = true,
+                    Path = "/",
+                    SameSite = SameSiteMode.Lax,
+                    Secure = context.Request.IsHttps
+                });
+
+            return Results.LocalRedirect(safeReturnUrl);
+        }
+
+        private static string GetSafeReturnUrl(string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl) ||
+                !returnUrl.StartsWith("/", StringComparison.Ordinal) ||
+                returnUrl.StartsWith("//", StringComparison.Ordinal) ||
+                returnUrl.StartsWith("/\\", StringComparison.Ordinal) ||
+                returnUrl.Contains('\\'))
+            {
+                return "/";
+            }
+
+            return returnUrl;
         }
 
         /// <summary>

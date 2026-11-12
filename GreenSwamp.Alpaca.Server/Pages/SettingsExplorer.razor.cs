@@ -6,6 +6,7 @@ using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using MudBlazor;
 using System.Text.Json;
 // Alias required: MonitorSettings page class exists in this namespace and shadows the model.
@@ -38,6 +39,8 @@ public class SettingsTreeItemData : TreeItemData<SettingsNode>
 
 public partial class SettingsExplorer : IDisposable
 {
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
     // -- Working copies ------------------------------------------------------
     private ObservatorySettings       _observatoryWork  = new();
     private ServerConfig              _serverConfigWork = new();
@@ -748,9 +751,23 @@ public partial class SettingsExplorer : IDisposable
                     break;
 
                 case SettingsNodeSource.ServerConfig:
+                {
+                    var originalConfig = DeserializeOrDefault<ServerConfig>(_serverConfigOrigJson);
+                    var cultureDefaultsChanged =
+                        !string.Equals(originalConfig.DefaultDisplayLanguage, _serverConfigWork.DefaultDisplayLanguage, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(originalConfig.DefaultRegionalFormat, _serverConfigWork.DefaultRegionalFormat, StringComparison.OrdinalIgnoreCase);
+
                     await SettingsService.SaveServerConfigAsync(_serverConfigWork);
                     _serverConfigOrigJson = Serialize(_serverConfigWork);
+
+                    if (cultureDefaultsChanged)
+                    {
+                        NavigateToCultureCookie();
+                        return;
+                    }
+
                     break;
+                }
 
                 case SettingsNodeSource.Monitor:
                     MonitorSettingsModel monSnapshot = _monitorWork;
@@ -813,6 +830,20 @@ public partial class SettingsExplorer : IDisposable
         {
             _saving = false;
         }
+    }
+
+    private void NavigateToCultureCookie()
+    {
+        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
+        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
+        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
+        {
+            ["displayLanguage"] = _serverConfigWork.DefaultDisplayLanguage,
+            ["regionalFormat"] = _serverConfigWork.DefaultRegionalFormat,
+            ["returnUrl"] = returnUrl
+        });
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
     }
 
     /// <summary>
