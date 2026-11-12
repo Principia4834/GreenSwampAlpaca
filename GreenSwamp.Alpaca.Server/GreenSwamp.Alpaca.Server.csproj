@@ -146,7 +146,10 @@
   <Target Name="_ResolveCopyLocalNuGetPkgXmls" AfterTargets="ResolveReferences">
     <ItemGroup>
       <!-- Copy XML documentation files from NuGet packages (e.g. ASCOM.Common.xml) to the output directory -->
-      <ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)'!='' and Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+      <ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)'!='' and Exists('%(RootDir)%(Directory)%(Filename).xml')">
+        <!-- Keep the XML files beside the single-file exe; otherwise the bundler may drop them for some RIDs (NETSDK1236) -->
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ReferenceCopyLocalPaths>
     </ItemGroup>
   </Target>
 
