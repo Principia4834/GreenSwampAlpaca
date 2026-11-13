@@ -11,14 +11,61 @@
                       @bind-Value:after="NotifyChanged"
                       Label="User Name" Disabled="@(!Config.UseAuth)" Immediate="true" />
     </MudTooltip>
-    <MudAlert Severity="Severity.Normal" Dense="true">
-        To change the password, use the <MudLink Href="/setup">Server Settings</MudLink> page.
-    </MudAlert>
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Password used when authentication is enabled." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="PasswordValue"
+                      @bind-Value:after="OnPasswordChanged"
+                      Label="Password"
+                      InputType="InputType.Password"
+                      Disabled="@(!Config.UseAuth)"
+                      Immediate="true" />
+    </MudTooltip>
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Repeat the password to confirm it matches." Placement="Placement.Right" Arrow="true">
+        <MudTextField @bind-Value="RepeatPasswordValue"
+                      @bind-Value:after="OnRepeatPasswordChanged"
+                      Label="Repeat Password"
+                      InputType="InputType.Password"
+                      Disabled="@(!Config.UseAuth)"
+                      Immediate="true" />
+    </MudTooltip>
 </MudStack>
 
 @code {
     [Parameter] public ServerConfig Config { get; set; } = default!;
     [Parameter] public EventCallback OnChanged { get; set; }
+
+    private string PasswordValue { get; set; } = string.Empty;
+    private string RepeatPasswordValue { get; set; } = string.Empty;
+
+    private async Task OnPasswordChanged()
+    {
+        UpdateStoredPassword();
+        await NotifyChanged();
+    }
+
+    private async Task OnRepeatPasswordChanged()
+    {
+        UpdateStoredPassword();
+        await NotifyChanged();
+    }
+
+    private void UpdateStoredPassword()
+    {
+        if (string.IsNullOrEmpty(PasswordValue) && string.IsNullOrEmpty(RepeatPasswordValue))
+        {
+            Config.Password = string.Empty;
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(PasswordValue)
+            && !string.IsNullOrEmpty(RepeatPasswordValue)
+            && string.Equals(PasswordValue, RepeatPasswordValue, StringComparison.Ordinal))
+        {
+            Config.Password = ASCOM.Alpaca.Hash.GetStoragePassword(PasswordValue);
+            return;
+        }
+
+        Config.Password = string.Empty;
+    }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();
 }

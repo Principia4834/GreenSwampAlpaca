@@ -2,16 +2,10 @@
 
 namespace GreenSwamp.Alpaca.Shared.Transport
 {
-    public class DiscoveryState
+    public class DiscoveryState(IPAddress interfaceAddress, CancellationTokenSource cts)
     {
-        public DiscoveryState(IPAddress interfaceAddress, CancellationTokenSource cts)
-        {
-            InterfaceAddress = interfaceAddress;
-            Cts = cts;
-        }
+        public IPAddress InterfaceAddress { get; } = interfaceAddress;
 
-        public IPAddress InterfaceAddress { get; }
-
-        public CancellationTokenSource Cts { get; }
+        public CancellationTokenSource Cts { get; } = cts;
     }
 }

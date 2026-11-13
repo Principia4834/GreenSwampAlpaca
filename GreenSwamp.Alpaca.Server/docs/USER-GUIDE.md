@@ -21,7 +21,7 @@
 5. [Page Reference](#5-page-reference)
    - 5.1 [Home](#51-home)
    - 5.2 [Mount Status](#52-mount-status)
-   - 5.3 [Mount Settings](#53-mount-settings)
+   - 5.3 [Mount Settings](#53-mount-configuration)
    - 5.4 [Monitor](#54-monitor)
    - 5.5 [Settings Explorer](#55-settings-explorer)
    - 5.6 [Alpaca Settings](#56-alpaca-settings)
@@ -206,7 +206,7 @@ the browser.
 
 ### 5.3 Mount Settings
 
-**URL:** `/mount-settings` or `/mount-settings/{deviceNumber}`
+**URL:** `/mount-configuration` or `/mount-configuration/{deviceNumber}`
 
 Provides a quick read-only overview of each device's configuration, one tab per device. Each tab shows the device identity, serial connection details, and mount hardware summary.
 
@@ -410,8 +410,7 @@ Four groups, each covering a different aspect of the Alpaca HTTP server:
 | Group | Key Settings |
 |---|---|
 | **Network** | Port, remote access, UDP discovery, loopback discovery |
-| **Alpaca Behaviour** | Strict mode, remote disconnects, image-bytes |
-| **Identity & UI** | Location label, browser auto-start, Swagger |
+| **User Interface** | Zoom, browser auto-start, display theme, language |
 | **Authentication** | Enable auth, username |
 
 ### 6.5 Logging Settings

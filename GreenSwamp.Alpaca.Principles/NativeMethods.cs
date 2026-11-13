@@ -79,7 +79,7 @@ namespace GreenSwamp.Alpaca.Principles
             var objProcesses = Process.GetProcessesByName(name);
             if (objProcesses.Length <= 0) { return; }
             var handle = objProcesses[0].MainWindowHandle;
-            if (IsIconic(handle)){ShowWindowAsync(new HandleRef(null, handle), SW_RESTORE);}
+            if (IsIconic(handle)) { ShowWindowAsync(new HandleRef(null, handle), SW_RESTORE); }
             SetForegroundWindow(objProcesses[0].MainWindowHandle);
         }
 

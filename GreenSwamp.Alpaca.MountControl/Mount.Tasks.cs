@@ -269,7 +269,7 @@ internal void MountErrorHandler(Exception ex)
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 
@@ -466,11 +466,11 @@ internal void MountErrorHandler(Exception ex)
                             _ = new SkySetAxisPosition(0, q, Axis.Axis2, homeAxesSky.Y);
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 
@@ -521,7 +521,7 @@ internal void MountErrorHandler(Exception ex)
                     }
                     return false;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 
@@ -600,7 +600,7 @@ internal void MountErrorHandler(Exception ex)
                     }
                     return false;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
         }
 

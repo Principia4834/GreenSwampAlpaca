@@ -41,6 +41,11 @@ Rules (must follow)
 - When answering MudBlazor UI behavior questions in this workspace, consult the MudBlazor MCP docs before responding.
 - When scoping or proposing chart UI changes, use both MudBlazor MCP and ApexCharts MCP references.
 - Validate assumptions using browser DevTools results (e.g., $0.closest selectors, computed styles) and expect fixes based on those observations.
+- UI typography and zoom (see `GreenSwamp.Alpaca.Server\docs\DEVELOPER-GUIDE.md` section 13.6):
+  - Use `MudText Typo="..."` for all visible text. No `font-size`, `em`, `px` or `rem` text sizes in `style=` attributes. Do not use `h1`-`h3` to get "bigger text".
+  - Page title `h3`, readout `h4` + `gs-font-mono`, banner/brand `h5`, card/dialog title `h6`, body `body1`, panel heading `overline` + `gs-panel-heading`, small label `caption`.
+  - Raw `th`/`td` inside `MudSimpleTable` keep MudBlazor's native `subtitle2`/`body2`; do not wrap cells in `MudText`.
+  - New dimensions containing text use `rem`. `site.css` must not set `font-size` on `.mud-*` internals.
 
 ## Razor file creation, editing and debugging
 

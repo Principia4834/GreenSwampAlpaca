@@ -31,7 +31,7 @@ namespace ASCOM.Alpaca
                 byte[] salt = new byte[salt_length];
 
                 Array.Copy(hashBytes, 0, salt, 0, salt_length);
-                byte[] hash= Rfc2898DeriveBytes.Pbkdf2(password, salt, iters, HashAlgorithmName.SHA256, key_length);
+                byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, iters, HashAlgorithmName.SHA256, key_length);
                 bool same = true;
 
                 for (int i = 0; i < key_length; i++)

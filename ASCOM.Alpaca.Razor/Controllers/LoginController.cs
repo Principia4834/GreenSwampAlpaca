@@ -6,14 +6,9 @@ using System.Security.Claims;
 namespace ASCOM.Alpaca
 {
     [ApiExplorerSettings(GroupName = "Authorisation")]
-    public class LoginController : ControllerBase
+    public class LoginController(IUserService service) : ControllerBase
     {
-        IUserService _userService;
-
-        public LoginController(IUserService service)
-        {
-            _userService = service;
-        }
+        IUserService _userService = service;
 
         [HttpPost]
         [Route("/login")]
@@ -46,7 +41,7 @@ namespace ASCOM.Alpaca
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, username ?? "Default"),
+                new (ClaimTypes.Name, username ?? "Default"),
             };
 
             var claimsIdentity = new ClaimsIdentity(

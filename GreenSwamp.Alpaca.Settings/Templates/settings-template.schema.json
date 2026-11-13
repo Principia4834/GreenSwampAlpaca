@@ -271,13 +271,15 @@
           "type": "number",
           "description": "Flip angle limit in degrees"
         },
-        "HzLimitPark": {
-          "type": "boolean",
-          "description": "Enable horizon park limit"
+        "HorizonTrackingAction": {
+          "type": "string",
+          "enum": [ "None", "StopTracking", "Park" ],
+          "description": "Action to take when horizon tracking limit is reached"
         },
-        "HzLimitTracking": {
-          "type": "boolean",
-          "description": "Enable horizon tracking limit"
+        "MeridianTrackingAction": {
+          "type": "string",
+          "enum": [ "None", "StopTracking", "Park" ],
+          "description": "Action to take when meridian tracking limit is reached"
         },
         "KingRate": {
           "type": "number",
@@ -288,14 +290,6 @@
           "minimum": -90,
           "maximum": 90,
           "description": "Observer latitude in degrees"
-        },
-        "LimitPark": {
-          "type": "boolean",
-          "description": "Enable park limits"
-        },
-        "LimitTracking": {
-          "type": "boolean",
-          "description": "Enable tracking limits"
         },
         "LimitsOn": {
           "type": "boolean",

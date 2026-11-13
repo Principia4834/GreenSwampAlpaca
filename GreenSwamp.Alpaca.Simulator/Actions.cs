@@ -327,17 +327,14 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
         internal Tuple<double?, DateTime> AxisStepsDt(Axis axis)
         {
-            switch (axis)
+            return axis switch
             {
-                case Axis.Axis1:
-                    return new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis1}")),
-                        HiResDateTime.UtcNow);
-                case Axis.Axis2:
-                    return new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis2}")),
-                        HiResDateTime.UtcNow);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
-            }
+                Axis.Axis1 => new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis1}")),
+                                        HiResDateTime.UtcNow),
+                Axis.Axis2 => new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis2}")),
+                                        HiResDateTime.UtcNow),
+                _ => throw new ArgumentOutOfRangeException(nameof(axis), axis, null),
+            };
         }
 
         /// <summary>

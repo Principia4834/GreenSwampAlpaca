@@ -158,7 +158,7 @@ namespace GreenSwamp.Alpaca.Principles
                 {
                     SynchronizingObject.BeginInvoke(
                         new EventRaiser(OnStarted),
-                        new object[] { EventArgs.Empty });
+                        [EventArgs.Empty]);
                 }
                 else
                 {
@@ -192,7 +192,7 @@ namespace GreenSwamp.Alpaca.Principles
             {
                 SynchronizingObject.BeginInvoke(
                     new EventRaiser(OnStopped),
-                    new object[] { EventArgs.Empty });
+                    [EventArgs.Empty]);
             }
             else
             {
@@ -205,7 +205,7 @@ namespace GreenSwamp.Alpaca.Principles
         {
             if (_synchronizingObject != null)
             {
-                _synchronizingObject.BeginInvoke(_tickRaiser, new object[] { EventArgs.Empty });
+                _synchronizingObject.BeginInvoke(_tickRaiser, [EventArgs.Empty]);
             }
             else
             {
@@ -218,7 +218,7 @@ namespace GreenSwamp.Alpaca.Principles
         {
             if (_synchronizingObject != null)
             {
-                _synchronizingObject.BeginInvoke(_tickRaiser, new object[] { EventArgs.Empty });
+                _synchronizingObject.BeginInvoke(_tickRaiser, [EventArgs.Empty]);
                 Stop();
             }
             else
@@ -489,21 +489,16 @@ namespace GreenSwamp.Alpaca.Principles
     /// <summary>
     /// The exception that is thrown when a timer fails to start.
     /// </summary>
+    /// <inheritdoc />
+    /// <remarks>
+    /// Initializes a new instance of the TimerStartException class.
+    /// </remarks>
+    /// <param name="message">
+    /// The error message that explains the reason for the exception. 
+    /// </param>
     [Serializable]
-    public class TimerStartException : Exception
+    public class TimerStartException(string message) : Exception(message)
     {
-        /// <inheritdoc />
-        /// <summary>
-        /// Initializes a new instance of the TimerStartException class.
-        /// </summary>
-        /// <param name="message">
-        /// The error message that explains the reason for the exception. 
-        /// </param>
-        public TimerStartException(string message)
-            : base(message)
-        {
-        }
-
     }
 
 

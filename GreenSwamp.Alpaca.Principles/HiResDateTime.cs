@@ -27,8 +27,8 @@ namespace GreenSwamp.Alpaca.Principles
     {
         private static readonly long MaxIdle = TimeSpan.FromSeconds(10).Ticks;
         private const long TicksMultiplier = 1000 * TimeSpan.TicksPerMillisecond;
-        private static readonly ThreadLocal<DateTime> StartTime = new ThreadLocal<DateTime>(() => DateTime.UtcNow, false);
-        private static readonly ThreadLocal<double> StartTimestamp = new ThreadLocal<double>(() => Stopwatch.GetTimestamp(), false);
+        private static readonly ThreadLocal<DateTime> StartTime = new(() => DateTime.UtcNow, false);
+        private static readonly ThreadLocal<double> StartTimestamp = new(() => Stopwatch.GetTimestamp(), false);
 
         private static readonly Func<DateTime> UtcNowProvider;
 

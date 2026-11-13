@@ -30,19 +30,15 @@ namespace GreenSwamp.Alpaca.MountControl
         private static bool IsWithinFlipLimits(SkySettings settings, double[] position)
         {
             var absPos0 = Math.Abs(position[0]);
-            switch (settings.AlignmentMode)
+            return settings.AlignmentMode switch
             {
-                case AlignmentMode.AltAz:
-                    return (settings.AxisLimitX >= absPos0) && (absPos0 >= 360.0 - settings.AxisLimitX);
-                case AlignmentMode.Polar:
-                    return (180.0 - settings.AxisLimitX <= absPos0) && (absPos0 <= settings.AxisLimitX);
-                case AlignmentMode.GermanPolar:
-                    return -settings.HourAngleLimit < absPos0 && absPos0 < settings.HourAngleLimit ||
-                           180 - settings.HourAngleLimit < absPos0 && absPos0 < 180 + settings.HourAngleLimit;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(settings.AlignmentMode),
-                        settings.AlignmentMode, "Unsupported alignment mode");
-            }
+                AlignmentMode.AltAz => (settings.AxisLimitX >= absPos0) && (absPos0 >= 360.0 - settings.AxisLimitX),
+                AlignmentMode.Polar => (180.0 - settings.AxisLimitX <= absPos0) && (absPos0 <= settings.AxisLimitX),
+                AlignmentMode.GermanPolar => -settings.HourAngleLimit < absPos0 && absPos0 < settings.HourAngleLimit ||
+                                           180 - settings.HourAngleLimit < absPos0 && absPos0 < 180 + settings.HourAngleLimit,
+                _ => throw new ArgumentOutOfRangeException(nameof(settings.AlignmentMode),
+                                        settings.AlignmentMode, "Unsupported alignment mode"),
+            };
         }
 
         /// <summary>
@@ -116,7 +112,7 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
 
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
                     break;
 
@@ -166,12 +162,12 @@ namespace GreenSwamp.Alpaca.MountControl
                             break;
 
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException();
                     }
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             return a;
@@ -362,7 +358,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     axes = HaDecToAxesXy(axes, settings, skipAlternatePosition, selectAlternatePosition);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             return [axes[0], axes[1]];
@@ -400,7 +396,7 @@ namespace GreenSwamp.Alpaca.MountControl
                     altAz = Coordinate.HaDec2AltAz(ha, altAz[0], settings.Latitude);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             altAz = Range.RangeAltAz(altAz);
@@ -421,7 +417,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal static double[] PolarParkToAzAlt(double axisX, double axisY, SkySettings settings)
         {
             // Convert app axes to Az/Alt
-            double[] azAlt = AxesXyToAzAlt(new[] { axisX, axisY }, settings);
+            double[] azAlt = AxesXyToAzAlt([axisX, axisY], settings);
             double azLocal = azAlt[0];
             double altLocal = azAlt[1];
 
@@ -449,7 +445,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
             }
 
-            return new[] { azStorage, altLocal };
+            return [azStorage, altLocal];
         }
 
         /// <summary>
@@ -526,7 +522,7 @@ namespace GreenSwamp.Alpaca.MountControl
                         raDec[1] = -raDec[1];
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException();
             }
 
             raDec = Range.RangeRaDec(raDec);

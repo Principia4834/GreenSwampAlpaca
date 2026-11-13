@@ -115,7 +115,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
 
         // Pulse Guide Settings
         [CommonSetting]
-        public List<HcPulseGuide> HcPulseGuides { get; set; } = new();
+        public List<HcPulseGuide> HcPulseGuides { get; set; } = [];
         [CommonSetting]
         public int MinPulseRa { get; set; }
         [CommonSetting]
@@ -159,19 +159,15 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public bool TrackAfterUnpark { get; set; } = false;
         [UniqueSetting]
-        public bool LimitPark { get; set; }
-        [UniqueSetting]
         public string ParkLimitName { get; set; } = null!;
         [UniqueSetting]
-        public List<ParkPosition> ParkPositions { get; set; } = new();
+        public List<ParkPosition> ParkPositions { get; set; } = [];
         [UniqueSetting]
         public double[] ParkAxes { get; set; } = Array.Empty<double>();
 
         // Limit Settings
         [UniqueSetting]
         public bool LimitsOn { get; set; }
-        [UniqueSetting]
-        public bool LimitTracking { get; set; }
         [UniqueSetting]
         public double HourAngleLimit { get; set; }
         [UniqueSetting]
@@ -185,11 +181,11 @@ namespace GreenSwamp.Alpaca.Settings.Models
         [UniqueSetting]
         public double AxisTrackingLimit { get; set; }
         [UniqueSetting]
-        public bool HzLimitTracking { get; set; }
+        public String HorizonTrackingAction { get; set; } = null!;
+        [UniqueSetting]
+        public String MeridianTrackingAction { get; set; } = null!;
         [UniqueSetting]
         public string ParkHzLimitName { get; set; } = null!;
-        [UniqueSetting]
-        public bool HzLimitPark { get; set; }
         [UniqueSetting]
         public double AxisHzTrackingLimit { get; set; }
         [UniqueSetting]

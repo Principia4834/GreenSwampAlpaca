@@ -24,14 +24,9 @@ namespace GreenSwamp.Alpaca.Server.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class BackupController : ControllerBase
+    public class BackupController(ISettingsExportService backupService) : ControllerBase
     {
-        private readonly ISettingsExportService _backupService;
-
-        public BackupController(ISettingsExportService backupService)
-        {
-            _backupService = backupService ?? throw new ArgumentNullException(nameof(backupService));
-        }
+        private readonly ISettingsExportService _backupService = backupService ?? throw new ArgumentNullException(nameof(backupService));
 
         /// <summary>
         /// Gets information about the backup without actually creating it.

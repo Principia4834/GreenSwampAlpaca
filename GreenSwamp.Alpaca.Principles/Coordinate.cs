@@ -125,7 +125,7 @@ namespace GreenSwamp.Alpaca.Principles
             var n = -d * g;
             var o = -e * h * g + f * i;
             var p = Units.Rad2Hrs(Math.Atan2(n, o));
-            return new [] {p, l};
+            return [p, l];
         }
 
         ///// <summary>

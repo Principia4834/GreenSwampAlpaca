@@ -2,7 +2,6 @@
 @page "/mount-control/{DeviceNumber:int}"
 @using ASCOM.Common.DeviceInterfaces;
 @using GreenSwamp.Alpaca.Server.Components
-@using GreenSwamp.Alpaca.Server.Components.ButtonBar
 @using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Settings.Services
 @using GreenSwamp.Alpaca.MountControl
@@ -11,20 +10,19 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject TelescopeStateService StateService
-@inject IJSRuntime JS
 @implements IDisposable
 
 <PageTitle>Mount Control</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h5">Mount Control</MudText>
+    <MudText Typo="Typo.h3">Mount Control</MudText>
 
     @if (IsActiveMountSimulator)
     {
         <MudPaper Elevation="0"
                   Class="d-flex align-center justify-center pa-1"
                   Style="background-color: var(--mud-palette-success); border-radius: 8px; flex: 0 0 33%; max-width: 33%;">
-            <MudText Typo="Typo.h4" Color="Color.Default">Simulator</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Default">Simulator</MudText>
         </MudPaper>
     }
 
@@ -44,6 +42,7 @@
 else
 {
     <MudTabs Rounded="true" Elevation="1" Class="mb-4 gs-tabs-no-transform"
+             TabPanelsClass="pt-2"
              ActivePanelIndex="@ActiveTabIndex"
              ActivePanelIndexChanged="OnDeviceTabChanged">
         @foreach (var dn in GetConfiguredDeviceNumbers())
@@ -52,42 +51,46 @@ else
                 @{
                     var s  = StateService.GetCurrentState(dn);
                     var ms = _deviceSettings.GetValueOrDefault(dn);
-                    var connected = IsUiClientConnected(dn);
+                    var isUiClientConnected = IsUiClientConnected(dn);
                     var mount = MountRegistry.GetInstance(dn);
                 }
 
                 @* -- Compact position header ------------------------------- *@
                 <MudPaper Elevation="1" Class="pa-2 mb-2">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4" Wrap="Wrap.Wrap">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.caption" Color="Color.Primary">RA</MudText>
-                            <MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">RA</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.caption" Color="Color.Primary">Dec</MudText>
-                            <MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">Dec</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.caption" Color="Color.Primary">Az</MudText>
-                            <MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">Az</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.caption" Color="Color.Primary">Alt</MudText>
-                            <MudText Typo="Typo.body2" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">Alt</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.caption" Color="Color.Primary">LHA</MudText>
-                            <MudText Typo="Typo.body2" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">LHA</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
+                        </MudStack>
+                        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+                            <MudText Typo="Typo.body1" Color="Color.Primary">LST</MudText>
+                            <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.LocalSiderealTime)</MudText>
                         </MudStack>
                     </MudStack>
                 </MudPaper>
 
                 @* -- State icon row ----------------------------------------- *@
-                <MudPaper Elevation="0" Class="pa-1 mb-2">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudPaper Elevation="1" Class="px-2 py-2 mb-3" Style="height:4rem;">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
 
                         @* -- Status indicators (left) *@
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
 
                             <MudTooltip Text="@(s.AtHome ? "At Home" : "Not at Home")" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.Home"
@@ -136,7 +139,7 @@ else
                             </MudTooltip>
 
                             <MudTooltip Text="@(s.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Bottom" Arrow="true">
-                                <MudIcon Color="@(connected ? Color.Success : Color.Default)"
+                                <MudIcon Color="@(isUiClientConnected ? Color.Success : Color.Default)"
                                          Icon="@(s.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
                                          Size="Size.Large" />
                             </MudTooltip>
@@ -148,66 +151,11 @@ else
                                     <MudIcon Icon="@(s.ConnectedClientCount > 0 ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
                                              Color="@(s.ConnectedClientCount > 0 ? Color.Success : Color.Default)"
                                              Size="Size.Large" />
-                                    <MudText Typo="Typo.h1"
-                                             Color="@(s.ConnectedClientCount > 0 ? Color.Success : (s.HasEverBeenConnected ? Color.Warning : Color.Default))"
-                                             Style="line-height: 1;">
+                                    <MudText Typo="Typo.h4"
+                                             Color="@(s.ConnectedClientCount > 0 ? Color.Success : (s.HasEverBeenConnected ? Color.Warning : Color.Default))">
                                         : @s.ConnectedClientCount
                                     </MudText>
                                 </MudStack>
-                            </MudTooltip>
-
-                        </MudStack>
-
-                        @* -- Park position controls (right) *@
-                        @{
-                            var effectiveParkName = (s.ParkPositionNames.Count > 0 && s.ParkPositionNames.Contains(s.ParkSelectedName))
-                                ? s.ParkSelectedName!
-                                : s.ParkPositionNames.FirstOrDefault(p => string.Equals(p, "Default", StringComparison.OrdinalIgnoreCase))
-                                  ?? s.ParkPositionNames.FirstOrDefault()
-                                  ?? "—";
-                            var selectorDisabled = !connected || !(mount?.Settings.CanPark ?? false);
-                        }
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-
-                            @* Display only: currently selected park position name *@
-                            <MudText Typo="Typo.body1" Color="Color.Primary"
-                                     Style="padding: 0 8px; white-space: nowrap; font-size: 1.1rem; font-weight: 500;">
-                                @effectiveParkName
-                            </MudText>
-
-                            @* Park position selector — ActivatorContent gives identical Size.Large rendering to the gear *@
-                            <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
-                                <MudMenu Disabled="@selectorDisabled">
-                                    <ActivatorContent>
-                                        <MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Large"
-                                                       Disabled="@selectorDisabled"
-                                                       OnClick="@context.ToggleAsync" />
-                                    </ActivatorContent>
-                                    <ChildContent>
-                                        @if (s.ParkPositionNames.Count > 0)
-                                        {
-                                            @foreach (var posName in s.ParkPositionNames)
-                                            {
-                                                <MudMenuItem OnClick="@(() => OnParkPositionSelectedInStatusBar(dn, posName))">@posName</MudMenuItem>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <MudMenuItem Disabled="true">No positions configured</MudMenuItem>
-                                        }
-                                    </ChildContent>
-                                </MudMenu>
-                            </MudTooltip>
-
-                            @* Manage park positions *@
-                            <MudTooltip Text="Create, update or delete park positions" Placement="Placement.Top" Arrow="true">
-                                <MudIconButton Icon="@Icons.Material.Filled.Settings"
-                                               Size="Size.Large"
-                                               Color="Color.Primary"
-                                               Disabled="@(!connected)"
-                                               OnClick="@(() => OpenManageParkPositionsDialogAsync(dn))" />
                             </MudTooltip>
 
                         </MudStack>
@@ -216,75 +164,31 @@ else
                 </MudPaper>
 
                 @* -- Inline control panels and buttons ---------------------- *@
-                <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="3" Wrap="Wrap.Wrap" Class="mb-3">
+                <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="3" Wrap="Wrap.Wrap" Class="mb-3">
 
-                    <MudPaper Elevation="1" Class="pa-3" Style="min-width:420px">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo / Slew</MudText>
-                        <GoToPanel DeviceNumber="@dn" IsEnabled="@connected" />
-                        <MudDivider DividerType="DividerType.Middle" Class="my-6" />
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Dials</MudText>
-                        <MudStack Row="true" Justify="Justify.FlexStart" Spacing="4" Wrap="Wrap.Wrap" Class="mt-1">
-                            @if (_coordMode == CoordMode.AltAz)
-                            {
-                                <AxisDial Angle="@s.Azimuth" Label="Azimuth" Size="160" />
-                                <AxisDial Angle="@s.Altitude" Label="Altitude" Size="160" />
-                            }
-                            @if (_coordMode == CoordMode.RaDec)
-                            {
-                                <AxisDial Angle="@(s.RightAscension * 15)" Label="Right Ascension"
-                                          DisplayUnits="DialDisplayUnits.Hours" Size="160" />
-                                <AxisDial Angle="@s.Declination" Label="Declination" Size="160" />
-                            }
-                            @if (_coordMode == CoordMode.Optics)
-                            {
-                                <AxisDial Angle="@s.ActualAxisX" Label="X Axis" Size="160" />
-                                <AxisDial Angle="@s.ActualAxisY" Label="Y Axis" Size="160" />
-                            }
-                        </MudStack>
-                        <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
-                                        SelectionMode="SelectionMode.SingleSelection">
-                            <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" />
-                            <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" />
-                            <MudToggleItem Value="CoordMode.Optics" Text="Optics" />
-                        </MudToggleGroup>
+                    <MudPaper Elevation="1" Class="pa-3" Style="min-width:18.75rem">
+                        <GoToPanel State="@s"
+                                   DeviceNumber="@dn"
+                                   IsUiClientConnected="@isUiClientConnected" />
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
                         <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Hand Controller</MudText>
-                        <HandControllerPanel DeviceNumber="@dn" IsEnabled="@connected" />
+                        <HandControllerPanel DeviceNumber="@dn" IsEnabled="@isUiClientConnected" />
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
-                        <MudStack Spacing="2" AlignItems="AlignItems.Center" Row="false">
-                            @* Park..Limits vertical, centered *@
-                            <MountButtonBar State="@s"
-                                            DeviceNumber="@dn"
-                                            IsConnected="@connected"
-                                            Vertical="true"
-                                            ShowPrimaryButtons="true"
-                                            ShowStopButton="false" />
-                            <MudDivider />
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       OnClick="@(() => OpenChartWindowAsync(dn,"radec", ms))">
-                                Axes Chart
-                            </MudButton>
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       OnClick="@(() => OpenChartWindowAsync(dn,"pulse", ms))">
-                                Pulse Chart
-                            </MudButton>
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       OnClick="@(() => OpenTelescopeViewAsync(dn))">
-                                3D View
-                            </MudButton>
-                        </MudStack>
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount Info</MudText>
+                        <MountInfo State="@s"
+                                   DeviceNumber="@dn"
+                                   IsConnected="@isUiClientConnected"
+                                   AlignmentMode="@ms?.AlignmentMode"
+                                   DeviceLabel="@TabLabel(dn)" />
                     </MudPaper>
                 </MudStack>
 
                 @* -- Bottom action bar ------------------------------------- *@
-                <MudPaper Elevation="1" Class="pa-2 mt-3">
+                <MudPaper Elevation="1" Class="px-2 py-2 mt-3" Style="height:4rem;">
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
                         @* Far left: Shutdown *@
@@ -294,7 +198,7 @@ else
                                            Color="Color.Error"
                                            Size="Size.Large"
                                            Variant="Variant.Text"
-                                           OnClick="ShutdownAsync" />
+                                           OnClick="OpenShutdownDialogAsync" />
                         </MudTooltip>
 
                         @* Centre: Stop — same StopCircle icon as the hand controller *@
@@ -303,7 +207,7 @@ else
                                            Color="Color.Error"
                                            Size="Size.Large"
                                            Variant="Variant.Text"
-                                           Disabled="@(!s.HasEverBeenConnected && !connected)"
+                                           Disabled="@(!s.HasEverBeenConnected)"
                                            OnClick="@(() => OnStopClickAsync(dn))" />
                         </MudTooltip>
 
@@ -311,9 +215,9 @@ else
                         @{
                             var connecting = IsConnecting(dn);
                         }
-                        <MudTooltip Text="@(connecting ? "Connecting\u2026" : connected ? "Disconnect from mount" : "Connect to mount")"
+                        <MudTooltip Text="@(connecting ? "Connecting\u2026" : isUiClientConnected ? "Disconnect from mount" : "Connect to mount")"
                                     Placement="Placement.Top" Arrow="true">
-                            <MudIconButton Color="@(connected ? Color.Error : Color.Success)"
+                            <MudIconButton Color="@(isUiClientConnected ? Color.Error : Color.Success)"
                                            Size="Size.Large"
                                            Variant="Variant.Text"
                                            Disabled="@connecting"
@@ -325,7 +229,7 @@ else
                                 }
                                 else
                                 {
-                                    <MudIcon Icon="@(connected ? Icons.Material.Filled.LinkOff : Icons.Material.Filled.Link)"
+                                    <MudIcon Icon="@(isUiClientConnected ? Icons.Material.Filled.LinkOff : Icons.Material.Filled.Link)"
                                              Size="Size.Large" />
                                 }
                             </MudIconButton>

@@ -37,8 +37,8 @@ namespace GreenSwamp.Alpaca.Shared
         private static int _ringIndex;    // next write slot (0-based, wraps at Capacity)
         private static int _recordIndex;  // global record index (monotonically increasing, not reset or wrapped)                      
         private static int _count;        // number of valid entries (capped at Capacity)
-        private static readonly object _lock = new object();
-        private static readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
+        private static readonly object _lock = new();
+        private static readonly SemaphoreSlim _fileLock = new(1, 1);
         private const string Fmt = "0000#";
 
         #endregion

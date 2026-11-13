@@ -12,16 +12,13 @@
 @switch (Node.GroupKey)
 {
     // -- Server Configuration -----------------------------------------------
-    case "Network":
-        <NetworkEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
+    case "Alpaca Settings":
+        <AlpacaSettingsEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
-    case "Alpaca Behaviour":
-        <AlpacaBehaviourEditor Config="ServerConfig" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
+    case "User Interface":
+        <UserInterfaceEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
-    case "Identity & UI":
-        <IdentityUiEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
-        break;
-    case "Authentication":
+    case "Security":
         <AuthenticationEditor Config="ServerConfig" OnChanged="OnSettingChanged" />
         break;
 

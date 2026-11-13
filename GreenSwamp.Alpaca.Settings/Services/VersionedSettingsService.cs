@@ -19,6 +19,7 @@ using GreenSwamp.Alpaca.Settings.Attributes;
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -68,6 +69,11 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public event EventHandler<ModelSetCollection>? ModelSetsChanged;
 
+        private readonly SemaphoreSlim _carouselFileLock = new(1, 1);
+        public string CarouselSettingsPath => Path.Combine(_currentVersionPath, "carousel.settings.json");
+
+        public event EventHandler<CarouselSettings>? CarouselSettingsChanged;
+
         public VersionedSettingsService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -86,8 +92,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
             // Ensure device files exist before anything else (e.g. discovery, DeviceManager).
             // After migration this creates only the files that were not copied.
             RunFirstRunDeviceInit();
+
+            EnsureCarouselSettingsFile();
         }
-        
+
         // -- Path helpers ------------------------------------------------------
 
         public string GetDeviceSettingsPath(int deviceNumber)
@@ -142,14 +150,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var stem = Path.GetFileNameWithoutExtension(file);         // "device-00.settings"
                 var stem2 = Path.GetFileNameWithoutExtension(stem);        // "device-00"
                 var nnStr = stem2.Length >= 9 ? stem2.Substring(7) : null; // "00"
-                if (nnStr == null || !int.TryParse(nnStr, out var nn)) continue;
+                if (nnStr == null || !int.TryParse(nnStr, NumberStyles.None, CultureInfo.InvariantCulture, out var nn)) continue;
 
                 var settings = GetDeviceSettings(nn);
                 if (settings != null)
                     result.Add(settings);
             }
 
-            return result.OrderBy(d => d.DeviceNumber).ToList();
+            return [.. result.OrderBy(d => d.DeviceNumber)];
         }
 
         public async Task SaveDeviceSettingsAsync(int deviceNumber, SkySettings settings)
@@ -377,7 +385,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 _configuration.GetSection("DeviceTemplates:GermanPolar").Bind(defaults);
             }
 
-            return JsonNode.Parse(JsonSerializer.Serialize(defaults, _jsonOptions))?.AsObject() ?? new JsonObject();
+            return JsonNode.Parse(JsonSerializer.Serialize(defaults, _jsonOptions))?.AsObject() ?? [];
         }
 
         private Dictionary<string, JsonNode?> LoadLegacyCommonSkySettings(string previousVersionPath)
@@ -507,9 +515,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
             List<AlpacaDevice> alpacaDevices;
 
             if (alpacaSection.Exists())
-                alpacaDevices = alpacaSection.Get<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                alpacaDevices = alpacaSection.Get<List<AlpacaDevice>>() ?? [];
             else
-                alpacaDevices = new List<AlpacaDevice>();
+                alpacaDevices = [];
 
             // Replace any placeholder / well-known fixed GUID with a freshly generated one.
             // This ensures that every first-run installation receives a unique ASCOM discovery identity
@@ -550,14 +558,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 var json = File.ReadAllText(AlpacaDevicesSettingsPath);
                 var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
                 if (doc != null && doc.TryGetValue("AlpacaDevices", out var element))
-                    return element.Deserialize<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                    return element.Deserialize<List<AlpacaDevice>>() ?? [];
             }
             catch (Exception ex)
             {
                 LogSafe("ERROR", $"Error reading AlpacaDevices from devices.alpaca.user.json: {ex.Message}");
             }
 
-            return new List<AlpacaDevice>();
+            return [];
         }
 
         public async Task SaveAlpacaDevicesAsync(List<AlpacaDevice> devices)
@@ -618,18 +626,18 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         private List<AlpacaDevice> ReadAlpacaDevicesUnlocked()
         {
-            if (!File.Exists(AlpacaDevicesSettingsPath)) return new List<AlpacaDevice>();
+            if (!File.Exists(AlpacaDevicesSettingsPath)) return [];
 
             try
             {
                 var json = File.ReadAllText(AlpacaDevicesSettingsPath);
                 var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
                 if (doc != null && doc.TryGetValue("AlpacaDevices", out var element))
-                    return element.Deserialize<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                    return element.Deserialize<List<AlpacaDevice>>() ?? [];
             }
             catch { }
 
-            return new List<AlpacaDevice>();
+            return [];
         }
 
         private async Task WriteAlpacaDevicesUnlockedAsync(List<AlpacaDevice> devices)
@@ -783,7 +791,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
                     });
                     return result;
                 }
-                devices = element.Deserialize<List<AlpacaDevice>>() ?? new List<AlpacaDevice>();
+                devices = element.Deserialize<List<AlpacaDevice>>() ?? [];
             }
             catch (Exception ex)
             {
@@ -1123,17 +1131,17 @@ namespace GreenSwamp.Alpaca.Settings.Services
         private async Task<Dictionary<string, JsonElement>> ReadSettingsFileAsync(string path)
         {
             if (!File.Exists(path))
-                return new Dictionary<string, JsonElement>();
+                return [];
 
             try
             {
                 var json = await File.ReadAllTextAsync(path);
                 return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)
-                       ?? new Dictionary<string, JsonElement>();
+                       ?? [];
             }
             catch
             {
-                return new Dictionary<string, JsonElement>();
+                return [];
             }
         }
 
@@ -1195,6 +1203,107 @@ namespace GreenSwamp.Alpaca.Settings.Services
             ]
         };
 
+
+        // -- Carousel settings -------------------------------------------------
+
+        // Seeds carousel.settings.json with factory defaults so the developer has a file to edit.
+        // Never overwrites an existing (possibly migrated) file.
+        private void EnsureCarouselSettingsFile()
+        {
+            try
+            {
+                if (File.Exists(CarouselSettingsPath)) return;
+                var json = JsonSerializer.Serialize(CarouselSettings.CreateDefault(), _jsonOptions);
+                File.WriteAllText(CarouselSettingsPath, json, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                LogSafe("WARNING", $"Could not create carousel settings file: {ex.Message}");
+            }
+        }
+
+        public CarouselSettings GetCarouselSettings()
+        {
+            if (!File.Exists(CarouselSettingsPath))
+                return CarouselSettings.CreateDefault();
+
+            try
+            {
+                var json = File.ReadAllText(CarouselSettingsPath);
+                var settings = JsonSerializer.Deserialize<CarouselSettings>(json, _jsonReadOptions);
+                if (settings == null)
+                    return CarouselSettings.CreateDefault();
+                return settings.Sanitize(msg => LogSafe("WARNING", msg));
+            }
+            catch (Exception ex)
+            {
+                LogSafe("WARNING", $"Carousel settings unreadable, using defaults: {ex.Message}");
+                return CarouselSettings.CreateDefault();
+            }
+        }
+
+        public async Task SaveCarouselSettingsAsync(CarouselSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+
+            if (!await _carouselFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Timeout acquiring carousel settings lock.");
+
+            try
+            {
+                var json = JsonSerializer.Serialize(settings, _jsonOptions);
+                var tempPath = CarouselSettingsPath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json, Encoding.UTF8);
+                File.Move(tempPath, CarouselSettingsPath, overwrite: true);
+                LogSafe("INFO", $"Carousel settings saved for version {CurrentVersion}");
+            }
+            finally
+            {
+                _carouselFileLock.Release();
+            }
+
+            CarouselSettingsChanged?.Invoke(this, settings);
+        }
+
+        public async Task SetCarouselActiveShowAsync(string showId)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(showId);
+
+            if (!await _carouselFileLock.WaitAsync(TimeSpan.FromSeconds(5)))
+                throw new TimeoutException("Timeout acquiring carousel settings lock.");
+
+            CarouselSettings raw;
+            try
+            {
+                if (!File.Exists(CarouselSettingsPath)) return;
+
+                try
+                {
+                    var current = await File.ReadAllTextAsync(CarouselSettingsPath);
+                    raw = JsonSerializer.Deserialize<CarouselSettings>(current, _jsonReadOptions)
+                          ?? throw new JsonException("Empty carousel settings");
+                }
+                catch (Exception ex)
+                {
+                    LogSafe("WARNING", $"Carousel active show not saved, file unreadable: {ex.Message}");
+                    return;
+                }
+
+                if (string.Equals(raw.ActiveShow, showId, StringComparison.Ordinal)) return;
+
+                raw.ActiveShow = showId;
+                var json = JsonSerializer.Serialize(raw, _jsonOptions);
+                var tempPath = CarouselSettingsPath + ".tmp";
+                await File.WriteAllTextAsync(tempPath, json, Encoding.UTF8);
+                File.Move(tempPath, CarouselSettingsPath, overwrite: true);
+            }
+            finally
+            {
+                _carouselFileLock.Release();
+            }
+
+            CarouselSettingsChanged?.Invoke(this, raw);
+        }
 
         private void LogSafe(string level, string message)
         {

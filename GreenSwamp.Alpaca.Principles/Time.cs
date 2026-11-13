@@ -343,28 +343,16 @@ namespace GreenSwamp.Alpaca.Principles
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SystemTime
+        public struct SystemTime(DateTime dt)
         {
-            public readonly ushort Year;
-            public readonly ushort Month;
-            public readonly ushort DayOfWeek;
-            public readonly ushort Day;
-            public readonly ushort Hour;
-            public readonly ushort Minute;
-            public readonly ushort Second;
-            public readonly ushort Milliseconds;
-
-            public SystemTime(DateTime dt)
-            {
-                Year = (ushort)dt.Year;
-                Month = (ushort)dt.Month;
-                DayOfWeek = (ushort)dt.DayOfWeek;
-                Day = (ushort)dt.Day;
-                Hour = (ushort)dt.Hour;
-                Minute = (ushort)dt.Minute;
-                Second = (ushort)dt.Second;
-                Milliseconds = (ushort)dt.Millisecond;
-            }
+            public readonly ushort Year = (ushort)dt.Year;
+            public readonly ushort Month = (ushort)dt.Month;
+            public readonly ushort DayOfWeek = (ushort)dt.DayOfWeek;
+            public readonly ushort Day = (ushort)dt.Day;
+            public readonly ushort Hour = (ushort)dt.Hour;
+            public readonly ushort Minute = (ushort)dt.Minute;
+            public readonly ushort Second = (ushort)dt.Second;
+            public readonly ushort Milliseconds = (ushort)dt.Millisecond;
         }
     }
 }

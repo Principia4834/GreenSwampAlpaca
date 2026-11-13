@@ -16,6 +16,7 @@
 
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.Settings.Models;
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
@@ -32,7 +33,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
         
         // Cache templates to avoid repeated file I/O
         private SkySettings? _commonSettingsCache;
-        private readonly Dictionary<AlignmentMode, Dictionary<string, object>> _overridesCache = new();
+        private readonly Dictionary<AlignmentMode, Dictionary<string, object>> _overridesCache = [];
         
         public SettingsTemplateService()
         {
@@ -193,13 +194,10 @@ namespace GreenSwamp.Alpaca.Settings.Services
                 
                 if (!root.TryGetProperty("Overrides", out var overridesElement))
                     throw new InvalidOperationException($"Failed to find 'Overrides' in {mode} template");
-                
+
                 // Convert JsonElement to Dictionary
-                var overrides = JsonSerializer.Deserialize<Dictionary<string, object>>(overridesElement.GetRawText());
-                
-                if (overrides == null)
-                    throw new InvalidOperationException($"Failed to deserialize {mode} overrides");
-                
+                var overrides = JsonSerializer.Deserialize<Dictionary<string, object>>(overridesElement.GetRawText()) ?? throw new InvalidOperationException($"Failed to deserialize {mode} overrides");
+
                 // Cache for future use
                 _overridesCache[mode] = overrides;
 
@@ -298,7 +296,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             if (underlyingType != null)
                 targetType = underlyingType;
             
-            return Convert.ChangeType(value, targetType);
+            return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
         
         /// <summary>

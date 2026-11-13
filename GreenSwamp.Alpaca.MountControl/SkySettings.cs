@@ -129,7 +129,6 @@ namespace GreenSwamp.Alpaca.MountControl
         private string _parkName = "Default";
         private double[] _parkAxes = [0.0, 0.0];
         private List<ParkPosition> _parkPositions = [];
-        private bool _limitPark = false;
         private string _parkLimitName = string.Empty;
 
         // Limits
@@ -139,10 +138,9 @@ namespace GreenSwamp.Alpaca.MountControl
         private double _axisLowerLimitY = -90.0;
         private double _horizonLimit = 0.0;
         private bool _limitsOn = false;
-        private bool _limitTracking = false;
         private bool _syncLimitOn = false;
-        private bool _hzLimitTracking = false;
-        private bool _hzLimitPark = false;
+        private LimitAction _horizonTrackingAction = LimitAction.None;
+        private LimitAction _meridianTrackingAction = LimitAction.None;
         private string _parkHzLimitName = string.Empty;
         private int _syncLimit = 45;
 
@@ -1351,19 +1349,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        public bool LimitPark
-        {
-            get => _limitPark;
-            set
-            {
-                if (_limitPark != value)
-                {
-                    _limitPark = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public string ParkLimitName
         {
             get => _parkLimitName;
@@ -1459,19 +1444,6 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        public bool LimitTracking
-        {
-            get => _limitTracking;
-            set
-            {
-                if (_limitTracking != value)
-                {
-                    _limitTracking = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public bool SyncLimitOn
         {
             get => _syncLimitOn;
@@ -1485,27 +1457,27 @@ namespace GreenSwamp.Alpaca.MountControl
             }
         }
 
-        public bool HzLimitTracking
+        public LimitAction HorizonTrackingAction
         {
-            get => _hzLimitTracking;
+            get => _horizonTrackingAction;
             set
             {
-                if (_hzLimitTracking != value)
+                if (_horizonTrackingAction != value)
                 {
-                    _hzLimitTracking = value;
+                    _horizonTrackingAction = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public bool HzLimitPark
+        public LimitAction MeridianTrackingAction
         {
-            get => _hzLimitPark;
+            get => _meridianTrackingAction;
             set
             {
-                if (_hzLimitPark != value)
+                if (_meridianTrackingAction != value)
                 {
-                    _hzLimitPark = value;
+                    _meridianTrackingAction = value;
                     OnPropertyChanged();
                 }
             }
@@ -1902,7 +1874,6 @@ namespace GreenSwamp.Alpaca.MountControl
                         new ParkPosition ( p.Name, p.X, p.Y )).ToList() ?? [];
                 }
 
-                _limitPark = settings.LimitPark;
                 _parkLimitName = settings.ParkLimitName ?? string.Empty;
 
                 // Limits
@@ -1912,10 +1883,11 @@ namespace GreenSwamp.Alpaca.MountControl
                 _axisLimitX = settings.AxisLimitX;
                 _axisUpperLimitY = settings.AxisUpperLimitY;
                 _axisLowerLimitY = settings.AxisLowerLimitY;
-                _limitTracking = settings.LimitTracking;
                 _syncLimitOn = settings.SyncLimitOn;
-                _hzLimitTracking = settings.HzLimitTracking;
-                _hzLimitPark = settings.HzLimitPark;
+                if (Enum.TryParse<LimitAction>(settings.HorizonTrackingAction, true, out var horizonAction))
+                    _horizonTrackingAction = horizonAction;
+                if (Enum.TryParse<LimitAction>(settings.MeridianTrackingAction, true, out var meridianAction))
+                    _meridianTrackingAction = meridianAction;
                 _parkHzLimitName = settings.ParkHzLimitName ?? string.Empty;
                 _syncLimit = settings.SyncLimit;
 
@@ -1930,9 +1902,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _hcFlipNs = settings.HcFlipNS;
                 _disableKeysOnGoTo = settings.DisableKeysOnGoTo;
                 _hcOneClickStart = settings.HcOneClickStart;
-                _hcPulseGuides = settings.HcPulseGuides
-                    .Select(g => new HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })
-                    .ToList();
+                _hcPulseGuides = [.. settings.HcPulseGuides.Select(g => new HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })];
 
                 // Miscellaneous
                 _temperature = settings.Temperature;
@@ -2092,7 +2062,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 }
                 // For Polar mode, settings.ParkPositions already has correct Az/Alt from property setter, don't overwrite
 
-                settings.LimitPark = _limitPark;
                 settings.ParkLimitName = _parkLimitName;
 
                 settings.LimitsOn = _limitsOn;
@@ -2101,11 +2070,10 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.AxisLimitX = _axisLimitX;
                 settings.AxisUpperLimitY = _axisUpperLimitY;
                 settings.AxisLowerLimitY = _axisLowerLimitY;
-                settings.LimitTracking = _limitTracking;
                 settings.SyncLimitOn = _syncLimitOn;
-                settings.HzLimitTracking = _hzLimitTracking;
-                settings.HzLimitPark = _hzLimitPark;
                 settings.ParkHzLimitName = _parkHzLimitName;
+                settings.HorizonTrackingAction = _horizonTrackingAction.ToString();
+                settings.MeridianTrackingAction = _meridianTrackingAction.ToString();
 
                 settings.PpecOn = _pPecOn;
                 settings.PolarLedLevel = _polarLedLevel;
@@ -2115,9 +2083,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 settings.HcFlipEW = _hcFlipEw;
                 settings.HcFlipNS = _hcFlipNs;
                 settings.DisableKeysOnGoTo = _disableKeysOnGoTo;
-                settings.HcPulseGuides = _hcPulseGuides
-                    .Select(g => new Settings.Models.SkySettings.HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })
-                    .ToList();
+                settings.HcPulseGuides = [.. _hcPulseGuides.Select(g => new Settings.Models.SkySettings.HcPulseGuide { Speed = g.Speed, Duration = g.Duration, Interval = g.Interval, Rate = g.Rate })];
 
                 settings.Temperature = _temperature;
 

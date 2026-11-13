@@ -36,6 +36,7 @@ namespace GreenSwamp.Alpaca.Server.Models
         // Pier side and timing
         public PointingState SideOfPier { get; set; }
         public double LocalHourAngle { get; set; }
+        public double LocalSiderealTime { get; set; }
         public DateTime UTCDate { get; set; }
         public DateTime LocalDate { get; set; }
         
@@ -117,7 +118,7 @@ namespace GreenSwamp.Alpaca.Server.Models
         public bool CanPolarLed { get; set; }
         public bool CanAdvancedCmdSupport { get; set; }
         public string MountName { get; set; } = string.Empty;
-        public string[] MountVersion { get; set; } = { string.Empty, string.Empty };
+        public string[] MountVersion { get; set; } = [string.Empty, string.Empty];
         public string Capabilities { get; set; } = string.Empty;
 
         // 3D view configuration (read once at scene init; not updated on every tick)
@@ -138,6 +139,7 @@ namespace GreenSwamp.Alpaca.Server.Models
             RightAscension = double.NaN;
             SideOfPier = PointingState.Unknown;
             LocalHourAngle = 0;
+            LocalSiderealTime = 0;
             UTCDate = DateTime.MinValue;
             LocalDate = DateTime.MinValue;
             Slewing = false;
@@ -177,9 +179,9 @@ namespace GreenSwamp.Alpaca.Server.Models
             IsGermanPolarMode = false;
             AutoHomeAxisX = 90.0;
             AutoHomeAxisY = 90.0;
-            StepsPerRevolution = new [] { 0L, 0L };
-            StepsWormPerRevolution = new [] { 0.0, 0.0 };
-            StepsTimeFreq = new [] { 0L, 0L };
+            StepsPerRevolution = [0L, 0L];
+            StepsWormPerRevolution = [0.0, 0.0];
+            StepsTimeFreq = [0L, 0L];
             SiteLatitude = double.NaN;
             SiteLongitude = double.NaN;
             SiteElevation = double.NaN;

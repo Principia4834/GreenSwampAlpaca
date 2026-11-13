@@ -1,0 +1,76 @@
+﻿<MudDialog>
+@*     <TitleContent>
+        <MudText Typo="Typo.h2">About</MudText>
+    </TitleContent>
+ *@
+    <DialogContent>
+        <MudTabs Elevation="0"
+                 Rounded="true"
+                 Border="true"
+                 Style="width:100%; min-width:0; max-width:100%; overflow-x:hidden;">
+            <MudTabPanel Text="About">
+                <MudPaper Elevation="0"
+                          Class="pa-3"
+                          Style="height:25rem; width:100%; min-width:0; overflow-y:auto; overflow-x:hidden;">
+                    <MudText Typo="Typo.body1"
+                             Style="display:block; width:100%; min-width:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word;">
+                        @_aboutText
+                    </MudText>
+                </MudPaper>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Credits">
+                <MudPaper Elevation="0"
+                          Class="pa-3"
+                          Style="height:25rem; width:100%; min-width:0; overflow-y:auto; overflow-x:hidden;">
+                    <MudText Typo="Typo.body1"
+                             Style="display:block; width:100%; min-width:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word;">
+                        @_creditsText
+                    </MudText>
+                </MudPaper>
+            </MudTabPanel>
+
+            <MudTabPanel Text="License">
+
+                <MudPaper Elevation="0"
+                          Class="pa-3"
+                          Style="height:25rem; width:100%; min-width:0; overflow-y:auto; overflow-x:hidden;">
+                    <MudText Typo="Typo.body1"
+                             Style="display:block; width:100%; min-width:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word;">
+                        @_licenseText
+                    </MudText>
+                </MudPaper>
+            </MudTabPanel>
+        </MudTabs>
+    </DialogContent>
+
+    <DialogActions>
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="width: 100%;">
+            <MudStack Row="true" Spacing="1">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Href="https://github.com/Principia4834/GreenSwampAlpaca/wiki"
+                           Target="_blank"
+                           Rel="noopener noreferrer"
+                           StartIcon="@Icons.Material.Filled.HelpCenter">
+                    Online Help
+                </MudButton>
+
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Href="https://ascom-standards.org/"
+                           Target="_blank"
+                           Rel="noopener noreferrer"
+                           StartIcon="@Icons.Material.Filled.Info">
+                    Alpaca
+                </MudButton>
+            </MudStack>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Default"
+                       OnClick="Close">
+                Close
+            </MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>

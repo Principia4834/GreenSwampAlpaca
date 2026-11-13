@@ -100,7 +100,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             executor?.Initialize(_serial);
             executor?.SetCustomGearing(_customMount360Steps, _customRaWormSteps);
             executor?.SetCallbacks(_stepsCallback, _pulseGuideRaCallback, _pulseGuideDecCallback);
-            if (executor != null) executor.DeviceNumber = DeviceNumber;
+            executor?.DeviceNumber = DeviceNumber;
         }
 
         protected override void CleanupExecutor(SkyWatcher executor)

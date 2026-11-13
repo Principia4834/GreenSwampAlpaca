@@ -5,7 +5,7 @@ using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Pages
 {
-    public partial class MountSettings
+    public partial class MountConfiguration
     {
         [Inject]
         NavigationManager NavManager { get; set; } = default!;
@@ -13,7 +13,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         [Parameter] public int DeviceNumber { get; set; }
         private int ActiveDeviceTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
-        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
+        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = [];
 
         protected override void OnInitialized()
         {
@@ -34,14 +34,13 @@ namespace GreenSwamp.Alpaca.Server.Pages
         {
             var keys = GetConfiguredDeviceNumbers();
             if (index >= 0 && index < keys.Count)
-                NavManager.NavigateTo($"/mount-settings/{keys[index]}");
+                NavManager.NavigateTo($"/mount-configuration/{keys[index]}");
         }
 
         private List<int> GetConfiguredDeviceNumbers() =>
-            _alpacaDevices
+            [.. _alpacaDevices
                 .Select(d => d.DeviceNumber)
-                .OrderBy(d => d)
-                .ToList();
+                .OrderBy(d => d)];
 
         private async Task OpenExportDialog()
         {

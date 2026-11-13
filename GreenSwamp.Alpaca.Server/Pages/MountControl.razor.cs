@@ -23,7 +23,6 @@ using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Utilities;
 
@@ -41,9 +40,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private CancellationTokenSource? _hbCts;
         private int ActiveTabIndex { get; set; }
         private List<AlpacaDevice> _alpacaDevices = [];
-        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = new();
-        private enum CoordMode { RaDec, AltAz, Optics }
-        private CoordMode _coordMode = CoordMode.RaDec;
+        private Dictionary<int, GreenSwamp.Alpaca.Settings.Models.SkySettings> _deviceSettings = [];
 
         private const long UiClientId = GreenSwamp.Alpaca.MountControl.Mount.UiInternalClientId;
 
@@ -111,20 +108,12 @@ namespace GreenSwamp.Alpaca.Server.Pages
         }
 
         // -- Shutdown (replaces checkbox + plain button) -----------------------
-        private async Task ShutdownAsync()
+        private async Task OpenShutdownDialogAsync()
         {
-            var confirmed = await ConfirmAsync(
-                "Gracefully stops the server process. Use only when all mounts are parked and disconnected.",
-                "Shutdown");
-            if (!confirmed) return;
-            try
-            {
-                Program.Lifetime?.StopApplication();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Shutdown failed: {ex.Message}", Severity.Error);
-            }
+            await ShutdownDialogHelper.ShowShutdownDialogAsync(
+                DialogService,
+                Snackbar,
+                Program.Lifetime);
         }
 
         // -- Stop (inline bottom bar) ------------------------------------------
@@ -147,18 +136,6 @@ namespace GreenSwamp.Alpaca.Server.Pages
             MaxWidth = MaxWidth.ExtraSmall,
             CloseOnEscapeKey = true
         };
-
-        private async Task<bool> ConfirmAsync(string message, string confirmText)
-        {
-            var parameters = new DialogParameters<ConfirmDialog>
-            {
-                { x => x.ContentText, message },
-                { x => x.ConfirmText, confirmText }
-            };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog>(string.Empty, parameters, _confirmOptions);
-            var result = await dialog.Result;
-            return result is { Canceled: false };
-        }
 
         public void Dispose()
         {
@@ -206,9 +183,9 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private async Task OpenExportDialog()
         {
             var parameters = new DialogParameters();
-            var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+            var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, FullWidth = true};
 
-            await DialogService.ShowAsync<SettingsExportDialog>("", parameters, options);
+            await DialogService.ShowAsync<SettingsExportDialog>(null, parameters, options);
         }
 
         /// <summary>Returns true when the UI's internal client is registered as connected.</summary>
@@ -234,10 +211,9 @@ namespace GreenSwamp.Alpaca.Server.Pages
         }
 
         private List<int> GetConfiguredDeviceNumbers() =>
-            _alpacaDevices
+            [.. _alpacaDevices
                 .Select(d => d.DeviceNumber)
-                .OrderBy(d => d)
-                .ToList();
+                .OrderBy(d => d)];
 
         private string TabLabel(int deviceNumber)
         {
@@ -266,79 +242,5 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private static string FormatHMS(double hours) => CoordinateFormatter.FormatHMS(hours);
         private static string FormatDMS(double degrees) => CoordinateFormatter.FormatDMS(degrees);
-
-        // -- Manage Park Positions (status bar) --------------------------------
-        private async Task OpenManageParkPositionsDialogAsync(int deviceNumber)
-        {
-            var parameters = new DialogParameters
-            {
-                [nameof(ManageParkPositionsDialog.DeviceNumber)] = deviceNumber
-            };
-            var options = new DialogOptions
-            {
-                MaxWidth = MaxWidth.Small,
-                FullWidth = true,
-                CloseOnEscapeKey = true,
-                CloseButton = true
-            };
-            await DialogService.ShowAsync<ManageParkPositionsDialog>("", parameters, options);
-        }
-
-        // -- Park Position Selection (status bar) ------------------------------
-        private void OnParkPositionSelectedInStatusBar(int deviceNumber, string positionName)
-        {
-            var mount = MountRegistry.GetInstance(deviceNumber);
-            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
-
-            var position = mount.Settings.ParkPositions?.Find(p => p.Name == positionName);
-            if (position == null) { Snackbar.Add($"Park position '{positionName}' not found", Severity.Warning); return; }
-
-            mount.ParkSelected = position;
-            Snackbar.Add($"Park position set to: {positionName}", Severity.Info);
-        }
-
-        // -- Plot ------------------------------------------------------------
-        private async Task OpenChartWindowAsync(int deviceNumber, string chartType, Settings.Models.SkySettings ms)
-        {
-            var mount = MountRegistry.GetInstance(deviceNumber);
-            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
-            var path = $"/charts/{chartType}/{deviceNumber}?type={ms.AlignmentMode}&label={TabLabel(deviceNumber)}";
-            await JS.InvokeVoidAsync(
-                "chartWindowInterop.open",
-                DotNetObjectReference.Create(this),
-                path,
-                $"gs-{chartType}-chart-{deviceNumber}",
-                1200,
-                700);
-        }
-
-        // -- 3D View ------------------------------------------------------------
-        private async Task OpenTelescopeViewAsync(int deviceNumber)
-        {
-            var mount = MountRegistry.GetInstance(deviceNumber);
-            if (mount == null) { Snackbar.Add($"Mount device {deviceNumber} not found", Severity.Error); return; }
-
-            await JS.InvokeVoidAsync(
-                "chartWindowInterop.open",
-                DotNetObjectReference.Create(this),
-                $"/telescope-view/{deviceNumber}",
-                $"gs-telescope-view-{deviceNumber}",
-                900,
-                700);
-        }
-
-        [JSInvokable]
-        public void OnPopupBlocked(string url)
-        {
-            Snackbar.Add(
-                "Chart window was blocked. Please allow pop-ups for this site.",
-                Severity.Warning);
-        }
-
-        [JSInvokable]
-        public void OnChartWindowClosed(string windowKey)
-        {
-            // Chart window closed externally — no nav-menu state to update.
-        }
     }
 }

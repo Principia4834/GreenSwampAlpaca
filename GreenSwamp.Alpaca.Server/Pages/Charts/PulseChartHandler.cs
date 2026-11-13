@@ -38,7 +38,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             _settings    = SettingsService.GetChartSettings();
             _displayMode = "Realtime";
-            ChartId = string.IsNullOrEmpty(Label) ? "Pulse" : Regex.Replace(Label, @"[^\w]+", string.Empty);
+            ChartId = string.IsNullOrEmpty(Label) ? "Pulse" : MyRegex().Replace(Label, string.Empty);
             ChartId += $"_{DeviceNumber.ToString()}_{DateTime.Now.ToString("yyyy-MM-dd")}";
 
             BuildChartOptions();
@@ -332,5 +332,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 await _hub.DisposeAsync();
             }
         }
+
+        [GeneratedRegex(@"[^\w]+")]
+        private static partial Regex MyRegex();
     }
 }

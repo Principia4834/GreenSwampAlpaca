@@ -1,0 +1,84 @@
+﻿@using GreenSwamp.Alpaca.MountControl
+@using GreenSwamp.Alpaca.Settings.Services
+@implements IDisposable
+@inject IVersionedSettingsService SettingsService
+
+@* Row of tiles that scrolls horizontally when it is wider than the bar. The stack shrinks to its
+   content in the centred bottom bar, so max-width keeps it inside the bar and the overflow scrolls. *@
+<MudStack Row="true" Class="pa-1" Style="max-width:100%; overflow-x:auto;"
+          role="list" aria-label="Telescope devices">
+    @foreach (var device in _devices)
+    {
+        <div role="listitem" @key="device.DeviceNumber">
+            <DeviceTile Device="device" />
+        </div>
+    }
+    @if (_devices.Count == 0)
+    {
+        <MudText Typo="Typo.body1" Class="gs-tile-empty">No telescope devices are configured.</MudText>
+    }
+</MudStack>
+
+@code {
+    private readonly CancellationTokenSource _cts = new();
+    private List<HomeDeviceInfo> _devices = [];
+
+    protected override void OnInitialized()
+    {
+        var settingsByNumber = SettingsService.GetAllDeviceSettings()
+            .ToDictionary(s => s.DeviceNumber);
+
+        _devices = SettingsService.GetAlpacaDevices()
+            .OrderBy(d => d.DeviceNumber)
+            .Select(d =>
+            {
+                settingsByNumber.TryGetValue(d.DeviceNumber, out var s);
+                return new HomeDeviceInfo(
+                    d.DeviceNumber,
+                    string.IsNullOrWhiteSpace(d.DeviceName) ? $"Device {d.DeviceNumber}" : d.DeviceName,
+                    s?.DeviceDescription ?? string.Empty,
+                    s?.Mount ?? "Unknown",
+                    s?.AlignmentMode ?? "Unknown",
+                    IsConnected(d.DeviceNumber),
+                    s?.Enabled ?? true);
+            })
+            .ToList();
+
+        _ = RefreshLoopAsync(_cts.Token);
+    }
+
+    // Mount.IsConnected is a lock-free O(1) check; no mount hardware is touched.
+    private static bool IsConnected(int deviceNumber) =>
+        MountRegistry.GetInstance(deviceNumber)?.IsConnected ?? false;
+
+    private async Task RefreshLoopAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                var changed = false;
+                for (var i = 0; i < _devices.Count; i++)
+                {
+                    var connected = IsConnected(_devices[i].DeviceNumber);
+                    if (connected == _devices[i].Connected) continue;
+                    _devices[i] = _devices[i] with { Connected = connected };
+                    changed = true;
+                }
+
+                if (changed) await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Component disposed
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

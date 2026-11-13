@@ -55,8 +55,17 @@
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\css">
 				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\css\apexcharts.css.gz" KeyPath="yes" />
 			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\css">
+				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\css\apexcharts-ignite-ui.css.gz" KeyPath="yes" />
+			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\js">
 				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\js\apexcharts.esm.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\js">
+				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\js\apexcharts.full.min.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\js\features">
+				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\js\features\ignite-ui.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\js">
 				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\js\blazor-apexcharts.js.gz" KeyPath="yes" />
@@ -72,6 +81,9 @@
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\locales">
 				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\locales\it.json.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_content\Blazor-ApexCharts\locales">
+				<File Source="$(var.PublishDir)\wwwroot\_content\Blazor-ApexCharts\locales\es.json.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\_framework">
 				<File Source="$(var.PublishDir)\wwwroot\_framework\blazor.server.js.gz" KeyPath="yes" />
@@ -109,6 +121,18 @@
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\fonts">
 				<File Source="$(var.PublishDir)\wwwroot\fonts\SwampWitch.ttf" KeyPath="yes" />
 			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\images">
+				<File Source="$(var.PublishDir)\wwwroot\images\GreenSwamp1.webp" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\images\carousel\astronomy">
+				<File Source="$(var.PublishDir)\wwwroot\images\carousel\astronomy\Longmore8.jpg" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\images\carousel\astronomy">
+				<File Source="$(var.PublishDir)\wwwroot\images\carousel\astronomy\M42.jpg" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\images\carousel\astronomy">
+				<File Source="$(var.PublishDir)\wwwroot\images\carousel\astronomy\M83.jpg" KeyPath="yes" />
+			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\profileUtils.js.gz" KeyPath="yes" />
 			</Component>
@@ -129,6 +153,18 @@
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\tts.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\culturePreferences.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\goToPanelSmartInput.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\telescopeViewer.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\models">
+				<File Source="$(var.PublishDir)\wwwroot\models\telescope.obj" KeyPath="yes" />
 			</Component>
 			<!-- Local Babylon.js vendor files required by TelescopeView -->
 			<!-- Packaged under wwwroot\lib\babylon so the app does not depend on the CDN at runtime -->

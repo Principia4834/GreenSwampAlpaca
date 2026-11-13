@@ -86,7 +86,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// <summary>
         /// Returns a snapshot of all current lines in chronological order (oldest first).
         /// </summary>
-        public IReadOnlyList<string> GetSnapshot() => _lines.ToArray();
+        public IReadOnlyList<string> GetSnapshot() => [.. _lines];
 
         /// <summary>
         /// Clears the in-memory display buffer.

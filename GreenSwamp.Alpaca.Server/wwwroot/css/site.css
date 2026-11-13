@@ -5,31 +5,19 @@
 
 /* --- CSS Custom Properties ---------------------------------- */
 :root {
-    /* Global font scale */
-    --gs-global-font-scale: 1.0;
     /* Base surfaces */
     --gs-bg-app: #121212;
     --gs-bg-paper: #1e1e1e;
     --gs-bg-elevated: #2a2a2a;
     --gs-bg-sidebar: #0d1117;
-    /* Primary: Material Grey */
-    --gs-grey-50: #fafafa;
-    --gs-grey-100: #f5f5f5;
-    --gs-grey-300: #e0e0e0;
-    --gs-grey-500: #9e9e9e;
-    --gs-grey-700: #616161;
-    --gs-grey-900: #212121;
     /* Accent: Material Green */
     --gs-accent-300: #81c784;
     --gs-accent-500: #4caf50;
     --gs-accent-500-rgb: 76, 175, 80;
     --gs-accent-700: #388e3c;
-    --gs-accent-a200: #69f0ae;
     /* Text */
     --gs-text-primary: rgba(255, 255, 255, 0.87);
     --gs-text-secondary: rgba(255, 255, 255, 0.60);
-    --gs-text-disabled: rgba(255, 255, 255, 0.38);
-    --gs-text-hint: rgba(255, 255, 255, 0.38);
     /* Dividers */
     --gs-divider: rgba(255, 255, 255, 0.12);
     /* Status / Semantic */
@@ -37,45 +25,38 @@
     --gs-warning: #ffa726;
     --gs-error: #f44336;
     --gs-info: #42a5f5;
-    /* Spacing (8dp grid) */
-    --gs-space-1: 4px;
-    --gs-space-2: 8px;
-    --gs-space-3: 12px;
-    --gs-space-4: 16px;
-    --gs-space-6: 24px;
-    --gs-space-8: 32px;
     /* Typography */
     --gs-font-sans: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --gs-font-mono: 'Roboto Mono', 'Courier New', monospace;
 }
 
-html {
-    font-size: 14px;
+/* Fallback root size before the server-rendered zoom style loads; keep in sync with GsZoom.BaseFontSizePx. */
+:root {
+    font-size: 16px;
 }
 
-/* Selected value text + free text input text */
+/* collapsed (and default header) height tuning */
+.gs-panel .mud-expand-panel-header {
+    min-height: 1.5rem; /* default is larger */
+    height: 1.5rem;
+    padding-top: 0;
+    padding-bottom: 0;
+}
 
-.mud-select-input,
-.mud-select .mud-input-slot,
-.mud-input-slot.mud-input-root-input,
-.mud-input-slot,
-.mud-input-root-input,
-.mud-input > input,
-.mud-textfield .mud-input-slot,
-.mud-input-label,
+.gs-panel .mud-expand-panel-content {
+    min-height: 1.5rem; /* keeps header/content alignment */
+}
 
-/* Dropdown / combo popup items rendered via MudPopoverProvider */
-.mud-popover .mud-select-item,
-.mud-popover .mud-list-item,
-.mud-popover .mud-list-item-text {
-    font-size: inherit !important;
+/* --- AppBar brand: weight and tracking only; size comes from Typo --- */
+.gs-brand {
+    font-weight:    300;
+    letter-spacing: 0.01em;
 }
 
 /* --- Telescope State — panel group heading ------------------ */
 .gs-panel-heading {
     color:          var(--gs-text-secondary);
     letter-spacing: 0.08em;
-    font-size:      0.70em;
     text-transform: uppercase;
 }
 
@@ -88,12 +69,12 @@ body {
 }
 
 /* Ensure main content area stays dark */
-main, .content, article {
+main, .content {
     background-color: var(--gs-bg-app) !important;
     color:            var(--gs-text-primary);
 }
 
-a, .btn-link {
+a {
     color: var(--gs-accent-500);
 }
 
@@ -105,17 +86,16 @@ a:hover {
     padding-top: 1.1rem;
 }
 
-/* --- Material Symbols sizing -------------------------------- */
-.material-symbols-outlined {
-    font-size:   1.25em;
-    line-height: 1;
-    vertical-align: middle;
-    margin-right: var(--gs-space-2);
-    color: var(--gs-text-secondary);
+.shutdown-nav-link.mud-nav-link-active {
+    color: inherit !important;
+    background-color: transparent !important;
 }
 
-.nav-item ::deep .material-symbols-outlined {
-    color: inherit;
+/* Restore normal nav hover behavior */
+.shutdown-nav-link:hover,
+.shutdown-nav-link:focus-visible {
+    color: var(--mud-palette-primary) !important;
+    background-color: var(--mud-palette-action-default-hover) !important;
 }
 
 /* --- MudTabs: suppress uppercase on tab labels -------------- */
@@ -124,100 +104,21 @@ a:hover {
 }
 
 /* --- Monospace / telemetry ---------------------------------- */
-.gs-monospace {
-    font-family:    var(--gs-font-mono);
-    font-size:      0.8125em;
-    font-weight:    500;
-    letter-spacing: 0.03em;
-    color:          var(--gs-text-primary);
+.gs-font-mono {
+    font-family: var(--gs-font-mono);
 }
 
-/* --- Cards / panels ---------------------------------------- */
-.gs-card {
-    background:    var(--gs-bg-paper);
-    border:        1px solid var(--gs-divider);
-    border-radius: 4px;
-    padding:       var(--gs-space-4);
-    margin-bottom: var(--gs-space-6);
-    color:         var(--gs-text-primary);
+/* --- Key/value tables inside MudSimpleTable: size comes from MudBlazor (td=body2, th=subtitle2) --- */
+.gs-kv-label {
+    color: var(--mud-palette-primary);
 }
 
-.gs-card-header {
-    font-size:      1.125em;
-    font-weight:    400;
-    color:          var(--gs-text-primary);
-    border-bottom:  1px solid var(--gs-divider);
-    padding-bottom: var(--gs-space-2);
-    margin-bottom:  var(--gs-space-4);
-}
-
-/* --- Buttons ----------------------------------------------- */
-.btn-gs-danger {
-    background-color: transparent;
-    color:            var(--gs-error);
-    border:           1px solid var(--gs-error);
-    border-radius:    4px;
-    padding:          5px 15px;
-    font-weight:      500;
-    text-transform:   uppercase;
-    letter-spacing:   0.06em;
-}
-
-.btn-gs-danger:hover {
-    background-color: rgba(244, 67, 54, 0.12);
-}
-
-/* --- Status badges ----------------------------------------- */
-.gs-badge {
-    display:        inline-flex;
-    align-items:    center;
-    padding:        2px 10px;
-    border-radius:  12px;
-    font-size:      0.75em;
-    font-weight:    500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.gs-badge-connected    { background: rgba(102,187,106,0.2); color: var(--gs-success); }
-.gs-badge-disconnected { background: rgba(244, 67, 54,0.2); color: var(--gs-error);   }
-.gs-badge-slewing      { background: rgba(255,167, 38,0.2); color: var(--gs-warning); }
-.gs-badge-tracking     { background: rgba( 66,165,245,0.2); color: var(--gs-info);    }
-.gs-badge-parked       { background: rgba(158,158,158,0.2); color: var(--gs-grey-300);}
-
-/* --- Monitor / log viewer ---------------------------------- */
-.gs-monitor {
-    background:    #000;
-    color:         var(--gs-text-primary);
-    font-family:   var(--gs-font-mono);
-    font-size:     0.8125em;
-    padding:       var(--gs-space-2);
-    border-radius: 4px;
-    border:        1px solid var(--gs-divider);
-    overflow-y:    auto;
-    max-height:    350px;
-}
-
-.gs-monitor-row {
-    display:               grid;
-    grid-template-columns: 3rem 7rem 1fr;
-    gap:                   0 var(--gs-space-2);
-    padding:               1px 0;
-}
-
-.gs-monitor-row:hover {
-    background: rgba(255, 255, 255, 0.04);
-}
-
-.gs-monitor-index   { font-weight: 700; color: var(--gs-text-secondary); }
-.gs-monitor-time    { color: var(--gs-text-secondary); }
-.gs-monitor-message { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* --- Data tables ------------------------------------------- */
-.gs-table {
-    width:           100%;
-    border-collapse: collapse;
-    font-size:       1em;
+/* Borderless centre column holding copy buttons (CdcDialog) */
+.gs-kv-spacer {
+    border-top:    none !important;
+    border-bottom: none !important;
+    padding:       0 2px !important;
+    text-align:    center;
 }
 
 /* --- TelescopeSetup tables: align labels and values consistently --- */
@@ -229,8 +130,6 @@ a:hover {
 .ts-table th {
     width: 50%;
     color: var(--gs-text-secondary);
-    font-size: 0.8125em;
-    font-weight: 500;
     padding: 6px 12px;
     text-align: left;
     vertical-align: top;
@@ -241,53 +140,6 @@ a:hover {
     padding: 6px 12px;
     text-align: left;
     vertical-align: top;
-}
-
-.gs-table th {
-    color:          var(--gs-text-secondary);
-    font-size:      0.75em;
-    font-weight:    500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding:        8px 12px;
-    border-bottom:  1px solid var(--gs-divider);
-    text-align:     left;
-}
-
-.gs-table td {
-    color:         var(--gs-text-primary);
-    padding:       8px 12px;
-    border-bottom: 1px solid var(--gs-divider);
-}
-
-.gs-table td.gs-value { font-family: var(--gs-font-mono); font-size: 0.8125em; }
-
-.gs-table tbody tr:hover { background: var(--gs-bg-elevated); }
-
-/* --- Validation -------------------------------------------- */
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid var(--gs-success);
-}
-
-.invalid {
-    outline: 1px solid var(--gs-error);
-}
-
-.validation-message {
-    color:     var(--gs-error);
-    font-size: 0.75em;
-}
-
-/* --- Live / animated values -------------------------------- */
-@keyframes gs-live-pulse {
-    0%   { opacity: 1;   }
-    50%  { opacity: 0.55;}
-    100% { opacity: 1;   }
-}
-
-.gs-live {
-    animation: gs-live-pulse 2s ease-in-out infinite;
-    color:     var(--gs-success);
 }
 
 /* --- Code -------------------------------------------------- */
@@ -334,48 +186,29 @@ code {
 /* --- Home / Welcome page ------------------------------------ */
 /* Remove container padding so the hero fills wall-to-wall      */
 .gs-home-hero-wrap {
-    margin: -1rem;  /* cancel MudContainer pa-4 (16px)          */
+    margin: -16px;  /* cancel MudContainer pa-4 (fixed 16px; must stay px so it matches at any zoom) */
 }
 
 .gs-home-hero {
-    position:        relative;
-    min-height:      calc(100vh - 48px);
-    display:         flex;
-    flex-direction:  column;
-    justify-content: space-between;
-    background-image:    url('https://greenswamp.org/wp-content/uploads/2022/03/GreenSwamp1.jpg');
-    background-size:     cover;
+    min-height: calc(100vh - 48px);
+    /* darkening gradient layered over the photo */
+    background-image:
+        linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,0.75) 100%),
+        url('/images/GreenSwamp1.webp');
+    background-size: cover;
     background-position: center;
-    background-repeat:   no-repeat;
-    border-radius:   4px;
-    overflow:        hidden;
-}
-
-.gs-home-overlay {
-    position: absolute;
-    inset:    0;
-    background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.55) 0%,
-        rgba(0,0,0,0.30) 50%,
-        rgba(0,0,0,0.75) 100%
-    );
-    pointer-events: none;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }
 
 .gs-home-content {
-    position:   relative;
-    z-index:    1;
-    padding:    3rem 2.5rem 1.5rem;
-    flex:       1;
+    flex:       0 0 auto;
 }
 
 .gs-home-title {
-    font-size:   clamp(1.75rem, 4vw, 3rem);
     font-weight: 300;
     color:       #fff;
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
-    margin-bottom: 1.5rem;
     letter-spacing: 0.02em;
 }
 
@@ -390,88 +223,148 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     outline: none !important;
 }
 
-.gs-home-bullets {
-    list-style:  none;
-    padding:     0;
-    margin:      0 0 2rem;
-    max-width:   520px;
-}
+    /* Carousel area: fills the space between the title and the bottom bar */
+    .gs-home-carousel-area {
+        min-height:     340px;
+    }
 
-.gs-home-bullets li {
-    color:        rgba(255,255,255,0.90);
-    font-size:    1rem;
-    line-height:  1.7;
-    padding-left: 1.4em;
-    position:     relative;
-    text-shadow:  0 1px 4px rgba(0,0,0,0.7);
-}
+    .gs-carousel-toggle .mud-toggle-group {
+        background: rgba(0,0,0,0.55);
+    }
 
-.gs-home-bullets li::before {
-    content:  '●';
-    position: absolute;
-    left:     0;
-    color:    var(--gs-accent-500);
-    font-size: 0.55em;
-    top:      0.45em;
-}
+    .gs-carousel {
+        min-height:    300px;
+        color:         #fff;
+        background:    rgba(0,0,0,0.35);
+    }
 
-.gs-home-links {
-    display:    flex;
-    gap:        1rem;
-    flex-wrap:  wrap;
-}
+    .gs-carousel-empty {
+        color:       rgba(255,255,255,0.75);
+        text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+    }
 
-.gs-home-links a {
-    display:         inline-flex;
-    align-items:     center;
-    gap:             0.35rem;
-    padding:         0.45rem 1.1rem;
-    border:          1px solid var(--gs-accent-500);
-    border-radius:   4px;
-    color:           var(--gs-accent-500);
-    font-size:       0.875rem;
-    font-weight:     500;
-    text-decoration: none;
-    background:      rgba(0,0,0,0.35);
-    backdrop-filter: blur(4px);
-    transition:      background 0.2s, border-color 0.2s;
-}
+    /* Each slide fills the (absolutely positioned) carousel item. The bottom padding
+       (pb-11 on the element) keeps the caption clear of MudBlazor's overlaid bullet row. */
+    .gs-slide {
+        margin:         0;
+        height:         100%;
+        box-sizing:     border-box;
+    }
 
-.gs-home-links a:hover {
-    background:   rgba(76,175,80,0.20);
-    border-color: var(--gs-accent-500);
-    color:        #fff;
-}
+    .gs-slide-img {
+        max-width:     100%;
+        max-height:    100%;
+        object-fit:    contain;
+        border-radius: 4px;
+        box-shadow:    0 2px 12px rgba(0,0,0,0.6);
+    }
 
-    /* Home links: remove default focus ring for pointer focus */
-    .gs-home-links a:focus {
-        outline: none;
-}
+    .gs-slide-fallback {
+        display: none;
+        color:   rgba(255,255,255,0.7);
+    }
 
-/* Home links: explicit keyboard focus style */
-    .gs-home-links a:focus-visible {
-        outline: 2px solid var(--gs-accent-500);
-        outline-offset: 2px;
-        border-color: var(--gs-accent-300);
-        box-shadow: 0 0 0 3px rgba(var(--gs-accent-500-rgb), 0.25);
-}
-    
-    .gs-home-footer {
-    position:    relative;
-    z-index:     1;
-    text-align:  center;
-    padding:     1.25rem 1rem;
-    background:  transparent;
-}
+    .gs-slide-missing .gs-slide-img      { display: none; }
+    .gs-slide-missing .gs-slide-fallback { display: block; }
 
-.gs-home-footer-text {
-    font-family: 'Swamp Witch', cursive;
-    font-size:   clamp(1.1rem, 2.5vw, 1.8rem);
-    color:       var(--gs-accent-500);
-    letter-spacing: 0.06em;
-    text-shadow: 0 0 18px rgba(76,175,80,0.5), 0 2px 6px rgba(0,0,0,0.8);
-    margin:      0;
-}
+    .gs-slide-caption {
+        flex:        0 0 auto;
+        color:       rgba(255,255,255,0.92);
+        white-space: nowrap;
+        overflow:    hidden;
+        text-overflow: ellipsis;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    }
+
+    .gs-slide-preload {
+        position:       absolute;
+        width:          1px;
+        height:         1px;
+        opacity:        0;
+        pointer-events: none;
+    }
+
+    /* Bottom bar: tile row above the wordmark, both centred */
+    .gs-home-bottom-bar {
+        background:     rgba(0,0,0,0.45);
+        backdrop-filter: blur(4px);
+    }
+
+    .gs-tile-empty {
+        color: rgba(255,255,255,0.75);
+    }
+
+    .mud-card.gs-tile {
+        display:        flex;
+        flex-direction: column;
+        overflow:       hidden;
+        flex:           0 0 auto;
+        width:          9.375rem;
+        height:         7.5rem;
+        border:         3px solid var(--gs-accent-500);
+        border-radius:  8px;
+        background:     rgba(0,0,0,0.55);
+        color:          #fff;
+        transition:     background 0.2s;
+    }
+
+    .mud-card.gs-tile:hover {
+        background: rgba(76,175,80,0.25);
+    }
+
+    .mud-card.gs-tile-disabled {
+        opacity: 0.55;
+    }
+
+    /* Tooltip root wrapper around the main button takes the space above the actions row */
+    .gs-tile-main-tip {
+        display:    block;
+        flex:       1 1 auto;
+        min-height: 0;
+    }
+
+    .mud-card.gs-tile .mud-card-actions {
+        justify-content: space-between;
+        padding:         2px;
+    }
+
+    /* MudButton upper-cases its label; keep the device name as typed */
+    .gs-tile-main.mud-button-root {
+        width:          100%;
+        height:         100%;
+        min-width:      0;
+        padding:        0.5rem;
+        border-radius:  6px;
+        text-transform: none;
+    }
+
+    .gs-tile-main .mud-button-label {
+        flex-direction:  column;
+        align-items:     center;
+        justify-content: center;
+        gap:             0.25rem;
+        max-width:       100%;
+        min-width:       0;
+    }
+
+    .gs-tile-name {
+        max-width:     100%;
+        overflow:      hidden;
+        white-space:   nowrap;
+        text-overflow: ellipsis;
+        font-weight:   500;
+    }
+
+    .gs-tile-state {
+        opacity: 0.8;
+    }
+
+    .gs-home-footer-text {
+        font-family:    'Swamp Witch', cursive;
+        color:          var(--gs-accent-500);
+        letter-spacing: 0.06em;
+        text-shadow:    0 0 18px rgba(76,175,80,0.5), 0 2px 6px rgba(0,0,0,0.8);
+    }
 
 /* -------------------------------------------------------------- */
 .blazor-error-boundary::after {
@@ -479,9 +372,14 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 }
 
 /* --- Hand Controller grid ---------------------------------- */
+.hc-primary-controls {
+    --hc-cell-size: 3.125rem;
+    --hc-gap: 0.5rem;
+    --hc-grid-width: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
+    --hc-speed-column-width: 4.5rem;
+}
+
 .hc-grid {
-    --hc-cell-size: 50px; /* change only this */
-    --hc-gap: 8px;
     display: grid;
     grid-template-columns: repeat(3, var(--hc-cell-size));
     grid-template-rows: repeat(3, var(--hc-cell-size));
@@ -490,24 +388,24 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     touch-action: none;
 }
 
-    /* MudButton root inside the grid */
-    .hc-grid > .mud-button-root.hc-btn {
-        width: 100%;
-        height: 100%;
-        min-width: 0; /* override MudButton min sizing behavior */
-        min-height: 0;
-        padding: 0; /* remove internal spacing */
-        aspect-ratio: 1 / 1;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid var(--mud-palette-primary);
-        border-radius: 8px;
-        background: var(--mud-palette-surface);
-        transition: background-color 0.15s ease, box-shadow 0.15s ease; /* avoid scale overlap */
-        outline: none;
-    }
+/* MudButton root inside the grid */
+.hc-grid > .mud-button-root.hc-btn {
+    width: 100%;
+    height: 100%;
+    min-width: 0; /* override MudButton min sizing behavior */
+    min-height: 0;
+    padding: 0; /* remove internal spacing */
+    aspect-ratio: 1 / 1;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--mud-palette-primary);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    transition: background-color 0.15s ease, box-shadow 0.15s ease; /* avoid scale overlap */
+    outline: none;
+}
 
         /* Optional: keep visual feedback without growth overlap */
         .hc-grid > .mud-button-root.hc-btn:hover {
@@ -528,6 +426,91 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
             color: var(--mud-palette-primary-text);
             border-color: var(--mud-palette-primary-darken);
         }
+
+        .hc-speed-column {
+            --hc-speed-column-height: calc(var(--hc-cell-size) * 3 + var(--hc-gap) * 2);
+            --hc-speed-label-height: 1rem;
+            --hc-speed-slider-gap: 1rem;
+            --hc-speed-slider-length: calc(var(--hc-speed-column-height) - var(--hc-speed-label-height) - var(--hc-speed-slider-gap));
+            height: var(--hc-speed-column-height);
+            width: var(--hc-speed-column-width);
+        }
+
+        .hc-speed-column > .mud-typography {
+            width: 100%;
+            min-height: var(--hc-speed-label-height);
+            margin: 0;
+            text-align: center;
+        }
+
+        .hc-speed-column > .mud-typography.hc-speed-label {
+            display: flex;
+            justify-content: center;
+            line-height: 1;
+            align-items: flex-start;
+        }
+
+        .hc-speed-slider-slot {
+            position: relative;
+            flex: 1 1 auto;
+            width: 100%;
+            min-height: var(--hc-speed-slider-length);
+            padding: var(--hc-speed-slider-gap) 0;
+            box-sizing: border-box;
+            overflow: visible;
+        }
+
+    .hc-speed-slider-slot > .mud-slider.hc-speed-slider.mud-slider-vertical {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: var(--hc-speed-slider-length);
+        height: auto;
+        transform: translate(-50%, -50%) rotate(270deg);
+        transform-origin: center;
+    }
+
+.hc-secondary-controls {
+    width: calc(var(--hc-grid-width) + var(--hc-speed-column-width) + var(--hc-gap));
+}
+
+.hc-secondary-options {
+    width: var(--hc-grid-width);
+}
+
+.hc-secondary-settings {
+    width: var(--hc-speed-column-width);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.mud-button-root.gs-icon-button-rounded {
+    width: 3.125rem;
+    height: 3.125rem;
+    min-width: 3.125rem;
+    min-height: 3.125rem;
+    border-radius: 8px;
+    border-width: 2px;
+    border-style: solid;
+}
+
+.gs-goto-overlay-host {
+    position: relative;
+    width: 100%;
+}
+
+.gs-goto-content-hidden {
+    visibility: hidden;
+}
+
+.gs-goto-settings-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    overflow: auto;
+    background-color: var(--mud-palette-surface);
+}
 
 /* ============================================================
    ApexCharts toolbar + export menu (global override)

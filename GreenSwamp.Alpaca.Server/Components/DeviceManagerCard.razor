@@ -34,7 +34,7 @@
                             <MudIcon Icon="@Icons.Material.Filled.DeviceHub"
                                      Color="Color.Primary" Size="Size.Medium" />
                             <MudStack Spacing="0" Style="flex:1; min-width:0;">
-                                <MudText Typo="Typo.body1" Style="font-weight:500;">
+                                <MudText Typo="Typo.subtitle2">
                                     Device @deviceNumber - @device.DeviceName
                                 </MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
@@ -119,11 +119,5 @@
             await OnHotReload.InvokeAsync();
     }
 
-    private static string FriendlyAlignment(string? mode) => mode?.ToLowerInvariant() switch
-    {
-        "germanpolar" => "German Equatorial (GEM)",
-        "polar" => "Polar / Fork",
-        "altaz" => "Alt-Azimuth",
-        _ => mode ?? "Unknown"
-    };
+    private static string FriendlyAlignment(string? mode) => DeviceDisplay.FriendlyAlignment(mode);
 }

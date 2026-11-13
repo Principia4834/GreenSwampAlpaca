@@ -18,7 +18,7 @@ namespace GreenSwamp.Alpaca.Shared
 {
     public static class GsFile
     {
-        private static readonly SemaphoreSlim LockFile = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim LockFile = new(1);
 
         // ToDo implement a cross-platform file picker
         /// <summary>

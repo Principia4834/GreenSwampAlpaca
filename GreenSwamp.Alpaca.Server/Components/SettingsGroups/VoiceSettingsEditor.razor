@@ -25,7 +25,7 @@
                        @bind-Value:after="NotifyChanged"
                        Label="Voice"
                        Clearable="true"
-                       Style="min-width:260px">
+                       Style="min-width:16.25rem">
                 @foreach (var v in _voices)
                 {
                     <MudSelectItem T="string" Value="@v.Name">@v.Name (@v.Lang)@(v.Default ? " ★" : "")</MudSelectItem>

@@ -108,21 +108,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             var speedEight = mount?.SlewSpeedEight ?? 4.0;
             var maxSlewRate = speedEight > 0 ? speedEight : 4.0;
 
-            switch (axis)
+            _mRates = axis switch
             {
-                case TelescopeAxis.Primary:
-                    // Example: m_Rates = new Rate[] { new Rate(10.5, 30.2), new Rate(54.0, 43.6) }
-                    _mRates = new[] { new Rate(0.0, maxSlewRate) };
-                    break;
-                case TelescopeAxis.Secondary:
-                    _mRates = new[] { new Rate(0.0, maxSlewRate) };
-                    break;
-                case TelescopeAxis.Tertiary:
-                    _mRates = new[] { new Rate(0.0, maxSlewRate) }; //Conversions.Sec2ArcSec(SkyServer.SlewSpeedEight)) };
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
-            }
+                TelescopeAxis.Primary => [new Rate(0.0, maxSlewRate)],// Example: m_Rates = new Rate[] { new Rate(10.5, 30.2), new Rate(54.0, 43.6) }
+                TelescopeAxis.Secondary => [new Rate(0.0, maxSlewRate)],
+                TelescopeAxis.Tertiary => [new Rate(0.0, maxSlewRate)],//Conversions.Sec2ArcSec(SkyServer.SlewSpeedEight)) };
+                _ => throw new ArgumentOutOfRangeException(nameof(axis), axis, null),
+            };
             _pos = -1;
         }
 
@@ -217,7 +209,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             // the tracking rates supported by your SkyServer. The one value
             // (tracking rate) that MUST be supported is driveSidereal!
             //
-            _mTrackingRates = new[] { DriveRate.Sidereal, DriveRate.King, DriveRate.Lunar, DriveRate.Solar };
+            _mTrackingRates = [DriveRate.Sidereal, DriveRate.King, DriveRate.Lunar, DriveRate.Solar];
         }
 
         #region ITrackingRates Members
@@ -315,7 +307,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             // the tracking rates supported by your SkyServer. The one value
             // (tracking rate) that MUST be supported is driveSidereal!
             //
-            _mTrackingRates = new[] { DriveRate.Sidereal };
+            _mTrackingRates = [DriveRate.Sidereal];
         }
 
         #region ITrackingRates Members

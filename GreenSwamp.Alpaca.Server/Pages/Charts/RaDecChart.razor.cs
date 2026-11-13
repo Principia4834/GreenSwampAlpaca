@@ -155,7 +155,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             if (IsHistoricalMode) return Task.CompletedTask;
 
-            _pausedSnapshot = _raDecChartDataSubList.ToList();
+            _pausedSnapshot = [.. _raDecChartDataSubList];
             _displayMode = "Historical";
 
             RebuildChartForCurrentMode();
@@ -362,7 +362,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
         string[] AxisLabels(string alignmentMode)
         {
-            string[] label = { "Axis 1", "Axis 2" };
+            string[] label = ["Axis 1", "Axis 2"];
             switch (alignmentMode?.ToLowerInvariant())
             {
                 case "altaz":
@@ -393,7 +393,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             if (!_disposeCts.IsCancellationRequested) _disposeCts.Cancel();
 
             ActiveViews.Remove(_viewSessionId);
-            if (_viewHeartbeat is not null) _viewHeartbeat.Dispose();
+            _viewHeartbeat?.Dispose();
             
             if (_refreshTimer is not null) await _refreshTimer.DisposeAsync();
 

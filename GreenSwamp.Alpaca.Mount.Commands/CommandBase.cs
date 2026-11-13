@@ -24,7 +24,7 @@ namespace GreenSwamp.Alpaca.Mount.Commands
     /// <typeparam name="TExecutor">The type of executor that will process this command</typeparam>
     public abstract class CommandBase<TExecutor> : ICommand<TExecutor>
     {
-        private readonly ManualResetEventSlim _completionEvent = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim _completionEvent = new(false);
 
         public long Id { get; }
         public DateTime CreatedUtc { get; }

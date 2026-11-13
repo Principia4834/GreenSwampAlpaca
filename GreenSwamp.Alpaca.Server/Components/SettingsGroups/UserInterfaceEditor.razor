@@ -1,0 +1,82 @@
+﻿@using GreenSwamp.Alpaca.Settings.Models
+@using GreenSwamp.Alpaca.Server.Configuration
+@using System.Globalization
+@inject SupportedCultureSettings SupportedCultures
+
+<MudStack Spacing="3">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Global UI zoom level applied across the server UI." Placement="Placement.Right" Arrow="true">
+        <MudSelect T="int"
+                   Value="ZoomPercent"
+                   ValueChanged="OnZoomPercentChanged"
+                   Label="Zoom">
+            @foreach (var zoom in ZoomOptions)
+            {
+                <MudSelectItem T="int" Value="@zoom">@($"{zoom}%")</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Display theme selection for the server UI." Placement="Placement.Right" Arrow="true">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="pa-2 mud-border rounded">
+            <MudText Typo="Typo.body2">Display Theme</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Not implemented</MudText>
+        </MudStack>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Server defaults are used when a browser has no supported culture preference. Saving these values also updates this browser; its saved cookie takes precedence on later visits." Placement="Placement.Right" Arrow="true">
+        <MudSelect T="string"
+                   @bind-Value="Config.DefaultDisplayLanguage"
+                   @bind-Value:after="NotifyChanged"
+                   Label="Display Language">
+            @foreach (var language in SupportedCultures.SupportedDisplayLanguages)
+            {
+                <MudSelectItem T="string" Value="@language">@CultureLabel(language)</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Choose the regional conventions used for dates and numbers. Saving these values also updates this browser; its saved cookie takes precedence on later visits." Placement="Placement.Right" Arrow="true">
+        <MudSelect T="string"
+                   @bind-Value="Config.DefaultRegionalFormat"
+                   @bind-Value:after="NotifyChanged"
+                   Label="Regional Format">
+            @foreach (var culture in SupportedCultures.SupportedRegionalFormats)
+            {
+                <MudSelectItem T="string" Value="@culture">@CultureLabel(culture)</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Open the default browser automatically when the server starts." Placement="Placement.Right" Arrow="true">
+        <MudCheckBox @bind-Value="Config.AutoStartBrowser"
+                     @bind-Value:after="NotifyChanged"
+                     Label="Auto-start Browser" Color="Color.Primary" />
+    </MudTooltip>
+</MudStack>
+
+@code {
+    [Parameter] public ServerConfig Config { get; set; } = default!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private static IEnumerable<int> ZoomOptions => GsZoom.ZoomPercentOptions;
+
+    private static string CultureLabel(string cultureName)
+    {
+        var culture = CultureInfo.GetCultureInfo(cultureName);
+        return $"{culture.NativeName} ({culture.Name})";
+    }
+
+    private int ZoomPercent
+    {
+        get => GsZoom.NormalizePercent((int)Math.Round(Config.GlobalFontScale * 100.0));
+        set => Config.GlobalFontScale = GsZoom.NormalizePercent(value) / 100.0;
+    }
+
+    private async Task OnZoomPercentChanged(int value)
+    {
+        ZoomPercent = value;
+        await NotifyChanged();
+    }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

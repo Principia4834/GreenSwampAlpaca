@@ -40,15 +40,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ASCOM.AstrometryTools" Version="4.0.0" />
-    <PackageReference Include="Blazor-ApexCharts" Version="7.0.0" />
+    <PackageReference Include="ASCOM.AstrometryTools" Version="4.1.0" />
+    <PackageReference Include="Blazor-ApexCharts" Version="8.0.0" />
     <PackageReference Include="H.NotifyIcon" Version="2.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
     <!-- Windows Service host lifetime support — no-op on Linux/RPi at runtime -->
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.14" Condition="'$(TargetFramework)' == 'net10.0'" />
     <!-- Linux systemd service lifetime support — no-op on Windows/RPi at runtime -->
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.12" />
-    <PackageReference Include="MudBlazor" Version="9.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.14" />
+    <PackageReference Include="MudBlazor" Version="9.12.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,6 +73,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <EmbeddedResource Include="Resources\About.txt" />
+	  <EmbeddedResource Include="Resources\Credits.txt" />
+	  <EmbeddedResource Include="Resources\License.txt" />
+  </ItemGroup>
+	
+	<ItemGroup>
     <Content Update="wwwroot\css\fonts.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -96,6 +102,21 @@
 	  </Content>
 	  <Content Update="wwwroot\fonts\SwampWitch.ttf">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\M33.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\M42.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\NGC6992.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\CarouselAstronomy\Orion.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\images\GreenSwamp1.webp">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\js\profileUtils.js">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -125,7 +146,10 @@
   <Target Name="_ResolveCopyLocalNuGetPkgXmls" AfterTargets="ResolveReferences">
     <ItemGroup>
       <!-- Copy XML documentation files from NuGet packages (e.g. ASCOM.Common.xml) to the output directory -->
-      <ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)'!='' and Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+      <ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)'!='' and Exists('%(RootDir)%(Directory)%(Filename).xml')">
+        <!-- Keep the XML files beside the single-file exe; otherwise the bundler may drop them for some RIDs (NETSDK1236) -->
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ReferenceCopyLocalPaths>
     </ItemGroup>
   </Target>
 

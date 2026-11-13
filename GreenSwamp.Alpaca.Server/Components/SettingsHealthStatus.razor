@@ -28,7 +28,7 @@
         {
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                <MudText>Validating settings...</MudText>
+                <MudText Typo="Typo.body1">Validating settings...</MudText>
             </MudStack>
         }
         else if (_validationResult != null)
@@ -76,7 +76,7 @@
                                     <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
                                 }
                             </MudStack>
-                            <MudText Class="mt-1">@error.Message</MudText>
+                            <MudText Typo="Typo.body1" Class="mt-1">@error.Message</MudText>
                             <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @error.Resolution</MudText>
                         </MudCardContent>
                     </MudCard>
@@ -105,7 +105,7 @@
                                     <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
                                 }
                             </MudStack>
-                            <MudText Class="mt-1">@warning.Message</MudText>
+                            <MudText Typo="Typo.body1" Class="mt-1">@warning.Message</MudText>
                             <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @warning.Resolution</MudText>
                         </MudCardContent>
                     </MudCard>

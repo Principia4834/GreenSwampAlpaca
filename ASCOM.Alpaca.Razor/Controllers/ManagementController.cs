@@ -35,7 +35,7 @@ namespace ASCOM.Alpaca
         {
             var TransactionID = DeviceManager.ServerTransactionID;
             Logging.LogAPICall(HttpContext.Connection.RemoteIpAddress, HttpContext.Request.Path.ToString(), ClientID, ClientTransactionID, TransactionID);
-            return new IntListResponse(ClientTransactionID, TransactionID, new int[] {1});
+            return new IntListResponse(ClientTransactionID, TransactionID, [1]);
         }
 
         /// <summary>

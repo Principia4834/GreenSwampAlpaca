@@ -200,7 +200,7 @@ namespace GreenSwamp.Alpaca.Principles
         //    if (month > 10) return false;
         //    if (day < 5) return true;
         //    if (day > 14) return false;
-        //    throw new ArgumentOutOfRangeException();
+        //    throw new InvalidOperationException();
         //}
 
         ///// <summary>

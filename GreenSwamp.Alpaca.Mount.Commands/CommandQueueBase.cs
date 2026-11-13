@@ -119,15 +119,15 @@ namespace GreenSwamp.Alpaca.Mount.Commands
         public virtual void Start()
         {
             Stop();
-            if (_cts == null) _cts = new CancellationTokenSource();
+            _cts ??= new CancellationTokenSource();
             var ct = _cts.Token;
 
             _executor = CreateExecutor();
             InitializeExecutor(_executor);
-            _commandBlockingCollection = new BlockingCollection<ICommand<TExecutor>>();
+            _commandBlockingCollection = [];
             _taskReadySignal = new ManualResetEventSlim(false);
 
-            if (Statistics == null) Statistics = new CommandQueueStatistics();
+            Statistics ??= new CommandQueueStatistics();
             Statistics.Reset();
 
             // ReSharper disable once AccessToDisposedClosure

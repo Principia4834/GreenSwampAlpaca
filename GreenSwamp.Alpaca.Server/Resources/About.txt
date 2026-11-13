@@ -1,0 +1,21 @@
+﻿GreenSwamp Alpaca Server 
+© Copyright 2026 Andy Watson and Rob Morgan, licensed under GNU GENERAL PUBLIC LICENSE Version 3
+
+A modern, platform and operating system agnostic, ASCOM Alpaca-compliant telescope control server for SkyWatcher and compatible mounts:
+• Supports German Equatorial (GEM), Polar / Fork Equatorial and Alt-Az mounts
+• Provides a simulator for all mount types for testing and development
+• Enables parallel control of multiple mounts by multiple ASCOM clients
+
+The application provides a browser based user interface with:
+• Mount control and status monitoring
+• Device configuration and management
+• Observatory configuration and management
+• Tracking, guiding and positioning tools
+• Custom tracking rates, pulse guiding, and park/unpark actions
+• Real-time Axis and Pulse Guiding charts
+
+GreenSwamp Alpaca Server can run as a desktop application or a system service, allowing any Alpaca•aware, local or remote application to control the mount.
+
+Installation packages are available for Windows, Linux (including Rpi), and macOS platforms targetting x86, x64, arm64, and arm32 processors
+
+GreenSwamp Alpaca Server passes extended ASCOM ConformU testing and supports astronomy workflows in a simple, flexible, and extensible way.

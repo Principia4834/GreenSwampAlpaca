@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -29,12 +29,12 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>
         /// List of validation errors
         /// </summary>
-        public List<ValidationError> Errors { get; set; } = new();
+        public List<ValidationError> Errors { get; set; } = [];
 
         /// <summary>
         /// List of validation warnings
         /// </summary>
-        public List<ValidationError> Warnings { get; set; } = new();
+        public List<ValidationError> Warnings { get; set; } = [];
 
         /// <summary>
         /// Error message if validation failed (legacy compatibility)
@@ -125,7 +125,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>
         /// List of actions performed during repair
         /// </summary>
-        public List<string> ActionsPerformed { get; set; } = new();
+        public List<string> ActionsPerformed { get; set; } = [];
 
         /// <summary>
         /// Number of devices repaired
@@ -135,7 +135,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         /// <summary>
         /// Validation errors that remain after repair (require manual intervention)
         /// </summary>
-        public List<ValidationError> RemainingErrors { get; set; } = new();
+        public List<ValidationError> RemainingErrors { get; set; } = [];
     }
 }
 

@@ -1,5 +1,8 @@
 ﻿@using System.Globalization
+@using Microsoft.AspNetCore.WebUtilities
+@using GreenSwamp.Alpaca.Server.Components.About
 @using GreenSwamp.Alpaca.Server.Services
+@using GreenSwamp.Alpaca.Server.Theme
 @using GreenSwamp.Alpaca.Settings.Services
 
 @inherits LayoutComponentBase
@@ -8,6 +11,15 @@
 @inject NavigationManager NavigationManager
 @inject TelescopeStateService TelescopeStateService
 @inject IVersionedSettingsService SettingsService
+@inject IDialogService DialogService
+@inject BrowserCultureService BrowserCultureService
+@inject BrowserTtsService BrowserTtsService
+
+<HeadContent>
+    <style>
+        @RootFontSizeStyle
+    </style>
+</HeadContent>
 
 <MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -15,12 +27,12 @@
 <MudSnackbarProvider />
 <GlobalNotificationsHost />
 
-<MudLayout Style="@LayoutStyle">
+<MudLayout>
     <MudAppBar Elevation="0" Dense="true"
                Style="background-color:var(--gs-bg-sidebar); border-bottom:1px solid var(--gs-divider);">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
                        Edge="Edge.Start" OnClick="ToggleDrawer" />
-        <MudText Typo="Typo.h6" Style="font-weight:300; letter-spacing:0.01em; font-size:1rem;">
+        <MudText Typo="Typo.h5" Class="gs-brand">
             <span style="font-weight:700; color:var(--gs-accent-500);">GS</span>Alpaca
         </MudText>
 
@@ -29,14 +41,22 @@
         <MudText Typo="Typo.h6" Color="Color.Primary">@CurrentDateTimeString</MudText>
 
         <MudSpacer />
-        <MudLink Href="https://greenswamp.org/" Target="_blank" Color="Color.Inherit"
-                 Typo="Typo.caption" Style="opacity:0.6;">About</MudLink>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" 
+                   StartIcon="@Icons.Material.Filled.Help" 
+                   OnClick="OpenAboutDialog">
+                   Help
+        </MudButton>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive"
+               Breakpoint="Breakpoint.LgAndDown"
                ClipMode="DrawerClipMode.Always"
+               Width="12.5rem"
                Style="background-color:var(--gs-bg-sidebar); border-right:1px solid rgba(var(--gs-accent-500-rgb),0.2);">
         <NavMenu />
+        <MudText Typo="Typo.caption" Class="mt-auto pa-3">
+            Version @(ServerConfig.GetVersion())
+        </MudText>
     </MudDrawer>
 
         <MudMainContent>
@@ -50,16 +70,28 @@
 <PersistentFloatingWindow />
 
 @code {
-    private const double DefaultGlobalFontScale = 1.0;
-    private const double MinGlobalFontScale = 0.75;
-    private const double MaxGlobalFontScale = 1.5;
-
     private bool _drawerOpen = true;
+    private double _fontScale = GsZoom.DefaultScale;
+
+    private string RootFontSizeStyle => GsZoom.BuildRootStyle(_fontScale);
+
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task OpenAboutDialog()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = false,
+            CloseOnEscapeKey = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+        await DialogService.ShowAsync<AboutDialog>("", options);
+    }
 
     private string CurrentDateTimeString { get; set; } = string.Empty;
     private Timer? _timer;
-    private string LayoutStyle { get; set; } = BuildLayoutStyle(DefaultGlobalFontScale);
 
     protected override void OnInitialized()
     {
@@ -75,20 +107,31 @@
         base.OnInitialized();
     }
 
-    private void ApplyServerConfig(GreenSwamp.Alpaca.Settings.Models.ServerConfig config)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        LayoutStyle = BuildLayoutStyle(config.GlobalFontScale);
+        if (!firstRender || await BrowserCultureService.HasCulturePreferenceAsync())
+        {
+            return;
+        }
+
+        await BrowserCultureService.MarkInitializationAttemptedAsync();
+
+        var browserCulture = await BrowserTtsService.GetLanguageAsync();
+        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
+        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
+        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
+        {
+            ["initialize"] = "true",
+            ["browserCulture"] = browserCulture,
+            ["returnUrl"] = returnUrl
+        });
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
     }
 
-    private const double BaseFontSizePx = 14.0;
-
-    private static string BuildLayoutStyle(double fontScale)
+    private void ApplyServerConfig(GreenSwamp.Alpaca.Settings.Models.ServerConfig config)
     {
-        var normalizedScale = Math.Clamp(fontScale, MinGlobalFontScale, MaxGlobalFontScale);
-        var effectiveFontSizePx = BaseFontSizePx * normalizedScale;
-        return string.Create(
-            CultureInfo.InvariantCulture,
-            $"font-size:{effectiveFontSizePx:0.##}px;--gs-global-font-scale:{normalizedScale:0.##};");
+        _fontScale = GsZoom.NormalizeScale(config.GlobalFontScale);
     }
 
     private void OnServerConfigChanged(object? sender, GreenSwamp.Alpaca.Settings.Models.ServerConfig config)

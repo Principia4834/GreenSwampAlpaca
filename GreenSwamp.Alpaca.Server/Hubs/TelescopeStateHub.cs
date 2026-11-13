@@ -33,21 +33,15 @@ namespace GreenSwamp.Alpaca.Server.Hubs
     /// Tracks per-connection group membership so that OnDisconnectedAsync can unregister the view
     /// and subscriber count when the last subscriber disconnects without a clean leave.
     /// </summary>
-    public class TelescopeStateHub : Hub
+    public class TelescopeStateHub(TelescopeStateBroadcastService broadcast, ILogger<TelescopeStateHub> logger) : Hub
     {
-        private readonly TelescopeStateBroadcastService _broadcast;
-        private readonly ILogger<TelescopeStateHub> _logger;
+        private readonly TelescopeStateBroadcastService _broadcast = broadcast;
+        private readonly ILogger<TelescopeStateHub> _logger = logger;
 
         // Tracks which device numbers each connection has joined.
         // Key = connectionId, Value = set of device numbers.
         // Static so it survives across the transient hub instances SignalR creates per call.
         private static readonly ConcurrentDictionary<string, HashSet<int>> _connectionGroups = new();
-
-        public TelescopeStateHub(TelescopeStateBroadcastService broadcast, ILogger<TelescopeStateHub> logger)
-        {
-            _broadcast = broadcast;
-            _logger = logger;
-        }
 
         /// <summary>Subscribes the caller to telescope-state broadcasts for the given device.</summary>
         public async Task JoinTelescopeStateGroupAsync(int deviceNumber)

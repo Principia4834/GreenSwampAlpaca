@@ -7,17 +7,12 @@ using System.Threading;
 
 namespace GreenSwamp.Alpaca.Shared.Transport
 {
-    public sealed class SerialOverUdpPort : UdpClient, ISerialPort
+    public sealed class SerialOverUdpPort(IPEndPoint remoteEndpoint, TimeSpan readTimeout) : UdpClient, ISerialPort
     {
-        private readonly IPEndPoint _remoteEndpoint;
+        private readonly IPEndPoint _remoteEndpoint = remoteEndpoint;
         private SendReceiveState _state;
 
-        public SerialOverUdpPort(IPEndPoint remoteEndpoint, TimeSpan readTimeout)
-        {
-            _remoteEndpoint = remoteEndpoint;
-            ReadTimeout = (int)readTimeout.TotalMilliseconds;
-        }
-        public int ReadTimeout { get; }
+        public int ReadTimeout { get; } = (int)readTimeout.TotalMilliseconds;
         public bool IsOpen => Client.Connected;
         public void DiscardInBuffer(){}
         public void DiscardOutBuffer(){}
@@ -144,14 +139,10 @@ namespace GreenSwamp.Alpaca.Shared.Transport
         }
     }
 
-    internal class SendReceiveState
+    internal class SendReceiveState(int timeoutMs)
     {
-        public SendReceiveState(int timeoutMs)
-        {
-            Cts = new CancellationTokenSource(timeoutMs);
-        }
         public string Received { get; set; }
-        public CancellationTokenSource Cts { get; }
+        public CancellationTokenSource Cts { get; } = new CancellationTokenSource(timeoutMs);
     }
 }
 
