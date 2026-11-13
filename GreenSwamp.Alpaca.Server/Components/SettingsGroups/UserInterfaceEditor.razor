@@ -1,7 +1,11 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.Server.Configuration
+@using GreenSwamp.Alpaca.Server.Services
+@using Microsoft.AspNetCore.WebUtilities
 @using System.Globalization
 @inject SupportedCultureSettings SupportedCultures
+@inject BrowserCultureService BrowserCultureService
+@inject NavigationManager NavigationManager
 
 <MudStack Spacing="3">
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Global UI zoom level applied across the server UI." Placement="Placement.Right" Arrow="true">
@@ -23,22 +27,24 @@
         </MudStack>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Server defaults are used when a browser has no supported culture preference. Saving these values also updates this browser; its saved cookie takes precedence on later visits." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Choose the language used by this browser. This preference is saved in a browser cookie; server defaults are used only when no supported browser preference exists." Placement="Placement.Right" Arrow="true">
         <MudSelect T="string"
-                   @bind-Value="Config.DefaultDisplayLanguage"
-                   @bind-Value:after="NotifyChanged"
+                   Value="_displayLanguage"
+                   ValueChanged="OnDisplayLanguageChanged"
+                   Disabled="@(!_culturePreferenceLoaded)"
                    Label="Display Language">
-            @foreach (var language in SupportedCultures.SupportedDisplayLanguages)
+            @foreach (var language in SupportedCultures.SupportedLanguages)
             {
-                <MudSelectItem T="string" Value="@language">@CultureLabel(language)</MudSelectItem>
+                <MudSelectItem T="string" Value="@language">@LanguageLabel(language)</MudSelectItem>
             }
         </MudSelect>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Choose the regional conventions used for dates and numbers. Saving these values also updates this browser; its saved cookie takes precedence on later visits." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Choose the date and number conventions used by this browser. This preference is saved in a browser cookie." Placement="Placement.Right" Arrow="true">
         <MudSelect T="string"
-                   @bind-Value="Config.DefaultRegionalFormat"
-                   @bind-Value:after="NotifyChanged"
+                   Value="_regionalFormat"
+                   ValueChanged="OnRegionalFormatChanged"
+                   Disabled="@(!_culturePreferenceLoaded)"
                    Label="Regional Format">
             @foreach (var culture in SupportedCultures.SupportedRegionalFormats)
             {
@@ -58,12 +64,68 @@
     [Parameter] public ServerConfig Config { get; set; } = default!;
     [Parameter] public EventCallback OnChanged { get; set; }
 
+    private string _displayLanguage = string.Empty;
+    private string _regionalFormat = string.Empty;
+    private bool _culturePreferenceLoaded;
+
     private static IEnumerable<int> ZoomOptions => GsZoom.ZoomPercentOptions;
 
     private static string CultureLabel(string cultureName)
     {
         var culture = CultureInfo.GetCultureInfo(cultureName);
         return $"{culture.NativeName} ({culture.Name})";
+    }
+
+    private string LanguageLabel(string languageCode)
+    {
+        var culture = CultureInfo.GetCultureInfo(SupportedCultures.GetDisplayCulture(languageCode)!);
+        return $"{culture.NativeName} ({languageCode})";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var preference = await BrowserCultureService.GetCulturePreferenceAsync();
+        _displayLanguage = SupportedCultures.GetDisplayLanguageCode(preference?.DisplayLanguage)
+            ?? Config.DefaultDisplayLanguage;
+        _regionalFormat = preference is not null &&
+                          SupportedCultures.IsSupportedRegionalFormat(preference.RegionalFormat)
+            ? preference.RegionalFormat
+            : Config.DefaultRegionalFormat;
+        _culturePreferenceLoaded = true;
+        StateHasChanged();
+    }
+
+    private Task OnDisplayLanguageChanged(string value)
+    {
+        _displayLanguage = value;
+        NavigateToCultureCookie();
+        return Task.CompletedTask;
+    }
+
+    private Task OnRegionalFormatChanged(string value)
+    {
+        _regionalFormat = value;
+        NavigateToCultureCookie();
+        return Task.CompletedTask;
+    }
+
+    private void NavigateToCultureCookie()
+    {
+        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
+        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
+        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
+        {
+            ["displayLanguage"] = _displayLanguage,
+            ["regionalFormat"] = _regionalFormat,
+            ["returnUrl"] = returnUrl
+        });
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
     }
 
     private int ZoomPercent

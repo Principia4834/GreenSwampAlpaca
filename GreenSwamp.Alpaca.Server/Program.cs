@@ -605,13 +605,11 @@ namespace GreenSwamp.Alpaca.Server
             {
                 DefaultRequestCulture = new RequestCulture(
                     startupConfig.DefaultRegionalFormat,
-                    startupConfig.DefaultDisplayLanguage),
+                    supportedCultureSettings.GetDisplayCulture(startupConfig.DefaultDisplayLanguage)!),
                 SupportedCultures = supportedCultureSettings.SupportedRegionalFormats
                     .Select(cultureName => CultureInfo.GetCultureInfo(cultureName))
                     .ToList(),
-                SupportedUICultures = supportedCultureSettings.SupportedDisplayLanguages
-                    .Select(cultureName => CultureInfo.GetCultureInfo(cultureName))
-                    .ToList(),
+                SupportedUICultures = supportedCultureSettings.GetSupportedDisplayCultures(),
                 RequestCultureProviders =
                 [
                     new CookieRequestCultureProvider(),
@@ -892,17 +890,11 @@ namespace GreenSwamp.Alpaca.Server
             if (isInitialization)
             {
                 var serverDefaults = settingsService.GetServerConfig();
-                if (supportedCultures.IsSupportedDisplayLanguage(browserCulture) &&
-                    supportedCultures.IsSupportedRegionalFormat(browserCulture))
-                {
-                    selectedDisplayLanguage = browserCulture!;
-                    selectedRegionalFormat = browserCulture!;
-                }
-                else
-                {
-                    selectedDisplayLanguage = serverDefaults.DefaultDisplayLanguage;
-                    selectedRegionalFormat = serverDefaults.DefaultRegionalFormat;
-                }
+                selectedDisplayLanguage = supportedCultures.GetDisplayLanguageCode(browserCulture)
+                    ?? serverDefaults.DefaultDisplayLanguage;
+                selectedRegionalFormat = supportedCultures.IsSupportedRegionalFormat(browserCulture)
+                    ? browserCulture!
+                    : serverDefaults.DefaultRegionalFormat;
             }
             else
             {
@@ -916,7 +908,13 @@ namespace GreenSwamp.Alpaca.Server
                 selectedRegionalFormat = regionalFormat!;
             }
 
-            var requestCulture = new RequestCulture(selectedRegionalFormat, selectedDisplayLanguage);
+            var displayCulture = supportedCultures.GetDisplayCulture(selectedDisplayLanguage);
+            if (displayCulture is null)
+            {
+                return Results.BadRequest("The requested display language is not supported.");
+            }
+
+            var requestCulture = new RequestCulture(selectedRegionalFormat, displayCulture);
             context.Response.Cookies.Append(
                 cookieName,
                 CookieRequestCultureProvider.MakeCookieValue(requestCulture),

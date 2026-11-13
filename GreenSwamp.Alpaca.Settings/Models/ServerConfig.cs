@@ -60,7 +60,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
         public bool AutoStartBrowser { get; set; } = true;
 
         /// <summary>Fallback UI language for browsers without a supported saved culture preference.</summary>
-        public string DefaultDisplayLanguage { get; set; } = "en-US";
+        public string DefaultDisplayLanguage { get; set; } = "en";
 
         /// <summary>Fallback regional formatting culture for browsers without a saved culture preference.</summary>
         public string DefaultRegionalFormat { get; set; } = "en-US";
