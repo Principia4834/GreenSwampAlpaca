@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
+using MudBlazor.Translations;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -351,6 +352,9 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
+            builder.Services.AddMudTranslations();
+            builder.Services.AddLocalization();
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Localization.CircuitCulture>();
             builder.Services.AddHttpContextAccessor();
 
             //Load any xml comments for this program, this helps with swagger

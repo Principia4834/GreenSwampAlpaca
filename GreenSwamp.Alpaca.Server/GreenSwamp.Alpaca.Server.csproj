@@ -49,6 +49,7 @@
     <!-- Linux systemd service lifetime support — no-op on Windows/RPi at runtime -->
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.14" />
     <PackageReference Include="MudBlazor" Version="9.12.0" />
+    <PackageReference Include="MudBlazor.Translations" Version="3.7.0" />
   </ItemGroup>
 
   <ItemGroup>
