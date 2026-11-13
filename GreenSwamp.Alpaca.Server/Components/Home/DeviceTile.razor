@@ -5,35 +5,35 @@
 @* The main button and the MudCardActions row (info, connected, settings) are siblings inside the card,
    so no interactive element is inside another. Each is wrapped in a MudTooltip. *@
 <MudCard Elevation="0" Outlined="true" Class="@($"gs-tile {(Device.Enabled ? string.Empty : "gs-tile-disabled")}")">
-    <MudTooltip Text="@($"Open control page for {Device.Name}")" Placement="Placement.Top" Arrow="true"
+    <MudTooltip Text="@Loc["Home_OpenControl", Device.Name]" Placement="Placement.Top" Arrow="true"
                 RootClass="gs-tile-main-tip">
         <MudButton Class="gs-tile-main" FullWidth="true" Variant="Variant.Text" Color="Color.Inherit"
-                   aria-label="@($"Open control page for {Device.Name}")"
+                   aria-label="@Loc["Home_OpenControl", Device.Name]"
                    OnClick="OpenControl">
             <MudIcon Icon="@TelescopeIcon" Size="Size.Large" />
             <MudText Typo="Typo.subtitle1" Class="gs-tile-name">@Device.Name</MudText>
             @if (!Device.Enabled)
             {
-                <MudText Typo="Typo.caption" Class="gs-tile-state">Disabled</MudText>
+                <MudText Typo="Typo.caption" Class="gs-tile-state">@Loc["Common_Disabled"]</MudText>
             }
         </MudButton>
     </MudTooltip>
 
     <MudCardActions>
-        <MudTooltip Text="Device information" Placement="Placement.Top" Arrow="true">
+        <MudTooltip Text="@Loc["Home_DeviceInformation"]" Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.Info" Size="Size.Medium" Color="Color.Inherit"
-                           aria-label="@($"Device information for {Device.Name}")"
+                           aria-label="@Loc["Home_DeviceInformationFor", Device.Name]"
                            OnClick="ShowInfo" />
         </MudTooltip>
-        <MudTooltip Text="@(Device.Connected ? "Device connected" : "Device not connected")" Placement="Placement.Top"
+        <MudTooltip Text="@(Device.Connected ? Loc["Home_DeviceConnected"].Value : Loc["Home_DeviceNotConnected"].Value)" Placement="Placement.Top"
                     Arrow="true">
             <MudIcon Icon="@(Device.Connected ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
                      Size="Size.Large" Color="@(Device.Connected ? Color.Success : Color.Default)"
-                     aria-label="@(Device.Connected ? "Connected" : "Not connected")" />
+                     aria-label="@(Device.Connected ? Loc["Home_Connected"].Value : Loc["Home_NotConnected"].Value)" />
         </MudTooltip>
-        <MudTooltip Text="Device settings" Placement="Placement.Top" Arrow="true">
+        <MudTooltip Text="@Loc["Home_DeviceSettings"]" Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.Settings" Size="Size.Medium" Color="Color.Inherit"
-                           aria-label="@($"Settings for {Device.Name}")"
+                           aria-label="@Loc["Home_SettingsFor", Device.Name]"
                            OnClick="OpenSettings" />
         </MudTooltip>
     </MudCardActions>

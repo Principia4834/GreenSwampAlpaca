@@ -4,22 +4,22 @@
     <DialogContent>
         <MudSimpleTable Dense="true" Hover="false" Elevation="0">
             <tbody>
-                @DeviceRow("Device number", Device.DeviceNumber)
-                @DeviceRow("Name", Device.Name)
-                @DeviceRow("Description", Device.Description)
-                @DeviceRow("Mount type", Device.MountType)
-                @DeviceRow("Alignment mode", DeviceDisplay.FriendlyAlignment(Device.AlignmentMode))
+                @DeviceRow(Loc["Home_DeviceNumber"], Device.DeviceNumber)
+                @DeviceRow(Loc["Home_DeviceName"], Device.Name)
+                @DeviceRow(Loc["Home_DeviceDescription"], Device.Description)
+                @DeviceRow(Loc["Home_DeviceMountType"], Device.MountType)
+                @DeviceRow(Loc["Home_DeviceAlignment"], DeviceDisplay.FriendlyAlignment(Loc, Device.AlignmentMode))
 
                 @if (!Device.Enabled)
                 {
-                    @DeviceRow("Status", "Disabled")
+                    @DeviceRow(Loc["Home_DeviceStatus"], Loc["Common_Disabled"].Value)
                 }
             </tbody>
         </MudSimpleTable>
     </DialogContent>
 
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Close">Close</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Close">@Loc["Common_Close"]</MudButton>
     </DialogActions>
 </MudDialog>
 

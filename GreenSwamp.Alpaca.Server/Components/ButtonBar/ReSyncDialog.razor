@@ -4,22 +4,22 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.SettingsEthernet" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">ReSync Axes</MudText>
+            <MudText Typo="Typo.h6">@Loc["ReSync_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3" Class="mt-2">
             <MudText Typo="Typo.body2">
-                Resync the axixes to a reference point without moving the mount.
+                @Loc["ReSync_Description"]
             </MudText>
             <MudRadioGroup T="ReSyncMode" @bind-Value="_mode">
-                <MudRadio T="ReSyncMode" Value="ReSyncMode.Home" Color="Color.Primary">Sync to Home position</MudRadio>
+                <MudRadio T="ReSyncMode" Value="ReSyncMode.Home" Color="Color.Primary">@Loc["ReSync_ToHome"]</MudRadio>
                 <MudRadio T="ReSyncMode" Value="ReSyncMode.Park" Color="Color.Primary"
-                          Disabled="@(!ParkPositionNames.Any())">Sync to Park position</MudRadio>
+                          Disabled="@(!ParkPositionNames.Any())">@Loc["ReSync_ToPark"]</MudRadio>
             </MudRadioGroup>
             @if (_mode == ReSyncMode.Park)
             {
-                <MudSelect T="string" Label="Park position" @bind-Value="_selectedParkName"
+                <MudSelect T="string" Label="@Loc["ReSync_ParkPosition"]" @bind-Value="_selectedParkName"
                            Variant="Variant.Outlined" Dense="true">
                     @foreach (var name in ParkPositionNames)
                     {
@@ -30,10 +30,10 @@
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">@Loc["Common_Cancel"]</MudButton>
         <MudButton Color="Color.Primary" Variant="Variant.Filled"
                    Disabled="@(_mode == ReSyncMode.Park && string.IsNullOrEmpty(_selectedParkName))"
-                   OnClick="Accept">ReSync</MudButton>
+                   OnClick="Accept">@Loc["ReSync_Button"]</MudButton>
     </DialogActions>
 </MudDialog>
 

@@ -8,7 +8,7 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.HomeWork" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">AutoHome</MudText>
+            <MudText Typo="Typo.h6">@Loc["AutoHome_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
@@ -18,21 +18,21 @@
                                Rounded="true" Size="Size.Medium" Class="mb-2" />
             @if (_running)
             {
-                <MudText Typo="Typo.body2" Align="Align.Center">Searching for home sensor…</MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center">@Loc["AutoHome_Searching"]</MudText>
             }
 
-            <MudNumericField T="int" Label="Degree limit" @bind-Value="_degreeLimit"
+            <MudNumericField T="int" Label="@Loc["AutoHome_DegreeLimit"]" @bind-Value="_degreeLimit"
                              Variant="Variant.Outlined"
                              Disabled="@_running"
                              Min="20" Max="179"
-                             HelperText="Maximum degrees to travel when searching for the home sensor" />
+                             HelperText="@Loc["AutoHome_DegreeLimitHelp"]" />
 
             @if (IsGermanPolarMode)
             {
-                <MudSelect T="int" Label="Dec offset" @bind-Value="_decOffset"
+                <MudSelect T="int" Label="@Loc["AutoHome_DecOffset"]" @bind-Value="_decOffset"
                            Variant="Variant.Outlined" Dense="true"
                            Disabled="@_running"
-                           HelperText="Dec axis offset applied after home is found">
+                           HelperText="@Loc["AutoHome_DecOffsetHelp"]">
                     @foreach (var offset in _decOffsets)
                     {
                         <MudSelectItem T="int" Value="@offset">@offset</MudSelectItem>
@@ -40,24 +40,24 @@
                 </MudSelect>
                 <MudDivider />
 
-                <MudText Typo="Typo.subtitle2">Sensor positions (GEM)</MudText>
+                <MudText Typo="Typo.subtitle2">@Loc["AutoHome_SensorPositions"]</MudText>
 
-                <MudNumericField T="double" Label="RA sensor position" @bind-Value="_axisX"
+                <MudNumericField T="double" Label="@Loc["AutoHome_RaSensorPosition"]" @bind-Value="_axisX"
                                  Variant="Variant.Outlined"
                                  Disabled="@_running"
                                  Min="85.0" Max="95.0" Step="0.1"
-                                 HelperText="Expected RA axis position at home sensor" />
+                                 HelperText="@Loc["AutoHome_RaSensorHelp"]" />
 
-                <MudNumericField T="double" Label="Dec sensor position" @bind-Value="_axisY"
+                <MudNumericField T="double" Label="@Loc["AutoHome_DecSensorPosition"]" @bind-Value="_axisY"
                                  Variant="Variant.Outlined"
                                  Disabled="@_running"
                                  Min="85.0" Max="95.0" Step="0.1"
-                                 HelperText="Expected Dec axis position at home sensor" />
+                                 HelperText="@Loc["AutoHome_DecSensorHelp"]" />
 
                 <MudButton Variant="Variant.Text" Color="Color.Secondary"
                            Disabled="@_running"
                            OnClick="ResetSensorPositions">
-                    Reset sensor positions to 90
+                    @Loc["AutoHome_ResetSensors"]
                 </MudButton>
             }
 
@@ -66,12 +66,12 @@
     <DialogActions>
         @if (_running)
         {
-            <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="StopAutoHome">Stop</MudButton>
+            <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="StopAutoHome">@Loc["Common_Stop"]</MudButton>
         }
         else
         {
-            <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Start">Start</MudButton>
+            <MudButton OnClick="Cancel" Variant="Variant.Text">@Loc["Common_Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Start">@Loc["Common_Start"]</MudButton>
         }
     </DialogActions>
 </MudDialog>
@@ -119,9 +119,9 @@
             InvokeAsync(() =>
             {
                 if (error != null)
-                    Snackbar.Add($"AutoHome failed: {error.Message}", Severity.Error);
+                    Snackbar.Add(Loc["AutoHome_Failed", error.Message], Severity.Error);
                 else
-                    Snackbar.Add("AutoHome complete", Severity.Success);
+                    Snackbar.Add(Loc["AutoHome_Complete"], Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
             });
         }
@@ -142,7 +142,7 @@
         var mount = MountRegistry.GetInstance(DeviceNumber);
         if (mount == null)
         {
-            Snackbar.Add("Mount not found", Severity.Error);
+            Snackbar.Add(Loc["AutoHome_MountNotFound"], Severity.Error);
             return;
         }
 

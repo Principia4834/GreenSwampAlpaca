@@ -16,7 +16,7 @@
     Angle 0°     : 12 o'clock (top), increases clockwise
 *@
 
-<svg viewBox="0 0 240 260" style="width:@WidthRem;overflow:visible;display:block" aria-label="@Label dial showing @Angle.ToString("F1", CultureInfo.InvariantCulture) degrees">
+<svg viewBox="0 0 240 260" style="width:@WidthRem;overflow:visible;display:block" aria-label="@(Loc["AxisDial_AriaLabel", Label, Angle.ToString("F1", CultureInfo.InvariantCulture)].Value)">
 
     @* -- Outer ring ------------------------------------------------------- *@
     <circle cx="120" cy="115" r="92"

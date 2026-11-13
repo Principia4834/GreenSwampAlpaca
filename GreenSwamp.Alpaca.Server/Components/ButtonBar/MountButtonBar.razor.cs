@@ -44,34 +44,34 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         {
             if (State.AtPark)
             {
-                var confirmed = await ConfirmAsync("Unpark the mount?", "Unpark");
+                var confirmed = await ConfirmAsync(Loc["MountButtons_UnparkConfirm"], Loc["MountButtons_Unpark"]);
                 if (!confirmed) return;
                 await ExecuteAsync(
                     () => DeviceManager.GetTelescope((uint)DeviceNumber).Unpark(),
-                    "Unpark failed");
+                    Loc["MountButtons_UnparkFailed"]);
             }
             else
             {
                 var confirmed = await ConfirmAsync(
                     string.IsNullOrEmpty(State.ParkSelectedName)
-                        ? "Park the mount?"
-                        : $"Park the mount at '{State.ParkSelectedName}'?",
-                    "Park");
+                        ? Loc["MountButtons_ParkConfirm"]
+                        : Loc["MountButtons_ParkAtConfirm", State.ParkSelectedName],
+                    Loc["MountButtons_Park"]);
                 if (!confirmed) return;
                 await ExecuteAsync(
                     () => DeviceManager.GetTelescope((uint)DeviceNumber).Park(),
-                    "Park failed");
+                    Loc["MountButtons_ParkFailed"]);
             }
         }
 
         // -- Home --------------------------------------------------------------
         private async Task OnHomeClickAsync()
         {
-            var confirmed = await ConfirmAsync("Slew to the home position?", "Go to Home");
+            var confirmed = await ConfirmAsync(Loc["MountButtons_HomeConfirm"], Loc["MountButtons_GoToHome"]);
             if (!confirmed) return;
             await ExecuteAsync(
                 () => DeviceManager.GetTelescope((uint)DeviceNumber).FindHome(),
-                "Home failed");
+                Loc["MountButtons_HomeFailed"]);
         }
 
         // -- Tracking ----------------------------------------------------------
@@ -81,7 +81,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             {
                 var telescope = DeviceManager.GetTelescope((uint)DeviceNumber);
                 telescope.Tracking = !telescope.Tracking;
-            }, "Tracking toggle failed");
+            }, Loc["MountButtons_TrackingToggleFailed"]);
         }
 
         // -- ReSync ------------------------------------------------------------
@@ -92,14 +92,14 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             { x => x.ParkPositionNames, State.ParkPositionNames }
         };
 
-            var dialog = await DialogService.ShowAsync<ReSyncDialog>("ReSync Axes", parameters, _configOptions);
+            var dialog = await DialogService.ShowAsync<ReSyncDialog>(Loc["MountButtons_ReSyncTitle"], parameters, _configOptions);
             var result = await dialog.Result;
             if (result is null || result.Canceled) return;
 
             if (result.Data is not ReSyncDialog.ReSyncRequest request) return;
 
             var mount = Mount;
-            if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+            if (mount == null) { Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error); return; }
 
             await ExecuteAsync(() =>
             {
@@ -112,7 +112,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
                     var position = mount.Settings.ParkPositions?.Find(p => p.Name == request.ParkPositionName);
                     mount.ReSync(position);
                 }
-            }, "ReSync failed");
+            }, Loc["MountButtons_ReSyncFailed"]);
         }
 
         // -- Flip SOP ----------------------------------------------------------
@@ -123,14 +123,14 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             { x => x.FlipOnNextGoto, State.FlipOnNextGoto }
         };
 
-            var dialog = await DialogService.ShowAsync<FlipSopDialog>("Flip Side of Pier", parameters, _configOptions);
+            var dialog = await DialogService.ShowAsync<FlipSopDialog>(Loc["MountButtons_FlipTitle"], parameters, _configOptions);
             var result = await dialog.Result;
             if (result is null || result.Canceled) return;
 
             if (result.Data is not FlipSopDialog.FlipSopResult flipResult) return;
 
             var mount = Mount;
-            if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+            if (mount == null) { Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error); return; }
 
             mount.FlipOnNextGoto = flipResult.FlipOnNextGoto;
 
@@ -150,7 +150,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
                 }
                 catch (Exception ex)
                 {
-                    Snackbar.Add($"Flip SOP failed: {ex.Message}", Severity.Error);
+                    Snackbar.Add(Loc["MountButtons_FlipFailed", ex.Message], Severity.Error);
                 }
             }
         }
@@ -159,7 +159,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         private async Task OnAutoHomeClickAsync()
         {
             var mount = Mount;
-            if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+            if (mount == null) { Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error); return; }
 
             var parameters = new DialogParameters<AutoHomeDialog>
         {
@@ -169,7 +169,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             { x => x.DeviceNumber,      DeviceNumber }
         };
 
-            await DialogService.ShowAsync<AutoHomeDialog>("AutoHome", parameters, _configOptions);
+            await DialogService.ShowAsync<AutoHomeDialog>(Loc["MountButtons_AutoHomeTitle"], parameters, _configOptions);
         }
 
         private const string HomeSearchIcon = "<path d=\"M0 0h24v24H0z\" fill=\"none\"/>" +
@@ -184,9 +184,9 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         private async Task OnLimitsClickAsync()
         {
             var mount = Mount;
-            if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+            if (mount == null) { Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error); return; }
 
-            await ExecuteAsync(() => mount.LimitsOn = !mount.LimitsOn, "Limits toggle failed");
+            await ExecuteAsync(() => mount.LimitsOn = !mount.LimitsOn, Loc["MountButtons_LimitsToggleFailed"]);
         }
 
         private const string LimitsOnIcon = "<path d=\"M0 0h24v24H0z\" fill=\"none\"/>" +
@@ -205,9 +205,9 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
         private async Task OnStopClickAsync()
         {
             var mount = Mount;
-            if (mount == null) { Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error); return; }
+            if (mount == null) { Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error); return; }
 
-            await ExecuteAsync(() => mount.EmergencyStopAll(), "Stop failed");
+            await ExecuteAsync(() => mount.EmergencyStopAll(), Loc["MountButtons_StopFailed"]);
         }
 
         // -- Helpers -----------------------------------------------------------
@@ -218,7 +218,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             { x => x.ContentText, message },
             { x => x.ConfirmText, confirmText }
         };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm", parameters, _confirmOptions);
+            var dialog = await DialogService.ShowAsync<ConfirmDialog>(Loc["Common_Confirm"], parameters, _confirmOptions);
             var result = await dialog.Result;
             return result is { Canceled: false };
         }
@@ -231,7 +231,7 @@ namespace GreenSwamp.Alpaca.Server.Components.ButtonBar
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"{errorPrefix}: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["Common_ErrorWithMessage", errorPrefix, ex.Message], Severity.Error);
             }
         }
     }

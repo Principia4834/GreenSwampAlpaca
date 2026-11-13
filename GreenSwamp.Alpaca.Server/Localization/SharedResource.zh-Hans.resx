@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>监视器</value>
+    <comment>WPF: optMonitor</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>取消</value>
+    <comment>WPF: diaCancel</comment>
+  </data>
+  <data name="Common_Start" xml:space="preserve">
+    <value>开始</value>
+    <comment>WPF: btnAutoHomeStart</comment>
+  </data>
+  <data name="Common_Stop" xml:space="preserve">
+    <value>停止</value>
+    <comment>WPF: btnStop</comment>
+  </data>
+  <data name="MountButtons_Unpark" xml:space="preserve">
+    <value>解除停放</value>
+    <comment>WPF: btnUnPark</comment>
+  </data>
+  <data name="MountButtons_Park" xml:space="preserve">
+    <value>停放</value>
+    <comment>WPF: btnPark</comment>
+  </data>
+  <data name="MountButtons_FlipTitle" xml:space="preserve">
+    <value>翻转镜筒偏向</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
+    <value>自动归位</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="AutoHome_Title" xml:space="preserve">
+    <value>自动归位</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="FlipSop_Title" xml:space="preserve">
+    <value>翻转镜筒偏向</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="ReSync_Button" xml:space="preserve">
+    <value>重新同步</value>
+    <comment>WPF: btnReSync</comment>
+  </data>
+  <data name="Common_Ok" xml:space="preserve">
+    <value>确定</value>
+    <comment>WPF: diaOk</comment>
+  </data>
+  <data name="Common_Accept" xml:space="preserve">
+    <value>确认</value>
+    <comment>WPF: diaAccept</comment>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>关闭</value>
+    <comment>WPF: skyClose</comment>
+  </data>
+  <data name="Coord_Ra" xml:space="preserve">
+    <value>赤经</value>
+    <comment>WPF: topRaShort</comment>
+  </data>
+  <data name="Coord_Dec" xml:space="preserve">
+    <value>赤纬</value>
+    <comment>WPF: topDecShort</comment>
+  </data>
+  <data name="Coord_Az" xml:space="preserve">
+    <value>方位角</value>
+    <comment>WPF: topAz</comment>
+  </data>
+  <data name="Coord_Alt" xml:space="preserve">
+    <value>高度角</value>
+    <comment>WPF: topAlt</comment>
+  </data>
+  <data name="AddDevice_MountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="AddDevice_AlignmentMode" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>WPF: notAlignmentMode</comment>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>保存</value>
+    <comment>WPF: gpSave</comment>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>删除</value>
+    <comment>WPF: aliDelete</comment>
+  </data>
+  <data name="Common_Latitude" xml:space="preserve">
+    <value>纬度</value>
+    <comment>WPF: gpsLat</comment>
+  </data>
+  <data name="Common_Longitude" xml:space="preserve">
+    <value>经度</value>
+    <comment>WPF: gpsLong</comment>
+  </data>
+  <data name="Common_Altitude" xml:space="preserve">
+    <value>海拔</value>
+    <comment>WPF: skyElevation</comment>
+  </data>
+  <data name="Home_DeviceMountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="Home_DeviceAlignment" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>WPF: notAlignmentMode</comment>
+  </data>
+  <data name="Home_Connected" xml:space="preserve">
+    <value>已连接</value>
+    <comment>WPF: focuserConnected</comment>
+  </data>
+  <data name="MountInfo_Azimuth" xml:space="preserve">
+    <value>方位角</value>
+    <comment>WPF: lbAxisX</comment>
+  </data>
+  <data name="MountInfo_Altitude" xml:space="preserve">
+    <value>高度角</value>
+    <comment>WPF: lbAxisY</comment>
+  </data>
+  <data name="MountInfo_RightAscension" xml:space="preserve">
+    <value>赤经</value>
+    <comment>WPF: topRa</comment>
+  </data>
+  <data name="MountInfo_Declination" xml:space="preserve">
+    <value>赤纬</value>
+    <comment>WPF: topDec</comment>
+  </data>
+  <data name="MountInfo_Optics" xml:space="preserve">
+    <value>镜筒</value>
+    <comment>WPF: lbOptics</comment>
+  </data>
+  <data name="HandCtl_North" xml:space="preserve">
+    <value>北</value>
+    <comment>WPF: lbNorth</comment>
+  </data>
+  <data name="HandCtl_West" xml:space="preserve">
+    <value>西</value>
+    <comment>WPF: lbWest</comment>
+  </data>
+  <data name="HandCtl_East" xml:space="preserve">
+    <value>东</value>
+    <comment>WPF: lbEast</comment>
+  </data>
+  <data name="HandCtl_South" xml:space="preserve">
+    <value>南</value>
+    <comment>WPF: lbSouth</comment>
+  </data>
+  <data name="HandCtl_OneClickStart" xml:space="preserve">
+    <value>一键启动</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="GoTo_GoToButton" xml:space="preserve">
+    <value>GoTo</value>
+    <comment>WPF: goGoTo</comment>
+  </data>
+  <data name="GoTo_CopyButton" xml:space="preserve">
+    <value>复制</value>
+    <comment>WPF: goCopy</comment>
+  </data>
+  <data name="GoTo_SyncButton" xml:space="preserve">
+    <value>同步</value>
+    <comment>WPF: goSync</comment>
+  </data>
+  <data name="GoTo_ParkPositions" xml:space="preserve">
+    <value>停放位置</value>
+    <comment>WPF: btnTipParkPos</comment>
+  </data>
+  <data name="GoTo_ParkAction" xml:space="preserve">
+    <value>停放</value>
+    <comment>WPF: btnPark</comment>
+  </data>
+</root>

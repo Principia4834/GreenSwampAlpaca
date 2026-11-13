@@ -15,46 +15,46 @@
                 @* 3x3 Direction Grid *@
                 <div class="hc-grid" @ref="_gridElement">
                     @* Row 1: NW, N, NE *@
-                    <MudButton class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="North-West" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="@Loc["HandCtl_NorthWest"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.NorthWest" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("North"))" data-hc-dir="North" title="North" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("North"))" data-hc-dir="North" title="@Loc["HandCtl_North"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.North" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="North-East" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="@Loc["HandCtl_NorthEast"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.NorthEast" />
                     </MudButton>
 
                     @* Row 2: W, Stop, E *@
-                    <MudButton class="@(GetButtonClass("West"))" data-hc-dir="West" title="West" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("West"))" data-hc-dir="West" title="@Loc["HandCtl_West"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.West" />
                     </MudButton>
-                    <MudButton class="hc-btn hc-stop" data-hc-stop="true" title="Stop" disabled="@(!IsEnabled)">
+                    <MudButton class="hc-btn hc-stop" data-hc-stop="true" title="@Loc["Common_Stop"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" Size="Size.Large" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("East"))" data-hc-dir="East" title="East" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("East"))" data-hc-dir="East" title="@Loc["HandCtl_East"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.East" />
                     </MudButton>
 
                     @* Row 3: SW, S, SE *@
-                    <MudButton class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="South-West" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="@Loc["HandCtl_SouthWest"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.SouthWest" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("South"))" data-hc-dir="South" title="South" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("South"))" data-hc-dir="South" title="@Loc["HandCtl_South"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.South" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="South-East" disabled="@(!IsEnabled)">
+                    <MudButton class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="@Loc["HandCtl_SouthEast"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.SouthEast" />
                     </MudButton>
                 </div>
 
                 @* Speed Slider — vertical, beside direction grid *@
-                <MudTooltip Text="Hand controller motion speed">
+                <MudTooltip Text="@Loc["HandCtl_SpeedTooltip"]">
                     <MudStack Class="hc-speed-column"
                               Spacing="0"
                               AlignItems="AlignItems.Center"
                               Justify="Justify.SpaceBetween">
-                        <MudText Typo="Typo.body1" Align="Align.Center" Class="hc-speed-label">Speed: @_speed</MudText>
+                        <MudText Typo="Typo.body1" Align="Align.Center" Class="hc-speed-label">@Loc["HandCtl_Speed", _speed]</MudText>
                         <div class="hc-speed-slider-slot">
                             <MudSlider @bind-Value="_speed"
                                        @bind-Value:after="OnSpeedChanged"
@@ -69,15 +69,15 @@
 
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Start" Class="hc-secondary-controls">
                 <MudStack Spacing="1" Class="hc-secondary-options">
-                    <MudTooltip Text="One click starts and stops motion">
-                        <MudCheckBox @bind-Value="_oneClickStart" @bind-Value:after="OnOneClickStartChanged" T="bool" Dense="true" Label="One Click Start" Disabled="@(!IsEnabled)" />
+                    <MudTooltip Text="@Loc["HandCtl_OneClickTooltip"]">
+                        <MudCheckBox @bind-Value="_oneClickStart" @bind-Value:after="OnOneClickStartChanged" T="bool" Dense="true" Label="@Loc["HandCtl_OneClickStart"]" Disabled="@(!IsEnabled)" />
                     </MudTooltip>
-                    <MudTooltip Text="Keys disabled while slewing">
-                        <MudCheckBox @bind-Value="_disableKeysOnGoTo" @bind-Value:after="OnDisableKeysOnGoToChanged" T="bool" Dense="true" Label="Keys Off for Go To" Disabled="@(!IsEnabled)" />
+                    <MudTooltip Text="@Loc["HandCtl_KeysOffTooltip"]">
+                        <MudCheckBox @bind-Value="_disableKeysOnGoTo" @bind-Value:after="OnDisableKeysOnGoToChanged" T="bool" Dense="true" Label="@Loc["HandCtl_KeysOff"]" Disabled="@(!IsEnabled)" />
                     </MudTooltip>
                 </MudStack>
                 <div class="hc-secondary-settings">
-                    <MudTooltip Text="Edit hand controller settings" Placement="Placement.Right" Arrow="true">
+                    <MudTooltip Text="@Loc["HandCtl_EditTooltip"]" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                        Color="Color.Primary"
                                        Size="Size.Large"
@@ -97,14 +97,14 @@
                             Size="Size.Small"
                             SelectionMode="SelectionMode.SingleSelection"
                             Disabled="@(!IsEnabled)">
-            <MudTooltip Text="Axes motion control">
-                    <MudToggleItem Value="@HcMode.Axes" Text="Axes" Class="mud-width-full rounded-0" />
+            <MudTooltip Text="@Loc["HandCtl_AxesTooltip"]">
+                    <MudToggleItem Value="@HcMode.Axes" Text="@Loc["HandCtl_Axes"]" Class="mud-width-full rounded-0" />
             </MudTooltip>
-            <MudTooltip Text="Guiding motion control">
-                    <MudToggleItem Value="@HcMode.Guiding" Text="Guiding" Class="mud-width-full rounded-0" />
+            <MudTooltip Text="@Loc["HandCtl_GuidingTooltip"]">
+                    <MudToggleItem Value="@HcMode.Guiding" Text="@Loc["HandCtl_Guiding"]" Class="mud-width-full rounded-0" />
             </MudTooltip>
-            <MudTooltip Text="Pulse motion control">
-                    <MudToggleItem Value="@HcMode.Pulse" Text="Pulse" Class="mud-width-full rounded-0" />
+            <MudTooltip Text="@Loc["HandCtl_PulseTooltip"]">
+                    <MudToggleItem Value="@HcMode.Pulse" Text="@Loc["HandCtl_Pulse"]" Class="mud-width-full rounded-0" />
             </MudTooltip>
             </MudToggleGroup>
         </MudStack>

@@ -12,11 +12,9 @@ public partial class AboutDialog
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private const string MissingResourceText = "Content is not available.";
-
-    private string _aboutText = MissingResourceText;
-    private string _licenseText = MissingResourceText;
-    private string _creditsText = MissingResourceText;
+    private string _aboutText = string.Empty;
+    private string _licenseText = string.Empty;
+    private string _creditsText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,7 +25,7 @@ public partial class AboutDialog
 
     private void Close() => MudDialog.Close();
 
-    private static async Task<string> ReadEmbeddedResourceAsync(string resourceFileName)
+    private async Task<string> ReadEmbeddedResourceAsync(string resourceFileName)
     {
         var assembly = Assembly.GetExecutingAssembly();
 
@@ -37,13 +35,13 @@ public partial class AboutDialog
 
         if (resourceName is null)
         {
-            return MissingResourceText;
+            return Loc["About_ContentUnavailable"];
         }
 
         await using var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream is null)
         {
-            return MissingResourceText;
+            return Loc["About_ContentUnavailable"];
         }
 
         using var reader = new StreamReader(stream, leaveOpen: false);

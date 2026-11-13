@@ -32,7 +32,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             if (!MountExists()) return;
 
-            var label = string.IsNullOrWhiteSpace(DeviceLabel) ? $"Device {DeviceNumber}" : DeviceLabel;
+            var label = string.IsNullOrWhiteSpace(DeviceLabel) ? Loc["Home_DefaultDeviceName", DeviceNumber].Value : DeviceLabel;
             var path = $"/charts/{chartType}/{DeviceNumber}" +
                        $"?type={Uri.EscapeDataString(AlignmentMode ?? string.Empty)}" +
                        $"&label={Uri.EscapeDataString(label)}";
@@ -63,9 +63,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         [JSInvokable]
         public void OnPopupBlocked(string url)
         {
-            Snackbar.Add(
-                "Chart window was blocked. Please allow pop-ups for this site.",
-                Severity.Warning);
+            _ = InvokeAsync(() => Snackbar.Add(Loc["Nav_ChartPopupBlocked"], Severity.Warning));
         }
 
         [JSInvokable]
@@ -77,7 +75,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         private bool MountExists()
         {
             if (MountRegistry.GetInstance(DeviceNumber) != null) return true;
-            Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error);
+            Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error);
             return false;
         }
 

@@ -10,17 +10,17 @@
             @if (_state == ExportState.Initial)
             {
                 <MudText Typo="Typo.body1" Color="Color.Default">
-                    Preparing export of all settings and user logs...
+                    @Loc["Export_Preparing"]
                 </MudText>
 
                 @if (_exportInfo != null)
                 {
                     <MudStack Spacing="1" Class="mud-paper pa-3" Style="background-color: rgba(63, 81, 181, 0.1);">
                         <MudText Typo="Typo.body1">
-                            <strong>Files:</strong> @_exportInfo.FileCount
+                            <strong>@Loc["Export_Files"]</strong> @_exportInfo.FileCount
                         </MudText>
                         <MudText Typo="Typo.body1">
-                            <strong>Estimated download size:</strong> @_exportInfo.EstimatedSizeFormatted
+                            <strong>@Loc["Export_EstimatedSize"]</strong> @_exportInfo.EstimatedSizeFormatted
                         </MudText>
                     </MudStack>
                 }
@@ -28,7 +28,7 @@
             else if (_state == ExportState.InProgress)
             {
                 <MudText Typo="Typo.body1" Color="Color.Default">
-                    Creating export file...
+                    @Loc["Export_Creating"]
                 </MudText>
 
                 <MudProgressLinear
@@ -46,11 +46,11 @@
             else if (_state == ExportState.Success)
             {
                 <MudAlert Severity="Severity.Success" Class="my-2">
-                    Backup created successfully! Download started.
+                    @Loc["Export_Success"]
                 </MudAlert>
 
                 <MudText Typo="Typo.body1" Color="Color.Default">
-                    Your export file contains all JSON settings files and logs.
+                    @Loc["Export_SuccessInfo"]
                 </MudText>
             }
             else if (_state == ExportState.Error)
@@ -65,26 +65,26 @@
     <DialogActions>
         @if (_state == ExportState.Initial)
         {
-            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton OnClick="Cancel">@Loc["Common_Cancel"]</MudButton>
             <MudButton Color="Color.Primary" OnClick="CreateExport" Variant="Variant.Filled">
-                Create Export
+                @Loc["Export_CreateButton"]
             </MudButton>
         }
         else if (_state == ExportState.InProgress)
         {
-            <MudButton OnClick="Cancel" Disabled="true">Cancel</MudButton>
+            <MudButton OnClick="Cancel" Disabled="true">@Loc["Common_Cancel"]</MudButton>
         }
         else if (_state == ExportState.Success)
         {
             <MudButton Color="Color.Primary" OnClick="Cancel" Variant="Variant.Filled">
-                Close
+                @Loc["Common_Close"]
             </MudButton>
         }
         else if (_state == ExportState.Error)
         {
-            <MudButton OnClick="Cancel">Close</MudButton>
+            <MudButton OnClick="Cancel">@Loc["Common_Close"]</MudButton>
             <MudButton Color="Color.Primary" OnClick="Retry" Variant="Variant.Filled">
-                Retry
+                @Loc["Common_Retry"]
             </MudButton>
         }
     </DialogActions>
@@ -126,7 +126,7 @@
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Failed to load backup information: {ex.Message}";
+            _errorMessage = Loc["Export_LoadFailed", ex.Message];
             _state = ExportState.Error;
         }
     }
@@ -161,7 +161,7 @@
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Error creating export: {ex.Message}";
+            _errorMessage = Loc["Export_CreateFailed", ex.Message];
             _state = ExportState.Error;
         }
     }

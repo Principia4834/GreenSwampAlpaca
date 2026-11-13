@@ -79,7 +79,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             _isMountRunning = _mount?.IsMountRunning ?? false;
             if (_mount == null || !_isMountRunning)
             {
-                Snackbar.Add("Mount is not running.", Severity.Error);
+                Snackbar.Add(Loc["GoTo_MountNotRunning"], Severity.Error);
                 return;
             }
 
@@ -117,14 +117,14 @@ namespace GreenSwamp.Alpaca.Server.Components
             // Check if the target coordinates are below the mount's horizon limit
             if (AltAz[0] < _horizonLimit)
             {
-                Snackbar.Add("Target coordinates are below the mount's horizon limit.", Severity.Warning);
+                Snackbar.Add(Loc["GoTo_BelowHorizon"], Severity.Warning);
                 return;
             }
 
             // Show confirmation dialog
             var parameters = new DialogParameters
             {
-                [nameof(AcceptCoordinatesDialog.Title)] = "Accept GoTo Coordinates",
+                [nameof(AcceptCoordinatesDialog.Title)] = Loc["GoTo_AcceptTitle"].Value,
                 [nameof(AcceptCoordinatesDialog.Coord1)] = coord1,
                 [nameof(AcceptCoordinatesDialog.Coord2)] = coord2,
                 [nameof(AcceptCoordinatesDialog.IsRaDec)] = _coordMode == CoordMode.RaDec
@@ -149,13 +149,13 @@ namespace GreenSwamp.Alpaca.Server.Components
                     slewResult = await _mount.SlewAltAzAsync(coord2, coord1);   // signature: (alt, az)
 
                 if (slewResult.CanProceed)
-                    Snackbar.Add("GoTo in progress\u2026", Severity.Info);
+                    Snackbar.Add(Loc["GoTo_InProgress"], Severity.Info);
                 else
-                    Snackbar.Add($"GoTo rejected: {slewResult.ErrorMessage}", Severity.Warning);
+                    Snackbar.Add(Loc["GoTo_Rejected", slewResult.ErrorMessage], Severity.Warning);
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"GoTo failed: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["GoTo_Failed", ex.Message], Severity.Error);
             }
         }
 
@@ -211,7 +211,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             if (_mount == null)
             {
-                Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error);
+                Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error);
                 return Task.CompletedTask;
             }
 
@@ -220,7 +220,7 @@ namespace GreenSwamp.Alpaca.Server.Components
                 var selectedPosition = _mount.Settings.ParkPositions?.Find(p => p.Name == _workingParkPositionName);
                 if (selectedPosition == null)
                 {
-                    Snackbar.Add($"Park position '{_workingParkPositionName}' not found", Severity.Warning);
+                    Snackbar.Add(Loc["GoTo_ParkNotFound", _workingParkPositionName], Severity.Warning);
                     return Task.CompletedTask;
                 }
 
@@ -275,7 +275,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             _showHorizonLimitSettings = false;
             _isSettingsDirty = false;
             _isSettingsPanelOpen = false;
-            Snackbar.Add("GoTo settings saved.", Severity.Success);
+            Snackbar.Add(Loc["GoTo_SettingsSaved"], Severity.Success);
             return Task.CompletedTask;
         }
 
@@ -298,7 +298,7 @@ namespace GreenSwamp.Alpaca.Server.Components
                 CloseOnEscapeKey = true,
                 CloseButton = true
             };
-            await DialogService.ShowAsync<ManageParkPositionsDialog>("Manage Park Positions", parameters, options);
+            await DialogService.ShowAsync<ManageParkPositionsDialog>(Loc["ParkPos_Title"], parameters, options);
         }
 
         private Task UpdateVoiceActive(bool value)
@@ -416,7 +416,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             _isMountRunning = _mount?.IsMountRunning ?? false;
             if (_mount == null || !_isMountRunning)
             {
-                Snackbar.Add("Mount is not running.", Severity.Error);
+                Snackbar.Add(Loc["GoTo_MountNotRunning"], Severity.Error);
                 return;
             }
 
@@ -444,7 +444,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             // Show confirmation dialog
             var parameters = new DialogParameters
             {
-                [nameof(AcceptCoordinatesDialog.Title)] = "Accept Sync Coordinates",
+                [nameof(AcceptCoordinatesDialog.Title)] = Loc["GoTo_AcceptSyncTitle"].Value,
                 [nameof(AcceptCoordinatesDialog.Coord1)] = coord1,
                 [nameof(AcceptCoordinatesDialog.Coord2)] = coord2,
                 [nameof(AcceptCoordinatesDialog.IsRaDec)] = _coordMode == CoordMode.RaDec
@@ -464,11 +464,11 @@ namespace GreenSwamp.Alpaca.Server.Components
                 _mount.TargetRa = coord1;
                 _mount.TargetDec = coord2;
                 await Task.Run(() => _mount.SyncToTargetRaDec());
-                Snackbar.Add("Sync complete.", Severity.Success);
+                Snackbar.Add(Loc["GoTo_SyncComplete"], Severity.Success);
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Sync failed: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["GoTo_SyncFailed", ex.Message], Severity.Error);
             }
         }
 
@@ -484,7 +484,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             return true;
         }
 
-        private const string RequiredMessage = "Value is required.";
+        private string RequiredMessage => Loc["Coord_Required"];
 
         private bool TryGetAltAzCoordinates(out double az, out double alt, out string error)
         {
@@ -519,12 +519,12 @@ namespace GreenSwamp.Alpaca.Server.Components
             return $"{sign}{d:00}° {m:00}′ {s:00.##}″";
         }
 
-        private static bool TryParseSmartRa(string input, out double hours, out string error)
+        private bool TryParseSmartRa(string input, out double hours, out string error)
         {
             return TryParseSmartCoordinate(input, out hours, out error, isRa: true);
         }
 
-        private static bool TryParseSmartAngle(string input, out double degrees, out string error)
+        private bool TryParseSmartAngle(string input, out double degrees, out string error)
         {
             return TryParseSmartCoordinate(input, out degrees, out error, isRa: false);
         }
@@ -555,7 +555,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             return Task.CompletedTask;
         }
 
-        private static string? ValidateSmartPartial(string input, bool isRa)
+        private string? ValidateSmartPartial(string input, bool isRa)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -572,7 +572,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             var decimalMode = TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical);
             if (decimalMode)
             {
-                return string.IsNullOrEmpty(decimalCanonical) ? (isRa ? "Hours must be in the range [0..24)." : "Degrees must be in the range [-90..90].") : string.Empty;
+                return string.IsNullOrEmpty(decimalCanonical) ? (isRa ? Loc["Coord_HoursRange"].Value : Loc["Coord_DegreesRange"].Value) : string.Empty;
             }
 
             var tokens = TokenizeSmartInput(input);
@@ -583,7 +583,7 @@ namespace GreenSwamp.Alpaca.Server.Components
 
             if (!TryParseIntegerToken(tokens[0], out var major))
             {
-                return isRa ? "Hours must be an integer." : "Degrees must be an integer.";
+                return isRa ? Loc["Coord_HoursInteger"].Value : Loc["Coord_DegreesInteger"].Value;
             }
 
             var sign = 1;
@@ -595,21 +595,21 @@ namespace GreenSwamp.Alpaca.Server.Components
             var signedMajor = major * sign;
             if (isRa)
             {
-                if (signedMajor < 0 || signedMajor >= 24) return "Hours must be in the range [0..24).";
+                if (signedMajor < 0 || signedMajor >= 24) return Loc["Coord_HoursRange"];
             }
             else
             {
-                if (signedMajor < -90 || signedMajor > 90) return "Degrees must be in the range [-90..90].";
+                if (signedMajor < -90 || signedMajor > 90) return Loc["Coord_DegreesRange"];
             }
 
             if (tokens.Length > 1 && (!TryParseIntegerToken(tokens[1], out var minutes) || minutes < 0 || minutes >= 60))
             {
-                return "Minutes must be an integer in the range [0..60).";
+                return Loc["Coord_MinutesInteger"];
             }
 
             if (tokens.Length > 2 && (!TryParseDecimalToken(tokens[2], out var seconds) || seconds < 0 || seconds >= 60))
             {
-                return "Seconds must be in the range [0..60).";
+                return Loc["Coord_SecondsRange"];
             }
 
             return string.Empty;
@@ -745,14 +745,14 @@ namespace GreenSwamp.Alpaca.Server.Components
             return double.TryParse(token, out value);
         }
 
-        private static bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa)
+        private bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa)
         {
             value = 0;
-            error = isRa ? "Enter a valid RA value." : "Enter a valid angle value.";
+            error = isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value;
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                error = isRa ? "RA is required." : "Angle value is required.";
+                error = isRa ? Loc["Coord_RaRequired"].Value : Loc["Coord_AngleRequired"].Value;
                 return false;
             }
 
@@ -761,13 +761,13 @@ namespace GreenSwamp.Alpaca.Server.Components
             {
                 if (string.IsNullOrEmpty(decimalCanonical))
                 {
-                    error = isRa ? "RA must be in the range [0..24)." : "Degrees must be in the range [-90..90].";
+                    error = isRa ? Loc["Coord_RaRange"].Value : Loc["Coord_DegreesRange"].Value;
                     return false;
                 }
 
                 if (!double.TryParse(trimmed.TrimStart('+', '-'), out value))
                 {
-                    error = isRa ? "Enter a valid RA value." : "Enter a valid angle value.";
+                    error = isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value;
                     return false;
                 }
 
@@ -780,13 +780,13 @@ namespace GreenSwamp.Alpaca.Server.Components
                 {
                     if (value < 0 || value >= 24)
                     {
-                        error = "RA must be in the range [0..24).";
+                        error = Loc["Coord_RaRange"];
                         return false;
                     }
                 }
                 else if (value < -90 || value > 90)
                 {
-                    error = "Degrees must be in the range [-90..90].";
+                    error = Loc["Coord_DegreesRange"];
                     return false;
                 }
 
@@ -829,13 +829,13 @@ namespace GreenSwamp.Alpaca.Server.Components
             var major = Math.Abs(a);
             if (parts.Length > 1 && (b < 0 || b >= 60))
             {
-                error = "Minutes must be in the range [0..60).";
+                error = Loc["Coord_MinutesRange"];
                 return false;
             }
 
             if (parts.Length > 2 && (c < 0 || c >= 60))
             {
-                error = "Seconds must be in the range [0..60).";
+                error = Loc["Coord_SecondsRange"];
                 return false;
             }
 

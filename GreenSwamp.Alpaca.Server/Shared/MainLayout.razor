@@ -5,7 +5,7 @@
 @using GreenSwamp.Alpaca.Server.Theme
 @using GreenSwamp.Alpaca.Settings.Services
 
-@inherits LayoutComponentBase
+@inherits LocalizedLayoutComponentBase
 @implements IDisposable
 @inject FloatingWindowManager WindowManager
 @inject NavigationManager NavigationManager
@@ -44,7 +44,7 @@
         <MudButton Color="Color.Primary" Variant="Variant.Filled" 
                    StartIcon="@Icons.Material.Filled.Help" 
                    OnClick="OpenAboutDialog">
-                   Help
+                   @Loc["Layout_Help"]
         </MudButton>
     </MudAppBar>
 
@@ -55,7 +55,7 @@
                Style="background-color:var(--gs-bg-sidebar); border-right:1px solid rgba(var(--gs-accent-500-rgb),0.2);">
         <NavMenu />
         <MudText Typo="Typo.caption" Class="mt-auto pa-3">
-            Version @(ServerConfig.GetVersion())
+            @Loc["Layout_Version", ServerConfig.GetVersion()]
         </MudText>
     </MudDrawer>
 

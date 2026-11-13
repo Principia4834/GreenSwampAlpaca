@@ -5,58 +5,57 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">Add Telescope Device</MudText>
+            <MudText Typo="Typo.h6">@Loc["AddDevice_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="4" Class="mt-2">
             <MudTextField @bind-Value="_deviceName"
-                          Label="Device Name"
-                          Placeholder="e.g. EQ6-R Pro"
+                          Label="@Loc["AddDevice_DeviceName"]"
+                          Placeholder="@Loc["AddDevice_DeviceNamePlaceholder"]"
                           Required="true"
-                          RequiredError="Device name is required"
+                          RequiredError="@Loc["AddDevice_DeviceNameRequired"]"
                           Immediate="true"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.DeviceHub" />
 
             <MudSelect @bind-Value="_mountType"
-                       Label="Mount Type"
-                       HelperText="Applies Simulator or SkyWatcher default settings">
+                       Label="@Loc["AddDevice_MountType"]"
+                       HelperText="@Loc["AddDevice_MountTypeHelp"]">
                 <MudSelectItem Value="MountType.Simulator">
-                    No physical mount, use for testing and simulation
+                    @Loc["AddDevice_Simulator"]
                 </MudSelectItem>
                 <MudSelectItem Value="MountType.SkyWatcher">
-                    Physical mount, must support SkyWatcher / Synta commands
+                    @Loc["AddDevice_SkyWatcher"]
                 </MudSelectItem>
             </MudSelect>
 
             <MudSelect @bind-Value="_alignmentMode"
-                       Label="Alignment Mode"
-                       HelperText="Applies alignment mode specific default settings">
+                       Label="@Loc["AddDevice_AlignmentMode"]"
+                       HelperText="@Loc["AddDevice_AlignmentModeHelp"]">
                 <MudSelectItem Value="AlignmentMode.GermanPolar">
-                    German Equatorial (GEM) — counterweight, meridian flip
+                    @Loc["AddDevice_Gem"]
                 </MudSelectItem>
                 <MudSelectItem Value="AlignmentMode.Polar">
-                    Polar / Fork — fork equatorial, no meridian flip
+                    @Loc["AddDevice_Polar"]
                 </MudSelectItem>
                 <MudSelectItem Value="AlignmentMode.AltAz">
-                    Alt-Azimuth — altitude / azimuth axes
+                    @Loc["AddDevice_AltAz"]
                 </MudSelectItem>
             </MudSelect>
 
             <MudAlert Severity="Severity.Info" Dense="true">
-                All other settings can be configured in the device's
-                <strong>Mount Configuration</strong> group after the device is added.
+                @Loc.Html("AddDevice_Note")
             </MudAlert>
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">@Loc["Common_Cancel"]</MudButton>
         <MudButton Color="Color.Primary" Variant="Variant.Filled"
                    Disabled="@string.IsNullOrWhiteSpace(_deviceName)"
                    OnClick="Confirm"
                    StartIcon="@Icons.Material.Filled.Add">
-            Add Device
+            @Loc["AddDevice_Add"]
         </MudButton>
     </DialogActions>
 </MudDialog>

@@ -5,17 +5,17 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.AddLocationAlt" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">Add Observatory</MudText>
+            <MudText Typo="Typo.h6">@Loc["AddObservatory_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3" Class="mt-2">
             <MudTextField @bind-Value="_name"
                           @bind-Value:after="ValidateName"
-                          Label="Observatory Name"
-                          Placeholder="e.g. Backyard Observatory"
+                          Label="@Loc["AddObservatory_Name"]"
+                          Placeholder="@Loc["AddObservatory_NamePlaceholder"]"
                           Required="true"
-                          RequiredError="Name is required."
+                          RequiredError="@Loc["AddObservatory_NameRequired"]"
                           Immediate="true"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.LocationOn"
@@ -23,22 +23,22 @@
                           ErrorText="@_nameErrorText" />
 
             <MudNumericField T="double" @bind-Value="_latitude"
-                             Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
+                             Label="@Loc["AddObservatory_Latitude"]" Format="F6" Min="-90" Max="90" Immediate="true" />
             <MudNumericField T="double" @bind-Value="_longitude"
-                             Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
+                             Label="@Loc["AddObservatory_Longitude"]" Format="F6" Min="-180" Max="180" Immediate="true" />
             <MudNumericField T="double" @bind-Value="_elevation"
-                             Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
+                             Label="@Loc["AddObservatory_Elevation"]" Format="F1" Min="-500" Max="9000" Immediate="true" />
             <MudNumericField T="double" @bind-Value="_utcOffsetHours"
-                             Label="UTC Offset (h)" Format="F1" Min="-14" Max="14" Immediate="true" />
+                             Label="@Loc["AddObservatory_UtcOffset"]" Format="F1" Min="-14" Max="14" Immediate="true" />
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">@Loc["Common_Cancel"]</MudButton>
         <MudButton Color="Color.Primary" Variant="Variant.Filled"
                    Disabled="@(!CanConfirm)"
                    OnClick="Confirm"
                    StartIcon="@Icons.Material.Filled.Add">
-            Add Observatory
+            @Loc["AddObservatory_Add"]
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -65,12 +65,12 @@
         if (string.IsNullOrWhiteSpace(_name))
         {
             _nameError = true;
-            _nameErrorText = "Name is required.";
+            _nameErrorText = Loc["AddObservatory_NameRequired"];
             return;
         }
         var isDuplicate = ExistingNames.Any(n => string.Equals(n, _name.Trim(), StringComparison.OrdinalIgnoreCase));
         _nameError = isDuplicate;
-        _nameErrorText = isDuplicate ? "An observatory with this name already exists." : string.Empty;
+        _nameErrorText = isDuplicate ? Loc["AddObservatory_NameExists"].Value : string.Empty;
     }
 
     private void Confirm()

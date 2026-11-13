@@ -10,9 +10,9 @@
             <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Color="Color.Primary" />
         </CardHeaderAvatar>
         <CardHeaderContent>
-            <MudText Typo="Typo.h6">Telescope Devices</MudText>
+            <MudText Typo="Typo.h6">@Loc["DeviceMgr_Title"]</MudText>
             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                Manage connected telescope mount devices
+                @Loc["DeviceMgr_Subtitle"]
             </MudText>
         </CardHeaderContent>
     </MudCardHeader>
@@ -21,7 +21,7 @@
         @if (Devices is null || Devices.Count == 0)
         {
             <MudAlert Severity="Severity.Normal" Icon="@Icons.Material.Filled.Info">
-                No telescope devices are configured. Add a device to get started.
+                @Loc["DeviceMgr_NoDevices"]
             </MudAlert>
         }
         else
@@ -35,13 +35,13 @@
                                      Color="Color.Primary" Size="Size.Medium" />
                             <MudStack Spacing="0" Style="flex:1; min-width:0;">
                                 <MudText Typo="Typo.subtitle2">
-                                    Device @deviceNumber - @device.DeviceName
+                                    @Loc["DeviceMgr_DeviceLine", deviceNumber, device.DeviceName]
                                 </MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
                                     @FriendlyAlignment(device.AlignmentMode) &nbsp;-&nbsp; @device.Mount
                                 </MudText>
                             </MudStack>
-                            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Permanently delete this device and all its settings"
+                            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["DeviceMgr_DeleteTooltip"]"
                                         Placement="Placement.Left" Arrow="true">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteForever"
                                                Color="Color.Error"
@@ -62,14 +62,14 @@
         @if (HasPendingChanges)
         {
             <MudTooltip Inline="false" RootStyle="max-width:300px"
-                        Text="Apply all device additions and deletions without restarting the server"
+                        Text="@Loc["DeviceMgr_ApplyTooltip"]"
                         Placement="Placement.Top" Arrow="true">
                 <MudButton Variant="Variant.Filled" Color="Color.Warning"
                            StartIcon="@Icons.Material.Filled.Refresh"
                            Class="me-2"
                            Disabled="@IsBusy"
                            OnClick="RequestHotReload">
-                    Apply Changes
+                    @Loc["DeviceMgr_ApplyChanges"]
                 </MudButton>
             </MudTooltip>
         }
@@ -77,7 +77,7 @@
                    StartIcon="@Icons.Material.Filled.Add"
                    Disabled="@IsBusy"
                    OnClick="RequestAdd">
-            Add Device
+            @Loc["AddDevice_Add"]
         </MudButton>
     </MudCardActions>
 </MudCard>
@@ -119,5 +119,5 @@
             await OnHotReload.InvokeAsync();
     }
 
-    private static string FriendlyAlignment(string? mode) => DeviceDisplay.FriendlyAlignment(mode);
+    private string FriendlyAlignment(string? mode) => DeviceDisplay.FriendlyAlignment(Loc, mode);
 }
