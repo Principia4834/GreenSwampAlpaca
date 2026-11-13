@@ -253,6 +253,11 @@ namespace GreenSwamp.Alpaca.Server
 
             var builder = WebApplication.CreateBuilder([.. hostArgs]);
 
+            // Static web assets (wwwroot, _framework/blazor.server.js, _content/MudBlazor) are only wired up
+            // automatically in Development. Enable them for unpublished builds run directly from bin\ in
+            // other environments; this is a no-op for published output, which has no runtime manifest.
+            builder.WebHost.UseStaticWebAssets();
+
             // Configure response compression with Brotli and Gzip providers, enabling for HTTPS
             builder.Services.AddResponseCompression(options =>
             {
