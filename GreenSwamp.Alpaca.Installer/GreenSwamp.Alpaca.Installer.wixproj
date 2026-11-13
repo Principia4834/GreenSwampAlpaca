@@ -8,7 +8,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <Manufacturer Condition="'$(Manufacturer)' == ''">Principia4834</Manufacturer>
-    <!-- UpgradeCode: stable GUID per platform. CI passes via -p:UpgradeCode=... -->
+    <!-- UpgradeCode: stable GUID per platform. CI passes via -p:UpgradeCode=... (same values as below).
+         Local/VS builds fall back to the per-platform default so an x86 MSI never reuses the x64 code. -->
+    <UpgradeCode Condition="'$(UpgradeCode)' == '' and ('$(Platform)' == 'x86' or '$(Platform)' == 'win-x86')">D910192D-77C9-499E-80E9-10428B7FB80F</UpgradeCode>
     <UpgradeCode Condition="'$(UpgradeCode)' == ''">0BFB5E9F-4475-4BFA-A8A5-1F26CD982B1C</UpgradeCode>
     <!-- Platform: WiX MSBuild token (x64/x86/ARM64). dotnet build and VS both use this form.
 			 CI can override with -p:Platform=x64. Use -p:PublishRid=win-x64 to control the RID separately. -->
