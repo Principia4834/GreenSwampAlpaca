@@ -205,7 +205,7 @@
                                                          Min="0"
                                                          Max="30"
                                                          Immediate="true"
-                                                         Converter="@(NumericFieldConverter.Invariant("F2"))"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                         <MudNumericField T="double"
                                                          Value="@_workingTrackingLimitAfterFlipAngle"
@@ -214,7 +214,7 @@
                                                          Min="0"
                                                          Max="15"
                                                          Immediate="true"
-                                                         Converter="@(NumericFieldConverter.Invariant("F2"))"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                     </MudStack>
                                 }
@@ -248,7 +248,7 @@
                                                          ValueChanged="OnHorizonTrackingLimitChanged"
                                                          Label="@Loc["GoTo_HorizonTrackingLimit"]"
                                                          Immediate="true"
-                                                         Converter="@(NumericFieldConverter.Invariant("F2"))"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                         <MudNumericField T="double"
                                                          Value="@_workingHorizonGoToLimit"
@@ -257,7 +257,7 @@
                                                          Min="-20"
                                                          Max="30"
                                                          Immediate="true"
-                                                         Converter="@(NumericFieldConverter.Invariant("F2"))"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                     </MudStack>
                                 }

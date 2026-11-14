@@ -185,7 +185,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private string FormatDegrees(double degrees)
         {
             if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
-            return FormattableString.Invariant($"{degrees:F4}°");
+            return degrees.ToString("F4", CultureInfo.CurrentCulture) + "°";
         }
     }
 }
