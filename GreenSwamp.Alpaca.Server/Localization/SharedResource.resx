@@ -1,5 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -51,15 +156,12 @@
   </data>
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
-    <comment>WPF: diaCancel</comment>
   </data>
   <data name="Common_Start" xml:space="preserve">
     <value>Start</value>
-    <comment>WPF: btnAutoHomeStart (ambiguous: btnAutoHomeStart, diaStart, pulStart, pltStart, utilStart, chtStart)</comment>
   </data>
   <data name="Common_Stop" xml:space="preserve">
     <value>Stop</value>
-    <comment>WPF: btnStop (ambiguous: btnStop, hcTipStop, gpStop, diaStop, vceStop, utilStop)</comment>
   </data>
   <data name="Common_MountNotFound" xml:space="preserve">
     <value>Mount device {0} not found</value>
@@ -166,7 +268,6 @@
   </data>
   <data name="AutoHome_Title" xml:space="preserve">
     <value>AutoHome</value>
-    <comment>WPF: btnAutoHome</comment>
   </data>
   <data name="AutoHome_Searching" xml:space="preserve">
     <value>Searching for home sensor…</value>
@@ -212,7 +313,6 @@
   </data>
   <data name="FlipSop_Title" xml:space="preserve">
     <value>Flip Side of Pier</value>
-    <comment>WPF: btnTipFlip</comment>
   </data>
   <data name="FlipSop_Description" xml:space="preserve">
     <value>The mount will slew to the same sky position on the opposite pier side. The telescope must be within the flip angle limits.</value>
@@ -247,15 +347,12 @@
   </data>
   <data name="Common_Ok" xml:space="preserve">
     <value>OK</value>
-    <comment>WPF: diaOk</comment>
   </data>
   <data name="Common_Accept" xml:space="preserve">
     <value>Accept</value>
-    <comment>WPF: diaAccept (ambiguous: diaAccept, aliAcceptButtonCaption, utilAccept)</comment>
   </data>
   <data name="Common_Close" xml:space="preserve">
     <value>Close</value>
-    <comment>WPF: skyClose</comment>
   </data>
   <data name="About_TabAbout" xml:space="preserve">
     <value>About</value>
@@ -277,19 +374,15 @@
   </data>
   <data name="Coord_Ra" xml:space="preserve">
     <value>RA</value>
-    <comment>WPF: topRaShort (ambiguous: topRaShort, goRa, bacRa, notRa)</comment>
   </data>
   <data name="Coord_Dec" xml:space="preserve">
     <value>Dec</value>
-    <comment>WPF: topDecShort (ambiguous: topDecShort, goDec, bacDec, notDec)</comment>
   </data>
   <data name="Coord_Az" xml:space="preserve">
     <value>Az</value>
-    <comment>WPF: topAz (ambiguous: topAz, goAz, notAz, lbAz)</comment>
   </data>
   <data name="Coord_Alt" xml:space="preserve">
     <value>Alt</value>
-    <comment>WPF: topAlt (ambiguous: topAlt, goAlt, notAlt, lbAlt)</comment>
   </data>
   <data name="AddDevice_Title" xml:space="preserve">
     <value>Add Telescope Device</value>
@@ -305,7 +398,6 @@
   </data>
   <data name="AddDevice_MountType" xml:space="preserve">
     <value>Mount Type</value>
-    <comment>WPF: skyMount</comment>
   </data>
   <data name="AddDevice_MountTypeHelp" xml:space="preserve">
     <value>Applies Simulator or SkyWatcher default settings</value>
@@ -318,7 +410,6 @@
   </data>
   <data name="AddDevice_AlignmentMode" xml:space="preserve">
     <value>Alignment Mode</value>
-    <comment>WPF: notAlignmentMode (ambiguous: notAlignmentMode, skyAlignment)</comment>
   </data>
   <data name="AddDevice_AlignmentModeHelp" xml:space="preserve">
     <value>Applies alignment mode specific default settings</value>
@@ -415,14 +506,12 @@
   </data>
   <data name="Common_Save" xml:space="preserve">
     <value>Save</value>
-    <comment>WPF: gpSave</comment>
   </data>
   <data name="Common_Apply" xml:space="preserve">
     <value>Apply</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
     <value>Delete</value>
-    <comment>WPF: aliDelete (ambiguous: aliDelete, utilDelete)</comment>
   </data>
   <data name="Common_Create" xml:space="preserve">
     <value>Create</value>
@@ -432,15 +521,12 @@
   </data>
   <data name="Common_Latitude" xml:space="preserve">
     <value>Latitude</value>
-    <comment>WPF: gpsLat (ambiguous: gpsLat, cdcLat, skyLatitude, polLat)</comment>
   </data>
   <data name="Common_Longitude" xml:space="preserve">
     <value>Longitude</value>
-    <comment>WPF: gpsLong (ambiguous: gpsLong, cdcLong, skyLongitude, polLong)</comment>
   </data>
   <data name="Common_Altitude" xml:space="preserve">
     <value>Altitude</value>
-    <comment>WPF: lbAxisY</comment>
   </data>
   <data name="Cdc_Title" xml:space="preserve">
     <value>Cartes du Ciel at {0} : {1}</value>
@@ -624,7 +710,6 @@
   </data>
   <data name="Home_DeviceMountType" xml:space="preserve">
     <value>Mount type</value>
-    <comment>WPF: skyMount</comment>
   </data>
   <data name="Home_DeviceAlignment" xml:space="preserve">
     <value>Alignment mode</value>
@@ -830,25 +915,21 @@
   </data>
   <data name="HandCtl_North" xml:space="preserve">
     <value>North</value>
-    <comment>WPF: lbNorth</comment>
   </data>
   <data name="HandCtl_NorthEast" xml:space="preserve">
     <value>North-East</value>
   </data>
   <data name="HandCtl_West" xml:space="preserve">
     <value>West</value>
-    <comment>WPF: lbWest</comment>
   </data>
   <data name="HandCtl_East" xml:space="preserve">
     <value>East</value>
-    <comment>WPF: lbEast</comment>
   </data>
   <data name="HandCtl_SouthWest" xml:space="preserve">
     <value>South-West</value>
   </data>
   <data name="HandCtl_South" xml:space="preserve">
     <value>South</value>
-    <comment>WPF: lbSouth</comment>
   </data>
   <data name="HandCtl_SouthEast" xml:space="preserve">
     <value>South-East</value>
@@ -864,7 +945,6 @@
   </data>
   <data name="HandCtl_OneClickStart" xml:space="preserve">
     <value>One Click Start</value>
-    <comment>WPF: lbOneClickStart</comment>
   </data>
   <data name="HandCtl_KeysOffTooltip" xml:space="preserve">
     <value>Keys disabled while slewing</value>
@@ -907,21 +987,18 @@
   </data>
   <data name="GoTo_GoToButton" xml:space="preserve">
     <value>GoTo</value>
-    <comment>WPF: goGoTo</comment>
   </data>
   <data name="GoTo_CopyTooltip" xml:space="preserve">
     <value>Copy from current position</value>
   </data>
   <data name="GoTo_CopyButton" xml:space="preserve">
     <value>Copy</value>
-    <comment>WPF: goCopy (ambiguous: goCopy, notCopy, optCopy)</comment>
   </data>
   <data name="GoTo_SyncTooltip" xml:space="preserve">
     <value>Sync to coordinates</value>
   </data>
   <data name="GoTo_SyncButton" xml:space="preserve">
     <value>Sync</value>
-    <comment>WPF: goSync</comment>
   </data>
   <data name="GoTo_EnterRa" xml:space="preserve">
     <value>Enter right ascension value</value>
@@ -949,7 +1026,6 @@
   </data>
   <data name="GoTo_ParkPositions" xml:space="preserve">
     <value>Park Positions</value>
-    <comment>WPF: btnTipParkPos</comment>
   </data>
   <data name="GoTo_SelectParkPosition" xml:space="preserve">
     <value>Select park position</value>
@@ -971,7 +1047,6 @@
   </data>
   <data name="GoTo_ParkAction" xml:space="preserve">
     <value>Park</value>
-    <comment>WPF: btnPark (ambiguous: btnPark, botTipParked, gpPark)</comment>
   </data>
   <data name="GoTo_EditTrackingLimitsTooltip" xml:space="preserve">
     <value>Edit tracking limit values</value>
@@ -1364,7 +1439,6 @@
   </data>
   <data name="Lim_LimitsOn" xml:space="preserve">
     <value>Limits On</value>
-    <comment>WPF: 1021LimitsOn (ambiguous: 1021LimitsOn, vceLimitsOn)</comment>
   </data>
   <data name="Lim_FlipAngle_Tip" xml:space="preserve">
     <value>GEM safety limit in degrees around meridian.</value>
@@ -1398,7 +1472,6 @@
   </data>
   <data name="Lim_SyncPanel" xml:space="preserve">
     <value>Sync Limits</value>
-    <comment>WPF: skySyncLimitOn</comment>
   </data>
   <data name="Lim_EnableSyncLimit_Tip" xml:space="preserve">
     <value>Enable sync angle limit — reject syncs that would move the model by more than this angle.</value>
@@ -1566,7 +1639,6 @@
   </data>
   <data name="MC_MountType" xml:space="preserve">
     <value>Mount Type</value>
-    <comment>WPF: skyMount</comment>
   </data>
   <data name="MC_Simulator" xml:space="preserve">
     <value>Simulator</value>
@@ -1576,7 +1648,6 @@
   </data>
   <data name="MC_AlignMode" xml:space="preserve">
     <value>Alignment Mode</value>
-    <comment>WPF: notAlignmentMode (ambiguous: notAlignmentMode, skyAlignment)</comment>
   </data>
   <data name="MC_AlignGem" xml:space="preserve">
     <value>German Equatorial (GEM)</value>
@@ -1595,18 +1666,15 @@
   </data>
   <data name="MC_Left" xml:space="preserve">
     <value>Left</value>
-    <comment>WPF: hcTipL</comment>
   </data>
   <data name="MC_Right" xml:space="preserve">
     <value>Right</value>
-    <comment>WPF: hcTipR</comment>
   </data>
   <data name="MC_EqCoord_Tip" xml:space="preserve">
     <value>Equatorial coordinate type returned by the mount (J2000 or JNow).</value>
   </data>
   <data name="MC_EqCoord" xml:space="preserve">
     <value>Equatorial Coordinate Type</value>
-    <comment>WPF: notEqType</comment>
   </data>
   <data name="MC_CoordOther" xml:space="preserve">
     <value>Other</value>
@@ -1634,7 +1702,6 @@
   </data>
   <data name="MC_Baud" xml:space="preserve">
     <value>Baud Rate</value>
-    <comment>WPF: gpsBaud</comment>
   </data>
   <data name="MC_DataBits_Tip" xml:space="preserve">
     <value>Number of data bits.</value>
@@ -1698,14 +1765,12 @@
   </data>
   <data name="MC_PolarLed" xml:space="preserve">
     <value>Polar LED Level</value>
-    <comment>WPF: skyPolarLedLevel</comment>
   </data>
   <data name="MC_FullCurrent_Tip" xml:space="preserve">
     <value>Enable full current mode on the motor drivers.</value>
   </data>
   <data name="MC_FullCurrent" xml:space="preserve">
     <value>Full Current</value>
-    <comment>WPF: skyFullCurrent</comment>
   </data>
   <data name="MC_GearingPanel" xml:space="preserve">
     <value>Custom Gearing</value>
@@ -1721,11 +1786,9 @@
   </data>
   <data name="MC_RaWorm" xml:space="preserve">
     <value>RA Worm Teeth</value>
-    <comment>WPF: raWormTeeth</comment>
   </data>
   <data name="MC_RaTrkOffset" xml:space="preserve">
     <value>RA Tracking Offset</value>
-    <comment>WPF: raTrackingOffset</comment>
   </data>
   <data name="MC_DecAxis" xml:space="preserve">
     <value>Dec Axis</value>
@@ -1735,11 +1798,9 @@
   </data>
   <data name="MC_DecWorm" xml:space="preserve">
     <value>Dec Worm Teeth</value>
-    <comment>WPF: decWormTeeth</comment>
   </data>
   <data name="MC_DecTrkOffset" xml:space="preserve">
     <value>Dec Tracking Offset</value>
-    <comment>WPF: decTrackingOffset</comment>
   </data>
   <data name="ObsCard_Title" xml:space="preserve">
     <value>Observatories</value>
@@ -1950,63 +2011,51 @@
   </data>
   <data name="Mon_Device" xml:space="preserve">
     <value>Device</value>
-    <comment>WPF: optDevice</comment>
   </data>
   <data name="Mon_ServerDevice" xml:space="preserve">
     <value>Server Device</value>
   </data>
   <data name="Mon_Telescope" xml:space="preserve">
     <value>Telescope</value>
-    <comment>WPF: optTelescope</comment>
   </data>
   <data name="Mon_Ui" xml:space="preserve">
     <value>UI</value>
-    <comment>WPF: optUI</comment>
   </data>
   <data name="Mon_Other" xml:space="preserve">
     <value>Other</value>
   </data>
   <data name="Mon_Category" xml:space="preserve">
     <value>Category</value>
-    <comment>WPF: optCategory</comment>
   </data>
   <data name="Mon_Driver" xml:space="preserve">
     <value>Driver</value>
-    <comment>WPF: optDriver</comment>
   </data>
   <data name="Mon_Interface" xml:space="preserve">
     <value>Interface</value>
-    <comment>WPF: optInterface</comment>
   </data>
   <data name="Mon_Server" xml:space="preserve">
     <value>Server</value>
-    <comment>WPF: optServer</comment>
   </data>
   <data name="Mon_Mount" xml:space="preserve">
     <value>Mount</value>
-    <comment>WPF: mntMount (ambiguous: mntMount, optMount)</comment>
   </data>
   <data name="Mon_Alignment" xml:space="preserve">
     <value>Alignment</value>
   </data>
   <data name="Mon_Type" xml:space="preserve">
     <value>Type</value>
-    <comment>WPF: optType (ambiguous: optType, chtType)</comment>
   </data>
   <data name="Mon_Information" xml:space="preserve">
     <value>Information</value>
   </data>
   <data name="Mon_Data" xml:space="preserve">
     <value>Data</value>
-    <comment>WPF: optData</comment>
   </data>
   <data name="Mon_Warning" xml:space="preserve">
     <value>Warning</value>
-    <comment>WPF: optWarning</comment>
   </data>
   <data name="Mon_Error" xml:space="preserve">
     <value>Error</value>
-    <comment>WPF: exError</comment>
   </data>
   <data name="Mon_Debug" xml:space="preserve">
     <value>Debug</value>
@@ -2040,7 +2089,6 @@
   </data>
   <data name="Mon_LogPath" xml:space="preserve">
     <value>Log Path</value>
-    <comment>WPF: optLogPath</comment>
   </data>
   <data name="Mon_LogPath_Tip" xml:space="preserve">
     <value>Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GreenSwamp\Server).</value>
@@ -2059,11 +2107,9 @@
   </data>
   <data name="Mon_ClearAll" xml:space="preserve">
     <value>Clear All</value>
-    <comment>WPF: aliClearAll</comment>
   </data>
   <data name="Mon_Reset" xml:space="preserve">
     <value>Reset</value>
-    <comment>WPF: btnResetSensorPos (ambiguous: btnResetSensorPos, skyReset, optReset)</comment>
   </data>
   <data name="Home_PageTitle" xml:space="preserve">
     <value>Home – Green Swamp Alpaca Server</value>
@@ -2484,11 +2530,9 @@
   </data>
   <data name="MCtl_Lha" xml:space="preserve">
     <value>LHA</value>
-    <comment>WPF: topLHA</comment>
   </data>
   <data name="MCtl_Lst" xml:space="preserve">
     <value>LST</value>
-    <comment>WPF: topLST</comment>
   </data>
   <data name="MCtl_HandController" xml:space="preserve">
     <value>Hand Controller</value>
@@ -3018,7 +3062,6 @@
   </data>
   <data name="Chart_Degrees" xml:space="preserve">
     <value>Degrees</value>
-    <comment>WPF: btnHintAutoHomeLimit</comment>
   </data>
   <data name="Chart_YAxisMs" xml:space="preserve">
     <value>mS</value>

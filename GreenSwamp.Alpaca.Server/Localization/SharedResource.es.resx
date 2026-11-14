@@ -1,5 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -81,11 +186,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_UnparkTooltip" xml:space="preserve">
-    <value>Desestacionar la montura</value>
+    <value>Desaparcar la montura</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_ParkTooltip" xml:space="preserve">
-    <value>Estacionar la montura en la posición seleccionada</value>
+    <value>Aparcar la montura en la posición seleccionada</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_HomeTooltip" xml:space="preserve">
@@ -109,7 +214,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_AutoHomeRunningTooltip" xml:space="preserve">
-    <value>Origen automático en curso…</value>
+    <value>AutoHome en curso…</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_AutoHomeTooltip" xml:space="preserve">
@@ -125,7 +230,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_SettingsTooltip" xml:space="preserve">
-    <value>Establecer posiciones de estacionamiento y límites de desplazamiento</value>
+    <value>Establecer posiciones de aparcamiento y límites de desplazamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_StopTooltip" xml:space="preserve">
@@ -133,31 +238,31 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_UnparkConfirm" xml:space="preserve">
-    <value>¿Desestacionar la montura?</value>
+    <value>¿Desaparcar la montura?</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_Unpark" xml:space="preserve">
-    <value>Desestacionar</value>
+    <value>Desaparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_UnparkFailed" xml:space="preserve">
-    <value>Error al desestacionar</value>
+    <value>Error al desaparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_ParkConfirm" xml:space="preserve">
-    <value>¿Estacionar la montura?</value>
+    <value>¿Aparcar la montura?</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_ParkAtConfirm" xml:space="preserve">
-    <value>¿Estacionar la montura en '{0}'?</value>
+    <value>¿Aparcar la montura en '{0}'?</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_Park" xml:space="preserve">
-    <value>Estacionar</value>
+    <value>Aparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_ParkFailed" xml:space="preserve">
-    <value>Error al estacionar</value>
+    <value>Error al aparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_HomeConfirm" xml:space="preserve">
@@ -185,7 +290,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_FlipTitle" xml:space="preserve">
-    <value>Voltear lado del pilar</value>
+    <value>Cambiar al lado opuesto de la montura</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_FlipFailed" xml:space="preserve">
@@ -193,7 +298,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
-    <value>Origen automático</value>
+    <value>AutoHome</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_LimitsToggleFailed" xml:space="preserve">
@@ -205,7 +310,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_Title" xml:space="preserve">
-    <value>Origen automático</value>
+    <value>Autohome</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_Searching" xml:space="preserve">
@@ -253,11 +358,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_Failed" xml:space="preserve">
-    <value>Error en Origen automático: {0}</value>
+    <value>Error en AutoHome: {0}</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_Complete" xml:space="preserve">
-    <value>Origen automático completado</value>
+    <value>AutoHome completado</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_MountNotFound" xml:space="preserve">
@@ -265,7 +370,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="FlipSop_Title" xml:space="preserve">
-    <value>Voltear lado del pilar</value>
+    <value>Cambiar al lado opuesto de la montura</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="FlipSop_Description" xml:space="preserve">
@@ -297,11 +402,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ReSync_ToPark" xml:space="preserve">
-    <value>Sincronizar con la posición de estacionamiento</value>
+    <value>Sincronizar con la posición de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ReSync_ParkPosition" xml:space="preserve">
-    <value>Posición de estacionamiento</value>
+    <value>Posición de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ReSync_Button" xml:space="preserve">
@@ -665,7 +770,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_Title" xml:space="preserve">
-    <value>Gestionar posiciones de estacionamiento</value>
+    <value>Gestionar posiciones de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_NotConnected" xml:space="preserve">
@@ -673,7 +778,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_Position" xml:space="preserve">
-    <value>Posición de estacionamiento</value>
+    <value>Posición de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_UpdateTooltip" xml:space="preserve">
@@ -685,11 +790,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_CannotDeleteLast" xml:space="preserve">
-    <value>No se puede eliminar la última posición de estacionamiento</value>
+    <value>No se puede eliminar la última posición de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_DeleteTooltip" xml:space="preserve">
-    <value>Eliminar la posición de estacionamiento seleccionada</value>
+    <value>Eliminar la posición de aparcamiento seleccionada</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_MountMustBeConnected" xml:space="preserve">
@@ -697,7 +802,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_AddTooltip" xml:space="preserve">
-    <value>Añadir una posición de estacionamiento nueva a partir de la posición actual de la montura</value>
+    <value>Añadir una posición de aparcamiento nueva a partir de la posición actual de la montura</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_AddNew" xml:space="preserve">
@@ -713,7 +818,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_Updated" xml:space="preserve">
-    <value>Posición de estacionamiento '{0}' actualizada con la posición actual de la montura.</value>
+    <value>Posición de aparcamiento '{0}' actualizada con la posición actual de la montura.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_UpdateFailed" xml:space="preserve">
@@ -721,7 +826,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_Deleted" xml:space="preserve">
-    <value>Posición de estacionamiento '{0}' eliminada.</value>
+    <value>Posición de aparcamiento '{0}' eliminada.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_DeleteFailed" xml:space="preserve">
@@ -729,7 +834,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_Created" xml:space="preserve">
-    <value>Posición de estacionamiento '{0}' creada.</value>
+    <value>Posición de aparcamiento '{0}' creada.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ParkPos_CreateFailed" xml:space="preserve">
@@ -1205,11 +1310,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_ParkPositions" xml:space="preserve">
-    <value>Posiciones de estacionamiento</value>
+    <value>Posiciones de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_SelectParkPosition" xml:space="preserve">
-    <value>Seleccionar posición de estacionamiento</value>
+    <value>Seleccionar posición de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_NoPositions" xml:space="preserve">
@@ -1217,7 +1322,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_ManageParkTooltip" xml:space="preserve">
-    <value>Crear, actualizar o eliminar posiciones de estacionamiento</value>
+    <value>Crear, actualizar o eliminar posiciones de aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_TrackingLimits" xml:space="preserve">
@@ -1233,7 +1338,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_ParkAction" xml:space="preserve">
-    <value>Estacionar</value>
+    <value>Aparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_EditTrackingLimitsTooltip" xml:space="preserve">
@@ -1301,7 +1406,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_ParkNotFound" xml:space="preserve">
-    <value>Posición de estacionamiento '{0}' no encontrada</value>
+    <value>Posición de aparcamiento '{0}' no encontrada</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_SettingsSaved" xml:space="preserve">
@@ -1557,31 +1662,31 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_AutoHome" xml:space="preserve">
-    <value>Origen automático</value>
+    <value>AutoHome</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_Park" xml:space="preserve">
-    <value>Estacionamiento</value>
+    <value>Aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_ActivePark_Tip" xml:space="preserve">
-    <value>Nombre de la posición de estacionamiento activa.</value>
+    <value>Nombre de la posición de aparcamiento activa.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_ActivePark" xml:space="preserve">
-    <value>Posición de estacionamiento activa</value>
+    <value>Posición de aparcamiento activa</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_TrackAfterUnpark_Tip" xml:space="preserve">
-    <value>Iniciar el seguimiento automáticamente cuando la montura se desestacione.</value>
+    <value>Iniciar el seguimiento automáticamente cuando la montura se desaparque.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
-    <value>Seguimiento tras desestacionar</value>
+    <value>Seguimiento tras desaparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_DefinedParkPositions" xml:space="preserve">
-    <value>Posiciones de estacionamiento definidas</value>
+    <value>Posiciones de aparcamiento definidas</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_Name" xml:space="preserve">
@@ -1649,7 +1754,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Voice_Active_Tip" xml:space="preserve">
-    <value>Habilita los avisos de voz para este dispositivo (p. ej., Estacionada, Desplazando, Seguimiento activado).</value>
+    <value>Habilita los avisos de voz para este dispositivo (p. ej., Aparcada, Desplazando, Seguimiento activado).</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Voice_Active" xml:space="preserve">
@@ -1777,7 +1882,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Lim_PrimaryPark" xml:space="preserve">
-    <value>Posición de estacionamiento de la acción primaria</value>
+    <value>Posición de aparcamiento de la acción primaria</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Lim_GemHorizonAction" xml:space="preserve">
@@ -1789,7 +1894,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Lim_HorizonPark" xml:space="preserve">
-    <value>Posición de estacionamiento de la acción de horizonte</value>
+    <value>Posición de aparcamiento de la acción de horizonte</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Lim_SyncPanel" xml:space="preserve">
@@ -2089,7 +2194,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_Baud" xml:space="preserve">
-    <value>Velocidad en baudios</value>
+    <value>Baud Rate</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_DataBits_Tip" xml:space="preserve">
@@ -2181,7 +2286,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_FullCurrent" xml:space="preserve">
-    <value>Corriente completa</value>
+    <value>Corriente máxima</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_GearingPanel" xml:space="preserve">
@@ -2817,7 +2922,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_BaudRate" xml:space="preserve">
-    <value>Velocidad en baudios</value>
+    <value>Baud Rate</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_DataBits" xml:space="preserve">
@@ -2833,7 +2938,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_AutoTrackUnpark" xml:space="preserve">
-    <value>Seguimiento automático al desestacionar</value>
+    <value>Seguimiento automático al desaparcar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_TrackingRate" xml:space="preserve">
@@ -3097,11 +3202,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="State_Parked" xml:space="preserve">
-    <value>Estacionada</value>
+    <value>Aparcada</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="State_Unparked" xml:space="preserve">
-    <value>Desestacionada</value>
+    <value>Desaparcada</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="State_Slewing" xml:space="preserve">
@@ -3189,7 +3294,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MCtl_ShutdownTip" xml:space="preserve">
-    <value>Detiene correctamente el proceso del servidor. Utilícelo solo cuando todas las monturas estén estacionadas y desconectadas.</value>
+    <value>Detiene correctamente el proceso del servidor. Utilícelo solo cuando todas las monturas estén aparcadas y desconectadas.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MCtl_Connecting" xml:space="preserve">
@@ -3269,7 +3374,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_AtPark" xml:space="preserve">
-    <value>Estacionada</value>
+    <value>Aparcada</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_Mount" xml:space="preserve">
@@ -3613,7 +3718,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Node_HomeAndPark" xml:space="preserve">
-    <value>Origen y estacionamiento</value>
+    <value>Origen y aparcamiento</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Node_Limits" xml:space="preserve">
@@ -3697,7 +3802,7 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Desc_HomeAndPark" xml:space="preserve">
-    <value>Posiciones de ejes de origen y estacionamiento almacenadas.</value>
+    <value>Posiciones de ejes de origen y aparcamiento almacenadas.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Desc_Limits" xml:space="preserve">
@@ -3761,11 +3866,11 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Desc_HomePosition" xml:space="preserve">
-    <value>Posiciones de los ejes de origen almacenadas (X/Y) y posiciones de los ejes de origen automático.</value>
+    <value>Posiciones de los ejes de origen almacenadas (X/Y) y posiciones de los ejes de AutoHome.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Desc_ParkPositions" xml:space="preserve">
-    <value>Lista de posiciones de estacionamiento con nombre y selección de la posición activa.</value>
+    <value>Lista de posiciones de aparcamiento con nombre y selección de la posición activa.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="SE_Desc_AxisSlewLimits" xml:space="preserve">
