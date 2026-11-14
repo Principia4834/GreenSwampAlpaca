@@ -6,12 +6,11 @@
 @inject IVersionedSettingsService SettingsService
 @inject IHttpContextAccessor HttpContextAccessor
 
-<PageTitle>Settings Health Check</PageTitle>
+<PageTitle>@Loc["HealthPage_Title"]</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Settings Health Check</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">@Loc["HealthPage_Title"]</MudText>
 <MudText Typo="Typo.body1" Class="mb-4">
-    Validate and repair your settings configuration. This tool checks the integrity of your settings file
-    and can automatically fix common configuration issues.
+    @Loc["HealthPage_Intro"]
 </MudText>
 
 <MudGrid>
@@ -20,13 +19,13 @@
 
             @* Column 1 : Health status *@
             <MudItem xs="12" md="6">
-                <MudText Typo="Typo.h6" Class="mb-3">Settings Health Status</MudText>
+                <MudText Typo="Typo.h6" Class="mb-3">@Loc["HealthPage_StatusTitle"]</MudText>
 
                 @if (_loading)
                 {
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                        <MudText Typo="Typo.body1">Validating settings...</MudText>
+                        <MudText Typo="Typo.body1">@Loc["HealthPage_Validating"]</MudText>
                     </MudStack>
                 }
                 else if (_validationResult != null)
@@ -34,24 +33,24 @@
                     @if (_validationResult.IsValid)
                     {
                         <MudAlert Severity="Severity.Success" Class="mb-3">
-                            <strong>All settings are valid.</strong>
+                            @Loc.Html("HealthPage_AllValid")
                             @if (_validationResult.HasWarnings)
                             {
-                                <span> (@_validationResult.Warnings.Count warning(s))</span>
+                                <span> @Loc["HealthPage_WarningCount", _validationResult.Warnings.Count]</span>
                             }
                         </MudAlert>
                     }
                     else
                     {
                         <MudAlert Severity="Severity.Error" Class="mb-3">
-                            <strong>Settings validation failed.</strong> @_validationResult.Errors.Count error(s) found.
+                            @Loc.Html("HealthPage_Failed", _validationResult.Errors.Count)
                         </MudAlert>
                     }
 
                     @if (_validationResult.HasErrors)
                     {
                         <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">
-                            Errors (@_validationResult.Errors.Count)
+                            @Loc["HealthPage_ErrorsHeading", _validationResult.Errors.Count]
                         </MudText>
                         @foreach (var error in _validationResult.Errors)
                         {
@@ -61,16 +60,16 @@
                                         <MudChip T="string" Color="Color.Error" Size="Size.Small">@error.ErrorCode</MudChip>
                                         @if (error.DeviceNumber.HasValue)
                                         {
-                                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Device @error.DeviceNumber</MudChip>
+                                            <MudChip T="string" Color="Color.Default" Size="Size.Small">@Loc["Health_Device", error.DeviceNumber]</MudChip>
                                         }
                                     </MudStack>
                                     @if (error.IsAutoRepairable)
                                     {
-                                        <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
+                                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@Loc["HealthPage_AutoRepairable"]</MudChip>
                                     }
                                 </MudStack>
                                 <MudText Typo="Typo.body1">@error.Message</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @error.Resolution</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@Loc.Html("HealthPage_Resolution", error.Resolution)</MudText>
                             </MudPaper>
                         }
                     }
@@ -78,7 +77,7 @@
                     @if (_validationResult.HasWarnings)
                     {
                         <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2 mt-3">
-                            Warnings (@_validationResult.Warnings.Count)
+                            @Loc["HealthPage_WarningsHeading", _validationResult.Warnings.Count]
                         </MudText>
                         @foreach (var warning in _validationResult.Warnings)
                         {
@@ -88,16 +87,16 @@
                                         <MudChip T="string" Color="Color.Warning" Size="Size.Small">@warning.ErrorCode</MudChip>
                                         @if (warning.DeviceNumber.HasValue)
                                         {
-                                            <MudChip T="string" Color="Color.Default" Size="Size.Small">Device @warning.DeviceNumber</MudChip>
+                                            <MudChip T="string" Color="Color.Default" Size="Size.Small">@Loc["Health_Device", warning.DeviceNumber]</MudChip>
                                         }
                                     </MudStack>
                                     @if (warning.IsAutoRepairable)
                                     {
-                                        <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
+                                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@Loc["HealthPage_AutoRepairable"]</MudChip>
                                     }
                                 </MudStack>
                                 <MudText Typo="Typo.body1">@warning.Message</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @warning.Resolution</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@Loc.Html("HealthPage_Resolution", warning.Resolution)</MudText>
                             </MudPaper>
                         }
                     }
@@ -105,7 +104,7 @@
                 else
                 {
                     <MudAlert Severity="Severity.Warning" Class="mb-3">
-                        Unable to validate settings. Click <strong>Re-validate</strong> to try again.
+                        @Loc.Html("HealthPage_UnableToValidate")
                     </MudAlert>
                 }
 
@@ -113,20 +112,20 @@
                            StartIcon="@Icons.Material.Filled.Refresh"
                            OnClick="ValidateSettings" Disabled="_loading"
                            Class="mt-2">
-                    Re-validate
+                    @Loc["HealthPage_Revalidate"]
                 </MudButton>
             </MudItem>
 
             @* Column 2 : Settings files *@
             <MudItem xs="12" md="6">
-                <MudText Typo="Typo.h6" Class="mb-1">Settings Files</MudText>
+                <MudText Typo="Typo.h6" Class="mb-1">@Loc["HealthPage_FilesTitle"]</MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">
                     <code>@_settingsFolder</code>
                 </MudText>
 
                 @if (_jsonFiles.Count == 0)
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">No JSON files found in settings folder.</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@Loc["HealthPage_NoFiles"]</MudText>
                 }
                 else
                 {
@@ -141,14 +140,14 @@
                 }
 
                 <MudTooltip Inline="false" RootStyle="max-width:280px"
-                            Text="@(!_isLocalRequest ? "Only available when browsing from the server machine"
-                                  : SettingsPathResolver.IsService ? "Cannot open Explorer when running as a Windows service"
+                            Text="@(!_isLocalRequest ? Loc["HealthPage_OnlyLocalTip"].Value
+                                  : SettingsPathResolver.IsService ? Loc["HealthPage_ServiceTip"].Value
                                   : string.Empty)">
                     <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.FolderOpen"
                                OnClick="OpenSettingsFolder"
                                Disabled="@(!_isLocalRequest || SettingsPathResolver.IsService)">
-                        Open Settings Folder
+                        @Loc["HealthPage_OpenFolder"]
                     </MudButton>
                 </MudTooltip>
             </MudItem>
@@ -162,7 +161,7 @@
                 <CardHeaderContent>
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                         <MudIcon Icon="@Icons.Material.Filled.Info" />
-                        <MudText Typo="Typo.h6">About Settings Validation</MudText>
+                        <MudText Typo="Typo.h6">@Loc["HealthPage_AboutTitle"]</MudText>
                     </MudStack>
                 </CardHeaderContent>
             </MudCardHeader>
@@ -173,14 +172,14 @@
                         <TitleContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.FactCheck" Size="Size.Small" />
-                                <MudText Typo="Typo.subtitle2">What is validated?</MudText>
+                                <MudText Typo="Typo.subtitle2">@Loc["HealthPage_WhatValidated"]</MudText>
                             </MudStack>
                         </TitleContent>
                         <ChildContent>
                             <MudList T="string" Dense="true">
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>File-level checks:</strong> File existence, read permissions, JSON syntax, required structure</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Device validation:</strong> DeviceNumber uniqueness, DeviceName required, AlignmentMode valid, Mount type valid</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Synchronization:</strong> Devices and AlpacaDevices arrays must be in sync</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_V_File")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_V_Device")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_V_Sync")</MudListItem>
                             </MudList>
                         </ChildContent>
                     </MudExpansionPanel>
@@ -189,17 +188,17 @@
                         <TitleContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.BuildCircle" Size="Size.Small" />
-                                <MudText Typo="Typo.subtitle2">Automatic Repair Actions</MudText>
+                                <MudText Typo="Typo.subtitle2">@Loc["HealthPage_AutoRepairTitle"]</MudText>
                             </MudStack>
                         </TitleContent>
                         <ChildContent>
-                            <MudText Typo="Typo.body1" Class="mb-1">The repair function can automatically fix:</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-1">@Loc["HealthPage_AutoRepairIntro"]</MudText>
                             <MudList T="string" Dense="true">
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing or corrupted Devices array (regenerates from defaults)</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing device names (generates "Telescope X" names)</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Invalid AlignmentMode values (resets to GermanPolar)</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Missing Mount values (sets to Simulator)</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Out-of-sync AlpacaDevices array (regenerates from Devices)</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_R_Devices"]</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_R_Names"]</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_R_Align"]</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_R_Mount"]</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_R_Sync"]</MudListItem>
                             </MudList>
                         </ChildContent>
                     </MudExpansionPanel>
@@ -208,15 +207,15 @@
                         <TitleContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.Shield" Size="Size.Small" />
-                                <MudText Typo="Typo.subtitle2">Safety Features</MudText>
+                                <MudText Typo="Typo.subtitle2">@Loc["HealthPage_SafetyTitle"]</MudText>
                             </MudStack>
                         </TitleContent>
                         <ChildContent>
                             <MudList T="string" Dense="true">
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Automatic backup:</strong> A timestamped backup is created before any changes</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Validation after repair:</strong> Changes are validated before saving</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Restore on failure:</strong> Settings are restored from backup if repair fails</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small"><strong>Quarantine:</strong> Invalid devices are excluded from the active device list</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_S_Backup")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_S_Validation")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_S_Restore")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_S_Quarantine")</MudListItem>
                             </MudList>
                         </ChildContent>
                     </MudExpansionPanel>
@@ -225,20 +224,19 @@
                         <TitleContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" />
-                                <MudText Typo="Typo.subtitle2">Manual Repair</MudText>
+                                <MudText Typo="Typo.subtitle2">@Loc["HealthPage_ManualTitle"]</MudText>
                             </MudStack>
                         </TitleContent>
                         <ChildContent>
-                            <MudText Typo="Typo.body1" Class="mb-1">For issues that cannot be automatically fixed:</MudText>
+                            <MudText Typo="Typo.body1" Class="mb-1">@Loc["HealthPage_ManualIntro"]</MudText>
                             <MudList T="string" Dense="true">
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Use the <strong>Open Settings Folder</strong> button above</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Edit <code>appsettings.user.json</code> in a text editor</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">Restart the application</MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">If needed, delete the file to regenerate default settings</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_M_OpenFolder")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc.Html("HealthPage_M_Edit")</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_M_Restart"]</MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Circle" IconSize="Size.Small">@Loc["HealthPage_M_Delete"]</MudListItem>
                             </MudList>
                             <MudAlert Severity="Severity.Info" Class="mt-3">
-                                <strong>Note:</strong> This validation runs automatically during application startup.
-                                Invalid devices are quarantined and not advertised to ASCOM clients.
+                                @Loc.Html("HealthPage_Note")
                             </MudAlert>
                         </ChildContent>
                     </MudExpansionPanel>
@@ -304,14 +302,14 @@
             _validationResult = new ValidationResult
             {
                 IsValid = false,
-                ErrorMessage = $"Validation error: {ex.Message}"
+                ErrorMessage = Loc["HealthPage_ValidationError", ex.Message].Value
             };
             _validationResult.Errors.Add(new ValidationError
             {
                 ErrorCode    = "VALIDATION_EXCEPTION",
                 Severity     = "error",
-                Message      = $"An unexpected error occurred during validation: {ex.Message}",
-                Resolution   = "Check application logs for details.",
+                Message      = Loc["HealthPage_UnexpectedError", ex.Message].Value,
+                Resolution   = Loc["HealthPage_CheckLogs"].Value,
                 IsAutoRepairable = false
             });
         }

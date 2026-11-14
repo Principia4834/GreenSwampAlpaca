@@ -266,7 +266,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             };
 
             var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-            await DialogService.ShowAsync<HcPulseGuidesDialog>("HC Pulse Guides", parameters, options);
+            await DialogService.ShowAsync<HcPulseGuidesDialog>(Loc["HandCtl_PulseGuidesTitle"], parameters, options);
         }
 
         public async ValueTask DisposeAsync()

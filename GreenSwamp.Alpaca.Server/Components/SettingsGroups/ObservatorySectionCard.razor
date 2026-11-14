@@ -6,16 +6,16 @@
             <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" />
         </CardHeaderAvatar>
         <CardHeaderContent>
-            <MudText Typo="Typo.h6">Observatories</MudText>
+            <MudText Typo="Typo.h6">@Loc["ObsCard_Title"]</MudText>
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Manage observatory sites. Each telescope device can copy its location from any site listed here.
+                @Loc["ObsCard_Description"]
             </MudText>
         </CardHeaderContent>
         <CardHeaderActions>
             @if (IsDirty)
             {
                 <MudChip T="string" Color="Color.Warning" Size="Size.Small"
-                         Icon="@Icons.Material.Filled.Edit">Unsaved</MudChip>
+                         Icon="@Icons.Material.Filled.Edit">@Loc["ObsCard_Unsaved"]</MudChip>
             }
         </CardHeaderActions>
     </MudCardHeader>
@@ -25,30 +25,30 @@
         {
             <MudTable Items="list" Hover="true" Dense="true" Elevation="0">
                 <HeaderContent>
-                    <MudTh>Name</MudTh>
-                    <MudTh>Latitude (°)</MudTh>
-                    <MudTh>Longitude (°)</MudTh>
-                    <MudTh>Elevation (m)</MudTh>
-                    <MudTh>UTC Offset (h)</MudTh>
-                    <MudTh Style="text-align:right">Actions</MudTh>
+                    <MudTh>@Loc["ObsCard_Name"]</MudTh>
+                    <MudTh>@Loc["ObsCard_Latitude"]</MudTh>
+                    <MudTh>@Loc["ObsCard_Longitude"]</MudTh>
+                    <MudTh>@Loc["ObsCard_Elevation"]</MudTh>
+                    <MudTh>@Loc["ObsCard_UtcOffset"]</MudTh>
+                    <MudTh Style="text-align:right">@Loc["ObsCard_Actions"]</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Name"><MudText Typo="Typo.body2"><strong>@context.Name</strong></MudText></MudTd>
-                    <MudTd DataLabel="Latitude">@context.Latitude.ToString("F6")</MudTd>
-                    <MudTd DataLabel="Longitude">@context.Longitude.ToString("F6")</MudTd>
-                    <MudTd DataLabel="Elevation">@context.Elevation.ToString("F1")</MudTd>
-                    <MudTd DataLabel="UTC Offset">@context.UTCOffset.TotalHours.ToString("F1")</MudTd>
+                    <MudTd DataLabel="@Loc["ObsCard_Name"]"><MudText Typo="Typo.body2"><strong>@context.Name</strong></MudText></MudTd>
+                    <MudTd DataLabel="@Loc["Common_Latitude"]">@context.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+                    <MudTd DataLabel="@Loc["Common_Longitude"]">@context.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+                    <MudTd DataLabel="@Loc["ObsCard_DataElevation"]">@context.Elevation.ToString("F1")</MudTd>
+                    <MudTd DataLabel="@Loc["ObsCard_DataUtcOffset"]">@context.UTCOffset.TotalHours.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
                     <MudTd Style="text-align:right">
                         <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="0">
                             @if (DeviceSettings is { Count: > 0 })
                             {
-                                <MudTooltip Text="Copy Lat/Long/Elevation to all telescope devices" Placement="Placement.Left">
+                                <MudTooltip Text="@Loc["ObsCard_CopyToAll"]" Placement="Placement.Left">
                                     <MudIconButton Icon="@Icons.Material.Filled.CopyAll"
                                                    Size="Size.Small" Color="Color.Secondary"
                                                    OnClick="@(() => CopyToAllDevices(context))" />
                                 </MudTooltip>
                             }
-                            <MudTooltip Text="@(list.Count <= 1 ? "Cannot delete the last observatory" : "Delete this observatory")" Placement="Placement.Left">
+                            <MudTooltip Text="@(list.Count <= 1 ? Loc["ObsCard_CannotDeleteLast"].Value : Loc["ObsCard_Delete"].Value)" Placement="Placement.Left">
                                 <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                                Size="Size.Small" Color="Color.Error"
                                                Disabled="@(list.Count <= 1)"
@@ -65,7 +65,7 @@
         <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.AddLocationAlt"
                    OnClick="RequestAdd">
-            Add Observatory
+            @Loc["ObsCard_Add"]
         </MudButton>
         <MudSpacer />
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
@@ -76,13 +76,13 @@
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
             }
-            Save
+            @Loc["Common_Save"]
         </MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
                    StartIcon="@Icons.Material.Filled.RestartAlt"
                    Disabled="@(!IsDirty)"
                    OnClick="@(() => OnReset.InvokeAsync())">
-            Reset
+            @Loc["ObsCard_Reset"]
         </MudButton>
     </MudCardActions>
 </MudCard>

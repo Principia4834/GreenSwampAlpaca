@@ -144,7 +144,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                 {
                     alt = alt.Replace("M", string.Empty);
                     alt = alt.Replace("m", string.Empty);
-                    var parsed = double.TryParse(alt.Trim(), out var tmpalt);
+                    var parsed = double.TryParse(alt.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var tmpalt);
                     if (parsed)
                     {
                         darray[2] = tmpalt;

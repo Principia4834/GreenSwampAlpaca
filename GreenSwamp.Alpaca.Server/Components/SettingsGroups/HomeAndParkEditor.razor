@@ -4,52 +4,52 @@
 
 <MudExpansionPanels MultiExpansion="true">
 
-    <MudExpansionPanel Text="Home" Icon="@Icons.Material.Filled.Home" Expanded="false">
+    <MudExpansionPanel Text="@Loc["HomePark_Home"]" Icon="@Icons.Material.Filled.Home" Expanded="false">
         <MudStack Spacing="3">
-            <MudText Typo="Typo.subtitle2">Home Positions</MudText>
+            <MudText Typo="Typo.subtitle2">@Loc["HomePark_HomePositions"]</MudText>
             <MudSimpleTable Dense="true" Hover="true">
                 <thead>
                     <tr>
-                        <th>Position</th>
-                        <th>RA/Az Axis</th>
-                        <th>Dec/Alt Axis</th>
+                        <th>@Loc["HomePark_Position"]</th>
+                        <th>@Loc["HomePark_RaAzAxis"]</th>
+                        <th>@Loc["HomePark_DecAltAxis"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Home</td>
-                        <td>@Device?.HomeAxisX.ToString("F2")</td>
-                        <td>@Device?.HomeAxisY.ToString("F2")</td>
+                        <td>@Loc["HomePark_Home"]</td>
+                        <td>@Device?.HomeAxisX.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)</td>
+                        <td>@Device?.HomeAxisY.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)</td>
                     </tr>
                     <tr>
-                        <td>Auto-Home</td>
-                        <td>@Device?.AutoHomeAxisX.ToString("F2")</td>
-                        <td>@Device?.AutoHomeAxisY.ToString("F2")</td>
+                        <td>@Loc["HomePark_AutoHome"]</td>
+                        <td>@Device?.AutoHomeAxisX.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)</td>
+                        <td>@Device?.AutoHomeAxisY.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)</td>
                     </tr>
                 </tbody>
             </MudSimpleTable>
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Park" Icon="@Icons.Material.Filled.LocalParking" Expanded="false">
+    <MudExpansionPanel Text="@Loc["HomePark_Park"]" Icon="@Icons.Material.Filled.LocalParking" Expanded="false">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Name of the active park position." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["HomePark_ActivePark_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.ParkName" @bind-Value:after="NotifyChanged"
-                              Label="Active Park Position" Immediate="true" />
+                              Label="@Loc["HomePark_ActivePark"]" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Start tracking automatically when the mount unparks." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["HomePark_TrackAfterUnpark_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.TrackAfterUnpark" @bind-Value:after="NotifyChanged"
-                             Label="Track After Unpark" Color="Color.Primary" />
+                             Label="@Loc["HomePark_TrackAfterUnpark"]" Color="Color.Primary" />
             </MudTooltip>
             @if (Device?.ParkPositions is { Count: > 0 })
             {
-                <MudText Typo="Typo.subtitle2" Class="mt-2">Defined Park Positions</MudText>
+                <MudText Typo="Typo.subtitle2" Class="mt-2">@Loc["HomePark_DefinedParkPositions"]</MudText>
                 <MudSimpleTable Dense="true" Hover="true">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>RA/Az Axis</th>
-                            <th>Dec/Alt Axis</th>
+                            <th>@Loc["HomePark_Name"]</th>
+                            <th>@Loc["HomePark_RaAzAxis"]</th>
+                            <th>@Loc["HomePark_DecAltAxis"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,8 +57,8 @@
                         {
                             <tr>
                                 <td>@p.Name</td>
-                                <td>@p.X.ToString("F2")</td>
-                                <td>@p.Y.ToString("F2")</td>
+                                <td>@p.X.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                <td>@p.Y.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)</td>
                             </tr>
                         }
                     </tbody>

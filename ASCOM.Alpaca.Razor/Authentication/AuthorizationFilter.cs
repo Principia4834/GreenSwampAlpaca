@@ -51,7 +51,7 @@ namespace ASCOM.Alpaca
             }
 
             // Auth failed, block request
-            filterContext.HttpContext.Response.Headers.Append("WWW-Authenticate", string.Format("Basic realm=\"{0}\"", BasicRealm ?? "Alpaca"));
+            filterContext.HttpContext.Response.Headers.Append("WWW-Authenticate", string.Format(System.Globalization.CultureInfo.InvariantCulture, "Basic realm=\"{0}\"", BasicRealm ?? "Alpaca"));
             filterContext.Result = new UnauthorizedResult();
         }
     }

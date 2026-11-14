@@ -133,7 +133,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         {
             var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
             return string.IsNullOrWhiteSpace(device?.DeviceName)
-                ? $"Device {deviceNumber}"
+                ? Loc["Home_DefaultDeviceName", deviceNumber].Value
                 : device.DeviceName;
         }
 
@@ -156,7 +156,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private string BoolToSupported(bool value)
         {
-            return value ? "Supported" : "Not supported";
+            return value ? Loc["MStat_Supported"].Value : Loc["MStat_NotSupported"].Value;
         }
 
         private string StepsToArcSecs(long steps)
@@ -166,30 +166,26 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private string FormatHMS(double hours)
         {
-            if (double.IsNaN(hours) || double.IsInfinity(hours)) return "N/A";
+            if (double.IsNaN(hours) || double.IsInfinity(hours)) return Loc["MStat_NotAvailable"].Value;
             var sign = hours < 0 ? "-" : "+";
             hours = Math.Abs(hours);
-            var h = (int)hours;
-            var m = (int)((hours - h) * 60);
-            var s = ((hours - h) * 60 - m) * 60;
-            return $"{sign}{h:00}h {m:00}m {s:00.00}s";
+            Helpers.CoordinateFormatter.Split(hours, long.MaxValue, out var h, out var m, out var s);
+            return FormattableString.Invariant($"{sign}{h:00}h {m:00}m {s:00.00}s");
         }
 
         private string FormatDMS(double degrees)
         {
-            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
+            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
             var sign = degrees < 0 ? "-" : "+";
             degrees = Math.Abs(degrees);
-            var d = (int)degrees;
-            var m = (int)((degrees - d) * 60);
-            var s = ((degrees - d) * 60 - m) * 60;
-            return $"{sign}{d:00}° {m:00}' {s:00.00}\"";
+            Helpers.CoordinateFormatter.Split(degrees, long.MaxValue, out var d, out var m, out var s);
+            return FormattableString.Invariant($"{sign}{d:00}° {m:00}' {s:00.00}\"");
         }
 
         private string FormatDegrees(double degrees)
         {
-            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
-            return $"{degrees:F4}°";
+            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
+            return degrees.ToString("F4", CultureInfo.CurrentCulture) + "°";
         }
     }
 }

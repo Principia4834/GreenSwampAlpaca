@@ -18,7 +18,7 @@
                               : _validationResult?.HasWarnings == true ? Icons.Material.Filled.Info
                               : Icons.Material.Filled.CheckCircle)"
                          Color="@cardColor" />
-                <MudText Typo="Typo.h6">Settings Health Status</MudText>
+                <MudText Typo="Typo.h6">@Loc["Health_Title"]</MudText>
             </MudStack>
         </CardHeaderContent>
     </MudCardHeader>
@@ -28,7 +28,7 @@
         {
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                <MudText Typo="Typo.body1">Validating settings...</MudText>
+                <MudText Typo="Typo.body1">@Loc["Health_Validating"]</MudText>
             </MudStack>
         }
         else if (_validationResult != null)
@@ -36,28 +36,28 @@
             @if (_validationResult.IsValid)
             {
                 <MudAlert Severity="Severity.Success" Class="mb-3">
-                    <strong>All settings are valid.</strong>
+                    <strong>@Loc["Health_AllValid"]</strong>
                     @if (_validationResult.HasWarnings)
                     {
-                        <span> (@_validationResult.Warnings.Count warning(s))</span>
+                        <span> @Loc["Health_WarningCount", _validationResult.Warnings.Count]</span>
                     }
                 </MudAlert>
             }
             else
             {
                 <MudAlert Severity="Severity.Error" Class="mb-3">
-                    <strong>Settings validation failed.</strong> @_validationResult.Errors.Count error(s) found.
+                    <strong>@Loc["Health_Failed"]</strong> @Loc["Health_ErrorsFound", _validationResult.Errors.Count]
                 </MudAlert>
             }
 
             <MudText Typo="Typo.caption" Class="mb-3">
-                <strong>Settings file:</strong> <code>@SettingsService.MonitorSettingsPath</code>
+                <strong>@Loc["Health_SettingsFile"]</strong> <code>@SettingsService.MonitorSettingsPath</code>
             </MudText>
 
             @if (_validationResult.HasErrors)
             {
                 <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">
-                    Errors (@_validationResult.Errors.Count)
+                    @Loc["Health_Errors", _validationResult.Errors.Count]
                 </MudText>
                 @foreach (var error in _validationResult.Errors)
                 {
@@ -68,16 +68,16 @@
                                     <MudChip T="string" Color="Color.Error" Size="Size.Small">@error.ErrorCode</MudChip>
                                     @if (error.DeviceNumber.HasValue)
                                     {
-                                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Device @error.DeviceNumber</MudChip>
+                                        <MudChip T="string" Color="Color.Default" Size="Size.Small">@Loc["Health_Device", error.DeviceNumber]</MudChip>
                                     }
                                 </MudStack>
                                 @if (error.IsAutoRepairable)
                                 {
-                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">@Loc["Health_AutoRepairable"]</MudChip>
                                 }
                             </MudStack>
                             <MudText Typo="Typo.body1" Class="mt-1">@error.Message</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @error.Resolution</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>@Loc["Health_Resolution"]</strong> @error.Resolution</MudText>
                         </MudCardContent>
                     </MudCard>
                 }
@@ -86,7 +86,7 @@
             @if (_validationResult.HasWarnings)
             {
                 <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2 mt-3">
-                    Warnings (@_validationResult.Warnings.Count)
+                    @Loc["Health_Warnings", _validationResult.Warnings.Count]
                 </MudText>
                 @foreach (var warning in _validationResult.Warnings)
                 {
@@ -97,16 +97,16 @@
                                     <MudChip T="string" Color="Color.Warning" Size="Size.Small">@warning.ErrorCode</MudChip>
                                     @if (warning.DeviceNumber.HasValue)
                                     {
-                                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Device @warning.DeviceNumber</MudChip>
+                                        <MudChip T="string" Color="Color.Default" Size="Size.Small">@Loc["Health_Device", warning.DeviceNumber]</MudChip>
                                     }
                                 </MudStack>
                                 @if (warning.IsAutoRepairable)
                                 {
-                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">Auto-repairable</MudChip>
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">@Loc["Health_AutoRepairable"]</MudChip>
                                 }
                             </MudStack>
                             <MudText Typo="Typo.body1" Class="mt-1">@warning.Message</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>Resolution:</strong> @warning.Resolution</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary"><strong>@Loc["Health_Resolution"]</strong> @warning.Resolution</MudText>
                         </MudCardContent>
                     </MudCard>
                 }
@@ -116,25 +116,25 @@
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Refresh"
                            OnClick="RefreshValidation" Disabled="_loading">
-                    Re-validate
+                    @Loc["Health_Revalidate"]
                 </MudButton>
                 <MudButton Variant="Variant.Outlined" Color="Color.Info"
                            StartIcon="@Icons.Material.Filled.FolderOpen"
                            OnClick="OpenSettingsFile"
                            Disabled="@(!_isLocalRequest || SettingsPathResolver.IsService)">
-                    Open Settings Folder
+                    @Loc["Health_OpenFolder"]
                 </MudButton>
             </MudStack>
         }
         else
         {
             <MudAlert Severity="Severity.Warning" Class="mb-3">
-                Unable to validate settings. Click <strong>Re-validate</strong> to try again.
+                @Loc.Html("Health_Unable")
             </MudAlert>
             <MudButton Variant="Variant.Filled" Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Refresh"
                        OnClick="RefreshValidation">
-                Re-validate
+                @Loc["Health_Revalidate"]
             </MudButton>
         }
     </MudCardContent>
@@ -169,14 +169,14 @@
             _validationResult = new ValidationResult
             {
                 IsValid = false,
-                ErrorMessage = $"Validation error: {ex.Message}"
+                ErrorMessage = Loc["Health_ValidationError", ex.Message]
             };
             _validationResult.Errors.Add(new ValidationError
             {
                 ErrorCode = "VALIDATION_EXCEPTION",
                 Severity = "error",
-                Message = $"An unexpected error occurred during validation: {ex.Message}",
-                Resolution = "Check application logs for details.",
+                Message = Loc["Health_UnexpectedError", ex.Message],
+                Resolution = Loc["Health_CheckLogs"],
                 IsAutoRepairable = false
             });
         }

@@ -47,7 +47,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
             xForm.SiteLatitude = latitude;
             xForm.SiteLongitude = longitude;
             xForm.Refraction = refraction;
-            switch (from.ToLower())
+            switch (from.ToLowerInvariant())
             {
                 case "j2000":
                     xForm.SetJ2000(rightAscension, declination);
@@ -64,7 +64,7 @@ namespace GreenSwamp.Alpaca.Server.MountControl
 
             var r = new Vector(0, 0);
 
-            switch (to.ToLower())
+            switch (to.ToLowerInvariant())
             {
                 case "j2000":
                     r.X = xForm.RAJ2000;

@@ -5,8 +5,8 @@
         <MudStack Spacing="3" Class="px-1">
             <MudText Typo="Typo.body1">@ContentText</MudText>
             <MudStack Row="true" Spacing="1" Justify="Justify.FlexEnd">
-                <MudButton Size="Size.Small" OnClick="Cancel" Variant="Variant.Text">@CancelText</MudButton>
-                <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="Confirm">@ConfirmText</MudButton>
+                <MudButton Size="Size.Small" OnClick="Cancel" Variant="Variant.Text">@(CancelText ?? Loc["Common_Cancel"])</MudButton>
+                <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="Confirm">@(ConfirmText ?? Loc["Common_Ok"])</MudButton>
             </MudStack>
         </MudStack>
     </DialogContent>
@@ -16,8 +16,8 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public string ContentText { get; set; } = string.Empty;
-    [Parameter] public string ConfirmText { get; set; } = "OK";
-    [Parameter] public string CancelText  { get; set; } = "Cancel";
+    [Parameter] public string? ConfirmText { get; set; }
+    [Parameter] public string? CancelText  { get; set; }
 
     private void Confirm() => MudDialog.Close(DialogResult.Ok(true));
     private void Cancel()  => MudDialog.Cancel();

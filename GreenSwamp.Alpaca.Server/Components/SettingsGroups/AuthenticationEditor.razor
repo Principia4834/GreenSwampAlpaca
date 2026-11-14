@@ -1,28 +1,28 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Require HTTP Basic authentication for all requests." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_EnableAuth_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.UseAuth"
                      @bind-Value:after="NotifyChanged"
-                     Label="Enable Authentication" Color="Color.Primary" />
+                     Label="@Loc["Set_EnableAuth"]" Color="Color.Primary" />
     </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Login user name used when authentication is enabled." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_UserName_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Config.UserName"
                       @bind-Value:after="NotifyChanged"
-                      Label="User Name" Disabled="@(!Config.UseAuth)" Immediate="true" />
+                      Label="@Loc["Set_UserName"]" Disabled="@(!Config.UseAuth)" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Password used when authentication is enabled." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_Password_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="PasswordValue"
                       @bind-Value:after="OnPasswordChanged"
-                      Label="Password"
+                      Label="@Loc["Set_Password"]"
                       InputType="InputType.Password"
                       Disabled="@(!Config.UseAuth)"
                       Immediate="true" />
     </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Repeat the password to confirm it matches." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_RepeatPassword_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="RepeatPasswordValue"
                       @bind-Value:after="OnRepeatPasswordChanged"
-                      Label="Repeat Password"
+                      Label="@Loc["Set_RepeatPassword"]"
                       InputType="InputType.Password"
                       Disabled="@(!Config.UseAuth)"
                       Immediate="true" />

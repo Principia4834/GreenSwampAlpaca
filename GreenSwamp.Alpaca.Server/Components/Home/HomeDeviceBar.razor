@@ -6,7 +6,7 @@
 @* Row of tiles that scrolls horizontally when it is wider than the bar. The stack shrinks to its
    content in the centred bottom bar, so max-width keeps it inside the bar and the overflow scrolls. *@
 <MudStack Row="true" Class="pa-1" Style="max-width:100%; overflow-x:auto;"
-          role="list" aria-label="Telescope devices">
+          role="list" aria-label="@Loc["Home_DevicesLabel"]">
     @foreach (var device in _devices)
     {
         <div role="listitem" @key="device.DeviceNumber">
@@ -15,7 +15,7 @@
     }
     @if (_devices.Count == 0)
     {
-        <MudText Typo="Typo.body1" Class="gs-tile-empty">No telescope devices are configured.</MudText>
+        <MudText Typo="Typo.body1" Class="gs-tile-empty">@Loc["Home_NoDevices"]</MudText>
     }
 </MudStack>
 
@@ -35,9 +35,9 @@
                 settingsByNumber.TryGetValue(d.DeviceNumber, out var s);
                 return new HomeDeviceInfo(
                     d.DeviceNumber,
-                    string.IsNullOrWhiteSpace(d.DeviceName) ? $"Device {d.DeviceNumber}" : d.DeviceName,
+                    string.IsNullOrWhiteSpace(d.DeviceName) ? Loc["Home_DefaultDeviceName", d.DeviceNumber].Value : d.DeviceName,
                     s?.DeviceDescription ?? string.Empty,
-                    s?.Mount ?? "Unknown",
+                    s?.Mount ?? Loc["Common_Unknown"].Value,
                     s?.AlignmentMode ?? "Unknown",
                     IsConnected(d.DeviceNumber),
                     s?.Enabled ?? true);

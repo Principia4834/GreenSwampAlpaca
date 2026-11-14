@@ -4,7 +4,7 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" />
-            <MudText Typo="Typo.h6">Breaking Settings Change</MudText>
+            <MudText Typo="Typo.h6">@Loc["Breaking_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
@@ -13,17 +13,17 @@
             {
                 <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.LinkOff">
                     <MudText Typo="Typo.body1">
-                        <strong>@ClientCount connected ASCOM/Alpaca client(s) will be forcibly disconnected from @DeviceName.</strong>
+                        <strong>@Loc["Breaking_ClientsDisconnected", ClientCount, DeviceName]</strong>
                     </MudText>
                     <MudText Typo="Typo.body2" Class="mt-1">
-                        All clients must reconnect after this change is applied.
+                        @Loc["Breaking_ClientsReconnect"]
                     </MudText>
                 </MudAlert>
             }
 
             <MudAlert Severity="Severity.Normal" Icon="@Icons.Material.Filled.RestartAlt">
                 <MudText Typo="Typo.body2">
-                    The following setting(s) require the device to stop and restart:
+                    @Loc["Breaking_RestartRequired"]
                 </MudText>
                 <MudStack Spacing="0" Class="mt-1">
                     @foreach (var change in ChangedFields)
@@ -37,12 +37,12 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">
-            Cancel
+            @Loc["Common_Cancel"]
         </MudButton>
         <MudButton Color="Color.Error" Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.RestartAlt"
                    OnClick="Confirm">
-            Disconnect &amp; Restart
+            @Loc["Breaking_DisconnectRestart"]
         </MudButton>
     </DialogActions>
 </MudDialog>

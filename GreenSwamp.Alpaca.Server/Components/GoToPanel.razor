@@ -8,7 +8,7 @@
 <fieldset disabled="@(!IsUiClientConnected)" style="border:none;padding:0;margin:0">
     <MudPaper Elevation="0" Class="gs-goto-overlay-host">
         <MudStack Spacing="0" Class="@(_isSettingsPanelOpen ? "gs-goto-content-hidden" : null)">
-            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo & Slew</MudText>
+            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["GoTo_PanelTitle"]</MudText>
             <MudStack Spacing="3" Class="mt-1">
                 @* Mount control buttons: Park, Home, Tracking etc *@
                 <MountButtonBar State="@State"
@@ -25,29 +25,29 @@
 
                 @* Left column: GoTo / Copy / Sync *@
                 <MudStack Spacing="4" Style="min-width:4.5rem">
-                    <MudTooltip Text="Go to coordinates">
+                    <MudTooltip Text="@Loc["GoTo_GoToTooltip"]">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
                                    Size="Size.Small"
                                    FullWidth="true"
                                    Disabled="@(!IsUiClientConnected)"
-                                   OnClick="OnGoTo">GoTo</MudButton>
+                                   OnClick="OnGoTo">@Loc["GoTo_GoToButton"]</MudButton>
                     </MudTooltip>
-                    <MudTooltip Text="Copy from current position">
+                    <MudTooltip Text="@Loc["GoTo_CopyTooltip"]">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
                                    Size="Size.Small"
                                    FullWidth="true"
                                    Disabled="@(!IsUiClientConnected)"
-                                   OnClick="OnCopy">Copy</MudButton>
+                                   OnClick="OnCopy">@Loc["GoTo_CopyButton"]</MudButton>
                     </MudTooltip>
-                    <MudTooltip Text="Sync to coordinates">
+                    <MudTooltip Text="@Loc["GoTo_SyncTooltip"]">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
                                    Size="Size.Small"
                                    FullWidth="true"
                                    Disabled="@(!IsUiClientConnected|| _coordMode != CoordMode.RaDec || !_canSync)"
-                                   OnClick="OnSync">Sync</MudButton>
+                                   OnClick="OnSync">@Loc["GoTo_SyncButton"]</MudButton>
                     </MudTooltip>
                 </MudStack>
 
@@ -55,25 +55,25 @@
                 <MudStack Spacing="2" Style="width:11.25rem">
                     @if (_coordMode == CoordMode.RaDec)
                     {
-                        <MudTooltip Text="Enter right ascension value">
+                        <MudTooltip Text="@Loc["GoTo_EnterRa"]">
                             <MudTextField T="string" Value="_raSmart"
                                           ValueChanged="@(v => OnRaSmartChanged(v))"
                                           Disabled="@(!IsUiClientConnected)"
                                           Error="@(!string.IsNullOrEmpty(_raSmartError))"
                                           ErrorText="@_raSmartError"
-                                          Label="RA"
+                                          Label="@Loc["Coord_Ra"]"
                                           InputId="goto-smart-ra"
                                           Placeholder="23 15 12.55, 23.75"
                                           Immediate="true"
                                           OnBlur="@(() => OnRaSmartBlur())" />
                         </MudTooltip>
-                        <MudTooltip Text="Enter declination value">
+                        <MudTooltip Text="@Loc["GoTo_EnterDec"]">
                             <MudTextField T="string" Value="_decSmart"
                                           ValueChanged="@(v => OnDecSmartChanged(v))"
                                           Disabled="@(!IsUiClientConnected)"
                                           Error="@(!string.IsNullOrEmpty(_decSmartError))"
                                           ErrorText="@_decSmartError"
-                                          Label="Dec"
+                                          Label="@Loc["Coord_Dec"]"
                                           InputId="goto-smart-dec"
                                           Placeholder="+56 19 25.57, -56.32"
                                           Immediate="true"
@@ -82,25 +82,25 @@
                     }
                     else
                     {
-                        <MudTooltip Text="Enter azimuth value">
+                        <MudTooltip Text="@Loc["GoTo_EnterAz"]">
                             <MudTextField T="string" Value="_azSmart"
                                           ValueChanged="@(v => OnAzSmartChanged(v))"
                                           Disabled="@(!IsUiClientConnected)"
                                           Error="@(!string.IsNullOrEmpty(_azSmartError))"
                                           ErrorText="@_azSmartError"
-                                          Label="Az"
+                                          Label="@Loc["Coord_Az"]"
                                           InputId="goto-smart-az"
                                           Placeholder="23° 24’ 54.23”, 23.4"
                                           Immediate="true"
                                           OnBlur="@(() => OnAzSmartBlur())" />
                         </MudTooltip>
-                        <MudTooltip Text="Enter altitude value">
+                        <MudTooltip Text="@Loc["GoTo_EnterAlt"]">
                             <MudTextField T="string" Value="_altSmart"
                                           ValueChanged="@(v => OnAltSmartChanged(v))"
                                           Disabled="@(!IsUiClientConnected)"
                                           Error="@(!string.IsNullOrEmpty(_altSmartError))"
                                           ErrorText="@_altSmartError"
-                                          Label="Alt"
+                                          Label="@Loc["Coord_Alt"]"
                                           InputId="goto-smart-alt"
                                           Placeholder="-12° 24m 54.23s, -12.4"
                                           Immediate="true"
@@ -115,11 +115,11 @@
                     <MudToggleGroup T="CoordMode" @bind-Value="_coordMode" Size="Size.Small" Color="Color.Primary"
                                     SelectionMode="SelectionMode.SingleSelection"
                                     Disabled="@(!IsUiClientConnected)">
-                        <MudTooltip Text="Use RA / Dec coordinates">
-                            <MudToggleItem Value="CoordMode.RaDec" Text="RA / Dec" Class="mud-width-full rounded-0" />
+                        <MudTooltip Text="@Loc["GoTo_UseRaDec"]">
+                            <MudToggleItem Value="CoordMode.RaDec" Text="@Loc["GoTo_RaDec"]" Class="mud-width-full rounded-0" />
                         </MudTooltip>
-                        <MudTooltip Text="Use Alt / Az coordinates">
-                            <MudToggleItem Value="CoordMode.AltAz" Text="Alt / Az" Class="mud-width-full rounded-0" />
+                        <MudTooltip Text="@Loc["GoTo_UseAltAz"]">
+                            <MudToggleItem Value="CoordMode.AltAz" Text="@Loc["GoTo_AltAz"]" Class="mud-width-full rounded-0" />
                         </MudTooltip>
                     </MudToggleGroup>
                 </MudStack>
@@ -131,16 +131,16 @@
         {
             <MudPaper Elevation="0" Class="gs-goto-settings-overlay pa-2">
                 <MudStack Spacing="2" Style="height:100%">
-                    <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">GoTo & Slew Settings</MudText>
+                    <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["GoTo_SettingsTitle"]</MudText>
                     <MudExpansionPanels >
-                        <MudExpansionPanel Class="mb-2 gs-panel" Text="Park Positions" Gutters="false" Dense="true">
+                        <MudExpansionPanel Class="mb-2 gs-panel" Text="@Loc["GoTo_ParkPositions"]" Gutters="false" Dense="true">
                             <MudStack Spacing="1">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
                                     <MudText Typo="Typo.subtitle1" Color="Color.Default"
                                              Style="padding: 0 8px; white-space: nowrap;">
                                         @_workingParkPositionName
                                     </MudText>
-                                    <MudTooltip Text="Select park position" Placement="Placement.Top" Arrow="true">
+                                    <MudTooltip Text="@Loc["GoTo_SelectParkPosition"]" Placement="Placement.Top" Arrow="true">
                                         <MudMenu Disabled="@IsParkSelectorDisabled">
                                             <ActivatorContent>
                                                 <MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown"
@@ -159,13 +159,13 @@
                                                 }
                                                 else
                                                 {
-                                                    <MudMenuItem Disabled="true">No positions configured</MudMenuItem>
+                                                    <MudMenuItem Disabled="true">@Loc["GoTo_NoPositions"]</MudMenuItem>
                                                 }
                                             </ChildContent>
                                         </MudMenu>
                                     </MudTooltip>
                                     <MudSpacer/>
-                                    <MudTooltip Text="Create, update or delete park positions" Placement="Placement.Top" Arrow="true">
+                                    <MudTooltip Text="@Loc["GoTo_ManageParkTooltip"]" Placement="Placement.Top" Arrow="true">
                                         <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                        Size="Size.Small"
                                                        Color="Color.Primary"
@@ -175,18 +175,18 @@
                                 </MudStack>
                             </MudStack>
                         </MudExpansionPanel>
-                        <MudExpansionPanel Class="mb-2 gs-panel" Text="Tracking Limits" Gutters="false" Dense="true">
+                        <MudExpansionPanel Class="mb-2 gs-panel" Text="@Loc["GoTo_TrackingLimits"]" Gutters="false" Dense="true">
                             <MudStack AlignItems="AlignItems.Start" Spacing="1">
                                 <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction"
                                                Value="@_workingMeridianTrackingAction"
                                                ValueChanged="UpdateMeridianLimitAction">
                                     <ChildContent>
                                         <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Spacing="1">
-                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None" Dense="true">No action</MudRadio>
-                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking" Dense="true">Stop tracking</MudRadio>
-                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park" Dense="true">Park</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None" Dense="true">@Loc["GoTo_NoAction"]</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking" Dense="true">@Loc["GoTo_StopTracking"]</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park" Dense="true">@Loc["GoTo_ParkAction"]</MudRadio>
                                             <MudSpacer/>
-                                            <MudTooltip Text="Edit tracking limit values" Placement="Placement.Top" Arrow="true" Inline="false">
+                                            <MudTooltip Text="@Loc["GoTo_EditTrackingLimitsTooltip"]" Placement="Placement.Top" Arrow="true" Inline="false">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                                Size="Size.Small"
                                                                Color="Color.Primary"
@@ -201,35 +201,37 @@
                                         <MudNumericField T="double"
                                                          Value="@_workingFlipAngle"
                                                          ValueChanged="OnFlipAngleChanged"
-                                                         Label="Flip Angle (°)"
+                                                         Label="@Loc["GoTo_FlipAngle"]"
                                                          Min="0"
                                                          Max="30"
                                                          Immediate="true"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                         <MudNumericField T="double"
                                                          Value="@_workingTrackingLimitAfterFlipAngle"
                                                          ValueChanged="OnTrackingLimitAfterFlipAngleChanged"
-                                                         Label="Tracking Limit After Flip Angle (°)"
+                                                         Label="@Loc["GoTo_TrackingLimitAfterFlip"]"
                                                          Min="0"
                                                          Max="15"
                                                          Immediate="true"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                     </MudStack>
                                 }
                             </MudStack>
                         </MudExpansionPanel>
-                        <MudExpansionPanel Class="mb-2 gs-panel" Text="Horizon Limits" Gutters="false" Dense="true">
+                        <MudExpansionPanel Class="mb-2 gs-panel" Text="@Loc["GoTo_HorizonLimits"]" Gutters="false" Dense="true">
                             <MudStack AlignItems="AlignItems.Start" Spacing="1">
                                 <MudRadioGroup T="GreenSwamp.Alpaca.MountControl.LimitAction"
                                                Value="@_workingHorizonTrackingAction"
                                                ValueChanged="UpdateHorizonLimitAction">
                                     <ChildContent>
                                         <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Spacing="1">
-                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None" Dense="true">No action</MudRadio>
-                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking" Dense="true">Stop tracking</MudRadio>
-                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park" Dense="true">Park</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.None" Dense="true">@Loc["GoTo_NoAction"]</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.StopTracking" Dense="true">@Loc["GoTo_StopTracking"]</MudRadio>
+                                            <MudRadio Value="GreenSwamp.Alpaca.MountControl.LimitAction.Park" Dense="true">@Loc["GoTo_ParkAction"]</MudRadio>
                                             <MudSpacer />
-                                            <MudTooltip Text="Edit horizon limit values" Placement="Placement.Top" Arrow="true" Inline="false">
+                                            <MudTooltip Text="@Loc["GoTo_EditHorizonLimitsTooltip"]" Placement="Placement.Top" Arrow="true" Inline="false">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                                                Size="Size.Small"
                                                                Color="Color.Primary"
@@ -244,16 +246,18 @@
                                         <MudNumericField T="double"
                                                          Value="@_workingHorizonTrackingLimit"
                                                          ValueChanged="OnHorizonTrackingLimitChanged"
-                                                         Label="Horizon Tracking Limit (°)"
+                                                         Label="@Loc["GoTo_HorizonTrackingLimit"]"
                                                          Immediate="true"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                         <MudNumericField T="double"
                                                          Value="@_workingHorizonGoToLimit"
                                                          ValueChanged="OnHorizonGoToLimitChanged"
-                                                         Label="Horizon Go To Limit (°)"
+                                                         Label="@Loc["GoTo_HorizonGoToLimit"]"
                                                          Min="-20"
                                                          Max="30"
                                                          Immediate="true"
+                                                         Converter="@(NumericFieldConverter.Localized("F2"))"
                                                          Format="F2" />
                                     </MudStack>
                                 }
@@ -261,10 +265,10 @@
                         </MudExpansionPanel>
                     </MudExpansionPanels>
                     <MudStack Class="ml-n2">
-                        <MudTooltip Text="@(!_workingVoiceActive ? "Enable voice announcements" : "Disable voice announcements")"
+                        <MudTooltip Text="@(!_workingVoiceActive ? Loc["GoTo_VoiceEnable"].Value : Loc["GoTo_VoiceDisable"].Value)"
                                     Placement="Placement.Top" Arrow="true">
                             <MudSwitch T="bool"
-                                       Label="Voice announcements"
+                                       Label="@Loc["GoTo_Voice"]"
                                        LabelPlacement="Placement.Right"
                                        Value="@_workingVoiceActive"
                                        ValueChanged="UpdateVoiceActive"
@@ -279,12 +283,12 @@
                         {
                             <MudButton Variant="Variant.Outlined"
                                        Color="Color.Default"
-                                       OnClick="CancelSettingsChanges">Cancel</MudButton>
+                                       OnClick="CancelSettingsChanges">@Loc["Common_Cancel"]</MudButton>
                         }
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    OnClick="OnSettingsPrimaryActionClicked">
-                            @(_isSettingsDirty ? "Save" : "Close")
+                            @(_isSettingsDirty ? Loc["Common_Save"].Value : Loc["Common_Close"].Value)
                         </MudButton>
                     </MudStack>
                 </MudStack>

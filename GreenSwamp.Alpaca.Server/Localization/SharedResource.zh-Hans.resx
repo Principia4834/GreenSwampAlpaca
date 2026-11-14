@@ -1,0 +1,3963 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>监视器</value>
+    <comment>WPF: optMonitor</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>取消</value>
+    <comment>WPF: diaCancel</comment>
+  </data>
+  <data name="Common_Start" xml:space="preserve">
+    <value>开始</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Stop" xml:space="preserve">
+    <value>停止</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_Unpark" xml:space="preserve">
+    <value>解除停放</value>
+    <comment>WPF: btnUnPark</comment>
+  </data>
+  <data name="MountButtons_Park" xml:space="preserve">
+    <value>停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_FlipTitle" xml:space="preserve">
+    <value>翻转镜筒偏向</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
+    <value>自动归位</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="AutoHome_Title" xml:space="preserve">
+    <value>自动归位</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="FlipSop_Title" xml:space="preserve">
+    <value>翻转镜筒偏向</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="ReSync_Button" xml:space="preserve">
+    <value>重新同步</value>
+    <comment>WPF: btnReSync</comment>
+  </data>
+  <data name="Common_Ok" xml:space="preserve">
+    <value>确定</value>
+    <comment>WPF: diaOk</comment>
+  </data>
+  <data name="Common_Accept" xml:space="preserve">
+    <value>确认</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>关闭</value>
+    <comment>WPF: skyClose</comment>
+  </data>
+  <data name="Coord_Ra" xml:space="preserve">
+    <value>赤经</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Dec" xml:space="preserve">
+    <value>赤纬</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Az" xml:space="preserve">
+    <value>方位角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Alt" xml:space="preserve">
+    <value>高度角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_MountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="AddDevice_AlignmentMode" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>保存</value>
+    <comment>WPF: gpSave</comment>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>删除</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Latitude" xml:space="preserve">
+    <value>纬度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Longitude" xml:space="preserve">
+    <value>经度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Altitude" xml:space="preserve">
+    <value>海拔</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceMountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="Home_DeviceAlignment" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_Connected" xml:space="preserve">
+    <value>已连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_Azimuth" xml:space="preserve">
+    <value>方位角</value>
+    <comment>WPF: lbAxisX</comment>
+  </data>
+  <data name="MountInfo_Altitude" xml:space="preserve">
+    <value>高度角</value>
+    <comment>WPF: lbAxisY</comment>
+  </data>
+  <data name="MountInfo_RightAscension" xml:space="preserve">
+    <value>赤经</value>
+    <comment>WPF: topRa</comment>
+  </data>
+  <data name="MountInfo_Declination" xml:space="preserve">
+    <value>赤纬</value>
+    <comment>WPF: topDec</comment>
+  </data>
+  <data name="MountInfo_Optics" xml:space="preserve">
+    <value>镜筒</value>
+    <comment>WPF: lbOptics</comment>
+  </data>
+  <data name="HandCtl_North" xml:space="preserve">
+    <value>北</value>
+    <comment>WPF: lbNorth</comment>
+  </data>
+  <data name="HandCtl_West" xml:space="preserve">
+    <value>西</value>
+    <comment>WPF: lbWest</comment>
+  </data>
+  <data name="HandCtl_East" xml:space="preserve">
+    <value>东</value>
+    <comment>WPF: lbEast</comment>
+  </data>
+  <data name="HandCtl_South" xml:space="preserve">
+    <value>南</value>
+    <comment>WPF: lbSouth</comment>
+  </data>
+  <data name="HandCtl_OneClickStart" xml:space="preserve">
+    <value>一键启动</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="GoTo_GoToButton" xml:space="preserve">
+    <value>GoTo</value>
+    <comment>WPF: goGoTo</comment>
+  </data>
+  <data name="GoTo_CopyButton" xml:space="preserve">
+    <value>复制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncButton" xml:space="preserve">
+    <value>同步</value>
+    <comment>WPF: goSync</comment>
+  </data>
+  <data name="GoTo_ParkPositions" xml:space="preserve">
+    <value>停放位置</value>
+    <comment>WPF: btnTipParkPos</comment>
+  </data>
+  <data name="GoTo_ParkAction" xml:space="preserve">
+    <value>停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_OneClickStart" xml:space="preserve">
+    <value>一键启动</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="HomePark_Park" xml:space="preserve">
+    <value>停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
+    <value>解除停放后跟踪</value>
+    <comment>WPF: capTrackAfterUnpark</comment>
+  </data>
+  <data name="Voice_Select" xml:space="preserve">
+    <value>语音</value>
+    <comment>WPF: botTipVoice</comment>
+  </data>
+  <data name="Ui_Zoom" xml:space="preserve">
+    <value>缩放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_LimitsOn" xml:space="preserve">
+    <value>限位开启</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_SyncPanel" xml:space="preserve">
+    <value>同步限制</value>
+    <comment>WPF: skySyncLimitOn</comment>
+  </data>
+  <data name="Trk_Tracking" xml:space="preserve">
+    <value>跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_Rate" xml:space="preserve">
+    <value>跟踪速率</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="Trk_Sidereal" xml:space="preserve">
+    <value>恒星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_Lunar" xml:space="preserve">
+    <value>月球</value>
+    <comment>WPF: vceLunar</comment>
+  </data>
+  <data name="Trk_Solar" xml:space="preserve">
+    <value>太阳</value>
+    <comment>WPF: vceSolar</comment>
+  </data>
+  <data name="Trk_King" xml:space="preserve">
+    <value>King</value>
+    <comment>WPF: vceKing</comment>
+  </data>
+  <data name="Trk_RaGuideRate" xml:space="preserve">
+    <value>赤经导星速率 %</value>
+    <comment>WPF: skyRaGuiding</comment>
+  </data>
+  <data name="Trk_DecGuideRate" xml:space="preserve">
+    <value>赤纬导星速率 %</value>
+    <comment>WPF: skyDecGuiding</comment>
+  </data>
+  <data name="MC_MountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="MC_AlignMode" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Left" xml:space="preserve">
+    <value>左</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Right" xml:space="preserve">
+    <value>右</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_EqCoord" xml:space="preserve">
+    <value>赤道坐标类型</value>
+    <comment>WPF: notEqType</comment>
+  </data>
+  <data name="MC_Baud" xml:space="preserve">
+    <value>波特率</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="MC_PolarLed" xml:space="preserve">
+    <value>极轴镜 LED 亮度</value>
+    <comment>WPF: skyPolarLedLevel</comment>
+  </data>
+  <data name="MC_FullCurrent" xml:space="preserve">
+    <value>全电流</value>
+    <comment>WPF: skyFullCurrent</comment>
+  </data>
+  <data name="MC_RaWorm" xml:space="preserve">
+    <value>赤经蜗轮齿数</value>
+    <comment>WPF: raWormTeeth</comment>
+  </data>
+  <data name="MC_RaTrkOffset" xml:space="preserve">
+    <value>赤经跟踪偏移</value>
+    <comment>WPF: raTrackingOffset</comment>
+  </data>
+  <data name="MC_DecWorm" xml:space="preserve">
+    <value>赤纬蜗轮齿数</value>
+    <comment>WPF: decWormTeeth</comment>
+  </data>
+  <data name="MC_DecTrkOffset" xml:space="preserve">
+    <value>赤纬跟踪偏移</value>
+    <comment>WPF: decTrackingOffset</comment>
+  </data>
+  <data name="ObsCard_DataElevation" xml:space="preserve">
+    <value>海拔</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_DataUtcOffset" xml:space="preserve">
+    <value>UTC 偏移</value>
+    <comment>WPF: optUTCOffset</comment>
+  </data>
+  <data name="ObsCard_Reset" xml:space="preserve">
+    <value>重置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Device" xml:space="preserve">
+    <value>设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Telescope" xml:space="preserve">
+    <value>望远镜</value>
+    <comment>WPF: optTelescope</comment>
+  </data>
+  <data name="Mon_Ui" xml:space="preserve">
+    <value>界面</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Category" xml:space="preserve">
+    <value>类别</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Driver" xml:space="preserve">
+    <value>驱动</value>
+    <comment>WPF: optDriver</comment>
+  </data>
+  <data name="Mon_Interface" xml:space="preserve">
+    <value>接口</value>
+    <comment>WPF: optInterface</comment>
+  </data>
+  <data name="Mon_Server" xml:space="preserve">
+    <value>服务器</value>
+    <comment>WPF: optServer</comment>
+  </data>
+  <data name="Mon_Mount" xml:space="preserve">
+    <value>赤道仪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Type" xml:space="preserve">
+    <value>类型</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Data" xml:space="preserve">
+    <value>数据</value>
+    <comment>WPF: optData</comment>
+  </data>
+  <data name="Mon_Warning" xml:space="preserve">
+    <value>警告</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Error" xml:space="preserve">
+    <value>错误</value>
+    <comment>WPF: exError</comment>
+  </data>
+  <data name="Mon_LogPath" xml:space="preserve">
+    <value>日志路径</value>
+    <comment>WPF: optLogPath</comment>
+  </data>
+  <data name="Mon_ClearAll" xml:space="preserve">
+    <value>全部清除</value>
+    <comment>WPF: aliClearAll</comment>
+  </data>
+  <data name="Mon_Reset" xml:space="preserve">
+    <value>重置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Copy" xml:space="preserve">
+    <value>复制到剪贴板</value>
+    <comment>WPF: optCopyClip</comment>
+  </data>
+  <data name="TS_MountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="TS_AlignmentMode" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Elevation" xml:space="preserve">
+    <value>海拔</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Refraction" xml:space="preserve">
+    <value>大气折射</value>
+    <comment>WPF: skyRefraction</comment>
+  </data>
+  <data name="TS_BaudRate" xml:space="preserve">
+    <value>波特率</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="TS_TrackingRate" xml:space="preserve">
+    <value>跟踪速率</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="TS_SiderealRate" xml:space="preserve">
+    <value>恒星速率</value>
+    <comment>WPF: skySiderealRate</comment>
+  </data>
+  <data name="TS_RaBacklash" xml:space="preserve">
+    <value>赤经回差</value>
+    <comment>WPF: bacRaLash</comment>
+  </data>
+  <data name="TS_DecBacklash" xml:space="preserve">
+    <value>赤纬回差</value>
+    <comment>WPF: bacDecLash</comment>
+  </data>
+  <data name="TS_Encoders" xml:space="preserve">
+    <value>编码器</value>
+    <comment>WPF: skyEncoders</comment>
+  </data>
+  <data name="State_Slewing" xml:space="preserve">
+    <value>转动中</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Lha" xml:space="preserve">
+    <value>地方时角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Lst" xml:space="preserve">
+    <value>地方恒星时</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_LimitWarning" xml:space="preserve">
+    <value>限位警告</value>
+    <comment>WPF: vceLimit</comment>
+  </data>
+  <data name="MStat_Mount" xml:space="preserve">
+    <value>赤道仪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Type" xml:space="preserve">
+    <value>类型</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Mode" xml:space="preserve">
+    <value>模式</value>
+    <comment>WPF: hcMode</comment>
+  </data>
+  <data name="MStat_HomeSensor" xml:space="preserve">
+    <value>归位传感器</value>
+    <comment>WPF: mntHomeSensor</comment>
+  </data>
+  <data name="MStat_PolarLed" xml:space="preserve">
+    <value>极轴镜 LED</value>
+    <comment>WPF: mntPolarLed</comment>
+  </data>
+  <data name="MStat_Capabilities" xml:space="preserve">
+    <value>功能</value>
+    <comment>WPF: mntCap</comment>
+  </data>
+  <data name="MStat_CustomOffsetRa" xml:space="preserve">
+    <value>赤经自定义偏移</value>
+    <comment>WPF: mntCustomOffsetRa</comment>
+  </data>
+  <data name="MStat_CustomOffsetDec" xml:space="preserve">
+    <value>赤纬自定义偏移</value>
+    <comment>WPF: mntCustomOffsetDec</comment>
+  </data>
+  <data name="MStat_WormStepsRa" xml:space="preserve">
+    <value>赤经蜗杆步数</value>
+    <comment>WPF: mntWormStepsRa</comment>
+  </data>
+  <data name="MStat_WormStepsDec" xml:space="preserve">
+    <value>赤纬蜗杆步数</value>
+    <comment>WPF: mntWormStepsDec</comment>
+  </data>
+  <data name="MStat_FrequencyRa" xml:space="preserve">
+    <value>赤经频率</value>
+    <comment>WPF: mntFreqRa</comment>
+  </data>
+  <data name="MStat_FrequencyDec" xml:space="preserve">
+    <value>赤纬频率</value>
+    <comment>WPF: mntFreqDec</comment>
+  </data>
+  <data name="MStat_RaStepsArcSec" xml:space="preserve">
+    <value>赤经步/角秒</value>
+    <comment>WPF: mntRaSteps</comment>
+  </data>
+  <data name="MStat_DecStepsArcSec" xml:space="preserve">
+    <value>赤纬步/角秒</value>
+    <comment>WPF: mntDecSteps</comment>
+  </data>
+  <data name="MStat_Supported" xml:space="preserve">
+    <value>支持</value>
+    <comment>WPF: mntSupported</comment>
+  </data>
+  <data name="MStat_Tracking" xml:space="preserve">
+    <value>跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Slewing" xml:space="preserve">
+    <value>转动中</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_LimitsOn" xml:space="preserve">
+    <value>限位开启</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Degrees" xml:space="preserve">
+    <value>度</value>
+    <comment>WPF: btnHintAutoHomeLimit</comment>
+  </data>
+  <data name="About_TabAbout" xml:space="preserve">
+    <value>关于</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_TabCredits" xml:space="preserve">
+    <value>致谢</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_TabLicense" xml:space="preserve">
+    <value>许可证</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_OnlineHelp" xml:space="preserve">
+    <value>在线帮助</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_ContentUnavailable" xml:space="preserve">
+    <value>内容不可用。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AcceptCoords_Title" xml:space="preserve">
+    <value>确认坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Title" xml:space="preserve">
+    <value>添加望远镜设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_DeviceName" xml:space="preserve">
+    <value>设备名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_DeviceNamePlaceholder" xml:space="preserve">
+    <value>例如EQ6-R Pro</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_DeviceNameRequired" xml:space="preserve">
+    <value>设备名称为必填项</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_MountTypeHelp" xml:space="preserve">
+    <value>应用模拟器或SkyWatcher的默认设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Simulator" xml:space="preserve">
+    <value>无实体赤道仪，用于测试和模拟</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_SkyWatcher" xml:space="preserve">
+    <value>实体赤道仪，必须支持SkyWatcher / Synta指令</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_AlignmentModeHelp" xml:space="preserve">
+    <value>应用与对准模式对应的默认设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Gem" xml:space="preserve">
+    <value>德国赤道仪（GEM）——配重，中天翻转</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Polar" xml:space="preserve">
+    <value>极轴式 / 叉式——叉式赤道仪，无中天翻转</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_AltAz" xml:space="preserve">
+    <value>地平式——高度轴 / 方位轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Note" xml:space="preserve">
+    <value>添加设备后，可在该设备的&lt;strong&gt;赤道仪配置&lt;/strong&gt;组中配置所有其他设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Add" xml:space="preserve">
+    <value>添加设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Title" xml:space="preserve">
+    <value>添加天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Name" xml:space="preserve">
+    <value>天文台名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_NamePlaceholder" xml:space="preserve">
+    <value>例如后院天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_NameRequired" xml:space="preserve">
+    <value>名称为必填项。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_NameExists" xml:space="preserve">
+    <value>已存在同名天文台。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Latitude" xml:space="preserve">
+    <value>纬度（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Longitude" xml:space="preserve">
+    <value>经度（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Elevation" xml:space="preserve">
+    <value>海拔（m）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_UtcOffset" xml:space="preserve">
+    <value>UTC偏移（h）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Add" xml:space="preserve">
+    <value>添加天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Alignment_Gem" xml:space="preserve">
+    <value>德国赤道仪（GEM）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Alignment_Polar" xml:space="preserve">
+    <value>极轴式 / 叉式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Alignment_AltAz" xml:space="preserve">
+    <value>地平式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="App_NotFoundTitle" xml:space="preserve">
+    <value>未找到</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="App_NotFoundMessage" xml:space="preserve">
+    <value>抱歉，此地址没有任何内容。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_Searching" xml:space="preserve">
+    <value>正在搜索归位传感器…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DegreeLimit" xml:space="preserve">
+    <value>角度限制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DegreeLimitHelp" xml:space="preserve">
+    <value>搜索归位传感器时允许转动的最大角度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecOffset" xml:space="preserve">
+    <value>赤纬偏移</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecOffsetHelp" xml:space="preserve">
+    <value>找到归位位置后应用的赤纬轴偏移</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_SensorPositions" xml:space="preserve">
+    <value>传感器位置（GEM）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_RaSensorPosition" xml:space="preserve">
+    <value>赤经传感器位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_RaSensorHelp" xml:space="preserve">
+    <value>归位传感器处赤经轴的预期位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecSensorPosition" xml:space="preserve">
+    <value>赤纬传感器位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecSensorHelp" xml:space="preserve">
+    <value>归位传感器处赤纬轴的预期位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_ResetSensors" xml:space="preserve">
+    <value>将传感器位置重置为90</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_Failed" xml:space="preserve">
+    <value>自动归位失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_Complete" xml:space="preserve">
+    <value>自动归位完成</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_MountNotFound" xml:space="preserve">
+    <value>未找到赤道仪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AxisDial_AriaLabel" xml:space="preserve">
+    <value>{0}表盘，显示{1}度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_Title" xml:space="preserve">
+    <value>重大设置更改</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_ClientsDisconnected" xml:space="preserve">
+    <value>{0}个已连接的ASCOM/Alpaca客户端将被强制与{1}断开连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_ClientsReconnect" xml:space="preserve">
+    <value>应用此更改后，所有客户端必须重新连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_RestartRequired" xml:space="preserve">
+    <value>以下设置需要设备停止并重新启动：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_DisconnectRestart" xml:space="preserve">
+    <value>断开并重启</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Title" xml:space="preserve">
+    <value>Cartes du Ciel（{0} : {1}）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_IdleFetch" xml:space="preserve">
+    <value>点击“获取”可从CdC读取位置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_IdleOpen" xml:space="preserve">
+    <value>CdC必须处于运行状态。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Connecting" xml:space="preserve">
+    <value>正在连接到{0}…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_ColCdc" xml:space="preserve">
+    <value>CdC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_ColLocal" xml:space="preserve">
+    <value>本地</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_CopyLocalToCdc" xml:space="preserve">
+    <value>复制本地 → CdC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_CopyCdcToLocal" xml:space="preserve">
+    <value>复制CdC → 本地</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Sending" xml:space="preserve">
+    <value>正在向CdC发送位置…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Sent" xml:space="preserve">
+    <value>位置已成功发送到CdC。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Fetch" xml:space="preserve">
+    <value>获取</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PulseTitle" xml:space="preserve">
+    <value>脉冲导星图表 — GS Alpaca</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PulseHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;脉冲&lt;/b&gt;导星 — {0} — 设备{1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RaDecHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;{0} / {1}&lt;/b&gt;位置 — {2} — 设备{3}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RaDecTitle" xml:space="preserve">
+    <value>{0} / {1}图表</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Reconnecting" xml:space="preserve">
+    <value>正在重新连接…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Disconnected" xml:space="preserve">
+    <value>已断开连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_DataWindow" xml:space="preserve">
+    <value>数据窗口</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win10s" xml:space="preserve">
+    <value>10秒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win30s" xml:space="preserve">
+    <value>30秒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win2m" xml:space="preserve">
+    <value>2分钟</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win5m" xml:space="preserve">
+    <value>5分钟</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win15m" xml:space="preserve">
+    <value>15分钟</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win30m" xml:space="preserve">
+    <value>30分钟</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PulseUnits" xml:space="preserve">
+    <value>脉冲单位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Scale" xml:space="preserve">
+    <value>刻度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Milliseconds" xml:space="preserve">
+    <value>毫秒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ArcSeconds" xml:space="preserve">
+    <value>角秒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Steps" xml:space="preserve">
+    <value>步数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_YAxisMs" xml:space="preserve">
+    <value>mS</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ChartType" xml:space="preserve">
+    <value>图表类型</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Bars" xml:space="preserve">
+    <value>柱状</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Points" xml:space="preserve">
+    <value>散点</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Line" xml:space="preserve">
+    <value>折线</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PauseTip" xml:space="preserve">
+    <value>暂停（冻结为历史快照）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ResumeTip" xml:space="preserve">
+    <value>恢复实时滚动</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PauseAria" xml:space="preserve">
+    <value>暂停图表更新</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ResumeAria" xml:space="preserve">
+    <value>恢复图表更新</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RaRejected" xml:space="preserve">
+    <value>赤经被拒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_DecRejected" xml:space="preserve">
+    <value>赤纬被拒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Clear" xml:space="preserve">
+    <value>清除图表</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RenderFailed" xml:space="preserve">
+    <value>图表渲染失败，请关闭后重新打开此窗口。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>确认</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_MountNotFound" xml:space="preserve">
+    <value>未找到赤道仪设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_ErrorWithMessage" xml:space="preserve">
+    <value>{0}：{1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>应用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Create" xml:space="preserve">
+    <value>创建</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>重试</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>已禁用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>未知</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Required" xml:space="preserve">
+    <value>必须输入数值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_HoursRange" xml:space="preserve">
+    <value>小时必须在 [0..24) 范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_DegreesRange" xml:space="preserve">
+    <value>度必须在 [-90..90] 范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_HoursInteger" xml:space="preserve">
+    <value>小时必须为整数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_DegreesInteger" xml:space="preserve">
+    <value>度必须为整数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_MinutesInteger" xml:space="preserve">
+    <value>分必须为 [0..60) 范围内的整数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_MinutesRange" xml:space="preserve">
+    <value>分必须在 [0..60) 范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_SecondsRange" xml:space="preserve">
+    <value>秒必须在 [0..60) 范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_InvalidRa" xml:space="preserve">
+    <value>请输入有效的赤经值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_InvalidAngle" xml:space="preserve">
+    <value>请输入有效的角度值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_RaRequired" xml:space="preserve">
+    <value>必须输入赤经。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_AngleRequired" xml:space="preserve">
+    <value>必须输入角度值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_RaRange" xml:space="preserve">
+    <value>赤经必须在 [0..24) 范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Title" xml:space="preserve">
+    <value>删除设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_CannotUndo" xml:space="preserve">
+    <value>此操作无法撤销。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Removal" xml:space="preserve">
+    <value>设备&lt;strong&gt;{0} — {1}&lt;/strong&gt;及其所有设置文件将被永久删除。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Hint" xml:space="preserve">
+    <value>当前连接到此设备的所有Alpaca客户端都将断开连接。之后请在“望远镜设备”面板中点击&lt;strong&gt;应用更改&lt;/strong&gt;，即可在不重启服务器的情况下使删除生效。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Delete" xml:space="preserve">
+    <value>删除设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_Title" xml:space="preserve">
+    <value>望远镜设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_Subtitle" xml:space="preserve">
+    <value>管理已连接的望远镜赤道仪设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_NoDevices" xml:space="preserve">
+    <value>尚未配置望远镜设备，请添加设备以开始使用。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_DeviceLine" xml:space="preserve">
+    <value>设备{0} - {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_DeleteTooltip" xml:space="preserve">
+    <value>永久删除此设备及其所有设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_ApplyTooltip" xml:space="preserve">
+    <value>无需重启服务器，即可应用所有设备的添加和删除</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_ApplyChanges" xml:space="preserve">
+    <value>应用更改</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Preparing" xml:space="preserve">
+    <value>正在准备导出所有设置和用户日志...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Creating" xml:space="preserve">
+    <value>正在创建导出文件...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Files" xml:space="preserve">
+    <value>文件：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_EstimatedSize" xml:space="preserve">
+    <value>预计下载大小：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Success" xml:space="preserve">
+    <value>备份创建成功！已开始下载。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_SuccessInfo" xml:space="preserve">
+    <value>导出文件包含所有JSON设置文件和日志。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_CreateButton" xml:space="preserve">
+    <value>创建导出</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_LoadFailed" xml:space="preserve">
+    <value>加载备份信息失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_CreateFailed" xml:space="preserve">
+    <value>创建导出时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_Description" xml:space="preserve">
+    <value>赤道仪将转到镜筒偏向另一侧的同一天空位置。望远镜必须处于翻转角限位范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_FlipOnNextGoto" xml:space="preserve">
+    <value>下次GoTo时翻转</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_FlipOnNextGotoHelp" xml:space="preserve">
+    <value>启用后，下一次GoTo转动将在开始跟踪前越过子午线。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_FlipNow" xml:space="preserve">
+    <value>立即翻转</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_PanelTitle" xml:space="preserve">
+    <value>GoTo与转动</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SettingsTitle" xml:space="preserve">
+    <value>GoTo与转动设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_GoToTooltip" xml:space="preserve">
+    <value>转到坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_CopyTooltip" xml:space="preserve">
+    <value>从当前位置复制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncTooltip" xml:space="preserve">
+    <value>同步到坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterRa" xml:space="preserve">
+    <value>输入赤经值</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterDec" xml:space="preserve">
+    <value>输入赤纬值</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterAz" xml:space="preserve">
+    <value>输入方位角值</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterAlt" xml:space="preserve">
+    <value>输入高度角值</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_UseRaDec" xml:space="preserve">
+    <value>使用赤经 / 赤纬坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_UseAltAz" xml:space="preserve">
+    <value>使用高度角 / 方位角坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_RaDec" xml:space="preserve">
+    <value>赤经 / 赤纬</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_AltAz" xml:space="preserve">
+    <value>高度角 / 方位角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SelectParkPosition" xml:space="preserve">
+    <value>选择停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_NoPositions" xml:space="preserve">
+    <value>未配置任何位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_ManageParkTooltip" xml:space="preserve">
+    <value>创建、更新或删除停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_TrackingLimits" xml:space="preserve">
+    <value>跟踪限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_NoAction" xml:space="preserve">
+    <value>不执行</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_StopTracking" xml:space="preserve">
+    <value>停止跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EditTrackingLimitsTooltip" xml:space="preserve">
+    <value>编辑跟踪限位值</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_FlipAngle" xml:space="preserve">
+    <value>翻转角（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_TrackingLimitAfterFlip" xml:space="preserve">
+    <value>翻转角后的跟踪限位（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_HorizonLimits" xml:space="preserve">
+    <value>地平限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EditHorizonLimitsTooltip" xml:space="preserve">
+    <value>编辑地平限位值</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_HorizonTrackingLimit" xml:space="preserve">
+    <value>地平跟踪限位（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_HorizonGoToLimit" xml:space="preserve">
+    <value>地平GoTo限位（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_VoiceEnable" xml:space="preserve">
+    <value>启用语音播报</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_VoiceDisable" xml:space="preserve">
+    <value>禁用语音播报</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_Voice" xml:space="preserve">
+    <value>语音播报</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_MountNotRunning" xml:space="preserve">
+    <value>赤道仪未运行。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_BelowHorizon" xml:space="preserve">
+    <value>目标坐标低于赤道仪的地平限位。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_AcceptTitle" xml:space="preserve">
+    <value>确认GoTo坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_InProgress" xml:space="preserve">
+    <value>GoTo进行中…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_Rejected" xml:space="preserve">
+    <value>GoTo被拒绝：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_Failed" xml:space="preserve">
+    <value>GoTo失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_ParkNotFound" xml:space="preserve">
+    <value>未找到停放位置“{0}”</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SettingsSaved" xml:space="preserve">
+    <value>GoTo设置已保存。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_AcceptSyncTitle" xml:space="preserve">
+    <value>确认同步坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncComplete" xml:space="preserve">
+    <value>同步完成。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncFailed" xml:space="preserve">
+    <value>同步失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Title" xml:space="preserve">
+    <value>GPS定位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Reading" xml:space="preserve">
+    <value>正在从{0}读取…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Nmea" xml:space="preserve">
+    <value>NMEA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_GpsUtc" xml:space="preserve">
+    <value>GPS UTC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_PcUtc" xml:space="preserve">
+    <value>电脑UTC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_NotReported" xml:space="preserve">
+    <value>未报告</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_TimeDifference" xml:space="preserve">
+    <value>时间差</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_NoTimestamp" xml:space="preserve">
+    <value>不适用——未收到GPS时间戳</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Ahead" xml:space="preserve">
+    <value>GPS比电脑快{0:F2}秒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Behind" xml:space="preserve">
+    <value>GPS比电脑慢{0:F2}秒</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_NorthWest" xml:space="preserve">
+    <value>西北</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_NorthEast" xml:space="preserve">
+    <value>东北</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_SouthWest" xml:space="preserve">
+    <value>西南</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_SouthEast" xml:space="preserve">
+    <value>东南</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_SpeedTooltip" xml:space="preserve">
+    <value>手控器运动速度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Speed" xml:space="preserve">
+    <value>速度：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_OneClickTooltip" xml:space="preserve">
+    <value>单击即可开始和停止运动</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_KeysOffTooltip" xml:space="preserve">
+    <value>转动期间按键已禁用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_KeysOff" xml:space="preserve">
+    <value>GoTo时禁用按键</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_EditTooltip" xml:space="preserve">
+    <value>编辑手控器设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_AxesTooltip" xml:space="preserve">
+    <value>轴运动控制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Axes" xml:space="preserve">
+    <value>轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_GuidingTooltip" xml:space="preserve">
+    <value>导星运动控制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Guiding" xml:space="preserve">
+    <value>导星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_PulseTooltip" xml:space="preserve">
+    <value>脉冲运动控制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Pulse" xml:space="preserve">
+    <value>脉冲</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_PulseGuidesTitle" xml:space="preserve">
+    <value>手控器脉冲导星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Speed" xml:space="preserve">
+    <value>速度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Duration" xml:space="preserve">
+    <value>持续时间（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Interval" xml:space="preserve">
+    <value>间隔（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Rate" xml:space="preserve">
+    <value>速率</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_RateMax" xml:space="preserve">
+    <value>最大速率：{0}（MaximumSlewRate）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_Title" xml:space="preserve">
+    <value>手控器设置 — 设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_AxisTab" xml:space="preserve">
+    <value>轴设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_PulseTab" xml:space="preserve">
+    <value>脉冲导星速率</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_FlipRa" xml:space="preserve">
+    <value>反转赤经/方位角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_FlipDec" xml:space="preserve">
+    <value>反转赤纬/高度角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_AntiRa" xml:space="preserve">
+    <value>赤经/方位角回差补偿</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_AntiDec" xml:space="preserve">
+    <value>赤纬/高度角回差补偿</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Title" xml:space="preserve">
+    <value>设置健康状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Validating" xml:space="preserve">
+    <value>正在验证设置...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_AllValid" xml:space="preserve">
+    <value>所有设置均有效。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_WarningCount" xml:space="preserve">
+    <value>（{0}个警告）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Failed" xml:space="preserve">
+    <value>设置验证失败。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_ErrorsFound" xml:space="preserve">
+    <value>发现{0}个错误。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_SettingsFile" xml:space="preserve">
+    <value>设置文件：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Errors" xml:space="preserve">
+    <value>错误（{0}）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Warnings" xml:space="preserve">
+    <value>警告（{0}）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Device" xml:space="preserve">
+    <value>设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_AutoRepairable" xml:space="preserve">
+    <value>可自动修复</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Resolution" xml:space="preserve">
+    <value>解决方法：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Revalidate" xml:space="preserve">
+    <value>重新验证</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_OpenFolder" xml:space="preserve">
+    <value>打开设置文件夹</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Unable" xml:space="preserve">
+    <value>无法验证设置。请点击&lt;strong&gt;重新验证&lt;/strong&gt;重试。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_ValidationError" xml:space="preserve">
+    <value>验证错误：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_UnexpectedError" xml:space="preserve">
+    <value>验证过程中发生意外错误：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_CheckLogs" xml:space="preserve">
+    <value>请查看应用程序日志了解详情。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Title" xml:space="preserve">
+    <value>设置健康检查</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Intro" xml:space="preserve">
+    <value>验证并修复设置配置。此工具检查设置文件的完整性，并可自动修复常见的配置问题。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_StatusTitle" xml:space="preserve">
+    <value>设置健康状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Validating" xml:space="preserve">
+    <value>正在验证设置...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AllValid" xml:space="preserve">
+    <value>&lt;strong&gt;所有设置均有效。&lt;/strong&gt;</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_WarningCount" xml:space="preserve">
+    <value>（{0}个警告）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Failed" xml:space="preserve">
+    <value>&lt;strong&gt;设置验证失败。&lt;/strong&gt;发现{0}个错误。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ErrorsHeading" xml:space="preserve">
+    <value>错误（{0}）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_WarningsHeading" xml:space="preserve">
+    <value>警告（{0}）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AutoRepairable" xml:space="preserve">
+    <value>可自动修复</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Resolution" xml:space="preserve">
+    <value>&lt;strong&gt;解决方法：&lt;/strong&gt;{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_UnableToValidate" xml:space="preserve">
+    <value>无法验证设置。请点击&lt;strong&gt;重新验证&lt;/strong&gt;重试。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Revalidate" xml:space="preserve">
+    <value>重新验证</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_FilesTitle" xml:space="preserve">
+    <value>设置文件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_NoFiles" xml:space="preserve">
+    <value>设置文件夹中未找到JSON文件。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_OnlyLocalTip" xml:space="preserve">
+    <value>仅在服务器本机上浏览时可用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ServiceTip" xml:space="preserve">
+    <value>作为Windows服务运行时无法打开资源管理器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_OpenFolder" xml:space="preserve">
+    <value>打开设置文件夹</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AboutTitle" xml:space="preserve">
+    <value>关于设置验证</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_WhatValidated" xml:space="preserve">
+    <value>验证哪些内容？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_V_File" xml:space="preserve">
+    <value>&lt;strong&gt;文件级检查：&lt;/strong&gt;文件是否存在、读取权限、JSON语法、必需结构</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_V_Device" xml:space="preserve">
+    <value>&lt;strong&gt;设备验证：&lt;/strong&gt;DeviceNumber唯一性、DeviceName必填、AlignmentMode有效、赤道仪类型有效</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_V_Sync" xml:space="preserve">
+    <value>&lt;strong&gt;同步性：&lt;/strong&gt;Devices与AlpacaDevices数组必须保持一致</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AutoRepairTitle" xml:space="preserve">
+    <value>自动修复操作</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AutoRepairIntro" xml:space="preserve">
+    <value>修复功能可自动修复以下问题：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Devices" xml:space="preserve">
+    <value>Devices数组缺失或已损坏（根据默认值重新生成）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Names" xml:space="preserve">
+    <value>设备名称缺失（生成“Telescope X”名称）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Align" xml:space="preserve">
+    <value>AlignmentMode值无效（重置为GermanPolar）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Mount" xml:space="preserve">
+    <value>Mount值缺失（设置为Simulator）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Sync" xml:space="preserve">
+    <value>AlpacaDevices数组不同步（根据Devices重新生成）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_SafetyTitle" xml:space="preserve">
+    <value>安全功能</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Backup" xml:space="preserve">
+    <value>&lt;strong&gt;自动备份：&lt;/strong&gt;进行任何更改之前会创建带时间戳的备份</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Validation" xml:space="preserve">
+    <value>&lt;strong&gt;修复后验证：&lt;/strong&gt;更改在保存前会经过验证</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Restore" xml:space="preserve">
+    <value>&lt;strong&gt;失败时还原：&lt;/strong&gt;修复失败时将从备份还原设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Quarantine" xml:space="preserve">
+    <value>&lt;strong&gt;隔离：&lt;/strong&gt;无效设备将从活动设备列表中排除</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ManualTitle" xml:space="preserve">
+    <value>手动修复</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ManualIntro" xml:space="preserve">
+    <value>对于无法自动修复的问题：</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_OpenFolder" xml:space="preserve">
+    <value>使用上方的&lt;strong&gt;打开设置文件夹&lt;/strong&gt;按钮</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_Edit" xml:space="preserve">
+    <value>在文本编辑器中编辑&lt;code&gt;appsettings.user.json&lt;/code&gt;</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_Restart" xml:space="preserve">
+    <value>重新启动应用程序</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_Delete" xml:space="preserve">
+    <value>如有需要，删除该文件以重新生成默认设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Note" xml:space="preserve">
+    <value>&lt;strong&gt;注意：&lt;/strong&gt;此验证在应用程序启动时自动运行。无效设备将被隔离，不会向ASCOM客户端公布。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ValidationError" xml:space="preserve">
+    <value>验证错误：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_UnexpectedError" xml:space="preserve">
+    <value>验证过程中发生意外错误：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_CheckLogs" xml:space="preserve">
+    <value>请查看应用程序日志了解详情。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceNumber" xml:space="preserve">
+    <value>设备编号</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceName" xml:space="preserve">
+    <value>名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceDescription" xml:space="preserve">
+    <value>描述</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceStatus" xml:space="preserve">
+    <value>状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_OpenControl" xml:space="preserve">
+    <value>打开{0}的控制页面</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceInformation" xml:space="preserve">
+    <value>设备信息</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceInformationFor" xml:space="preserve">
+    <value>{0}的设备信息</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceConnected" xml:space="preserve">
+    <value>设备已连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceNotConnected" xml:space="preserve">
+    <value>设备未连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_NotConnected" xml:space="preserve">
+    <value>未连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceSettings" xml:space="preserve">
+    <value>设备设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_SettingsFor" xml:space="preserve">
+    <value>{0}的设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_NoCarousel" xml:space="preserve">
+    <value>未配置轮播图片。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_CarouselTooltip" xml:space="preserve">
+    <value>点击图片可停止或开始自动滚动</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_ImageNotFound" xml:space="preserve">
+    <value>未找到图片：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DevicesLabel" xml:space="preserve">
+    <value>望远镜设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_NoDevices" xml:space="preserve">
+    <value>尚未配置望远镜设备。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DefaultDeviceName" xml:space="preserve">
+    <value>设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_PageTitle" xml:space="preserve">
+    <value>首页 – Green Swamp Alpaca Server</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>欢迎使用&lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_Footer" xml:space="preserve">
+    <value>Green Swamp Alpaca Server</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_Home" xml:space="preserve">
+    <value>归位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_HomePositions" xml:space="preserve">
+    <value>归位位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_Position" xml:space="preserve">
+    <value>位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_RaAzAxis" xml:space="preserve">
+    <value>赤经/方位角轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_DecAltAxis" xml:space="preserve">
+    <value>赤纬/高度角轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_AutoHome" xml:space="preserve">
+    <value>自动归位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_ActivePark_Tip" xml:space="preserve">
+    <value>当前停放位置的名称。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_ActivePark" xml:space="preserve">
+    <value>当前停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark_Tip" xml:space="preserve">
+    <value>赤道仪解除停放时自动开始跟踪。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_DefinedParkPositions" xml:space="preserve">
+    <value>已定义的停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_Name" xml:space="preserve">
+    <value>名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Title" xml:space="preserve">
+    <value>应用设备更改</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Disconnect" xml:space="preserve">
+    <value>{0}台已连接的设备将被强制断开连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Warning" xml:space="preserve">
+    <value>所有活动的设备会话都将停止，设备注册表将根据当前设置文件重新构建。此操作期间连接的所有Alpaca客户端必须在之后重新连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Hint" xml:space="preserve">
+    <value>无需重启服务器，即可应用所有待处理的设备添加和删除。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Apply" xml:space="preserve">
+    <value>应用热重载</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Layout_Help" xml:space="preserve">
+    <value>帮助</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Layout_Version" xml:space="preserve">
+    <value>版本{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HardwarePanel" xml:space="preserve">
+    <value>硬件限位值（始终强制执行，以确保转动安全）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_UpperDecAlt_Tip" xml:space="preserve">
+    <value>赤纬/高度角上限硬件限位，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_UpperDecAlt" xml:space="preserve">
+    <value>赤纬/高度角上限硬件限位（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_LowerDecAlt_Tip" xml:space="preserve">
+    <value>赤纬/高度角下限硬件限位，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_LowerDecAlt" xml:space="preserve">
+    <value>赤纬/高度角下限硬件限位（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_RaAz_Tip" xml:space="preserve">
+    <value>赤经/方位角硬件限位，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_RaAz" xml:space="preserve">
+    <value>赤经/方位角硬件限位（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_ActionsPanel" xml:space="preserve">
+    <value>跟踪限位动作（由“限位开启”控制）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_FlipAngle_Tip" xml:space="preserve">
+    <value>GEM围绕子午线的安全限位，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_AfterFlip_Tip" xml:space="preserve">
+    <value>GEM越过翻转角后允许继续跟踪子午线的额外角度，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HzTracking_Tip" xml:space="preserve">
+    <value>GEM地平跟踪触发角度，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HzGoTo_Tip" xml:space="preserve">
+    <value>地平GoTo限位角度，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_WarningOnly" xml:space="preserve">
+    <value>仅警告</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_StopTracking" xml:space="preserve">
+    <value>停止跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryPark" xml:space="preserve">
+    <value>主要动作停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_GemHorizonAction" xml:space="preserve">
+    <value>GEM地平动作</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HorizonTrigger" xml:space="preserve">
+    <value>地平触发动作</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HorizonPark" xml:space="preserve">
+    <value>地平动作停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_EnableSyncLimit_Tip" xml:space="preserve">
+    <value>启用同步角度限制——拒绝使模型偏移超过此角度的同步。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_EnableSyncLimit" xml:space="preserve">
+    <value>启用同步限制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_SyncAngle_Tip" xml:space="preserve">
+    <value>单次同步可使指向模型偏移的最大角度，单位为度。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_SyncAngle" xml:space="preserve">
+    <value>同步限制（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_NoSyncMeridian_Tip" xml:space="preserve">
+    <value>望远镜越过子午线时拒绝同步请求（GEM/极轴式）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_NoSyncMeridian" xml:space="preserve">
+    <value>越过子午线禁止同步</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryLabelGem" xml:space="preserve">
+    <value>主要触发动作（GEM子午线）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryLabelHw" xml:space="preserve">
+    <value>主要触发动作（硬件限位）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryHelpGem" xml:space="preserve">
+    <value>达到GEM子午线限位时执行的动作。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryHelpHw" xml:space="preserve">
+    <value>跟踪时达到硬件限位时执行的动作。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DeviceInfoPanel" xml:space="preserve">
+    <value>设备信息</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Enabled_Tip" xml:space="preserve">
+    <value>启用此设备，使其可通过Alpaca访问。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Enabled" xml:space="preserve">
+    <value>对Alpaca启用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DeviceName_Tip" xml:space="preserve">
+    <value>此望远镜设备的易读名称，作为ASCOM Name属性返回。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DeviceName" xml:space="preserve">
+    <value>设备名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Description_Tip" xml:space="preserve">
+    <value>Alpaca设置中显示的设备描述。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Description" xml:space="preserve">
+    <value>描述</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_MountType_Tip" xml:space="preserve">
+    <value>此设备使用的赤道仪驱动程序。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Simulator" xml:space="preserve">
+    <value>模拟器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignMode_Tip" xml:space="preserve">
+    <value>对准模式：AltAz、GermanPolar或Polar。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignGem" xml:space="preserve">
+    <value>德国赤道仪（GEM）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignPolar" xml:space="preserve">
+    <value>极轴式 / 叉式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignAltAz" xml:space="preserve">
+    <value>地平式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PolarSide_Tip" xml:space="preserve">
+    <value>极轴对准GEM赤道仪的主要镜筒偏向。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PolarSide" xml:space="preserve">
+    <value>极轴主侧</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_EqCoord_Tip" xml:space="preserve">
+    <value>赤道仪返回的赤道坐标类型（J2000或JNow）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_CoordOther" xml:space="preserve">
+    <value>其他</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_CoordTopocentric" xml:space="preserve">
+    <value>站心坐标（JNow）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_SerialPanel" xml:space="preserve">
+    <value>串口连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Port_Tip" xml:space="preserve">
+    <value>选择或输入串口名称（例如COM3或/dev/ttyUSB0）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Port" xml:space="preserve">
+    <value>串口</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PortManual" xml:space="preserve">
+    <value>{0}（手动）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PortHelper" xml:space="preserve">
+    <value>未检测到串口——请手动输入串口名称。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Baud_Tip" xml:space="preserve">
+    <value>串口波特率。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DataBits_Tip" xml:space="preserve">
+    <value>数据位数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DataBits" xml:space="preserve">
+    <value>数据位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Handshake_Tip" xml:space="preserve">
+    <value>握手协议（None、XOnXOff、RequestToSend等）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Handshake" xml:space="preserve">
+    <value>握手</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_ReadTimeout_Tip" xml:space="preserve">
+    <value>读取超时，单位为毫秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_ReadTimeout" xml:space="preserve">
+    <value>读取超时（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Dtr" xml:space="preserve">
+    <value>启用DTR</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Rts" xml:space="preserve">
+    <value>启用RTS</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_HardwarePanel" xml:space="preserve">
+    <value>赤道仪硬件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AdvCmds_Tip" xml:space="preserve">
+    <value>启用赤道仪控制的高级指令。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AdvCmds" xml:space="preserve">
+    <value>允许高级指令</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Encoders_Tip" xml:space="preserve">
+    <value>为赤道仪各轴启用绝对编码器反馈。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Encoders" xml:space="preserve">
+    <value>启用编码器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_MaxSlew_Tip" xml:space="preserve">
+    <value>最大转动速率，单位为度/秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_MaxSlew" xml:space="preserve">
+    <value>最大转动速率（°/s）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_RaBacklash_Tip" xml:space="preserve">
+    <value>赤经轴回差补偿，单位为电机步数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_RaBacklash" xml:space="preserve">
+    <value>赤经回差（步）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DecBacklash_Tip" xml:space="preserve">
+    <value>赤纬轴回差补偿，单位为电机步数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DecBacklash" xml:space="preserve">
+    <value>赤纬回差（步）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PolarLed_Tip" xml:space="preserve">
+    <value>极轴镜LED亮度级别（0–255）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_FullCurrent_Tip" xml:space="preserve">
+    <value>启用电机驱动器的全电流模式。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_GearingPanel" xml:space="preserve">
+    <value>自定义齿轮参数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_CustomGearing" xml:space="preserve">
+    <value>启用自定义齿轮参数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_RaAxis" xml:space="preserve">
+    <value>赤经轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Ra360" xml:space="preserve">
+    <value>赤经360°步数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DecAxis" xml:space="preserve">
+    <value>赤纬轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Dec360" xml:space="preserve">
+    <value>赤纬360°步数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Title" xml:space="preserve">
+    <value>赤道仪控制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_HandController" xml:space="preserve">
+    <value>手控器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_MountInfo" xml:space="preserve">
+    <value>赤道仪信息</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_ShutdownTip" xml:space="preserve">
+    <value>正常停止服务器进程。仅在所有赤道仪均已停放并断开连接时使用。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Connecting" xml:space="preserve">
+    <value>正在连接…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Disconnect" xml:space="preserve">
+    <value>断开与赤道仪的连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Connect" xml:space="preserve">
+    <value>连接赤道仪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_StopFailed" xml:space="preserve">
+    <value>停止失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_ConnectFailed" xml:space="preserve">
+    <value>连接/断开失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LoggingSettings" xml:space="preserve">
+    <value>日志设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Unsaved" xml:space="preserve">
+    <value>未保存</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_ServerDevice" xml:space="preserve">
+    <value>服务器设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Other" xml:space="preserve">
+    <value>其他</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Alignment" xml:space="preserve">
+    <value>对准</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Information" xml:space="preserve">
+    <value>信息</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Debug" xml:space="preserve">
+    <value>调试</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Logging" xml:space="preserve">
+    <value>日志记录</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AutoStart_Tip" xml:space="preserve">
+    <value>必须开启，才会写入任何日志文件。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AutoStart" xml:space="preserve">
+    <value>自动启动</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogMonitor_Tip" xml:space="preserve">
+    <value>将监视器输出写入GSMonitorLog*.txt。与快速监视器互斥。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogMonitor" xml:space="preserve">
+    <value>监视器日志</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogSession" xml:space="preserve">
+    <value>会话日志</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogCharting" xml:space="preserve">
+    <value>图表日志</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_FastMonitor_Tip" xml:space="preserve">
+    <value>1000条记录的环形缓冲区——开销低于监视器日志。与监视器日志互斥。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_FastMonitor" xml:space="preserve">
+    <value>快速监视器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogPath_Tip" xml:space="preserve">
+    <value>写入日志文件的目录路径。留空则使用默认位置（%USERPROFILE%\Documents\GreenSwamp\Server）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_QuickSetActions" xml:space="preserve">
+    <value>快速设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AllDevices" xml:space="preserve">
+    <value>所有设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AllCategories" xml:space="preserve">
+    <value>所有类别</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AllTypes" xml:space="preserve">
+    <value>所有类型</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Title" xml:space="preserve">
+    <value>监视器设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Heading" xml:space="preserve">
+    <value>监视器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Records" xml:space="preserve">
+    <value>监视器记录</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_RecordsCount" xml:space="preserve">
+    <value>{0} / {1}条记录</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_ClearTip" xml:space="preserve">
+    <value>清除显示缓冲区</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Reload" xml:space="preserve">
+    <value>重新加载设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_WriteBuffer" xml:space="preserve">
+    <value>将缓冲区写入文件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Copied" xml:space="preserve">
+    <value>监视器记录已复制到剪贴板。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_CopyFailed" xml:space="preserve">
+    <value>复制失败——剪贴板访问可能被阻止。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Saved" xml:space="preserve">
+    <value>监视器设置已成功保存！更改已立即生效。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_SaveError" xml:space="preserve">
+    <value>保存设置时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_BufferWritten" xml:space="preserve">
+    <value>快速监视器缓冲区已于{0:HH:mm:ss}写入文件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_BufferError" xml:space="preserve">
+    <value>写入缓冲区时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_ResetDone" xml:space="preserve">
+    <value>日志设置已重置为上次保存的状态。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Reloaded" xml:space="preserve">
+    <value>设置已从文件重新加载</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetApplied" xml:space="preserve">
+    <value>已应用{0}预设（尚未保存）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetDevelopment" xml:space="preserve">
+    <value>开发</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetProduction" xml:space="preserve">
+    <value>生产</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetTroubleshooting" xml:space="preserve">
+    <value>故障排查</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetProfileDebug" xml:space="preserve">
+    <value>性能分析调试</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllDevicesSelected" xml:space="preserve">
+    <value>已选择所有设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllCategoriesSelected" xml:space="preserve">
+    <value>已选择所有类别</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllTypesSelected" xml:space="preserve">
+    <value>已选择所有类型</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllFiltersCleared" xml:space="preserve">
+    <value>已清除所有筛选条件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_UnparkTooltip" xml:space="preserve">
+    <value>解除赤道仪停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkTooltip" xml:space="preserve">
+    <value>将赤道仪停放到所选位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_HomeTooltip" xml:space="preserve">
+    <value>转到归位位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_TrackingOffTooltip" xml:space="preserve">
+    <value>关闭跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_TrackingOnTooltip" xml:space="preserve">
+    <value>开启跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_FlipTooltip" xml:space="preserve">
+    <value>将望远镜翻转到镜筒另一侧</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ReSyncTooltip" xml:space="preserve">
+    <value>将各轴重新同步到参考位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_AutoHomeRunningTooltip" xml:space="preserve">
+    <value>自动归位运行中…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_AutoHomeTooltip" xml:space="preserve">
+    <value>搜索归位传感器并重置各轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_LimitsOffTooltip" xml:space="preserve">
+    <value>禁用转动和跟踪限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_LimitsOnTooltip" xml:space="preserve">
+    <value>启用转动和跟踪限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_SettingsTooltip" xml:space="preserve">
+    <value>设置停放位置和转动限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_StopTooltip" xml:space="preserve">
+    <value>紧急停止所有轴的运动</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_UnparkConfirm" xml:space="preserve">
+    <value>解除赤道仪停放？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_UnparkFailed" xml:space="preserve">
+    <value>解除停放失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkConfirm" xml:space="preserve">
+    <value>停放赤道仪？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkAtConfirm" xml:space="preserve">
+    <value>将赤道仪停放到“{0}”？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkFailed" xml:space="preserve">
+    <value>停放失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_HomeConfirm" xml:space="preserve">
+    <value>转到归位位置？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_GoToHome" xml:space="preserve">
+    <value>转到归位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_HomeFailed" xml:space="preserve">
+    <value>归位失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_TrackingToggleFailed" xml:space="preserve">
+    <value>切换跟踪失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ReSyncTitle" xml:space="preserve">
+    <value>重新同步各轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ReSyncFailed" xml:space="preserve">
+    <value>重新同步失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_FlipFailed" xml:space="preserve">
+    <value>翻转镜筒偏向失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_LimitsToggleFailed" xml:space="preserve">
+    <value>切换限位失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_StopFailed" xml:space="preserve">
+    <value>停止失败</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_Title" xml:space="preserve">
+    <value>赤道仪配置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_Export" xml:space="preserve">
+    <value>导出设置和日志</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_NoDevices" xml:space="preserve">
+    <value>未注册赤道仪设备。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_EditInExplorer" xml:space="preserve">
+    <value>在设置浏览器中编辑</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_XAxis" xml:space="preserve">
+    <value>X轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_YAxis" xml:space="preserve">
+    <value>Y轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_RaDec" xml:space="preserve">
+    <value>赤经 / 赤纬</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AltAz" xml:space="preserve">
+    <value>高度角 / 方位角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_RaDecTooltip" xml:space="preserve">
+    <value>显示赤经和赤纬</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AltAzTooltip" xml:space="preserve">
+    <value>显示高度角和方位角</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_OpticsTooltip" xml:space="preserve">
+    <value>显示望远镜光学角度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AxesChartTooltip" xml:space="preserve">
+    <value>在新窗口中打开轴图表</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AxesChart" xml:space="preserve">
+    <value>轴图表</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_PulseChartTooltip" xml:space="preserve">
+    <value>在新窗口中打开脉冲图表</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_PulseChart" xml:space="preserve">
+    <value>脉冲图表</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_View3DTooltip" xml:space="preserve">
+    <value>在新窗口中打开3D视图</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_View3D" xml:space="preserve">
+    <value>3D视图</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Title" xml:space="preserve">
+    <value>赤道仪状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_PointingCoordinates" xml:space="preserve">
+    <value>指向坐标</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Pier" xml:space="preserve">
+    <value>镜筒偏向</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AxisPositions" xml:space="preserve">
+    <value>轴位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_ActualX" xml:space="preserve">
+    <value>实际X</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_ActualY" xml:space="preserve">
+    <value>实际Y</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AppX" xml:space="preserve">
+    <value>视X</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AppY" xml:space="preserve">
+    <value>视Y</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsX" xml:space="preserve">
+    <value>步数X</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsY" xml:space="preserve">
+    <value>步数Y</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Status" xml:space="preserve">
+    <value>状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_MountConnected" xml:space="preserve">
+    <value>赤道仪已连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_ActiveClients" xml:space="preserve">
+    <value>活动客户端</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AtPark" xml:space="preserve">
+    <value>已停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_MountModel" xml:space="preserve">
+    <value>赤道仪型号</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_MountFirmware" xml:space="preserve">
+    <value>赤道仪固件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AdvancedCommands" xml:space="preserve">
+    <value>高级指令</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Voltage" xml:space="preserve">
+    <value>电压</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_PowerEvent" xml:space="preserve">
+    <value>电源事件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsRa" xml:space="preserve">
+    <value>赤经步数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsDec" xml:space="preserve">
+    <value>赤纬步数</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AxisDials" xml:space="preserve">
+    <value>轴表盘</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_NotSupported" xml:space="preserve">
+    <value>不支持</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_PulseGuiding" xml:space="preserve">
+    <value>脉冲导星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AtHome" xml:space="preserve">
+    <value>已归位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_NotAvailable" xml:space="preserve">
+    <value>不适用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>首页</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Control" xml:space="preserve">
+    <value>控制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Status" xml:space="preserve">
+    <value>状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Configuration" xml:space="preserve">
+    <value>配置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_SettingsExplorer" xml:space="preserve">
+    <value>设置浏览器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_CheckSettings" xml:space="preserve">
+    <value>检查设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Shutdown" xml:space="preserve">
+    <value>关闭系统</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_ChartPopupBlocked" xml:space="preserve">
+    <value>图表窗口已被拦截。请允许此网站的弹出窗口。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Notify_ConnectionFailed" xml:space="preserve">
+    <value>连接失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Location" xml:space="preserve">
+    <value>位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CopyFrom" xml:space="preserve">
+    <value>从天文台复制</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CopyFrom_Tip" xml:space="preserve">
+    <value>将所选天文台的纬度、经度、海拔和GPS设置复制到此设备。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceLat_Tip" xml:space="preserve">
+    <value>设备所在地的地理纬度，十进制度数（-90至+90）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceLon_Tip" xml:space="preserve">
+    <value>设备所在地的地理经度，十进制度数（-180至+180）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Elev_Tip" xml:space="preserve">
+    <value>海平面以上的海拔高度，单位为米。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceUtc_Tip" xml:space="preserve">
+    <value>此设备所在地的UTC偏移（小时）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Environmental" xml:space="preserve">
+    <value>环境</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Refraction_Tip" xml:space="preserve">
+    <value>在指向计算中应用大气折射修正。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Refraction" xml:space="preserve">
+    <value>启用大气折射</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Temp_Tip" xml:space="preserve">
+    <value>环境温度，单位为摄氏度，用于折射修正。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Temp" xml:space="preserve">
+    <value>温度（°C）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceGpsPort_Tip" xml:space="preserve">
+    <value>选择或输入GPS接收器的串口名称（例如COM4或/dev/ttyUSB0）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsPort" xml:space="preserve">
+    <value>GPS串口</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceGpsBaud_Tip" xml:space="preserve">
+    <value>GPS接收器波特率。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsBaud" xml:space="preserve">
+    <value>GPS波特率</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsParity_Tip" xml:space="preserve">
+    <value>GPS接收器串口的校验位。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsParity" xml:space="preserve">
+    <value>GPS校验位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsStopBits_Tip" xml:space="preserve">
+    <value>GPS接收器串口的停止位。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsStopBits" xml:space="preserve">
+    <value>GPS停止位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsDataBits_Tip" xml:space="preserve">
+    <value>GPS接收器串口的数据位。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsDataBits" xml:space="preserve">
+    <value>GPS数据位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsTimeout_Tip" xml:space="preserve">
+    <value>GPS接收器串口的读取超时，单位为秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsTimeout" xml:space="preserve">
+    <value>GPS超时（s）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsHandshake_Tip" xml:space="preserve">
+    <value>GPS接收器串口的握手方式。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsHandshake" xml:space="preserve">
+    <value>GPS握手</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsConnect_Tip" xml:space="preserve">
+    <value>连接GPS接收器，并读取纬度、经度、海拔以及本地与GPS的时间差。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Connect" xml:space="preserve">
+    <value>连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceCdcAddress_Tip" xml:space="preserve">
+    <value>此设备所用Cartes du Ciel服务器的IP地址或主机名（例如127.0.0.1）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcAddress" xml:space="preserve">
+    <value>CdC地址</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcPort_Tip" xml:space="preserve">
+    <value>Cartes du Ciel服务器监听的TCP端口（默认3292）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcPort" xml:space="preserve">
+    <value>CdC端口</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcConnect_Tip" xml:space="preserve">
+    <value>连接Cartes du Ciel服务器，以读取或写入纬度、经度和海拔。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CopiedFrom" xml:space="preserve">
+    <value>已从“{0}”复制位置、GPS和CdC设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_NoGpsPortDevice" xml:space="preserve">
+    <value>此设备未配置GPS串口。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_NoGpsPortSite" xml:space="preserve">
+    <value>此天文台未配置GPS串口。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_UpdatedFromGps" xml:space="preserve">
+    <value>已根据GPS更新纬度、经度和海拔。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_UpdatedFromCdc" xml:space="preserve">
+    <value>已根据Cartes du Ciel更新纬度、经度和海拔。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Title" xml:space="preserve">
+    <value>天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Description" xml:space="preserve">
+    <value>管理天文台站点。每台望远镜设备都可以从此处列出的任一站点复制其位置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Unsaved" xml:space="preserve">
+    <value>未保存</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Name" xml:space="preserve">
+    <value>名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Latitude" xml:space="preserve">
+    <value>纬度（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Longitude" xml:space="preserve">
+    <value>经度（°）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Elevation" xml:space="preserve">
+    <value>海拔（m）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_UtcOffset" xml:space="preserve">
+    <value>UTC偏移（h）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Actions" xml:space="preserve">
+    <value>操作</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_CopyToAll" xml:space="preserve">
+    <value>将纬度/经度/海拔复制到所有望远镜设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_CannotDeleteLast" xml:space="preserve">
+    <value>无法删除最后一个天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Delete" xml:space="preserve">
+    <value>删除此天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Add" xml:space="preserve">
+    <value>添加天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Name_Tip" xml:space="preserve">
+    <value>此天文台站点的自定义名称。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Lat_Tip" xml:space="preserve">
+    <value>天文台的地理纬度，十进制度数（-90至+90）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Lon_Tip" xml:space="preserve">
+    <value>天文台的地理经度，十进制度数（-180至+180）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Utc_Tip" xml:space="preserve">
+    <value>天文台所在地的UTC偏移（小时）。西部地区请使用负值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_LocationSources" xml:space="preserve">
+    <value>位置来源</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_GpsPort_Tip" xml:space="preserve">
+    <value>选择或输入此站点GPS接收器的串口名称（例如COM4或/dev/ttyUSB0）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_GpsBaud_Tip" xml:space="preserve">
+    <value>此天文台站点的GPS接收器波特率。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_CdcAddress_Tip" xml:space="preserve">
+    <value>此天文台站点所用Cartes du Ciel服务器的IP地址或主机名（例如127.0.0.1）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_CopyToAll_Tip" xml:space="preserve">
+    <value>将此天文台的位置和GPS设置复制到所有望远镜设备。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_CopyToAll" xml:space="preserve">
+    <value>复制到所有设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_NameRequired" xml:space="preserve">
+    <value>名称为必填项。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_NameDuplicate" xml:space="preserve">
+    <value>已存在同名天文台。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Aperture_Tip" xml:space="preserve">
+    <value>口径，单位为米。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Aperture" xml:space="preserve">
+    <value>口径（m）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Area_Tip" xml:space="preserve">
+    <value>有效口径面积，单位为平方米。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Area" xml:space="preserve">
+    <value>口径面积（m²）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_FocalLength_Tip" xml:space="preserve">
+    <value>焦距，单位为米。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_FocalLength" xml:space="preserve">
+    <value>焦距（m）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Eyepiece_Tip" xml:space="preserve">
+    <value>目镜视场，单位为角分。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Eyepiece" xml:space="preserve">
+    <value>目镜视场（角分）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Title" xml:space="preserve">
+    <value>管理停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_NotConnected" xml:space="preserve">
+    <value>赤道仪未连接。请先连接赤道仪，再创建或更新位置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Position" xml:space="preserve">
+    <value>停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_UpdateTooltip" xml:space="preserve">
+    <value>将此位置的坐标设置为赤道仪当前位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_UpdateButton" xml:space="preserve">
+    <value>按当前位置更新</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_CannotDeleteLast" xml:space="preserve">
+    <value>无法删除最后一个停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_DeleteTooltip" xml:space="preserve">
+    <value>删除所选停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_MountMustBeConnected" xml:space="preserve">
+    <value>必须连接赤道仪才能创建位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_AddTooltip" xml:space="preserve">
+    <value>根据赤道仪当前位置添加新的停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_AddNew" xml:space="preserve">
+    <value>添加新位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Name" xml:space="preserve">
+    <value>位置名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_MaxChars" xml:space="preserve">
+    <value>最多12个字符</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Updated" xml:space="preserve">
+    <value>停放位置“{0}”已根据赤道仪当前位置更新。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_UpdateFailed" xml:space="preserve">
+    <value>更新失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Deleted" xml:space="preserve">
+    <value>停放位置“{0}”已删除。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_DeleteFailed" xml:space="preserve">
+    <value>删除失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Created" xml:space="preserve">
+    <value>停放位置“{0}”已创建。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_CreateFailed" xml:space="preserve">
+    <value>创建失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_CheckInterval_Tip" xml:space="preserve">
+    <value>界面显示刷新间隔，单位为毫秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_CheckInterval" xml:space="preserve">
+    <value>后台状态检查间隔（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_GotoPrecision_Tip" xml:space="preserve">
+    <value>GoTo精度，单位为角秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_GotoPrecision" xml:space="preserve">
+    <value>GoTo精度（度）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_TraceLogger_Tip" xml:space="preserve">
+    <value>为此设备启用追踪/调试日志，并写入文件。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_TraceLogger" xml:space="preserve">
+    <value>追踪日志</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ppec_Enabled" xml:space="preserve">
+    <value>PPEC已启用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_Title" xml:space="preserve">
+    <value>重新同步各轴</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_Description" xml:space="preserve">
+    <value>在不移动赤道仪的情况下，将各轴重新同步到参考点。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_ToHome" xml:space="preserve">
+    <value>同步到归位位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_ToPark" xml:space="preserve">
+    <value>同步到停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_ParkPosition" xml:space="preserve">
+    <value>停放位置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ExpandAll" xml:space="preserve">
+    <value>展开所有分区</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CollapseAll" xml:space="preserve">
+    <value>折叠所有分区</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ShowHiddenTip" xml:space="preserve">
+    <value>显示通常隐藏的设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ShowHidden" xml:space="preserve">
+    <value>显示隐藏项</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_SearchPlaceholder" xml:space="preserve">
+    <value>搜索设置…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_SelectGroup" xml:space="preserve">
+    <value>请从左侧树中选择设置组以开始编辑。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HiddenShown" xml:space="preserve">
+    <value>已显示隐藏设置。这些是通常不需要的高级值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceLabel" xml:space="preserve">
+    <value>设备{0} — {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceDescription" xml:space="preserve">
+    <value>望远镜设备{0}的设置：{1}。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeleteDeviceTitle" xml:space="preserve">
+    <value>删除望远镜设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceAdded" xml:space="preserve">
+    <value>已添加设备{0}：{1}。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrAddDevice" xml:space="preserve">
+    <value>添加设备时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceNotFound" xml:space="preserve">
+    <value>未找到设备{0}。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceDeleted" xml:space="preserve">
+    <value>已删除设备{0}：{1}。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrDeleteDevice" xml:space="preserve">
+    <value>删除设备{0}时出错：{1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HotReloaded" xml:space="preserve">
+    <value>设备注册表已重新加载——{0}个设备处于活动状态。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HotReloadFailed" xml:space="preserve">
+    <value>热重载失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HotReloadError" xml:space="preserve">
+    <value>热重载出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_PresetApplied" xml:space="preserve">
+    <value>预设已应用。请检查更改，准备就绪后点击“保存”。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllDevicesSelected" xml:space="preserve">
+    <value>已选择所有设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllCategoriesSelected" xml:space="preserve">
+    <value>已选择所有类别</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllTypesSelected" xml:space="preserve">
+    <value>已选择所有类型</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllFiltersCleared" xml:space="preserve">
+    <value>已清除所有筛选条件</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_LoggingSaved" xml:space="preserve">
+    <value>日志设置已成功保存。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrSaveLogging" xml:space="preserve">
+    <value>保存日志设置时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_LoggingReset" xml:space="preserve">
+    <value>日志设置已重置为上次保存的状态。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Saved" xml:space="preserve">
+    <value>设置已成功保存。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrSave" xml:space="preserve">
+    <value>保存设置时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_MountType" xml:space="preserve">
+    <value>赤道仪类型：{0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_ComPort" xml:space="preserve">
+    <value>COM端口：{0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_BaudRate" xml:space="preserve">
+    <value>波特率：{0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_AlignmentMode" xml:space="preserve">
+    <value>对准模式：{0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeleteObsContent" xml:space="preserve">
+    <value>删除天文台“{0}”？在点击“保存”之前，此更改不会被持久保存。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeleteObsTitle" xml:space="preserve">
+    <value>删除天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CopyObsContent" xml:space="preserve">
+    <value>将“{0}”的纬度、经度、海拔和GPS设置复制到全部{1}个望远镜设备并立即保存？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CopyAndSave" xml:space="preserve">
+    <value>复制并保存</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CopyObsTitle" xml:space="preserve">
+    <value>将天文台复制到所有设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_LocationCopied" xml:space="preserve">
+    <value>已将“{0}”的位置和GPS设置保存到{1}个设备。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrCopyObs" xml:space="preserve">
+    <value>将天文台复制到设备时出错：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DiscardContent" xml:space="preserve">
+    <value>存在未保存的更改。放弃这些更改并切换设置组？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Discard" xml:space="preserve">
+    <value>放弃</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Stay" xml:space="preserve">
+    <value>留下</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_UnsavedChangesTitle" xml:space="preserve">
+    <value>未保存的更改</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ObsSiteDescription" xml:space="preserve">
+    <value>天文台站点：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_TelescopeDevices" xml:space="preserve">
+    <value>望远镜设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Observatories" xml:space="preserve">
+    <value>天文台</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Logging" xml:space="preserve">
+    <value>日志记录</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_ServerConfiguration" xml:space="preserve">
+    <value>服务器配置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_AlpacaSettings" xml:space="preserve">
+    <value>Alpaca设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_UserInterface" xml:space="preserve">
+    <value>用户界面</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Security" xml:space="preserve">
+    <value>安全</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_MountConfiguration" xml:space="preserve">
+    <value>赤道仪配置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_ObservatoryConfiguration" xml:space="preserve">
+    <value>天文台配置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Optics" xml:space="preserve">
+    <value>光学</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_TrackingAndGuiding" xml:space="preserve">
+    <value>跟踪与导星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_HomeAndPark" xml:space="preserve">
+    <value>归位与停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Limits" xml:space="preserve">
+    <value>限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Voice" xml:space="preserve">
+    <value>语音</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_PerformanceAndTuning" xml:space="preserve">
+    <value>性能与调优</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Ppec" xml:space="preserve">
+    <value>PPEC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_HandController" xml:space="preserve">
+    <value>手控器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Observatories" xml:space="preserve">
+    <value>已命名的天文台站点——每个站点的纬度、经度、海拔和UTC偏移。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_ServerConfiguration" xml:space="preserve">
+    <value>Alpaca HTTP服务器行为、网络绑定、身份验证和标识。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Logging" xml:space="preserve">
+    <value>日志筛选设置——设备、类别和消息类型筛选。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_TelescopeDevices" xml:space="preserve">
+    <value>各设备的望远镜赤道仪设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Observatory" xml:space="preserve">
+    <value>此天文台站点的纬度、经度、海拔和UTC偏移。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_AlpacaSettings" xml:space="preserve">
+    <value>Alpaca服务器核心设置，包括服务器标识、端口、网络访问和兼容性行为。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_UserInterface" xml:space="preserve">
+    <value>显示缩放和前端用户偏好设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Security" xml:space="preserve">
+    <value>HTTP基本身份验证设置和账户安全。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_DeviceFilters" xml:space="preserve">
+    <value>按设备类型（服务器、望远镜、界面）启用或禁用日志条目。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_CategoryFilters" xml:space="preserve">
+    <value>按类别（驱动、接口、赤道仪等）启用或禁用日志条目。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_MessageTypeFilters" xml:space="preserve">
+    <value>按消息类型（信息、警告、错误、调试）启用或禁用日志条目。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_LoggingControl" xml:space="preserve">
+    <value>文件日志目标——监视器日志、会话日志和图表数据。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_DeviceIdentity" xml:space="preserve">
+    <value>设备编号、名称和启用状态。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_SerialConnection" xml:space="preserve">
+    <value>串口、波特率、握手和超时设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_MountConfiguration" xml:space="preserve">
+    <value>设备标识、串口连接、赤道坐标、赤道仪硬件（电机设置、编码器、回差）和自定义齿轮参数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HomeAndPark" xml:space="preserve">
+    <value>已存储的归位和停放轴位置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Limits" xml:space="preserve">
+    <value>轴 / 转动限位、同步限制、子午线 / 翻转角限位（GEM/极轴式）和水平轴限位（AltAz）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_TrackingAndGuiding" xml:space="preserve">
+    <value>跟踪速率和脉冲导星设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_ObservatoryConfiguration" xml:space="preserve">
+    <value>纬度、经度、海拔、UTC偏移、环境条件和GPS。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Optics" xml:space="preserve">
+    <value>口径、口径面积和焦距。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_CoordinateSystem" xml:space="preserve">
+    <value>赤道坐标类型（J2000 / JNow）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Tracking" xml:space="preserve">
+    <value>跟踪速率（恒星、月球、太阳、King）和赤经跟踪偏移。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_CustomGearing" xml:space="preserve">
+    <value>自定义电机齿轮参数的步数和蜗轮齿数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Backlash" xml:space="preserve">
+    <value>赤经和赤纬回差补偿，单位为电机步数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_PulseGuiding" xml:space="preserve">
+    <value>最小脉冲持续时间、ST4导星速率和导星速率偏移。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_SyncLimits" xml:space="preserve">
+    <value>同步角度限制和越过子午线禁止同步标志。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Ppec" xml:space="preserve">
+    <value>预测式PEC设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Encoders" xml:space="preserve">
+    <value>启用或禁用绝对编码器反馈。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HandController" xml:space="preserve">
+    <value>手控器速度、模式、翻转和回差补偿设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Gps" xml:space="preserve">
+    <value>用于时间/位置同步的GPS串口和波特率。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_PerformanceAndTuning" xml:space="preserve">
+    <value>循环更新间隔、GOTO精度和追踪日志。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HomePosition" xml:space="preserve">
+    <value>已存储的归位轴位置（X/Y）和自动归位轴位置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_ParkPositions" xml:space="preserve">
+    <value>已命名的停放位置列表和当前停放位置选择。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_AxisSlewLimits" xml:space="preserve">
+    <value>轴上限/下限和最大转动速率。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HorizontalAxisLimit" xml:space="preserve">
+    <value>地平式（AltAz）赤道仪的水平轴跟踪限位。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_AlignmentMode" xml:space="preserve">
+    <value>赤道仪对准模式（AltAz、GermanPolar、Polar）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Voice" xml:space="preserve">
+    <value>语音播报设置——启用/禁用、语音选择和音量。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerName" xml:space="preserve">
+    <value>服务器名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerName_Tip" xml:space="preserve">
+    <value>Alpaca发现和设置页面中显示的服务器易读名称。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerPort" xml:space="preserve">
+    <value>服务器端口</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerPort_Tip" xml:space="preserve">
+    <value>Alpaca服务器监听的TCP端口。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowRemoteAccess" xml:space="preserve">
+    <value>允许远程访问</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowRemoteAccess_Tip" xml:space="preserve">
+    <value>启用时绑定到所有网络接口；禁用时仅限localhost。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost" xml:space="preserve">
+    <value>本地仅对localhost响应</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost_Tip" xml:space="preserve">
+    <value>仅在环回适配器上响应来自localhost的Alpaca发现。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowDiscovery" xml:space="preserve">
+    <value>允许Alpaca发现</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowDiscovery_Tip" xml:space="preserve">
+    <value>通过Alpaca UDP发现公布此服务器。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_StrictAlpaca" xml:space="preserve">
+    <value>以严格Alpaca模式运行</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_StrictAlpaca_Tip" xml:space="preserve">
+    <value>启用时拒绝不符合规范的Alpaca请求。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_PreventRemoteDisconnects" xml:space="preserve">
+    <value>禁止远程断开连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_PreventRemoteDisconnects_Tip" xml:space="preserve">
+    <value>禁止远程客户端断开设备连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableSwagger" xml:space="preserve">
+    <value>启用Swagger UI</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableSwagger_Tip" xml:space="preserve">
+    <value>在/swagger提供OpenAPI / Swagger UI。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerAddresses" xml:space="preserve">
+    <value>服务器地址</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableAuth" xml:space="preserve">
+    <value>启用身份验证</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableAuth_Tip" xml:space="preserve">
+    <value>所有请求均需HTTP基本身份验证。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_UserName" xml:space="preserve">
+    <value>用户名</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_UserName_Tip" xml:space="preserve">
+    <value>启用身份验证时使用的登录用户名。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_Password" xml:space="preserve">
+    <value>密码</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_Password_Tip" xml:space="preserve">
+    <value>启用身份验证时使用的密码。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_RepeatPassword" xml:space="preserve">
+    <value>重复密码</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_RepeatPassword_Tip" xml:space="preserve">
+    <value>再次输入密码以确认两次输入一致。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_NoEditor" xml:space="preserve">
+    <value>未为组“{0}”定义编辑器。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcSpeed" xml:space="preserve">
+    <value>手控器速度</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcSpeed_Tip" xml:space="preserve">
+    <value>手控器转动速度设置。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcMode" xml:space="preserve">
+    <value>手控器模式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcMode_Tip" xml:space="preserve">
+    <value>手控器模式。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AntiBacklashRa" xml:space="preserve">
+    <value>赤经回差补偿</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AntiBacklashDec" xml:space="preserve">
+    <value>赤纬回差补偿</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_FlipEW" xml:space="preserve">
+    <value>反转东/西</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_FlipNS" xml:space="preserve">
+    <value>反转南/北</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_DisableKeysOnGoTo" xml:space="preserve">
+    <value>GoTo时禁用按键</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_Question" xml:space="preserve">
+    <value>确定要关闭系统吗？</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_OneMount" xml:space="preserve">
+    <value>当前有1台赤道仪已连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_ManyMounts" xml:space="preserve">
+    <value>当前有{0}台赤道仪已连接。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_Failed" xml:space="preserve">
+    <value>关闭失败：{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_AtHome" xml:space="preserve">
+    <value>已归位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_NotAtHome" xml:space="preserve">
+    <value>未归位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_Parked" xml:space="preserve">
+    <value>已停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_Unparked" xml:space="preserve">
+    <value>已解除停放</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_Stationary" xml:space="preserve">
+    <value>静止</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_TrackingWithRate" xml:space="preserve">
+    <value>跟踪（{0}）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_TrackingOff" xml:space="preserve">
+    <value>跟踪已关闭</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PulseGuidingActive" xml:space="preserve">
+    <value>脉冲导星已启用</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PulseGuidingOff" xml:space="preserve">
+    <value>脉冲导星已关闭</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PierEast" xml:space="preserve">
+    <value>镜筒偏向：东</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PierWest" xml:space="preserve">
+    <value>镜筒偏向：西</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_LimitTriggered" xml:space="preserve">
+    <value>已触发限位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_LimitsOn" xml:space="preserve">
+    <value>限位开启</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_LimitsOff" xml:space="preserve">
+    <value>限位关闭</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_VoiceOn" xml:space="preserve">
+    <value>语音开启</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_VoiceOff" xml:space="preserve">
+    <value>语音关闭</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_ActiveConnections" xml:space="preserve">
+    <value>{0}个活动连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_NoActiveConnectionsWas" xml:space="preserve">
+    <value>无活动连接（曾连接过）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_NoConnections" xml:space="preserve">
+    <value>无连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_PulseGuiding" xml:space="preserve">
+    <value>脉冲导星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_HcPulseGuides" xml:space="preserve">
+    <value>手控器脉冲导星</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_Rate_Tip" xml:space="preserve">
+    <value>默认跟踪速率（恒星、月球、太阳、King）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SiderealRate_Tip" xml:space="preserve">
+    <value>恒星跟踪速率，单位为角秒/秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SiderealRate" xml:space="preserve">
+    <value>恒星速率（角秒/秒）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_LunarRate_Tip" xml:space="preserve">
+    <value>月球跟踪速率，单位为角秒/秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_LunarRate" xml:space="preserve">
+    <value>月球速率（角秒/秒）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SolarRate_Tip" xml:space="preserve">
+    <value>太阳跟踪速率，单位为角秒/秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SolarRate" xml:space="preserve">
+    <value>太阳速率（角秒/秒）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_KingRate_Tip" xml:space="preserve">
+    <value>King跟踪速率，单位为角秒/秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_KingRate" xml:space="preserve">
+    <value>King速率（角秒/秒）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_RaOffset_Tip" xml:space="preserve">
+    <value>赤经轴跟踪偏移，单位为电机步数。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_RaOffset" xml:space="preserve">
+    <value>赤经跟踪偏移（步）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_AltAzInterval_Tip" xml:space="preserve">
+    <value>AltAz跟踪更新间隔，单位为毫秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_AltAzInterval" xml:space="preserve">
+    <value>AltAz更新间隔（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseRa_Tip" xml:space="preserve">
+    <value>赤经最小脉冲持续时间，单位为毫秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseRa" xml:space="preserve">
+    <value>赤经最小脉冲（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseDec_Tip" xml:space="preserve">
+    <value>赤纬最小脉冲持续时间，单位为毫秒。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseDec" xml:space="preserve">
+    <value>赤纬最小脉冲（ms）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_DecPulseToGoTo_Tip" xml:space="preserve">
+    <value>通过GoTo而非脉冲导星来执行赤纬脉冲指令。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_DecPulseToGoTo" xml:space="preserve">
+    <value>赤纬脉冲 → GoTo</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_AlternatingPpec" xml:space="preserve">
+    <value>交替PPEC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_St4_Tip" xml:space="preserve">
+    <value>ST4导星速率除数（例如0=全速，1=0.75倍，2=0.5倍等）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_St4" xml:space="preserve">
+    <value>ST4导星速率</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_RaGuideRate_Tip" xml:space="preserve">
+    <value>赤经导星速率，以恒星速率的百分比表示（0–100，步长10）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_DecGuideRate_Tip" xml:space="preserve">
+    <value>赤纬导星速率，以恒星速率的百分比表示（0–100，步长10）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_PageTitle" xml:space="preserve">
+    <value>望远镜设置 - 设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceInformation" xml:space="preserve">
+    <value>设备信息</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceNumber" xml:space="preserve">
+    <value>设备编号</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceName" xml:space="preserve">
+    <value>设备名称</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ConnectionStatus" xml:space="preserve">
+    <value>连接状态</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Connected" xml:space="preserve">
+    <value>已连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Disconnected" xml:space="preserve">
+    <value>已断开连接</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ObservatorySettings" xml:space="preserve">
+    <value>天文台设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_SerialPortSettings" xml:space="preserve">
+    <value>串口设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Port" xml:space="preserve">
+    <value>串口</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DataBits" xml:space="preserve">
+    <value>数据位</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ReadTimeout" xml:space="preserve">
+    <value>读取超时</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_TrackingGuiding" xml:space="preserve">
+    <value>跟踪与导星设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_AutoTrackUnpark" xml:space="preserve">
+    <value>解除停放后自动跟踪</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_MinPulseRa" xml:space="preserve">
+    <value>赤经最小脉冲</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_MinPulseDec" xml:space="preserve">
+    <value>赤纬最小脉冲</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_MountSettings" xml:space="preserve">
+    <value>赤道仪设置</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_AllowAdvanced" xml:space="preserve">
+    <value>允许高级指令</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_TelescopeOptics" xml:space="preserve">
+    <value>望远镜光学</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ApertureDiameter" xml:space="preserve">
+    <value>口径</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ApertureArea" xml:space="preserve">
+    <value>口径面积</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_FocalLength" xml:space="preserve">
+    <value>焦距</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_InstanceNotFound" xml:space="preserve">
+    <value>未找到设备实例</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_InstanceNotFoundBody" xml:space="preserve">
+    <value>设备{0}已注册，但没有赤道仪实例。这可能表示存在配置错误。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_BackToManager" xml:space="preserve">
+    <value>返回设备管理器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceNotFound" xml:space="preserve">
+    <value>未找到设备</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceNotFoundBody" xml:space="preserve">
+    <value>系统中不存在设备{0}。请返回设备管理器查看可用设备。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Title" xml:space="preserve">
+    <value>望远镜视图 — 设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Header" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;望远镜3D视图&lt;/b&gt; — 设备{0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Axis1" xml:space="preserve">
+    <value>轴1：{0}°</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Axis2" xml:space="preserve">
+    <value>轴2：{0}°</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_SaveView" xml:space="preserve">
+    <value>保存视图</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_Zoom_Tip" xml:space="preserve">
+    <value>应用于整个服务器界面的全局界面缩放级别。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_Theme_Tip" xml:space="preserve">
+    <value>服务器界面的显示主题选择。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_Theme" xml:space="preserve">
+    <value>显示主题</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_NotImplemented" xml:space="preserve">
+    <value>未实现</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
+    <value>选择此浏览器使用的语言。此偏好保存在浏览器Cookie中；仅当不存在受支持的浏览器偏好时，才使用服务器默认值。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_DisplayLanguage" xml:space="preserve">
+    <value>显示语言</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_RegionalFormat_Tip" xml:space="preserve">
+    <value>选择此浏览器使用的日期和数字格式。此偏好保存在浏览器Cookie中。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_RegionalFormat" xml:space="preserve">
+    <value>区域格式</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_AutoStartBrowser_Tip" xml:space="preserve">
+    <value>服务器启动时自动打开默认浏览器。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_AutoStartBrowser" xml:space="preserve">
+    <value>自动启动浏览器</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Active_Tip" xml:space="preserve">
+    <value>为此设备启用语音播报（例如“已停放”“转动中”“跟踪已开启”）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Active" xml:space="preserve">
+    <value>启用语音播报</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Select_Tip" xml:space="preserve">
+    <value>选择语音。留空则使用浏览器默认语音。点击“刷新”可加载按浏览器语言筛选的语音。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Volume_Tip" xml:space="preserve">
+    <value>语音播报音量（0 = 静音，100 = 最大音量）。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Volume" xml:space="preserve">
+    <value>音量（%）</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+</root>

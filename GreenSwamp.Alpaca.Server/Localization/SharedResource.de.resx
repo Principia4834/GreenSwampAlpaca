@@ -1,0 +1,3963 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>Überwachung</value>
+    <comment>WPF: optMonitor</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+    <comment>WPF: diaCancel</comment>
+  </data>
+  <data name="Common_Start" xml:space="preserve">
+    <value>Start</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Stop" xml:space="preserve">
+    <value>Stop</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_Unpark" xml:space="preserve">
+    <value>Entparken</value>
+    <comment>WPF: btnUnPark</comment>
+  </data>
+  <data name="MountButtons_Park" xml:space="preserve">
+    <value>Parken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_FlipTitle" xml:space="preserve">
+    <value>Umkehrung des Piers</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
+    <value>AutoHome</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="AutoHome_Title" xml:space="preserve">
+    <value>AutoHome</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="FlipSop_Title" xml:space="preserve">
+    <value>Umkehrung des Piers</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="ReSync_Button" xml:space="preserve">
+    <value>ReSync</value>
+    <comment>WPF: btnReSync</comment>
+  </data>
+  <data name="Common_Ok" xml:space="preserve">
+    <value>Ok</value>
+    <comment>WPF: diaOk</comment>
+  </data>
+  <data name="Common_Accept" xml:space="preserve">
+    <value>Akzeptieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Schließen</value>
+    <comment>WPF: skyClose</comment>
+  </data>
+  <data name="Coord_Ra" xml:space="preserve">
+    <value>RA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Dec" xml:space="preserve">
+    <value>Dek</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Az" xml:space="preserve">
+    <value>Az</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Alt" xml:space="preserve">
+    <value>Alt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_MountType" xml:space="preserve">
+    <value>Montierungstyp</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="AddDevice_AlignmentMode" xml:space="preserve">
+    <value>Ausrichtungsmodus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Speichern</value>
+    <comment>WPF: gpSave</comment>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Latitude" xml:space="preserve">
+    <value>Breitengrad</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Longitude" xml:space="preserve">
+    <value>Längengrad</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Altitude" xml:space="preserve">
+    <value>Höhe</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceMountType" xml:space="preserve">
+    <value>Montierungstyp</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="Home_DeviceAlignment" xml:space="preserve">
+    <value>Ausrichtungsmodus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_Connected" xml:space="preserve">
+    <value>Verbunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_Azimuth" xml:space="preserve">
+    <value>Azimuth</value>
+    <comment>WPF: lbAxisX</comment>
+  </data>
+  <data name="MountInfo_Altitude" xml:space="preserve">
+    <value>Altitude</value>
+    <comment>WPF: lbAxisY</comment>
+  </data>
+  <data name="MountInfo_RightAscension" xml:space="preserve">
+    <value>Rektaszension</value>
+    <comment>WPF: topRa</comment>
+  </data>
+  <data name="MountInfo_Declination" xml:space="preserve">
+    <value>Deklination</value>
+    <comment>WPF: topDec</comment>
+  </data>
+  <data name="MountInfo_Optics" xml:space="preserve">
+    <value>Optik</value>
+    <comment>WPF: lbOptics</comment>
+  </data>
+  <data name="HandCtl_North" xml:space="preserve">
+    <value>Nord</value>
+    <comment>WPF: lbNorth</comment>
+  </data>
+  <data name="HandCtl_West" xml:space="preserve">
+    <value>West</value>
+    <comment>WPF: lbWest</comment>
+  </data>
+  <data name="HandCtl_East" xml:space="preserve">
+    <value>Ost</value>
+    <comment>WPF: lbEast</comment>
+  </data>
+  <data name="HandCtl_South" xml:space="preserve">
+    <value>Süd</value>
+    <comment>WPF: lbSouth</comment>
+  </data>
+  <data name="HandCtl_OneClickStart" xml:space="preserve">
+    <value>Ein-Klick-Start</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="GoTo_GoToButton" xml:space="preserve">
+    <value>GoTo</value>
+    <comment>WPF: goGoTo</comment>
+  </data>
+  <data name="GoTo_CopyButton" xml:space="preserve">
+    <value>Kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncButton" xml:space="preserve">
+    <value>Synchr</value>
+    <comment>WPF: goSync</comment>
+  </data>
+  <data name="GoTo_ParkPositions" xml:space="preserve">
+    <value>Park Positionen</value>
+    <comment>WPF: btnTipParkPos</comment>
+  </data>
+  <data name="GoTo_ParkAction" xml:space="preserve">
+    <value>Parken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_OneClickStart" xml:space="preserve">
+    <value>Ein-Klick-Start</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="HomePark_Park" xml:space="preserve">
+    <value>Parken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
+    <value>Track After Unpark</value>
+    <comment>WPF: capTrackAfterUnpark</comment>
+  </data>
+  <data name="Voice_Select" xml:space="preserve">
+    <value>Stimme</value>
+    <comment>WPF: botTipVoice</comment>
+  </data>
+  <data name="Ui_Zoom" xml:space="preserve">
+    <value>Zoom</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_LimitsOn" xml:space="preserve">
+    <value>Grenzwerte an</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_SyncPanel" xml:space="preserve">
+    <value>Grenzen synchr</value>
+    <comment>WPF: skySyncLimitOn</comment>
+  </data>
+  <data name="Trk_Tracking" xml:space="preserve">
+    <value>Nachführung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_Rate" xml:space="preserve">
+    <value>Nachführungsrate</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="Trk_Sidereal" xml:space="preserve">
+    <value>Siderisch</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_Lunar" xml:space="preserve">
+    <value>Lunar</value>
+    <comment>WPF: vceLunar</comment>
+  </data>
+  <data name="Trk_Solar" xml:space="preserve">
+    <value>Solar</value>
+    <comment>WPF: vceSolar</comment>
+  </data>
+  <data name="Trk_King" xml:space="preserve">
+    <value>King</value>
+    <comment>WPF: vceKing</comment>
+  </data>
+  <data name="Trk_RaGuideRate" xml:space="preserve">
+    <value>Nachführung Ra %</value>
+    <comment>WPF: skyRaGuiding</comment>
+  </data>
+  <data name="Trk_DecGuideRate" xml:space="preserve">
+    <value>Nachführung Dek %</value>
+    <comment>WPF: skyDecGuiding</comment>
+  </data>
+  <data name="MC_MountType" xml:space="preserve">
+    <value>Montierungstyp</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="MC_AlignMode" xml:space="preserve">
+    <value>Ausrichtungsmodus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Left" xml:space="preserve">
+    <value>Links</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Right" xml:space="preserve">
+    <value>Rechts</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_EqCoord" xml:space="preserve">
+    <value>Äquatorialkoordinaten Typ</value>
+    <comment>WPF: notEqType</comment>
+  </data>
+  <data name="MC_Baud" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="MC_PolarLed" xml:space="preserve">
+    <value>Polsucher LED Stärke</value>
+    <comment>WPF: skyPolarLedLevel</comment>
+  </data>
+  <data name="MC_FullCurrent" xml:space="preserve">
+    <value>Voller Strom</value>
+    <comment>WPF: skyFullCurrent</comment>
+  </data>
+  <data name="MC_RaWorm" xml:space="preserve">
+    <value>RA Schneckenzähne</value>
+    <comment>WPF: raWormTeeth</comment>
+  </data>
+  <data name="MC_RaTrkOffset" xml:space="preserve">
+    <value>RA Nachführung Versatz</value>
+    <comment>WPF: raTrackingOffset</comment>
+  </data>
+  <data name="MC_DecWorm" xml:space="preserve">
+    <value>Dek Schneckenzähne</value>
+    <comment>WPF: decWormTeeth</comment>
+  </data>
+  <data name="MC_DecTrkOffset" xml:space="preserve">
+    <value>Dek Nachführung Versatz</value>
+    <comment>WPF: decTrackingOffset</comment>
+  </data>
+  <data name="ObsCard_DataElevation" xml:space="preserve">
+    <value>Höhe</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_DataUtcOffset" xml:space="preserve">
+    <value>UTC Abweichung</value>
+    <comment>WPF: optUTCOffset</comment>
+  </data>
+  <data name="ObsCard_Reset" xml:space="preserve">
+    <value>Zurücksetzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Device" xml:space="preserve">
+    <value>Gerät</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Telescope" xml:space="preserve">
+    <value>Teleskop</value>
+    <comment>WPF: optTelescope</comment>
+  </data>
+  <data name="Mon_Ui" xml:space="preserve">
+    <value>UI</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Category" xml:space="preserve">
+    <value>Kategorie</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Driver" xml:space="preserve">
+    <value>Treiber</value>
+    <comment>WPF: optDriver</comment>
+  </data>
+  <data name="Mon_Interface" xml:space="preserve">
+    <value>Schnittstelle</value>
+    <comment>WPF: optInterface</comment>
+  </data>
+  <data name="Mon_Server" xml:space="preserve">
+    <value>Server</value>
+    <comment>WPF: optServer</comment>
+  </data>
+  <data name="Mon_Mount" xml:space="preserve">
+    <value>Montierung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Type" xml:space="preserve">
+    <value>Typ</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Data" xml:space="preserve">
+    <value>Daten</value>
+    <comment>WPF: optData</comment>
+  </data>
+  <data name="Mon_Warning" xml:space="preserve">
+    <value>Warnung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Error" xml:space="preserve">
+    <value>Fehler</value>
+    <comment>WPF: exError</comment>
+  </data>
+  <data name="Mon_LogPath" xml:space="preserve">
+    <value>Protokollpfad</value>
+    <comment>WPF: optLogPath</comment>
+  </data>
+  <data name="Mon_ClearAll" xml:space="preserve">
+    <value>Alle löschen</value>
+    <comment>WPF: aliClearAll</comment>
+  </data>
+  <data name="Mon_Reset" xml:space="preserve">
+    <value>Zurücksetzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Copy" xml:space="preserve">
+    <value>In die Zwischenablage kopieren</value>
+    <comment>WPF: optCopyClip</comment>
+  </data>
+  <data name="TS_MountType" xml:space="preserve">
+    <value>Montierungstyp</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="TS_AlignmentMode" xml:space="preserve">
+    <value>Ausrichtungsmodus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Elevation" xml:space="preserve">
+    <value>Höhe</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Refraction" xml:space="preserve">
+    <value>Brechung</value>
+    <comment>WPF: skyRefraction</comment>
+  </data>
+  <data name="TS_BaudRate" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="TS_TrackingRate" xml:space="preserve">
+    <value>Nachführungsrate</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="TS_SiderealRate" xml:space="preserve">
+    <value>Sternzeit Rate</value>
+    <comment>WPF: skySiderealRate</comment>
+  </data>
+  <data name="TS_RaBacklash" xml:space="preserve">
+    <value>Ra Backlash</value>
+    <comment>WPF: bacRaLash</comment>
+  </data>
+  <data name="TS_DecBacklash" xml:space="preserve">
+    <value>Dek Backlash</value>
+    <comment>WPF: bacDecLash</comment>
+  </data>
+  <data name="TS_Encoders" xml:space="preserve">
+    <value>Drehgeber</value>
+    <comment>WPF: skyEncoders</comment>
+  </data>
+  <data name="State_Slewing" xml:space="preserve">
+    <value>Schwenkt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Lha" xml:space="preserve">
+    <value>LHA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Lst" xml:space="preserve">
+    <value>LST</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_LimitWarning" xml:space="preserve">
+    <value>Grenzwert-Warnung</value>
+    <comment>WPF: vceLimit</comment>
+  </data>
+  <data name="MStat_Mount" xml:space="preserve">
+    <value>Montierung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Type" xml:space="preserve">
+    <value>Typ</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Mode" xml:space="preserve">
+    <value>Modus</value>
+    <comment>WPF: hcMode</comment>
+  </data>
+  <data name="MStat_HomeSensor" xml:space="preserve">
+    <value>Home Sensor</value>
+    <comment>WPF: mntHomeSensor</comment>
+  </data>
+  <data name="MStat_PolarLed" xml:space="preserve">
+    <value>Polsucher LED</value>
+    <comment>WPF: mntPolarLed</comment>
+  </data>
+  <data name="MStat_Capabilities" xml:space="preserve">
+    <value>Fähigkeiten</value>
+    <comment>WPF: mntCap</comment>
+  </data>
+  <data name="MStat_CustomOffsetRa" xml:space="preserve">
+    <value>Benutzerdefinierter Versatz Ra</value>
+    <comment>WPF: mntCustomOffsetRa</comment>
+  </data>
+  <data name="MStat_CustomOffsetDec" xml:space="preserve">
+    <value>Benutzerdefinierter Versatz Dek</value>
+    <comment>WPF: mntCustomOffsetDec</comment>
+  </data>
+  <data name="MStat_WormStepsRa" xml:space="preserve">
+    <value>Schneckenzähne Ra</value>
+    <comment>WPF: mntWormStepsRa</comment>
+  </data>
+  <data name="MStat_WormStepsDec" xml:space="preserve">
+    <value>Schneckenzähne Dek</value>
+    <comment>WPF: mntWormStepsDec</comment>
+  </data>
+  <data name="MStat_FrequencyRa" xml:space="preserve">
+    <value>Frequenz Ra</value>
+    <comment>WPF: mntFreqRa</comment>
+  </data>
+  <data name="MStat_FrequencyDec" xml:space="preserve">
+    <value>Frequenz Dek</value>
+    <comment>WPF: mntFreqDec</comment>
+  </data>
+  <data name="MStat_RaStepsArcSec" xml:space="preserve">
+    <value>RA Schritte/Arksek</value>
+    <comment>WPF: mntRaSteps</comment>
+  </data>
+  <data name="MStat_DecStepsArcSec" xml:space="preserve">
+    <value>Dek Schritte/Arksek</value>
+    <comment>WPF: mntDecSteps</comment>
+  </data>
+  <data name="MStat_Supported" xml:space="preserve">
+    <value>Unterstützt</value>
+    <comment>WPF: mntSupported</comment>
+  </data>
+  <data name="MStat_Tracking" xml:space="preserve">
+    <value>Nachführung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Slewing" xml:space="preserve">
+    <value>Schwenkt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_LimitsOn" xml:space="preserve">
+    <value>Grenzwerte an</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Degrees" xml:space="preserve">
+    <value>Grad</value>
+    <comment>WPF: btnHintAutoHomeLimit</comment>
+  </data>
+  <data name="About_TabAbout" xml:space="preserve">
+    <value>Info</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_TabCredits" xml:space="preserve">
+    <value>Danksagungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_TabLicense" xml:space="preserve">
+    <value>Lizenz</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_OnlineHelp" xml:space="preserve">
+    <value>Online-Hilfe</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="About_ContentUnavailable" xml:space="preserve">
+    <value>Der Inhalt ist nicht verfügbar.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AcceptCoords_Title" xml:space="preserve">
+    <value>Koordinaten akzeptieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Title" xml:space="preserve">
+    <value>Teleskopgerät hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_DeviceName" xml:space="preserve">
+    <value>Gerätename</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_DeviceNamePlaceholder" xml:space="preserve">
+    <value>z. B. EQ6-R Pro</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_DeviceNameRequired" xml:space="preserve">
+    <value>Der Gerätename ist erforderlich</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_MountTypeHelp" xml:space="preserve">
+    <value>Übernimmt die Standardeinstellungen für Simulator oder SkyWatcher</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Simulator" xml:space="preserve">
+    <value>Keine physische Montierung, für Tests und Simulation</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_SkyWatcher" xml:space="preserve">
+    <value>Physische Montierung, muss SkyWatcher-/Synta-Befehle unterstützen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_AlignmentModeHelp" xml:space="preserve">
+    <value>Übernimmt die für den Ausrichtungsmodus typischen Standardeinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Gem" xml:space="preserve">
+    <value>Deutsche Montierung (GEM) — Gegengewicht, Meridianflip</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Polar" xml:space="preserve">
+    <value>Polar / Gabel — Gabelmontierung, kein Meridianflip</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_AltAz" xml:space="preserve">
+    <value>Alt-Azimutal — Höhen- / Azimutachsen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Note" xml:space="preserve">
+    <value>Alle weiteren Einstellungen können nach dem Hinzufügen des Geräts in dessen Gruppe &lt;strong&gt;Montierungskonfiguration&lt;/strong&gt; vorgenommen werden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddDevice_Add" xml:space="preserve">
+    <value>Gerät hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Title" xml:space="preserve">
+    <value>Sternwarte hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Name" xml:space="preserve">
+    <value>Name der Sternwarte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_NamePlaceholder" xml:space="preserve">
+    <value>z. B. Gartensternwarte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_NameRequired" xml:space="preserve">
+    <value>Der Name ist erforderlich.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_NameExists" xml:space="preserve">
+    <value>Eine Sternwarte mit diesem Namen existiert bereits.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Latitude" xml:space="preserve">
+    <value>Breitengrad (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Longitude" xml:space="preserve">
+    <value>Längengrad (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Elevation" xml:space="preserve">
+    <value>Höhe (m)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_UtcOffset" xml:space="preserve">
+    <value>UTC-Versatz (h)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AddObservatory_Add" xml:space="preserve">
+    <value>Sternwarte hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Alignment_Gem" xml:space="preserve">
+    <value>Deutsche Montierung (GEM)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Alignment_Polar" xml:space="preserve">
+    <value>Polar / Gabel</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Alignment_AltAz" xml:space="preserve">
+    <value>Alt-Azimutal</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="App_NotFoundTitle" xml:space="preserve">
+    <value>Nicht gefunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="App_NotFoundMessage" xml:space="preserve">
+    <value>Unter dieser Adresse ist leider nichts vorhanden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_Searching" xml:space="preserve">
+    <value>Home-Sensor wird gesucht…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DegreeLimit" xml:space="preserve">
+    <value>Gradgrenze</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DegreeLimitHelp" xml:space="preserve">
+    <value>Maximale Gradzahl, die bei der Suche nach dem Home-Sensor gefahren wird</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecOffset" xml:space="preserve">
+    <value>Dek-Versatz</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecOffsetHelp" xml:space="preserve">
+    <value>Versatz der Dek-Achse, der nach dem Auffinden von Home angewendet wird</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_SensorPositions" xml:space="preserve">
+    <value>Sensorpositionen (GEM)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_RaSensorPosition" xml:space="preserve">
+    <value>RA-Sensorposition</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_RaSensorHelp" xml:space="preserve">
+    <value>Erwartete Position der RA-Achse am Home-Sensor</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecSensorPosition" xml:space="preserve">
+    <value>Dek-Sensorposition</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_DecSensorHelp" xml:space="preserve">
+    <value>Erwartete Position der Dek-Achse am Home-Sensor</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_ResetSensors" xml:space="preserve">
+    <value>Sensorpositionen auf 90 zurücksetzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_Failed" xml:space="preserve">
+    <value>AutoHome fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_Complete" xml:space="preserve">
+    <value>AutoHome abgeschlossen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AutoHome_MountNotFound" xml:space="preserve">
+    <value>Montierung nicht gefunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="AxisDial_AriaLabel" xml:space="preserve">
+    <value>{0}-Anzeige mit {1} Grad</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_Title" xml:space="preserve">
+    <value>Kritische Änderung der Einstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_ClientsDisconnected" xml:space="preserve">
+    <value>{0} verbundene ASCOM-/Alpaca-Client(s) werden von {1} zwangsweise getrennt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_ClientsReconnect" xml:space="preserve">
+    <value>Nach dem Anwenden dieser Änderung müssen sich alle Clients neu verbinden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_RestartRequired" xml:space="preserve">
+    <value>Die folgenden Einstellungen erfordern, dass das Gerät gestoppt und neu gestartet wird:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Breaking_DisconnectRestart" xml:space="preserve">
+    <value>Trennen &amp; Neu starten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Title" xml:space="preserve">
+    <value>Cartes du Ciel bei {0} : {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_IdleFetch" xml:space="preserve">
+    <value>Klicken Sie auf „Abrufen“, um den Standort aus CdC zu lesen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_IdleOpen" xml:space="preserve">
+    <value>CdC muss geöffnet sein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Connecting" xml:space="preserve">
+    <value>Verbindung zu {0} wird hergestellt…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_ColCdc" xml:space="preserve">
+    <value>CdC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_ColLocal" xml:space="preserve">
+    <value>Lokal</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_CopyLocalToCdc" xml:space="preserve">
+    <value>Lokal → CdC kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_CopyCdcToLocal" xml:space="preserve">
+    <value>CdC → Lokal kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Sending" xml:space="preserve">
+    <value>Standort wird an CdC gesendet…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Sent" xml:space="preserve">
+    <value>Standort erfolgreich an CdC gesendet.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Cdc_Fetch" xml:space="preserve">
+    <value>Abrufen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PulseTitle" xml:space="preserve">
+    <value>Pulse-Guide-Diagramm — GS Alpaca</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PulseHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;Pulse&lt;/b&gt;-Guide — {0} — Gerät {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RaDecHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;{0} / {1}&lt;/b&gt; Position — {2} — Gerät {3}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RaDecTitle" xml:space="preserve">
+    <value>{0} / {1}-Diagramm</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Reconnecting" xml:space="preserve">
+    <value>Verbindung wird neu aufgebaut…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Disconnected" xml:space="preserve">
+    <value>Getrennt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_DataWindow" xml:space="preserve">
+    <value>Datenfenster</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win10s" xml:space="preserve">
+    <value>10 s</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win30s" xml:space="preserve">
+    <value>30 s</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win2m" xml:space="preserve">
+    <value>2 min</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win5m" xml:space="preserve">
+    <value>5 min</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win15m" xml:space="preserve">
+    <value>15 min</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Win30m" xml:space="preserve">
+    <value>30 min</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PulseUnits" xml:space="preserve">
+    <value>Puls-Einheiten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Scale" xml:space="preserve">
+    <value>Skala</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Milliseconds" xml:space="preserve">
+    <value>Millisekunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ArcSeconds" xml:space="preserve">
+    <value>Bogensekunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Steps" xml:space="preserve">
+    <value>Schritte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_YAxisMs" xml:space="preserve">
+    <value>mS</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ChartType" xml:space="preserve">
+    <value>Diagrammtyp</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Bars" xml:space="preserve">
+    <value>Balken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Points" xml:space="preserve">
+    <value>Punkte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Line" xml:space="preserve">
+    <value>Linie</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PauseTip" xml:space="preserve">
+    <value>Pause (auf historischen Schnappschuss einfrieren)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ResumeTip" xml:space="preserve">
+    <value>Echtzeit-Scrollen fortsetzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_PauseAria" xml:space="preserve">
+    <value>Diagrammaktualisierung anhalten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_ResumeAria" xml:space="preserve">
+    <value>Diagrammaktualisierung fortsetzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RaRejected" xml:space="preserve">
+    <value>RA abgel.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_DecRejected" xml:space="preserve">
+    <value>Dek abgel.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_Clear" xml:space="preserve">
+    <value>Diagramm leeren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Chart_RenderFailed" xml:space="preserve">
+    <value>Das Diagramm konnte nicht dargestellt werden. Bitte schließen Sie dieses Fenster und öffnen Sie es erneut.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_MountNotFound" xml:space="preserve">
+    <value>Montierungsgerät {0} nicht gefunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_ErrorWithMessage" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Anwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Create" xml:space="preserve">
+    <value>Erstellen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Wiederholen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Deaktiviert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Unbekannt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_Required" xml:space="preserve">
+    <value>Ein Wert ist erforderlich.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_HoursRange" xml:space="preserve">
+    <value>Stunden müssen im Bereich [0..24) liegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_DegreesRange" xml:space="preserve">
+    <value>Grad müssen im Bereich [-90..90] liegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_HoursInteger" xml:space="preserve">
+    <value>Stunden müssen eine ganze Zahl sein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_DegreesInteger" xml:space="preserve">
+    <value>Grad müssen eine ganze Zahl sein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_MinutesInteger" xml:space="preserve">
+    <value>Minuten müssen eine ganze Zahl im Bereich [0..60) sein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_MinutesRange" xml:space="preserve">
+    <value>Minuten müssen im Bereich [0..60) liegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_SecondsRange" xml:space="preserve">
+    <value>Sekunden müssen im Bereich [0..60) liegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_InvalidRa" xml:space="preserve">
+    <value>Geben Sie einen gültigen RA-Wert ein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_InvalidAngle" xml:space="preserve">
+    <value>Geben Sie einen gültigen Winkelwert ein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_RaRequired" xml:space="preserve">
+    <value>RA ist erforderlich.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_AngleRequired" xml:space="preserve">
+    <value>Ein Winkelwert ist erforderlich.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Coord_RaRange" xml:space="preserve">
+    <value>RA muss im Bereich [0..24) liegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Title" xml:space="preserve">
+    <value>Gerät löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_CannotUndo" xml:space="preserve">
+    <value>Diese Aktion kann nicht rückgängig gemacht werden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Removal" xml:space="preserve">
+    <value>Das Gerät &lt;strong&gt;{0} — {1}&lt;/strong&gt; und alle zugehörigen Einstellungsdateien werden dauerhaft entfernt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Hint" xml:space="preserve">
+    <value>Jeder Alpaca-Client, der derzeit mit diesem Gerät verbunden ist, verliert seine Verbindung. Klicken Sie anschließend im Bereich „Teleskopgeräte“ auf &lt;strong&gt;Änderungen anwenden&lt;/strong&gt;, um die Entfernung ohne Neustart des Servers wirksam zu machen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeleteDevice_Delete" xml:space="preserve">
+    <value>Gerät löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_Title" xml:space="preserve">
+    <value>Teleskopgeräte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_Subtitle" xml:space="preserve">
+    <value>Verbundene Teleskop-Montierungsgeräte verwalten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_NoDevices" xml:space="preserve">
+    <value>Es sind keine Teleskopgeräte konfiguriert. Fügen Sie ein Gerät hinzu, um zu beginnen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_DeviceLine" xml:space="preserve">
+    <value>Gerät {0} - {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_DeleteTooltip" xml:space="preserve">
+    <value>Dieses Gerät und alle zugehörigen Einstellungen dauerhaft löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_ApplyTooltip" xml:space="preserve">
+    <value>Alle hinzugefügten und gelöschten Geräte ohne Neustart des Servers anwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="DeviceMgr_ApplyChanges" xml:space="preserve">
+    <value>Änderungen anwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Preparing" xml:space="preserve">
+    <value>Export aller Einstellungen und Benutzerprotokolle wird vorbereitet...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Creating" xml:space="preserve">
+    <value>Exportdatei wird erstellt...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Files" xml:space="preserve">
+    <value>Dateien:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_EstimatedSize" xml:space="preserve">
+    <value>Geschätzte Downloadgröße:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_Success" xml:space="preserve">
+    <value>Sicherung erfolgreich erstellt! Der Download wurde gestartet.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_SuccessInfo" xml:space="preserve">
+    <value>Ihre Exportdatei enthält alle JSON-Einstellungsdateien und Protokolle.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_CreateButton" xml:space="preserve">
+    <value>Export erstellen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_LoadFailed" xml:space="preserve">
+    <value>Sicherungsinformationen konnten nicht geladen werden: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Export_CreateFailed" xml:space="preserve">
+    <value>Fehler beim Erstellen des Exports: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_Description" xml:space="preserve">
+    <value>Die Montierung schwenkt zur selben Himmelsposition auf der gegenüberliegenden Pierseite. Das Teleskop muss sich innerhalb der Flipwinkel-Grenzen befinden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_FlipOnNextGoto" xml:space="preserve">
+    <value>Flip beim nächsten GoTo</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_FlipOnNextGotoHelp" xml:space="preserve">
+    <value>Wenn aktiviert, überquert der nächste GoTo-Schwenk den Meridian, bevor die Nachführung beginnt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="FlipSop_FlipNow" xml:space="preserve">
+    <value>Jetzt flippen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_PanelTitle" xml:space="preserve">
+    <value>GoTo &amp; Schwenken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SettingsTitle" xml:space="preserve">
+    <value>GoTo- &amp; Schwenk-Einstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_GoToTooltip" xml:space="preserve">
+    <value>GoTo zu den Koordinaten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_CopyTooltip" xml:space="preserve">
+    <value>Aus aktueller Position kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncTooltip" xml:space="preserve">
+    <value>Auf Koordinaten synchronisieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterRa" xml:space="preserve">
+    <value>Wert der Rektaszension eingeben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterDec" xml:space="preserve">
+    <value>Wert der Deklination eingeben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterAz" xml:space="preserve">
+    <value>Wert des Azimuts eingeben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EnterAlt" xml:space="preserve">
+    <value>Wert der Höhe (Alt) eingeben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_UseRaDec" xml:space="preserve">
+    <value>RA-/Dek-Koordinaten verwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_UseAltAz" xml:space="preserve">
+    <value>Alt-/Az-Koordinaten verwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_RaDec" xml:space="preserve">
+    <value>RA / Dek</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_AltAz" xml:space="preserve">
+    <value>Alt / Az</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SelectParkPosition" xml:space="preserve">
+    <value>Parkposition auswählen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_NoPositions" xml:space="preserve">
+    <value>Keine Positionen konfiguriert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_ManageParkTooltip" xml:space="preserve">
+    <value>Parkpositionen erstellen, ändern oder löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_TrackingLimits" xml:space="preserve">
+    <value>Nachführgrenzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_NoAction" xml:space="preserve">
+    <value>Keine Aktion</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_StopTracking" xml:space="preserve">
+    <value>Nachführung stoppen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EditTrackingLimitsTooltip" xml:space="preserve">
+    <value>Nachführgrenzwerte bearbeiten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_FlipAngle" xml:space="preserve">
+    <value>Flipwinkel (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_TrackingLimitAfterFlip" xml:space="preserve">
+    <value>Nachführgrenze nach Flipwinkel (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_HorizonLimits" xml:space="preserve">
+    <value>Horizont-Grenzwerte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_EditHorizonLimitsTooltip" xml:space="preserve">
+    <value>Horizont-Grenzwerte bearbeiten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_HorizonTrackingLimit" xml:space="preserve">
+    <value>Horizont-Nachführgrenze (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_HorizonGoToLimit" xml:space="preserve">
+    <value>Horizont-GoTo-Grenze (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_VoiceEnable" xml:space="preserve">
+    <value>Sprachansagen aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_VoiceDisable" xml:space="preserve">
+    <value>Sprachansagen deaktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_Voice" xml:space="preserve">
+    <value>Sprachansagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_MountNotRunning" xml:space="preserve">
+    <value>Die Montierung läuft nicht.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_BelowHorizon" xml:space="preserve">
+    <value>Die Zielkoordinaten liegen unterhalb des Horizont-Grenzwerts der Montierung.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_AcceptTitle" xml:space="preserve">
+    <value>GoTo-Koordinaten akzeptieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_InProgress" xml:space="preserve">
+    <value>GoTo läuft…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_Rejected" xml:space="preserve">
+    <value>GoTo abgelehnt: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_Failed" xml:space="preserve">
+    <value>GoTo fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_ParkNotFound" xml:space="preserve">
+    <value>Parkposition „{0}“ nicht gefunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SettingsSaved" xml:space="preserve">
+    <value>GoTo-Einstellungen gespeichert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_AcceptSyncTitle" xml:space="preserve">
+    <value>Sync-Koordinaten akzeptieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncComplete" xml:space="preserve">
+    <value>Sync abgeschlossen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="GoTo_SyncFailed" xml:space="preserve">
+    <value>Sync fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Title" xml:space="preserve">
+    <value>GPS-Fix</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Reading" xml:space="preserve">
+    <value>Lesen von {0}…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Nmea" xml:space="preserve">
+    <value>NMEA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_GpsUtc" xml:space="preserve">
+    <value>GPS-UTC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_PcUtc" xml:space="preserve">
+    <value>PC-UTC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_NotReported" xml:space="preserve">
+    <value>Nicht gemeldet</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_TimeDifference" xml:space="preserve">
+    <value>Zeitdifferenz</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_NoTimestamp" xml:space="preserve">
+    <value>k. A. — kein GPS-Zeitstempel empfangen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Ahead" xml:space="preserve">
+    <value>GPS geht dem PC um {0:F2} s voraus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Gps_Behind" xml:space="preserve">
+    <value>GPS geht dem PC um {0:F2} s nach</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_NorthWest" xml:space="preserve">
+    <value>Nordwest</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_NorthEast" xml:space="preserve">
+    <value>Nordost</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_SouthWest" xml:space="preserve">
+    <value>Südwest</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_SouthEast" xml:space="preserve">
+    <value>Südost</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_SpeedTooltip" xml:space="preserve">
+    <value>Bewegungsgeschwindigkeit der Handsteuerung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Speed" xml:space="preserve">
+    <value>Geschwindigkeit: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_OneClickTooltip" xml:space="preserve">
+    <value>Ein Klick startet und stoppt die Bewegung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_KeysOffTooltip" xml:space="preserve">
+    <value>Tasten während des Schwenkens deaktiviert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_KeysOff" xml:space="preserve">
+    <value>Tasten aus bei GoTo</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_EditTooltip" xml:space="preserve">
+    <value>Einstellungen der Handsteuerung bearbeiten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_AxesTooltip" xml:space="preserve">
+    <value>Bewegungssteuerung der Achsen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Axes" xml:space="preserve">
+    <value>Achsen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_GuidingTooltip" xml:space="preserve">
+    <value>Bewegungssteuerung für das Guiding</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Guiding" xml:space="preserve">
+    <value>Guiding</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_PulseTooltip" xml:space="preserve">
+    <value>Bewegungssteuerung per Puls</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_Pulse" xml:space="preserve">
+    <value>Puls</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HandCtl_PulseGuidesTitle" xml:space="preserve">
+    <value>HC-Pulse-Guides</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Speed" xml:space="preserve">
+    <value>Tempo</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Duration" xml:space="preserve">
+    <value>Dauer (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Interval" xml:space="preserve">
+    <value>Intervall (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_Rate" xml:space="preserve">
+    <value>Rate</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcPg_RateMax" xml:space="preserve">
+    <value>Max. Rate: {0} (MaximumSlewRate)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_Title" xml:space="preserve">
+    <value>HC-Einstellungen — Gerät {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_AxisTab" xml:space="preserve">
+    <value>Achseneinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_PulseTab" xml:space="preserve">
+    <value>Pulse-Guide-Raten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_FlipRa" xml:space="preserve">
+    <value>RA/Az invertieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_FlipDec" xml:space="preserve">
+    <value>Dek/Alt invertieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_AntiRa" xml:space="preserve">
+    <value>Anti-Backlash RA/Az</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HcSettings_AntiDec" xml:space="preserve">
+    <value>Anti-Backlash Dek/Alt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Title" xml:space="preserve">
+    <value>Integritätsstatus der Einstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Validating" xml:space="preserve">
+    <value>Einstellungen werden geprüft...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_AllValid" xml:space="preserve">
+    <value>Alle Einstellungen sind gültig.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_WarningCount" xml:space="preserve">
+    <value>({0} Warnung(en))</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Failed" xml:space="preserve">
+    <value>Die Prüfung der Einstellungen ist fehlgeschlagen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_ErrorsFound" xml:space="preserve">
+    <value>{0} Fehler gefunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_SettingsFile" xml:space="preserve">
+    <value>Einstellungsdatei:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Errors" xml:space="preserve">
+    <value>Fehler ({0})</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Warnings" xml:space="preserve">
+    <value>Warnungen ({0})</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Device" xml:space="preserve">
+    <value>Gerät {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_AutoRepairable" xml:space="preserve">
+    <value>Automatisch reparierbar</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Resolution" xml:space="preserve">
+    <value>Lösung:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Revalidate" xml:space="preserve">
+    <value>Erneut prüfen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_OpenFolder" xml:space="preserve">
+    <value>Einstellungsordner öffnen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_Unable" xml:space="preserve">
+    <value>Die Einstellungen konnten nicht geprüft werden. Klicken Sie auf &lt;strong&gt;Erneut prüfen&lt;/strong&gt;, um es noch einmal zu versuchen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_ValidationError" xml:space="preserve">
+    <value>Prüfungsfehler: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_UnexpectedError" xml:space="preserve">
+    <value>Bei der Prüfung ist ein unerwarteter Fehler aufgetreten: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Health_CheckLogs" xml:space="preserve">
+    <value>Details finden Sie in den Anwendungsprotokollen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Title" xml:space="preserve">
+    <value>Integritätsprüfung der Einstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Intro" xml:space="preserve">
+    <value>Prüfen und reparieren Sie Ihre Einstellungskonfiguration. Dieses Werkzeug prüft die Integrität Ihrer Einstellungsdatei und kann häufige Konfigurationsprobleme automatisch beheben.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_StatusTitle" xml:space="preserve">
+    <value>Integritätsstatus der Einstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Validating" xml:space="preserve">
+    <value>Einstellungen werden geprüft...</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AllValid" xml:space="preserve">
+    <value>&lt;strong&gt;Alle Einstellungen sind gültig.&lt;/strong&gt;</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_WarningCount" xml:space="preserve">
+    <value>({0} Warnung(en))</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Failed" xml:space="preserve">
+    <value>&lt;strong&gt;Die Prüfung der Einstellungen ist fehlgeschlagen.&lt;/strong&gt; {0} Fehler gefunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ErrorsHeading" xml:space="preserve">
+    <value>Fehler ({0})</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_WarningsHeading" xml:space="preserve">
+    <value>Warnungen ({0})</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AutoRepairable" xml:space="preserve">
+    <value>Automatisch reparierbar</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Resolution" xml:space="preserve">
+    <value>&lt;strong&gt;Lösung:&lt;/strong&gt; {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_UnableToValidate" xml:space="preserve">
+    <value>Die Einstellungen konnten nicht geprüft werden. Klicken Sie auf &lt;strong&gt;Erneut prüfen&lt;/strong&gt;, um es noch einmal zu versuchen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Revalidate" xml:space="preserve">
+    <value>Erneut prüfen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_FilesTitle" xml:space="preserve">
+    <value>Einstellungsdateien</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_NoFiles" xml:space="preserve">
+    <value>Im Einstellungsordner wurden keine JSON-Dateien gefunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_OnlyLocalTip" xml:space="preserve">
+    <value>Nur verfügbar, wenn Sie vom Servercomputer aus zugreifen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ServiceTip" xml:space="preserve">
+    <value>Der Explorer kann nicht geöffnet werden, wenn die Anwendung als Windows-Dienst läuft</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_OpenFolder" xml:space="preserve">
+    <value>Einstellungsordner öffnen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AboutTitle" xml:space="preserve">
+    <value>Über die Einstellungsprüfung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_WhatValidated" xml:space="preserve">
+    <value>Was wird geprüft?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_V_File" xml:space="preserve">
+    <value>&lt;strong&gt;Prüfungen auf Dateiebene:&lt;/strong&gt; Vorhandensein der Datei, Leseberechtigungen, JSON-Syntax, erforderliche Struktur</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_V_Device" xml:space="preserve">
+    <value>&lt;strong&gt;Geräteprüfung:&lt;/strong&gt; Eindeutigkeit von DeviceNumber, DeviceName erforderlich, AlignmentMode gültig, Montierungstyp gültig</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_V_Sync" xml:space="preserve">
+    <value>&lt;strong&gt;Synchronisierung:&lt;/strong&gt; Die Arrays Devices und AlpacaDevices müssen synchron sein</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AutoRepairTitle" xml:space="preserve">
+    <value>Automatische Reparaturaktionen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_AutoRepairIntro" xml:space="preserve">
+    <value>Die Reparaturfunktion kann Folgendes automatisch beheben:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Devices" xml:space="preserve">
+    <value>Fehlendes oder beschädigtes Devices-Array (wird aus den Standardwerten neu erzeugt)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Names" xml:space="preserve">
+    <value>Fehlende Gerätenamen (erzeugt Namen wie „Telescope X“)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Align" xml:space="preserve">
+    <value>Ungültige AlignmentMode-Werte (Zurücksetzen auf GermanPolar)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Mount" xml:space="preserve">
+    <value>Fehlende Mount-Werte (Setzen auf Simulator)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_R_Sync" xml:space="preserve">
+    <value>Nicht synchrones AlpacaDevices-Array (wird aus Devices neu erzeugt)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_SafetyTitle" xml:space="preserve">
+    <value>Sicherheitsfunktionen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Backup" xml:space="preserve">
+    <value>&lt;strong&gt;Automatische Sicherung:&lt;/strong&gt; Vor jeder Änderung wird eine Sicherung mit Zeitstempel erstellt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Validation" xml:space="preserve">
+    <value>&lt;strong&gt;Prüfung nach der Reparatur:&lt;/strong&gt; Änderungen werden vor dem Speichern geprüft</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Restore" xml:space="preserve">
+    <value>&lt;strong&gt;Wiederherstellung bei Fehlern:&lt;/strong&gt; Die Einstellungen werden aus der Sicherung wiederhergestellt, wenn die Reparatur fehlschlägt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_S_Quarantine" xml:space="preserve">
+    <value>&lt;strong&gt;Quarantäne:&lt;/strong&gt; Ungültige Geräte werden aus der Liste der aktiven Geräte ausgeschlossen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ManualTitle" xml:space="preserve">
+    <value>Manuelle Reparatur</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ManualIntro" xml:space="preserve">
+    <value>Für Probleme, die nicht automatisch behoben werden können:</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_OpenFolder" xml:space="preserve">
+    <value>Verwenden Sie die Schaltfläche &lt;strong&gt;Einstellungsordner öffnen&lt;/strong&gt; oben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_Edit" xml:space="preserve">
+    <value>Bearbeiten Sie &lt;code&gt;appsettings.user.json&lt;/code&gt; in einem Texteditor</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_Restart" xml:space="preserve">
+    <value>Starten Sie die Anwendung neu</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_M_Delete" xml:space="preserve">
+    <value>Löschen Sie die Datei bei Bedarf, um die Standardeinstellungen neu zu erzeugen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_Note" xml:space="preserve">
+    <value>&lt;strong&gt;Hinweis:&lt;/strong&gt; Diese Prüfung läuft beim Start der Anwendung automatisch. Ungültige Geräte werden unter Quarantäne gestellt und nicht an ASCOM-Clients gemeldet.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_ValidationError" xml:space="preserve">
+    <value>Prüfungsfehler: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_UnexpectedError" xml:space="preserve">
+    <value>Bei der Prüfung ist ein unerwarteter Fehler aufgetreten: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HealthPage_CheckLogs" xml:space="preserve">
+    <value>Details finden Sie in den Anwendungsprotokollen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceNumber" xml:space="preserve">
+    <value>Gerätenummer</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceName" xml:space="preserve">
+    <value>Name</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceDescription" xml:space="preserve">
+    <value>Beschreibung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceStatus" xml:space="preserve">
+    <value>Status</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_OpenControl" xml:space="preserve">
+    <value>Steuerungsseite für {0} öffnen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceInformation" xml:space="preserve">
+    <value>Geräteinformationen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceInformationFor" xml:space="preserve">
+    <value>Geräteinformationen für {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceConnected" xml:space="preserve">
+    <value>Gerät verbunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceNotConnected" xml:space="preserve">
+    <value>Gerät nicht verbunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_NotConnected" xml:space="preserve">
+    <value>Nicht verbunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DeviceSettings" xml:space="preserve">
+    <value>Geräteeinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_SettingsFor" xml:space="preserve">
+    <value>Einstellungen für {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_NoCarousel" xml:space="preserve">
+    <value>Es sind keine Karussellbilder konfiguriert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_CarouselTooltip" xml:space="preserve">
+    <value>Auf das Bild klicken, um das automatische Weiterblättern zu stoppen oder zu starten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_ImageNotFound" xml:space="preserve">
+    <value>Bild nicht gefunden: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DevicesLabel" xml:space="preserve">
+    <value>Teleskopgeräte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_NoDevices" xml:space="preserve">
+    <value>Es sind keine Teleskopgeräte konfiguriert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_DefaultDeviceName" xml:space="preserve">
+    <value>Gerät {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_PageTitle" xml:space="preserve">
+    <value>Start – Green Swamp Alpaca Server</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>Willkommen beim &lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Home_Footer" xml:space="preserve">
+    <value>Green Swamp Alpaca Server</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_Home" xml:space="preserve">
+    <value>Home</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_HomePositions" xml:space="preserve">
+    <value>Home-Positionen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_Position" xml:space="preserve">
+    <value>Position</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_RaAzAxis" xml:space="preserve">
+    <value>RA/Az-Achse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_DecAltAxis" xml:space="preserve">
+    <value>Dek/Alt-Achse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_AutoHome" xml:space="preserve">
+    <value>AutoHome</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_ActivePark_Tip" xml:space="preserve">
+    <value>Name der aktiven Parkposition.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_ActivePark" xml:space="preserve">
+    <value>Aktive Parkposition</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark_Tip" xml:space="preserve">
+    <value>Nachführung automatisch starten, wenn die Montierung entparkt wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_DefinedParkPositions" xml:space="preserve">
+    <value>Definierte Parkpositionen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HomePark_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Title" xml:space="preserve">
+    <value>Geräteänderungen anwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Disconnect" xml:space="preserve">
+    <value>{0} verbundene(s) Gerät(e) werden zwangsweise getrennt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Warning" xml:space="preserve">
+    <value>Alle aktiven Gerätesitzungen werden gestoppt und die Geräteregistrierung wird anhand der aktuellen Einstellungsdateien neu aufgebaut. Jeder Alpaca-Client, der während dieses Vorgangs verbunden ist, muss sich anschließend neu verbinden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Hint" xml:space="preserve">
+    <value>Dadurch werden alle ausstehenden Geräteergänzungen und -löschungen ohne Neustart des Servers angewendet.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="HotReload_Apply" xml:space="preserve">
+    <value>Hot-Reload anwenden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Layout_Help" xml:space="preserve">
+    <value>Hilfe</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Layout_Version" xml:space="preserve">
+    <value>Version {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HardwarePanel" xml:space="preserve">
+    <value>Hardware-Grenzwerte (werden zur Schwenksicherheit stets durchgesetzt)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_UpperDecAlt_Tip" xml:space="preserve">
+    <value>Oberer Dek/Alt-Hardware-Grenzwert in Grad.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_UpperDecAlt" xml:space="preserve">
+    <value>Oberer Dek/Alt-Hardware-Grenzwert (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_LowerDecAlt_Tip" xml:space="preserve">
+    <value>Unterer Dek/Alt-Hardware-Grenzwert in Grad.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_LowerDecAlt" xml:space="preserve">
+    <value>Unterer Dek/Alt-Hardware-Grenzwert (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_RaAz_Tip" xml:space="preserve">
+    <value>RA/Az-Hardware-Grenzwert in Grad.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_RaAz" xml:space="preserve">
+    <value>RA/Az-Hardware-Grenzwert (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_ActionsPanel" xml:space="preserve">
+    <value>Aktionen bei Nachführgrenzen (gesteuert durch „Grenzwerte an“)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_FlipAngle_Tip" xml:space="preserve">
+    <value>GEM-Sicherheitsgrenze in Grad um den Meridian.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_AfterFlip_Tip" xml:space="preserve">
+    <value>Zusätzlicher GEM-Nachführspielraum in Grad jenseits des Meridians über den Flipwinkel hinaus.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HzTracking_Tip" xml:space="preserve">
+    <value>Auslösewinkel der GEM-Horizont-Nachführung in Grad.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HzGoTo_Tip" xml:space="preserve">
+    <value>Grenzwinkel für GoTo am Horizont in Grad.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_WarningOnly" xml:space="preserve">
+    <value>Nur Warnung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_StopTracking" xml:space="preserve">
+    <value>Nachführung stoppen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryPark" xml:space="preserve">
+    <value>Parkposition der primären Aktion</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_GemHorizonAction" xml:space="preserve">
+    <value>GEM-Horizontaktion</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HorizonTrigger" xml:space="preserve">
+    <value>Aktion bei Horizontauslösung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_HorizonPark" xml:space="preserve">
+    <value>Parkposition der Horizontaktion</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_EnableSyncLimit_Tip" xml:space="preserve">
+    <value>Sync-Winkelgrenze aktivieren — Syncs ablehnen, die das Modell um mehr als diesen Winkel verschieben würden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_EnableSyncLimit" xml:space="preserve">
+    <value>Sync-Grenze aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_SyncAngle_Tip" xml:space="preserve">
+    <value>Maximaler Winkel in Grad, um den ein Sync das Zeigemodell verschieben darf.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_SyncAngle" xml:space="preserve">
+    <value>Sync-Grenze (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_NoSyncMeridian_Tip" xml:space="preserve">
+    <value>Syncs ablehnen, wenn das Teleskop den Meridian überschritten hat (GEM/Polar).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_NoSyncMeridian" xml:space="preserve">
+    <value>Kein Sync jenseits des Meridians</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryLabelGem" xml:space="preserve">
+    <value>Primäre Auslöseaktion (GEM-Meridian)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryLabelHw" xml:space="preserve">
+    <value>Primäre Auslöseaktion (Hardware-Grenzwerte)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryHelpGem" xml:space="preserve">
+    <value>Aktion, wenn der GEM-Meridian-Grenzwert erreicht wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Lim_PrimaryHelpHw" xml:space="preserve">
+    <value>Aktion, wenn bei der Nachführung Hardware-Grenzwerte erreicht werden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DeviceInfoPanel" xml:space="preserve">
+    <value>Geräteinformationen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Enabled_Tip" xml:space="preserve">
+    <value>Dieses Gerät aktivieren, damit es über Alpaca erreichbar ist.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Enabled" xml:space="preserve">
+    <value>Für Alpaca aktiviert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DeviceName_Tip" xml:space="preserve">
+    <value>Lesbarer Name dieses Teleskopgeräts, wird als ASCOM-Eigenschaft „Name“ zurückgegeben.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DeviceName" xml:space="preserve">
+    <value>Gerätename</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Description_Tip" xml:space="preserve">
+    <value>Beschreibung des Geräts, die im Alpaca-Setup angezeigt wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Description" xml:space="preserve">
+    <value>Beschreibung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_MountType_Tip" xml:space="preserve">
+    <value>Für dieses Gerät zu verwendender Montierungstreiber.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Simulator" xml:space="preserve">
+    <value>Simulator</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignMode_Tip" xml:space="preserve">
+    <value>Ausrichtungsmodus: AltAz, GermanPolar oder Polar.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignGem" xml:space="preserve">
+    <value>Deutsche Montierung (GEM)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignPolar" xml:space="preserve">
+    <value>Polar / Gabel</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AlignAltAz" xml:space="preserve">
+    <value>Alt-Az</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PolarSide_Tip" xml:space="preserve">
+    <value>Die primäre Pierseite bei polar ausgerichteten GEM-Montierungen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PolarSide" xml:space="preserve">
+    <value>Primärseite (polar)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_EqCoord_Tip" xml:space="preserve">
+    <value>Von der Montierung zurückgegebener Typ der Äquatorialkoordinaten (J2000 oder JNow).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_CoordOther" xml:space="preserve">
+    <value>Andere</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_CoordTopocentric" xml:space="preserve">
+    <value>Topozentrisch (JNow)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_SerialPanel" xml:space="preserve">
+    <value>Serielle Verbindung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Port_Tip" xml:space="preserve">
+    <value>Namen eines seriellen Ports auswählen oder eingeben (z. B. COM3 oder /dev/ttyUSB0).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Port" xml:space="preserve">
+    <value>Port</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PortManual" xml:space="preserve">
+    <value>{0} (manuell)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PortHelper" xml:space="preserve">
+    <value>Keine Ports erkannt — geben Sie den Portnamen manuell ein.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Baud_Tip" xml:space="preserve">
+    <value>Serielle Baudrate.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DataBits_Tip" xml:space="preserve">
+    <value>Anzahl der Datenbits.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DataBits" xml:space="preserve">
+    <value>Datenbits</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Handshake_Tip" xml:space="preserve">
+    <value>Handshake-Protokoll (None, XOnXOff, RequestToSend usw.).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Handshake" xml:space="preserve">
+    <value>Handshake</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_ReadTimeout_Tip" xml:space="preserve">
+    <value>Lese-Timeout in Millisekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_ReadTimeout" xml:space="preserve">
+    <value>Lese-Timeout (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Dtr" xml:space="preserve">
+    <value>DTR aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Rts" xml:space="preserve">
+    <value>RTS aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_HardwarePanel" xml:space="preserve">
+    <value>Montierungshardware</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AdvCmds_Tip" xml:space="preserve">
+    <value>Erweiterte Befehle für die Montierungssteuerung aktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_AdvCmds" xml:space="preserve">
+    <value>Erweiterte Befehle zulassen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Encoders_Tip" xml:space="preserve">
+    <value>Absolute Encoder-Rückmeldung für die Montierungsachsen aktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Encoders" xml:space="preserve">
+    <value>Encoder aktiviert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_MaxSlew_Tip" xml:space="preserve">
+    <value>Maximale Schwenkrate in Grad pro Sekunde.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_MaxSlew" xml:space="preserve">
+    <value>Max. Schwenkrate (°/s)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_RaBacklash_Tip" xml:space="preserve">
+    <value>Backlash-Kompensation der RA-Achse in Motorschritten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_RaBacklash" xml:space="preserve">
+    <value>RA-Backlash (Schritte)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DecBacklash_Tip" xml:space="preserve">
+    <value>Backlash-Kompensation der Dek-Achse in Motorschritten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DecBacklash" xml:space="preserve">
+    <value>Dek-Backlash (Schritte)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_PolarLed_Tip" xml:space="preserve">
+    <value>Helligkeitsstufe der Polsucher-LED (0–255).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_FullCurrent_Tip" xml:space="preserve">
+    <value>Vollstrommodus der Motortreiber aktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_GearingPanel" xml:space="preserve">
+    <value>Benutzerdefinierte Übersetzung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_CustomGearing" xml:space="preserve">
+    <value>Benutzerdefinierte Übersetzung aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_RaAxis" xml:space="preserve">
+    <value>RA-Achse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Ra360" xml:space="preserve">
+    <value>RA-360°-Schritte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_DecAxis" xml:space="preserve">
+    <value>Dek-Achse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MC_Dec360" xml:space="preserve">
+    <value>Dek-360°-Schritte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Title" xml:space="preserve">
+    <value>Montierungssteuerung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_HandController" xml:space="preserve">
+    <value>Handsteuerung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_MountInfo" xml:space="preserve">
+    <value>Montierungsinfo</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_ShutdownTip" xml:space="preserve">
+    <value>Beendet den Serverprozess ordnungsgemäß. Nur verwenden, wenn alle Montierungen geparkt und getrennt sind.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Connecting" xml:space="preserve">
+    <value>Verbinden…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Disconnect" xml:space="preserve">
+    <value>Von Montierung trennen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_Connect" xml:space="preserve">
+    <value>Mit Montierung verbinden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_StopFailed" xml:space="preserve">
+    <value>Stopp fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MCtl_ConnectFailed" xml:space="preserve">
+    <value>Verbinden/Trennen fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LoggingSettings" xml:space="preserve">
+    <value>Protokollierungseinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Unsaved" xml:space="preserve">
+    <value>Nicht gespeichert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_ServerDevice" xml:space="preserve">
+    <value>Servergerät</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Other" xml:space="preserve">
+    <value>Sonstige</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Alignment" xml:space="preserve">
+    <value>Ausrichtung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Information" xml:space="preserve">
+    <value>Information</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Debug" xml:space="preserve">
+    <value>Debug</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_Logging" xml:space="preserve">
+    <value>Protokollierung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AutoStart_Tip" xml:space="preserve">
+    <value>Muss aktiviert sein, damit Protokolldateien geschrieben werden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AutoStart" xml:space="preserve">
+    <value>Autostart</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogMonitor_Tip" xml:space="preserve">
+    <value>Schreibt die Überwachungsausgabe in GSMonitorLog*.txt. Schließt sich mit „Schnellüberwachung“ gegenseitig aus.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogMonitor" xml:space="preserve">
+    <value>Überwachung protokollieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogSession" xml:space="preserve">
+    <value>Sitzung protokollieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogCharting" xml:space="preserve">
+    <value>Diagrammdaten protokollieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_FastMonitor_Tip" xml:space="preserve">
+    <value>Ringpuffer für 1000 Einträge — geringerer Aufwand als „Überwachung protokollieren“. Schließt sich mit „Überwachung protokollieren“ gegenseitig aus.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_FastMonitor" xml:space="preserve">
+    <value>Schnellüberwachung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_LogPath_Tip" xml:space="preserve">
+    <value>Verzeichnispfad, in den Protokolldateien geschrieben werden. Leer lassen für den Standardort (%USERPROFILE%\Documents\GreenSwamp\Server).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_QuickSetActions" xml:space="preserve">
+    <value>Schnellauswahl</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AllDevices" xml:space="preserve">
+    <value>Alle Geräte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AllCategories" xml:space="preserve">
+    <value>Alle Kategorien</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Mon_AllTypes" xml:space="preserve">
+    <value>Alle Typen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Title" xml:space="preserve">
+    <value>Überwachungseinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Heading" xml:space="preserve">
+    <value>Überwachung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Records" xml:space="preserve">
+    <value>Überwachungseinträge</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_RecordsCount" xml:space="preserve">
+    <value>{0} / {1} Einträge</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_ClearTip" xml:space="preserve">
+    <value>Anzeigepuffer leeren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Reload" xml:space="preserve">
+    <value>Einstellungen neu laden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_WriteBuffer" xml:space="preserve">
+    <value>Puffer in Datei schreiben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Copied" xml:space="preserve">
+    <value>Überwachungseinträge in die Zwischenablage kopiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_CopyFailed" xml:space="preserve">
+    <value>Kopieren fehlgeschlagen — möglicherweise ist der Zugriff auf die Zwischenablage blockiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Saved" xml:space="preserve">
+    <value>Überwachungseinstellungen erfolgreich gespeichert! Änderungen wurden sofort angewendet.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_SaveError" xml:space="preserve">
+    <value>Fehler beim Speichern der Einstellungen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_BufferWritten" xml:space="preserve">
+    <value>Puffer der Schnellüberwachung um {0:HH:mm:ss} in Datei geschrieben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_BufferError" xml:space="preserve">
+    <value>Fehler beim Schreiben des Puffers: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_ResetDone" xml:space="preserve">
+    <value>Protokollierungseinstellungen auf den zuletzt gespeicherten Stand zurückgesetzt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_Reloaded" xml:space="preserve">
+    <value>Einstellungen aus Datei neu geladen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetApplied" xml:space="preserve">
+    <value>Voreinstellung „{0}“ angewendet (noch nicht gespeichert)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetDevelopment" xml:space="preserve">
+    <value>Entwicklung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetProduction" xml:space="preserve">
+    <value>Produktion</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetTroubleshooting" xml:space="preserve">
+    <value>Fehlersuche</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_PresetProfileDebug" xml:space="preserve">
+    <value>Profil-Debug</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllDevicesSelected" xml:space="preserve">
+    <value>Alle Geräte ausgewählt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllCategoriesSelected" xml:space="preserve">
+    <value>Alle Kategorien ausgewählt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllTypesSelected" xml:space="preserve">
+    <value>Alle Typen ausgewählt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MonPage_AllFiltersCleared" xml:space="preserve">
+    <value>Alle Filter zurückgesetzt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_UnparkTooltip" xml:space="preserve">
+    <value>Montierung entparken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkTooltip" xml:space="preserve">
+    <value>Montierung an der ausgewählten Position parken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_HomeTooltip" xml:space="preserve">
+    <value>Zur Home-Position schwenken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_TrackingOffTooltip" xml:space="preserve">
+    <value>Nachführung ausschalten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_TrackingOnTooltip" xml:space="preserve">
+    <value>Nachführung einschalten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_FlipTooltip" xml:space="preserve">
+    <value>Teleskop auf die gegenüberliegende Pierseite flippen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ReSyncTooltip" xml:space="preserve">
+    <value>Achsen auf eine Referenzposition neu synchronisieren (ReSync)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_AutoHomeRunningTooltip" xml:space="preserve">
+    <value>AutoHome läuft…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_AutoHomeTooltip" xml:space="preserve">
+    <value>Home-Sensor suchen und Achsen zurücksetzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_LimitsOffTooltip" xml:space="preserve">
+    <value>Schwenk- und Nachführgrenzen deaktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_LimitsOnTooltip" xml:space="preserve">
+    <value>Schwenk- und Nachführgrenzen aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_SettingsTooltip" xml:space="preserve">
+    <value>Parkpositionen und Schwenkgrenzen festlegen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_StopTooltip" xml:space="preserve">
+    <value>Notstopp aller Achsbewegungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_UnparkConfirm" xml:space="preserve">
+    <value>Montierung entparken?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_UnparkFailed" xml:space="preserve">
+    <value>Entparken fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkConfirm" xml:space="preserve">
+    <value>Montierung parken?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkAtConfirm" xml:space="preserve">
+    <value>Montierung an „{0}“ parken?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ParkFailed" xml:space="preserve">
+    <value>Parken fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_HomeConfirm" xml:space="preserve">
+    <value>Zur Home-Position schwenken?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_GoToHome" xml:space="preserve">
+    <value>Zu Home schwenken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_HomeFailed" xml:space="preserve">
+    <value>Schwenken zu Home fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_TrackingToggleFailed" xml:space="preserve">
+    <value>Umschalten der Nachführung fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ReSyncTitle" xml:space="preserve">
+    <value>Achsen ReSync</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_ReSyncFailed" xml:space="preserve">
+    <value>ReSync fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_FlipFailed" xml:space="preserve">
+    <value>Flip der Pierseite fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_LimitsToggleFailed" xml:space="preserve">
+    <value>Umschalten der Grenzwerte fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountButtons_StopFailed" xml:space="preserve">
+    <value>Stopp fehlgeschlagen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_Title" xml:space="preserve">
+    <value>Montierungskonfiguration</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_Export" xml:space="preserve">
+    <value>Einstellungen &amp; Protokolle exportieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_NoDevices" xml:space="preserve">
+    <value>Keine Montierungsgeräte registriert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountCfg_EditInExplorer" xml:space="preserve">
+    <value>Im Einstellungen-Explorer bearbeiten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_XAxis" xml:space="preserve">
+    <value>X-Achse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_YAxis" xml:space="preserve">
+    <value>Y-Achse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_RaDec" xml:space="preserve">
+    <value>RA / Dek</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AltAz" xml:space="preserve">
+    <value>Alt / Az</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_RaDecTooltip" xml:space="preserve">
+    <value>Rektaszension und Deklination anzeigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AltAzTooltip" xml:space="preserve">
+    <value>Höhenwinkel und Azimut anzeigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_OpticsTooltip" xml:space="preserve">
+    <value>Optikwinkel des Teleskops anzeigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AxesChartTooltip" xml:space="preserve">
+    <value>Achsendiagramm in neuem Fenster öffnen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_AxesChart" xml:space="preserve">
+    <value>Achsendiagramm</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_PulseChartTooltip" xml:space="preserve">
+    <value>Pulsdiagramm in neuem Fenster öffnen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_PulseChart" xml:space="preserve">
+    <value>Pulsdiagramm</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_View3DTooltip" xml:space="preserve">
+    <value>3D-Ansicht in neuem Fenster öffnen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MountInfo_View3D" xml:space="preserve">
+    <value>3D-Ansicht</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Title" xml:space="preserve">
+    <value>Montierungsstatus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_PointingCoordinates" xml:space="preserve">
+    <value>Zeigekoordinaten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Pier" xml:space="preserve">
+    <value>Pier</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AxisPositions" xml:space="preserve">
+    <value>Achspositionen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_ActualX" xml:space="preserve">
+    <value>Ist X</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_ActualY" xml:space="preserve">
+    <value>Ist Y</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AppX" xml:space="preserve">
+    <value>App X</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AppY" xml:space="preserve">
+    <value>App Y</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsX" xml:space="preserve">
+    <value>Schritte X</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsY" xml:space="preserve">
+    <value>Schritte Y</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Status" xml:space="preserve">
+    <value>Status</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_MountConnected" xml:space="preserve">
+    <value>Montierung verbunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_ActiveClients" xml:space="preserve">
+    <value>Aktive Clients</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AtPark" xml:space="preserve">
+    <value>Geparkt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_MountModel" xml:space="preserve">
+    <value>Montierungsmodell</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_MountFirmware" xml:space="preserve">
+    <value>Montierungs-Firmware</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AdvancedCommands" xml:space="preserve">
+    <value>Erweiterte Befehle</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_Voltage" xml:space="preserve">
+    <value>Spannung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_PowerEvent" xml:space="preserve">
+    <value>Stromereignis</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsRa" xml:space="preserve">
+    <value>Schritte RA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_StepsDec" xml:space="preserve">
+    <value>Schritte Dek</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AxisDials" xml:space="preserve">
+    <value>Achsanzeigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_NotSupported" xml:space="preserve">
+    <value>Nicht unterstützt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_PulseGuiding" xml:space="preserve">
+    <value>Pulse-Guiding</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_AtHome" xml:space="preserve">
+    <value>In Home-Position</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="MStat_NotAvailable" xml:space="preserve">
+    <value>k. A.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Start</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Control" xml:space="preserve">
+    <value>Steuerung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Status" xml:space="preserve">
+    <value>Status</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Configuration" xml:space="preserve">
+    <value>Konfiguration</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_SettingsExplorer" xml:space="preserve">
+    <value>Einstellungen-Explorer</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_CheckSettings" xml:space="preserve">
+    <value>Einstellungen prüfen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_Shutdown" xml:space="preserve">
+    <value>Herunterfahren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Nav_ChartPopupBlocked" xml:space="preserve">
+    <value>Das Diagrammfenster wurde blockiert. Bitte erlauben Sie Pop-ups für diese Website.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Notify_ConnectionFailed" xml:space="preserve">
+    <value>Verbindung fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Location" xml:space="preserve">
+    <value>Standort</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CopyFrom" xml:space="preserve">
+    <value>Von Sternwarte kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CopyFrom_Tip" xml:space="preserve">
+    <value>Breitengrad, Längengrad, Höhe und GPS-Einstellungen von der ausgewählten Sternwarte auf dieses Gerät kopieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceLat_Tip" xml:space="preserve">
+    <value>Geografischer Breitengrad des Gerätestandorts in Dezimalgrad (-90 bis +90).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceLon_Tip" xml:space="preserve">
+    <value>Geografischer Längengrad des Gerätestandorts in Dezimalgrad (-180 bis +180).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Elev_Tip" xml:space="preserve">
+    <value>Höhe über dem Meeresspiegel in Metern.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceUtc_Tip" xml:space="preserve">
+    <value>UTC-Versatz für den Gerätestandort (Stunden).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Environmental" xml:space="preserve">
+    <value>Umgebung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Refraction_Tip" xml:space="preserve">
+    <value>Korrektur der atmosphärischen Refraktion in die Zeigeberechnungen einbeziehen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Refraction" xml:space="preserve">
+    <value>Refraktion aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Temp_Tip" xml:space="preserve">
+    <value>Umgebungstemperatur in Grad Celsius, wird für die Refraktionskorrektur verwendet.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Temp" xml:space="preserve">
+    <value>Temperatur (°C)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceGpsPort_Tip" xml:space="preserve">
+    <value>Namen eines seriellen Ports für den GPS-Empfänger auswählen oder eingeben (z. B. COM4 oder /dev/ttyUSB0).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsPort" xml:space="preserve">
+    <value>GPS-Port</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceGpsBaud_Tip" xml:space="preserve">
+    <value>Baudrate des GPS-Empfängers.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsBaud" xml:space="preserve">
+    <value>GPS-Baudrate</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsParity_Tip" xml:space="preserve">
+    <value>Parität des seriellen Ports des GPS-Empfängers.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsParity" xml:space="preserve">
+    <value>GPS-Parität</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsStopBits_Tip" xml:space="preserve">
+    <value>Stoppbits des seriellen Ports des GPS-Empfängers.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsStopBits" xml:space="preserve">
+    <value>GPS-Stoppbits</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsDataBits_Tip" xml:space="preserve">
+    <value>Datenbits des seriellen Ports des GPS-Empfängers.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsDataBits" xml:space="preserve">
+    <value>GPS-Datenbits</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsTimeout_Tip" xml:space="preserve">
+    <value>Lese-Timeout des seriellen Ports des GPS-Empfängers in Sekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsTimeout" xml:space="preserve">
+    <value>GPS-Timeout (s)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsHandshake_Tip" xml:space="preserve">
+    <value>Handshake des seriellen Ports des GPS-Empfängers.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsHandshake" xml:space="preserve">
+    <value>GPS-Handshake</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_GpsConnect_Tip" xml:space="preserve">
+    <value>Mit dem GPS-Empfänger verbinden und Breitengrad, Längengrad, Höhe sowie die Zeitdifferenz zwischen lokaler Zeit und GPS lesen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_Connect" xml:space="preserve">
+    <value>Verbinden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_DeviceCdcAddress_Tip" xml:space="preserve">
+    <value>IP-Adresse oder Hostname des Cartes-du-Ciel-Servers für dieses Gerät (z. B. 127.0.0.1).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcAddress" xml:space="preserve">
+    <value>CdC-Adresse</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcPort_Tip" xml:space="preserve">
+    <value>TCP-Port, auf dem der Cartes-du-Ciel-Server lauscht (Standard 3292).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcPort" xml:space="preserve">
+    <value>CdC-Port</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CdcConnect_Tip" xml:space="preserve">
+    <value>Mit dem Cartes-du-Ciel-Server verbinden, um Breitengrad, Längengrad und Höhe zu lesen oder zu schreiben.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_CopiedFrom" xml:space="preserve">
+    <value>Standort-, GPS- und CdC-Einstellungen von „{0}“ kopiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_NoGpsPortDevice" xml:space="preserve">
+    <value>Für dieses Gerät ist kein GPS-Port konfiguriert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_NoGpsPortSite" xml:space="preserve">
+    <value>Für diese Sternwarte ist kein GPS-Port konfiguriert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_UpdatedFromGps" xml:space="preserve">
+    <value>Breitengrad, Längengrad und Höhe wurden aus GPS aktualisiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Obs_UpdatedFromCdc" xml:space="preserve">
+    <value>Breitengrad, Längengrad und Höhe wurden aus Cartes du Ciel aktualisiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Title" xml:space="preserve">
+    <value>Sternwarten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Description" xml:space="preserve">
+    <value>Sternwartenstandorte verwalten. Jedes Teleskopgerät kann seinen Standort von jedem hier aufgeführten Standort übernehmen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Unsaved" xml:space="preserve">
+    <value>Nicht gespeichert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Latitude" xml:space="preserve">
+    <value>Breitengrad (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Longitude" xml:space="preserve">
+    <value>Längengrad (°)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Elevation" xml:space="preserve">
+    <value>Höhe (m)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_UtcOffset" xml:space="preserve">
+    <value>UTC-Versatz (h)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Actions" xml:space="preserve">
+    <value>Aktionen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_CopyToAll" xml:space="preserve">
+    <value>Breite/Länge/Höhe auf alle Teleskopgeräte kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_CannotDeleteLast" xml:space="preserve">
+    <value>Die letzte Sternwarte kann nicht gelöscht werden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Delete" xml:space="preserve">
+    <value>Diese Sternwarte löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsCard_Add" xml:space="preserve">
+    <value>Sternwarte hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Name_Tip" xml:space="preserve">
+    <value>Benutzerdefinierter Name für diesen Sternwartenstandort.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Lat_Tip" xml:space="preserve">
+    <value>Geografischer Breitengrad der Sternwarte in Dezimalgrad (-90 bis +90).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Lon_Tip" xml:space="preserve">
+    <value>Geografischer Längengrad der Sternwarte in Dezimalgrad (-180 bis +180).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_Utc_Tip" xml:space="preserve">
+    <value>UTC-Versatz für den Sternwartenstandort (Stunden). Für Westen negative Werte verwenden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_LocationSources" xml:space="preserve">
+    <value>Standortquellen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_GpsPort_Tip" xml:space="preserve">
+    <value>Namen eines seriellen Ports für den GPS-Empfänger an diesem Standort auswählen oder eingeben (z. B. COM4 oder /dev/ttyUSB0).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_GpsBaud_Tip" xml:space="preserve">
+    <value>Baudrate des GPS-Empfängers für diesen Sternwartenstandort.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_CdcAddress_Tip" xml:space="preserve">
+    <value>IP-Adresse oder Hostname des Cartes-du-Ciel-Servers an diesem Sternwartenstandort (z. B. 127.0.0.1).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_CopyToAll_Tip" xml:space="preserve">
+    <value>Standort- und GPS-Einstellungen dieser Sternwarte auf alle Teleskopgeräte kopieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_CopyToAll" xml:space="preserve">
+    <value>Auf alle Geräte kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_NameRequired" xml:space="preserve">
+    <value>Der Name ist erforderlich.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ObsSingle_NameDuplicate" xml:space="preserve">
+    <value>Eine Sternwarte mit diesem Namen existiert bereits.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Aperture_Tip" xml:space="preserve">
+    <value>Öffnungsdurchmesser in Metern.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Aperture" xml:space="preserve">
+    <value>Öffnungsdurchmesser (m)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Area_Tip" xml:space="preserve">
+    <value>Effektive Öffnungsfläche in Quadratmetern.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Area" xml:space="preserve">
+    <value>Öffnungsfläche (m²)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_FocalLength_Tip" xml:space="preserve">
+    <value>Brennweite in Metern.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_FocalLength" xml:space="preserve">
+    <value>Brennweite (m)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Eyepiece_Tip" xml:space="preserve">
+    <value>Gesichtsfeld des Okulars in Bogenminuten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Optics_Eyepiece" xml:space="preserve">
+    <value>Okular-GF (arcmin)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Title" xml:space="preserve">
+    <value>Parkpositionen verwalten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_NotConnected" xml:space="preserve">
+    <value>Die Montierung ist nicht verbunden. Verbinden Sie die Montierung, um Positionen zu erstellen oder zu aktualisieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Position" xml:space="preserve">
+    <value>Parkposition</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_UpdateTooltip" xml:space="preserve">
+    <value>Die Koordinaten dieser Position auf die aktuelle Montierungsposition setzen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_UpdateButton" xml:space="preserve">
+    <value>Aus aktueller Position aktualisieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_CannotDeleteLast" xml:space="preserve">
+    <value>Die letzte Parkposition kann nicht gelöscht werden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_DeleteTooltip" xml:space="preserve">
+    <value>Die ausgewählte Parkposition löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_MountMustBeConnected" xml:space="preserve">
+    <value>Zum Erstellen einer Position muss die Montierung verbunden sein</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_AddTooltip" xml:space="preserve">
+    <value>Neue Parkposition aus der aktuellen Montierungsposition hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_AddNew" xml:space="preserve">
+    <value>Neue Position hinzufügen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Name" xml:space="preserve">
+    <value>Positionsname</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_MaxChars" xml:space="preserve">
+    <value>Max. 12 Zeichen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Updated" xml:space="preserve">
+    <value>Parkposition „{0}“ aus der aktuellen Montierungsposition aktualisiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_UpdateFailed" xml:space="preserve">
+    <value>Aktualisierung fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Deleted" xml:space="preserve">
+    <value>Parkposition „{0}“ gelöscht.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_DeleteFailed" xml:space="preserve">
+    <value>Löschen fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_Created" xml:space="preserve">
+    <value>Parkposition „{0}“ erstellt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ParkPos_CreateFailed" xml:space="preserve">
+    <value>Erstellen fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_CheckInterval_Tip" xml:space="preserve">
+    <value>Aktualisierungsintervall der UI-Anzeige in Millisekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_CheckInterval" xml:space="preserve">
+    <value>Intervall der Hintergrund-Statusprüfung (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_GotoPrecision_Tip" xml:space="preserve">
+    <value>GoTo-Genauigkeit in Bogensekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_GotoPrecision" xml:space="preserve">
+    <value>GoTo-Genauigkeit (Grad)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_TraceLogger_Tip" xml:space="preserve">
+    <value>Trace-/Debug-Protokollierung in eine Datei für dieses Gerät aktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Perf_TraceLogger" xml:space="preserve">
+    <value>Trace-Logger</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ppec_Enabled" xml:space="preserve">
+    <value>PPEC aktiviert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_Title" xml:space="preserve">
+    <value>Achsen ReSync</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_Description" xml:space="preserve">
+    <value>Synchronisiert die Achsen auf einen Referenzpunkt, ohne die Montierung zu bewegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_ToHome" xml:space="preserve">
+    <value>Auf Home-Position synchronisieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_ToPark" xml:space="preserve">
+    <value>Auf Parkposition synchronisieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="ReSync_ParkPosition" xml:space="preserve">
+    <value>Parkposition</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ExpandAll" xml:space="preserve">
+    <value>Alle Abschnitte erweitern</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CollapseAll" xml:space="preserve">
+    <value>Alle Abschnitte reduzieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ShowHiddenTip" xml:space="preserve">
+    <value>Normalerweise ausgeblendete Einstellungen anzeigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ShowHidden" xml:space="preserve">
+    <value>Ausgeblendete anzeigen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_SearchPlaceholder" xml:space="preserve">
+    <value>Einstellungen suchen…</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_SelectGroup" xml:space="preserve">
+    <value>Wählen Sie links in der Baumansicht eine Einstellungsgruppe aus, um mit der Bearbeitung zu beginnen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HiddenShown" xml:space="preserve">
+    <value>Ausgeblendete Einstellungen werden angezeigt. Dies sind erweiterte Werte, die normalerweise nicht benötigt werden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceLabel" xml:space="preserve">
+    <value>Gerät {0} — {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceDescription" xml:space="preserve">
+    <value>Einstellungen für Teleskopgerät {0}: {1}.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeleteDeviceTitle" xml:space="preserve">
+    <value>Teleskopgerät löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceAdded" xml:space="preserve">
+    <value>Gerät {0} hinzugefügt: {1}.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrAddDevice" xml:space="preserve">
+    <value>Fehler beim Hinzufügen des Geräts: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceNotFound" xml:space="preserve">
+    <value>Gerät {0} wurde nicht gefunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeviceDeleted" xml:space="preserve">
+    <value>Gerät {0} gelöscht: {1}.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrDeleteDevice" xml:space="preserve">
+    <value>Fehler beim Löschen von Gerät {0}: {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HotReloaded" xml:space="preserve">
+    <value>Geräteregistrierung neu geladen — {0} Gerät(e) aktiv.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HotReloadFailed" xml:space="preserve">
+    <value>Hot-Reload fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_HotReloadError" xml:space="preserve">
+    <value>Hot-Reload-Fehler: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_PresetApplied" xml:space="preserve">
+    <value>Voreinstellung angewendet. Prüfen Sie die Änderungen und klicken Sie auf „Speichern“, wenn Sie bereit sind.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllDevicesSelected" xml:space="preserve">
+    <value>Alle Geräte ausgewählt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllCategoriesSelected" xml:space="preserve">
+    <value>Alle Kategorien ausgewählt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllTypesSelected" xml:space="preserve">
+    <value>Alle Typen ausgewählt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_AllFiltersCleared" xml:space="preserve">
+    <value>Alle Filter zurückgesetzt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_LoggingSaved" xml:space="preserve">
+    <value>Protokollierungseinstellungen erfolgreich gespeichert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrSaveLogging" xml:space="preserve">
+    <value>Fehler beim Speichern der Protokollierungseinstellungen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_LoggingReset" xml:space="preserve">
+    <value>Protokollierungseinstellungen auf den zuletzt gespeicherten Stand zurückgesetzt.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Saved" xml:space="preserve">
+    <value>Einstellungen erfolgreich gespeichert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrSave" xml:space="preserve">
+    <value>Fehler beim Speichern der Einstellungen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_MountType" xml:space="preserve">
+    <value>Montierungstyp: {0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_ComPort" xml:space="preserve">
+    <value>COM-Port: {0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_BaudRate" xml:space="preserve">
+    <value>Baudrate: {0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Chg_AlignmentMode" xml:space="preserve">
+    <value>Ausrichtungsmodus: {0} → {1}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeleteObsContent" xml:space="preserve">
+    <value>Sternwarte „{0}“ löschen? Diese Änderung wird erst dauerhaft gespeichert, wenn Sie auf „Speichern“ klicken.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DeleteObsTitle" xml:space="preserve">
+    <value>Sternwarte löschen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CopyObsContent" xml:space="preserve">
+    <value>Breitengrad, Längengrad, Höhe und GPS-Einstellungen von „{0}“ auf alle {1} Teleskopgerät(e) kopieren und sofort speichern?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CopyAndSave" xml:space="preserve">
+    <value>Kopieren &amp; Speichern</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_CopyObsTitle" xml:space="preserve">
+    <value>Sternwarte auf alle Geräte kopieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_LocationCopied" xml:space="preserve">
+    <value>Standort- und GPS-Einstellungen von „{0}“ wurden in {1} Gerät(en) gespeichert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ErrCopyObs" xml:space="preserve">
+    <value>Fehler beim Kopieren der Sternwarte auf die Geräte: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_DiscardContent" xml:space="preserve">
+    <value>Sie haben nicht gespeicherte Änderungen. Verwerfen und die Gruppe wechseln?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Discard" xml:space="preserve">
+    <value>Verwerfen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Stay" xml:space="preserve">
+    <value>Bleiben</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_UnsavedChangesTitle" xml:space="preserve">
+    <value>Nicht gespeicherte Änderungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_ObsSiteDescription" xml:space="preserve">
+    <value>Sternwartenstandort: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_TelescopeDevices" xml:space="preserve">
+    <value>Teleskopgeräte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Observatories" xml:space="preserve">
+    <value>Sternwarten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Logging" xml:space="preserve">
+    <value>Protokollierung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_ServerConfiguration" xml:space="preserve">
+    <value>Serverkonfiguration</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_AlpacaSettings" xml:space="preserve">
+    <value>Alpaca-Einstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_UserInterface" xml:space="preserve">
+    <value>Benutzeroberfläche</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Security" xml:space="preserve">
+    <value>Sicherheit</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_MountConfiguration" xml:space="preserve">
+    <value>Montierungskonfiguration</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_ObservatoryConfiguration" xml:space="preserve">
+    <value>Sternwartenkonfiguration</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Optics" xml:space="preserve">
+    <value>Optik</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_TrackingAndGuiding" xml:space="preserve">
+    <value>Nachführung &amp; Guiding</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_HomeAndPark" xml:space="preserve">
+    <value>Home und Parken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Limits" xml:space="preserve">
+    <value>Grenzwerte</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Voice" xml:space="preserve">
+    <value>Sprachausgabe</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_PerformanceAndTuning" xml:space="preserve">
+    <value>Leistung &amp; Tuning</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_Ppec" xml:space="preserve">
+    <value>PPEC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Node_HandController" xml:space="preserve">
+    <value>Handsteuerung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Observatories" xml:space="preserve">
+    <value>Benannte Sternwartenstandorte — Breitengrad, Längengrad, Höhe und UTC-Versatz je Standort.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_ServerConfiguration" xml:space="preserve">
+    <value>Verhalten des Alpaca-HTTP-Servers, Netzwerkbindung, Authentifizierung und Identität.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Logging" xml:space="preserve">
+    <value>Filtereinstellungen der Protokollierung — Filter für Gerät, Kategorie und Meldungstyp.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_TelescopeDevices" xml:space="preserve">
+    <value>Montierungseinstellungen je Teleskopgerät.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Observatory" xml:space="preserve">
+    <value>Breitengrad, Längengrad, Höhe und UTC-Versatz für diesen Sternwartenstandort.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_AlpacaSettings" xml:space="preserve">
+    <value>Zentrale Einstellungen des Alpaca-Servers, einschließlich Serveridentität, Port, Netzwerkzugriff und Kompatibilitätsverhalten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_UserInterface" xml:space="preserve">
+    <value>Anzeige-Zoom und Benutzereinstellungen der Oberfläche.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Security" xml:space="preserve">
+    <value>Einstellungen zur HTTP-Basisauthentifizierung und Kontosicherheit.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_DeviceFilters" xml:space="preserve">
+    <value>Protokolleinträge nach Gerätetyp (Server, Teleskop, UI) aktivieren oder deaktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_CategoryFilters" xml:space="preserve">
+    <value>Protokolleinträge nach Kategorie (Treiber, Schnittstelle, Montierung usw.) aktivieren oder deaktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_MessageTypeFilters" xml:space="preserve">
+    <value>Protokolleinträge nach Meldungstyp (Information, Warnung, Fehler, Debug) aktivieren oder deaktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_LoggingControl" xml:space="preserve">
+    <value>Ziele der Dateiprotokollierung — Überwachungsprotokoll, Sitzungsprotokoll und Diagrammdaten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_DeviceIdentity" xml:space="preserve">
+    <value>Gerätenummer, Name und Aktivierungsstatus.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_SerialConnection" xml:space="preserve">
+    <value>Serieller Port, Baudrate, Handshake und Timeout-Einstellungen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_MountConfiguration" xml:space="preserve">
+    <value>Geräteidentität, serielle Verbindung, Äquatorialkoordinaten, Montierungshardware (Motoreinstellungen, Encoder, Backlash) und benutzerdefinierte Übersetzung.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HomeAndPark" xml:space="preserve">
+    <value>Gespeicherte Achspositionen für Home und Parken.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Limits" xml:space="preserve">
+    <value>Achs-/Schwenkgrenzen, Sync-Grenzen, Meridian-/Flipwinkel-Grenze (GEM/Polar) und horizontale Achsgrenze (AltAz).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_TrackingAndGuiding" xml:space="preserve">
+    <value>Nachführraten und Pulse-Guiding-Einstellungen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_ObservatoryConfiguration" xml:space="preserve">
+    <value>Breitengrad, Längengrad, Höhe, UTC-Versatz, Umgebungsbedingungen und GPS.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Optics" xml:space="preserve">
+    <value>Öffnungsdurchmesser, Öffnungsfläche und Brennweite.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_CoordinateSystem" xml:space="preserve">
+    <value>Typ der Äquatorialkoordinaten (J2000 / JNow).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Tracking" xml:space="preserve">
+    <value>Nachführraten (siderisch, lunar, solar, King) und RA-Nachführversatz.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_CustomGearing" xml:space="preserve">
+    <value>Schrittzahlen der benutzerdefinierten Motorübersetzung und Zähnezahlen des Schneckenrads.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Backlash" xml:space="preserve">
+    <value>RA- und Dek-Backlash-Kompensation in Motorschritten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_PulseGuiding" xml:space="preserve">
+    <value>Minimale Pulsdauern, ST4-Führungsrate und Versatz der Führungsraten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_SyncLimits" xml:space="preserve">
+    <value>Sync-Winkelgrenze und Kennzeichen „Kein Sync jenseits des Meridians“.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Ppec" xml:space="preserve">
+    <value>Einstellungen der Predictive PEC.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Encoders" xml:space="preserve">
+    <value>Absolute Encoder-Rückmeldung aktivieren oder deaktivieren.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HandController" xml:space="preserve">
+    <value>Geschwindigkeit, Modus, Invertierung und Anti-Backlash der Handsteuerung.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Gps" xml:space="preserve">
+    <value>Serieller GPS-Port und Baudrate für die Synchronisierung von Zeit und Standort.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_PerformanceAndTuning" xml:space="preserve">
+    <value>Update-Intervall der Schleife, GoTo-Genauigkeit und Trace-Protokollierung.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HomePosition" xml:space="preserve">
+    <value>Gespeicherte Home-Achspositionen (X/Y) und AutoHome-Achspositionen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_ParkPositions" xml:space="preserve">
+    <value>Liste benannter Parkpositionen und Auswahl der aktiven Parkposition.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_AxisSlewLimits" xml:space="preserve">
+    <value>Obere/untere Achsgrenzen und maximale Schwenkrate.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_HorizontalAxisLimit" xml:space="preserve">
+    <value>Nachführgrenze der horizontalen Achse für AltAz-Montierungen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_AlignmentMode" xml:space="preserve">
+    <value>Ausrichtungsmodus der Montierung (AltAz, GermanPolar, Polar).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="SE_Desc_Voice" xml:space="preserve">
+    <value>Einstellungen der Sprachansagen — Aktivieren/Deaktivieren, Stimmenauswahl und Lautstärke.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerName" xml:space="preserve">
+    <value>Servername</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerName_Tip" xml:space="preserve">
+    <value>Lesbarer Servername, der bei der Alpaca-Erkennung und auf der Setup-Seite angezeigt wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerPort" xml:space="preserve">
+    <value>Server-Port</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerPort_Tip" xml:space="preserve">
+    <value>TCP-Port, auf dem der Alpaca-Server lauscht.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowRemoteAccess" xml:space="preserve">
+    <value>Fernzugriff zulassen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowRemoteAccess_Tip" xml:space="preserve">
+    <value>Bei Aktivierung an alle Netzwerkschnittstellen binden; bei Deaktivierung nur an localhost.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost" xml:space="preserve">
+    <value>Lokal nur auf localhost antworten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost_Tip" xml:space="preserve">
+    <value>Auf Alpaca-Erkennungsanfragen von localhost nur über den Loopback-Adapter antworten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowDiscovery" xml:space="preserve">
+    <value>Alpaca-Erkennung zulassen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AllowDiscovery_Tip" xml:space="preserve">
+    <value>Diesen Server über die Alpaca-UDP-Erkennung bekannt machen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_StrictAlpaca" xml:space="preserve">
+    <value>Im strikten Alpaca-Modus ausführen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_StrictAlpaca_Tip" xml:space="preserve">
+    <value>Bei Aktivierung nicht konforme Alpaca-Anfragen ablehnen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_PreventRemoteDisconnects" xml:space="preserve">
+    <value>Trennen durch Remote-Clients verhindern</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_PreventRemoteDisconnects_Tip" xml:space="preserve">
+    <value>Verhindern, dass Remote-Clients Geräte trennen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableSwagger" xml:space="preserve">
+    <value>Swagger-UI aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableSwagger_Tip" xml:space="preserve">
+    <value>Die OpenAPI-/Swagger-UI unter /swagger bereitstellen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_ServerAddresses" xml:space="preserve">
+    <value>Serveradressen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableAuth" xml:space="preserve">
+    <value>Authentifizierung aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_EnableAuth_Tip" xml:space="preserve">
+    <value>HTTP-Basisauthentifizierung für alle Anfragen verlangen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_UserName" xml:space="preserve">
+    <value>Benutzername</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_UserName_Tip" xml:space="preserve">
+    <value>Anmeldename, der bei aktivierter Authentifizierung verwendet wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_Password" xml:space="preserve">
+    <value>Kennwort</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_Password_Tip" xml:space="preserve">
+    <value>Kennwort, das bei aktivierter Authentifizierung verwendet wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_RepeatPassword" xml:space="preserve">
+    <value>Kennwort wiederholen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_RepeatPassword_Tip" xml:space="preserve">
+    <value>Kennwort wiederholen, um die Übereinstimmung zu bestätigen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_NoEditor" xml:space="preserve">
+    <value>Für die Gruppe „{0}“ ist kein Editor definiert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcSpeed" xml:space="preserve">
+    <value>HC-Geschwindigkeit</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcSpeed_Tip" xml:space="preserve">
+    <value>Schwenkgeschwindigkeit der Handsteuerung.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcMode" xml:space="preserve">
+    <value>HC-Modus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_HcMode_Tip" xml:space="preserve">
+    <value>Modus der Handsteuerung.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AntiBacklashRa" xml:space="preserve">
+    <value>Anti-Backlash RA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_AntiBacklashDec" xml:space="preserve">
+    <value>Anti-Backlash Dek</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_FlipEW" xml:space="preserve">
+    <value>O/W invertieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_FlipNS" xml:space="preserve">
+    <value>N/S invertieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Set_DisableKeysOnGoTo" xml:space="preserve">
+    <value>Tasten bei GoTo deaktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_Question" xml:space="preserve">
+    <value>Sind Sie sicher, dass Sie das System herunterfahren möchten?</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_OneMount" xml:space="preserve">
+    <value>Es ist 1 Montierung verbunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_ManyMounts" xml:space="preserve">
+    <value>Es sind {0} Montierungen verbunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Shutdown_Failed" xml:space="preserve">
+    <value>Herunterfahren fehlgeschlagen: {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_AtHome" xml:space="preserve">
+    <value>In Home-Position</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_NotAtHome" xml:space="preserve">
+    <value>Nicht in Home-Position</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_Parked" xml:space="preserve">
+    <value>Geparkt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_Unparked" xml:space="preserve">
+    <value>Entparkt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_Stationary" xml:space="preserve">
+    <value>Stillstand</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_TrackingWithRate" xml:space="preserve">
+    <value>Nachführung ({0})</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_TrackingOff" xml:space="preserve">
+    <value>Nachführung aus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PulseGuidingActive" xml:space="preserve">
+    <value>Pulse-Guiding aktiv</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PulseGuidingOff" xml:space="preserve">
+    <value>Pulse-Guiding aus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PierEast" xml:space="preserve">
+    <value>Pierseite Ost</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_PierWest" xml:space="preserve">
+    <value>Pierseite West</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_LimitTriggered" xml:space="preserve">
+    <value>Grenzwert ausgelöst</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_LimitsOn" xml:space="preserve">
+    <value>Grenzwerte an</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_LimitsOff" xml:space="preserve">
+    <value>Grenzwerte aus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_VoiceOn" xml:space="preserve">
+    <value>Sprachansage an</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_VoiceOff" xml:space="preserve">
+    <value>Sprachansage aus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_ActiveConnections" xml:space="preserve">
+    <value>{0} aktive Verbindung(en)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_NoActiveConnectionsWas" xml:space="preserve">
+    <value>Keine aktiven Verbindungen (war verbunden)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="State_NoConnections" xml:space="preserve">
+    <value>Keine Verbindungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_PulseGuiding" xml:space="preserve">
+    <value>Pulse-Guiding</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_HcPulseGuides" xml:space="preserve">
+    <value>HC-Pulse-Guides</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_Rate_Tip" xml:space="preserve">
+    <value>Standard-Nachführrate (Siderisch, Lunar, Solar, King).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SiderealRate_Tip" xml:space="preserve">
+    <value>Siderische Nachführrate in Bogensekunden/Sekunde.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SiderealRate" xml:space="preserve">
+    <value>Siderische Rate (arcsec/s)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_LunarRate_Tip" xml:space="preserve">
+    <value>Lunare Nachführrate in Bogensekunden/Sekunde.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_LunarRate" xml:space="preserve">
+    <value>Lunare Rate (arcsec/s)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SolarRate_Tip" xml:space="preserve">
+    <value>Solare Nachführrate in Bogensekunden/Sekunde.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_SolarRate" xml:space="preserve">
+    <value>Solare Rate (arcsec/s)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_KingRate_Tip" xml:space="preserve">
+    <value>King-Nachführrate in Bogensekunden/Sekunde.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_KingRate" xml:space="preserve">
+    <value>King-Rate (arcsec/s)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_RaOffset_Tip" xml:space="preserve">
+    <value>Nachführversatz der RA-Achse in Motorschritten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_RaOffset" xml:space="preserve">
+    <value>RA-Nachführversatz (Schritte)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_AltAzInterval_Tip" xml:space="preserve">
+    <value>Aktualisierungsintervall der AltAz-Nachführung in Millisekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_AltAzInterval" xml:space="preserve">
+    <value>AltAz-Update-Intervall (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseRa_Tip" xml:space="preserve">
+    <value>Minimale RA-Pulsdauer in Millisekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseRa" xml:space="preserve">
+    <value>Min. Puls RA (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseDec_Tip" xml:space="preserve">
+    <value>Minimale Dek-Pulsdauer in Millisekunden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_MinPulseDec" xml:space="preserve">
+    <value>Min. Puls Dek (ms)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_DecPulseToGoTo_Tip" xml:space="preserve">
+    <value>Dek-Pulsbefehle über GoTo statt über Pulse-Guiding leiten.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_DecPulseToGoTo" xml:space="preserve">
+    <value>Dek-Puls → GoTo</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_AlternatingPpec" xml:space="preserve">
+    <value>Alternierende PPEC</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_St4_Tip" xml:space="preserve">
+    <value>Teiler der ST4-Führungsrate (z. B. 0=voll, 1=0,75x, 2=0,5x usw.).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_St4" xml:space="preserve">
+    <value>ST4-Führungsrate</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_RaGuideRate_Tip" xml:space="preserve">
+    <value>RA-Führungsrate in Prozent der siderischen Rate (0–100, Schrittweite 10).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Trk_DecGuideRate_Tip" xml:space="preserve">
+    <value>Dek-Führungsrate in Prozent der siderischen Rate (0–100, Schrittweite 10).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_PageTitle" xml:space="preserve">
+    <value>Teleskop-Setup - Gerät {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceInformation" xml:space="preserve">
+    <value>Geräteinformationen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceNumber" xml:space="preserve">
+    <value>Gerätenummer</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceName" xml:space="preserve">
+    <value>Gerätename</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ConnectionStatus" xml:space="preserve">
+    <value>Verbindungsstatus</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Connected" xml:space="preserve">
+    <value>Verbunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Disconnected" xml:space="preserve">
+    <value>Getrennt</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ObservatorySettings" xml:space="preserve">
+    <value>Sternwarteneinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_SerialPortSettings" xml:space="preserve">
+    <value>Einstellungen des seriellen Ports</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_Port" xml:space="preserve">
+    <value>Port</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DataBits" xml:space="preserve">
+    <value>Datenbits</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ReadTimeout" xml:space="preserve">
+    <value>Lese-Timeout</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_TrackingGuiding" xml:space="preserve">
+    <value>Einstellungen für Nachführung &amp; Guiding</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_AutoTrackUnpark" xml:space="preserve">
+    <value>Automatisch nachführen beim Entparken</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_MinPulseRa" xml:space="preserve">
+    <value>Min. Puls RA</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_MinPulseDec" xml:space="preserve">
+    <value>Min. Puls Dek</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_MountSettings" xml:space="preserve">
+    <value>Montierungseinstellungen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_AllowAdvanced" xml:space="preserve">
+    <value>Erweiterte Befehle zulassen</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_TelescopeOptics" xml:space="preserve">
+    <value>Teleskopoptik</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ApertureDiameter" xml:space="preserve">
+    <value>Öffnungsdurchmesser</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_ApertureArea" xml:space="preserve">
+    <value>Öffnungsfläche</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_FocalLength" xml:space="preserve">
+    <value>Brennweite</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_InstanceNotFound" xml:space="preserve">
+    <value>Geräteinstanz nicht gefunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_InstanceNotFoundBody" xml:space="preserve">
+    <value>Gerät {0} ist registriert, hat aber keine Mount-Instanz. Das kann auf einen Konfigurationsfehler hinweisen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_BackToManager" xml:space="preserve">
+    <value>Zurück zur Geräteverwaltung</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceNotFound" xml:space="preserve">
+    <value>Gerät nicht gefunden</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TS_DeviceNotFoundBody" xml:space="preserve">
+    <value>Gerät {0} existiert im System nicht. Bitte kehren Sie zur Geräteverwaltung zurück, um die verfügbaren Geräte anzuzeigen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Title" xml:space="preserve">
+    <value>Teleskopansicht — Gerät {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Header" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;Teleskop-3D-Ansicht&lt;/b&gt; — Gerät {0}</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Axis1" xml:space="preserve">
+    <value>Achse 1: {0}°</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_Axis2" xml:space="preserve">
+    <value>Achse 2: {0}°</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="TView_SaveView" xml:space="preserve">
+    <value>Ansicht speichern</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_Zoom_Tip" xml:space="preserve">
+    <value>Globale Zoomstufe, die auf die gesamte Server-Oberfläche angewendet wird.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_Theme_Tip" xml:space="preserve">
+    <value>Auswahl des Anzeigedesigns für die Server-Oberfläche.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_Theme" xml:space="preserve">
+    <value>Anzeigedesign</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_NotImplemented" xml:space="preserve">
+    <value>Nicht implementiert</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
+    <value>Wählen Sie die Sprache, die von diesem Browser verwendet wird. Diese Einstellung wird in einem Browser-Cookie gespeichert; Server-Standardwerte werden nur verwendet, wenn keine unterstützte Browsereinstellung vorhanden ist.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_DisplayLanguage" xml:space="preserve">
+    <value>Anzeigesprache</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_RegionalFormat_Tip" xml:space="preserve">
+    <value>Wählen Sie die Datums- und Zahlenkonventionen, die von diesem Browser verwendet werden. Diese Einstellung wird in einem Browser-Cookie gespeichert.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_RegionalFormat" xml:space="preserve">
+    <value>Regionales Format</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_AutoStartBrowser_Tip" xml:space="preserve">
+    <value>Den Standardbrowser beim Start des Servers automatisch öffnen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Ui_AutoStartBrowser" xml:space="preserve">
+    <value>Browser automatisch starten</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Active_Tip" xml:space="preserve">
+    <value>Sprachansagen für dieses Gerät aktivieren (z. B. Geparkt, Schwenkt, Nachführung an).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Active" xml:space="preserve">
+    <value>Sprachansagen aktivieren</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Select_Tip" xml:space="preserve">
+    <value>Wählen Sie eine Stimme. Lassen Sie das Feld leer, um den Browser-Standard zu verwenden. Klicken Sie auf „Aktualisieren“, um nach Ihrer Browsersprache gefilterte Stimmen zu laden.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Volume_Tip" xml:space="preserve">
+    <value>Lautstärke der Sprachansagen (0 = stumm, 100 = volle Lautstärke).</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+  <data name="Voice_Volume" xml:space="preserve">
+    <value>Lautstärke (%)</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
+</root>

@@ -2,28 +2,27 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.FlipCameraAndroid" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">Flip Side of Pier</MudText>
+            <MudText Typo="Typo.h6">@Loc["FlipSop_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3" Class="mt-2">
             <MudText Typo="Typo.body2">
-                The mount will slew to the same sky position on the opposite pier side.
-                The telescope must be within the flip angle limits.
+                @Loc["FlipSop_Description"]
             </MudText>
             <MudDivider />
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                 <MudSwitch T="bool" @bind-Value="_flipOnNextGoto" Color="Color.Secondary"
-                           Label="Flip on next GoTo" />
+                           Label="@Loc["FlipSop_FlipOnNextGoto"]" />
             </MudStack>
             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                When enabled, the next GoTo slew will cross the meridian before tracking.
+                @Loc["FlipSop_FlipOnNextGotoHelp"]
             </MudText>
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="AcceptFlip">Flip Now</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">@Loc["Common_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="AcceptFlip">@Loc["FlipSop_FlipNow"]</MudButton>
     </DialogActions>
 </MudDialog>
 

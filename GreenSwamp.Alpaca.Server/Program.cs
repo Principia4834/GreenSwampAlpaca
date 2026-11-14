@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
+using MudBlazor.Translations;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -122,6 +123,10 @@ namespace GreenSwamp.Alpaca.Server
 
         public static async Task Main(string[] args)
         {
+            // Backend work (serial protocol, JSON, Alpaca REST, logging) is always culture invariant.
+            // Only Blazor circuits opt in to a regional format (see CircuitCulture and the localization middleware below).
+            GreenSwamp.Alpaca.Server.Helpers.BackendCulture.ApplyInvariantDefaults();
+
             // Bootstrap logger — active before the DI container is built.
             // Log level is read from the "Logging" section in appsettings.json after the host is built.
             // To get verbose output set "Logging:LogLevel:Default" to "Debug" in appsettings.json.
@@ -351,6 +356,9 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMudServices();
+            builder.Services.AddMudTranslations();
+            builder.Services.AddLocalization();
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Localization.CircuitCulture>();
             builder.Services.AddHttpContextAccessor();
 
             //Load any xml comments for this program, this helps with swagger
@@ -601,23 +609,27 @@ namespace GreenSwamp.Alpaca.Server
 
             var startupConfig = app.Services.GetRequiredService<IVersionedSettingsService>().GetServerConfig();
             supportedCultureSettings.ValidateServerDefaults(startupConfig);
-            app.UseRequestLocalization(new RequestLocalizationOptions
+            var requestLocalizationOptions = new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture(
                     startupConfig.DefaultRegionalFormat,
-                    startupConfig.DefaultDisplayLanguage),
+                    supportedCultureSettings.GetDisplayCulture(startupConfig.DefaultDisplayLanguage)!),
                 SupportedCultures = supportedCultureSettings.SupportedRegionalFormats
                     .Select(cultureName => CultureInfo.GetCultureInfo(cultureName))
                     .ToList(),
-                SupportedUICultures = supportedCultureSettings.SupportedDisplayLanguages
-                    .Select(cultureName => CultureInfo.GetCultureInfo(cultureName))
-                    .ToList(),
+                SupportedUICultures = supportedCultureSettings.GetSupportedDisplayCultures(),
                 RequestCultureProviders =
                 [
                     new CookieRequestCultureProvider(),
                     new AcceptLanguageHeaderRequestCultureProvider()
                 ]
-            });
+            };
+
+            // Regional format is a browser UI feature only. Alpaca REST, management, config and hub traffic
+            // never sees the cookie or Accept-Language and stays on the invariant process culture.
+            app.UseWhen(
+                context => !GreenSwamp.Alpaca.Server.Helpers.BackendCulture.IsInvariantPath(context.Request.Path),
+                branch => branch.UseRequestLocalization(requestLocalizationOptions));
 
             // Start Swagger on the Swagger endpoints if enabled.
             ASCOM.Alpaca.Razor.StartupHelpers.ConfigureSwagger(app);
@@ -892,17 +904,11 @@ namespace GreenSwamp.Alpaca.Server
             if (isInitialization)
             {
                 var serverDefaults = settingsService.GetServerConfig();
-                if (supportedCultures.IsSupportedDisplayLanguage(browserCulture) &&
-                    supportedCultures.IsSupportedRegionalFormat(browserCulture))
-                {
-                    selectedDisplayLanguage = browserCulture!;
-                    selectedRegionalFormat = browserCulture!;
-                }
-                else
-                {
-                    selectedDisplayLanguage = serverDefaults.DefaultDisplayLanguage;
-                    selectedRegionalFormat = serverDefaults.DefaultRegionalFormat;
-                }
+                selectedDisplayLanguage = supportedCultures.GetDisplayLanguageCode(browserCulture)
+                    ?? serverDefaults.DefaultDisplayLanguage;
+                selectedRegionalFormat = supportedCultures.IsSupportedRegionalFormat(browserCulture)
+                    ? browserCulture!
+                    : serverDefaults.DefaultRegionalFormat;
             }
             else
             {
@@ -916,7 +922,13 @@ namespace GreenSwamp.Alpaca.Server
                 selectedRegionalFormat = regionalFormat!;
             }
 
-            var requestCulture = new RequestCulture(selectedRegionalFormat, selectedDisplayLanguage);
+            var displayCulture = supportedCultures.GetDisplayCulture(selectedDisplayLanguage);
+            if (displayCulture is null)
+            {
+                return Results.BadRequest("The requested display language is not supported.");
+            }
+
+            var requestCulture = new RequestCulture(selectedRegionalFormat, displayCulture);
             context.Response.Cookies.Append(
                 cookieName,
                 CookieRequestCultureProvider.MakeCookieValue(requestCulture),

@@ -228,7 +228,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 if (!IPAddress.TryParse(ep[0], out ip))
                 { throw new FormatException("Invalid ip-address"); }
             }
-            return !int.TryParse(ep[ep.Length - 1], NumberStyles.None, NumberFormatInfo.CurrentInfo, out var port)
+            return !int.TryParse(ep[ep.Length - 1], NumberStyles.None, NumberFormatInfo.InvariantInfo, out var port)
                 ? throw new FormatException("Invalid port")
                 : new IPEndPoint(ip, port);
         }

@@ -64,7 +64,7 @@ namespace GreenSwamp.Alpaca.Shared
             foreach (var value in numbers)
             {
                 if (string.IsNullOrEmpty(value)) continue;
-                var ok = int.TryParse(value.Trim(), out var i);
+                var ok = int.TryParse(value.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var i);
                 if (ok) { return i; }
             }
             return null;
@@ -80,7 +80,7 @@ namespace GreenSwamp.Alpaca.Shared
             long value = 0;
             for (var i = 1; i + 1 < str.Length; i += 2)
             {
-                value += (long)(int.Parse(str.Substring(i, 2), NumberStyles.AllowHexSpecifier) * Math.Pow(16, i - 1));
+                value += (long)(int.Parse(str.Substring(i, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture) * Math.Pow(16, i - 1));
             }
             return value;
         }
@@ -96,7 +96,7 @@ namespace GreenSwamp.Alpaca.Shared
         {
             if (parseFirst && response.Length > 0)
             { response = response.Substring(1, response.Length - 1);}
-            var parsed = int.Parse(response, NumberStyles.HexNumber);
+            var parsed = int.Parse(response, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             var a = parsed / divFactor;
             return a;
         }

@@ -225,9 +225,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             var yTitle = _settings.RaDecScale switch
             {
-                "Degrees" => "Degrees",
-                "ArcSeconds" => "Arc Seconds",
-                _ => "Steps"
+                "Degrees" => Loc["Chart_Degrees"].Value,
+                "ArcSeconds" => Loc["Chart_ArcSeconds"].Value,
+                _ => Loc["Chart_Steps"].Value
             };
 
             var yFormatter = _settings.RaDecScale switch
@@ -280,7 +280,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
                 Title = new Title
                 {
-                    Text = $"{_axisLabels[0]} / {_axisLabels[1]} Chart",
+                    Text = Loc["Chart_RaDecTitle", AxisDisplay(_axisLabels[0]), AxisDisplay(_axisLabels[1])].Value,
                     Align = Align.Center
                 },
 
@@ -359,6 +359,16 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var max = _settings.RaDecMaxPoints > 0 ? _settings.RaDecMaxPoints : 5000;
             while (buffer.Count > max) buffer.RemoveAt(0);
         }
+
+        // _axisLabels stay as English identifiers (used as logging keys); this gives the display text.
+        private string AxisDisplay(string label) => label switch
+        {
+            "RA" => Loc["Coord_Ra"].Value,
+            "Dec" => Loc["Coord_Dec"].Value,
+            "Az" => Loc["Coord_Az"].Value,
+            "Alt" => Loc["Coord_Alt"].Value,
+            _ => label
+        };
 
         string[] AxisLabels(string alignmentMode)
         {

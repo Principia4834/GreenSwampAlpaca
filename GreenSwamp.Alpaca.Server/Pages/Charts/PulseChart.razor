@@ -11,7 +11,7 @@
 
 @implements IAsyncDisposable
 
-<PageTitle>Pulse Guide Chart — GS Alpaca</PageTitle>
+<PageTitle>@Loc["Chart_PulseTitle"]</PageTitle>
 
 <div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;padding:8px;box-sizing:border-box;">
 
@@ -19,7 +19,7 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-            <b style="color:var(--gs-accent-500);">Pulse</b> Guide &mdash; @Label &mdash; Device @DeviceNumber
+            @Loc.Html("Chart_PulseHeader", Label, DeviceNumber)
         </MudText>
 
         <MudSpacer />
@@ -28,66 +28,66 @@
         {
             <MudChip T="string" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small"
                      Icon="@Icons.Material.Filled.SignalWifiOff">
-                @(_hubState == HubConnectionState.Reconnecting ? "Reconnecting…" : "Disconnected")
+                @(_hubState == HubConnectionState.Reconnecting ? Loc["Chart_Reconnecting"].Value : Loc["Chart_Disconnected"].Value)
             </MudChip>
         }
 
         @* Data Window — disabled in Historical mode *@
-        <MudSelect T="int" Label="Data Window" Value="@_settings.PulseWindowSeconds"
+        <MudSelect T="int" Label="@Loc["Chart_DataWindow"]" Value="@_settings.PulseWindowSeconds"
                    ValueChanged="@OnWindowChangedAsync"
                    Disabled="@IsHistoricalMode"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
                    Style="min-width:6.875rem;">
-            <MudSelectItem Value="10">10 sec</MudSelectItem>
-            <MudSelectItem Value="30">30 sec</MudSelectItem>
-            <MudSelectItem Value="120">2 min</MudSelectItem>
-            <MudSelectItem Value="300">5 min</MudSelectItem>
-            <MudSelectItem Value="900">15 min</MudSelectItem>
-            <MudSelectItem Value="1800">30 min</MudSelectItem>
+            <MudSelectItem Value="10">@Loc["Chart_Win10s"]</MudSelectItem>
+            <MudSelectItem Value="30">@Loc["Chart_Win30s"]</MudSelectItem>
+            <MudSelectItem Value="120">@Loc["Chart_Win2m"]</MudSelectItem>
+            <MudSelectItem Value="300">@Loc["Chart_Win5m"]</MudSelectItem>
+            <MudSelectItem Value="900">@Loc["Chart_Win15m"]</MudSelectItem>
+            <MudSelectItem Value="1800">@Loc["Chart_Win30m"]</MudSelectItem>
         </MudSelect>
 
-        <MudSelect T="string" Label="Pulse Units" Value="@_settings.PulseScale"
+        <MudSelect T="string" Label="@Loc["Chart_PulseUnits"]" Value="@_settings.PulseScale"
                    ValueChanged="@OnScaleChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
                    Style="min-width:8.75rem;">
-            <MudSelectItem Value="@("Milliseconds")">milliSeconds</MudSelectItem>
-            <MudSelectItem Value="@("ArcSeconds")">Arc Seconds</MudSelectItem>
-            <MudSelectItem Value="@("Steps")">Steps</MudSelectItem>
+            <MudSelectItem Value="@("Milliseconds")">@Loc["Chart_Milliseconds"]</MudSelectItem>
+            <MudSelectItem Value="@("ArcSeconds")">@Loc["Chart_ArcSeconds"]</MudSelectItem>
+            <MudSelectItem Value="@("Steps")">@Loc["Chart_Steps"]</MudSelectItem>
         </MudSelect>
 
-        <MudSelect T="string" Label="Chart Type" Value="@_settings.PulseSeriesType"
+        <MudSelect T="string" Label="@Loc["Chart_ChartType"]" Value="@_settings.PulseSeriesType"
                    ValueChanged="@OnSeriesTypeChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
                    Style="min-width:6.5625rem;">
-            <MudSelectItem Value="@("Bars")">Bars</MudSelectItem>
-            <MudSelectItem Value="@("Points")">Points</MudSelectItem>
-            <MudSelectItem Value="@("Line")">Line</MudSelectItem>
+            <MudSelectItem Value="@("Bars")">@Loc["Chart_Bars"]</MudSelectItem>
+            <MudSelectItem Value="@("Points")">@Loc["Chart_Points"]</MudSelectItem>
+            <MudSelectItem Value="@("Line")">@Loc["Chart_Line"]</MudSelectItem>
         </MudSelect>
 
-        <MudTooltip Text="@(IsRealtimeMode ? "Pause (freeze to historical snapshot)" : "Resume realtime scrolling")"
+        <MudTooltip Text="@(IsRealtimeMode ? Loc["Chart_PauseTip"].Value : Loc["Chart_ResumeTip"].Value)"
                     Placement="Placement.Left">
             <MudIconButton Icon="@(IsRealtimeMode ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
                            Color="@(IsRealtimeMode ? MudBlazor.Color.Warning : MudBlazor.Color.Success)"
                            Variant="Variant.Outlined"
                            Size="MudBlazor.Size.Small"
                            OnClick="TogglePauseResumeAsync"
-                           aria-label="@(IsRealtimeMode ? "Pause chart updates" : "Resume chart updates")" />
+                           aria-label="@(IsRealtimeMode ? Loc["Chart_PauseAria"].Value : Loc["Chart_ResumeAria"].Value)" />
         </MudTooltip>
 
-        <MudSwitch T="bool" Label="RA"       Value="@_settings.ShowRaPulse"
+        <MudSwitch T="bool" Label="@Loc["Coord_Ra"]"       Value="@_settings.ShowRaPulse"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowRaPulse), v))"
                    Color="MudBlazor.Color.Error" />
-        <MudSwitch T="bool" Label="RA rej."  Value="@_settings.ShowRaRejected"
+        <MudSwitch T="bool" Label="@Loc["Chart_RaRejected"]"  Value="@_settings.ShowRaRejected"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowRaRejected), v))"
                    Color="MudBlazor.Color.Warning" />
-        <MudSwitch T="bool" Label="Dec"      Value="@_settings.ShowDecPulse"
+        <MudSwitch T="bool" Label="@Loc["Coord_Dec"]"      Value="@_settings.ShowDecPulse"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecPulse), v))"
                    Color="MudBlazor.Color.Info" />
-        <MudSwitch T="bool" Label="Dec rej." Value="@_settings.ShowDecRejected"
+        <MudSwitch T="bool" Label="@Loc["Chart_DecRejected"]" Value="@_settings.ShowDecRejected"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecRejected), v))"
                    Color="MudBlazor.Color.Success" />
 
-        <MudTooltip Text="Clear chart" Placement="Placement.Left">
+        <MudTooltip Text="@Loc["Chart_Clear"]" Placement="Placement.Left">
             <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Color ="MudBlazor.Color.Warning"
                            OnClick="ClearChartAsync" Size="MudBlazor.Size.Medium" />
         </MudTooltip>
@@ -107,7 +107,7 @@
 
                     <ApexPointSeries TItem="PulsePointDto"
                                         Items="@ChartItemsRa"
-                                        Name="RA"
+                                        Name="@Loc["Coord_Ra"].Value"
                                         SeriesType="@AcceptedSeriesType"
                                         XValue="@(p => p.TimestampMs)"
                                         YValue="@(p => (decimal)GetValue(p))"
@@ -116,7 +116,7 @@
 
                     <ApexPointSeries TItem="PulsePointDto"
                                         Items="@ChartItemsRaRej"
-                                        Name="RA rej."
+                                        Name="@Loc["Chart_RaRejected"].Value"
                                         SeriesType="SeriesType.Scatter"
                                         XValue="@(p => p.TimestampMs)"
                                         YValue="@(p => (decimal)GetValue(p))"
@@ -125,7 +125,7 @@
 
                     <ApexPointSeries TItem="PulsePointDto"
                                         Items="@ChartItemsDec"
-                                        Name="Dec"
+                                        Name="@Loc["Coord_Dec"].Value"
                                         SeriesType="@AcceptedSeriesType"
                                         XValue="@(p => p.TimestampMs)"
                                         YValue="@(p => (decimal)GetValue(p))"
@@ -134,7 +134,7 @@
 
                     <ApexPointSeries TItem="PulsePointDto"
                                         Items="@ChartItemsDecRej"
-                                        Name="Dec rej."
+                                        Name="@Loc["Chart_DecRejected"].Value"
                                         SeriesType="SeriesType.Scatter"
                                         XValue="@(p => p.TimestampMs)"
                                         YValue="@(p => (decimal)GetValue(p))"
@@ -145,7 +145,7 @@
             </ChildContent>
             <ErrorContent>
                 <MudAlert Severity="Severity.Error" Class="ma-2">
-                    Chart failed to render. Please close and reopen this window.
+                    @Loc["Chart_RenderFailed"]
                 </MudAlert>
             </ErrorContent>
         </ErrorBoundary>

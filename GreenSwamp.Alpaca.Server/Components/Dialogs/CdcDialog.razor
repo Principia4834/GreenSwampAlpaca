@@ -4,7 +4,7 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Language" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">Cartes du Ciel at @ConnectionParams.Address : @ConnectionParams.Port</MudText>
+            <MudText Typo="Typo.h6">@Loc["Cdc_Title", ConnectionParams.Address, ConnectionParams.Port]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
@@ -14,8 +14,8 @@
             @if (_state == DialogState.Idle)
             {
                 <MudAlert Severity="Severity.Normal" NoIcon="true" Dense="true">
-                    <p>Click Fetch to read the location from CdC.</p>
-                    <p>CdC must be open.</p>
+                    <p>@Loc["Cdc_IdleFetch"]</p>
+                    <p>@Loc["Cdc_IdleOpen"]</p>
                 </MudAlert>
             }
 
@@ -24,7 +24,7 @@
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
                     <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
-                    <MudText Typo="Typo.body1">Connecting to @ConnectionParams.Address&hellip;</MudText>
+                    <MudText Typo="Typo.body1">@Loc["Cdc_Connecting", ConnectionParams.Address]</MudText>
                 </MudStack>
             }
 
@@ -43,17 +43,17 @@
                     <thead>
                         <tr>
                             <th class="gs-kv-spacer"></th>
-                            <th>CdC</th>
+                            <th>@Loc["Cdc_ColCdc"]</th>
                             <th class="gs-kv-spacer"></th>
-                            <th>Local</th>
+                            <th>@Loc["Cdc_ColLocal"]</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Latitude</td>
-                            <td>@_cdcResult!.Latitude.ToString("F6")&deg;</td>
+                            <td>@Loc["Common_Latitude"]</td>
+                            <td>@_cdcResult!.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                             <td class="gs-kv-spacer">
-                                <MudTooltip Text="Copy Local → CdC" Placement="Placement.Left">
+                                <MudTooltip Text="@Loc["Cdc_CopyLocalToCdc"]" Placement="Placement.Left">
                                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
                                                    Size="Size.Large"
                                                    Color="Color.Primary"
@@ -61,13 +61,13 @@
                                                    OnClick="CopyToCdcAsync" />
                                 </MudTooltip>
                             </td>
-                            <td>@LocalLatitude.ToString("F6")&deg;</td>
+                            <td>@LocalLatitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                         </tr>
                         <tr>
-                            <td>Longitude</td>
-                            <td>@_cdcResult!.Longitude.ToString("F6")&deg;</td>
+                            <td>@Loc["Common_Longitude"]</td>
+                            <td>@_cdcResult!.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                             <td class="gs-kv-spacer">
-                                <MudTooltip Text="Copy CdC → Local" Placement="Placement.Right">
+                                <MudTooltip Text="@Loc["Cdc_CopyCdcToLocal"]" Placement="Placement.Right">
                                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
                                                    Size="Size.Large"
                                                    Color="Color.Primary"
@@ -75,10 +75,10 @@
                                                    OnClick="CopyFromCdc" />
                                 </MudTooltip>
                             </td>
-                            <td>@LocalLongitude.ToString("F6")&deg;</td>
+                            <td>@LocalLongitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                         </tr>
                         <tr>
-                            <td>Altitude</td>
+                            <td>@Loc["Common_Altitude"]</td>
                             <td>@_cdcResult!.Altitude.ToString("F1") m</td>
                             <td class="gs-kv-spacer"></td>
                             <td>@LocalAltitude.ToString("F1") m</td>
@@ -92,7 +92,7 @@
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
                     <MudProgressCircular Color="Color.Secondary" Indeterminate="true" Size="Size.Small" />
-                    <MudText Typo="Typo.body2">Sending location to CdC&hellip;</MudText>
+                    <MudText Typo="Typo.body2">@Loc["Cdc_Sending"]</MudText>
                 </MudStack>
             }
 
@@ -100,7 +100,7 @@
             @if (_state == DialogState.Sent)
             {
                 <MudAlert Severity="Severity.Success" Icon="@Icons.Material.Filled.CloudDone" Dense="true">
-                    Location sent to CdC successfully.
+                    @Loc["Cdc_Sent"]
                 </MudAlert>
             }
 
@@ -117,13 +117,13 @@
 
     <DialogActions>
         <MudStack Row="true" Justify="Justify.FlexEnd" Style="width: 100%" Spacing="1">
-            <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+            <MudButton OnClick="Cancel" Variant="Variant.Text">@Loc["Common_Cancel"]</MudButton>
             <MudButton Variant="Variant.Outlined"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.NetworkCheck"
                        Disabled="@(_state is DialogState.Connecting or DialogState.Sending)"
                        OnClick="TestConnectionAsync">
-                Fetch
+                @Loc["Cdc_Fetch"]
             </MudButton>
         </MudStack>
     </DialogActions>

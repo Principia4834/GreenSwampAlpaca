@@ -188,7 +188,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                 case "shutdown":
                     return Stop().ToString();
                 case "radecrate":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -202,7 +202,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     }
                     break;
                 case "moveaxisrate":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -216,7 +216,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     }
                     break;
                 case "slew":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -231,7 +231,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
                     break;
                 case "pulse":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -269,7 +269,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     StopAxis(ParseAxis(cmd[1]));
                     break;
                 case "hc":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -282,7 +282,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
 
                     break;
                 case "tracking":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -297,7 +297,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                 case "getrevsteps":
                     return $"{RevolutionSteps}";
                 case "gototarget":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -324,7 +324,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     HomeSensorReset(ParseAxis(cmd[1]));
                     break;
                 case "setdegrees":
-                    a = Convert.ToDouble(cmd[2]);
+                    a = Convert.ToDouble(cmd[2], System.Globalization.CultureInfo.InvariantCulture);
                     switch (ParseAxis(cmd[1]))
                     {
                         case Axis.Axis1:
@@ -358,7 +358,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                 case "factorsteps":
                     return $"{FactorSteps}";
                 case "gotorate":
-                    var x = Convert.ToInt32(cmd[1]);
+                    var x = Convert.ToInt32(cmd[1], System.Globalization.CultureInfo.InvariantCulture);
                     if (x >= 1 && x <= 20)
                     {
                         SlewSpeedEight = x;
@@ -366,7 +366,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
                     break;
                 case "snapport":
                     var s = Convert.ToBoolean(cmd[2]);
-                    switch (Convert.ToInt32(cmd[1]))
+                    switch (Convert.ToInt32(cmd[1], System.Globalization.CultureInfo.InvariantCulture))
                     {
                         case 1:
                             if (SnapPort1 != s){SnapPort1 = s;}

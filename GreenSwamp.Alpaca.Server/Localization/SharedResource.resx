@@ -1,0 +1,3141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Nav_Control" xml:space="preserve">
+    <value>Control</value>
+  </data>
+  <data name="Nav_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Nav_Configuration" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>Monitor</value>
+    <comment>WPF: optMonitor</comment>
+  </data>
+  <data name="Nav_SettingsExplorer" xml:space="preserve">
+    <value>Settings Explorer</value>
+  </data>
+  <data name="Nav_CheckSettings" xml:space="preserve">
+    <value>Check Settings</value>
+  </data>
+  <data name="Nav_Shutdown" xml:space="preserve">
+    <value>Shutdown</value>
+  </data>
+  <data name="Nav_ChartPopupBlocked" xml:space="preserve">
+    <value>Chart window was blocked. Please allow pop-ups for this site.</value>
+  </data>
+  <data name="Layout_Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Layout_Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Common_Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Common_MountNotFound" xml:space="preserve">
+    <value>Mount device {0} not found</value>
+  </data>
+  <data name="Common_ErrorWithMessage" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="MountButtons_UnparkTooltip" xml:space="preserve">
+    <value>Unpark the mount</value>
+  </data>
+  <data name="MountButtons_ParkTooltip" xml:space="preserve">
+    <value>Park the mount at the selected position</value>
+  </data>
+  <data name="MountButtons_HomeTooltip" xml:space="preserve">
+    <value>Slew to the home position</value>
+  </data>
+  <data name="MountButtons_TrackingOffTooltip" xml:space="preserve">
+    <value>Turn tracking off</value>
+  </data>
+  <data name="MountButtons_TrackingOnTooltip" xml:space="preserve">
+    <value>Turn tracking on</value>
+  </data>
+  <data name="MountButtons_FlipTooltip" xml:space="preserve">
+    <value>Flip the telescope to the opposite pier side</value>
+  </data>
+  <data name="MountButtons_ReSyncTooltip" xml:space="preserve">
+    <value>Resync axes to a reference position</value>
+  </data>
+  <data name="MountButtons_AutoHomeRunningTooltip" xml:space="preserve">
+    <value>AutoHome running…</value>
+  </data>
+  <data name="MountButtons_AutoHomeTooltip" xml:space="preserve">
+    <value>Search for home sensor and reset axes</value>
+  </data>
+  <data name="MountButtons_LimitsOffTooltip" xml:space="preserve">
+    <value>Disable slewing and tracking limits</value>
+  </data>
+  <data name="MountButtons_LimitsOnTooltip" xml:space="preserve">
+    <value>Enable slewing and tracking limits</value>
+  </data>
+  <data name="MountButtons_SettingsTooltip" xml:space="preserve">
+    <value>Set park positions and slew limits</value>
+  </data>
+  <data name="MountButtons_StopTooltip" xml:space="preserve">
+    <value>Emergency stop all axis motion</value>
+  </data>
+  <data name="MountButtons_UnparkConfirm" xml:space="preserve">
+    <value>Unpark the mount?</value>
+  </data>
+  <data name="MountButtons_Unpark" xml:space="preserve">
+    <value>Unpark</value>
+    <comment>WPF: btnUnPark</comment>
+  </data>
+  <data name="MountButtons_UnparkFailed" xml:space="preserve">
+    <value>Unpark failed</value>
+  </data>
+  <data name="MountButtons_ParkConfirm" xml:space="preserve">
+    <value>Park the mount?</value>
+  </data>
+  <data name="MountButtons_ParkAtConfirm" xml:space="preserve">
+    <value>Park the mount at '{0}'?</value>
+  </data>
+  <data name="MountButtons_Park" xml:space="preserve">
+    <value>Park</value>
+    <comment>WPF: btnPark (ambiguous: btnPark, botTipParked, gpPark)</comment>
+  </data>
+  <data name="MountButtons_ParkFailed" xml:space="preserve">
+    <value>Park failed</value>
+  </data>
+  <data name="MountButtons_HomeConfirm" xml:space="preserve">
+    <value>Slew to the home position?</value>
+  </data>
+  <data name="MountButtons_GoToHome" xml:space="preserve">
+    <value>Go to Home</value>
+  </data>
+  <data name="MountButtons_HomeFailed" xml:space="preserve">
+    <value>Home failed</value>
+  </data>
+  <data name="MountButtons_TrackingToggleFailed" xml:space="preserve">
+    <value>Tracking toggle failed</value>
+  </data>
+  <data name="MountButtons_ReSyncTitle" xml:space="preserve">
+    <value>ReSync Axes</value>
+  </data>
+  <data name="MountButtons_ReSyncFailed" xml:space="preserve">
+    <value>ReSync failed</value>
+  </data>
+  <data name="MountButtons_FlipTitle" xml:space="preserve">
+    <value>Flip Side of Pier</value>
+    <comment>WPF: btnTipFlip</comment>
+  </data>
+  <data name="MountButtons_FlipFailed" xml:space="preserve">
+    <value>Flip SOP failed: {0}</value>
+  </data>
+  <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
+    <value>AutoHome</value>
+    <comment>WPF: btnAutoHome</comment>
+  </data>
+  <data name="MountButtons_LimitsToggleFailed" xml:space="preserve">
+    <value>Limits toggle failed</value>
+  </data>
+  <data name="MountButtons_StopFailed" xml:space="preserve">
+    <value>Stop failed</value>
+  </data>
+  <data name="AutoHome_Title" xml:space="preserve">
+    <value>AutoHome</value>
+  </data>
+  <data name="AutoHome_Searching" xml:space="preserve">
+    <value>Searching for home sensor…</value>
+  </data>
+  <data name="AutoHome_DegreeLimit" xml:space="preserve">
+    <value>Degree limit</value>
+  </data>
+  <data name="AutoHome_DegreeLimitHelp" xml:space="preserve">
+    <value>Maximum degrees to travel when searching for the home sensor</value>
+  </data>
+  <data name="AutoHome_DecOffset" xml:space="preserve">
+    <value>Dec offset</value>
+  </data>
+  <data name="AutoHome_DecOffsetHelp" xml:space="preserve">
+    <value>Dec axis offset applied after home is found</value>
+  </data>
+  <data name="AutoHome_SensorPositions" xml:space="preserve">
+    <value>Sensor positions (GEM)</value>
+  </data>
+  <data name="AutoHome_RaSensorPosition" xml:space="preserve">
+    <value>RA sensor position</value>
+  </data>
+  <data name="AutoHome_RaSensorHelp" xml:space="preserve">
+    <value>Expected RA axis position at home sensor</value>
+  </data>
+  <data name="AutoHome_DecSensorPosition" xml:space="preserve">
+    <value>Dec sensor position</value>
+  </data>
+  <data name="AutoHome_DecSensorHelp" xml:space="preserve">
+    <value>Expected Dec axis position at home sensor</value>
+  </data>
+  <data name="AutoHome_ResetSensors" xml:space="preserve">
+    <value>Reset sensor positions to 90</value>
+  </data>
+  <data name="AutoHome_Failed" xml:space="preserve">
+    <value>AutoHome failed: {0}</value>
+  </data>
+  <data name="AutoHome_Complete" xml:space="preserve">
+    <value>AutoHome complete</value>
+  </data>
+  <data name="AutoHome_MountNotFound" xml:space="preserve">
+    <value>Mount not found</value>
+  </data>
+  <data name="FlipSop_Title" xml:space="preserve">
+    <value>Flip Side of Pier</value>
+  </data>
+  <data name="FlipSop_Description" xml:space="preserve">
+    <value>The mount will slew to the same sky position on the opposite pier side. The telescope must be within the flip angle limits.</value>
+  </data>
+  <data name="FlipSop_FlipOnNextGoto" xml:space="preserve">
+    <value>Flip on next GoTo</value>
+  </data>
+  <data name="FlipSop_FlipOnNextGotoHelp" xml:space="preserve">
+    <value>When enabled, the next GoTo slew will cross the meridian before tracking.</value>
+  </data>
+  <data name="FlipSop_FlipNow" xml:space="preserve">
+    <value>Flip Now</value>
+  </data>
+  <data name="ReSync_Title" xml:space="preserve">
+    <value>ReSync Axes</value>
+  </data>
+  <data name="ReSync_Description" xml:space="preserve">
+    <value>Resync the axes to a reference point without moving the mount.</value>
+  </data>
+  <data name="ReSync_ToHome" xml:space="preserve">
+    <value>Sync to Home position</value>
+  </data>
+  <data name="ReSync_ToPark" xml:space="preserve">
+    <value>Sync to Park position</value>
+  </data>
+  <data name="ReSync_ParkPosition" xml:space="preserve">
+    <value>Park position</value>
+  </data>
+  <data name="ReSync_Button" xml:space="preserve">
+    <value>ReSync</value>
+    <comment>WPF: btnReSync</comment>
+  </data>
+  <data name="Common_Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="About_TabAbout" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="About_TabCredits" xml:space="preserve">
+    <value>Credits</value>
+  </data>
+  <data name="About_TabLicense" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="About_OnlineHelp" xml:space="preserve">
+    <value>Online Help</value>
+  </data>
+  <data name="About_ContentUnavailable" xml:space="preserve">
+    <value>Content is not available.</value>
+  </data>
+  <data name="AcceptCoords_Title" xml:space="preserve">
+    <value>Accept Coordinates</value>
+  </data>
+  <data name="Coord_Ra" xml:space="preserve">
+    <value>RA</value>
+  </data>
+  <data name="Coord_Dec" xml:space="preserve">
+    <value>Dec</value>
+  </data>
+  <data name="Coord_Az" xml:space="preserve">
+    <value>Az</value>
+  </data>
+  <data name="Coord_Alt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="AddDevice_Title" xml:space="preserve">
+    <value>Add Telescope Device</value>
+  </data>
+  <data name="AddDevice_DeviceName" xml:space="preserve">
+    <value>Device Name</value>
+  </data>
+  <data name="AddDevice_DeviceNamePlaceholder" xml:space="preserve">
+    <value>e.g. EQ6-R Pro</value>
+  </data>
+  <data name="AddDevice_DeviceNameRequired" xml:space="preserve">
+    <value>Device name is required</value>
+  </data>
+  <data name="AddDevice_MountType" xml:space="preserve">
+    <value>Mount Type</value>
+  </data>
+  <data name="AddDevice_MountTypeHelp" xml:space="preserve">
+    <value>Applies Simulator or SkyWatcher default settings</value>
+  </data>
+  <data name="AddDevice_Simulator" xml:space="preserve">
+    <value>No physical mount, use for testing and simulation</value>
+  </data>
+  <data name="AddDevice_SkyWatcher" xml:space="preserve">
+    <value>Physical mount, must support SkyWatcher / Synta commands</value>
+  </data>
+  <data name="AddDevice_AlignmentMode" xml:space="preserve">
+    <value>Alignment Mode</value>
+  </data>
+  <data name="AddDevice_AlignmentModeHelp" xml:space="preserve">
+    <value>Applies alignment mode specific default settings</value>
+  </data>
+  <data name="AddDevice_Gem" xml:space="preserve">
+    <value>German Equatorial (GEM) — counterweight, meridian flip</value>
+  </data>
+  <data name="AddDevice_Polar" xml:space="preserve">
+    <value>Polar / Fork — fork equatorial, no meridian flip</value>
+  </data>
+  <data name="AddDevice_AltAz" xml:space="preserve">
+    <value>Alt-Azimuth — altitude / azimuth axes</value>
+  </data>
+  <data name="AddDevice_Note" xml:space="preserve">
+    <value>All other settings can be configured in the device's &lt;strong&gt;Mount Configuration&lt;/strong&gt; group after the device is added.</value>
+  </data>
+  <data name="AddDevice_Add" xml:space="preserve">
+    <value>Add Device</value>
+  </data>
+  <data name="AddObservatory_Title" xml:space="preserve">
+    <value>Add Observatory</value>
+  </data>
+  <data name="AddObservatory_Name" xml:space="preserve">
+    <value>Observatory Name</value>
+  </data>
+  <data name="AddObservatory_NamePlaceholder" xml:space="preserve">
+    <value>e.g. Backyard Observatory</value>
+  </data>
+  <data name="AddObservatory_NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="AddObservatory_NameExists" xml:space="preserve">
+    <value>An observatory with this name already exists.</value>
+  </data>
+  <data name="AddObservatory_Latitude" xml:space="preserve">
+    <value>Latitude (°)</value>
+  </data>
+  <data name="AddObservatory_Longitude" xml:space="preserve">
+    <value>Longitude (°)</value>
+  </data>
+  <data name="AddObservatory_Elevation" xml:space="preserve">
+    <value>Elevation (m)</value>
+  </data>
+  <data name="AddObservatory_UtcOffset" xml:space="preserve">
+    <value>UTC Offset (h)</value>
+  </data>
+  <data name="AddObservatory_Add" xml:space="preserve">
+    <value>Add Observatory</value>
+  </data>
+  <data name="Breaking_Title" xml:space="preserve">
+    <value>Breaking Settings Change</value>
+  </data>
+  <data name="Breaking_ClientsDisconnected" xml:space="preserve">
+    <value>{0} connected ASCOM/Alpaca client(s) will be forcibly disconnected from {1}.</value>
+  </data>
+  <data name="Breaking_ClientsReconnect" xml:space="preserve">
+    <value>All clients must reconnect after this change is applied.</value>
+  </data>
+  <data name="Breaking_RestartRequired" xml:space="preserve">
+    <value>The following setting(s) require the device to stop and restart:</value>
+  </data>
+  <data name="Breaking_DisconnectRestart" xml:space="preserve">
+    <value>Disconnect &amp; Restart</value>
+  </data>
+  <data name="DeleteDevice_Title" xml:space="preserve">
+    <value>Delete Device</value>
+  </data>
+  <data name="DeleteDevice_CannotUndo" xml:space="preserve">
+    <value>This action cannot be undone.</value>
+  </data>
+  <data name="DeleteDevice_Removal" xml:space="preserve">
+    <value>Device &lt;strong&gt;{0} — {1}&lt;/strong&gt; and all its settings files will be permanently removed.</value>
+  </data>
+  <data name="DeleteDevice_Hint" xml:space="preserve">
+    <value>Any Alpaca client currently connected to this device will lose its connection. Click &lt;strong&gt;Apply Changes&lt;/strong&gt; in the Telescope Devices panel afterwards to make the removal live without restarting the server.</value>
+  </data>
+  <data name="DeleteDevice_Delete" xml:space="preserve">
+    <value>Delete Device</value>
+  </data>
+  <data name="HotReload_Title" xml:space="preserve">
+    <value>Apply Device Changes</value>
+  </data>
+  <data name="HotReload_Disconnect" xml:space="preserve">
+    <value>{0} connected device(s) will be forcibly disconnected.</value>
+  </data>
+  <data name="HotReload_Warning" xml:space="preserve">
+    <value>All active device sessions will be stopped and the device registry will be rebuilt from the current settings files. Any Alpaca client connected during this operation must reconnect afterwards.</value>
+  </data>
+  <data name="HotReload_Hint" xml:space="preserve">
+    <value>This applies all pending device additions and deletions without restarting the server.</value>
+  </data>
+  <data name="HotReload_Apply" xml:space="preserve">
+    <value>Apply Hot Reload</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Common_Latitude" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="Common_Longitude" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="Common_Altitude" xml:space="preserve">
+    <value>Altitude</value>
+  </data>
+  <data name="Cdc_Title" xml:space="preserve">
+    <value>Cartes du Ciel at {0} : {1}</value>
+  </data>
+  <data name="Cdc_IdleFetch" xml:space="preserve">
+    <value>Click Fetch to read the location from CdC.</value>
+  </data>
+  <data name="Cdc_IdleOpen" xml:space="preserve">
+    <value>CdC must be open.</value>
+  </data>
+  <data name="Cdc_Connecting" xml:space="preserve">
+    <value>Connecting to {0}…</value>
+  </data>
+  <data name="Cdc_ColCdc" xml:space="preserve">
+    <value>CdC</value>
+  </data>
+  <data name="Cdc_ColLocal" xml:space="preserve">
+    <value>Local</value>
+  </data>
+  <data name="Cdc_CopyLocalToCdc" xml:space="preserve">
+    <value>Copy Local → CdC</value>
+  </data>
+  <data name="Cdc_CopyCdcToLocal" xml:space="preserve">
+    <value>Copy CdC → Local</value>
+  </data>
+  <data name="Cdc_Sending" xml:space="preserve">
+    <value>Sending location to CdC…</value>
+  </data>
+  <data name="Cdc_Sent" xml:space="preserve">
+    <value>Location sent to CdC successfully.</value>
+  </data>
+  <data name="Cdc_Fetch" xml:space="preserve">
+    <value>Fetch</value>
+  </data>
+  <data name="Gps_Title" xml:space="preserve">
+    <value>GPS Fix</value>
+  </data>
+  <data name="Gps_Reading" xml:space="preserve">
+    <value>Reading from {0}…</value>
+  </data>
+  <data name="Gps_Nmea" xml:space="preserve">
+    <value>NMEA</value>
+  </data>
+  <data name="Gps_GpsUtc" xml:space="preserve">
+    <value>GPS UTC</value>
+  </data>
+  <data name="Gps_PcUtc" xml:space="preserve">
+    <value>PC UTC</value>
+  </data>
+  <data name="Gps_NotReported" xml:space="preserve">
+    <value>Not reported</value>
+  </data>
+  <data name="Gps_TimeDifference" xml:space="preserve">
+    <value>Time Difference</value>
+  </data>
+  <data name="Gps_NoTimestamp" xml:space="preserve">
+    <value>N/A — no GPS timestamp received</value>
+  </data>
+  <data name="Gps_Ahead" xml:space="preserve">
+    <value>GPS ahead of PC by {0:F2} s</value>
+  </data>
+  <data name="Gps_Behind" xml:space="preserve">
+    <value>GPS behind PC by {0:F2} s</value>
+  </data>
+  <data name="HcSettings_Title" xml:space="preserve">
+    <value>HC Settings — Device {0}</value>
+  </data>
+  <data name="HcSettings_AxisTab" xml:space="preserve">
+    <value>Axis Settings</value>
+  </data>
+  <data name="HcSettings_PulseTab" xml:space="preserve">
+    <value>Pulse Guide Rates</value>
+  </data>
+  <data name="HcSettings_FlipRa" xml:space="preserve">
+    <value>Flip RA/Az</value>
+  </data>
+  <data name="HcSettings_FlipDec" xml:space="preserve">
+    <value>Flip Dec/Alt</value>
+  </data>
+  <data name="HcSettings_AntiRa" xml:space="preserve">
+    <value>Anti-backlash RA/Az</value>
+  </data>
+  <data name="HcSettings_AntiDec" xml:space="preserve">
+    <value>Anti-backlash Dec/Alt</value>
+  </data>
+  <data name="ParkPos_Title" xml:space="preserve">
+    <value>Manage Park Positions</value>
+  </data>
+  <data name="ParkPos_NotConnected" xml:space="preserve">
+    <value>Mount is not connected. Connect the mount to create or update positions.</value>
+  </data>
+  <data name="ParkPos_Position" xml:space="preserve">
+    <value>Park Position</value>
+  </data>
+  <data name="ParkPos_UpdateTooltip" xml:space="preserve">
+    <value>Set this position's coordinates to the current mount position</value>
+  </data>
+  <data name="ParkPos_UpdateButton" xml:space="preserve">
+    <value>Update from Current Position</value>
+  </data>
+  <data name="ParkPos_CannotDeleteLast" xml:space="preserve">
+    <value>Cannot delete the last park position</value>
+  </data>
+  <data name="ParkPos_DeleteTooltip" xml:space="preserve">
+    <value>Delete the selected park position</value>
+  </data>
+  <data name="ParkPos_MountMustBeConnected" xml:space="preserve">
+    <value>Mount must be connected to create a position</value>
+  </data>
+  <data name="ParkPos_AddTooltip" xml:space="preserve">
+    <value>Add a new park position from the current mount position</value>
+  </data>
+  <data name="ParkPos_AddNew" xml:space="preserve">
+    <value>Add New Position</value>
+  </data>
+  <data name="ParkPos_Name" xml:space="preserve">
+    <value>Position Name</value>
+  </data>
+  <data name="ParkPos_MaxChars" xml:space="preserve">
+    <value>Max 12 characters</value>
+  </data>
+  <data name="ParkPos_Updated" xml:space="preserve">
+    <value>Park position '{0}' updated from current mount position.</value>
+  </data>
+  <data name="ParkPos_UpdateFailed" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+  <data name="ParkPos_Deleted" xml:space="preserve">
+    <value>Park position '{0}' deleted.</value>
+  </data>
+  <data name="ParkPos_DeleteFailed" xml:space="preserve">
+    <value>Delete failed: {0}</value>
+  </data>
+  <data name="ParkPos_Created" xml:space="preserve">
+    <value>Park position '{0}' created.</value>
+  </data>
+  <data name="ParkPos_CreateFailed" xml:space="preserve">
+    <value>Create failed: {0}</value>
+  </data>
+  <data name="Export_Preparing" xml:space="preserve">
+    <value>Preparing export of all settings and user logs...</value>
+  </data>
+  <data name="Export_Creating" xml:space="preserve">
+    <value>Creating export file...</value>
+  </data>
+  <data name="Export_Files" xml:space="preserve">
+    <value>Files:</value>
+  </data>
+  <data name="Export_EstimatedSize" xml:space="preserve">
+    <value>Estimated download size:</value>
+  </data>
+  <data name="Export_Success" xml:space="preserve">
+    <value>Backup created successfully! Download started.</value>
+  </data>
+  <data name="Export_SuccessInfo" xml:space="preserve">
+    <value>Your export file contains all JSON settings files and logs.</value>
+  </data>
+  <data name="Export_CreateButton" xml:space="preserve">
+    <value>Create Export</value>
+  </data>
+  <data name="Export_LoadFailed" xml:space="preserve">
+    <value>Failed to load backup information: {0}</value>
+  </data>
+  <data name="Export_CreateFailed" xml:space="preserve">
+    <value>Error creating export: {0}</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Home_DeviceNumber" xml:space="preserve">
+    <value>Device number</value>
+  </data>
+  <data name="Home_DeviceName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Home_DeviceDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Home_DeviceMountType" xml:space="preserve">
+    <value>Mount type</value>
+  </data>
+  <data name="Home_DeviceAlignment" xml:space="preserve">
+    <value>Alignment mode</value>
+    <comment>WPF: notAlignmentMode (ambiguous: notAlignmentMode, skyAlignment)</comment>
+  </data>
+  <data name="Home_DeviceStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Home_OpenControl" xml:space="preserve">
+    <value>Open control page for {0}</value>
+  </data>
+  <data name="Home_DeviceInformation" xml:space="preserve">
+    <value>Device information</value>
+  </data>
+  <data name="Home_DeviceInformationFor" xml:space="preserve">
+    <value>Device information for {0}</value>
+  </data>
+  <data name="Home_DeviceConnected" xml:space="preserve">
+    <value>Device connected</value>
+  </data>
+  <data name="Home_DeviceNotConnected" xml:space="preserve">
+    <value>Device not connected</value>
+  </data>
+  <data name="Home_Connected" xml:space="preserve">
+    <value>Connected</value>
+    <comment>WPF: focuserConnected</comment>
+  </data>
+  <data name="Home_NotConnected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="Home_DeviceSettings" xml:space="preserve">
+    <value>Device settings</value>
+  </data>
+  <data name="Home_SettingsFor" xml:space="preserve">
+    <value>Settings for {0}</value>
+  </data>
+  <data name="Home_NoCarousel" xml:space="preserve">
+    <value>No carousel images are configured.</value>
+  </data>
+  <data name="Home_CarouselTooltip" xml:space="preserve">
+    <value>Click image to stop and start auto-scrolling</value>
+  </data>
+  <data name="Home_ImageNotFound" xml:space="preserve">
+    <value>Image not found: {0}</value>
+  </data>
+  <data name="Home_DevicesLabel" xml:space="preserve">
+    <value>Telescope devices</value>
+  </data>
+  <data name="Home_NoDevices" xml:space="preserve">
+    <value>No telescope devices are configured.</value>
+  </data>
+  <data name="Home_DefaultDeviceName" xml:space="preserve">
+    <value>Device {0}</value>
+  </data>
+  <data name="Alignment_Gem" xml:space="preserve">
+    <value>German Equatorial (GEM)</value>
+  </data>
+  <data name="Alignment_Polar" xml:space="preserve">
+    <value>Polar / Fork</value>
+  </data>
+  <data name="Alignment_AltAz" xml:space="preserve">
+    <value>Alt-Azimuth</value>
+  </data>
+  <data name="DeviceMgr_Title" xml:space="preserve">
+    <value>Telescope Devices</value>
+  </data>
+  <data name="DeviceMgr_Subtitle" xml:space="preserve">
+    <value>Manage connected telescope mount devices</value>
+  </data>
+  <data name="DeviceMgr_NoDevices" xml:space="preserve">
+    <value>No telescope devices are configured. Add a device to get started.</value>
+  </data>
+  <data name="DeviceMgr_DeviceLine" xml:space="preserve">
+    <value>Device {0} - {1}</value>
+  </data>
+  <data name="DeviceMgr_DeleteTooltip" xml:space="preserve">
+    <value>Permanently delete this device and all its settings</value>
+  </data>
+  <data name="DeviceMgr_ApplyTooltip" xml:space="preserve">
+    <value>Apply all device additions and deletions without restarting the server</value>
+  </data>
+  <data name="DeviceMgr_ApplyChanges" xml:space="preserve">
+    <value>Apply Changes</value>
+  </data>
+  <data name="MountInfo_Azimuth" xml:space="preserve">
+    <value>Azimuth</value>
+    <comment>WPF: lbAxisX</comment>
+  </data>
+  <data name="MountInfo_Altitude" xml:space="preserve">
+    <value>Altitude</value>
+    <comment>WPF: lbAxisY</comment>
+  </data>
+  <data name="MountInfo_RightAscension" xml:space="preserve">
+    <value>Right Ascension</value>
+    <comment>WPF: topRa</comment>
+  </data>
+  <data name="MountInfo_Declination" xml:space="preserve">
+    <value>Declination</value>
+    <comment>WPF: topDec</comment>
+  </data>
+  <data name="MountInfo_XAxis" xml:space="preserve">
+    <value>X Axis</value>
+  </data>
+  <data name="MountInfo_YAxis" xml:space="preserve">
+    <value>Y Axis</value>
+  </data>
+  <data name="MountInfo_RaDec" xml:space="preserve">
+    <value>RA / Dec</value>
+  </data>
+  <data name="MountInfo_AltAz" xml:space="preserve">
+    <value>Alt / Az</value>
+  </data>
+  <data name="MountInfo_Optics" xml:space="preserve">
+    <value>Optics</value>
+    <comment>WPF: lbOptics</comment>
+  </data>
+  <data name="MountInfo_RaDecTooltip" xml:space="preserve">
+    <value>Show right ascension and declination</value>
+  </data>
+  <data name="MountInfo_AltAzTooltip" xml:space="preserve">
+    <value>Show altitude and azimuth</value>
+  </data>
+  <data name="MountInfo_OpticsTooltip" xml:space="preserve">
+    <value>Show telescope optics angles</value>
+  </data>
+  <data name="MountInfo_AxesChartTooltip" xml:space="preserve">
+    <value>Open axes chart in new window</value>
+  </data>
+  <data name="MountInfo_AxesChart" xml:space="preserve">
+    <value>Axes Chart</value>
+  </data>
+  <data name="MountInfo_PulseChartTooltip" xml:space="preserve">
+    <value>Open pulse chart in new window</value>
+  </data>
+  <data name="MountInfo_PulseChart" xml:space="preserve">
+    <value>Pulse Chart</value>
+  </data>
+  <data name="MountInfo_View3DTooltip" xml:space="preserve">
+    <value>Open 3D view in new window</value>
+  </data>
+  <data name="MountInfo_View3D" xml:space="preserve">
+    <value>3D View</value>
+  </data>
+  <data name="Health_Title" xml:space="preserve">
+    <value>Settings Health Status</value>
+  </data>
+  <data name="Health_Validating" xml:space="preserve">
+    <value>Validating settings...</value>
+  </data>
+  <data name="Health_AllValid" xml:space="preserve">
+    <value>All settings are valid.</value>
+  </data>
+  <data name="Health_WarningCount" xml:space="preserve">
+    <value>({0} warning(s))</value>
+  </data>
+  <data name="Health_Failed" xml:space="preserve">
+    <value>Settings validation failed.</value>
+  </data>
+  <data name="Health_ErrorsFound" xml:space="preserve">
+    <value>{0} error(s) found.</value>
+  </data>
+  <data name="Health_SettingsFile" xml:space="preserve">
+    <value>Settings file:</value>
+  </data>
+  <data name="Health_Errors" xml:space="preserve">
+    <value>Errors ({0})</value>
+  </data>
+  <data name="Health_Warnings" xml:space="preserve">
+    <value>Warnings ({0})</value>
+  </data>
+  <data name="Health_Device" xml:space="preserve">
+    <value>Device {0}</value>
+  </data>
+  <data name="Health_AutoRepairable" xml:space="preserve">
+    <value>Auto-repairable</value>
+  </data>
+  <data name="Health_Resolution" xml:space="preserve">
+    <value>Resolution:</value>
+  </data>
+  <data name="Health_Revalidate" xml:space="preserve">
+    <value>Re-validate</value>
+  </data>
+  <data name="Health_OpenFolder" xml:space="preserve">
+    <value>Open Settings Folder</value>
+  </data>
+  <data name="Health_Unable" xml:space="preserve">
+    <value>Unable to validate settings. Click &lt;strong&gt;Re-validate&lt;/strong&gt; to try again.</value>
+  </data>
+  <data name="Health_ValidationError" xml:space="preserve">
+    <value>Validation error: {0}</value>
+  </data>
+  <data name="Health_UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred during validation: {0}</value>
+  </data>
+  <data name="Health_CheckLogs" xml:space="preserve">
+    <value>Check application logs for details.</value>
+  </data>
+  <data name="AxisDial_AriaLabel" xml:space="preserve">
+    <value>{0} dial showing {1} degrees</value>
+  </data>
+  <data name="HandCtl_NorthWest" xml:space="preserve">
+    <value>North-West</value>
+  </data>
+  <data name="HandCtl_North" xml:space="preserve">
+    <value>North</value>
+  </data>
+  <data name="HandCtl_NorthEast" xml:space="preserve">
+    <value>North-East</value>
+  </data>
+  <data name="HandCtl_West" xml:space="preserve">
+    <value>West</value>
+  </data>
+  <data name="HandCtl_East" xml:space="preserve">
+    <value>East</value>
+  </data>
+  <data name="HandCtl_SouthWest" xml:space="preserve">
+    <value>South-West</value>
+  </data>
+  <data name="HandCtl_South" xml:space="preserve">
+    <value>South</value>
+  </data>
+  <data name="HandCtl_SouthEast" xml:space="preserve">
+    <value>South-East</value>
+  </data>
+  <data name="HandCtl_SpeedTooltip" xml:space="preserve">
+    <value>Hand controller motion speed</value>
+  </data>
+  <data name="HandCtl_Speed" xml:space="preserve">
+    <value>Speed: {0}</value>
+  </data>
+  <data name="HandCtl_OneClickTooltip" xml:space="preserve">
+    <value>One click starts and stops motion</value>
+  </data>
+  <data name="HandCtl_OneClickStart" xml:space="preserve">
+    <value>One Click Start</value>
+  </data>
+  <data name="HandCtl_KeysOffTooltip" xml:space="preserve">
+    <value>Keys disabled while slewing</value>
+  </data>
+  <data name="HandCtl_KeysOff" xml:space="preserve">
+    <value>Keys Off for Go To</value>
+  </data>
+  <data name="HandCtl_EditTooltip" xml:space="preserve">
+    <value>Edit hand controller settings</value>
+  </data>
+  <data name="HandCtl_AxesTooltip" xml:space="preserve">
+    <value>Axes motion control</value>
+  </data>
+  <data name="HandCtl_Axes" xml:space="preserve">
+    <value>Axes</value>
+  </data>
+  <data name="HandCtl_GuidingTooltip" xml:space="preserve">
+    <value>Guiding motion control</value>
+  </data>
+  <data name="HandCtl_Guiding" xml:space="preserve">
+    <value>Guiding</value>
+  </data>
+  <data name="HandCtl_PulseTooltip" xml:space="preserve">
+    <value>Pulse motion control</value>
+  </data>
+  <data name="HandCtl_Pulse" xml:space="preserve">
+    <value>Pulse</value>
+  </data>
+  <data name="HandCtl_PulseGuidesTitle" xml:space="preserve">
+    <value>HC Pulse Guides</value>
+  </data>
+  <data name="GoTo_PanelTitle" xml:space="preserve">
+    <value>GoTo &amp; Slew</value>
+  </data>
+  <data name="GoTo_SettingsTitle" xml:space="preserve">
+    <value>GoTo &amp; Slew Settings</value>
+  </data>
+  <data name="GoTo_GoToTooltip" xml:space="preserve">
+    <value>Go to coordinates</value>
+  </data>
+  <data name="GoTo_GoToButton" xml:space="preserve">
+    <value>GoTo</value>
+  </data>
+  <data name="GoTo_CopyTooltip" xml:space="preserve">
+    <value>Copy from current position</value>
+  </data>
+  <data name="GoTo_CopyButton" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="GoTo_SyncTooltip" xml:space="preserve">
+    <value>Sync to coordinates</value>
+  </data>
+  <data name="GoTo_SyncButton" xml:space="preserve">
+    <value>Sync</value>
+  </data>
+  <data name="GoTo_EnterRa" xml:space="preserve">
+    <value>Enter right ascension value</value>
+  </data>
+  <data name="GoTo_EnterDec" xml:space="preserve">
+    <value>Enter declination value</value>
+  </data>
+  <data name="GoTo_EnterAz" xml:space="preserve">
+    <value>Enter azimuth value</value>
+  </data>
+  <data name="GoTo_EnterAlt" xml:space="preserve">
+    <value>Enter altitude value</value>
+  </data>
+  <data name="GoTo_UseRaDec" xml:space="preserve">
+    <value>Use RA / Dec coordinates</value>
+  </data>
+  <data name="GoTo_UseAltAz" xml:space="preserve">
+    <value>Use Alt / Az coordinates</value>
+  </data>
+  <data name="GoTo_RaDec" xml:space="preserve">
+    <value>RA / Dec</value>
+  </data>
+  <data name="GoTo_AltAz" xml:space="preserve">
+    <value>Alt / Az</value>
+  </data>
+  <data name="GoTo_ParkPositions" xml:space="preserve">
+    <value>Park Positions</value>
+  </data>
+  <data name="GoTo_SelectParkPosition" xml:space="preserve">
+    <value>Select park position</value>
+  </data>
+  <data name="GoTo_NoPositions" xml:space="preserve">
+    <value>No positions configured</value>
+  </data>
+  <data name="GoTo_ManageParkTooltip" xml:space="preserve">
+    <value>Create, update or delete park positions</value>
+  </data>
+  <data name="GoTo_TrackingLimits" xml:space="preserve">
+    <value>Tracking Limits</value>
+  </data>
+  <data name="GoTo_NoAction" xml:space="preserve">
+    <value>No action</value>
+  </data>
+  <data name="GoTo_StopTracking" xml:space="preserve">
+    <value>Stop tracking</value>
+  </data>
+  <data name="GoTo_ParkAction" xml:space="preserve">
+    <value>Park</value>
+  </data>
+  <data name="GoTo_EditTrackingLimitsTooltip" xml:space="preserve">
+    <value>Edit tracking limit values</value>
+  </data>
+  <data name="GoTo_FlipAngle" xml:space="preserve">
+    <value>Flip Angle (°)</value>
+  </data>
+  <data name="GoTo_TrackingLimitAfterFlip" xml:space="preserve">
+    <value>Tracking Limit After Flip Angle (°)</value>
+  </data>
+  <data name="GoTo_HorizonLimits" xml:space="preserve">
+    <value>Horizon Limits</value>
+  </data>
+  <data name="GoTo_EditHorizonLimitsTooltip" xml:space="preserve">
+    <value>Edit horizon limit values</value>
+  </data>
+  <data name="GoTo_HorizonTrackingLimit" xml:space="preserve">
+    <value>Horizon Tracking Limit (°)</value>
+  </data>
+  <data name="GoTo_HorizonGoToLimit" xml:space="preserve">
+    <value>Horizon Go To Limit (°)</value>
+  </data>
+  <data name="GoTo_VoiceEnable" xml:space="preserve">
+    <value>Enable voice announcements</value>
+  </data>
+  <data name="GoTo_VoiceDisable" xml:space="preserve">
+    <value>Disable voice announcements</value>
+  </data>
+  <data name="GoTo_Voice" xml:space="preserve">
+    <value>Voice announcements</value>
+  </data>
+  <data name="GoTo_MountNotRunning" xml:space="preserve">
+    <value>Mount is not running.</value>
+  </data>
+  <data name="GoTo_BelowHorizon" xml:space="preserve">
+    <value>Target coordinates are below the mount's horizon limit.</value>
+  </data>
+  <data name="GoTo_AcceptTitle" xml:space="preserve">
+    <value>Accept GoTo Coordinates</value>
+  </data>
+  <data name="GoTo_InProgress" xml:space="preserve">
+    <value>GoTo in progress…</value>
+  </data>
+  <data name="GoTo_Rejected" xml:space="preserve">
+    <value>GoTo rejected: {0}</value>
+  </data>
+  <data name="GoTo_Failed" xml:space="preserve">
+    <value>GoTo failed: {0}</value>
+  </data>
+  <data name="GoTo_ParkNotFound" xml:space="preserve">
+    <value>Park position '{0}' not found</value>
+  </data>
+  <data name="GoTo_SettingsSaved" xml:space="preserve">
+    <value>GoTo settings saved.</value>
+  </data>
+  <data name="GoTo_AcceptSyncTitle" xml:space="preserve">
+    <value>Accept Sync Coordinates</value>
+  </data>
+  <data name="GoTo_SyncComplete" xml:space="preserve">
+    <value>Sync complete.</value>
+  </data>
+  <data name="GoTo_SyncFailed" xml:space="preserve">
+    <value>Sync failed: {0}</value>
+  </data>
+  <data name="Coord_Required" xml:space="preserve">
+    <value>Value is required.</value>
+  </data>
+  <data name="Coord_HoursRange" xml:space="preserve">
+    <value>Hours must be in the range [0..24).</value>
+  </data>
+  <data name="Coord_DegreesRange" xml:space="preserve">
+    <value>Degrees must be in the range [-90..90].</value>
+  </data>
+  <data name="Coord_HoursInteger" xml:space="preserve">
+    <value>Hours must be an integer.</value>
+  </data>
+  <data name="Coord_DegreesInteger" xml:space="preserve">
+    <value>Degrees must be an integer.</value>
+  </data>
+  <data name="Coord_MinutesInteger" xml:space="preserve">
+    <value>Minutes must be an integer in the range [0..60).</value>
+  </data>
+  <data name="Coord_MinutesRange" xml:space="preserve">
+    <value>Minutes must be in the range [0..60).</value>
+  </data>
+  <data name="Coord_SecondsRange" xml:space="preserve">
+    <value>Seconds must be in the range [0..60).</value>
+  </data>
+  <data name="Coord_InvalidRa" xml:space="preserve">
+    <value>Enter a valid RA value.</value>
+  </data>
+  <data name="Coord_InvalidAngle" xml:space="preserve">
+    <value>Enter a valid angle value.</value>
+  </data>
+  <data name="Coord_RaRequired" xml:space="preserve">
+    <value>RA is required.</value>
+  </data>
+  <data name="Coord_AngleRequired" xml:space="preserve">
+    <value>Angle value is required.</value>
+  </data>
+  <data name="Coord_RaRange" xml:space="preserve">
+    <value>RA must be in the range [0..24).</value>
+  </data>
+  <data name="Set_ServerName" xml:space="preserve">
+    <value>Server Name</value>
+  </data>
+  <data name="Set_ServerName_Tip" xml:space="preserve">
+    <value>Human-readable server name shown in Alpaca discovery and the setup page.</value>
+  </data>
+  <data name="Set_ServerPort" xml:space="preserve">
+    <value>Server Port</value>
+  </data>
+  <data name="Set_ServerPort_Tip" xml:space="preserve">
+    <value>TCP port the Alpaca server listens on.</value>
+  </data>
+  <data name="Set_AllowRemoteAccess" xml:space="preserve">
+    <value>Allow Remote Access</value>
+  </data>
+  <data name="Set_AllowRemoteAccess_Tip" xml:space="preserve">
+    <value>Bind to all network interfaces when enabled; localhost-only when disabled.</value>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost" xml:space="preserve">
+    <value>Respond Locally to Localhost Only</value>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost_Tip" xml:space="preserve">
+    <value>Respond to localhost-sourced Alpaca discovery on the loopback adapter only.</value>
+  </data>
+  <data name="Set_AllowDiscovery" xml:space="preserve">
+    <value>Allow Alpaca Discovery</value>
+  </data>
+  <data name="Set_AllowDiscovery_Tip" xml:space="preserve">
+    <value>Advertise this server via Alpaca UDP discovery.</value>
+  </data>
+  <data name="Set_StrictAlpaca" xml:space="preserve">
+    <value>Run in Strict Alpaca Mode</value>
+  </data>
+  <data name="Set_StrictAlpaca_Tip" xml:space="preserve">
+    <value>Reject non-compliant Alpaca requests when enabled.</value>
+  </data>
+  <data name="Set_PreventRemoteDisconnects" xml:space="preserve">
+    <value>Prevent Remote Disconnects</value>
+  </data>
+  <data name="Set_PreventRemoteDisconnects_Tip" xml:space="preserve">
+    <value>Prevent remote clients from disconnecting devices.</value>
+  </data>
+  <data name="Set_EnableSwagger" xml:space="preserve">
+    <value>Enable Swagger UI</value>
+  </data>
+  <data name="Set_EnableSwagger_Tip" xml:space="preserve">
+    <value>Expose the OpenAPI / Swagger UI at /swagger.</value>
+  </data>
+  <data name="Set_ServerAddresses" xml:space="preserve">
+    <value>Server Addresses</value>
+  </data>
+  <data name="Set_EnableAuth" xml:space="preserve">
+    <value>Enable Authentication</value>
+  </data>
+  <data name="Set_EnableAuth_Tip" xml:space="preserve">
+    <value>Require HTTP Basic authentication for all requests.</value>
+  </data>
+  <data name="Set_UserName" xml:space="preserve">
+    <value>User Name</value>
+  </data>
+  <data name="Set_UserName_Tip" xml:space="preserve">
+    <value>Login user name used when authentication is enabled.</value>
+  </data>
+  <data name="Set_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Set_Password_Tip" xml:space="preserve">
+    <value>Password used when authentication is enabled.</value>
+  </data>
+  <data name="Set_RepeatPassword" xml:space="preserve">
+    <value>Repeat Password</value>
+  </data>
+  <data name="Set_RepeatPassword_Tip" xml:space="preserve">
+    <value>Repeat the password to confirm it matches.</value>
+  </data>
+  <data name="Set_NoEditor" xml:space="preserve">
+    <value>No editor defined for group "{0}".</value>
+  </data>
+  <data name="Set_HcSpeed" xml:space="preserve">
+    <value>HC Speed</value>
+  </data>
+  <data name="Set_HcSpeed_Tip" xml:space="preserve">
+    <value>Hand controller slew speed setting.</value>
+  </data>
+  <data name="Set_HcMode" xml:space="preserve">
+    <value>HC Mode</value>
+  </data>
+  <data name="Set_HcMode_Tip" xml:space="preserve">
+    <value>Hand controller mode.</value>
+  </data>
+  <data name="Set_AntiBacklashRa" xml:space="preserve">
+    <value>Anti-backlash RA</value>
+  </data>
+  <data name="Set_AntiBacklashDec" xml:space="preserve">
+    <value>Anti-backlash Dec</value>
+  </data>
+  <data name="Set_FlipEW" xml:space="preserve">
+    <value>Flip E/W</value>
+  </data>
+  <data name="Set_FlipNS" xml:space="preserve">
+    <value>Flip N/S</value>
+  </data>
+  <data name="Set_DisableKeysOnGoTo" xml:space="preserve">
+    <value>Disable Keys on GoTo</value>
+  </data>
+  <data name="Set_OneClickStart" xml:space="preserve">
+    <value>One Click Start</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="HcPg_Speed" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="HcPg_Duration" xml:space="preserve">
+    <value>Duration (ms)</value>
+  </data>
+  <data name="HcPg_Interval" xml:space="preserve">
+    <value>Interval (ms)</value>
+  </data>
+  <data name="HcPg_Rate" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="HcPg_RateMax" xml:space="preserve">
+    <value>Rate max: {0} (MaximumSlewRate)</value>
+  </data>
+  <data name="HomePark_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="HomePark_HomePositions" xml:space="preserve">
+    <value>Home Positions</value>
+  </data>
+  <data name="HomePark_Position" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="HomePark_RaAzAxis" xml:space="preserve">
+    <value>RA/Az Axis</value>
+  </data>
+  <data name="HomePark_DecAltAxis" xml:space="preserve">
+    <value>Dec/Alt Axis</value>
+  </data>
+  <data name="HomePark_AutoHome" xml:space="preserve">
+    <value>Auto-Home</value>
+  </data>
+  <data name="HomePark_Park" xml:space="preserve">
+    <value>Park</value>
+    <comment>WPF: btnPark (ambiguous: btnPark, botTipParked, gpPark)</comment>
+  </data>
+  <data name="HomePark_ActivePark_Tip" xml:space="preserve">
+    <value>Name of the active park position.</value>
+  </data>
+  <data name="HomePark_ActivePark" xml:space="preserve">
+    <value>Active Park Position</value>
+  </data>
+  <data name="HomePark_TrackAfterUnpark_Tip" xml:space="preserve">
+    <value>Start tracking automatically when the mount unparks.</value>
+  </data>
+  <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
+    <value>Track After Unpark</value>
+    <comment>WPF: capTrackAfterUnpark</comment>
+  </data>
+  <data name="HomePark_DefinedParkPositions" xml:space="preserve">
+    <value>Defined Park Positions</value>
+  </data>
+  <data name="HomePark_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Optics_Aperture_Tip" xml:space="preserve">
+    <value>Aperture diameter in metres.</value>
+  </data>
+  <data name="Optics_Aperture" xml:space="preserve">
+    <value>Aperture Diameter (m)</value>
+  </data>
+  <data name="Optics_Area_Tip" xml:space="preserve">
+    <value>Effective aperture area in square metres.</value>
+  </data>
+  <data name="Optics_Area" xml:space="preserve">
+    <value>Aperture Area (m²)</value>
+  </data>
+  <data name="Optics_FocalLength_Tip" xml:space="preserve">
+    <value>Focal length in metres.</value>
+  </data>
+  <data name="Optics_FocalLength" xml:space="preserve">
+    <value>Focal Length (m)</value>
+  </data>
+  <data name="Optics_Eyepiece_Tip" xml:space="preserve">
+    <value>Eyepiece field of view in arcminutes.</value>
+  </data>
+  <data name="Optics_Eyepiece" xml:space="preserve">
+    <value>Eyepiece FS (arcmin)</value>
+  </data>
+  <data name="Perf_CheckInterval_Tip" xml:space="preserve">
+    <value>UI display refresh interval in milliseconds.</value>
+  </data>
+  <data name="Perf_CheckInterval" xml:space="preserve">
+    <value>Background Status Check Interval (ms)</value>
+  </data>
+  <data name="Perf_GotoPrecision_Tip" xml:space="preserve">
+    <value>GoTo precision in arcseconds.</value>
+  </data>
+  <data name="Perf_GotoPrecision" xml:space="preserve">
+    <value>GoTo Precision (degrees)</value>
+  </data>
+  <data name="Perf_TraceLogger_Tip" xml:space="preserve">
+    <value>Enable trace/debug logging to a file for this device.</value>
+  </data>
+  <data name="Perf_TraceLogger" xml:space="preserve">
+    <value>Trace Logger</value>
+  </data>
+  <data name="Ppec_Enabled" xml:space="preserve">
+    <value>PPEC Enabled</value>
+  </data>
+  <data name="Voice_Active_Tip" xml:space="preserve">
+    <value>Enable voice announcements for this device (e.g. Parked, Slewing, Tracking On).</value>
+  </data>
+  <data name="Voice_Active" xml:space="preserve">
+    <value>Enable Voice Announcements</value>
+  </data>
+  <data name="Voice_Select_Tip" xml:space="preserve">
+    <value>Select a voice. Leave blank to use the browser default. Click Refresh to load voices filtered by your browser language.</value>
+  </data>
+  <data name="Voice_Select" xml:space="preserve">
+    <value>Voice</value>
+    <comment>WPF: botTipVoice</comment>
+  </data>
+  <data name="Voice_Volume_Tip" xml:space="preserve">
+    <value>Volume for voice announcements (0 = silent, 100 = full volume).</value>
+  </data>
+  <data name="Voice_Volume" xml:space="preserve">
+    <value>Volume (%)</value>
+  </data>
+  <data name="Ui_Zoom_Tip" xml:space="preserve">
+    <value>Global UI zoom level applied across the server UI.</value>
+  </data>
+  <data name="Ui_Zoom" xml:space="preserve">
+    <value>Zoom</value>
+    <comment>WPF: chtZoom</comment>
+  </data>
+  <data name="Ui_Theme_Tip" xml:space="preserve">
+    <value>Display theme selection for the server UI.</value>
+  </data>
+  <data name="Ui_Theme" xml:space="preserve">
+    <value>Display Theme</value>
+  </data>
+  <data name="Ui_NotImplemented" xml:space="preserve">
+    <value>Not implemented</value>
+  </data>
+  <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
+    <value>Choose the language used by this browser. This preference is saved in a browser cookie; server defaults are used only when no supported browser preference exists.</value>
+  </data>
+  <data name="Ui_DisplayLanguage" xml:space="preserve">
+    <value>Display Language</value>
+  </data>
+  <data name="Ui_RegionalFormat_Tip" xml:space="preserve">
+    <value>Choose the date and number conventions used by this browser. This preference is saved in a browser cookie.</value>
+  </data>
+  <data name="Ui_RegionalFormat" xml:space="preserve">
+    <value>Regional Format</value>
+  </data>
+  <data name="Ui_AutoStartBrowser_Tip" xml:space="preserve">
+    <value>Open the default browser automatically when the server starts.</value>
+  </data>
+  <data name="Ui_AutoStartBrowser" xml:space="preserve">
+    <value>Auto-start Browser</value>
+  </data>
+  <data name="Lim_HardwarePanel" xml:space="preserve">
+    <value>Hardware Limit Values (always enforced for slew safety)</value>
+  </data>
+  <data name="Lim_UpperDecAlt_Tip" xml:space="preserve">
+    <value>Upper Dec/Alt hardware limit in degrees.</value>
+  </data>
+  <data name="Lim_UpperDecAlt" xml:space="preserve">
+    <value>Upper Dec/Alt Hardware Limit (°)</value>
+  </data>
+  <data name="Lim_LowerDecAlt_Tip" xml:space="preserve">
+    <value>Lower Dec/Alt hardware limit in degrees.</value>
+  </data>
+  <data name="Lim_LowerDecAlt" xml:space="preserve">
+    <value>Lower Dec/Alt Hardware Limit (°)</value>
+  </data>
+  <data name="Lim_RaAz_Tip" xml:space="preserve">
+    <value>RA/Az hardware limit in degrees.</value>
+  </data>
+  <data name="Lim_RaAz" xml:space="preserve">
+    <value>RA/Az Hardware Limit (°)</value>
+  </data>
+  <data name="Lim_ActionsPanel" xml:space="preserve">
+    <value>Tracking-Limit Actions (controlled by Limits On)</value>
+  </data>
+  <data name="Lim_LimitsOn" xml:space="preserve">
+    <value>Limits On</value>
+  </data>
+  <data name="Lim_FlipAngle_Tip" xml:space="preserve">
+    <value>GEM safety limit in degrees around meridian.</value>
+  </data>
+  <data name="Lim_AfterFlip_Tip" xml:space="preserve">
+    <value>Additional GEM meridian tracking allowance in degrees past flip angle.</value>
+  </data>
+  <data name="Lim_HzTracking_Tip" xml:space="preserve">
+    <value>GEM horizon tracking trigger angle in degrees.</value>
+  </data>
+  <data name="Lim_HzGoTo_Tip" xml:space="preserve">
+    <value>Horizon go to limit angle in degrees.</value>
+  </data>
+  <data name="Lim_WarningOnly" xml:space="preserve">
+    <value>Warning Only</value>
+  </data>
+  <data name="Lim_StopTracking" xml:space="preserve">
+    <value>Stop Tracking</value>
+  </data>
+  <data name="Lim_PrimaryPark" xml:space="preserve">
+    <value>Primary Action Park Position</value>
+  </data>
+  <data name="Lim_GemHorizonAction" xml:space="preserve">
+    <value>GEM Horizon Action</value>
+  </data>
+  <data name="Lim_HorizonTrigger" xml:space="preserve">
+    <value>Horizon Trigger Action</value>
+  </data>
+  <data name="Lim_HorizonPark" xml:space="preserve">
+    <value>Horizon Action Park Position</value>
+  </data>
+  <data name="Lim_SyncPanel" xml:space="preserve">
+    <value>Sync Limits</value>
+  </data>
+  <data name="Lim_EnableSyncLimit_Tip" xml:space="preserve">
+    <value>Enable sync angle limit — reject syncs that would move the model by more than this angle.</value>
+  </data>
+  <data name="Lim_EnableSyncLimit" xml:space="preserve">
+    <value>Enable Sync Limit</value>
+  </data>
+  <data name="Lim_SyncAngle_Tip" xml:space="preserve">
+    <value>Maximum angle in degrees by which a sync may shift the pointing model.</value>
+  </data>
+  <data name="Lim_SyncAngle" xml:space="preserve">
+    <value>Sync Limit (°)</value>
+  </data>
+  <data name="Lim_NoSyncMeridian_Tip" xml:space="preserve">
+    <value>Reject sync requests when the scope is past the meridian (GEM/Polar).</value>
+  </data>
+  <data name="Lim_NoSyncMeridian" xml:space="preserve">
+    <value>No Sync Past Meridian</value>
+  </data>
+  <data name="Lim_PrimaryLabelGem" xml:space="preserve">
+    <value>Primary Trigger Action (GEM Meridian)</value>
+  </data>
+  <data name="Lim_PrimaryLabelHw" xml:space="preserve">
+    <value>Primary Trigger Action (Hardware Limits)</value>
+  </data>
+  <data name="Lim_PrimaryHelpGem" xml:space="preserve">
+    <value>Action to take when GEM meridian limit is reached.</value>
+  </data>
+  <data name="Lim_PrimaryHelpHw" xml:space="preserve">
+    <value>Action to take when hardware limits are reached while tracking.</value>
+  </data>
+  <data name="Trk_Tracking" xml:space="preserve">
+    <value>Tracking</value>
+    <comment>WPF: btnTracking (ambiguous: btnTracking, botTracking, botTipTracking, gpTracking)</comment>
+  </data>
+  <data name="Trk_PulseGuiding" xml:space="preserve">
+    <value>Pulse Guiding</value>
+  </data>
+  <data name="Trk_HcPulseGuides" xml:space="preserve">
+    <value>HC Pulse Guides</value>
+  </data>
+  <data name="Trk_Rate_Tip" xml:space="preserve">
+    <value>Default tracking rate (Sidereal, Lunar, Solar, King).</value>
+  </data>
+  <data name="Trk_Rate" xml:space="preserve">
+    <value>Tracking Rate</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="Trk_Sidereal" xml:space="preserve">
+    <value>Sidereal</value>
+    <comment>WPF: vceSidereal (ambiguous: vceSidereal, skySidereal)</comment>
+  </data>
+  <data name="Trk_Lunar" xml:space="preserve">
+    <value>Lunar</value>
+    <comment>WPF: vceLunar</comment>
+  </data>
+  <data name="Trk_Solar" xml:space="preserve">
+    <value>Solar</value>
+    <comment>WPF: vceSolar</comment>
+  </data>
+  <data name="Trk_King" xml:space="preserve">
+    <value>King</value>
+    <comment>WPF: vceKing</comment>
+  </data>
+  <data name="Trk_SiderealRate_Tip" xml:space="preserve">
+    <value>Sidereal tracking rate in arcseconds/second.</value>
+  </data>
+  <data name="Trk_SiderealRate" xml:space="preserve">
+    <value>Sidereal Rate (arcsec/s)</value>
+  </data>
+  <data name="Trk_LunarRate_Tip" xml:space="preserve">
+    <value>Lunar tracking rate in arcseconds/second.</value>
+  </data>
+  <data name="Trk_LunarRate" xml:space="preserve">
+    <value>Lunar Rate (arcsec/s)</value>
+  </data>
+  <data name="Trk_SolarRate_Tip" xml:space="preserve">
+    <value>Solar tracking rate in arcseconds/second.</value>
+  </data>
+  <data name="Trk_SolarRate" xml:space="preserve">
+    <value>Solar Rate (arcsec/s)</value>
+  </data>
+  <data name="Trk_KingRate_Tip" xml:space="preserve">
+    <value>King tracking rate in arcseconds/second.</value>
+  </data>
+  <data name="Trk_KingRate" xml:space="preserve">
+    <value>King Rate (arcsec/s)</value>
+  </data>
+  <data name="Trk_RaOffset_Tip" xml:space="preserve">
+    <value>RA axis tracking offset in motor steps.</value>
+  </data>
+  <data name="Trk_RaOffset" xml:space="preserve">
+    <value>RA Tracking Offset (steps)</value>
+  </data>
+  <data name="Trk_AltAzInterval_Tip" xml:space="preserve">
+    <value>AltAz tracking update interval in milliseconds.</value>
+  </data>
+  <data name="Trk_AltAzInterval" xml:space="preserve">
+    <value>AltAz Update Interval (ms)</value>
+  </data>
+  <data name="Trk_MinPulseRa_Tip" xml:space="preserve">
+    <value>Minimum RA pulse duration in milliseconds.</value>
+  </data>
+  <data name="Trk_MinPulseRa" xml:space="preserve">
+    <value>Min Pulse RA (ms)</value>
+  </data>
+  <data name="Trk_MinPulseDec_Tip" xml:space="preserve">
+    <value>Minimum Dec pulse duration in milliseconds.</value>
+  </data>
+  <data name="Trk_MinPulseDec" xml:space="preserve">
+    <value>Min Pulse Dec (ms)</value>
+  </data>
+  <data name="Trk_DecPulseToGoTo_Tip" xml:space="preserve">
+    <value>Route Dec pulse commands via GoTo instead of pulse guiding.</value>
+  </data>
+  <data name="Trk_DecPulseToGoTo" xml:space="preserve">
+    <value>Dec Pulse → GoTo</value>
+  </data>
+  <data name="Trk_AlternatingPpec" xml:space="preserve">
+    <value>Alternating PPEC</value>
+  </data>
+  <data name="Trk_St4_Tip" xml:space="preserve">
+    <value>ST4 guide rate divisor (e.g. 0=full, 1=0.75x, 2=0.5x, etc.).</value>
+  </data>
+  <data name="Trk_St4" xml:space="preserve">
+    <value>ST4 Guide Rate</value>
+  </data>
+  <data name="Trk_RaGuideRate_Tip" xml:space="preserve">
+    <value>RA guide rate as a percentage of sidereal (0–100, step 10).</value>
+  </data>
+  <data name="Trk_RaGuideRate" xml:space="preserve">
+    <value>RA Guiding Rate %</value>
+    <comment>WPF: skyRaGuiding</comment>
+  </data>
+  <data name="Trk_DecGuideRate_Tip" xml:space="preserve">
+    <value>Dec guide rate as a percentage of sidereal (0–100, step 10).</value>
+  </data>
+  <data name="Trk_DecGuideRate" xml:space="preserve">
+    <value>Dec Guiding Rate %</value>
+    <comment>WPF: skyDecGuiding</comment>
+  </data>
+  <data name="MC_DeviceInfoPanel" xml:space="preserve">
+    <value>Device Information</value>
+  </data>
+  <data name="MC_Enabled_Tip" xml:space="preserve">
+    <value>Enable this device so it is accessible via Alpaca.</value>
+  </data>
+  <data name="MC_Enabled" xml:space="preserve">
+    <value>Enabled for Alpaca</value>
+  </data>
+  <data name="MC_DeviceName_Tip" xml:space="preserve">
+    <value>Human-readable name for this telescope device, returned as the ASCOM Name property.</value>
+  </data>
+  <data name="MC_DeviceName" xml:space="preserve">
+    <value>Device Name</value>
+  </data>
+  <data name="MC_Description_Tip" xml:space="preserve">
+    <value>Description of the device shown in Alpaca setup.</value>
+  </data>
+  <data name="MC_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="MC_MountType_Tip" xml:space="preserve">
+    <value>Mount driver to use for this device.</value>
+  </data>
+  <data name="MC_MountType" xml:space="preserve">
+    <value>Mount Type</value>
+  </data>
+  <data name="MC_Simulator" xml:space="preserve">
+    <value>Simulator</value>
+  </data>
+  <data name="MC_AlignMode_Tip" xml:space="preserve">
+    <value>Alignment mode: AltAz, GermanPolar, or Polar.</value>
+  </data>
+  <data name="MC_AlignMode" xml:space="preserve">
+    <value>Alignment Mode</value>
+  </data>
+  <data name="MC_AlignGem" xml:space="preserve">
+    <value>German Equatorial (GEM)</value>
+  </data>
+  <data name="MC_AlignPolar" xml:space="preserve">
+    <value>Polar / Fork</value>
+  </data>
+  <data name="MC_AlignAltAz" xml:space="preserve">
+    <value>Alt-Az</value>
+  </data>
+  <data name="MC_PolarSide_Tip" xml:space="preserve">
+    <value>The primary side of the pier for polar-aligned GEM mounts.</value>
+  </data>
+  <data name="MC_PolarSide" xml:space="preserve">
+    <value>Polar Primary Side</value>
+  </data>
+  <data name="MC_Left" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="MC_Right" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="MC_EqCoord_Tip" xml:space="preserve">
+    <value>Equatorial coordinate type returned by the mount (J2000 or JNow).</value>
+  </data>
+  <data name="MC_EqCoord" xml:space="preserve">
+    <value>Equatorial Coordinate Type</value>
+  </data>
+  <data name="MC_CoordOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="MC_CoordTopocentric" xml:space="preserve">
+    <value>Topocentric (JNow)</value>
+  </data>
+  <data name="MC_SerialPanel" xml:space="preserve">
+    <value>Serial Connection</value>
+  </data>
+  <data name="MC_Port_Tip" xml:space="preserve">
+    <value>Select or type a serial port name (e.g. COM3 or /dev/ttyUSB0).</value>
+  </data>
+  <data name="MC_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="MC_PortManual" xml:space="preserve">
+    <value>{0} (manual)</value>
+  </data>
+  <data name="MC_PortHelper" xml:space="preserve">
+    <value>No ports detected — type the port name manually.</value>
+  </data>
+  <data name="MC_Baud_Tip" xml:space="preserve">
+    <value>Serial baud rate.</value>
+  </data>
+  <data name="MC_Baud" xml:space="preserve">
+    <value>Baud Rate</value>
+  </data>
+  <data name="MC_DataBits_Tip" xml:space="preserve">
+    <value>Number of data bits.</value>
+  </data>
+  <data name="MC_DataBits" xml:space="preserve">
+    <value>Data Bits</value>
+  </data>
+  <data name="MC_Handshake_Tip" xml:space="preserve">
+    <value>Handshake protocol (None, XOnXOff, RequestToSend, etc.).</value>
+  </data>
+  <data name="MC_Handshake" xml:space="preserve">
+    <value>Handshake</value>
+  </data>
+  <data name="MC_ReadTimeout_Tip" xml:space="preserve">
+    <value>Read timeout in milliseconds.</value>
+  </data>
+  <data name="MC_ReadTimeout" xml:space="preserve">
+    <value>Read Timeout (ms)</value>
+  </data>
+  <data name="MC_Dtr" xml:space="preserve">
+    <value>DTR Enable</value>
+  </data>
+  <data name="MC_Rts" xml:space="preserve">
+    <value>RTS Enable</value>
+  </data>
+  <data name="MC_HardwarePanel" xml:space="preserve">
+    <value>Mount Hardware</value>
+  </data>
+  <data name="MC_AdvCmds_Tip" xml:space="preserve">
+    <value>Enable advanced commands for mount control.</value>
+  </data>
+  <data name="MC_AdvCmds" xml:space="preserve">
+    <value>Allow Advanced Commands</value>
+  </data>
+  <data name="MC_Encoders_Tip" xml:space="preserve">
+    <value>Enable absolute encoder feedback for the mount axes.</value>
+  </data>
+  <data name="MC_Encoders" xml:space="preserve">
+    <value>Encoders Enabled</value>
+  </data>
+  <data name="MC_MaxSlew_Tip" xml:space="preserve">
+    <value>Maximum slew rate in degrees per second.</value>
+  </data>
+  <data name="MC_MaxSlew" xml:space="preserve">
+    <value>Max Slew Rate (°/s)</value>
+  </data>
+  <data name="MC_RaBacklash_Tip" xml:space="preserve">
+    <value>RA axis backlash compensation in motor steps.</value>
+  </data>
+  <data name="MC_RaBacklash" xml:space="preserve">
+    <value>RA Backlash (steps)</value>
+  </data>
+  <data name="MC_DecBacklash_Tip" xml:space="preserve">
+    <value>Dec axis backlash compensation in motor steps.</value>
+  </data>
+  <data name="MC_DecBacklash" xml:space="preserve">
+    <value>Dec Backlash (steps)</value>
+  </data>
+  <data name="MC_PolarLed_Tip" xml:space="preserve">
+    <value>Polar scope LED brightness level (0–255).</value>
+  </data>
+  <data name="MC_PolarLed" xml:space="preserve">
+    <value>Polar LED Level</value>
+  </data>
+  <data name="MC_FullCurrent_Tip" xml:space="preserve">
+    <value>Enable full current mode on the motor drivers.</value>
+  </data>
+  <data name="MC_FullCurrent" xml:space="preserve">
+    <value>Full Current</value>
+  </data>
+  <data name="MC_GearingPanel" xml:space="preserve">
+    <value>Custom Gearing</value>
+  </data>
+  <data name="MC_CustomGearing" xml:space="preserve">
+    <value>Enable Custom Gearing</value>
+  </data>
+  <data name="MC_RaAxis" xml:space="preserve">
+    <value>RA Axis</value>
+  </data>
+  <data name="MC_Ra360" xml:space="preserve">
+    <value>RA 360° Steps</value>
+  </data>
+  <data name="MC_RaWorm" xml:space="preserve">
+    <value>RA Worm Teeth</value>
+  </data>
+  <data name="MC_RaTrkOffset" xml:space="preserve">
+    <value>RA Tracking Offset</value>
+  </data>
+  <data name="MC_DecAxis" xml:space="preserve">
+    <value>Dec Axis</value>
+  </data>
+  <data name="MC_Dec360" xml:space="preserve">
+    <value>Dec 360° Steps</value>
+  </data>
+  <data name="MC_DecWorm" xml:space="preserve">
+    <value>Dec Worm Teeth</value>
+  </data>
+  <data name="MC_DecTrkOffset" xml:space="preserve">
+    <value>Dec Tracking Offset</value>
+  </data>
+  <data name="ObsCard_Title" xml:space="preserve">
+    <value>Observatories</value>
+  </data>
+  <data name="ObsCard_Description" xml:space="preserve">
+    <value>Manage observatory sites. Each telescope device can copy its location from any site listed here.</value>
+  </data>
+  <data name="ObsCard_Unsaved" xml:space="preserve">
+    <value>Unsaved</value>
+  </data>
+  <data name="ObsCard_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ObsCard_Latitude" xml:space="preserve">
+    <value>Latitude (°)</value>
+  </data>
+  <data name="ObsCard_Longitude" xml:space="preserve">
+    <value>Longitude (°)</value>
+  </data>
+  <data name="ObsCard_Elevation" xml:space="preserve">
+    <value>Elevation (m)</value>
+  </data>
+  <data name="ObsCard_UtcOffset" xml:space="preserve">
+    <value>UTC Offset (h)</value>
+  </data>
+  <data name="ObsCard_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="ObsCard_DataElevation" xml:space="preserve">
+    <value>Elevation</value>
+    <comment>WPF: gpsEle (ambiguous: gpsEle, cdcEle, skyElevation)</comment>
+  </data>
+  <data name="ObsCard_DataUtcOffset" xml:space="preserve">
+    <value>UTC Offset</value>
+    <comment>WPF: optUTCOffset</comment>
+  </data>
+  <data name="ObsCard_CopyToAll" xml:space="preserve">
+    <value>Copy Lat/Long/Elevation to all telescope devices</value>
+  </data>
+  <data name="ObsCard_CannotDeleteLast" xml:space="preserve">
+    <value>Cannot delete the last observatory</value>
+  </data>
+  <data name="ObsCard_Delete" xml:space="preserve">
+    <value>Delete this observatory</value>
+  </data>
+  <data name="ObsCard_Add" xml:space="preserve">
+    <value>Add Observatory</value>
+  </data>
+  <data name="ObsCard_Reset" xml:space="preserve">
+    <value>Reset</value>
+    <comment>WPF: btnResetSensorPos (ambiguous: btnResetSensorPos, skyReset, optReset)</comment>
+  </data>
+  <data name="Obs_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Obs_CopyFrom" xml:space="preserve">
+    <value>Copy from observatory</value>
+  </data>
+  <data name="Obs_CopyFrom_Tip" xml:space="preserve">
+    <value>Copy Latitude, Longitude, Elevation and GPS settings from the selected observatory to this device.</value>
+  </data>
+  <data name="Obs_DeviceLat_Tip" xml:space="preserve">
+    <value>Geographic latitude of the device site in decimal degrees (-90 to +90).</value>
+  </data>
+  <data name="Obs_DeviceLon_Tip" xml:space="preserve">
+    <value>Geographic longitude of the device site in decimal degrees (-180 to +180).</value>
+  </data>
+  <data name="Obs_Elev_Tip" xml:space="preserve">
+    <value>Elevation above sea level in metres.</value>
+  </data>
+  <data name="Obs_DeviceUtc_Tip" xml:space="preserve">
+    <value>UTC offset for this device site (hours).</value>
+  </data>
+  <data name="Obs_Environmental" xml:space="preserve">
+    <value>Environmental</value>
+  </data>
+  <data name="Obs_Refraction_Tip" xml:space="preserve">
+    <value>Apply atmospheric refraction correction to pointing calculations.</value>
+  </data>
+  <data name="Obs_Refraction" xml:space="preserve">
+    <value>Enable Refraction</value>
+  </data>
+  <data name="Obs_Temp_Tip" xml:space="preserve">
+    <value>Ambient temperature in degrees Celsius, used for refraction correction.</value>
+  </data>
+  <data name="Obs_Temp" xml:space="preserve">
+    <value>Temperature (°C)</value>
+  </data>
+  <data name="Obs_DeviceGpsPort_Tip" xml:space="preserve">
+    <value>Select or type a serial port name for the GPS receiver (e.g. COM4 or /dev/ttyUSB0).</value>
+  </data>
+  <data name="Obs_GpsPort" xml:space="preserve">
+    <value>GPS Port</value>
+  </data>
+  <data name="Obs_DeviceGpsBaud_Tip" xml:space="preserve">
+    <value>GPS receiver baud rate.</value>
+  </data>
+  <data name="Obs_GpsBaud" xml:space="preserve">
+    <value>GPS Baud Rate</value>
+  </data>
+  <data name="Obs_GpsParity_Tip" xml:space="preserve">
+    <value>GPS receiver serial port parity.</value>
+  </data>
+  <data name="Obs_GpsParity" xml:space="preserve">
+    <value>GPS Parity</value>
+  </data>
+  <data name="Obs_GpsStopBits_Tip" xml:space="preserve">
+    <value>GPS receiver serial port stop bits.</value>
+  </data>
+  <data name="Obs_GpsStopBits" xml:space="preserve">
+    <value>GPS Stop Bits</value>
+  </data>
+  <data name="Obs_GpsDataBits_Tip" xml:space="preserve">
+    <value>GPS receiver serial port data bits.</value>
+  </data>
+  <data name="Obs_GpsDataBits" xml:space="preserve">
+    <value>GPS Data Bits</value>
+  </data>
+  <data name="Obs_GpsTimeout_Tip" xml:space="preserve">
+    <value>GPS receiver serial port read timeout in seconds.</value>
+  </data>
+  <data name="Obs_GpsTimeout" xml:space="preserve">
+    <value>GPS Timeout (s)</value>
+  </data>
+  <data name="Obs_GpsHandshake_Tip" xml:space="preserve">
+    <value>GPS receiver serial port handshake.</value>
+  </data>
+  <data name="Obs_GpsHandshake" xml:space="preserve">
+    <value>GPS Handshake</value>
+  </data>
+  <data name="Obs_GpsConnect_Tip" xml:space="preserve">
+    <value>Connect to the GPS receiver and read latitude, longitude, elevation and the local-vs-GPS time difference.</value>
+  </data>
+  <data name="Obs_Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Obs_DeviceCdcAddress_Tip" xml:space="preserve">
+    <value>IP address or hostname of the Cartes du Ciel server for this device (e.g. 127.0.0.1).</value>
+  </data>
+  <data name="Obs_CdcAddress" xml:space="preserve">
+    <value>CdC Address</value>
+  </data>
+  <data name="Obs_CdcPort_Tip" xml:space="preserve">
+    <value>TCP port the Cartes du Ciel server is listening on (default 3292).</value>
+  </data>
+  <data name="Obs_CdcPort" xml:space="preserve">
+    <value>CdC Port</value>
+  </data>
+  <data name="Obs_CdcConnect_Tip" xml:space="preserve">
+    <value>Connect to the Cartes du Ciel server to read or write latitude, longitude and elevation.</value>
+  </data>
+  <data name="Obs_CopiedFrom" xml:space="preserve">
+    <value>Location, GPS and CdC settings copied from '{0}'.</value>
+  </data>
+  <data name="Obs_NoGpsPortDevice" xml:space="preserve">
+    <value>No GPS port is configured for this device.</value>
+  </data>
+  <data name="Obs_NoGpsPortSite" xml:space="preserve">
+    <value>No GPS port is configured for this observatory.</value>
+  </data>
+  <data name="Obs_UpdatedFromGps" xml:space="preserve">
+    <value>Latitude, longitude and elevation updated from GPS.</value>
+  </data>
+  <data name="Obs_UpdatedFromCdc" xml:space="preserve">
+    <value>Latitude, longitude and elevation updated from Cartes du Ciel.</value>
+  </data>
+  <data name="ObsSingle_Name_Tip" xml:space="preserve">
+    <value>User-defined name for this observatory site.</value>
+  </data>
+  <data name="ObsSingle_Lat_Tip" xml:space="preserve">
+    <value>Geographic latitude of the observatory in decimal degrees (-90 to +90).</value>
+  </data>
+  <data name="ObsSingle_Lon_Tip" xml:space="preserve">
+    <value>Geographic longitude of the observatory in decimal degrees (-180 to +180).</value>
+  </data>
+  <data name="ObsSingle_Utc_Tip" xml:space="preserve">
+    <value>UTC offset for the observatory site (hours). Use negative values for west.</value>
+  </data>
+  <data name="ObsSingle_LocationSources" xml:space="preserve">
+    <value>Location Sources</value>
+  </data>
+  <data name="ObsSingle_GpsPort_Tip" xml:space="preserve">
+    <value>Select or type a serial port name for the GPS receiver at this site (e.g. COM4 or /dev/ttyUSB0).</value>
+  </data>
+  <data name="ObsSingle_GpsBaud_Tip" xml:space="preserve">
+    <value>GPS receiver baud rate for this observatory site.</value>
+  </data>
+  <data name="ObsSingle_CdcAddress_Tip" xml:space="preserve">
+    <value>IP address or hostname of the Cartes du Ciel server at this observatory site (e.g. 127.0.0.1).</value>
+  </data>
+  <data name="ObsSingle_CopyToAll_Tip" xml:space="preserve">
+    <value>Copy location and GPS settings from this observatory to all telescope devices.</value>
+  </data>
+  <data name="ObsSingle_CopyToAll" xml:space="preserve">
+    <value>Copy to all devices</value>
+  </data>
+  <data name="ObsSingle_NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="ObsSingle_NameDuplicate" xml:space="preserve">
+    <value>An observatory with this name already exists.</value>
+  </data>
+  <data name="Mon_LoggingSettings" xml:space="preserve">
+    <value>Logging Settings</value>
+  </data>
+  <data name="Mon_Unsaved" xml:space="preserve">
+    <value>Unsaved</value>
+  </data>
+  <data name="Mon_Device" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="Mon_ServerDevice" xml:space="preserve">
+    <value>Server Device</value>
+  </data>
+  <data name="Mon_Telescope" xml:space="preserve">
+    <value>Telescope</value>
+  </data>
+  <data name="Mon_Ui" xml:space="preserve">
+    <value>UI</value>
+  </data>
+  <data name="Mon_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Mon_Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Mon_Driver" xml:space="preserve">
+    <value>Driver</value>
+  </data>
+  <data name="Mon_Interface" xml:space="preserve">
+    <value>Interface</value>
+  </data>
+  <data name="Mon_Server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="Mon_Mount" xml:space="preserve">
+    <value>Mount</value>
+  </data>
+  <data name="Mon_Alignment" xml:space="preserve">
+    <value>Alignment</value>
+  </data>
+  <data name="Mon_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Mon_Information" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="Mon_Data" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Mon_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Mon_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Mon_Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Mon_Logging" xml:space="preserve">
+    <value>Logging</value>
+  </data>
+  <data name="Mon_AutoStart_Tip" xml:space="preserve">
+    <value>Must be ON for any log files to be written.</value>
+  </data>
+  <data name="Mon_AutoStart" xml:space="preserve">
+    <value>Auto-start</value>
+  </data>
+  <data name="Mon_LogMonitor_Tip" xml:space="preserve">
+    <value>Writes monitor output to GSMonitorLog*.txt. Mutually exclusive with Fast Monitor.</value>
+  </data>
+  <data name="Mon_LogMonitor" xml:space="preserve">
+    <value>Log Monitor</value>
+  </data>
+  <data name="Mon_LogSession" xml:space="preserve">
+    <value>Log Session</value>
+  </data>
+  <data name="Mon_LogCharting" xml:space="preserve">
+    <value>Log Charting</value>
+  </data>
+  <data name="Mon_FastMonitor_Tip" xml:space="preserve">
+    <value>1000-record ring buffer — lower overhead than Log Monitor. Mutually exclusive with Log Monitor.</value>
+  </data>
+  <data name="Mon_FastMonitor" xml:space="preserve">
+    <value>Fast Monitor</value>
+  </data>
+  <data name="Mon_LogPath" xml:space="preserve">
+    <value>Log Path</value>
+  </data>
+  <data name="Mon_LogPath_Tip" xml:space="preserve">
+    <value>Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GreenSwamp\Server).</value>
+  </data>
+  <data name="Mon_QuickSetActions" xml:space="preserve">
+    <value>Quick Set Actions</value>
+  </data>
+  <data name="Mon_AllDevices" xml:space="preserve">
+    <value>All Devices</value>
+  </data>
+  <data name="Mon_AllCategories" xml:space="preserve">
+    <value>All Categories</value>
+  </data>
+  <data name="Mon_AllTypes" xml:space="preserve">
+    <value>All Types</value>
+  </data>
+  <data name="Mon_ClearAll" xml:space="preserve">
+    <value>Clear All</value>
+  </data>
+  <data name="Mon_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Home_PageTitle" xml:space="preserve">
+    <value>Home – Green Swamp Alpaca Server</value>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>Welcome to &lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
+  </data>
+  <data name="Home_Footer" xml:space="preserve">
+    <value>Green Swamp Alpaca Server</value>
+  </data>
+  <data name="MountCfg_Title" xml:space="preserve">
+    <value>Mount Configuration</value>
+  </data>
+  <data name="MountCfg_Export" xml:space="preserve">
+    <value>Export Settings &amp; Logs</value>
+  </data>
+  <data name="MountCfg_NoDevices" xml:space="preserve">
+    <value>No mount devices registered.</value>
+  </data>
+  <data name="MountCfg_EditInExplorer" xml:space="preserve">
+    <value>Edit in Settings Explorer</value>
+  </data>
+  <data name="MonPage_Title" xml:space="preserve">
+    <value>Monitor Settings</value>
+  </data>
+  <data name="MonPage_Heading" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="MonPage_Records" xml:space="preserve">
+    <value>Monitor Records</value>
+  </data>
+  <data name="MonPage_RecordsCount" xml:space="preserve">
+    <value>{0} / {1} records</value>
+  </data>
+  <data name="MonPage_ClearTip" xml:space="preserve">
+    <value>Clear display buffer</value>
+  </data>
+  <data name="MonPage_Copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+    <comment>WPF: optCopyClip</comment>
+  </data>
+  <data name="MonPage_Reload" xml:space="preserve">
+    <value>Reload Settings</value>
+  </data>
+  <data name="MonPage_WriteBuffer" xml:space="preserve">
+    <value>Write Buffer to File</value>
+  </data>
+  <data name="MonPage_Copied" xml:space="preserve">
+    <value>Monitor records copied to clipboard.</value>
+  </data>
+  <data name="MonPage_CopyFailed" xml:space="preserve">
+    <value>Copy failed — clipboard access may be blocked.</value>
+  </data>
+  <data name="MonPage_Saved" xml:space="preserve">
+    <value>Monitor settings saved successfully! Changes applied immediately.</value>
+  </data>
+  <data name="MonPage_SaveError" xml:space="preserve">
+    <value>Error saving settings: {0}</value>
+  </data>
+  <data name="MonPage_BufferWritten" xml:space="preserve">
+    <value>Fast monitor buffer written to file at {0:HH:mm:ss}</value>
+  </data>
+  <data name="MonPage_BufferError" xml:space="preserve">
+    <value>Error writing buffer: {0}</value>
+  </data>
+  <data name="MonPage_ResetDone" xml:space="preserve">
+    <value>Logging settings reset to last saved state.</value>
+  </data>
+  <data name="MonPage_Reloaded" xml:space="preserve">
+    <value>Settings reloaded from file</value>
+  </data>
+  <data name="MonPage_PresetApplied" xml:space="preserve">
+    <value>{0} preset applied (not saved yet)</value>
+  </data>
+  <data name="MonPage_PresetDevelopment" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="MonPage_PresetProduction" xml:space="preserve">
+    <value>Production</value>
+  </data>
+  <data name="MonPage_PresetTroubleshooting" xml:space="preserve">
+    <value>Troubleshooting</value>
+  </data>
+  <data name="MonPage_PresetProfileDebug" xml:space="preserve">
+    <value>Profile Debug</value>
+  </data>
+  <data name="MonPage_AllDevicesSelected" xml:space="preserve">
+    <value>All devices selected</value>
+  </data>
+  <data name="MonPage_AllCategoriesSelected" xml:space="preserve">
+    <value>All categories selected</value>
+  </data>
+  <data name="MonPage_AllTypesSelected" xml:space="preserve">
+    <value>All types selected</value>
+  </data>
+  <data name="MonPage_AllFiltersCleared" xml:space="preserve">
+    <value>All filters cleared</value>
+  </data>
+  <data name="TS_PageTitle" xml:space="preserve">
+    <value>Telescope Setup - Device {0}</value>
+  </data>
+  <data name="TS_DeviceInformation" xml:space="preserve">
+    <value>Device Information</value>
+  </data>
+  <data name="TS_DeviceNumber" xml:space="preserve">
+    <value>Device Number</value>
+  </data>
+  <data name="TS_DeviceName" xml:space="preserve">
+    <value>Device Name</value>
+  </data>
+  <data name="TS_MountType" xml:space="preserve">
+    <value>Mount Type</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="TS_AlignmentMode" xml:space="preserve">
+    <value>Alignment Mode</value>
+    <comment>WPF: notAlignmentMode (ambiguous: notAlignmentMode, skyAlignment)</comment>
+  </data>
+  <data name="TS_ConnectionStatus" xml:space="preserve">
+    <value>Connection Status</value>
+  </data>
+  <data name="TS_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="TS_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="TS_ObservatorySettings" xml:space="preserve">
+    <value>Observatory Settings</value>
+  </data>
+  <data name="TS_Elevation" xml:space="preserve">
+    <value>Elevation</value>
+    <comment>WPF: gpsEle (ambiguous: gpsEle, cdcEle, skyElevation)</comment>
+  </data>
+  <data name="TS_Refraction" xml:space="preserve">
+    <value>Refraction</value>
+    <comment>WPF: skyRefraction</comment>
+  </data>
+  <data name="TS_SerialPortSettings" xml:space="preserve">
+    <value>Serial Port Settings</value>
+  </data>
+  <data name="TS_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="TS_BaudRate" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="TS_DataBits" xml:space="preserve">
+    <value>Data Bits</value>
+  </data>
+  <data name="TS_ReadTimeout" xml:space="preserve">
+    <value>Read Timeout</value>
+  </data>
+  <data name="TS_TrackingGuiding" xml:space="preserve">
+    <value>Tracking &amp; Guiding Settings</value>
+  </data>
+  <data name="TS_AutoTrackUnpark" xml:space="preserve">
+    <value>Auto Track on Unpark</value>
+  </data>
+  <data name="TS_TrackingRate" xml:space="preserve">
+    <value>Tracking Rate</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="TS_SiderealRate" xml:space="preserve">
+    <value>Sidereal Rate</value>
+    <comment>WPF: skySiderealRate</comment>
+  </data>
+  <data name="TS_MinPulseRa" xml:space="preserve">
+    <value>Min Pulse RA</value>
+  </data>
+  <data name="TS_MinPulseDec" xml:space="preserve">
+    <value>Min Pulse Dec</value>
+  </data>
+  <data name="TS_MountSettings" xml:space="preserve">
+    <value>Mount Settings</value>
+  </data>
+  <data name="TS_RaBacklash" xml:space="preserve">
+    <value>RA Backlash</value>
+    <comment>WPF: bacRaLash</comment>
+  </data>
+  <data name="TS_DecBacklash" xml:space="preserve">
+    <value>Dec Backlash</value>
+    <comment>WPF: bacDecLash</comment>
+  </data>
+  <data name="TS_Encoders" xml:space="preserve">
+    <value>Encoders</value>
+    <comment>WPF: skyEncoders</comment>
+  </data>
+  <data name="TS_AllowAdvanced" xml:space="preserve">
+    <value>Allow Advanced Commands</value>
+  </data>
+  <data name="TS_TelescopeOptics" xml:space="preserve">
+    <value>Telescope Optics</value>
+  </data>
+  <data name="TS_ApertureDiameter" xml:space="preserve">
+    <value>Aperture Diameter</value>
+  </data>
+  <data name="TS_ApertureArea" xml:space="preserve">
+    <value>Aperture Area</value>
+  </data>
+  <data name="TS_FocalLength" xml:space="preserve">
+    <value>Focal Length</value>
+  </data>
+  <data name="TS_InstanceNotFound" xml:space="preserve">
+    <value>Device Instance Not Found</value>
+  </data>
+  <data name="TS_InstanceNotFoundBody" xml:space="preserve">
+    <value>Device {0} is registered but has no Mount instance. This may indicate a configuration error.</value>
+  </data>
+  <data name="TS_BackToManager" xml:space="preserve">
+    <value>Back to Device Manager</value>
+  </data>
+  <data name="TS_DeviceNotFound" xml:space="preserve">
+    <value>Device Not Found</value>
+  </data>
+  <data name="TS_DeviceNotFoundBody" xml:space="preserve">
+    <value>Device {0} does not exist in the system. Please return to the Device Manager to see available devices.</value>
+  </data>
+  <data name="HealthPage_Title" xml:space="preserve">
+    <value>Settings Health Check</value>
+  </data>
+  <data name="HealthPage_Intro" xml:space="preserve">
+    <value>Validate and repair your settings configuration. This tool checks the integrity of your settings file and can automatically fix common configuration issues.</value>
+  </data>
+  <data name="HealthPage_StatusTitle" xml:space="preserve">
+    <value>Settings Health Status</value>
+  </data>
+  <data name="HealthPage_Validating" xml:space="preserve">
+    <value>Validating settings...</value>
+  </data>
+  <data name="HealthPage_AllValid" xml:space="preserve">
+    <value>&lt;strong&gt;All settings are valid.&lt;/strong&gt;</value>
+  </data>
+  <data name="HealthPage_WarningCount" xml:space="preserve">
+    <value>({0} warning(s))</value>
+  </data>
+  <data name="HealthPage_Failed" xml:space="preserve">
+    <value>&lt;strong&gt;Settings validation failed.&lt;/strong&gt; {0} error(s) found.</value>
+  </data>
+  <data name="HealthPage_ErrorsHeading" xml:space="preserve">
+    <value>Errors ({0})</value>
+  </data>
+  <data name="HealthPage_WarningsHeading" xml:space="preserve">
+    <value>Warnings ({0})</value>
+  </data>
+  <data name="HealthPage_AutoRepairable" xml:space="preserve">
+    <value>Auto-repairable</value>
+  </data>
+  <data name="HealthPage_Resolution" xml:space="preserve">
+    <value>&lt;strong&gt;Resolution:&lt;/strong&gt; {0}</value>
+  </data>
+  <data name="HealthPage_UnableToValidate" xml:space="preserve">
+    <value>Unable to validate settings. Click &lt;strong&gt;Re-validate&lt;/strong&gt; to try again.</value>
+  </data>
+  <data name="HealthPage_Revalidate" xml:space="preserve">
+    <value>Re-validate</value>
+  </data>
+  <data name="HealthPage_FilesTitle" xml:space="preserve">
+    <value>Settings Files</value>
+  </data>
+  <data name="HealthPage_NoFiles" xml:space="preserve">
+    <value>No JSON files found in settings folder.</value>
+  </data>
+  <data name="HealthPage_OnlyLocalTip" xml:space="preserve">
+    <value>Only available when browsing from the server machine</value>
+  </data>
+  <data name="HealthPage_ServiceTip" xml:space="preserve">
+    <value>Cannot open Explorer when running as a Windows service</value>
+  </data>
+  <data name="HealthPage_OpenFolder" xml:space="preserve">
+    <value>Open Settings Folder</value>
+  </data>
+  <data name="HealthPage_AboutTitle" xml:space="preserve">
+    <value>About Settings Validation</value>
+  </data>
+  <data name="HealthPage_WhatValidated" xml:space="preserve">
+    <value>What is validated?</value>
+  </data>
+  <data name="HealthPage_V_File" xml:space="preserve">
+    <value>&lt;strong&gt;File-level checks:&lt;/strong&gt; File existence, read permissions, JSON syntax, required structure</value>
+  </data>
+  <data name="HealthPage_V_Device" xml:space="preserve">
+    <value>&lt;strong&gt;Device validation:&lt;/strong&gt; DeviceNumber uniqueness, DeviceName required, AlignmentMode valid, Mount type valid</value>
+  </data>
+  <data name="HealthPage_V_Sync" xml:space="preserve">
+    <value>&lt;strong&gt;Synchronization:&lt;/strong&gt; Devices and AlpacaDevices arrays must be in sync</value>
+  </data>
+  <data name="HealthPage_AutoRepairTitle" xml:space="preserve">
+    <value>Automatic Repair Actions</value>
+  </data>
+  <data name="HealthPage_AutoRepairIntro" xml:space="preserve">
+    <value>The repair function can automatically fix:</value>
+  </data>
+  <data name="HealthPage_R_Devices" xml:space="preserve">
+    <value>Missing or corrupted Devices array (regenerates from defaults)</value>
+  </data>
+  <data name="HealthPage_R_Names" xml:space="preserve">
+    <value>Missing device names (generates "Telescope X" names)</value>
+  </data>
+  <data name="HealthPage_R_Align" xml:space="preserve">
+    <value>Invalid AlignmentMode values (resets to GermanPolar)</value>
+  </data>
+  <data name="HealthPage_R_Mount" xml:space="preserve">
+    <value>Missing Mount values (sets to Simulator)</value>
+  </data>
+  <data name="HealthPage_R_Sync" xml:space="preserve">
+    <value>Out-of-sync AlpacaDevices array (regenerates from Devices)</value>
+  </data>
+  <data name="HealthPage_SafetyTitle" xml:space="preserve">
+    <value>Safety Features</value>
+  </data>
+  <data name="HealthPage_S_Backup" xml:space="preserve">
+    <value>&lt;strong&gt;Automatic backup:&lt;/strong&gt; A timestamped backup is created before any changes</value>
+  </data>
+  <data name="HealthPage_S_Validation" xml:space="preserve">
+    <value>&lt;strong&gt;Validation after repair:&lt;/strong&gt; Changes are validated before saving</value>
+  </data>
+  <data name="HealthPage_S_Restore" xml:space="preserve">
+    <value>&lt;strong&gt;Restore on failure:&lt;/strong&gt; Settings are restored from backup if repair fails</value>
+  </data>
+  <data name="HealthPage_S_Quarantine" xml:space="preserve">
+    <value>&lt;strong&gt;Quarantine:&lt;/strong&gt; Invalid devices are excluded from the active device list</value>
+  </data>
+  <data name="HealthPage_ManualTitle" xml:space="preserve">
+    <value>Manual Repair</value>
+  </data>
+  <data name="HealthPage_ManualIntro" xml:space="preserve">
+    <value>For issues that cannot be automatically fixed:</value>
+  </data>
+  <data name="HealthPage_M_OpenFolder" xml:space="preserve">
+    <value>Use the &lt;strong&gt;Open Settings Folder&lt;/strong&gt; button above</value>
+  </data>
+  <data name="HealthPage_M_Edit" xml:space="preserve">
+    <value>Edit &lt;code&gt;appsettings.user.json&lt;/code&gt; in a text editor</value>
+  </data>
+  <data name="HealthPage_M_Restart" xml:space="preserve">
+    <value>Restart the application</value>
+  </data>
+  <data name="HealthPage_M_Delete" xml:space="preserve">
+    <value>If needed, delete the file to regenerate default settings</value>
+  </data>
+  <data name="HealthPage_Note" xml:space="preserve">
+    <value>&lt;strong&gt;Note:&lt;/strong&gt; This validation runs automatically during application startup. Invalid devices are quarantined and not advertised to ASCOM clients.</value>
+  </data>
+  <data name="HealthPage_ValidationError" xml:space="preserve">
+    <value>Validation error: {0}</value>
+  </data>
+  <data name="HealthPage_UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred during validation: {0}</value>
+  </data>
+  <data name="HealthPage_CheckLogs" xml:space="preserve">
+    <value>Check application logs for details.</value>
+  </data>
+  <data name="State_AtHome" xml:space="preserve">
+    <value>At Home</value>
+  </data>
+  <data name="State_NotAtHome" xml:space="preserve">
+    <value>Not at Home</value>
+  </data>
+  <data name="State_Parked" xml:space="preserve">
+    <value>Parked</value>
+  </data>
+  <data name="State_Unparked" xml:space="preserve">
+    <value>Unparked</value>
+  </data>
+  <data name="State_Slewing" xml:space="preserve">
+    <value>Slewing</value>
+    <comment>WPF: botSlewing (ambiguous: botSlewing, botTipSlewing, vceSlewing)</comment>
+  </data>
+  <data name="State_Stationary" xml:space="preserve">
+    <value>Stationary</value>
+  </data>
+  <data name="State_TrackingWithRate" xml:space="preserve">
+    <value>Tracking ({0})</value>
+  </data>
+  <data name="State_TrackingOff" xml:space="preserve">
+    <value>Tracking Off</value>
+  </data>
+  <data name="State_PulseGuidingActive" xml:space="preserve">
+    <value>Pulse Guiding Active</value>
+  </data>
+  <data name="State_PulseGuidingOff" xml:space="preserve">
+    <value>Pulse Guiding Off</value>
+  </data>
+  <data name="State_PierEast" xml:space="preserve">
+    <value>Pier Side East</value>
+  </data>
+  <data name="State_PierWest" xml:space="preserve">
+    <value>Pier Side West</value>
+  </data>
+  <data name="State_LimitTriggered" xml:space="preserve">
+    <value>Limit Triggered</value>
+  </data>
+  <data name="State_LimitsOn" xml:space="preserve">
+    <value>Limits On</value>
+  </data>
+  <data name="State_LimitsOff" xml:space="preserve">
+    <value>Limits off</value>
+  </data>
+  <data name="State_VoiceOn" xml:space="preserve">
+    <value>Voice on</value>
+  </data>
+  <data name="State_VoiceOff" xml:space="preserve">
+    <value>Voice off</value>
+  </data>
+  <data name="State_ActiveConnections" xml:space="preserve">
+    <value>{0} active connection(s)</value>
+  </data>
+  <data name="State_NoActiveConnectionsWas" xml:space="preserve">
+    <value>No active connections (has been connected)</value>
+  </data>
+  <data name="State_NoConnections" xml:space="preserve">
+    <value>No connections</value>
+  </data>
+  <data name="MCtl_Title" xml:space="preserve">
+    <value>Mount Control</value>
+  </data>
+  <data name="MCtl_Lha" xml:space="preserve">
+    <value>LHA</value>
+  </data>
+  <data name="MCtl_Lst" xml:space="preserve">
+    <value>LST</value>
+  </data>
+  <data name="MCtl_HandController" xml:space="preserve">
+    <value>Hand Controller</value>
+  </data>
+  <data name="MCtl_MountInfo" xml:space="preserve">
+    <value>Mount Info</value>
+  </data>
+  <data name="MCtl_ShutdownTip" xml:space="preserve">
+    <value>Gracefully stops the server process. Use only when all mounts are parked and disconnected.</value>
+  </data>
+  <data name="MCtl_Connecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="MCtl_Disconnect" xml:space="preserve">
+    <value>Disconnect from mount</value>
+  </data>
+  <data name="MCtl_Connect" xml:space="preserve">
+    <value>Connect to mount</value>
+  </data>
+  <data name="MCtl_StopFailed" xml:space="preserve">
+    <value>Stop failed: {0}</value>
+  </data>
+  <data name="MCtl_ConnectFailed" xml:space="preserve">
+    <value>Connect/Disconnect failed: {0}</value>
+  </data>
+  <data name="MStat_Title" xml:space="preserve">
+    <value>Mount Status</value>
+  </data>
+  <data name="MStat_PointingCoordinates" xml:space="preserve">
+    <value>Pointing Coordinates</value>
+  </data>
+  <data name="MStat_Pier" xml:space="preserve">
+    <value>Pier</value>
+  </data>
+  <data name="MStat_AxisPositions" xml:space="preserve">
+    <value>Axis Positions</value>
+  </data>
+  <data name="MStat_ActualX" xml:space="preserve">
+    <value>Actual X</value>
+  </data>
+  <data name="MStat_ActualY" xml:space="preserve">
+    <value>Actual Y</value>
+  </data>
+  <data name="MStat_AppX" xml:space="preserve">
+    <value>App X</value>
+  </data>
+  <data name="MStat_AppY" xml:space="preserve">
+    <value>App Y</value>
+  </data>
+  <data name="MStat_StepsX" xml:space="preserve">
+    <value>Steps X</value>
+  </data>
+  <data name="MStat_StepsY" xml:space="preserve">
+    <value>Steps Y</value>
+  </data>
+  <data name="MStat_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="MStat_MountConnected" xml:space="preserve">
+    <value>Mount Connected</value>
+  </data>
+  <data name="MStat_ActiveClients" xml:space="preserve">
+    <value>Active clients</value>
+  </data>
+  <data name="MStat_LimitWarning" xml:space="preserve">
+    <value>Limit Warning</value>
+    <comment>WPF: vceLimit</comment>
+  </data>
+  <data name="MStat_AtPark" xml:space="preserve">
+    <value>At Park</value>
+  </data>
+  <data name="MStat_Mount" xml:space="preserve">
+    <value>Mount</value>
+    <comment>WPF: mntMount (ambiguous: mntMount, optMount)</comment>
+  </data>
+  <data name="MStat_Type" xml:space="preserve">
+    <value>Type</value>
+    <comment>WPF: optType (ambiguous: optType, chtType)</comment>
+  </data>
+  <data name="MStat_Mode" xml:space="preserve">
+    <value>Mode</value>
+    <comment>WPF: hcMode</comment>
+  </data>
+  <data name="MStat_MountModel" xml:space="preserve">
+    <value>Mount Model</value>
+  </data>
+  <data name="MStat_MountFirmware" xml:space="preserve">
+    <value>Mount Firmware</value>
+  </data>
+  <data name="MStat_AdvancedCommands" xml:space="preserve">
+    <value>Advanced Commands</value>
+  </data>
+  <data name="MStat_HomeSensor" xml:space="preserve">
+    <value>Home Sensor</value>
+    <comment>WPF: mntHomeSensor</comment>
+  </data>
+  <data name="MStat_Voltage" xml:space="preserve">
+    <value>Voltage</value>
+  </data>
+  <data name="MStat_PowerEvent" xml:space="preserve">
+    <value>Power Event</value>
+  </data>
+  <data name="MStat_PolarLed" xml:space="preserve">
+    <value>Polar LED</value>
+    <comment>WPF: mntPolarLed</comment>
+  </data>
+  <data name="MStat_Capabilities" xml:space="preserve">
+    <value>Capabilities</value>
+    <comment>WPF: mntCap</comment>
+  </data>
+  <data name="MStat_CustomOffsetRa" xml:space="preserve">
+    <value>Custom Offset RA</value>
+    <comment>WPF: mntCustomOffsetRa</comment>
+  </data>
+  <data name="MStat_CustomOffsetDec" xml:space="preserve">
+    <value>Custom Offset Dec</value>
+    <comment>WPF: mntCustomOffsetDec</comment>
+  </data>
+  <data name="MStat_StepsRa" xml:space="preserve">
+    <value>Steps RA</value>
+  </data>
+  <data name="MStat_StepsDec" xml:space="preserve">
+    <value>Steps Dec</value>
+  </data>
+  <data name="MStat_WormStepsRa" xml:space="preserve">
+    <value>Worm Steps RA</value>
+    <comment>WPF: mntWormStepsRa</comment>
+  </data>
+  <data name="MStat_WormStepsDec" xml:space="preserve">
+    <value>Worm Steps Dec</value>
+    <comment>WPF: mntWormStepsDec</comment>
+  </data>
+  <data name="MStat_FrequencyRa" xml:space="preserve">
+    <value>Frequency RA</value>
+    <comment>WPF: mntFreqRa</comment>
+  </data>
+  <data name="MStat_FrequencyDec" xml:space="preserve">
+    <value>Frequency Dec</value>
+    <comment>WPF: mntFreqDec</comment>
+  </data>
+  <data name="MStat_RaStepsArcSec" xml:space="preserve">
+    <value>RA Steps/ArcSec</value>
+    <comment>WPF: mntRaSteps</comment>
+  </data>
+  <data name="MStat_DecStepsArcSec" xml:space="preserve">
+    <value>Dec Steps/ArcSec</value>
+    <comment>WPF: mntDecSteps</comment>
+  </data>
+  <data name="MStat_AxisDials" xml:space="preserve">
+    <value>Axis Dials</value>
+  </data>
+  <data name="MStat_Supported" xml:space="preserve">
+    <value>Supported</value>
+    <comment>WPF: mntSupported</comment>
+  </data>
+  <data name="MStat_NotSupported" xml:space="preserve">
+    <value>Not supported</value>
+  </data>
+  <data name="MStat_Tracking" xml:space="preserve">
+    <value>Tracking</value>
+    <comment>WPF: btnTracking (ambiguous: btnTracking, botTracking, botTipTracking, gpTracking)</comment>
+  </data>
+  <data name="MStat_PulseGuiding" xml:space="preserve">
+    <value>Pulse Guiding</value>
+  </data>
+  <data name="MStat_Slewing" xml:space="preserve">
+    <value>Slewing</value>
+    <comment>WPF: botSlewing (ambiguous: botSlewing, botTipSlewing, vceSlewing)</comment>
+  </data>
+  <data name="MStat_LimitsOn" xml:space="preserve">
+    <value>Limits On</value>
+    <comment>WPF: 1021LimitsOn (ambiguous: 1021LimitsOn, vceLimitsOn)</comment>
+  </data>
+  <data name="MStat_AtHome" xml:space="preserve">
+    <value>At Home</value>
+  </data>
+  <data name="MStat_NotAvailable" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+  <data name="SE_ExpandAll" xml:space="preserve">
+    <value>Expand all sections</value>
+  </data>
+  <data name="SE_CollapseAll" xml:space="preserve">
+    <value>Collapse all sections</value>
+  </data>
+  <data name="SE_ShowHiddenTip" xml:space="preserve">
+    <value>Show settings that are normally hidden</value>
+  </data>
+  <data name="SE_ShowHidden" xml:space="preserve">
+    <value>Show hidden</value>
+  </data>
+  <data name="SE_SearchPlaceholder" xml:space="preserve">
+    <value>Search settings…</value>
+  </data>
+  <data name="SE_SelectGroup" xml:space="preserve">
+    <value>Select a settings group from the tree on the left to begin editing.</value>
+  </data>
+  <data name="SE_HiddenShown" xml:space="preserve">
+    <value>Hidden settings are shown. These are advanced values not normally needed.</value>
+  </data>
+  <data name="SE_DeviceLabel" xml:space="preserve">
+    <value>Device {0} — {1}</value>
+  </data>
+  <data name="SE_DeviceDescription" xml:space="preserve">
+    <value>Settings for telescope device {0}: {1}.</value>
+  </data>
+  <data name="SE_DeleteDeviceTitle" xml:space="preserve">
+    <value>Delete Telescope Device</value>
+  </data>
+  <data name="SE_DeviceAdded" xml:space="preserve">
+    <value>Added device {0}: {1}.</value>
+  </data>
+  <data name="SE_ErrAddDevice" xml:space="preserve">
+    <value>Error adding device: {0}</value>
+  </data>
+  <data name="SE_DeviceNotFound" xml:space="preserve">
+    <value>Device {0} was not found.</value>
+  </data>
+  <data name="SE_DeviceDeleted" xml:space="preserve">
+    <value>Deleted device {0}: {1}.</value>
+  </data>
+  <data name="SE_ErrDeleteDevice" xml:space="preserve">
+    <value>Error deleting device {0}: {1}</value>
+  </data>
+  <data name="SE_HotReloaded" xml:space="preserve">
+    <value>Device registry reloaded — {0} device(s) active.</value>
+  </data>
+  <data name="SE_HotReloadFailed" xml:space="preserve">
+    <value>Hot reload failed: {0}</value>
+  </data>
+  <data name="SE_HotReloadError" xml:space="preserve">
+    <value>Hot reload error: {0}</value>
+  </data>
+  <data name="SE_PresetApplied" xml:space="preserve">
+    <value>Preset applied. Review the changes and click Save when ready.</value>
+  </data>
+  <data name="SE_AllDevicesSelected" xml:space="preserve">
+    <value>All devices selected</value>
+  </data>
+  <data name="SE_AllCategoriesSelected" xml:space="preserve">
+    <value>All categories selected</value>
+  </data>
+  <data name="SE_AllTypesSelected" xml:space="preserve">
+    <value>All types selected</value>
+  </data>
+  <data name="SE_AllFiltersCleared" xml:space="preserve">
+    <value>All filters cleared</value>
+  </data>
+  <data name="SE_LoggingSaved" xml:space="preserve">
+    <value>Logging settings saved successfully.</value>
+  </data>
+  <data name="SE_ErrSaveLogging" xml:space="preserve">
+    <value>Error saving Logging settings: {0}</value>
+  </data>
+  <data name="SE_LoggingReset" xml:space="preserve">
+    <value>Logging settings reset to last saved state.</value>
+  </data>
+  <data name="SE_Saved" xml:space="preserve">
+    <value>Settings saved successfully.</value>
+  </data>
+  <data name="SE_ErrSave" xml:space="preserve">
+    <value>Error saving settings: {0}</value>
+  </data>
+  <data name="SE_Chg_MountType" xml:space="preserve">
+    <value>Mount Type: {0} → {1}</value>
+  </data>
+  <data name="SE_Chg_ComPort" xml:space="preserve">
+    <value>COM Port: {0} → {1}</value>
+  </data>
+  <data name="SE_Chg_BaudRate" xml:space="preserve">
+    <value>Baud Rate: {0} → {1}</value>
+  </data>
+  <data name="SE_Chg_AlignmentMode" xml:space="preserve">
+    <value>Alignment Mode: {0} → {1}</value>
+  </data>
+  <data name="SE_DeleteObsContent" xml:space="preserve">
+    <value>Delete observatory "{0}"? This change will not be persisted until you click Save.</value>
+  </data>
+  <data name="SE_DeleteObsTitle" xml:space="preserve">
+    <value>Delete Observatory</value>
+  </data>
+  <data name="SE_CopyObsContent" xml:space="preserve">
+    <value>Copy Latitude, Longitude, Elevation and GPS settings from '{0}' to all {1} telescope device(s) and save immediately?</value>
+  </data>
+  <data name="SE_CopyAndSave" xml:space="preserve">
+    <value>Copy &amp; Save</value>
+  </data>
+  <data name="SE_CopyObsTitle" xml:space="preserve">
+    <value>Copy Observatory to All Devices</value>
+  </data>
+  <data name="SE_LocationCopied" xml:space="preserve">
+    <value>Location and GPS settings from '{0}' saved to {1} device(s).</value>
+  </data>
+  <data name="SE_ErrCopyObs" xml:space="preserve">
+    <value>Error copying observatory to devices: {0}</value>
+  </data>
+  <data name="SE_DiscardContent" xml:space="preserve">
+    <value>You have unsaved changes. Discard them and switch groups?</value>
+  </data>
+  <data name="SE_Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="SE_Stay" xml:space="preserve">
+    <value>Stay</value>
+  </data>
+  <data name="SE_UnsavedChangesTitle" xml:space="preserve">
+    <value>Unsaved Changes</value>
+  </data>
+  <data name="SE_ObsSiteDescription" xml:space="preserve">
+    <value>Observatory site: {0}</value>
+  </data>
+  <data name="SE_Node_TelescopeDevices" xml:space="preserve">
+    <value>Telescope Devices</value>
+  </data>
+  <data name="SE_Node_Observatories" xml:space="preserve">
+    <value>Observatories</value>
+  </data>
+  <data name="SE_Node_Logging" xml:space="preserve">
+    <value>Logging</value>
+  </data>
+  <data name="SE_Node_ServerConfiguration" xml:space="preserve">
+    <value>Server Configuration</value>
+  </data>
+  <data name="SE_Node_AlpacaSettings" xml:space="preserve">
+    <value>Alpaca Settings</value>
+  </data>
+  <data name="SE_Node_UserInterface" xml:space="preserve">
+    <value>User Interface</value>
+  </data>
+  <data name="SE_Node_Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="SE_Node_MountConfiguration" xml:space="preserve">
+    <value>Mount Configuration</value>
+  </data>
+  <data name="SE_Node_ObservatoryConfiguration" xml:space="preserve">
+    <value>Observatory Configuration</value>
+  </data>
+  <data name="SE_Node_Optics" xml:space="preserve">
+    <value>Optics</value>
+  </data>
+  <data name="SE_Node_TrackingAndGuiding" xml:space="preserve">
+    <value>Tracking &amp; Guiding</value>
+  </data>
+  <data name="SE_Node_HomeAndPark" xml:space="preserve">
+    <value>Home and Park</value>
+  </data>
+  <data name="SE_Node_Limits" xml:space="preserve">
+    <value>Limits</value>
+  </data>
+  <data name="SE_Node_Voice" xml:space="preserve">
+    <value>Voice</value>
+  </data>
+  <data name="SE_Node_PerformanceAndTuning" xml:space="preserve">
+    <value>Performance &amp; Tuning</value>
+  </data>
+  <data name="SE_Node_Ppec" xml:space="preserve">
+    <value>PPEC</value>
+  </data>
+  <data name="SE_Node_HandController" xml:space="preserve">
+    <value>Hand Controller</value>
+  </data>
+  <data name="SE_Desc_Observatories" xml:space="preserve">
+    <value>Named observatory sites — latitude, longitude, elevation and UTC offset per site.</value>
+  </data>
+  <data name="SE_Desc_ServerConfiguration" xml:space="preserve">
+    <value>Alpaca HTTP server behaviour, network binding, authentication and identity.</value>
+  </data>
+  <data name="SE_Desc_Logging" xml:space="preserve">
+    <value>Logging filter settings — device, category and message type filters.</value>
+  </data>
+  <data name="SE_Desc_TelescopeDevices" xml:space="preserve">
+    <value>Per-device telescope mount settings.</value>
+  </data>
+  <data name="SE_Desc_Observatory" xml:space="preserve">
+    <value>Latitude, longitude, elevation and UTC offset for this observatory site.</value>
+  </data>
+  <data name="SE_Desc_AlpacaSettings" xml:space="preserve">
+    <value>Core Alpaca server settings, including server identity, port, network access and compatibility behaviour.</value>
+  </data>
+  <data name="SE_Desc_UserInterface" xml:space="preserve">
+    <value>Display zoom and frontend user-preference settings.</value>
+  </data>
+  <data name="SE_Desc_Security" xml:space="preserve">
+    <value>HTTP Basic authentication settings and account security.</value>
+  </data>
+  <data name="SE_Desc_DeviceFilters" xml:space="preserve">
+    <value>Enable or disable log entries by device type (server, telescope, UI).</value>
+  </data>
+  <data name="SE_Desc_CategoryFilters" xml:space="preserve">
+    <value>Enable or disable log entries by category (driver, interface, mount, etc.).</value>
+  </data>
+  <data name="SE_Desc_MessageTypeFilters" xml:space="preserve">
+    <value>Enable or disable log entries by message type (info, warning, error, debug).</value>
+  </data>
+  <data name="SE_Desc_LoggingControl" xml:space="preserve">
+    <value>File logging targets — monitor log, session log and charting data.</value>
+  </data>
+  <data name="SE_Desc_DeviceIdentity" xml:space="preserve">
+    <value>Device number, name and enabled state.</value>
+  </data>
+  <data name="SE_Desc_SerialConnection" xml:space="preserve">
+    <value>Serial port, baud rate, handshake and timeout settings.</value>
+  </data>
+  <data name="SE_Desc_MountConfiguration" xml:space="preserve">
+    <value>Device identity, serial connection, equatorial coordinates, mount hardware (motor settings, encoders, backlash) and custom gearing.</value>
+  </data>
+  <data name="SE_Desc_HomeAndPark" xml:space="preserve">
+    <value>Stored home and park axis positions.</value>
+  </data>
+  <data name="SE_Desc_Limits" xml:space="preserve">
+    <value>Axis / slew limits, sync limits, meridian / flip angle limit (GEM/Polar) and horizontal axis limit (AltAz).</value>
+  </data>
+  <data name="SE_Desc_TrackingAndGuiding" xml:space="preserve">
+    <value>Tracking rates and pulse guiding settings.</value>
+  </data>
+  <data name="SE_Desc_ObservatoryConfiguration" xml:space="preserve">
+    <value>Latitude, longitude, elevation, UTC offset, environmental conditions and GPS.</value>
+  </data>
+  <data name="SE_Desc_Optics" xml:space="preserve">
+    <value>Aperture diameter, aperture area and focal length.</value>
+  </data>
+  <data name="SE_Desc_CoordinateSystem" xml:space="preserve">
+    <value>Equatorial coordinate type (J2000 / JNow).</value>
+  </data>
+  <data name="SE_Desc_Tracking" xml:space="preserve">
+    <value>Tracking rates (sidereal, lunar, solar, king) and RA tracking offset.</value>
+  </data>
+  <data name="SE_Desc_CustomGearing" xml:space="preserve">
+    <value>Custom motor gearing step counts and worm-wheel tooth counts.</value>
+  </data>
+  <data name="SE_Desc_Backlash" xml:space="preserve">
+    <value>RA and Dec backlash compensation in motor steps.</value>
+  </data>
+  <data name="SE_Desc_PulseGuiding" xml:space="preserve">
+    <value>Minimum pulse durations, ST4 guide rate and guide rate offsets.</value>
+  </data>
+  <data name="SE_Desc_SyncLimits" xml:space="preserve">
+    <value>Sync angle limit and no-sync-past-meridian flag.</value>
+  </data>
+  <data name="SE_Desc_Ppec" xml:space="preserve">
+    <value>Predictive PEC settings.</value>
+  </data>
+  <data name="SE_Desc_Encoders" xml:space="preserve">
+    <value>Enable or disable absolute encoder feedback.</value>
+  </data>
+  <data name="SE_Desc_HandController" xml:space="preserve">
+    <value>Hand controller speed, mode, flip and anti-backlash settings.</value>
+  </data>
+  <data name="SE_Desc_Gps" xml:space="preserve">
+    <value>GPS serial port and baud rate for time/location synchronisation.</value>
+  </data>
+  <data name="SE_Desc_PerformanceAndTuning" xml:space="preserve">
+    <value>Loop update interval, GOTO precision and trace logging.</value>
+  </data>
+  <data name="SE_Desc_HomePosition" xml:space="preserve">
+    <value>Stored home axis positions (X/Y) and auto-home axis positions.</value>
+  </data>
+  <data name="SE_Desc_ParkPositions" xml:space="preserve">
+    <value>Named park position list and active park selection.</value>
+  </data>
+  <data name="SE_Desc_AxisSlewLimits" xml:space="preserve">
+    <value>Upper/lower axis limits and maximum slew rate.</value>
+  </data>
+  <data name="SE_Desc_HorizontalAxisLimit" xml:space="preserve">
+    <value>Horizontal axis tracking limit for AltAz mounts.</value>
+  </data>
+  <data name="SE_Desc_AlignmentMode" xml:space="preserve">
+    <value>Mount alignment mode (AltAz, GermanPolar, Polar).</value>
+  </data>
+  <data name="SE_Desc_Voice" xml:space="preserve">
+    <value>Voice announcement settings — enable/disable, voice selection and volume.</value>
+  </data>
+  <data name="Chart_PulseTitle" xml:space="preserve">
+    <value>Pulse Guide Chart — GS Alpaca</value>
+  </data>
+  <data name="Chart_PulseHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;Pulse&lt;/b&gt; Guide — {0} — Device {1}</value>
+  </data>
+  <data name="Chart_RaDecHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;{0} / {1}&lt;/b&gt; Position — {2} — Device {3}</value>
+  </data>
+  <data name="Chart_RaDecTitle" xml:space="preserve">
+    <value>{0} / {1} Chart</value>
+  </data>
+  <data name="Chart_Reconnecting" xml:space="preserve">
+    <value>Reconnecting…</value>
+  </data>
+  <data name="Chart_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Chart_DataWindow" xml:space="preserve">
+    <value>Data Window</value>
+  </data>
+  <data name="Chart_Win10s" xml:space="preserve">
+    <value>10 sec</value>
+  </data>
+  <data name="Chart_Win30s" xml:space="preserve">
+    <value>30 sec</value>
+  </data>
+  <data name="Chart_Win2m" xml:space="preserve">
+    <value>2 min</value>
+  </data>
+  <data name="Chart_Win5m" xml:space="preserve">
+    <value>5 min</value>
+  </data>
+  <data name="Chart_Win15m" xml:space="preserve">
+    <value>15 min</value>
+  </data>
+  <data name="Chart_Win30m" xml:space="preserve">
+    <value>30 min</value>
+  </data>
+  <data name="Chart_PulseUnits" xml:space="preserve">
+    <value>Pulse Units</value>
+  </data>
+  <data name="Chart_Scale" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="Chart_Milliseconds" xml:space="preserve">
+    <value>milliSeconds</value>
+  </data>
+  <data name="Chart_ArcSeconds" xml:space="preserve">
+    <value>Arc Seconds</value>
+  </data>
+  <data name="Chart_Steps" xml:space="preserve">
+    <value>Steps</value>
+  </data>
+  <data name="Chart_Degrees" xml:space="preserve">
+    <value>Degrees</value>
+  </data>
+  <data name="Chart_YAxisMs" xml:space="preserve">
+    <value>mS</value>
+  </data>
+  <data name="Chart_ChartType" xml:space="preserve">
+    <value>Chart Type</value>
+  </data>
+  <data name="Chart_Bars" xml:space="preserve">
+    <value>Bars</value>
+  </data>
+  <data name="Chart_Points" xml:space="preserve">
+    <value>Points</value>
+  </data>
+  <data name="Chart_Line" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="Chart_PauseTip" xml:space="preserve">
+    <value>Pause (freeze to historical snapshot)</value>
+  </data>
+  <data name="Chart_ResumeTip" xml:space="preserve">
+    <value>Resume realtime scrolling</value>
+  </data>
+  <data name="Chart_PauseAria" xml:space="preserve">
+    <value>Pause chart updates</value>
+  </data>
+  <data name="Chart_ResumeAria" xml:space="preserve">
+    <value>Resume chart updates</value>
+  </data>
+  <data name="Chart_RaRejected" xml:space="preserve">
+    <value>RA rej.</value>
+  </data>
+  <data name="Chart_DecRejected" xml:space="preserve">
+    <value>Dec rej.</value>
+  </data>
+  <data name="Chart_Clear" xml:space="preserve">
+    <value>Clear chart</value>
+  </data>
+  <data name="Chart_RenderFailed" xml:space="preserve">
+    <value>Chart failed to render. Please close and reopen this window.</value>
+  </data>
+  <data name="TView_Title" xml:space="preserve">
+    <value>Telescope View — Device {0}</value>
+  </data>
+  <data name="TView_Header" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;Telescope 3D View&lt;/b&gt; — Device {0}</value>
+  </data>
+  <data name="TView_Axis1" xml:space="preserve">
+    <value>Axis 1: {0}°</value>
+  </data>
+  <data name="TView_Axis2" xml:space="preserve">
+    <value>Axis 2: {0}°</value>
+  </data>
+  <data name="TView_SaveView" xml:space="preserve">
+    <value>Save View</value>
+  </data>
+  <data name="App_NotFoundTitle" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="App_NotFoundMessage" xml:space="preserve">
+    <value>Sorry, there's nothing at this address.</value>
+  </data>
+  <data name="Shutdown_Question" xml:space="preserve">
+    <value>Are you sure you want to shut down the system?</value>
+  </data>
+  <data name="Shutdown_OneMount" xml:space="preserve">
+    <value>There is 1 mount connected.</value>
+  </data>
+  <data name="Shutdown_ManyMounts" xml:space="preserve">
+    <value>There are {0} mounts connected.</value>
+  </data>
+  <data name="Shutdown_Failed" xml:space="preserve">
+    <value>Shutdown failed: {0}</value>
+  </data>
+  <data name="Notify_ConnectionFailed" xml:space="preserve">
+    <value>Connection failed: {0}</value>
+  </data>
+</root>

@@ -5,18 +5,18 @@
 
 <MudNavMenu>
     @* Mount actions*@
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">@Loc["Nav_Home"]</MudNavLink>
 
-    <MudNavLink Href="/mount-control" Icon="@Icons.Material.Filled.Navigation">Control</MudNavLink>
-    <MudNavLink Href="/mount-status" Icon="@Icons.Material.Filled.DisplaySettings">Status</MudNavLink>
-    <MudNavLink Href="/mount-configuration" Icon="@Icons.Material.Filled.TravelExplore">Configuration</MudNavLink>
-    <MudNavLink Href="/monitor" Icon="@Icons.Material.Filled.ListAlt">Monitor</MudNavLink>
+    <MudNavLink Href="/mount-control" Icon="@Icons.Material.Filled.Navigation">@Loc["Nav_Control"]</MudNavLink>
+    <MudNavLink Href="/mount-status" Icon="@Icons.Material.Filled.DisplaySettings">@Loc["Nav_Status"]</MudNavLink>
+    <MudNavLink Href="/mount-configuration" Icon="@Icons.Material.Filled.TravelExplore">@Loc["Nav_Configuration"]</MudNavLink>
+    <MudNavLink Href="/monitor" Icon="@Icons.Material.Filled.ListAlt">@Loc["Nav_Monitor"]</MudNavLink>
 
     <MudDivider Class="my-2" />
 
     @* Settings actions *@
-    <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">Settings Explorer</MudNavLink>
-    <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">Check Settings</MudNavLink>
+    <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">@Loc["Nav_SettingsExplorer"]</MudNavLink>
+    <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">@Loc["Nav_CheckSettings"]</MudNavLink>
 
     <MudDivider Class="my-2" />
 
@@ -24,7 +24,7 @@
     <MudNavLink Icon="@Icons.Material.Filled.PowerSettingsNew"
                 IconColor="Color.Error"
                 Class="shutdown-nav-link"
-                OnClick="OpenShutdownDialogAsync">Shutdown</MudNavLink>
+                OnClick="OpenShutdownDialogAsync">@Loc["Nav_Shutdown"]</MudNavLink>
 
 </MudNavMenu>
 
@@ -36,7 +36,8 @@
         await ShutdownDialogHelper.ShowShutdownDialogAsync(
             DialogService,
             Snackbar,
-            Program.Lifetime);
+            Program.Lifetime,
+            Loc);
     }
 
     private async Task OpenChartWindowAsync(string url, string windowKey)
@@ -54,7 +55,7 @@
     public void OnPopupBlocked(string url)
     {
         Snackbar.Add(
-            "Chart window was blocked. Please allow pop-ups for this site.",
+            Loc["Nav_ChartPopupBlocked"],
             Severity.Warning);
     }
 

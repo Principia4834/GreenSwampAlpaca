@@ -54,7 +54,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         {
             var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
             return string.IsNullOrWhiteSpace(device?.DeviceName)
-                ? $"Device {deviceNumber}"
+                ? Loc["Home_DefaultDeviceName", deviceNumber].Value
                 : device.DeviceName;
         }
 

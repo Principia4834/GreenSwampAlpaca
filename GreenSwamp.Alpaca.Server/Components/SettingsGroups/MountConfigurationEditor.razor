@@ -5,50 +5,50 @@
 
 <MudExpansionPanels MultiExpansion="true">
 
-    <MudExpansionPanel Text="Device Information" Icon="@Icons.Material.Filled.Badge" Expanded="false">
+    <MudExpansionPanel Text="@Loc["MC_DeviceInfoPanel"]" Icon="@Icons.Material.Filled.Badge" Expanded="false">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable this device so it is accessible via Alpaca." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_Enabled_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.Enabled" @bind-Value:after="NotifyChanged"
-                             Label="Enabled for Alpaca" Color="Color.Primary" />
+                             Label="@Loc["MC_Enabled"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Human-readable name for this telescope device, returned as the ASCOM Name property." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_DeviceName_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.DeviceName" @bind-Value:after="NotifyChanged"
-                              Label="Device Name" Immediate="true" />
+                              Label="@Loc["MC_DeviceName"]" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Description of the device shown in Alpaca setup." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_Description_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.DeviceDescription" @bind-Value:after="NotifyChanged"
-                              Label="Description" Immediate="true" />
+                              Label="@Loc["MC_Description"]" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Mount driver to use for this device." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_MountType_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.Mount" @bind-Value:after="NotifyChanged"
-                           Label="Mount Type">
-                    <MudSelectItem Value="@("Simulator")">Simulator</MudSelectItem>
+                           Label="@Loc["MC_MountType"]">
+                    <MudSelectItem Value="@("Simulator")">@Loc["MC_Simulator"]</MudSelectItem>
                     <MudSelectItem Value="@("SkyWatcher")">SkyWatcher</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Alignment mode: AltAz, GermanPolar, or Polar." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_AlignMode_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.AlignmentMode" @bind-Value:after="NotifyChanged"
-                           Label="Alignment Mode">
-                    <MudSelectItem Value="@("GermanPolar")">German Equatorial (GEM)</MudSelectItem>
-                    <MudSelectItem Value="@("Polar")">Polar / Fork</MudSelectItem>
-                    <MudSelectItem Value="@("AltAz")">Alt-Az</MudSelectItem>
+                           Label="@Loc["MC_AlignMode"]">
+                    <MudSelectItem Value="@("GermanPolar")">@Loc["MC_AlignGem"]</MudSelectItem>
+                    <MudSelectItem Value="@("Polar")">@Loc["MC_AlignPolar"]</MudSelectItem>
+                    <MudSelectItem Value="@("AltAz")">@Loc["MC_AlignAltAz"]</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
             @if (Device?.AlignmentMode == "Polar")
             {
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="The primary side of the pier for polar-aligned GEM mounts." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_PolarSide_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudSelect @bind-Value="Device!.PolarMode" @bind-Value:after="NotifyChanged"
-                               Label="Polar Primary Side">
-                        <MudSelectItem Value="@("Left")">Left</MudSelectItem>
-                        <MudSelectItem Value="@("Right")">Right</MudSelectItem>
+                               Label="@Loc["MC_PolarSide"]">
+                        <MudSelectItem Value="@("Left")">@Loc["MC_Left"]</MudSelectItem>
+                        <MudSelectItem Value="@("Right")">@Loc["MC_Right"]</MudSelectItem>
                     </MudSelect>
                 </MudTooltip>
             }
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Equatorial coordinate type returned by the mount (J2000 or JNow)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_EqCoord_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudSelect @bind-Value="Device!.EquatorialCoordinateType" @bind-Value:after="NotifyChanged"
-                           Label="Equatorial Coordinate Type">
-                    <MudSelectItem Value="@("Other")">Other</MudSelectItem>
-                    <MudSelectItem Value="@("Topocentric")">Topocentric (JNow)</MudSelectItem>
+                           Label="@Loc["MC_EqCoord"]">
+                    <MudSelectItem Value="@("Other")">@Loc["MC_CoordOther"]</MudSelectItem>
+                    <MudSelectItem Value="@("Topocentric")">@Loc["MC_CoordTopocentric"]</MudSelectItem>
                     <MudSelectItem Value="@("J2000")">J2000</MudSelectItem>
                     <MudSelectItem Value="@("J2050")">J2050</MudSelectItem>
                     <MudSelectItem Value="@("B1950")">B1950</MudSelectItem>
@@ -57,33 +57,33 @@
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Serial Connection" Icon="@Icons.Material.Filled.Cable" Expanded="false">
+    <MudExpansionPanel Text="@Loc["MC_SerialPanel"]" Icon="@Icons.Material.Filled.Cable" Expanded="false">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Select or type a serial port name (e.g. COM3 or /dev/ttyUSB0)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_Port_Tip"]" Placement="Placement.Right" Arrow="true">
                 @if (_availablePorts.Length > 0)
                 {
                     <MudSelect @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
-                               Label="Port" AnchorOrigin="Origin.BottomLeft">
+                               Label="@Loc["MC_Port"]" AnchorOrigin="Origin.BottomLeft">
                         @foreach (var port in _availablePorts)
                         {
                             <MudSelectItem Value="@port">@port</MudSelectItem>
                         }
                         @if (!string.IsNullOrWhiteSpace(Device!.Port) && !_availablePorts.Contains(Device!.Port, StringComparer.OrdinalIgnoreCase))
                         {
-                            <MudSelectItem Value="@Device!.Port">@Device!.Port (manual)</MudSelectItem>
+                            <MudSelectItem Value="@Device!.Port">@Loc["MC_PortManual", Device!.Port]</MudSelectItem>
                         }
                     </MudSelect>
                 }
                 else
                 {
                     <MudTextField @bind-Value="Device!.Port" @bind-Value:after="NotifyChanged"
-                                  Label="Port" Immediate="true"
-                                  HelperText="No ports detected — type the port name manually." />
+                                  Label="@Loc["MC_Port"]" Immediate="true"
+                                  HelperText="@Loc["MC_PortHelper"]" />
                 }
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Serial baud rate." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_Baud_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudSelect T="int" @bind-Value="Device!.BaudRate" @bind-Value:after="NotifyChanged"
-                           Label="Baud Rate">
+                           Label="@Loc["MC_Baud"]">
                     <MudSelectItem Value="9600">9600</MudSelectItem>
                     <MudSelectItem Value="19200">19200</MudSelectItem>
                     <MudSelectItem Value="38400">38400</MudSelectItem>
@@ -94,77 +94,77 @@
             </MudTooltip>
             @if (ShowHidden)
             {
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Number of data bits." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_DataBits_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.DataBits" @bind-Value:after="NotifyChanged"
-                                     Label="Data Bits" Min="5" Max="8" Immediate="true" />
+                                     Label="@Loc["MC_DataBits"]" Min="5" Max="8" Immediate="true" />
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Handshake protocol (None, XOnXOff, RequestToSend, etc.)." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_Handshake_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudTextField @bind-Value="Device!.Handshake" @bind-Value:after="NotifyChanged"
-                                  Label="Handshake" Immediate="true" />
+                                  Label="@Loc["MC_Handshake"]" Immediate="true" />
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Read timeout in milliseconds." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_ReadTimeout_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.ReadTimeout" @bind-Value:after="NotifyChanged"
-                                     Label="Read Timeout (ms)" Immediate="true" />
+                                     Label="@Loc["MC_ReadTimeout"]" Immediate="true" />
                 </MudTooltip>
                 <MudCheckBox @bind-Value="Device!.DTREnable" @bind-Value:after="NotifyChanged"
-                             Label="DTR Enable" Color="Color.Primary" />
+                             Label="@Loc["MC_Dtr"]" Color="Color.Primary" />
                 <MudCheckBox @bind-Value="Device!.RTSEnable" @bind-Value:after="NotifyChanged"
-                             Label="RTS Enable" Color="Color.Primary" />
+                             Label="@Loc["MC_Rts"]" Color="Color.Primary" />
             }
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Mount Hardware" Icon="@Icons.Material.Filled.Bolt">
+    <MudExpansionPanel Text="@Loc["MC_HardwarePanel"]" Icon="@Icons.Material.Filled.Bolt">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable advanced commands for mount control." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_AdvCmds_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.AllowAdvancedCommandSet" @bind-Value:after="NotifyChanged"
-                             Label="Allow Advanced Commands" Color="Color.Primary" />
+                             Label="@Loc["MC_AdvCmds"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable absolute encoder feedback for the mount axes." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_Encoders_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.EncodersOn" @bind-Value:after="NotifyChanged"
-                             Label="Encoders Enabled" Color="Color.Primary" />
+                             Label="@Loc["MC_Encoders"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Maximum slew rate in degrees per second." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_MaxSlew_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.MaximumSlewRate" @bind-Value:after="NotifyChanged"
-                                 Label="Max Slew Rate (°/s)" Format="F2" Min="0" Immediate="true" />
+                                 Label="@Loc["MC_MaxSlew"]" Format="F2" Converter="@(NumericFieldConverter.Localized("F2"))" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_RaBacklash_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"
-                                 Label="RA Backlash (steps)" Min="0" Immediate="true" />
+                                 Label="@Loc["MC_RaBacklash"]" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Dec axis backlash compensation in motor steps." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_DecBacklash_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.DecBacklash" @bind-Value:after="NotifyChanged"
-                                 Label="Dec Backlash (steps)" Min="0" Immediate="true" />
+                                 Label="@Loc["MC_DecBacklash"]" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Polar scope LED brightness level (0–255)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_PolarLed_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.PolarLedLevel" @bind-Value:after="NotifyChanged"
-                                 Label="Polar LED Level" Min="0" Max="255" Immediate="true" />
+                                 Label="@Loc["MC_PolarLed"]" Min="0" Max="255" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable full current mode on the motor drivers." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_FullCurrent_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.FullCurrent" @bind-Value:after="NotifyChanged"
-                             Label="Full Current" Color="Color.Primary" />
+                             Label="@Loc["MC_FullCurrent"]" Color="Color.Primary" />
             </MudTooltip>
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Custom Gearing" Icon="@Icons.Material.Filled.Settings">
+    <MudExpansionPanel Text="@Loc["MC_GearingPanel"]" Icon="@Icons.Material.Filled.Settings">
         <MudStack Spacing="3">
             <MudCheckBox @bind-Value="Device!.CustomGearing" @bind-Value:after="NotifyChanged"
-                         Label="Enable Custom Gearing" Color="Color.Primary" />
-            <MudText Typo="Typo.subtitle2" Class="mt-2">RA Axis</MudText>
+                         Label="@Loc["MC_CustomGearing"]" Color="Color.Primary" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2">@Loc["MC_RaAxis"]</MudText>
             <MudNumericField T="int" @bind-Value="Device!.CustomRa360Steps" @bind-Value:after="NotifyChanged"
-                             Label="RA 360° Steps" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+                             Label="@Loc["MC_Ra360"]" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
             <MudNumericField T="int" @bind-Value="Device!.CustomRaWormTeeth" @bind-Value:after="NotifyChanged"
-                             Label="RA Worm Teeth" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+                             Label="@Loc["MC_RaWorm"]" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
             <MudNumericField T="int" @bind-Value="Device!.CustomRaTrackingOffset" @bind-Value:after="NotifyChanged"
-                             Label="RA Tracking Offset" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
-            <MudText Typo="Typo.subtitle2" Class="mt-2">Dec Axis</MudText>
+                             Label="@Loc["MC_RaTrkOffset"]" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2">@Loc["MC_DecAxis"]</MudText>
             <MudNumericField T="int" @bind-Value="Device!.CustomDec360Steps" @bind-Value:after="NotifyChanged"
-                             Label="Dec 360° Steps" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+                             Label="@Loc["MC_Dec360"]" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
             <MudNumericField T="int" @bind-Value="Device!.CustomDecWormTeeth" @bind-Value:after="NotifyChanged"
-                             Label="Dec Worm Teeth" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+                             Label="@Loc["MC_DecWorm"]" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
             <MudNumericField T="int" @bind-Value="Device!.CustomDecTrackingOffset" @bind-Value:after="NotifyChanged"
-                             Label="Dec Tracking Offset" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
+                             Label="@Loc["MC_DecTrkOffset"]" Immediate="true" Disabled="@(!Device!.CustomGearing)" />
         </MudStack>
     </MudExpansionPanel>
 

@@ -1,20 +1,20 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="UI display refresh interval in milliseconds." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Perf_CheckInterval_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudNumericField T="int" @bind-Value="Device!.CheckInterval" @bind-Value:after="NotifyChanged"
-                         Label="Background Status Check Interval (ms)" Min="100" Immediate="true" />
+                         Label="@Loc["Perf_CheckInterval"]" Min="100" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GoTo precision in arcseconds." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Perf_GotoPrecision_Tip"]" Placement="Placement.Right" Arrow="true">
         @if (ShowHidden)
         {
             <MudNumericField T="double" @bind-Value="Device!.GotoPrecision" @bind-Value:after="NotifyChanged"
-                             Label="GoTo Precision (degrees)" Format="F5" Min="0.000001" Immediate="true" />
+                             Label="@Loc["Perf_GotoPrecision"]" Format="F5" Converter="@(NumericFieldConverter.Localized("F5"))" Min="0.000001" Immediate="true" />
         }
     </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Enable trace/debug logging to a file for this device." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Perf_TraceLogger_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Device!.TraceLogger" @bind-Value:after="NotifyChanged"
-                     Label="Trace Logger" Color="Color.Primary" />
+                     Label="@Loc["Perf_TraceLogger"]" Color="Color.Primary" />
     </MudTooltip>
 </MudStack>
 

@@ -6,7 +6,6 @@ using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Settings.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.WebUtilities;
 using MudBlazor;
 using System.Text.Json;
 // Alias required: MonitorSettings page class exists in this namespace and shadows the model.
@@ -85,7 +84,7 @@ public partial class SettingsExplorer : IDisposable
 
     /// <summary>True when the selected node is the Monitor/Logging section (shows presets and quick actions card).</summary>
     private static bool IsMonitorLoggingSectionNode(SettingsNode? node) =>
-        node is { Level: SettingsNodeLevel.Section, Source: SettingsNodeSource.Monitor, Label: "Logging" };
+        node is { Level: SettingsNodeLevel.Section, Source: SettingsNodeSource.Monitor };
 
     /// <summary>True when the selected node is the Observatories section (shows the observatory list card).</summary>
     private static bool IsObservatoriesSectionNode(SettingsNode? node) =>
@@ -110,56 +109,83 @@ public partial class SettingsExplorer : IDisposable
 
     private static readonly JsonSerializerOptions _jsonOpts = new() { WriteIndented = false };
 
-    // -- Node description lookup ---------------------------------------------
+    // -- Node label / description lookup (values are resource keys) ----------
     private static readonly Dictionary<string, string> NodeDescriptions = new()
     {
         // Section descriptions
-        ["Observatories"]     = "Named observatory sites — latitude, longitude, elevation and UTC offset per site.",
-        ["Server Configuration"] = "Alpaca HTTP server behaviour, network binding, authentication and identity.",
-        ["Logging"] = "Logging filter settings — device, category and message type filters.",
-        ["Telescope Devices"] = "Per-device telescope mount settings.",
+        ["Observatories"]     = "SE_Desc_Observatories",
+        ["Server Configuration"] = "SE_Desc_ServerConfiguration",
+        ["Logging"] = "SE_Desc_Logging",
+        ["Telescope Devices"] = "SE_Desc_TelescopeDevices",
 
         // Observatory leaf (shared key for all individual observatory nodes)
-        ["Observatory"]       = "Latitude, longitude, elevation and UTC offset for this observatory site.",
+        ["Observatory"]       = "SE_Desc_Observatory",
 
         // Server Config group descriptions
-        ["Alpaca Settings"]   = "Core Alpaca server settings, including server identity, port, network access and compatibility behaviour.",
-        ["User Interface"]    = "Display zoom and frontend user-preference settings.",
-        ["Security"]          = "HTTP Basic authentication settings and account security.",
+        ["Alpaca Settings"]   = "SE_Desc_AlpacaSettings",
+        ["User Interface"]    = "SE_Desc_UserInterface",
+        ["Security"]          = "SE_Desc_Security",
 
         // Monitor groups
-        ["Device Filters"]       = "Enable or disable log entries by device type (server, telescope, UI).",
-        ["Category Filters"]     = "Enable or disable log entries by category (driver, interface, mount, etc.).",
-        ["Message Type Filters"] = "Enable or disable log entries by message type (info, warning, error, debug).",
-        ["Logging Control"]      = "File logging targets — monitor log, session log and charting data.",
+        ["Device Filters"]       = "SE_Desc_DeviceFilters",
+        ["Category Filters"]     = "SE_Desc_CategoryFilters",
+        ["Message Type Filters"] = "SE_Desc_MessageTypeFilters",
+        ["Logging Control"]      = "SE_Desc_LoggingControl",
 
         // Device leaf groups
-        ["Device Identity"]      = "Device number, name and enabled state.",
-        ["Serial Connection"]    = "Serial port, baud rate, handshake and timeout settings.",
-        ["Mount Configuration"]      = "Device identity, serial connection, equatorial coordinates, mount hardware (motor settings, encoders, backlash) and custom gearing.",
-        ["Home and Park"]            = "Stored home and park axis positions.",
-        ["Limits"]                   = "Axis / slew limits, sync limits, meridian / flip angle limit (GEM/Polar) and horizontal axis limit (AltAz).",
-        ["Tracking & Guiding"]       = "Tracking rates and pulse guiding settings.",
-        ["Observatory Configuration"] = "Latitude, longitude, elevation, UTC offset, environmental conditions and GPS.",
-        ["Optics"]                   = "Aperture diameter, aperture area and focal length.",
-        ["Coordinate System"]    = "Equatorial coordinate type (J2000 / JNow).",
-        ["Tracking"]             = "Tracking rates (sidereal, lunar, solar, king) and RA tracking offset.",
-        ["Custom Gearing"]       = "Custom motor gearing step counts and worm-wheel tooth counts.",
-        ["Backlash"]             = "RA and Dec backlash compensation in motor steps.",
-        ["Pulse Guiding"]        = "Minimum pulse durations, ST4 guide rate and guide rate offsets.",
-        ["Sync Limits"]          = "Sync angle limit and no-sync-past-meridian flag.",
-        ["PPEC"]                 = "Predictive PEC settings.",
-        ["Encoders"]             = "Enable or disable absolute encoder feedback.",
-        ["Hand Controller"]      = "Hand controller speed, mode, flip and anti-backlash settings.",
-        ["GPS"]                  = "GPS serial port and baud rate for time/location synchronisation.",
-        ["Performance & Tuning"] = "Loop update interval, GOTO precision and trace logging.",
-        ["Home Position"]        = "Stored home axis positions (X/Y) and auto-home axis positions.",
-        ["Park Positions"]       = "Named park position list and active park selection.",
-        ["Axis / Slew Limits"]   = "Upper/lower axis limits and maximum slew rate.",
-        ["Horizontal Axis Limit"]= "Horizontal axis tracking limit for AltAz mounts.",
-        ["Alignment Mode"]       = "Mount alignment mode (AltAz, GermanPolar, Polar).",
-        ["Voice"]               = "Voice announcement settings — enable/disable, voice selection and volume.",
+        ["Device Identity"]      = "SE_Desc_DeviceIdentity",
+        ["Serial Connection"]    = "SE_Desc_SerialConnection",
+        ["Mount Configuration"]      = "SE_Desc_MountConfiguration",
+        ["Home and Park"]            = "SE_Desc_HomeAndPark",
+        ["Limits"]                   = "SE_Desc_Limits",
+        ["Tracking & Guiding"]       = "SE_Desc_TrackingAndGuiding",
+        ["Observatory Configuration"] = "SE_Desc_ObservatoryConfiguration",
+        ["Optics"]                   = "SE_Desc_Optics",
+        ["Coordinate System"]    = "SE_Desc_CoordinateSystem",
+        ["Tracking"]             = "SE_Desc_Tracking",
+        ["Custom Gearing"]       = "SE_Desc_CustomGearing",
+        ["Backlash"]             = "SE_Desc_Backlash",
+        ["Pulse Guiding"]        = "SE_Desc_PulseGuiding",
+        ["Sync Limits"]          = "SE_Desc_SyncLimits",
+        ["PPEC"]                 = "SE_Desc_Ppec",
+        ["Encoders"]             = "SE_Desc_Encoders",
+        ["Hand Controller"]      = "SE_Desc_HandController",
+        ["GPS"]                  = "SE_Desc_Gps",
+        ["Performance & Tuning"] = "SE_Desc_PerformanceAndTuning",
+        ["Home Position"]        = "SE_Desc_HomePosition",
+        ["Park Positions"]       = "SE_Desc_ParkPositions",
+        ["Axis / Slew Limits"]   = "SE_Desc_AxisSlewLimits",
+        ["Horizontal Axis Limit"]= "SE_Desc_HorizontalAxisLimit",
+        ["Alignment Mode"]       = "SE_Desc_AlignmentMode",
+        ["Voice"]               = "SE_Desc_Voice",
     };
+
+    private static readonly Dictionary<string, string> NodeLabelKeys = new()
+    {
+        ["Telescope Devices"]         = "SE_Node_TelescopeDevices",
+        ["Observatories"]             = "SE_Node_Observatories",
+        ["Logging"]                   = "SE_Node_Logging",
+        ["Server Configuration"]      = "SE_Node_ServerConfiguration",
+        ["Alpaca Settings"]           = "SE_Node_AlpacaSettings",
+        ["User Interface"]            = "SE_Node_UserInterface",
+        ["Security"]                  = "SE_Node_Security",
+        ["Mount Configuration"]       = "SE_Node_MountConfiguration",
+        ["Observatory Configuration"] = "SE_Node_ObservatoryConfiguration",
+        ["Optics"]                    = "SE_Node_Optics",
+        ["Tracking & Guiding"]        = "SE_Node_TrackingAndGuiding",
+        ["Home and Park"]             = "SE_Node_HomeAndPark",
+        ["Limits"]                    = "SE_Node_Limits",
+        ["Voice"]                     = "SE_Node_Voice",
+        ["Performance & Tuning"]      = "SE_Node_PerformanceAndTuning",
+        ["PPEC"]                      = "SE_Node_Ppec",
+        ["Hand Controller"]           = "SE_Node_HandController",
+    };
+
+    private string Describe(string groupKey, string fallback) =>
+        NodeDescriptions.TryGetValue(groupKey, out var key) ? Loc[key].Value : fallback;
+
+    private string NodeLabel(string label) =>
+        NodeLabelKeys.TryGetValue(label, out var key) ? Loc[key].Value : label;
 
     // -- Lifecycle ----------------------------------------------------------
     protected override async Task OnInitializedAsync()
@@ -255,9 +281,9 @@ public partial class SettingsExplorer : IDisposable
         // Telescope Devices (first)
         var deviceSection = new SettingsNode
         {
-            Label    = "Telescope Devices",
+            Label    = Loc["SE_Node_TelescopeDevices"].Value,
             Icon     = Icons.Material.Filled.TravelExplore,
-            Description = NodeDescriptions["Telescope Devices"],
+            Description = Describe("Telescope Devices", string.Empty),
             Level    = SettingsNodeLevel.Section,
             Source   = SettingsNodeSource.Device,
             Children = BuildDeviceNodes()
@@ -267,9 +293,9 @@ public partial class SettingsExplorer : IDisposable
         // Observatories
         var observatorySection = new SettingsNode
         {
-            Label    = "Observatories",
+            Label    = Loc["SE_Node_Observatories"].Value,
             Icon     = Icons.Material.Filled.LocationOn,
-            Description = NodeDescriptions["Observatories"],
+            Description = Describe("Observatories", string.Empty),
             Level    = SettingsNodeLevel.Section,
             Source   = SettingsNodeSource.Observatory,
             Children = BuildObservatoryNodes()
@@ -279,9 +305,9 @@ public partial class SettingsExplorer : IDisposable
         // Logging — single non-expandable section; rendered by MonitorSettingsCombinedPanel
         root.Add(new SettingsNode
         {
-            Label    = "Logging",
+            Label    = Loc["SE_Node_Logging"].Value,
             Icon     = Icons.Material.Filled.ListAlt,
-            Description = NodeDescriptions["Logging"],
+            Description = Describe("Logging", string.Empty),
             Level    = SettingsNodeLevel.Section,
             Source   = SettingsNodeSource.Monitor
         });
@@ -289,9 +315,9 @@ public partial class SettingsExplorer : IDisposable
         // Server Configuration
         root.Add(new SettingsNode
         {
-            Label    = "Server Configuration",
+            Label    = Loc["SE_Node_ServerConfiguration"].Value,
             Icon     = Icons.Material.Filled.Dns,
-            Description = NodeDescriptions["Server Configuration"],
+            Description = Describe("Server Configuration", string.Empty),
             Level    = SettingsNodeLevel.Section,
             Source   = SettingsNodeSource.ServerConfig,
             Children =
@@ -339,9 +365,9 @@ public partial class SettingsExplorer : IDisposable
 
             nodes.Add(new SettingsNode
             {
-                Label        = $"Device {deviceNumber} — {device.DeviceName}",
+                Label        = Loc["SE_DeviceLabel", deviceNumber, device.DeviceName].Value,
                 Icon         = Icons.Material.Filled.DeviceHub,
-                Description  = $"Settings for telescope device {deviceNumber}: {device.DeviceName}.",
+                Description  = Loc["SE_DeviceDescription", deviceNumber, device.DeviceName].Value,
                 Level        = SettingsNodeLevel.Section,
                 Source       = SettingsNodeSource.Device,
                 DeviceNumber = deviceNumber,
@@ -356,7 +382,7 @@ public partial class SettingsExplorer : IDisposable
         {
             Label         = obs.Name,
             Icon          = Icons.Material.Filled.Terrain,
-            Description   = NodeDescriptions.GetValueOrDefault("Observatory", $"Observatory site: {obs.Name}"),
+            Description   = Describe("Observatory", Loc["SE_ObsSiteDescription", obs.Name].Value),
             Level         = SettingsNodeLevel.Group,
             Source        = SettingsNodeSource.Observatory,
             GroupKey      = "Observatory",
@@ -364,23 +390,23 @@ public partial class SettingsExplorer : IDisposable
             DeviceNumber  = -1
         })];
 
-    private static SettingsNode Leaf(string label, string icon,
+    private SettingsNode Leaf(string label, string icon,
         SettingsNodeSource source, string groupKey) => new()
     {
-        Label       = label,
+        Label       = NodeLabel(label),
         Icon        = icon,
-        Description = NodeDescriptions.GetValueOrDefault(groupKey, label),
+        Description = Describe(groupKey, label),
         Level       = SettingsNodeLevel.Group,
         Source      = source,
         GroupKey    = groupKey,
         DeviceNumber = -1
     };
 
-    private static SettingsNode DeviceLeaf(int deviceNumber, string label, string icon, string groupKey) => new()
+    private SettingsNode DeviceLeaf(int deviceNumber, string label, string icon, string groupKey) => new()
     {
-        Label        = label,
+        Label        = NodeLabel(label),
         Icon         = icon,
-        Description  = NodeDescriptions.GetValueOrDefault(groupKey, label),
+        Description  = Describe(groupKey, label),
         Level        = SettingsNodeLevel.Group,
         Source       = SettingsNodeSource.Device,
         DeviceNumber = deviceNumber,
@@ -417,7 +443,7 @@ public partial class SettingsExplorer : IDisposable
     private async Task AddDeviceAsync()
     {
         var dialog = await DialogService.ShowAsync<AddDeviceDialog>(
-            "Add Telescope Device",
+            Loc["AddDevice_Title"],
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
         var result = await dialog.Result;
@@ -441,11 +467,11 @@ public partial class SettingsExplorer : IDisposable
             _hasPendingDeviceReload = true;
             await LoadSettingsAsync();
             SelectDeviceManagerNode();
-            ShowSuccess($"Added device {nextDeviceNumber}: {deviceName}.");
+            ShowSuccess(Loc["SE_DeviceAdded", nextDeviceNumber, deviceName]);
         }
         catch (Exception ex)
         {
-            ShowError($"Error adding device: {ex.Message}");
+            ShowError(Loc["SE_ErrAddDevice", ex.Message]);
         }
         finally
         {
@@ -457,7 +483,7 @@ public partial class SettingsExplorer : IDisposable
     {
         if (!_deviceWork.TryGetValue(deviceNumber, out var device))
         {
-            ShowError($"Device {deviceNumber} was not found.");
+            ShowError(Loc["SE_DeviceNotFound", deviceNumber]);
             return;
         }
 
@@ -468,7 +494,7 @@ public partial class SettingsExplorer : IDisposable
         };
 
         var dialog = await DialogService.ShowAsync<DeleteDeviceDialog>(
-            "Delete Telescope Device",
+            Loc["SE_DeleteDeviceTitle"],
             parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
@@ -485,11 +511,11 @@ public partial class SettingsExplorer : IDisposable
             _hasPendingDeviceReload = true;
             await LoadSettingsAsync();
             SelectDeviceManagerNode();
-            ShowSuccess($"Deleted device {deviceNumber}: {device.DeviceName}.");
+            ShowSuccess(Loc["SE_DeviceDeleted", deviceNumber, device.DeviceName]);
         }
         catch (Exception ex)
         {
-            ShowError($"Error deleting device {deviceNumber}: {ex.Message}");
+            ShowError(Loc["SE_ErrDeleteDevice", deviceNumber, ex.Message]);
         }
         finally
         {
@@ -512,7 +538,7 @@ public partial class SettingsExplorer : IDisposable
     {
         var connectedDevices = MountRegistry.GetAllInstances()
             .Where(kvp => kvp.Value.IsConnected)
-            .Select(kvp => $"Device {kvp.Key} \u2014 {kvp.Value.DeviceName}")
+            .Select(kvp => Loc["SE_DeviceLabel", kvp.Key, kvp.Value.DeviceName].Value)
             .ToList();
 
         var parameters = new DialogParameters<HotReloadDevicesDialog>
@@ -521,7 +547,7 @@ public partial class SettingsExplorer : IDisposable
         };
 
         var dialog = await DialogService.ShowAsync<HotReloadDevicesDialog>(
-            "Apply Device Changes",
+            Loc["HotReload_Title"],
             parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
@@ -538,16 +564,16 @@ public partial class SettingsExplorer : IDisposable
                 _hasPendingDeviceReload = false;
                 await LoadSettingsAsync();
                 SelectDeviceManagerNode();
-                ShowSuccess($"Device registry reloaded \u2014 {reloadResult.ReloadedCount} device(s) active.");
+                ShowSuccess(Loc["SE_HotReloaded", reloadResult.ReloadedCount]);
             }
             else
             {
-                ShowError($"Hot reload failed: {reloadResult.ErrorMessage}");
+                ShowError(Loc["SE_HotReloadFailed", reloadResult.ErrorMessage ?? string.Empty]);
             }
         }
         catch (Exception ex)
         {
-            ShowError($"Hot reload error: {ex.Message}");
+            ShowError(Loc["SE_HotReloadError", ex.Message]);
         }
         finally
         {
@@ -585,7 +611,7 @@ public partial class SettingsExplorer : IDisposable
         StateHasChanged();
 
         // Show success feedback
-        ShowSuccess("Preset applied. Review the changes and click Save when ready.");
+        ShowSuccess(Loc["SE_PresetApplied"]);
     }
 
     /// <summary>
@@ -626,7 +652,7 @@ public partial class SettingsExplorer : IDisposable
                 _monitorWork.ServerDevice = true;
                 _monitorWork.Telescope = true;
                 _monitorWork.Ui = true;
-                ShowSuccess("All devices selected");
+                ShowSuccess(Loc["SE_AllDevicesSelected"]);
                 break;
 
             case "SelectAllCategories":
@@ -636,7 +662,7 @@ public partial class SettingsExplorer : IDisposable
                 _monitorWork.Server = true;
                 _monitorWork.Mount = true;
                 _monitorWork.Alignment = true;
-                ShowSuccess("All categories selected");
+                ShowSuccess(Loc["SE_AllCategoriesSelected"]);
                 break;
 
             case "SelectAllTypes":
@@ -645,7 +671,7 @@ public partial class SettingsExplorer : IDisposable
                 _monitorWork.Warning = true;
                 _monitorWork.Error = true;
                 _monitorWork.Debug = true;
-                ShowSuccess("All types selected");
+                ShowSuccess(Loc["SE_AllTypesSelected"]);
                 break;
 
             case "ClearAllFilters":
@@ -663,7 +689,7 @@ public partial class SettingsExplorer : IDisposable
                 _monitorWork.Warning = false;
                 _monitorWork.Error = false;
                 _monitorWork.Debug = false;
-                ShowSuccess("All filters cleared");
+                ShowSuccess(Loc["SE_AllFiltersCleared"]);
                 break;
         }
 
@@ -706,11 +732,11 @@ public partial class SettingsExplorer : IDisposable
                 n.IsDirty = false;
             }
 
-            ShowSuccess("Logging settings saved successfully.");
+            ShowSuccess(Loc["SE_LoggingSaved"]);
         }
         catch (Exception ex)
         {
-            ShowError($"Error saving Logging settings: {ex.Message}");
+            ShowError(Loc["SE_ErrSaveLogging", ex.Message]);
         }
         finally
         {
@@ -733,7 +759,7 @@ public partial class SettingsExplorer : IDisposable
         }
 
         StateHasChanged();
-        ShowSuccess("Logging settings reset to last saved state.");
+        ShowSuccess(Loc["SE_LoggingReset"]);
     }
 
     // -- Save ---------------------------------------------------------------
@@ -751,23 +777,9 @@ public partial class SettingsExplorer : IDisposable
                     break;
 
                 case SettingsNodeSource.ServerConfig:
-                {
-                    var originalConfig = DeserializeOrDefault<ServerConfig>(_serverConfigOrigJson);
-                    var cultureDefaultsChanged =
-                        !string.Equals(originalConfig.DefaultDisplayLanguage, _serverConfigWork.DefaultDisplayLanguage, StringComparison.OrdinalIgnoreCase) ||
-                        !string.Equals(originalConfig.DefaultRegionalFormat, _serverConfigWork.DefaultRegionalFormat, StringComparison.OrdinalIgnoreCase);
-
                     await SettingsService.SaveServerConfigAsync(_serverConfigWork);
                     _serverConfigOrigJson = Serialize(_serverConfigWork);
-
-                    if (cultureDefaultsChanged)
-                    {
-                        NavigateToCultureCookie();
-                        return;
-                    }
-
                     break;
-                }
 
                 case SettingsNodeSource.Monitor:
                     MonitorSettingsModel monSnapshot = _monitorWork;
@@ -820,11 +832,11 @@ public partial class SettingsExplorer : IDisposable
             }
 
             _selectedNode.IsDirty = false;
-            ShowSuccess("Settings saved successfully.");
+            ShowSuccess(Loc["SE_Saved"]);
         }
         catch (Exception ex)
         {
-            ShowError($"Error saving settings: {ex.Message}");
+            ShowError(Loc["SE_ErrSave", ex.Message]);
         }
         finally
         {
@@ -832,40 +844,26 @@ public partial class SettingsExplorer : IDisposable
         }
     }
 
-    private void NavigateToCultureCookie()
-    {
-        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
-        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
-        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
-        {
-            ["displayLanguage"] = _serverConfigWork.DefaultDisplayLanguage,
-            ["regionalFormat"] = _serverConfigWork.DefaultRegionalFormat,
-            ["returnUrl"] = returnUrl
-        });
-
-        NavigationManager.NavigateTo(target, forceLoad: true);
-    }
-
     /// <summary>
     /// Compares the original persisted settings to the working copy and returns a
     /// human-readable description for each breaking field that has changed.
     /// Breaking fields: Mount type, COM Port, Baud Rate, Alignment Mode.
     /// </summary>
-    private static List<string> BuildBreakingChangeList(SkySettings original, SkySettings incoming)
+    private List<string> BuildBreakingChangeList(SkySettings original, SkySettings incoming)
     {
         var changes = new List<string>();
 
         if (!string.Equals(original.Mount, incoming.Mount, StringComparison.Ordinal))
-            changes.Add($"Mount Type: {original.Mount} → {incoming.Mount}");
+            changes.Add(Loc["SE_Chg_MountType", original.Mount, incoming.Mount].Value);
 
         if (!string.Equals(original.Port, incoming.Port, StringComparison.OrdinalIgnoreCase))
-            changes.Add($"COM Port: {original.Port} → {incoming.Port}");
+            changes.Add(Loc["SE_Chg_ComPort", original.Port, incoming.Port].Value);
 
         if (original.BaudRate != incoming.BaudRate)
-            changes.Add($"Baud Rate: {original.BaudRate} → {incoming.BaudRate}");
+            changes.Add(Loc["SE_Chg_BaudRate", original.BaudRate, incoming.BaudRate].Value);
 
         if (!string.Equals(original.AlignmentMode, incoming.AlignmentMode, StringComparison.Ordinal))
-            changes.Add($"Alignment Mode: {original.AlignmentMode} → {incoming.AlignmentMode}");
+            changes.Add(Loc["SE_Chg_AlignmentMode", original.AlignmentMode, incoming.AlignmentMode].Value);
 
         return changes;
     }
@@ -889,7 +887,7 @@ public partial class SettingsExplorer : IDisposable
 
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
         var dialog  = await DialogService.ShowAsync<BreakingSettingsChangeDialog>(
-            "Breaking Settings Change", parameters, options);
+            Loc["Breaking_Title"], parameters, options);
         var result  = await dialog.Result;
 
         return result is { Canceled: false };
@@ -946,7 +944,7 @@ public partial class SettingsExplorer : IDisposable
             { d => d.ExistingNames, existingNames }
         };
         var dialog = await DialogService.ShowAsync<AddObservatoryDialog>(
-            "Add Observatory",
+            Loc["AddObservatory_Title"],
             parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
@@ -982,12 +980,12 @@ public partial class SettingsExplorer : IDisposable
 
         var parameters = new DialogParameters<ConfirmDialog>
         {
-            { d => d.ContentText, $"Delete observatory \"{obs.Name}\"? This change will not be persisted until you click Save." },
-            { d => d.ConfirmText, "Delete" },
-            { d => d.CancelText,  "Cancel" }
+            { d => d.ContentText, Loc["SE_DeleteObsContent", obs.Name].Value },
+            { d => d.ConfirmText, Loc["Common_Delete"].Value },
+            { d => d.CancelText,  Loc["Common_Cancel"].Value }
         };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(
-            "Delete Observatory", parameters,
+            Loc["SE_DeleteObsTitle"], parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small });
         var result = await dialog.Result;
         if (result.Canceled) return;
@@ -1017,12 +1015,12 @@ public partial class SettingsExplorer : IDisposable
 
         var parameters = new DialogParameters<ConfirmDialog>
         {
-            { d => d.ContentText, $"CCopy Latitude, Longitude, Elevation and GPS settings from '{obs.Name}' to all {_deviceWork.Count} telescope device(s) and save immediately?" },
-            { d => d.ConfirmText, "Copy & Save" },
-            { d => d.CancelText,  "Cancel" }
+            { d => d.ContentText, Loc["SE_CopyObsContent", obs.Name, _deviceWork.Count].Value },
+            { d => d.ConfirmText, Loc["SE_CopyAndSave"].Value },
+            { d => d.CancelText,  Loc["Common_Cancel"].Value }
         };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>(
-            "Copy Observatory to All Devices", parameters,
+            Loc["SE_CopyObsTitle"], parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
         var result = await dialog.Result;
         if (result.Canceled) return;
@@ -1048,11 +1046,11 @@ public partial class SettingsExplorer : IDisposable
             foreach (var node in Flatten(_treeItems).Where(n => n.Source == SettingsNodeSource.Device))
                 node.IsDirty = false;
 
-            ShowSuccess($"Location and GPS settings from '{obs.Name}' saved to {_deviceWork.Count} device(s).");
+            ShowSuccess(Loc["SE_LocationCopied", obs.Name, _deviceWork.Count]);
         }
         catch (Exception ex)
         {
-            ShowError($"Error copying observatory to devices: {ex.Message}");
+            ShowError(Loc["SE_ErrCopyObs", ex.Message]);
         }
         finally
         {
@@ -1081,12 +1079,12 @@ public partial class SettingsExplorer : IDisposable
     {
         var parameters = new DialogParameters<ConfirmDialog>
         {
-            { d => d.ContentText, "You have unsaved changes. Discard them and switch groups?" },
-            { d => d.ConfirmText, "Discard" },
-            { d => d.CancelText,  "Stay" }
+            { d => d.ContentText, Loc["SE_DiscardContent"].Value },
+            { d => d.ConfirmText, Loc["SE_Discard"].Value },
+            { d => d.CancelText,  Loc["SE_Stay"].Value }
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
-        var dialog  = await DialogService.ShowAsync<ConfirmDialog>("Unsaved Changes", parameters, options);
+        var dialog  = await DialogService.ShowAsync<ConfirmDialog>(Loc["SE_UnsavedChangesTitle"], parameters, options);
         var result  = await dialog.Result;
         return result is { Canceled: false };
     }

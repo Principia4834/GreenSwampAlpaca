@@ -3,53 +3,53 @@
 <MudGrid Spacing="2">
     <MudItem xs="12" md="8">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Human-readable server name shown in Alpaca discovery and the setup page." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_ServerName_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Config.Location"
                               @bind-Value:after="NotifyChanged"
-                              Label="Server Name" Immediate="true" />
+                              Label="@Loc["Set_ServerName"]" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="TCP port the Alpaca server listens on." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_ServerPort_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="ushort" @bind-Value="Config.ServerPort"
                                   @bind-Value:after="NotifyChanged"
-                                  Label="Server Port"
+                                  Label="@Loc["Set_ServerPort"]"
                                   Min="1" Max="65535" Class="mb-1" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Bind to all network interfaces when enabled; localhost-only when disabled." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_AllowRemoteAccess_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Config.AllowRemoteAccess"
                              @bind-Value:after="NotifyChanged"
-                             Label="Allow Remote Access" Color="Color.Primary" />
+                             Label="@Loc["Set_AllowRemoteAccess"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Respond to localhost-sourced Alpaca discovery on the loopback adapter only." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_LocalRespondOnlyToLocalHost_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Config.LocalRespondOnlyToLocalHost"
                              @bind-Value:after="NotifyChanged"
-                             Label="Respond Locally to Localhost Only" Color="Color.Primary" />
+                             Label="@Loc["Set_LocalRespondOnlyToLocalHost"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Advertise this server via Alpaca UDP discovery." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_AllowDiscovery_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Config.AllowDiscovery"
                              @bind-Value:after="NotifyChanged"
-                             Label="Allow Alpaca Discovery" Color="Color.Primary" />
+                             Label="@Loc["Set_AllowDiscovery"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Reject non-compliant Alpaca requests when enabled." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_StrictAlpaca_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Config.RunInStrictAlpacaMode"
                              @bind-Value:after="NotifyChanged"
-                             Label="Run in Strict Alpaca Mode" Color="Color.Primary" />
+                             Label="@Loc["Set_StrictAlpaca"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Prevent remote clients from disconnecting devices." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_PreventRemoteDisconnects_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Config.PreventRemoteDisconnects"
                              @bind-Value:after="NotifyChanged"
-                             Label="Prevent Remote Disconnects" Color="Color.Primary" />
+                             Label="@Loc["Set_PreventRemoteDisconnects"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Expose the OpenAPI / Swagger UI at /swagger." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_EnableSwagger_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Config.RunSwagger"
                              @bind-Value:after="NotifyChanged"
-                             Label="Enable Swagger UI" Color="Color.Primary" />
+                             Label="@Loc["Set_EnableSwagger"]" Color="Color.Primary" />
             </MudTooltip>
         </MudStack>
     </MudItem>
 
     <MudItem xs="12" md="4">
         <MudPaper Class="pa-3" Style="height:100%;">
-            <MudText Typo="Typo.subtitle2" Class="mb-2">Server Addresses</MudText>
+            <MudText Typo="Typo.subtitle2" Class="mb-2">@Loc["Set_ServerAddresses"]</MudText>
             @if (Config.AllowRemoteAccess)
             {
                 <MudStack Spacing="0">

@@ -20,6 +20,7 @@
   <Project Path="GreenSwamp.Alpaca.Mount.SkyWatcher/GreenSwamp.Alpaca.Mount.SkyWatcher.csproj" />
   <Project Path="GreenSwamp.Alpaca.MountControl/GreenSwamp.Alpaca.MountControl.csproj" />
   <Project Path="GreenSwamp.Alpaca.Principles/GreenSwamp.Alpaca.Principles.csproj" />
+  <Project Path="GreenSwamp.Alpaca.Server.Tests/GreenSwamp.Alpaca.Server.Tests.csproj" />
   <Project Path="GreenSwamp.Alpaca.Server/GreenSwamp.Alpaca.Server.csproj" />
   <Project Path="GreenSwamp.Alpaca.Settings/GreenSwamp.Alpaca.Settings.csproj" />
   <Project Path="GreenSwamp.Alpaca.Shared/GreenSwamp.Alpaca.Shared.csproj" />

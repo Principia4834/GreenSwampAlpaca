@@ -6,14 +6,14 @@
         <CardHeaderContent>
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                 <MudIcon Icon="@Icons.Material.Filled.ManageSearch" />
-                <MudText Typo="Typo.h6">Logging Settings</MudText>
+                <MudText Typo="Typo.h6">@Loc["Mon_LoggingSettings"]</MudText>
             </MudStack>
         </CardHeaderContent>
         <CardHeaderActions>
             @if (IsDirty)
             {
                 <MudChip T="string" Color="Color.Warning" Size="Size.Small"
-                         Icon="@Icons.Material.Filled.Edit">Unsaved</MudChip>
+                         Icon="@Icons.Material.Filled.Edit">@Loc["Mon_Unsaved"]</MudChip>
             }
         </CardHeaderActions>
     </MudCardHeader>
@@ -34,80 +34,80 @@
                     @* Device filter row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Device</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">@Loc["Mon_Device"]</MudText>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.ServerDevice" @bind-Value:after="NotifyChanged"
-                                         Label="Server Device" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_ServerDevice"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Telescope" @bind-Value:after="NotifyChanged"
-                                         Label="Telescope" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Telescope"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Ui" @bind-Value:after="NotifyChanged"
-                                         Label="UI" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Ui"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Other" @bind-Value:after="NotifyChanged"
-                                         Label="Other" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Other"]" Dense="true" Color="Color.Primary" /></td>
                         <td></td>
                     </tr>
                     @* Category filter row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Category</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">@Loc["Mon_Category"]</MudText>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.Driver" @bind-Value:after="NotifyChanged"
-                                         Label="Driver" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Driver"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Interface" @bind-Value:after="NotifyChanged"
-                                         Label="Interface" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Interface"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Server" @bind-Value:after="NotifyChanged"
-                                         Label="Server" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Server"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Mount" @bind-Value:after="NotifyChanged"
-                                         Label="Mount" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Mount"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Alignment" @bind-Value:after="NotifyChanged"
-                                         Label="Alignment" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Alignment"]" Dense="true" Color="Color.Primary" /></td>
                     </tr>
                     @* Message type filter row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Type</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">@Loc["Mon_Type"]</MudText>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.Information" @bind-Value:after="NotifyChanged"
-                                         Label="Information" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Information"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Data" @bind-Value:after="NotifyChanged"
-                                         Label="Data" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_Data"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Warning" @bind-Value:after="NotifyChanged"
-                                         Label="Warning" Dense="true" Color="Color.Warning" /></td>
+                                         Label="@Loc["Mon_Warning"]" Dense="true" Color="Color.Warning" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Error" @bind-Value:after="NotifyChanged"
-                                         Label="Error" Dense="true" Color="Color.Error" /></td>
+                                         Label="@Loc["Mon_Error"]" Dense="true" Color="Color.Error" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.Debug" @bind-Value:after="NotifyChanged"
-                                         Label="Debug" Dense="true" Color="Color.Info" /></td>
+                                         Label="@Loc["Mon_Debug"]" Dense="true" Color="Color.Info" /></td>
                     </tr>
                     @* Logging control row *@
                     <tr>
                         <td style="padding:0 8px 0 4px; vertical-align:middle; white-space:nowrap;">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Logging</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">@Loc["Mon_Logging"]</MudText>
                         </td>
                         <td>
-                            <MudTooltip Text="Must be ON for any log files to be written."
+                            <MudTooltip Text="@Loc["Mon_AutoStart_Tip"]"
                                         Placement="Placement.Bottom" Arrow="true" Inline="false" RootStyle="max-width:240px">
                                 <MudCheckBox @bind-Value="Settings!.StartMonitor" @bind-Value:after="NotifyChanged"
-                                             Label="Auto-start" Dense="true" Color="Color.Primary" />
+                                             Label="@Loc["Mon_AutoStart"]" Dense="true" Color="Color.Primary" />
                             </MudTooltip>
                         </td>
                         <td>
-                            <MudTooltip Text="Writes monitor output to GSMonitorLog*.txt. Mutually exclusive with Fast Monitor."
+                            <MudTooltip Text="@Loc["Mon_LogMonitor_Tip"]"
                                         Placement="Placement.Bottom" Arrow="true" Inline="false" RootStyle="max-width:260px">
                                 <MudCheckBox Value="Settings!.LogMonitor" ValueChanged="@((bool v) => OnLogMonitorChangedAsync(v))"
-                                             Label="Log Monitor" Dense="true" Color="Color.Primary" />
+                                             Label="@Loc["Mon_LogMonitor"]" Dense="true" Color="Color.Primary" />
                             </MudTooltip>
                         </td>
                         <td><MudCheckBox @bind-Value="Settings!.LogSession" @bind-Value:after="NotifyChanged"
-                                         Label="Log Session" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_LogSession"]" Dense="true" Color="Color.Primary" /></td>
                         <td><MudCheckBox @bind-Value="Settings!.LogCharting" @bind-Value:after="NotifyChanged"
-                                         Label="Log Charting" Dense="true" Color="Color.Primary" /></td>
+                                         Label="@Loc["Mon_LogCharting"]" Dense="true" Color="Color.Primary" /></td>
                         <td>
                             @if (ShowHidden)
                             {
-                                <MudTooltip Text="1000-record ring buffer — lower overhead than Log Monitor. Mutually exclusive with Log Monitor."
+                                <MudTooltip Text="@Loc["Mon_FastMonitor_Tip"]"
                                             Placement="Placement.Bottom" Arrow="true" Inline="false" RootStyle="max-width:260px">
                                     <MudCheckBox Value="Settings!.FastMonitor" ValueChanged="@((bool v) => OnFastMonitorChangedAsync(v))"
-                                                 Label="Fast Monitor" Dense="true" Color="Color.Info" />
+                                                 Label="@Loc["Mon_FastMonitor"]" Dense="true" Color="Color.Info" />
                                 </MudTooltip>
                             }
                         </td>
@@ -117,13 +117,13 @@
                         @* Log path row (hidden) *@
                         <tr>
                             <td style="padding:4px 8px 2px 4px; vertical-align:middle; white-space:nowrap;">
-                                <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">Log Path</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" HtmlTag="span">@Loc["Mon_LogPath"]</MudText>
                             </td>
                             <td colspan="5" style="padding-top:4px;">
-                                <MudTooltip Text="Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GreenSwamp\Server)."
+                                <MudTooltip Text="@Loc["Mon_LogPath_Tip"]"
                                             Placement="Placement.Bottom" Arrow="true" Inline="false" RootStyle="max-width:320px">
                                     <MudTextField @bind-Value="Settings!.LogPath" @bind-Value:after="NotifyChanged"
-                                                  Label="Log Path" Immediate="true" Margin="Margin.Dense" />
+                                                  Label="@Loc["Mon_LogPath"]" Immediate="true" Margin="Margin.Dense" />
                                 </MudTooltip>
                             </td>
                         </tr>
@@ -136,17 +136,17 @@
             @* ---- Quick Actions row ------------------------------------ *@
             <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
                 <MudSelect T="string?" @bind-Value="_selectedQuickAction" @bind-Value:after="OnQuickActionChangedAsync"
-                           Label="Quick Set Actions"
+                           Label="@Loc["Mon_QuickSetActions"]"
                            AdornmentIcon="@Icons.Material.Filled.Bolt" Adornment="Adornment.End"
                            Variant="Variant.Outlined" Margin="Margin.Dense"
                            Style="min-width:13.75rem">
-                    <MudSelectItem T="string?" Value="@("SelectAllDevices")">All Devices</MudSelectItem>
-                    <MudSelectItem T="string?" Value="@("SelectAllCategories")">All Categories</MudSelectItem>
-                    <MudSelectItem T="string?" Value="@("SelectAllTypes")">All Types</MudSelectItem>
+                    <MudSelectItem T="string?" Value="@("SelectAllDevices")">@Loc["Mon_AllDevices"]</MudSelectItem>
+                    <MudSelectItem T="string?" Value="@("SelectAllCategories")">@Loc["Mon_AllCategories"]</MudSelectItem>
+                    <MudSelectItem T="string?" Value="@("SelectAllTypes")">@Loc["Mon_AllTypes"]</MudSelectItem>
                     <MudSelectItem T="string?" Value="@("ClearAllFilters")">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                             <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" />
-                            <span>Clear All</span>
+                            <span>@Loc["Mon_ClearAll"]</span>
                         </MudStack>
                     </MudSelectItem>
                 </MudSelect>
@@ -163,13 +163,13 @@
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
             }
-            Save
+            @Loc["Common_Save"]
         </MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
                    StartIcon="@Icons.Material.Filled.RestartAlt"
                    Disabled="@(!IsDirty)"
                    OnClick="@(() => OnReset.InvokeAsync())">
-            Reset
+            @Loc["Mon_Reset"]
         </MudButton>
     </MudCardActions>
 </MudCard>

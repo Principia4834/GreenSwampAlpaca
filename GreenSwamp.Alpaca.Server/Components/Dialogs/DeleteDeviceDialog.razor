@@ -4,35 +4,32 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" />
-            <MudText Typo="Typo.h6" Color="Color.Error">Delete Device</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Error">@Loc["DeleteDevice_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3" Class="mt-2">
             <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Warning">
                 <MudText Typo="Typo.body1">
-                    <strong>This action cannot be undone.</strong>
+                    <strong>@Loc["DeleteDevice_CannotUndo"]</strong>
                 </MudText>
                 <MudText Typo="Typo.body2" Class="mt-1">
-                    Device <strong>@DeviceNumber — @DeviceName</strong> and all its settings
-                    files will be permanently removed.
+                    @Loc.Html("DeleteDevice_Removal", DeviceNumber, DeviceName)
                 </MudText>
             </MudAlert>
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Any Alpaca client currently connected to this device will lose its connection.
-                Click <strong>Apply Changes</strong> in the Telescope Devices panel afterwards
-                to make the removal live without restarting the server.
+                @Loc.Html("DeleteDevice_Hint")
             </MudText>
         </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">
-            Cancel
+            @Loc["Common_Cancel"]
         </MudButton>
         <MudButton Color="Color.Error" Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.DeleteForever"
                    OnClick="Confirm">
-            Delete Device
+            @Loc["DeleteDevice_Delete"]
         </MudButton>
     </DialogActions>
 </MudDialog>

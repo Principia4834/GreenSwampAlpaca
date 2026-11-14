@@ -10,21 +10,20 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<PageTitle>Telescope View — Device @DeviceNumber</PageTitle>
+<PageTitle>@Loc["TView_Title", DeviceNumber]</PageTitle>
 
 <div style="display:flex; flex-direction:column; height:100vh; overflow:hidden; padding:8px; box-sizing:border-box;">
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
         <MudText Typo="Typo.subtitle1">
-            <b style="color:var(--gs-accent-500);">Telescope 3D View</b>
-            &mdash; Device @DeviceNumber
+            @Loc.Html("TView_Header", DeviceNumber)
         </MudText>
         <MudSpacer />
         <MudText Typo="Typo.caption" Class="gs-font-mono">
-            Axis 1: @_axisX.ToString("F2")°&nbsp;&nbsp;Axis 2: @_axisY.ToString("F2")°
+            @Loc["TView_Axis1", _axisX.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]&nbsp;&nbsp;@Loc["TView_Axis2", _axisY.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]
         </MudText>
         <MudIconButton Icon="@Icons.Material.Filled.Save"
                        Size="Size.Small"
-                       Title="Save View"
+                       Title="@Loc["TView_SaveView"]"
                        OnClick="SaveViewAsync" />
     </MudStack>
     <canvas id="telescopeCanvas"

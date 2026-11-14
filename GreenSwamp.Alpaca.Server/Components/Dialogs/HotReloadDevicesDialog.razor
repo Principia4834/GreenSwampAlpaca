@@ -4,7 +4,7 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Refresh" Color="Color.Warning" />
-            <MudText Typo="Typo.h6">Apply Device Changes</MudText>
+            <MudText Typo="Typo.h6">@Loc["HotReload_Title"]</MudText>
         </MudStack>
     </TitleContent>
     <DialogContent>
@@ -13,7 +13,7 @@
             {
                 <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.LinkOff">
                     <MudText Typo="Typo.body1">
-                        <strong>@ConnectedDevices.Count connected device(s) will be forcibly disconnected.</strong>
+                        <strong>@Loc["HotReload_Disconnect", ConnectedDevices.Count]</strong>
                     </MudText>
                     <MudStack Spacing="0" Class="mt-1">
                         @foreach (var name in ConnectedDevices)
@@ -26,25 +26,23 @@
 
             <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
                 <MudText Typo="Typo.body2">
-                    All active device sessions will be stopped and the device registry will be
-                    rebuilt from the current settings files. Any Alpaca client connected during
-                    this operation must reconnect afterwards.
+                    @Loc["HotReload_Warning"]
                 </MudText>
             </MudAlert>
 
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                This applies all pending device additions and deletions without restarting the server.
+                @Loc["HotReload_Hint"]
             </MudText>
         </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">
-            Cancel
+            @Loc["Common_Cancel"]
         </MudButton>
         <MudButton Color="Color.Warning" Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.Refresh"
                    OnClick="Confirm">
-            Apply Hot Reload
+            @Loc["HotReload_Apply"]
         </MudButton>
     </DialogActions>
 </MudDialog>

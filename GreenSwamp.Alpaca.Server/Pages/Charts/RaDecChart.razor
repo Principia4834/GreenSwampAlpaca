@@ -17,7 +17,7 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2" Wrap="Wrap.Wrap">
 
         <MudText Typo="Typo.subtitle1" Style="white-space:nowrap;">
-            <b style="color:var(--gs-accent-500);">@_axisLabels[0] / @_axisLabels[1]</b> Position &mdash; @Label &mdash; Device @DeviceNumber
+            @Loc.Html("Chart_RaDecHeader", AxisDisplay(_axisLabels[0]), AxisDisplay(_axisLabels[1]), Label, DeviceNumber)
         </MudText>
 
         <MudSpacer />
@@ -25,51 +25,51 @@
         @if (_hubInitialised && _hubState != HubConnectionState.Connected)
         {
             <MudChip T="string" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="@Icons.Material.Filled.SignalWifiOff">
-                @(_hubState == HubConnectionState.Reconnecting ? "Reconnecting…" : "Disconnected")
+                @(_hubState == HubConnectionState.Reconnecting ? Loc["Chart_Reconnecting"].Value : Loc["Chart_Disconnected"].Value)
             </MudChip>
         }
 
         @* Window duration — only visible in Realtime mode *@
-        <MudSelect T="int" Label="Data Window" Value="@_settings.RealtimeWindowSeconds"
+        <MudSelect T="int" Label="@Loc["Chart_DataWindow"]" Value="@_settings.RealtimeWindowSeconds"
                    ValueChanged="@OnWindowChangedAsync"
                    Disabled="@(IsHistoricalMode)"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
                    Style="min-width:6.875rem;">
-            <MudSelectItem Value="10">10 sec</MudSelectItem>
-            <MudSelectItem Value="30">30 sec</MudSelectItem>
-            <MudSelectItem Value="120">2 min</MudSelectItem>
-            <MudSelectItem Value="300">5 min</MudSelectItem>
-            <MudSelectItem Value="900">15 min</MudSelectItem>
-            <MudSelectItem Value="1800">30 min</MudSelectItem>
+            <MudSelectItem Value="10">@Loc["Chart_Win10s"]</MudSelectItem>
+            <MudSelectItem Value="30">@Loc["Chart_Win30s"]</MudSelectItem>
+            <MudSelectItem Value="120">@Loc["Chart_Win2m"]</MudSelectItem>
+            <MudSelectItem Value="300">@Loc["Chart_Win5m"]</MudSelectItem>
+            <MudSelectItem Value="900">@Loc["Chart_Win15m"]</MudSelectItem>
+            <MudSelectItem Value="1800">@Loc["Chart_Win30m"]</MudSelectItem>
         </MudSelect>
 
-        <MudSelect T="string" Label="Scale" Value="@_settings.RaDecScale"
+        <MudSelect T="string" Label="@Loc["Chart_Scale"]" Value="@_settings.RaDecScale"
                    ValueChanged="@OnScaleChangedAsync"
                    Variant="Variant.Outlined" Margin="Margin.Dense"
                    Style="min-width:8.125rem;">
-            <MudSelectItem Value="@("Steps")">Steps</MudSelectItem>
-            <MudSelectItem Value="@("Degrees")">Degrees</MudSelectItem>
-            <MudSelectItem Value="@("ArcSeconds")">Arc Seconds</MudSelectItem>
+            <MudSelectItem Value="@("Steps")">@Loc["Chart_Steps"]</MudSelectItem>
+            <MudSelectItem Value="@("Degrees")">@Loc["Chart_Degrees"]</MudSelectItem>
+            <MudSelectItem Value="@("ArcSeconds")">@Loc["Chart_ArcSeconds"]</MudSelectItem>
         </MudSelect>
 
-        <MudTooltip Text="@(IsRealtimeMode ? "Pause (freeze to historical snapshot)" : "Resume realtime scrolling")" Placement="Placement.Left">
+        <MudTooltip Text="@(IsRealtimeMode ? Loc["Chart_PauseTip"].Value : Loc["Chart_ResumeTip"].Value)" Placement="Placement.Left">
             <MudIconButton Icon="@(IsRealtimeMode ? Icons.Material.Filled.Pause : Icons.Material.Filled.PlayArrow)"
                            Color="@(IsRealtimeMode ? MudBlazor.Color.Warning : MudBlazor.Color.Success)"
                            Variant="Variant.Outlined"
                            Size="MudBlazor.Size.Small"
                            OnClick="TogglePauseResumeAsync"
-                           aria-label="@(IsRealtimeMode ? "Pause chart updates" : "Resume chart updates")" />
+                           aria-label="@(IsRealtimeMode ? Loc["Chart_PauseAria"].Value : Loc["Chart_ResumeAria"].Value)" />
         </MudTooltip>
 
-        <MudSwitch T="bool" Label="@_axisLabels[0]" Value="@_settings.ShowAxis1"
+        <MudSwitch T="bool" Label="@AxisDisplay(_axisLabels[0])" Value="@_settings.ShowAxis1"
                    ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 1))"
                    Color="MudBlazor.Color.Error" />
 
-        <MudSwitch T="bool" Label="@_axisLabels[1]" Value="@_settings.ShowAxis2"
+        <MudSwitch T="bool" Label="@AxisDisplay(_axisLabels[1])" Value="@_settings.ShowAxis2"
                 ValueChanged="@(v => OnSeriesToggleAsync(v, axis: 2))"
                 Color="MudBlazor.Color.Info" />
 
-        <MudTooltip Text="Clear chart" Placement="Placement.Left">
+        <MudTooltip Text="@Loc["Chart_Clear"]" Placement="Placement.Left">
             <MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Color="MudBlazor.Color.Warning"
                            OnClick="ClearChartAsync" Size="MudBlazor.Size.Medium" />
         </MudTooltip>
@@ -88,7 +88,7 @@
 
             <ApexPointSeries TItem="RaDecChartData"
                                 Items="@_chartItems"
-                                Name="@(_axisLabels[0])"
+                                Name="@(AxisDisplay(_axisLabels[0]))"
                                 SeriesType="SeriesType.Line"
                                 XValue="@(p => p.TimestampMs)"
                                 YValue="@(p => (decimal)p.Ra)"
@@ -97,7 +97,7 @@
 
             <ApexPointSeries TItem="RaDecChartData"
                                 Items="@_chartItems"
-                                Name="@(_axisLabels[1])"
+                                Name="@(AxisDisplay(_axisLabels[1]))"
                                 SeriesType="SeriesType.Line"
                                 XValue="@(p => p.TimestampMs)"
                                 YValue="@(p => (decimal)p.Dec)"

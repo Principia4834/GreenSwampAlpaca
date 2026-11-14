@@ -2,6 +2,7 @@
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
+using GreenSwamp.Alpaca.Server.Helpers;
 using GreenSwamp.Alpaca.Server.Models;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -79,7 +80,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             _isMountRunning = _mount?.IsMountRunning ?? false;
             if (_mount == null || !_isMountRunning)
             {
-                Snackbar.Add("Mount is not running.", Severity.Error);
+                Snackbar.Add(Loc["GoTo_MountNotRunning"], Severity.Error);
                 return;
             }
 
@@ -117,14 +118,14 @@ namespace GreenSwamp.Alpaca.Server.Components
             // Check if the target coordinates are below the mount's horizon limit
             if (AltAz[0] < _horizonLimit)
             {
-                Snackbar.Add("Target coordinates are below the mount's horizon limit.", Severity.Warning);
+                Snackbar.Add(Loc["GoTo_BelowHorizon"], Severity.Warning);
                 return;
             }
 
             // Show confirmation dialog
             var parameters = new DialogParameters
             {
-                [nameof(AcceptCoordinatesDialog.Title)] = "Accept GoTo Coordinates",
+                [nameof(AcceptCoordinatesDialog.Title)] = Loc["GoTo_AcceptTitle"].Value,
                 [nameof(AcceptCoordinatesDialog.Coord1)] = coord1,
                 [nameof(AcceptCoordinatesDialog.Coord2)] = coord2,
                 [nameof(AcceptCoordinatesDialog.IsRaDec)] = _coordMode == CoordMode.RaDec
@@ -149,13 +150,13 @@ namespace GreenSwamp.Alpaca.Server.Components
                     slewResult = await _mount.SlewAltAzAsync(coord2, coord1);   // signature: (alt, az)
 
                 if (slewResult.CanProceed)
-                    Snackbar.Add("GoTo in progress\u2026", Severity.Info);
+                    Snackbar.Add(Loc["GoTo_InProgress"], Severity.Info);
                 else
-                    Snackbar.Add($"GoTo rejected: {slewResult.ErrorMessage}", Severity.Warning);
+                    Snackbar.Add(Loc["GoTo_Rejected", slewResult.ErrorMessage], Severity.Warning);
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"GoTo failed: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["GoTo_Failed", ex.Message], Severity.Error);
             }
         }
 
@@ -211,7 +212,7 @@ namespace GreenSwamp.Alpaca.Server.Components
         {
             if (_mount == null)
             {
-                Snackbar.Add($"Mount device {DeviceNumber} not found", Severity.Error);
+                Snackbar.Add(Loc["Common_MountNotFound", DeviceNumber], Severity.Error);
                 return Task.CompletedTask;
             }
 
@@ -220,7 +221,7 @@ namespace GreenSwamp.Alpaca.Server.Components
                 var selectedPosition = _mount.Settings.ParkPositions?.Find(p => p.Name == _workingParkPositionName);
                 if (selectedPosition == null)
                 {
-                    Snackbar.Add($"Park position '{_workingParkPositionName}' not found", Severity.Warning);
+                    Snackbar.Add(Loc["GoTo_ParkNotFound", _workingParkPositionName], Severity.Warning);
                     return Task.CompletedTask;
                 }
 
@@ -275,7 +276,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             _showHorizonLimitSettings = false;
             _isSettingsDirty = false;
             _isSettingsPanelOpen = false;
-            Snackbar.Add("GoTo settings saved.", Severity.Success);
+            Snackbar.Add(Loc["GoTo_SettingsSaved"], Severity.Success);
             return Task.CompletedTask;
         }
 
@@ -298,7 +299,7 @@ namespace GreenSwamp.Alpaca.Server.Components
                 CloseOnEscapeKey = true,
                 CloseButton = true
             };
-            await DialogService.ShowAsync<ManageParkPositionsDialog>("Manage Park Positions", parameters, options);
+            await DialogService.ShowAsync<ManageParkPositionsDialog>(Loc["ParkPos_Title"], parameters, options);
         }
 
         private Task UpdateVoiceActive(bool value)
@@ -416,7 +417,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             _isMountRunning = _mount?.IsMountRunning ?? false;
             if (_mount == null || !_isMountRunning)
             {
-                Snackbar.Add("Mount is not running.", Severity.Error);
+                Snackbar.Add(Loc["GoTo_MountNotRunning"], Severity.Error);
                 return;
             }
 
@@ -444,7 +445,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             // Show confirmation dialog
             var parameters = new DialogParameters
             {
-                [nameof(AcceptCoordinatesDialog.Title)] = "Accept Sync Coordinates",
+                [nameof(AcceptCoordinatesDialog.Title)] = Loc["GoTo_AcceptSyncTitle"].Value,
                 [nameof(AcceptCoordinatesDialog.Coord1)] = coord1,
                 [nameof(AcceptCoordinatesDialog.Coord2)] = coord2,
                 [nameof(AcceptCoordinatesDialog.IsRaDec)] = _coordMode == CoordMode.RaDec
@@ -464,11 +465,11 @@ namespace GreenSwamp.Alpaca.Server.Components
                 _mount.TargetRa = coord1;
                 _mount.TargetDec = coord2;
                 await Task.Run(() => _mount.SyncToTargetRaDec());
-                Snackbar.Add("Sync complete.", Severity.Success);
+                Snackbar.Add(Loc["GoTo_SyncComplete"], Severity.Success);
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Sync failed: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["GoTo_SyncFailed", ex.Message], Severity.Error);
             }
         }
 
@@ -484,7 +485,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             return true;
         }
 
-        private const string RequiredMessage = "Value is required.";
+        private string RequiredMessage => Loc["Coord_Required"];
 
         private bool TryGetAltAzCoordinates(out double az, out double alt, out string error)
         {
@@ -498,33 +499,16 @@ namespace GreenSwamp.Alpaca.Server.Components
             return true;
         }
 
-        private static string FormatRaSmart(double hours)
-        {
-            hours = Math.Max(0.0, hours);
-            var h = (int)hours;
-            var rem = (hours - h) * 60.0;
-            var m = (int)rem;
-            var s = (rem - m) * 60.0;
-            return $"{h:00}h {m:00}m {s:00.##}s";
-        }
+        private static string FormatRaSmart(double hours) => CoordinateParser.FormatRa(hours);
 
-        private static string FormatAngleSmart(double degrees)
-        {
-            var sign = degrees < 0 ? "-" : "+";
-            degrees = Math.Abs(degrees);
-            var d = (int)degrees;
-            var rem = (degrees - d) * 60.0;
-            var m = (int)rem;
-            var s = (rem - m) * 60.0;
-            return $"{sign}{d:00}° {m:00}′ {s:00.##}″";
-        }
+        private static string FormatAngleSmart(double degrees) => CoordinateParser.FormatAngle(degrees);
 
-        private static bool TryParseSmartRa(string input, out double hours, out string error)
+        private bool TryParseSmartRa(string input, out double hours, out string error)
         {
             return TryParseSmartCoordinate(input, out hours, out error, isRa: true);
         }
 
-        private static bool TryParseSmartAngle(string input, out double degrees, out string error)
+        private bool TryParseSmartAngle(string input, out double degrees, out string error)
         {
             return TryParseSmartCoordinate(input, out degrees, out error, isRa: false);
         }
@@ -555,298 +539,40 @@ namespace GreenSwamp.Alpaca.Server.Components
             return Task.CompletedTask;
         }
 
-        private static string? ValidateSmartPartial(string input, bool isRa)
+        private string? ValidateSmartPartial(string input, bool isRa)
         {
-            if (string.IsNullOrWhiteSpace(input))
+            return CoordinateParser.ValidatePartial(input, isRa) switch
             {
-                // Empty is not an error while editing; "required" is only reported on GoTo / Sync.
-                return string.Empty;
-            }
-
-            var trimmed = input.Trim();
-            if (!isRa && (trimmed == "+" || trimmed == "-"))
-            {
-                return string.Empty;
-            }
-
-            var decimalMode = TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical);
-            if (decimalMode)
-            {
-                return string.IsNullOrEmpty(decimalCanonical) ? (isRa ? "Hours must be in the range [0..24)." : "Degrees must be in the range [-90..90].") : string.Empty;
-            }
-
-            var tokens = TokenizeSmartInput(input);
-            if (tokens.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            if (!TryParseIntegerToken(tokens[0], out var major))
-            {
-                return isRa ? "Hours must be an integer." : "Degrees must be an integer.";
-            }
-
-            var sign = 1;
-            if (!isRa && trimmed.StartsWith("-", StringComparison.Ordinal))
-            {
-                sign = -1;
-            }
-
-            var signedMajor = major * sign;
-            if (isRa)
-            {
-                if (signedMajor < 0 || signedMajor >= 24) return "Hours must be in the range [0..24).";
-            }
-            else
-            {
-                if (signedMajor < -90 || signedMajor > 90) return "Degrees must be in the range [-90..90].";
-            }
-
-            if (tokens.Length > 1 && (!TryParseIntegerToken(tokens[1], out var minutes) || minutes < 0 || minutes >= 60))
-            {
-                return "Minutes must be an integer in the range [0..60).";
-            }
-
-            if (tokens.Length > 2 && (!TryParseDecimalToken(tokens[2], out var seconds) || seconds < 0 || seconds >= 60))
-            {
-                return "Seconds must be in the range [0..60).";
-            }
-
-            return string.Empty;
+                CoordinateParseError.NotInteger => isRa ? Loc["Coord_HoursInteger"].Value : Loc["Coord_DegreesInteger"].Value,
+                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_HoursRange"].Value : Loc["Coord_DegreesRange"].Value,
+                CoordinateParseError.MinutesNotInteger => Loc["Coord_MinutesInteger"].Value,
+                CoordinateParseError.SecondsRange => Loc["Coord_SecondsRange"].Value,
+                _ => string.Empty
+            };
         }
 
         private static string CanonicalizeSmartValue(string input, bool isRa, bool canonicalizeSign)
         {
-            var trimmed = input.Trim();
-            if (!isRa && (trimmed == "+" || trimmed == "-"))
-            {
-                return trimmed;
-            }
-
-            var decimalMode = TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical);
-            if (decimalMode && !string.IsNullOrEmpty(decimalCanonical))
-            {
-                return decimalCanonical;
-            }
-
-            var tokens = TokenizeSmartInput(input);
-            if (tokens.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            if (!TryParseIntegerToken(tokens[0], out var major))
-            {
-                return input.Trim();
-            }
-
-            var minutes = 0;
-            var seconds = 0.0;
-            if (tokens.Length > 1)
-            {
-                _ = int.TryParse(tokens[1], out minutes);
-            }
-            if (tokens.Length > 2)
-            {
-                _ = double.TryParse(tokens[2], out seconds);
-            }
-
-            if (isRa)
-            {
-                return tokens.Length > 2
-                    ? $"{major:00}h {minutes:00}m {seconds:00.##}s"
-                    : tokens.Length > 1
-                        ? $"{major:00}h {minutes:00}m"
-                        : $"{major:00}h";
-            }
-
-            var sign = string.Empty;
-            if (canonicalizeSign)
-            {
-                if (input.TrimStart().StartsWith("-", StringComparison.Ordinal)) sign = "-";
-                else if (input.TrimStart().StartsWith("+", StringComparison.Ordinal)) sign = "+";
-            }
-
-            var signedMajor = sign == "-" ? -Math.Abs(major) : Math.Abs(major);
-            return tokens.Length > 2
-                ? $"{signedMajor:+00;-00;00}° {minutes:00}′ {seconds:00.##}″"
-                : tokens.Length > 1
-                    ? $"{signedMajor:+00;-00;00}° {minutes:00}′"
-                    : $"{signedMajor:+00;-00;00}°";
+            return CoordinateParser.Canonicalize(input, isRa, canonicalizeSign);
         }
 
-        private static bool TryParseSmartDecimalMode(string input, bool isRa, out string canonical)
+        private bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa)
         {
-            canonical = string.Empty;
-            if (!input.Contains('.'))
+            if (CoordinateParser.TryParse(input, isRa, out value, out var parseError))
             {
-                return false;
-            }
-
-            var text = input.Trim();
-            var sign = string.Empty;
-            if (!isRa && (text.StartsWith("+") || text.StartsWith("-")))
-            {
-                sign = text.StartsWith("-") ? "-" : "+";
-                text = text[1..].TrimStart();
-            }
-
-            if (!double.TryParse(text, out var value))
-            {
-                return false;
-            }
-
-            if (isRa)
-            {
-                if (value < 0 || value >= 24)
-                {
-                    return true;
-                }
-
-                canonical = $"{value:0.##}";
-                return true;
-            }
-
-            if (sign == "-") value = -value;
-            if (value < -90 || value > 90)
-            {
-                return true;
-            }
-
-            canonical = $"{value:+0.##;-0.##;0.##}";
-            return true;
-        }
-
-        private static string[] TokenizeSmartInput(string input)
-        {
-            var normalized = input.Trim()
-                .Replace("º", "°")
-                .Replace('’', '′')
-                .Replace('\'', '′')
-                .Replace('"', '″')
-                .Replace(':', ' ')
-                .Replace("°", " ")
-                .Replace("h", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("m", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("s", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("′", " ")
-                .Replace("″", " ");
-
-            return normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        private static bool TryParseIntegerToken(string token, out int value)
-        {
-            return int.TryParse(token, out value);
-        }
-
-        private static bool TryParseDecimalToken(string token, out double value)
-        {
-            return double.TryParse(token, out value);
-        }
-
-        private static bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa)
-        {
-            value = 0;
-            error = isRa ? "Enter a valid RA value." : "Enter a valid angle value.";
-
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                error = isRa ? "RA is required." : "Angle value is required.";
-                return false;
-            }
-
-            var trimmed = input.Trim();
-            if (TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical))
-            {
-                if (string.IsNullOrEmpty(decimalCanonical))
-                {
-                    error = isRa ? "RA must be in the range [0..24)." : "Degrees must be in the range [-90..90].";
-                    return false;
-                }
-
-                if (!double.TryParse(trimmed.TrimStart('+', '-'), out value))
-                {
-                    error = isRa ? "Enter a valid RA value." : "Enter a valid angle value.";
-                    return false;
-                }
-
-                if (!isRa && trimmed.StartsWith("-", StringComparison.Ordinal))
-                {
-                    value = -value;
-                }
-
-                if (isRa)
-                {
-                    if (value < 0 || value >= 24)
-                    {
-                        error = "RA must be in the range [0..24).";
-                        return false;
-                    }
-                }
-                else if (value < -90 || value > 90)
-                {
-                    error = "Degrees must be in the range [-90..90].";
-                    return false;
-                }
-
                 error = string.Empty;
                 return true;
             }
 
-            var normalized = input.Trim()
-                .Replace("°", " ")
-                .Replace("º", " ")
-                .Replace("h", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("m", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("s", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("′", " ")
-                .Replace("’", " ")
-                .Replace("'", " ")
-                .Replace("″", " ")
-                .Replace("\"", " ")
-                .Replace(":", " ");
-
-            var parts = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 0 || parts.Length > 3)
+            error = parseError switch
             {
-                return false;
-            }
-
-            var sign = 1.0;
-            if (!isRa && parts[0].StartsWith("-", StringComparison.Ordinal))
-            {
-                sign = -1.0;
-            }
-
-            if (!int.TryParse(parts[0], out var a)) return false;
-            var b = 0;
-            var c = 0.0;
-
-            if (parts.Length > 1 && !int.TryParse(parts[1], out b)) return false;
-            if (parts.Length > 2 && !double.TryParse(parts[2], out c)) return false;
-
-            var major = Math.Abs(a);
-            if (parts.Length > 1 && (b < 0 || b >= 60))
-            {
-                error = "Minutes must be in the range [0..60).";
-                return false;
-            }
-
-            if (parts.Length > 2 && (c < 0 || c >= 60))
-            {
-                error = "Seconds must be in the range [0..60).";
-                return false;
-            }
-
-            value = major + b / 60.0 + c / 3600.0;
-            if (!isRa)
-            {
-                value *= sign;
-            }
-
-            error = string.Empty;
-            return true;
+                CoordinateParseError.Required => isRa ? Loc["Coord_RaRequired"].Value : Loc["Coord_AngleRequired"].Value,
+                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_RaRange"].Value : Loc["Coord_DegreesRange"].Value,
+                CoordinateParseError.MinutesRange => Loc["Coord_MinutesRange"].Value,
+                CoordinateParseError.SecondsRange => Loc["Coord_SecondsRange"].Value,
+                _ => isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value
+            };
+            return false;
         }
     }
 }

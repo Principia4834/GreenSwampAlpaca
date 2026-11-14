@@ -7,38 +7,38 @@
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" />
-            <MudText Typo="Typo.h6">HC Settings — Device @DeviceNumber</MudText>
+            <MudText Typo="Typo.h6">@Loc["HcSettings_Title", DeviceNumber]</MudText>
         </MudStack>
     </TitleContent>
 
     <DialogContent>
         <MudTabs Rounded="true" Outlined="true" KeepPanelsAlive="true" Elevation="0">
-            <MudTabPanel Text="Axis Settings">
+            <MudTabPanel Text="@Loc["HcSettings_AxisTab"]">
                 <MudStack Spacing="1" Class="pt-2">
                     <MudCheckBox @bind-Value="_flipEw"
                                  @bind-Value:after="() => OnHandControllerOptionChanged(HcOption.FlipEw)"
                                  T="bool"
                                  Dense="true"
-                                 Label="Flip RA/Az" />
+                                 Label="@Loc["HcSettings_FlipRa"]" />
                     <MudCheckBox @bind-Value="_flipNs"
                                  @bind-Value:after="() => OnHandControllerOptionChanged(HcOption.FlipNs)"
                                  T="bool"
                                  Dense="true"
-                                 Label="Flip Dec/Alt" />
+                                 Label="@Loc["HcSettings_FlipDec"]" />
                     <MudCheckBox @bind-Value="_antiRa"
                                  @bind-Value:after="() => OnHandControllerOptionChanged(HcOption.AntiRa)"
                                  T="bool"
                                  Dense="true"
-                                 Label="Anti-backlash RA/Az" />
+                                 Label="@Loc["HcSettings_AntiRa"]" />
                     <MudCheckBox @bind-Value="_antiDec"
                                  @bind-Value:after="() => OnHandControllerOptionChanged(HcOption.AntiDec)"
                                  T="bool"
                                  Dense="true"
-                                 Label="Anti-backlash Dec/Alt" />
+                                 Label="@Loc["HcSettings_AntiDec"]" />
                 </MudStack>
             </MudTabPanel>
 
-            <MudTabPanel Text="Pulse Guide Rates">
+            <MudTabPanel Text="@Loc["HcSettings_PulseTab"]">
                 <MudStack Spacing="2" Class="pt-2">
                     <HcPulseGuidesEditor Guides="@_working"
                                          MaxRate="@MaxRate"
@@ -46,14 +46,14 @@
 
                     <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
                         <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">
-                            Cancel
+                            @Loc["Common_Cancel"]
                         </MudButton>
                         <MudButton OnClick="SaveAsync"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    Disabled="@(!_isDirty)"
                                    StartIcon="@Icons.Material.Filled.Save">
-                            Save
+                            @Loc["Common_Save"]
                         </MudButton>
                     </MudStack>
                 </MudStack>

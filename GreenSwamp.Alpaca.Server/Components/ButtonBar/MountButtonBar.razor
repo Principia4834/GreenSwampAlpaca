@@ -13,7 +13,7 @@
     <div style="display:inline-grid; grid-template-columns: repeat(4, auto);">
 
         @* -- Park --------------------------------------------------------------- *@
-        <MudTooltip Text="@(State.AtPark ? "Unpark the mount" : "Park the mount at the selected position")"
+        <MudTooltip Text="@(State.AtPark ? Loc["MountButtons_UnparkTooltip"] : Loc["MountButtons_ParkTooltip"])"
                     Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.LocalParking"
                            Color="@(State.AtPark ? Color.Warning : Color.Primary)"
@@ -27,7 +27,7 @@
         </MudTooltip>
 
         @* -- Home --------------------------------------------------------------- *@
-        <MudTooltip Text="Slew to the home position" Placement="Placement.Top" Arrow="true">
+        <MudTooltip Text="@Loc["MountButtons_HomeTooltip"]" Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.Home"
                            Color="Color.Primary"
                            Variant="Variant.Outlined"
@@ -38,7 +38,7 @@
         </MudTooltip>
 
         @* -- Tracking ----------------------------------------------------------- *@
-        <MudTooltip Text="@(State.Tracking ? "Turn tracking off" : "Turn tracking on")"
+        <MudTooltip Text="@(State.Tracking ? Loc["MountButtons_TrackingOffTooltip"] : Loc["MountButtons_TrackingOnTooltip"])"
                     Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.TrackChanges"
                            Color="Color.Primary"
@@ -52,7 +52,7 @@
         @* -- Flip SOP (GEM only) ------------------------------------------------ *@
         @if (State.IsGermanPolarMode)
         {
-            <MudTooltip Text="Flip the telescope to the opposite pier side"
+            <MudTooltip Text="@Loc["MountButtons_FlipTooltip"]"
                         Placement="Placement.Top" Arrow="true">
                 <MudIconButton Icon="@Icons.Material.Filled.FlipCameraAndroid"
                                Color="Color.Primary"
@@ -65,7 +65,7 @@
         }
 
         @* -- ReSync ------------------------------------------------------------- *@
-        <MudTooltip Text="Resync axes to a reference position" Placement="Placement.Top" Arrow="true">
+        <MudTooltip Text="@Loc["MountButtons_ReSyncTooltip"]" Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.SettingsEthernet"
                            Color="Color.Primary"
                            Variant="Variant.Outlined"
@@ -76,7 +76,7 @@
         </MudTooltip>
 
         @* -- AutoHome ----------------------------------------------------------- *@
-        <MudTooltip Text="@(State.IsAutoHomeRunning ? "AutoHome running…" : "Search for home sensor and reset axes")"
+        <MudTooltip Text="@(State.IsAutoHomeRunning ? Loc["MountButtons_AutoHomeRunningTooltip"] : Loc["MountButtons_AutoHomeTooltip"])"
                     Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@HomeSearchIcon"
                            Color="@(State.IsAutoHomeRunning ? Color.Warning : Color.Primary)"
@@ -88,7 +88,7 @@
         </MudTooltip>
 
         @* -- Limits ------------------------------------------------------------- *@
-        <MudTooltip Text="@(State.LimitsOn ? "Disable slewing and tracking limits" : "Enable slewing and tracking limits")"
+        <MudTooltip Text="@(State.LimitsOn ? Loc["MountButtons_LimitsOffTooltip"] : Loc["MountButtons_LimitsOnTooltip"])"
                     Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@LimitsOnIcon"
                            Color="Color.Primary"
@@ -100,7 +100,7 @@
         </MudTooltip>
 
         @* -- Settings ----------------------------------------------------------- *@
-        <MudTooltip Text="Set park positions and slew limits"
+        <MudTooltip Text="@Loc["MountButtons_SettingsTooltip"]"
                     Placement="Placement.Top" Arrow="true">
             <MudIconButton Icon="@Icons.Material.Filled.Settings"
                            Color="Color.Primary"
@@ -116,7 +116,7 @@
 @if (ShowStopButton)
 {
     @* -- Stop (kept for any future ShowStopButton=true usage) ------------------- *@
-    <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
+    <MudTooltip Text="@Loc["MountButtons_StopTooltip"]" Placement="Placement.Top" Arrow="true">
         <MudIconButton Variant="Variant.Outlined" Color="Color.Error"
                        Icon="@Icons.Material.Filled.StopCircle"
                        Size="Size.Large"
