@@ -178,7 +178,8 @@ namespace GreenSwamp.Alpaca.Server.Services
                     SiteLongitude = mount.Settings.Longitude,
                     SiteElevation = mount.Settings.Elevation,
                     AlignmentMode = mount.Settings.AlignmentMode,
-                    MountType     = mount.Settings.Mount
+                    MountType     = mount.Settings.Mount,
+                    PolarMode     = mount.Settings.PolarMode
                 };
             }
             catch (Exception)

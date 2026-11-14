@@ -15,6 +15,7 @@
  */
 
 
+using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Settings.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -24,6 +25,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.TelescopeView;
 public partial class TelescopeView : IAsyncDisposable
 {
     [Parameter] public int DeviceNumber { get; set; }
+
+    /// <summary>Optional ?model=Reflector etc. (see <see cref="Model3DType"/>); defaults to the standard model.</summary>
+    [SupplyParameterFromQuery(Name = "model")] public string? ModelName { get; set; }
 
     private IJSObjectReference? _module;
     private double _axisX;
@@ -37,6 +41,7 @@ public partial class TelescopeView : IAsyncDisposable
     private bool _subscribedStateChanged;
     private bool _heartbeatStarted;
     private int? _initializedDeviceNumber;
+    private string? _loadedMountKey;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -84,7 +89,15 @@ public partial class TelescopeView : IAsyncDisposable
 
         try
         {
-            await _module.InvokeVoidAsync("setAxes", _axisX, _axisY);
+            var latitude = double.IsFinite(s.SiteLatitude) ? s.SiteLatitude : 0.0;
+            await EnsureModelLoadedAsync(s, latitude);
+
+            if (double.IsFinite(_axisX) && double.IsFinite(_axisY))
+            {
+                var pose = Model3D.GetPose(s.AlignmentMode, s.MountType, s.PolarMode, latitude, _axisX, _axisY);
+                await _module.InvokeVoidAsync("setPose", pose.X, pose.Y, pose.Z, pose.YCentre);
+            }
+
             StateHasChanged();
         }
         catch (JSDisconnectedException) { }
@@ -113,32 +126,29 @@ public partial class TelescopeView : IAsyncDisposable
 
         _activeModelSetName = activeEntry.Name;
 
-        var baseUri = Nav.BaseUri.TrimEnd('/');
-        object modelsObj = new
-        {
-            support = ResolveUrl(baseUri, activeEntry.Models.Support),
-            structural = ResolveUrl(baseUri, activeEntry.Models.Structural),
-            primaryAxis = ResolveUrl(baseUri, activeEntry.Models.PrimaryAxis),
-            secondaryAxis = ResolveUrl(baseUri, activeEntry.Models.SecondaryAxis),
-            ota = ResolveUrl(baseUri, activeEntry.Models.Ota),
-            otaSecondary = ResolveUrl(baseUri, activeEntry.Models.OtaSecondary),
-            counterWeight = ResolveUrl(baseUri, activeEntry.Models.CounterWeight)
-        };
+        // Camera angles are degrees. The model is (re)loaded by EnsureModelLoadedAsync on the next state push.
+        await _module.InvokeAsync<bool>("init", "telescopeCanvas", new { camera = (object?)activeEntry.Camera });
 
-        var s = StateService.GetCurrentState(DeviceNumber);
-        var effectiveLatitude = s.AlignmentMode == ASCOM.Common.DeviceInterfaces.AlignmentMode.AltAz ? 90.0 : s.SiteLatitude;
-        var alignmentModeStr = s.AlignmentMode.ToString();
-        var mountTypeStr = s.MountType.ToString();
-
-        await _module.InvokeVoidAsync("init",
-            "telescopeCanvas",
-            effectiveLatitude,
-            alignmentModeStr,
-            mountTypeStr,
-            modelsObj,
-            (object?)activeEntry.Camera);
-
+        _loadedMountKey = null;
         _initializedDeviceNumber = DeviceNumber;
+    }
+
+    private async Task EnsureModelLoadedAsync(TelescopeStateModel s, double latitude)
+    {
+        if (_module is null) return;
+
+        var modelType = Enum.TryParse<Model3DType>(ModelName, true, out var parsed) ? parsed : Model3DType.Default;
+        var mountKey = $"{s.AlignmentMode}|{s.MountType}|{s.PolarMode}|{Math.Round(latitude, 2)}|{modelType}";
+        if (mountKey == _loadedMountKey) return;
+        _loadedMountKey = mountKey;
+
+        var url = ResolveUrl(Nav.BaseUri.TrimEnd('/'), Model3D.GetModelUrl(modelType, s.AlignmentMode, s.PolarMode));
+        await _module.InvokeAsync<string>("loadModel", url, new
+        {
+            mode = (int)s.AlignmentMode,
+            latitude,
+            northCompass = Model3D.UseNorthCompass(s.AlignmentMode, latitude)
+        });
     }
 
     private async Task RunViewHeartbeatAsync()

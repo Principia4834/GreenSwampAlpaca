@@ -62,6 +62,7 @@ namespace GreenSwamp.Alpaca.Settings.Models
     /// </summary>
     public class CameraState
     {
+        // Alpha and Beta are degrees (the OBJ viewer). The preserved .glb viewer stored radians.
         public double Alpha  { get; set; }
         public double Beta   { get; set; }
         public double Radius { get; set; }

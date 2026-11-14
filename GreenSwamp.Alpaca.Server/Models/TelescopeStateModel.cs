@@ -127,6 +127,7 @@ namespace GreenSwamp.Alpaca.Server.Models
         public double SiteElevation { get; set; }
         public AlignmentMode AlignmentMode { get; set; }
         public MountType MountType { get; set; }
+        public PolarMode PolarMode { get; set; }
 
         /// <summary>
         /// Constructor initializes with default/invalid values
@@ -187,6 +188,7 @@ namespace GreenSwamp.Alpaca.Server.Models
             SiteElevation = double.NaN;
             AlignmentMode = AlignmentMode.GermanPolar;
             MountType     = MountType.Simulator;
+            PolarMode     = PolarMode.Right;
     }
 }
 }

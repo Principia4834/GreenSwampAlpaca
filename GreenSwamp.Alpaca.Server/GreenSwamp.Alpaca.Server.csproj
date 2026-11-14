@@ -22,6 +22,16 @@
     <Compile Remove="Pages\Charts\PulseChartDev.razor.cs" />
   </ItemGroup>
 
+  <!-- Preserved source for the future .glb model-set viewer (see docs\TelescopeView-3D-ImplementationPlan.md). Not built or served. -->
+  <ItemGroup>
+    <Compile Remove="Preserved\**" />
+    <Content Remove="Preserved\**" />
+    <EmbeddedResource Remove="Preserved\**" />
+    <None Remove="Preserved\**" />
+    <RazorComponent Remove="Preserved\**" />
+    <None Include="Preserved\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Remove="appsettings.json" />
     <Content Remove="appsettings.schema.json" />
@@ -129,7 +139,10 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\models\telescope.obj">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\model3d\**">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
   </ItemGroup>
 
