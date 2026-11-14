@@ -111,11 +111,11 @@ namespace ASCOM.Alpaca
                 return true;
 
             string deviceType = pathElements[3].ToLowerInvariant();
-            if (!int.TryParse(pathElements[4], out int deviceNumber))
+            if (!int.TryParse(pathElements[4], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int deviceNumber))
                 return true;
             string operation = pathElements[5].ToLowerInvariant();
 
-            var device = DeviceManager.GetDevices().FirstOrDefault(x => x.DeviceType.ToLower().Equals(deviceType) && x.DeviceNumber == deviceNumber);
+            var device = DeviceManager.GetDevices().FirstOrDefault(x => x.DeviceType.ToLowerInvariant().Equals(deviceType) && x.DeviceNumber == deviceNumber);
             if (device == null)
                 return true;
 
@@ -181,9 +181,9 @@ namespace ASCOM.Alpaca
                 // Check device exists
                 string deviceType = pathElements[3].ToLowerInvariant();
                 AlpacaConfiguredDevice device = null;
-                if (int.TryParse(pathElements[4], out int deviceNumber))
+                if (int.TryParse(pathElements[4], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int deviceNumber))
                 {
-                    device = DeviceManager.GetDevices().FirstOrDefault(x => x.DeviceType.ToLower().Equals(deviceType) && x.DeviceNumber == deviceNumber);
+                    device = DeviceManager.GetDevices().FirstOrDefault(x => x.DeviceType.ToLowerInvariant().Equals(deviceType) && x.DeviceNumber == deviceNumber);
                 }
 
                 if (device == null)

@@ -1,0 +1,15 @@
+﻿root = true
+
+# Culture guard: backend code (serial protocol, JSON, Alpaca REST, logging) must be culture invariant.
+# CA1304 = ToLower/ToUpper without culture, CA1305 = missing IFormatProvider, CA1311 = specify culture or invariant case.
+[*.cs]
+dotnet_diagnostic.CA1304.severity = warning
+dotnet_diagnostic.CA1305.severity = warning
+dotnet_diagnostic.CA1311.severity = warning
+
+# Blazor UI code deliberately formats with the browser's regional format (the ambient circuit culture).
+# Coordinates must use the invariant helpers in Helpers/CoordinateFormatter.cs.
+[GreenSwamp.Alpaca.Server/{Components,Pages,Shared,Localization}/**.cs]
+dotnet_diagnostic.CA1304.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1311.severity = none

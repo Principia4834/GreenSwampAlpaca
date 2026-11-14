@@ -192,7 +192,7 @@ namespace ASCOM.Alpaca.Razor
                     {
                         if (serverAddress.Contains(":"))
                         {
-                            if (int.TryParse(serverAddress.Split(':').Last(), out int result))
+                            if (int.TryParse(serverAddress.Split(':').Last(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int result))
                             {
                                 port = result;
                             }

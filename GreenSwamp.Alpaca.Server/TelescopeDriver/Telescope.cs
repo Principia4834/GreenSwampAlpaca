@@ -1845,8 +1845,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}|{valueName}" };
                 LogMonitor(monitorItem);
-                throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.CurrentCulture),
-                    string.Format(CultureInfo.CurrentCulture, "{0}, {1} to {2}", valueName, min, max));
+                throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.InvariantCulture),
+                    string.Format(CultureInfo.InvariantCulture, "{0}, {1} to {2}", valueName, min, max));
             }
         }
 
@@ -1867,8 +1867,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{value}|{min}|{max}|{propertyOrMethod}" };
                 LogMonitor(monitorItem);
 
-                throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.CurrentCulture),
-                    string.Format(CultureInfo.CurrentCulture, "{0} to {1}", min, max));
+                throw new InvalidValueException(propertyOrMethod, value.ToString(CultureInfo.InvariantCulture),
+                    string.Format(CultureInfo.InvariantCulture, "{0} to {1}", min, max));
             }
         }
 

@@ -101,7 +101,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         internal double[] AxesDegrees()
         {
-            var x = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis1}"));
+            var x = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis1}"), CultureInfo.InvariantCulture);
 
             //put in for capture tracking in charts
             var stepsx = _ioSerial.Send($"steps|{Axis.Axis1}");
@@ -109,7 +109,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"steps1|{null}|{stepsx}" };
             LogMonitor(monitorItem);
 
-            var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}"));
+            var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}"), CultureInfo.InvariantCulture);
 
             //put in for capture tracking in charts
             var stepsy = _ioSerial.Send($"steps|{Axis.Axis2}");
@@ -129,7 +129,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         internal void AxesSteps()
         {
             var z = FactorSteps();
-            var x = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis1}")) * z;
+            var x = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis1}"), CultureInfo.InvariantCulture) * z;
 
             //put in for capture tracking in charts
             var stepsx = _ioSerial.Send($"steps|{Axis.Axis1}");
@@ -137,7 +137,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Mount, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"steps1|{null}|{stepsx}" };
             LogMonitor(monitorItem);
 
-            var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}")) * z;
+            var y = Convert.ToDouble(_ioSerial.Send($"degrees|{Axis.Axis2}"), CultureInfo.InvariantCulture) * z;
 
             //put in for capture tracking in charts
             var stepsy = _ioSerial.Send($"steps|{Axis.Axis2}");
@@ -319,8 +319,8 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         internal int[] AxisSteps()
         {
-            var x = Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis1}"));
-            var y = Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis2}"));
+            var x = Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis1}"), CultureInfo.InvariantCulture);
+            var y = Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis2}"), CultureInfo.InvariantCulture);
             var i = new[] { x, y};
             return i;
         }
@@ -329,9 +329,9 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             return axis switch
             {
-                Axis.Axis1 => new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis1}")),
+                Axis.Axis1 => new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis1}"), CultureInfo.InvariantCulture),
                                         HiResDateTime.UtcNow),
-                Axis.Axis2 => new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis2}")),
+                Axis.Axis2 => new Tuple<double?, DateTime>(Convert.ToInt32(_ioSerial.Send($"steps|{Axis.Axis2}"), CultureInfo.InvariantCulture),
                                         HiResDateTime.UtcNow),
                 _ => throw new ArgumentOutOfRangeException(nameof(axis), axis, null),
             };
@@ -343,7 +343,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         internal int FactorSteps()
         {
-            var x = Convert.ToInt32(_ioSerial.Send($"FactorSteps"));
+            var x = Convert.ToInt32(_ioSerial.Send($"FactorSteps"), CultureInfo.InvariantCulture);
             return x;
         }
 
@@ -406,7 +406,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         internal int HomeSensor(Axis axis)
         {
-            return Convert.ToInt32(_ioSerial.Send($"homesensor|{axis}"));
+            return Convert.ToInt32(_ioSerial.Send($"homesensor|{axis}"), CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -435,8 +435,8 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         {
             var result = _ioSerial.Send("mountversion");
 
-            var first = int.Parse(result.Substring(0, 2), NumberStyles.HexNumber);
-            var second = int.Parse(result.Substring(2, 2), NumberStyles.HexNumber);
+            var first = int.Parse(result.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var second = int.Parse(result.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             return $"{first}.{second:D2}";
         }
 
@@ -451,7 +451,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         internal long Spr()
         {
-            return Convert.ToInt32(_ioSerial.Send("spr"));
+            return Convert.ToInt32(_ioSerial.Send("spr"), CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -460,7 +460,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         /// <returns></returns>
         internal double Spw()
         {
-            return Convert.ToDouble(_ioSerial.Send("spw"));
+            return Convert.ToDouble(_ioSerial.Send("spw"), CultureInfo.InvariantCulture);
         }
 
         /// <summary>

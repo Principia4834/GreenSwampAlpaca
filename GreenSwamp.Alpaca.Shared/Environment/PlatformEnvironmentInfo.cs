@@ -247,7 +247,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
                 {
                     if (obj["TotalPhysicalMemory"] != null)
                     {
-                        var totalGB = Convert.ToInt64(obj["TotalPhysicalMemory"]) / (1024.0 * 1024 * 1024);
+                        var totalGB = Convert.ToInt64(obj["TotalPhysicalMemory"], System.Globalization.CultureInfo.InvariantCulture) / (1024.0 * 1024 * 1024);
                         writer.WriteLine($"Total Physical Memory: {totalGB:N2} GB");
                     }
                     writer.WriteLine($"Manufacturer: {obj["Manufacturer"]}");
@@ -318,7 +318,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
                     writer.WriteLine($"Video Card:     {obj["Name"]}");
                     if (obj["AdapterRAM"] != null)
                     {
-                        var ramMB = Convert.ToInt64(obj["AdapterRAM"]) / (1024 * 1024);
+                        var ramMB = Convert.ToInt64(obj["AdapterRAM"], System.Globalization.CultureInfo.InvariantCulture) / (1024 * 1024);
                         writer.WriteLine($"Video RAM:      {ramMB:N0} MB");
                     }
                     if (obj["DriverVersion"] != null)

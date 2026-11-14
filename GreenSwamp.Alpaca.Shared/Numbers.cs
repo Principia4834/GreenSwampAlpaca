@@ -26,9 +26,9 @@ namespace GreenSwamp.Alpaca.Shared
         public static string LongToHex(long number)
         {
             // 31 -> 0F0000
-            var a = ((int)number & 0xFF).ToString("X").ToUpper();
-            var b = (((int)number & 0xFF00) / 256).ToString("X").ToUpper();
-            var c = (((int)number & 0xFF0000) / 256 / 256).ToString("X").ToUpper();
+            var a = ((int)number & 0xFF).ToString("X", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+            var b = (((int)number & 0xFF00) / 256).ToString("X", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+            var c = (((int)number & 0xFF0000) / 256 / 256).ToString("X", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
 
             if (a.Length == 1)
                 a = "0" + a;

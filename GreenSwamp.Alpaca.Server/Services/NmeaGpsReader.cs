@@ -338,7 +338,7 @@ namespace GreenSwamp.Alpaca.Server.Services
             {
                 checkSum ^= Convert.ToByte(ch);
             }
-            if (string.Equals(checkChar, checkSum.ToString("X2"), StringComparison.Ordinal))
+            if (string.Equals(checkChar, checkSum.ToString("X2", CultureInfo.InvariantCulture), StringComparison.Ordinal))
                 return true;
             var monitorItem = new MonitorEntry
             { Datetime = Principles.HiResDateTime.UtcNow, Device = MonitorDevice.Server, Category = MonitorCategory.Server, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{receivedData}" };

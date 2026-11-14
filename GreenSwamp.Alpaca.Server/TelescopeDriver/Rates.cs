@@ -134,7 +134,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 if (index < 1 || index > Count)
-                    throw new InvalidValueException("AxisRates.index", index.ToString(CultureInfo.CurrentCulture), string.Format(CultureInfo.CurrentCulture, "1 to {0}", Count));
+                    throw new InvalidValueException("AxisRates.index", index.ToString(CultureInfo.InvariantCulture), string.Format(CultureInfo.InvariantCulture, "1 to {0}", Count));
                 return _mRates[index - 1]; 	// 1-based
             }
         }
@@ -229,7 +229,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 if (index < 1 || index > Count)
-                    throw new InvalidValueException("TrackingRates.this", index.ToString(CultureInfo.CurrentCulture), string.Format(CultureInfo.CurrentCulture, "1 to {0}", Count));
+                    throw new InvalidValueException("TrackingRates.this", index.ToString(CultureInfo.InvariantCulture), string.Format(CultureInfo.InvariantCulture, "1 to {0}", Count));
                 return _mTrackingRates[index - 1];
             }	// 1-based
         }
@@ -326,7 +326,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 if (index <= 1 || index > Count)
-                    throw new InvalidValueException("TrackingRatesSimple.this", index.ToString(CultureInfo.CurrentCulture), string.Format(CultureInfo.CurrentCulture, "1 to {0}", Count));
+                    throw new InvalidValueException("TrackingRatesSimple.this", index.ToString(CultureInfo.InvariantCulture), string.Format(CultureInfo.InvariantCulture, "1 to {0}", Count));
                 return _mTrackingRates[index - 1];
             }	// 1-based
         }

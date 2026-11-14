@@ -498,9 +498,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 // 2 digits major version
                 // 2 digits minor version
                 // + 00
-                first = int.Parse(response.Substring(3, 2), NumberStyles.HexNumber);
-                second = int.Parse(response.Substring(5, 2), NumberStyles.HexNumber);
-                mountModel = int.Parse(response.Substring(1, 2), NumberStyles.HexNumber);
+                first = int.Parse(response.Substring(3, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                second = int.Parse(response.Substring(5, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                mountModel = int.Parse(response.Substring(1, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 mountVersion = $"{first}.{second:D2}";
                 msg = "X0005";
             }
@@ -510,9 +510,9 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 var tmpInt = Convert.ToInt32(StringToLong(response));
                 intVersion = ((tmpInt & 0xFF) << 16) | ((tmpInt & 0xFF00)) | ((tmpInt & 0xFF0000) >> 16);
                 //example =032723
-                first = int.Parse(response.Substring(1, 2), NumberStyles.HexNumber);
-                second = int.Parse(response.Substring(3, 2), NumberStyles.HexNumber);
-                mountModel = int.Parse(response.Substring(5, 2), NumberStyles.HexNumber);
+                first = int.Parse(response.Substring(1, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                second = int.Parse(response.Substring(3, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                mountModel = int.Parse(response.Substring(5, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 mountVersion = $"{first}.{second:D2}";
                 msg = "e";
             }
@@ -1028,7 +1028,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             if (SupportAdvancedCommandSet && AllowAdvancedCommandSet)
             {
                 newStepIndex *= _resolutionFactor[(int)axis];
-                var szCmd = "01" + newStepIndex.ToString("X8");
+                var szCmd = "01" + newStepIndex.ToString("X8", CultureInfo.InvariantCulture);
                 CmdToMount(axis, 'X', szCmd);
             }
             else
@@ -1051,7 +1051,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         {
             if (SupportAdvancedCommandSet && AllowAdvancedCommandSet)
             {
-                var szCmd = "01" + steps.ToString("X8");
+                var szCmd = "01" + steps.ToString("X8", CultureInfo.InvariantCulture);
                 CmdToMount(axis, 'X', szCmd);
             }
             else
@@ -1283,7 +1283,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         internal void SetPolarLedLevel(Axis axis, int level)
         {
             if (level < 0 || level > 255) { return; }
-            var szCmd = level.ToString("X2");
+            var szCmd = level.ToString("X2", CultureInfo.InvariantCulture);
             CmdToMount(axis, 'V', szCmd);
         }
 
@@ -1386,7 +1386,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             // var irateInSteps = AngleToStep(axis, rateInRadian * 1024 * _resolutionFactor[(int)axis]);
 
             if (rateInRadian < 0) { ratePad = 'F'; } // F for negative numbers
-            var szCmd = "02" + irateInSteps.ToString("X").PadLeft(16, ratePad);
+            var szCmd = "02" + irateInSteps.ToString("X", CultureInfo.InvariantCulture).PadLeft(16, ratePad);
 
             var monitorItem = new MonitorEntry
             {
@@ -1423,7 +1423,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             // var irateInSteps = AngleToStep(axis, rateInRadian * 1024 * _resolutionFactor[(int)axis]);
             if (irateInSteps < 0) { ratePad = 'F'; } // F for negative numbers
 
-            var szCmd = "04" + itargetInSteps.ToString("X").PadLeft(8, targetPad) + irateInSteps.ToString("X").PadLeft(16, ratePad);
+            var szCmd = "04" + itargetInSteps.ToString("X", CultureInfo.InvariantCulture).PadLeft(8, targetPad) + irateInSteps.ToString("X", CultureInfo.InvariantCulture).PadLeft(16, ratePad);
             CmdToMount(axis, 'X', szCmd);
 
             var monitorItem = new MonitorEntry
@@ -1802,7 +1802,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
                 long value = 0;
                 for (var i = 1; i + 1 < str.Length; i += 2)
                 {
-                    value += (long)(int.Parse(str.Substring(i, 2), NumberStyles.AllowHexSpecifier) * Math.Pow(16, i - 1));
+                    value += (long)(int.Parse(str.Substring(i, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture) * Math.Pow(16, i - 1));
                 }
 
                 return value;
@@ -1824,7 +1824,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
 
             for (var i = 0; i < chars.Length; i += 2)
             {
-                var part = ((int)number & 0xFF).ToString("X2");
+                var part = ((int)number & 0xFF).ToString("X2", CultureInfo.InvariantCulture);
                 chars[i] = part[0];
                 chars[i + 1] = part[1];
                 number >>= 8;
@@ -1872,7 +1872,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             {
                 if (parseFirst && response.Length > 0)
                 { response = response[1..]; }
-                var parsed = int.Parse(response, NumberStyles.HexNumber);
+                var parsed = int.Parse(response, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 var a = parsed / divFactor;
 
                 return a;

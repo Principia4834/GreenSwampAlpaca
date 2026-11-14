@@ -1416,7 +1416,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
             var code = result.ToCharArray();
             for (var i = 0; i < code.Length; i++)
             {
-                var b = Enums.GetFlags((StatusBit)uint.Parse(code[i].ToString(), NumberStyles.HexNumber));
+                var b = Enums.GetFlags((StatusBit)uint.Parse(code[i].ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture));
 
                 switch (i)
                 {

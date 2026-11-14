@@ -87,7 +87,7 @@ namespace GreenSwamp.Alpaca.Shared.EnvironmentLog
 
             var parts = bytes.Select((b, i) => i < bytes.Length - 2
                 ? "**"
-                : b.ToString("X2"));
+                : b.ToString("X2", CultureInfo.InvariantCulture));
 
             return string.Join(":", parts);
         }

@@ -225,7 +225,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -239,7 +239,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -253,7 +253,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -267,7 +267,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -281,7 +281,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -295,7 +295,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -309,7 +309,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -323,7 +323,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -337,7 +337,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
@@ -351,7 +351,7 @@ namespace ASCOM.Alpaca
             }
             else
             {
-                throw new DeviceNotFoundException(string.Format("Instance {0} does not exist in this server.", DeviceID));
+                throw new DeviceNotFoundException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "Instance {0} does not exist in this server.", DeviceID));
             }
         }
 #endif
