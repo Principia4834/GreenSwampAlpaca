@@ -9,13 +9,13 @@
 
 <MudExpansionPanels MultiExpansion="true" Elevation="0">
 
-    <MudExpansionPanel Text="Location" Icon="@Icons.Material.Filled.MyLocation" Expanded="false">
+    <MudExpansionPanel Text="@Loc["Obs_Location"]" Icon="@Icons.Material.Filled.MyLocation" Expanded="false">
         <MudStack Spacing="3">
             @if (Observatory?.Observatories is { Count: > 0 })
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                     <MudSelect T="string" @bind-Value="_selectedObservatoryId"
-                               Label="Copy from observatory" Dense="true"
+                               Label="@Loc["Obs_CopyFrom"]" Dense="true"
                                Style="max-width:15rem"
                                AnchorOrigin="Origin.BottomLeft">
                         @foreach (var obs in Observatory.Observatories)
@@ -23,7 +23,7 @@
                             <MudSelectItem Value="@obs.Id">@obs.Name</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Copy Latitude, Longitude, Elevation and GPS settings from the selected observatory to this device." Placement="Placement.Right" Arrow="true">
+                    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_CopyFrom_Tip"]" Placement="Placement.Right" Arrow="true">
                         <MudIconButton Icon="@Icons.Material.Filled.CopyAll"
                                        Color="Color.Secondary" Size="Size.Small"
                                        Disabled="@string.IsNullOrEmpty(_selectedObservatoryId)"
@@ -31,68 +31,68 @@
                     </MudTooltip>
                 </MudStack>
             }
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic latitude of the device site in decimal degrees (-90 to +90)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_DeviceLat_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.Latitude" @bind-Value:after="NotifyChanged"
-                                 Label="Latitude (°)" Format="F6" Min="-90" Max="90" Immediate="true" />
+                                 Label="@Loc["ObsCard_Latitude"]" Format="F6" Min="-90" Max="90" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Geographic longitude of the device site in decimal degrees (-180 to +180)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_DeviceLon_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.Longitude" @bind-Value:after="NotifyChanged"
-                                 Label="Longitude (°)" Format="F6" Min="-180" Max="180" Immediate="true" />
+                                 Label="@Loc["ObsCard_Longitude"]" Format="F6" Min="-180" Max="180" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Elevation above sea level in metres." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_Elev_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.Elevation" @bind-Value:after="NotifyChanged"
-                                 Label="Elevation (m)" Format="F1" Min="-500" Max="9000" Immediate="true" />
+                                 Label="@Loc["ObsCard_Elevation"]" Format="F1" Min="-500" Max="9000" Immediate="true" />
             </MudTooltip>
             @if (ShowHidden)
             {
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="UTC offset for this device site (hours)." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_DeviceUtc_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="double" @bind-Value="_utcHours" @bind-Value:after="OnUtcChanged"
-                                     Label="UTC Offset (h)" Format="F2" Min="-14" Max="14" Immediate="true" />
+                                     Label="@Loc["ObsCard_UtcOffset"]" Format="F2" Min="-14" Max="14" Immediate="true" />
                 </MudTooltip>
             }
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Environmental" Icon="@Icons.Material.Filled.Air">
+    <MudExpansionPanel Text="@Loc["Obs_Environmental"]" Icon="@Icons.Material.Filled.Air">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Apply atmospheric refraction correction to pointing calculations." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_Refraction_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.Refraction" @bind-Value:after="NotifyChanged"
-                             Label="Enable Refraction" Color="Color.Primary" />
+                             Label="@Loc["Obs_Refraction"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Ambient temperature in degrees Celsius, used for refraction correction." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_Temp_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.Temperature" @bind-Value:after="NotifyChanged"
-                                 Label="Temperature (°C)" Format="F1" Min="-50" Max="60" Immediate="true" />
+                                 Label="@Loc["Obs_Temp"]" Format="F1" Min="-50" Max="60" Immediate="true" />
             </MudTooltip>
         </MudStack>
     </MudExpansionPanel>
 
     <MudExpansionPanel Text="GPS" Icon="@Icons.Material.Filled.GpsFixed">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Select or type a serial port name for the GPS receiver (e.g. COM4 or /dev/ttyUSB0)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_DeviceGpsPort_Tip"]" Placement="Placement.Right" Arrow="true">
                 @if (_availableGpsPorts.Length > 0)
                 {
                     <MudSelect @bind-Value="Device!.GpsPort" @bind-Value:after="NotifyChanged"
-                               Label="GPS Port" AnchorOrigin="Origin.BottomLeft">
+                               Label="@Loc["Obs_GpsPort"]" AnchorOrigin="Origin.BottomLeft">
                         @foreach (var port in _availableGpsPorts)
                         {
                             <MudSelectItem Value="@port">@port</MudSelectItem>
                         }
                         @if (!string.IsNullOrWhiteSpace(Device!.GpsPort) && !_availableGpsPorts.Contains(Device!.GpsPort, StringComparer.OrdinalIgnoreCase))
                         {
-                            <MudSelectItem Value="@Device!.GpsPort">@Device!.GpsPort (manual)</MudSelectItem>
+                            <MudSelectItem Value="@Device!.GpsPort">@Loc["MC_PortManual", Device!.GpsPort]</MudSelectItem>
                         }
                     </MudSelect>
                 }
                 else
                 {
                     <MudTextField @bind-Value="Device!.GpsPort" @bind-Value:after="NotifyChanged"
-                                  Label="GPS Port" Immediate="true"
-                                  HelperText="No ports detected — type the port name manually." />
+                                  Label="@Loc["Obs_GpsPort"]" Immediate="true"
+                                  HelperText="@Loc["MC_PortHelper"]" />
                 }
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver baud rate." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_DeviceGpsBaud_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudSelect T="int" @bind-Value="Device!.GpsBaudRate" @bind-Value:after="NotifyChanged"
-                           Label="GPS Baud Rate">
+                           Label="@Loc["Obs_GpsBaud"]">
                     <MudSelectItem Value="4800">4800</MudSelectItem>
                     <MudSelectItem Value="9600">9600</MudSelectItem>
                     <MudSelectItem Value="19200">19200</MudSelectItem>
@@ -106,9 +106,9 @@
                still used by NmeaGpsReader when a fix is requested. *@
             @if (ShowHidden)
             {
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port parity." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_GpsParity_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudSelect T="string" @bind-Value="Device!.GpsParity" @bind-Value:after="NotifyChanged"
-                               Label="GPS Parity">
+                               Label="@Loc["Obs_GpsParity"]">
                         <MudSelectItem Value="@("None")">None</MudSelectItem>
                         <MudSelectItem Value="@("Odd")">Odd</MudSelectItem>
                         <MudSelectItem Value="@("Even")">Even</MudSelectItem>
@@ -116,31 +116,31 @@
                         <MudSelectItem Value="@("Space")">Space</MudSelectItem>
                     </MudSelect>
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port stop bits." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_GpsStopBits_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudSelect T="string" @bind-Value="Device!.GpsStopBits" @bind-Value:after="NotifyChanged"
-                               Label="GPS Stop Bits">
+                               Label="@Loc["Obs_GpsStopBits"]">
                         <MudSelectItem Value="@("None")">None</MudSelectItem>
                         <MudSelectItem Value="@("One")">One</MudSelectItem>
                         <MudSelectItem Value="@("OnePointFive")">OnePointFive</MudSelectItem>
                         <MudSelectItem Value="@("Two")">Two</MudSelectItem>
                     </MudSelect>
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port data bits." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_GpsDataBits_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudSelect T="int" @bind-Value="Device!.GpsDataBits" @bind-Value:after="NotifyChanged"
-                               Label="GPS Data Bits">
+                               Label="@Loc["Obs_GpsDataBits"]">
                         <MudSelectItem Value="5">5</MudSelectItem>
                         <MudSelectItem Value="6">6</MudSelectItem>
                         <MudSelectItem Value="7">7</MudSelectItem>
                         <MudSelectItem Value="8">8</MudSelectItem>
                     </MudSelect>
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port read timeout in seconds." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_GpsTimeout_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.GpsTimeout" @bind-Value:after="NotifyChanged"
-                                     Label="GPS Timeout (s)" Min="1" Max="30" />
+                                     Label="@Loc["Obs_GpsTimeout"]" Min="1" Max="30" />
                 </MudTooltip>
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="GPS receiver serial port handshake." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_GpsHandshake_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudSelect T="string" @bind-Value="Device!.GpsHandshake" @bind-Value:after="NotifyChanged"
-                               Label="GPS Handshake">
+                               Label="@Loc["Obs_GpsHandshake"]">
                         <MudSelectItem Value="@("None")">None</MudSelectItem>
                         <MudSelectItem Value="@("XOnXOff")">XOnXOff</MudSelectItem>
                         <MudSelectItem Value="@("RequestToSend")">RequestToSend</MudSelectItem>
@@ -148,11 +148,11 @@
                     </MudSelect>
                 </MudTooltip>
             }
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the GPS receiver and read latitude, longitude, elevation and the local-vs-GPS time difference." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_GpsConnect_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.GpsFixed"
                            OnClick="OpenGpsFixAsync">
-                    Connect
+                    @Loc["Obs_Connect"]
                 </MudButton>
             </MudTooltip>
         </MudStack>
@@ -160,21 +160,21 @@
 
     <MudExpansionPanel Text="Cartes du Ciel" Icon="@Icons.Material.Filled.Language">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="IP address or hostname of the Cartes du Ciel server for this device (e.g. 127.0.0.1)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_DeviceCdcAddress_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudTextField @bind-Value="Device!.CdcAddress"
                               @bind-Value:after="NotifyChanged"
-                              Label="CdC Address" Immediate="true" />
+                              Label="@Loc["Obs_CdcAddress"]" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="TCP port the Cartes du Ciel server is listening on (default 3292)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_CdcPort_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.CdcPort"
                                  @bind-Value:after="NotifyChanged"
-                                 Label="CdC Port" Min="1" Max="65535" Immediate="true" />
+                                 Label="@Loc["Obs_CdcPort"]" Min="1" Max="65535" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Connect to the Cartes du Ciel server to read or write latitude, longitude and elevation." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_CdcConnect_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.Language"
                            OnClick="OpenCdcDialogAsync">
-                    Connect
+                    @Loc["Obs_Connect"]
                 </MudButton>
             </MudTooltip>
         </MudStack>
@@ -222,7 +222,7 @@
         Device.GpsHandshake = source.GpsHandshake;
         Device.CdcAddress   = source.CdcAddress;
         Device.CdcPort      = source.CdcPort;
-        Snackbar.Add($"Location, GPS and CdC settings copied from '{source.Name}'.", MudBlazor.Severity.Success);
+        Snackbar.Add(Loc["Obs_CopiedFrom", source.Name], MudBlazor.Severity.Success);
         await NotifyChanged();
     }
 
@@ -240,7 +240,7 @@
         if (Device is null) return;
         if (string.IsNullOrWhiteSpace(Device.GpsPort))
         {
-            Snackbar.Add("No GPS port is configured for this device.", MudBlazor.Severity.Warning);
+            Snackbar.Add(Loc["Obs_NoGpsPortDevice"], MudBlazor.Severity.Warning);
             return;
         }
 
@@ -259,7 +259,7 @@
         };
 
         var dialog = await DialogService.ShowAsync<GpsFixDialog>(
-            "GPS Fix", parameters,
+            Loc["Gps_Title"], parameters,
             new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
 
         var result = await dialog.Result;
@@ -268,7 +268,7 @@
         Device.Latitude = fix.Latitude;
         Device.Longitude = fix.Longitude;
         Device.Elevation = fix.Altitude;
-        Snackbar.Add("Latitude, longitude and elevation updated from GPS.", MudBlazor.Severity.Success);
+        Snackbar.Add(Loc["Obs_UpdatedFromGps"], MudBlazor.Severity.Success);
         await NotifyChanged();
     }
 
@@ -296,7 +296,7 @@
         Device.Latitude  = location.Latitude;
         Device.Longitude = location.Longitude;
         Device.Elevation = location.Altitude;
-        Snackbar.Add("Latitude, longitude and elevation updated from Cartes du Ciel.", MudBlazor.Severity.Success);
+        Snackbar.Add(Loc["Obs_UpdatedFromCdc"], MudBlazor.Severity.Success);
         await NotifyChanged();
     }
 

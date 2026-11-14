@@ -74,13 +74,13 @@
                     <VoiceSettingsEditor Device="device" ShowHidden="ShowHidden" OnChanged="OnSettingChanged" />
                     break;
                 default:
-                    <MudAlert Severity="Severity.Warning">No editor defined for group "@Node.GroupKey".</MudAlert>
+                    <MudAlert Severity="Severity.Warning">@Loc["Set_NoEditor", Node.GroupKey]</MudAlert>
                     break;
             }
         }
         else
         {
-            <MudAlert Severity="Severity.Warning">No editor defined for group "@Node.GroupKey".</MudAlert>
+            <MudAlert Severity="Severity.Warning">@Loc["Set_NoEditor", Node.GroupKey]</MudAlert>
         }
         break;
 }

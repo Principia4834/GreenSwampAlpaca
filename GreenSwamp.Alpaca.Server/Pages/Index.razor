@@ -3,13 +3,13 @@
 @using GreenSwamp.Alpaca.Server.Components.Home
 @inject GreenSwamp.Alpaca.Server.Services.BrowserTtsService Tts
 
-<PageTitle>Home – Green Swamp Alpaca Server</PageTitle>
+<PageTitle>@Loc["Home_PageTitle"]</PageTitle>
 
 <div class="gs-home-hero-wrap">
 <MudStack Spacing="0" Justify="Justify.SpaceBetween" Class="gs-home-hero rounded">
     <div class="gs-home-content pt-8 px-10 pb-4">
         <MudText Typo="Typo.h1" Align="Align.Center" Class="gs-home-title mb-6">
-            Welcome to <span>Green Swamp</span> Alpaca Server
+            @Loc.Html("Home_Welcome")
         </MudText>
     </div>
 
@@ -19,7 +19,7 @@
 
     <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="gs-home-bottom-bar pt-3 px-4 pb-2">
         <HomeDeviceBar />
-        <MudText Typo="Typo.h2" HtmlTag="p" Class="gs-home-footer-text">Green Swamp Alpaca Server</MudText>
+        <MudText Typo="Typo.h2" HtmlTag="p" Class="gs-home-footer-text">@Loc["Home_Footer"]</MudText>
     </MudStack>
 </MudStack>
 </div>

@@ -184,4 +184,316 @@
     <value>停放</value>
     <comment>WPF: btnPark</comment>
   </data>
+  <data name="Set_OneClickStart" xml:space="preserve">
+    <value>一键启动</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="HomePark_Park" xml:space="preserve">
+    <value>停放</value>
+    <comment>WPF: btnPark</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
+    <value>解除停放后跟踪</value>
+    <comment>WPF: capTrackAfterUnpark</comment>
+  </data>
+  <data name="Voice_Select" xml:space="preserve">
+    <value>语音</value>
+    <comment>WPF: botTipVoice</comment>
+  </data>
+  <data name="Ui_Zoom" xml:space="preserve">
+    <value>缩放</value>
+    <comment>WPF: chtZoom</comment>
+  </data>
+  <data name="Lim_LimitsOn" xml:space="preserve">
+    <value>限位开启</value>
+    <comment>WPF: 1021LimitsOn</comment>
+  </data>
+  <data name="Lim_SyncPanel" xml:space="preserve">
+    <value>同步限制</value>
+    <comment>WPF: skySyncLimitOn</comment>
+  </data>
+  <data name="Trk_Tracking" xml:space="preserve">
+    <value>跟踪</value>
+    <comment>WPF: btnTracking</comment>
+  </data>
+  <data name="Trk_Rate" xml:space="preserve">
+    <value>跟踪速率</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="Trk_Sidereal" xml:space="preserve">
+    <value>恒星</value>
+    <comment>WPF: vceSidereal</comment>
+  </data>
+  <data name="Trk_Lunar" xml:space="preserve">
+    <value>月球</value>
+    <comment>WPF: vceLunar</comment>
+  </data>
+  <data name="Trk_Solar" xml:space="preserve">
+    <value>太阳</value>
+    <comment>WPF: vceSolar</comment>
+  </data>
+  <data name="Trk_King" xml:space="preserve">
+    <value>King</value>
+    <comment>WPF: vceKing</comment>
+  </data>
+  <data name="Trk_RaGuideRate" xml:space="preserve">
+    <value>赤经导星速率 %</value>
+    <comment>WPF: skyRaGuiding</comment>
+  </data>
+  <data name="Trk_DecGuideRate" xml:space="preserve">
+    <value>赤纬导星速率 %</value>
+    <comment>WPF: skyDecGuiding</comment>
+  </data>
+  <data name="MC_MountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="MC_AlignMode" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>WPF: notAlignmentMode</comment>
+  </data>
+  <data name="MC_Left" xml:space="preserve">
+    <value>左</value>
+    <comment>WPF: hcTipL</comment>
+  </data>
+  <data name="MC_Right" xml:space="preserve">
+    <value>右</value>
+    <comment>WPF: hcTipR</comment>
+  </data>
+  <data name="MC_EqCoord" xml:space="preserve">
+    <value>赤道坐标类型</value>
+    <comment>WPF: notEqType</comment>
+  </data>
+  <data name="MC_Baud" xml:space="preserve">
+    <value>波特率</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="MC_PolarLed" xml:space="preserve">
+    <value>极轴镜 LED 亮度</value>
+    <comment>WPF: skyPolarLedLevel</comment>
+  </data>
+  <data name="MC_FullCurrent" xml:space="preserve">
+    <value>全电流</value>
+    <comment>WPF: skyFullCurrent</comment>
+  </data>
+  <data name="MC_RaWorm" xml:space="preserve">
+    <value>赤经蜗轮齿数</value>
+    <comment>WPF: raWormTeeth</comment>
+  </data>
+  <data name="MC_RaTrkOffset" xml:space="preserve">
+    <value>赤经跟踪偏移</value>
+    <comment>WPF: raTrackingOffset</comment>
+  </data>
+  <data name="MC_DecWorm" xml:space="preserve">
+    <value>赤纬蜗轮齿数</value>
+    <comment>WPF: decWormTeeth</comment>
+  </data>
+  <data name="MC_DecTrkOffset" xml:space="preserve">
+    <value>赤纬跟踪偏移</value>
+    <comment>WPF: decTrackingOffset</comment>
+  </data>
+  <data name="ObsCard_DataElevation" xml:space="preserve">
+    <value>海拔</value>
+    <comment>WPF: gpsEle</comment>
+  </data>
+  <data name="ObsCard_DataUtcOffset" xml:space="preserve">
+    <value>UTC 偏移</value>
+    <comment>WPF: optUTCOffset</comment>
+  </data>
+  <data name="ObsCard_Reset" xml:space="preserve">
+    <value>重置</value>
+    <comment>WPF: btnResetSensorPos</comment>
+  </data>
+  <data name="Mon_Device" xml:space="preserve">
+    <value>设备</value>
+    <comment>WPF: optDevice</comment>
+  </data>
+  <data name="Mon_Telescope" xml:space="preserve">
+    <value>望远镜</value>
+    <comment>WPF: optTelescope</comment>
+  </data>
+  <data name="Mon_Ui" xml:space="preserve">
+    <value>界面</value>
+    <comment>WPF: optUI</comment>
+  </data>
+  <data name="Mon_Category" xml:space="preserve">
+    <value>类别</value>
+    <comment>WPF: optCategory</comment>
+  </data>
+  <data name="Mon_Driver" xml:space="preserve">
+    <value>驱动</value>
+    <comment>WPF: optDriver</comment>
+  </data>
+  <data name="Mon_Interface" xml:space="preserve">
+    <value>接口</value>
+    <comment>WPF: optInterface</comment>
+  </data>
+  <data name="Mon_Server" xml:space="preserve">
+    <value>服务器</value>
+    <comment>WPF: optServer</comment>
+  </data>
+  <data name="Mon_Mount" xml:space="preserve">
+    <value>赤道仪</value>
+    <comment>WPF: mntMount</comment>
+  </data>
+  <data name="Mon_Type" xml:space="preserve">
+    <value>类型</value>
+    <comment>WPF: optType</comment>
+  </data>
+  <data name="Mon_Data" xml:space="preserve">
+    <value>数据</value>
+    <comment>WPF: optData</comment>
+  </data>
+  <data name="Mon_Warning" xml:space="preserve">
+    <value>警告</value>
+    <comment>WPF: optWarning</comment>
+  </data>
+  <data name="Mon_Error" xml:space="preserve">
+    <value>错误</value>
+    <comment>WPF: exError</comment>
+  </data>
+  <data name="Mon_LogPath" xml:space="preserve">
+    <value>日志路径</value>
+    <comment>WPF: optLogPath</comment>
+  </data>
+  <data name="Mon_ClearAll" xml:space="preserve">
+    <value>全部清除</value>
+    <comment>WPF: aliClearAll</comment>
+  </data>
+  <data name="Mon_Reset" xml:space="preserve">
+    <value>重置</value>
+    <comment>WPF: btnResetSensorPos</comment>
+  </data>
+  <data name="MonPage_Copy" xml:space="preserve">
+    <value>复制到剪贴板</value>
+    <comment>WPF: optCopyClip</comment>
+  </data>
+  <data name="TS_MountType" xml:space="preserve">
+    <value>赤道仪类型</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="TS_AlignmentMode" xml:space="preserve">
+    <value>对准模式</value>
+    <comment>WPF: notAlignmentMode</comment>
+  </data>
+  <data name="TS_Elevation" xml:space="preserve">
+    <value>海拔</value>
+    <comment>WPF: gpsEle</comment>
+  </data>
+  <data name="TS_Refraction" xml:space="preserve">
+    <value>大气折射</value>
+    <comment>WPF: skyRefraction</comment>
+  </data>
+  <data name="TS_BaudRate" xml:space="preserve">
+    <value>波特率</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="TS_TrackingRate" xml:space="preserve">
+    <value>跟踪速率</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="TS_SiderealRate" xml:space="preserve">
+    <value>恒星速率</value>
+    <comment>WPF: skySiderealRate</comment>
+  </data>
+  <data name="TS_RaBacklash" xml:space="preserve">
+    <value>赤经回差</value>
+    <comment>WPF: bacRaLash</comment>
+  </data>
+  <data name="TS_DecBacklash" xml:space="preserve">
+    <value>赤纬回差</value>
+    <comment>WPF: bacDecLash</comment>
+  </data>
+  <data name="TS_Encoders" xml:space="preserve">
+    <value>编码器</value>
+    <comment>WPF: skyEncoders</comment>
+  </data>
+  <data name="State_Slewing" xml:space="preserve">
+    <value>转动中</value>
+    <comment>WPF: botSlewing</comment>
+  </data>
+  <data name="MCtl_Lha" xml:space="preserve">
+    <value>地方时角</value>
+    <comment>WPF: topLHA</comment>
+  </data>
+  <data name="MCtl_Lst" xml:space="preserve">
+    <value>地方恒星时</value>
+    <comment>WPF: topLST</comment>
+  </data>
+  <data name="MStat_LimitWarning" xml:space="preserve">
+    <value>限位警告</value>
+    <comment>WPF: vceLimit</comment>
+  </data>
+  <data name="MStat_Mount" xml:space="preserve">
+    <value>赤道仪</value>
+    <comment>WPF: mntMount</comment>
+  </data>
+  <data name="MStat_Type" xml:space="preserve">
+    <value>类型</value>
+    <comment>WPF: optType</comment>
+  </data>
+  <data name="MStat_Mode" xml:space="preserve">
+    <value>模式</value>
+    <comment>WPF: hcMode</comment>
+  </data>
+  <data name="MStat_HomeSensor" xml:space="preserve">
+    <value>归位传感器</value>
+    <comment>WPF: mntHomeSensor</comment>
+  </data>
+  <data name="MStat_PolarLed" xml:space="preserve">
+    <value>极轴镜 LED</value>
+    <comment>WPF: mntPolarLed</comment>
+  </data>
+  <data name="MStat_Capabilities" xml:space="preserve">
+    <value>功能</value>
+    <comment>WPF: mntCap</comment>
+  </data>
+  <data name="MStat_CustomOffsetRa" xml:space="preserve">
+    <value>赤经自定义偏移</value>
+    <comment>WPF: mntCustomOffsetRa</comment>
+  </data>
+  <data name="MStat_CustomOffsetDec" xml:space="preserve">
+    <value>赤纬自定义偏移</value>
+    <comment>WPF: mntCustomOffsetDec</comment>
+  </data>
+  <data name="MStat_WormStepsRa" xml:space="preserve">
+    <value>赤经蜗杆步数</value>
+    <comment>WPF: mntWormStepsRa</comment>
+  </data>
+  <data name="MStat_WormStepsDec" xml:space="preserve">
+    <value>赤纬蜗杆步数</value>
+    <comment>WPF: mntWormStepsDec</comment>
+  </data>
+  <data name="MStat_FrequencyRa" xml:space="preserve">
+    <value>赤经频率</value>
+    <comment>WPF: mntFreqRa</comment>
+  </data>
+  <data name="MStat_FrequencyDec" xml:space="preserve">
+    <value>赤纬频率</value>
+    <comment>WPF: mntFreqDec</comment>
+  </data>
+  <data name="MStat_RaStepsArcSec" xml:space="preserve">
+    <value>赤经步/角秒</value>
+    <comment>WPF: mntRaSteps</comment>
+  </data>
+  <data name="MStat_DecStepsArcSec" xml:space="preserve">
+    <value>赤纬步/角秒</value>
+    <comment>WPF: mntDecSteps</comment>
+  </data>
+  <data name="MStat_Supported" xml:space="preserve">
+    <value>支持</value>
+    <comment>WPF: mntSupported</comment>
+  </data>
+  <data name="MStat_Tracking" xml:space="preserve">
+    <value>跟踪</value>
+    <comment>WPF: btnTracking</comment>
+  </data>
+  <data name="MStat_Slewing" xml:space="preserve">
+    <value>转动中</value>
+    <comment>WPF: botSlewing</comment>
+  </data>
+  <data name="MStat_LimitsOn" xml:space="preserve">
+    <value>限位开启</value>
+    <comment>WPF: 1021LimitsOn</comment>
+  </data>
 </root>

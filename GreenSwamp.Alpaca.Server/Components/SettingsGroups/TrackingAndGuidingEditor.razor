@@ -4,86 +4,86 @@
 
 <MudExpansionPanels MultiExpansion="true">
 
-    <MudExpansionPanel Text="Tracking" Icon="@Icons.Material.Filled.Speed" Expanded="false">
+    <MudExpansionPanel Text="@Loc["Trk_Tracking"]" Icon="@Icons.Material.Filled.Speed" Expanded="false">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Start tracking automatically when the mount unparks." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["HomePark_TrackAfterUnpark_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.TrackAfterUnpark" @bind-Value:after="NotifyChanged"
-                             Label="Track After Unpark" Color="Color.Primary" />
+                             Label="@Loc["HomePark_TrackAfterUnpark"]" Color="Color.Primary" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Default tracking rate (Sidereal, Lunar, Solar, King)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_Rate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudSelect T="string" @bind-Value="Device!.TrackingRate" @bind-Value:after="NotifyChanged"
-                           Label="Tracking Rate">
-                    <MudSelectItem Value="@("Sidereal")">Sidereal</MudSelectItem>
-                    <MudSelectItem Value="@("Lunar")">Lunar</MudSelectItem>
-                    <MudSelectItem Value="@("Solar")">Solar</MudSelectItem>
-                    <MudSelectItem Value="@("King")">King</MudSelectItem>
+                           Label="@Loc["Trk_Rate"]">
+                    <MudSelectItem Value="@("Sidereal")">@Loc["Trk_Sidereal"]</MudSelectItem>
+                    <MudSelectItem Value="@("Lunar")">@Loc["Trk_Lunar"]</MudSelectItem>
+                    <MudSelectItem Value="@("Solar")">@Loc["Trk_Solar"]</MudSelectItem>
+                    <MudSelectItem Value="@("King")">@Loc["Trk_King"]</MudSelectItem>
                 </MudSelect>
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Sidereal tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_SiderealRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.SiderealRate" @bind-Value:after="NotifyChanged"
-                                 Label="Sidereal Rate (arcsec/s)" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_SiderealRate"]" Format="F6" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Lunar tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_LunarRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.LunarRate" @bind-Value:after="NotifyChanged"
-                                 Label="Lunar Rate (arcsec/s)" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_LunarRate"]" Format="F6" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Solar tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_SolarRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.SolarRate" @bind-Value:after="NotifyChanged"
-                                 Label="Solar Rate (arcsec/s)" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_SolarRate"]" Format="F6" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="King tracking rate in arcseconds/second." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_KingRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.KingRate" @bind-Value:after="NotifyChanged"
-                                 Label="King Rate (arcsec/s)" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_KingRate"]" Format="F6" Immediate="true" />
             </MudTooltip>
             @if (ShowHidden)
             {
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA axis tracking offset in motor steps." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_RaOffset_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.RATrackingOffset" @bind-Value:after="NotifyChanged"
-                                     Label="RA Tracking Offset (steps)" Immediate="true" />
+                                     Label="@Loc["Trk_RaOffset"]" Immediate="true" />
                 </MudTooltip>
             }
             @if (ShowHidden)
             {
-                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="AltAz tracking update interval in milliseconds." Placement="Placement.Right" Arrow="true">
+                <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_AltAzInterval_Tip"]" Placement="Placement.Right" Arrow="true">
                     <MudNumericField T="int" @bind-Value="Device!.AltAzTrackingUpdateInterval" @bind-Value:after="NotifyChanged"
-                                     Label="AltAz Update Interval (ms)" Immediate="true" />
+                                     Label="@Loc["Trk_AltAzInterval"]" Immediate="true" />
                 </MudTooltip>
             }
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Pulse Guiding" Icon="@Icons.Material.Filled.NearMe">
+    <MudExpansionPanel Text="@Loc["Trk_PulseGuiding"]" Icon="@Icons.Material.Filled.NearMe">
         <MudStack Spacing="3">
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Minimum RA pulse duration in milliseconds." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_MinPulseRa_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.MinPulseRa" @bind-Value:after="NotifyChanged"
-                                 Label="Min Pulse RA (ms)" Min="5" Max="50" Immediate="true" />
+                                 Label="@Loc["Trk_MinPulseRa"]" Min="5" Max="50" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Minimum Dec pulse duration in milliseconds." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_MinPulseDec_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.MinPulseDec" @bind-Value:after="NotifyChanged"
-                                 Label="Min Pulse Dec (ms)" Min="5" Max="50" Immediate="true" />
+                                 Label="@Loc["Trk_MinPulseDec"]" Min="5" Max="50" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Route Dec pulse commands via GoTo instead of pulse guiding." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_DecPulseToGoTo_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudCheckBox @bind-Value="Device!.DecPulseToGoTo" @bind-Value:after="NotifyChanged"
-                             Label="Dec Pulse → GoTo" Color="Color.Primary" />
+                             Label="@Loc["Trk_DecPulseToGoTo"]" Color="Color.Primary" />
             </MudTooltip>
             <MudCheckBox @bind-Value="Device!.AlternatingPPEC" @bind-Value:after="NotifyChanged"
-                         Label="Alternating PPEC" Color="Color.Primary" />
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="ST4 guide rate divisor (e.g. 0=full, 1=0.75x, 2=0.5x, etc.)." Placement="Placement.Right" Arrow="true">
+                         Label="@Loc["Trk_AlternatingPpec"]" Color="Color.Primary" />
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_St4_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.St4Guiderate" @bind-Value:after="NotifyChanged"
-                                 Label="ST4 Guide Rate" Min="0" Immediate="true" />
+                                 Label="@Loc["Trk_St4"]" Min="0" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="RA guide rate as a percentage of sidereal (0–100, step 10)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_RaGuideRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="_raGuideRatePercent" @bind-Value:after="OnRaGuideRateChanged"
-                                 Label="RA Guiding Rate %" Min="0" Max="100" Step="10" Immediate="true" />
+                                 Label="@Loc["Trk_RaGuideRate"]" Min="0" Max="100" Step="10" Immediate="true" />
             </MudTooltip>
-            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Dec guide rate as a percentage of sidereal (0–100, step 10)." Placement="Placement.Right" Arrow="true">
+            <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_DecGuideRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="_decGuideRatePercent" @bind-Value:after="OnDecGuideRateChanged"
-                                 Label="Dec Guiding Rate %" Min="0" Max="100" Step="10" Immediate="true" />
+                                 Label="@Loc["Trk_DecGuideRate"]" Min="0" Max="100" Step="10" Immediate="true" />
             </MudTooltip>
         </MudStack>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="HC Pulse Guides" Icon="@Icons.Material.Filled.Speed">
+    <MudExpansionPanel Text="@Loc["Trk_HcPulseGuides"]" Icon="@Icons.Material.Filled.Speed">
         @if (Device != null)
         {
             <HcPulseGuidesEditor Guides="@Device.HcPulseGuides"

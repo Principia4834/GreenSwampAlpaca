@@ -8,11 +8,11 @@
 @inject NavigationManager NavigationManager
 
 <MudStack Spacing="3">
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Global UI zoom level applied across the server UI." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Zoom_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudSelect T="int"
                    Value="ZoomPercent"
                    ValueChanged="OnZoomPercentChanged"
-                   Label="Zoom">
+                   Label="@Loc["Ui_Zoom"]">
             @foreach (var zoom in ZoomOptions)
             {
                 <MudSelectItem T="int" Value="@zoom">@($"{zoom}%")</MudSelectItem>
@@ -20,19 +20,19 @@
         </MudSelect>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Display theme selection for the server UI." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Theme_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="pa-2 mud-border rounded">
-            <MudText Typo="Typo.body2">Display Theme</MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">Not implemented</MudText>
+            <MudText Typo="Typo.body2">@Loc["Ui_Theme"]</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@Loc["Ui_NotImplemented"]</MudText>
         </MudStack>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Choose the language used by this browser. This preference is saved in a browser cookie; server defaults are used only when no supported browser preference exists." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_DisplayLanguage_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudSelect T="string"
                    Value="_displayLanguage"
                    ValueChanged="OnDisplayLanguageChanged"
                    Disabled="@(!_culturePreferenceLoaded)"
-                   Label="Display Language">
+                   Label="@Loc["Ui_DisplayLanguage"]">
             @foreach (var language in SupportedCultures.SupportedLanguages)
             {
                 <MudSelectItem T="string" Value="@language">@LanguageLabel(language)</MudSelectItem>
@@ -40,12 +40,12 @@
         </MudSelect>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Choose the date and number conventions used by this browser. This preference is saved in a browser cookie." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_RegionalFormat_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudSelect T="string"
                    Value="_regionalFormat"
                    ValueChanged="OnRegionalFormatChanged"
                    Disabled="@(!_culturePreferenceLoaded)"
-                   Label="Regional Format">
+                   Label="@Loc["Ui_RegionalFormat"]">
             @foreach (var culture in SupportedCultures.SupportedRegionalFormats)
             {
                 <MudSelectItem T="string" Value="@culture">@CultureLabel(culture)</MudSelectItem>
@@ -53,10 +53,10 @@
         </MudSelect>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Open the default browser automatically when the server starts." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_AutoStartBrowser_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.AutoStartBrowser"
                      @bind-Value:after="NotifyChanged"
-                     Label="Auto-start Browser" Color="Color.Primary" />
+                     Label="@Loc["Ui_AutoStartBrowser"]" Color="Color.Primary" />
     </MudTooltip>
 </MudStack>
 

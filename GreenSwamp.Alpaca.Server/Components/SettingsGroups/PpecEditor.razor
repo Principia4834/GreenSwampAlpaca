@@ -3,7 +3,7 @@
 <MudStack Spacing="3">
     <MudText Typo="Typo.subtitle2">PPEC</MudText>
     <MudCheckBox @bind-Value="Device!.PpecOn" @bind-Value:after="NotifyChanged"
-                 Label="PPEC Enabled" Color="Color.Primary" />
+                 Label="@Loc["Ppec_Enabled"]" Color="Color.Primary" />
 </MudStack>
 
 @code {

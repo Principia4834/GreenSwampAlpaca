@@ -120,14 +120,14 @@ namespace GreenSwamp.Alpaca.Server.Pages
         private async Task OnStopClickAsync(int dn)
         {
             var mount = MountRegistry.GetInstance(dn);
-            if (mount == null) { Snackbar.Add($"Mount device {dn} not found", Severity.Error); return; }
+            if (mount == null) { Snackbar.Add(Loc["Common_MountNotFound", dn], Severity.Error); return; }
             try
             {
                 await Task.Run(() => mount.EmergencyStopAll());
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Stop failed: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["MCtl_StopFailed", ex.Message], Severity.Error);
             }
         }
 
@@ -155,11 +155,11 @@ namespace GreenSwamp.Alpaca.Server.Pages
         {
             if (state.LimitsOn)
             {
-                return state.LimitTriggered ? "Limit Triggered" : "Limits On";
+                return state.LimitTriggered ? Loc["State_LimitTriggered"].Value : Loc["State_LimitsOn"].Value;
             }
             else
             {
-                return "Limits off";
+                return Loc["State_LimitsOff"].Value;
             }
         }
 
@@ -206,7 +206,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Connect/Disconnect failed: {ex.Message}", Severity.Error);
+                Snackbar.Add(Loc["MCtl_ConnectFailed", ex.Message], Severity.Error);
             }
         }
 
@@ -219,7 +219,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         {
             var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
             return string.IsNullOrWhiteSpace(device?.DeviceName)
-                ? $"Device {deviceNumber}"
+                ? Loc["Home_DefaultDeviceName", deviceNumber].Value
                 : device.DeviceName;
         }
 

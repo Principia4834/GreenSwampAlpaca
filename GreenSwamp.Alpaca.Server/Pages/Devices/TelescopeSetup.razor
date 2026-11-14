@@ -1,7 +1,7 @@
 ﻿@using GreenSwamp.Alpaca.MountControl
 @using GreenSwamp.Alpaca.Shared
 
-<PageTitle>Telescope Setup - Device @InstanceID</PageTitle>
+<PageTitle>@Loc["TS_PageTitle", InstanceID]</PageTitle>
 
 @* Removed the redundant page subheading — main page title is handled elsewhere *@
 
@@ -21,21 +21,21 @@
                         <CardHeaderContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
-                                <MudText Typo="Typo.body1">Device Information</MudText>
+                                <MudText Typo="Typo.body1">@Loc["TS_DeviceInformation"]</MudText>
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                                     <tbody>
-                                        <tr><th>Device Number</th><td>@InstanceID</td></tr>
-                                        <tr><th>Device Name</th><td>@instance.DeviceName</td></tr>
-                                        <tr><th>Mount Type</th><td>@settings.Mount</td></tr>
-                                        <tr><th>Alignment Mode</th><td>@settings.AlignmentMode</td></tr>
+                                        <tr><th>@Loc["TS_DeviceNumber"]</th><td>@InstanceID</td></tr>
+                                        <tr><th>@Loc["TS_DeviceName"]</th><td>@instance.DeviceName</td></tr>
+                                        <tr><th>@Loc["TS_MountType"]</th><td>@settings.Mount</td></tr>
+                                        <tr><th>@Loc["TS_AlignmentMode"]</th><td>@settings.AlignmentMode</td></tr>
                                         <tr>
-                                            <th>Connection Status</th>
+                                            <th>@Loc["TS_ConnectionStatus"]</th>
                                             <td>
-                                                <MudText Typo="Typo.body2" Color="@(instance.IsConnected ? Color.Success : Color.Default)">@(instance.IsConnected ? "Connected" : "Disconnected")</MudText>
+                                                <MudText Typo="Typo.body2" Color="@(instance.IsConnected ? Color.Success : Color.Default)">@(instance.IsConnected ? Loc["TS_Connected"].Value : Loc["TS_Disconnected"].Value)</MudText>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -51,18 +51,18 @@
                         <CardHeaderContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Success" />
-                                <MudText Typo="Typo.body1">Observatory Settings</MudText>
+                                <MudText Typo="Typo.body1">@Loc["TS_ObservatorySettings"]</MudText>
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent Style="padding-top:6px;">
                         <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                             <tbody>
-                                <tr><th>Latitude</th><td>@settings.Latitude.ToString("F6")°</td></tr>
-                                <tr><th>Longitude</th><td>@settings.Longitude.ToString("F6")°</td></tr>
-                                <tr><th>Elevation</th><td>@settings.Elevation m</td></tr>
+                                <tr><th>@Loc["Common_Latitude"]</th><td>@settings.Latitude.ToString("F6")°</td></tr>
+                                <tr><th>@Loc["Common_Longitude"]</th><td>@settings.Longitude.ToString("F6")°</td></tr>
+                                <tr><th>@Loc["TS_Elevation"]</th><td>@settings.Elevation m</td></tr>
                                 <tr>
-                                    <th>Refraction</th>
+                                    <th>@Loc["TS_Refraction"]</th>
                                     <td>
                                         @if (settings.Refraction)
                                         {
@@ -76,8 +76,8 @@
                                 </tr>
                                 @if (!string.IsNullOrWhiteSpace(settings.GpsComPort))
                                 {
-                                    <tr><th>GPS Port</th><td>@settings.GpsComPort</td></tr>
-                                    <tr><th>GPS Baud Rate</th><td>@((int)settings.GpsBaudRate)</td></tr>
+                                    <tr><th>@Loc["Obs_GpsPort"]</th><td>@settings.GpsComPort</td></tr>
+                                    <tr><th>@Loc["Obs_GpsBaud"]</th><td>@((int)settings.GpsBaudRate)</td></tr>
                                 }
                             </tbody>
                         </MudSimpleTable>
@@ -92,17 +92,17 @@
                         <CardHeaderContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.SettingsInputHdmi" Color="Color.Warning" />
-                                <MudText Typo="Typo.body1">Serial Port Settings</MudText>
+                                <MudText Typo="Typo.body1">@Loc["TS_SerialPortSettings"]</MudText>
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                                     <tbody>
-                                        <tr><th>Port</th><td>@settings.Port</td></tr>
-                                        <tr><th>Baud Rate</th><td>@settings.BaudRate</td></tr>
-                                        <tr><th>Data Bits</th><td>@settings.DataBits</td></tr>
-                                        <tr><th>Read Timeout</th><td>@settings.ReadTimeout ms</td></tr>
+                                        <tr><th>@Loc["TS_Port"]</th><td>@settings.Port</td></tr>
+                                        <tr><th>@Loc["TS_BaudRate"]</th><td>@settings.BaudRate</td></tr>
+                                        <tr><th>@Loc["TS_DataBits"]</th><td>@settings.DataBits</td></tr>
+                                        <tr><th>@Loc["TS_ReadTimeout"]</th><td>@settings.ReadTimeout ms</td></tr>
                                     </tbody>
                                 </MudSimpleTable>
                     </MudCardContent>
@@ -116,7 +116,7 @@
                         <CardHeaderContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Color="Color.Info" />
-                                <MudText Typo="Typo.body1">Tracking &amp; Guiding Settings</MudText>
+                                <MudText Typo="Typo.body1">@Loc["TS_TrackingGuiding"]</MudText>
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
@@ -124,7 +124,7 @@
                                 <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                                     <tbody>
                                         <tr>
-                                            <th>Auto Track on Unpark</th>
+                                            <th>@Loc["TS_AutoTrackUnpark"]</th>
                                             <td>
                                                 @if (settings.TrackAfterUnpark)
                                                 {
@@ -136,11 +136,11 @@
                                                 }
                                             </td>
                                         </tr>
-                                        <tr><th>Tracking Rate</th><td>@settings.TrackingRate</td></tr>
-                                        <tr><th>Sidereal Rate</th><td>@settings.SiderealRate.ToString("F7")"/sec</td></tr>
+                                        <tr><th>@Loc["TS_TrackingRate"]</th><td>@settings.TrackingRate</td></tr>
+                                        <tr><th>@Loc["TS_SiderealRate"]</th><td>@settings.SiderealRate.ToString("F7")"/sec</td></tr>
                                         @* Refraction moved to Observatory Settings *@
-                                        <tr><th>Min Pulse RA</th><td>@settings.MinPulseRa ms</td></tr>
-                                        <tr><th>Min Pulse Dec</th><td>@settings.MinPulseDec ms</td></tr>
+                                        <tr><th>@Loc["TS_MinPulseRa"]</th><td>@settings.MinPulseRa ms</td></tr>
+                                        <tr><th>@Loc["TS_MinPulseDec"]</th><td>@settings.MinPulseDec ms</td></tr>
                                     </tbody>
                                 </MudSimpleTable>
                     </MudCardContent>
@@ -154,17 +154,17 @@
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.Tune" />
-                                <MudText Typo="Typo.h6">Mount Settings</MudText>
+                                <MudText Typo="Typo.h6">@Loc["TS_MountSettings"]</MudText>
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                             <tbody>
-                                <tr><th>RA Backlash</th><td>@settings.RaBacklash</td></tr>
-                                <tr><th>Dec Backlash</th><td>@settings.DecBacklash</td></tr>
-                                <tr><th>Encoders</th><td>@if (settings.Encoders) { <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" /> } else { <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Default" /> }</td></tr>
-                                <tr><th>Allow Advanced Commands</th><td>@if (settings.AllowAdvancedCommandSet) { <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" /> } else { <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Default" /> }</td></tr>
+                                <tr><th>@Loc["TS_RaBacklash"]</th><td>@settings.RaBacklash</td></tr>
+                                <tr><th>@Loc["TS_DecBacklash"]</th><td>@settings.DecBacklash</td></tr>
+                                <tr><th>@Loc["TS_Encoders"]</th><td>@if (settings.Encoders) { <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" /> } else { <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Default" /> }</td></tr>
+                                <tr><th>@Loc["TS_AllowAdvanced"]</th><td>@if (settings.AllowAdvancedCommandSet) { <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" /> } else { <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Default" /> }</td></tr>
                             </tbody>
                         </MudSimpleTable>
                     </MudCardContent>
@@ -177,16 +177,16 @@
                         <CardHeaderContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                 <MudIcon Icon="@Icons.Material.Filled.Visibility" />
-                                <MudText Typo="Typo.body1">Telescope Optics</MudText>
+                                <MudText Typo="Typo.body1">@Loc["TS_TelescopeOptics"]</MudText>
                             </MudStack>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardContent Style="padding-top:6px;">
                                 <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                             <tbody>
-                                <tr><th>Aperture Diameter</th><td>@settings.ApertureDiameter m</td></tr>
-                                <tr><th>Aperture Area</th><td>@settings.ApertureArea m²</td></tr>
-                                <tr><th>Focal Length</th><td>@settings.FocalLength m</td></tr>
+                                <tr><th>@Loc["TS_ApertureDiameter"]</th><td>@settings.ApertureDiameter m</td></tr>
+                                <tr><th>@Loc["TS_ApertureArea"]</th><td>@settings.ApertureArea m²</td></tr>
+                                <tr><th>@Loc["TS_FocalLength"]</th><td>@settings.FocalLength m</td></tr>
                             </tbody>
                         </MudSimpleTable>
                     </MudCardContent>
@@ -199,21 +199,21 @@
     else
     {
         <MudAlert Severity="Severity.Error" Class="mb-3">
-            <MudText Typo="Typo.h6">Device Instance Not Found</MudText>
-            Device @InstanceID is registered but has no Mount instance. This may indicate a configuration error.
+            <MudText Typo="Typo.h6">@Loc["TS_InstanceNotFound"]</MudText>
+            @Loc["TS_InstanceNotFoundBody", InstanceID]
         </MudAlert>
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.ArrowBack"
-                   Href="/device-manager">Back to Device Manager</MudButton>
+                   Href="/device-manager">@Loc["TS_BackToManager"]</MudButton>
     }
 }
 else
 {
     <MudAlert Severity="Severity.Warning" Class="mb-3">
-        <MudText Typo="Typo.h6">Device Not Found</MudText>
-        Device @InstanceID does not exist in the system. Please return to the Device Manager to see available devices.
+        <MudText Typo="Typo.h6">@Loc["TS_DeviceNotFound"]</MudText>
+        @Loc["TS_DeviceNotFoundBody", InstanceID]
     </MudAlert>
     <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.ArrowBack"
-               Href="/device-manager">Back to Device Manager</MudButton>
+               Href="/device-manager">@Loc["TS_BackToManager"]</MudButton>
 }
 
 @code {

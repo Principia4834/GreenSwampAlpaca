@@ -184,4 +184,316 @@
     <value>Parcheggia</value>
     <comment>WPF: btnPark</comment>
   </data>
+  <data name="Set_OneClickStart" xml:space="preserve">
+    <value>Avvio con un clic</value>
+    <comment>WPF: lbOneClickStart</comment>
+  </data>
+  <data name="HomePark_Park" xml:space="preserve">
+    <value>Parcheggia</value>
+    <comment>WPF: btnPark</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
+    <value>Track After Unpark</value>
+    <comment>WPF: capTrackAfterUnpark</comment>
+  </data>
+  <data name="Voice_Select" xml:space="preserve">
+    <value>Voce</value>
+    <comment>WPF: botTipVoice</comment>
+  </data>
+  <data name="Ui_Zoom" xml:space="preserve">
+    <value>Zoom</value>
+    <comment>WPF: chtZoom</comment>
+  </data>
+  <data name="Lim_LimitsOn" xml:space="preserve">
+    <value>Limiti On</value>
+    <comment>WPF: 1021LimitsOn</comment>
+  </data>
+  <data name="Lim_SyncPanel" xml:space="preserve">
+    <value>Limiti Sync</value>
+    <comment>WPF: skySyncLimitOn</comment>
+  </data>
+  <data name="Trk_Tracking" xml:space="preserve">
+    <value>Tracciamento</value>
+    <comment>WPF: btnTracking</comment>
+  </data>
+  <data name="Trk_Rate" xml:space="preserve">
+    <value>Tracking Rate</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="Trk_Sidereal" xml:space="preserve">
+    <value>Siderale</value>
+    <comment>WPF: vceSidereal</comment>
+  </data>
+  <data name="Trk_Lunar" xml:space="preserve">
+    <value>Lunare</value>
+    <comment>WPF: vceLunar</comment>
+  </data>
+  <data name="Trk_Solar" xml:space="preserve">
+    <value>Solare</value>
+    <comment>WPF: vceSolar</comment>
+  </data>
+  <data name="Trk_King" xml:space="preserve">
+    <value>King</value>
+    <comment>WPF: vceKing</comment>
+  </data>
+  <data name="Trk_RaGuideRate" xml:space="preserve">
+    <value>RA Guiding Rate %</value>
+    <comment>WPF: skyRaGuiding</comment>
+  </data>
+  <data name="Trk_DecGuideRate" xml:space="preserve">
+    <value>Dec Guiding Rate %</value>
+    <comment>WPF: skyDecGuiding</comment>
+  </data>
+  <data name="MC_MountType" xml:space="preserve">
+    <value>Tipo Montatura</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="MC_AlignMode" xml:space="preserve">
+    <value>Modo di Allineamento</value>
+    <comment>WPF: notAlignmentMode</comment>
+  </data>
+  <data name="MC_Left" xml:space="preserve">
+    <value>S</value>
+    <comment>WPF: hcTipL</comment>
+  </data>
+  <data name="MC_Right" xml:space="preserve">
+    <value>D</value>
+    <comment>WPF: hcTipR</comment>
+  </data>
+  <data name="MC_EqCoord" xml:space="preserve">
+    <value>Equatorial Coordinate Type</value>
+    <comment>WPF: notEqType</comment>
+  </data>
+  <data name="MC_Baud" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="MC_PolarLed" xml:space="preserve">
+    <value>Luminosità LED Polare</value>
+    <comment>WPF: skyPolarLedLevel</comment>
+  </data>
+  <data name="MC_FullCurrent" xml:space="preserve">
+    <value>Piena Corrente</value>
+    <comment>WPF: skyFullCurrent</comment>
+  </data>
+  <data name="MC_RaWorm" xml:space="preserve">
+    <value>Denti vite RA</value>
+    <comment>WPF: raWormTeeth</comment>
+  </data>
+  <data name="MC_RaTrkOffset" xml:space="preserve">
+    <value>Offset Tracciamento RA</value>
+    <comment>WPF: raTrackingOffset</comment>
+  </data>
+  <data name="MC_DecWorm" xml:space="preserve">
+    <value>Denti vite Dec</value>
+    <comment>WPF: decWormTeeth</comment>
+  </data>
+  <data name="MC_DecTrkOffset" xml:space="preserve">
+    <value>Offset Tracciamento Dec</value>
+    <comment>WPF: decTrackingOffset</comment>
+  </data>
+  <data name="ObsCard_DataElevation" xml:space="preserve">
+    <value>Elevazione</value>
+    <comment>WPF: gpsEle</comment>
+  </data>
+  <data name="ObsCard_DataUtcOffset" xml:space="preserve">
+    <value>UTC OffSet</value>
+    <comment>WPF: optUTCOffset</comment>
+  </data>
+  <data name="ObsCard_Reset" xml:space="preserve">
+    <value>Ripristina</value>
+    <comment>WPF: btnResetSensorPos</comment>
+  </data>
+  <data name="Mon_Device" xml:space="preserve">
+    <value>Device</value>
+    <comment>WPF: optDevice</comment>
+  </data>
+  <data name="Mon_Telescope" xml:space="preserve">
+    <value>Telescopio</value>
+    <comment>WPF: optTelescope</comment>
+  </data>
+  <data name="Mon_Ui" xml:space="preserve">
+    <value>UI</value>
+    <comment>WPF: optUI</comment>
+  </data>
+  <data name="Mon_Category" xml:space="preserve">
+    <value>Categoria</value>
+    <comment>WPF: optCategory</comment>
+  </data>
+  <data name="Mon_Driver" xml:space="preserve">
+    <value>Driver</value>
+    <comment>WPF: optDriver</comment>
+  </data>
+  <data name="Mon_Interface" xml:space="preserve">
+    <value>Interfaccia</value>
+    <comment>WPF: optInterface</comment>
+  </data>
+  <data name="Mon_Server" xml:space="preserve">
+    <value>Server</value>
+    <comment>WPF: optServer</comment>
+  </data>
+  <data name="Mon_Mount" xml:space="preserve">
+    <value>Montatura</value>
+    <comment>WPF: mntMount</comment>
+  </data>
+  <data name="Mon_Type" xml:space="preserve">
+    <value>Tipe</value>
+    <comment>WPF: optType</comment>
+  </data>
+  <data name="Mon_Data" xml:space="preserve">
+    <value>Data</value>
+    <comment>WPF: optData</comment>
+  </data>
+  <data name="Mon_Warning" xml:space="preserve">
+    <value>Attenzione</value>
+    <comment>WPF: optWarning</comment>
+  </data>
+  <data name="Mon_Error" xml:space="preserve">
+    <value>Errore</value>
+    <comment>WPF: exError</comment>
+  </data>
+  <data name="Mon_LogPath" xml:space="preserve">
+    <value>Percorso del registro</value>
+    <comment>WPF: optLogPath</comment>
+  </data>
+  <data name="Mon_ClearAll" xml:space="preserve">
+    <value>Elimina Tutto</value>
+    <comment>WPF: aliClearAll</comment>
+  </data>
+  <data name="Mon_Reset" xml:space="preserve">
+    <value>Ripristina</value>
+    <comment>WPF: btnResetSensorPos</comment>
+  </data>
+  <data name="MonPage_Copy" xml:space="preserve">
+    <value>Copia negli appunti</value>
+    <comment>WPF: optCopyClip</comment>
+  </data>
+  <data name="TS_MountType" xml:space="preserve">
+    <value>Tipo Montatura</value>
+    <comment>WPF: skyMount</comment>
+  </data>
+  <data name="TS_AlignmentMode" xml:space="preserve">
+    <value>Modo di Allineamento</value>
+    <comment>WPF: notAlignmentMode</comment>
+  </data>
+  <data name="TS_Elevation" xml:space="preserve">
+    <value>Elevazione</value>
+    <comment>WPF: gpsEle</comment>
+  </data>
+  <data name="TS_Refraction" xml:space="preserve">
+    <value>Rifrazione</value>
+    <comment>WPF: skyRefraction</comment>
+  </data>
+  <data name="TS_BaudRate" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>WPF: gpsBaud</comment>
+  </data>
+  <data name="TS_TrackingRate" xml:space="preserve">
+    <value>Tracking Rate</value>
+    <comment>WPF: skyTracking</comment>
+  </data>
+  <data name="TS_SiderealRate" xml:space="preserve">
+    <value>Siderele Rate</value>
+    <comment>WPF: skySiderealRate</comment>
+  </data>
+  <data name="TS_RaBacklash" xml:space="preserve">
+    <value>Ra Backlash</value>
+    <comment>WPF: bacRaLash</comment>
+  </data>
+  <data name="TS_DecBacklash" xml:space="preserve">
+    <value>Dec Backlash</value>
+    <comment>WPF: bacDecLash</comment>
+  </data>
+  <data name="TS_Encoders" xml:space="preserve">
+    <value>Encoders</value>
+    <comment>WPF: skyEncoders</comment>
+  </data>
+  <data name="State_Slewing" xml:space="preserve">
+    <value>Inseguimento</value>
+    <comment>WPF: botSlewing</comment>
+  </data>
+  <data name="MCtl_Lha" xml:space="preserve">
+    <value>LHA</value>
+    <comment>WPF: topLHA</comment>
+  </data>
+  <data name="MCtl_Lst" xml:space="preserve">
+    <value>LST</value>
+    <comment>WPF: topLST</comment>
+  </data>
+  <data name="MStat_LimitWarning" xml:space="preserve">
+    <value>Limit warning</value>
+    <comment>WPF: vceLimit</comment>
+  </data>
+  <data name="MStat_Mount" xml:space="preserve">
+    <value>Montatura</value>
+    <comment>WPF: mntMount</comment>
+  </data>
+  <data name="MStat_Type" xml:space="preserve">
+    <value>Tipe</value>
+    <comment>WPF: optType</comment>
+  </data>
+  <data name="MStat_Mode" xml:space="preserve">
+    <value>Modo</value>
+    <comment>WPF: hcMode</comment>
+  </data>
+  <data name="MStat_HomeSensor" xml:space="preserve">
+    <value>Sensore di Home</value>
+    <comment>WPF: mntHomeSensor</comment>
+  </data>
+  <data name="MStat_PolarLed" xml:space="preserve">
+    <value>LED Polare</value>
+    <comment>WPF: mntPolarLed</comment>
+  </data>
+  <data name="MStat_Capabilities" xml:space="preserve">
+    <value>Capacità</value>
+    <comment>WPF: mntCap</comment>
+  </data>
+  <data name="MStat_CustomOffsetRa" xml:space="preserve">
+    <value>Offset Personalizzato Ra</value>
+    <comment>WPF: mntCustomOffsetRa</comment>
+  </data>
+  <data name="MStat_CustomOffsetDec" xml:space="preserve">
+    <value>Offset Personalizzato Dec</value>
+    <comment>WPF: mntCustomOffsetDec</comment>
+  </data>
+  <data name="MStat_WormStepsRa" xml:space="preserve">
+    <value>Passi vite Ra</value>
+    <comment>WPF: mntWormStepsRa</comment>
+  </data>
+  <data name="MStat_WormStepsDec" xml:space="preserve">
+    <value>Passi vite Dec</value>
+    <comment>WPF: mntWormStepsDec</comment>
+  </data>
+  <data name="MStat_FrequencyRa" xml:space="preserve">
+    <value>Frequenza Ra</value>
+    <comment>WPF: mntFreqRa</comment>
+  </data>
+  <data name="MStat_FrequencyDec" xml:space="preserve">
+    <value>Freqenza Dec</value>
+    <comment>WPF: mntFreqDec</comment>
+  </data>
+  <data name="MStat_RaStepsArcSec" xml:space="preserve">
+    <value>Ra Steps/Arcsec</value>
+    <comment>WPF: mntRaSteps</comment>
+  </data>
+  <data name="MStat_DecStepsArcSec" xml:space="preserve">
+    <value>Dec Steps/Arcsec</value>
+    <comment>WPF: mntDecSteps</comment>
+  </data>
+  <data name="MStat_Supported" xml:space="preserve">
+    <value>Supportate</value>
+    <comment>WPF: mntSupported</comment>
+  </data>
+  <data name="MStat_Tracking" xml:space="preserve">
+    <value>Tracciamento</value>
+    <comment>WPF: btnTracking</comment>
+  </data>
+  <data name="MStat_Slewing" xml:space="preserve">
+    <value>Inseguimento</value>
+    <comment>WPF: botSlewing</comment>
+  </data>
+  <data name="MStat_LimitsOn" xml:space="preserve">
+    <value>Limiti On</value>
+    <comment>WPF: 1021LimitsOn</comment>
+  </data>
 </root>

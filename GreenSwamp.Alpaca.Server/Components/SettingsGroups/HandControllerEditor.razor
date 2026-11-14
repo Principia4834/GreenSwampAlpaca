@@ -1,22 +1,22 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
 
 <MudStack Spacing="3">
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Hand controller slew speed setting." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_HcSpeed_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Device!.HcSpeed" @bind-Value:after="NotifyChanged"
-                      Label="HC Speed" Immediate="true" />
+                      Label="@Loc["Set_HcSpeed"]" Immediate="true" />
     </MudTooltip>
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Hand controller mode." Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Set_HcMode_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudTextField @bind-Value="Device!.HcMode" @bind-Value:after="NotifyChanged"
-                      Label="HC Mode" Immediate="true" />
+                      Label="@Loc["Set_HcMode"]" Immediate="true" />
     </MudTooltip>
-    <MudCheckBox @bind-Value="Device!.HcAntiRa"  @bind-Value:after="NotifyChanged" Label="Anti-backlash RA"  Color="Color.Primary" />
-    <MudCheckBox @bind-Value="Device!.HcAntiDec" @bind-Value:after="NotifyChanged" Label="Anti-backlash Dec" Color="Color.Primary" />
-    <MudCheckBox @bind-Value="Device!.HcFlipEW"  @bind-Value:after="NotifyChanged" Label="Flip E/W"          Color="Color.Primary" />
-    <MudCheckBox @bind-Value="Device!.HcFlipNS"  @bind-Value:after="NotifyChanged" Label="Flip N/S"          Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcAntiRa"  @bind-Value:after="NotifyChanged" Label="@Loc["Set_AntiBacklashRa"]"  Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcAntiDec" @bind-Value:after="NotifyChanged" Label="@Loc["Set_AntiBacklashDec"]" Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcFlipEW"  @bind-Value:after="NotifyChanged" Label="@Loc["Set_FlipEW"]"          Color="Color.Primary" />
+    <MudCheckBox @bind-Value="Device!.HcFlipNS"  @bind-Value:after="NotifyChanged" Label="@Loc["Set_FlipNS"]"          Color="Color.Primary" />
     <MudCheckBox @bind-Value="Device!.DisableKeysOnGoTo" @bind-Value:after="NotifyChanged"
-                 Label="Disable Keys on GoTo" Color="Color.Primary" />
+                 Label="@Loc["Set_DisableKeysOnGoTo"]" Color="Color.Primary" />
     <MudCheckBox @bind-Value="Device!.HcOneClickStart" @bind-Value:after="NotifyChanged"
-                 Label="One Click Start" Color="Color.Primary" />
+                 Label="@Loc["Set_OneClickStart"]" Color="Color.Primary" />
 </MudStack>
 
 @code {

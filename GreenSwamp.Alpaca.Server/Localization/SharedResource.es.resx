@@ -1372,4 +1372,2024 @@
     <value>RA must be in the range [0..24).</value>
     <comment>TODO: machine translation</comment>
   </data>
+  <data name="Set_ServerName" xml:space="preserve">
+    <value>Server Name</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_ServerName_Tip" xml:space="preserve">
+    <value>Human-readable server name shown in Alpaca discovery and the setup page.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_ServerPort" xml:space="preserve">
+    <value>Server Port</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_ServerPort_Tip" xml:space="preserve">
+    <value>TCP port the Alpaca server listens on.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_AllowRemoteAccess" xml:space="preserve">
+    <value>Allow Remote Access</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_AllowRemoteAccess_Tip" xml:space="preserve">
+    <value>Bind to all network interfaces when enabled; localhost-only when disabled.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost" xml:space="preserve">
+    <value>Respond Locally to Localhost Only</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_LocalRespondOnlyToLocalHost_Tip" xml:space="preserve">
+    <value>Respond to localhost-sourced Alpaca discovery on the loopback adapter only.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_AllowDiscovery" xml:space="preserve">
+    <value>Allow Alpaca Discovery</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_AllowDiscovery_Tip" xml:space="preserve">
+    <value>Advertise this server via Alpaca UDP discovery.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_StrictAlpaca" xml:space="preserve">
+    <value>Run in Strict Alpaca Mode</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_StrictAlpaca_Tip" xml:space="preserve">
+    <value>Reject non-compliant Alpaca requests when enabled.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_PreventRemoteDisconnects" xml:space="preserve">
+    <value>Prevent Remote Disconnects</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_PreventRemoteDisconnects_Tip" xml:space="preserve">
+    <value>Prevent remote clients from disconnecting devices.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_EnableSwagger" xml:space="preserve">
+    <value>Enable Swagger UI</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_EnableSwagger_Tip" xml:space="preserve">
+    <value>Expose the OpenAPI / Swagger UI at /swagger.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_ServerAddresses" xml:space="preserve">
+    <value>Server Addresses</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_EnableAuth" xml:space="preserve">
+    <value>Enable Authentication</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_EnableAuth_Tip" xml:space="preserve">
+    <value>Require HTTP Basic authentication for all requests.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_UserName" xml:space="preserve">
+    <value>User Name</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_UserName_Tip" xml:space="preserve">
+    <value>Login user name used when authentication is enabled.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_Password" xml:space="preserve">
+    <value>Password</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_Password_Tip" xml:space="preserve">
+    <value>Password used when authentication is enabled.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_RepeatPassword" xml:space="preserve">
+    <value>Repeat Password</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_RepeatPassword_Tip" xml:space="preserve">
+    <value>Repeat the password to confirm it matches.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_NoEditor" xml:space="preserve">
+    <value>No editor defined for group "{0}".</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_HcSpeed" xml:space="preserve">
+    <value>HC Speed</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_HcSpeed_Tip" xml:space="preserve">
+    <value>Hand controller slew speed setting.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_HcMode" xml:space="preserve">
+    <value>HC Mode</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_HcMode_Tip" xml:space="preserve">
+    <value>Hand controller mode.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_AntiBacklashRa" xml:space="preserve">
+    <value>Anti-backlash RA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_AntiBacklashDec" xml:space="preserve">
+    <value>Anti-backlash Dec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_FlipEW" xml:space="preserve">
+    <value>Flip E/W</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_FlipNS" xml:space="preserve">
+    <value>Flip N/S</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_DisableKeysOnGoTo" xml:space="preserve">
+    <value>Disable Keys on GoTo</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Set_OneClickStart" xml:space="preserve">
+    <value>One Click Start</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HcPg_Speed" xml:space="preserve">
+    <value>Speed</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HcPg_Duration" xml:space="preserve">
+    <value>Duration (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HcPg_Interval" xml:space="preserve">
+    <value>Interval (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HcPg_Rate" xml:space="preserve">
+    <value>Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HcPg_RateMax" xml:space="preserve">
+    <value>Rate max: {0} (MaximumSlewRate)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_Home" xml:space="preserve">
+    <value>Home</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_HomePositions" xml:space="preserve">
+    <value>Home Positions</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_Position" xml:space="preserve">
+    <value>Position</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_RaAzAxis" xml:space="preserve">
+    <value>RA/Az Axis</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_DecAltAxis" xml:space="preserve">
+    <value>Dec/Alt Axis</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_AutoHome" xml:space="preserve">
+    <value>Auto-Home</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_Park" xml:space="preserve">
+    <value>Park</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_ActivePark_Tip" xml:space="preserve">
+    <value>Name of the active park position.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_ActivePark" xml:space="preserve">
+    <value>Active Park Position</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark_Tip" xml:space="preserve">
+    <value>Start tracking automatically when the mount unparks.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
+    <value>Track After Unpark</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_DefinedParkPositions" xml:space="preserve">
+    <value>Defined Park Positions</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HomePark_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_Aperture_Tip" xml:space="preserve">
+    <value>Aperture diameter in metres.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_Aperture" xml:space="preserve">
+    <value>Aperture Diameter (m)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_Area_Tip" xml:space="preserve">
+    <value>Effective aperture area in square metres.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_Area" xml:space="preserve">
+    <value>Aperture Area (m²)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_FocalLength_Tip" xml:space="preserve">
+    <value>Focal length in metres.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_FocalLength" xml:space="preserve">
+    <value>Focal Length (m)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_Eyepiece_Tip" xml:space="preserve">
+    <value>Eyepiece field of view in arcminutes.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Optics_Eyepiece" xml:space="preserve">
+    <value>Eyepiece FS (arcmin)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Perf_CheckInterval_Tip" xml:space="preserve">
+    <value>UI display refresh interval in milliseconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Perf_CheckInterval" xml:space="preserve">
+    <value>Background Status Check Interval (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Perf_GotoPrecision_Tip" xml:space="preserve">
+    <value>GoTo precision in arcseconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Perf_GotoPrecision" xml:space="preserve">
+    <value>GoTo Precision (degrees)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Perf_TraceLogger_Tip" xml:space="preserve">
+    <value>Enable trace/debug logging to a file for this device.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Perf_TraceLogger" xml:space="preserve">
+    <value>Trace Logger</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ppec_Enabled" xml:space="preserve">
+    <value>PPEC Enabled</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Voice_Active_Tip" xml:space="preserve">
+    <value>Enable voice announcements for this device (e.g. Parked, Slewing, Tracking On).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Voice_Active" xml:space="preserve">
+    <value>Enable Voice Announcements</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Voice_Select_Tip" xml:space="preserve">
+    <value>Select a voice. Leave blank to use the browser default. Click Refresh to load voices filtered by your browser language.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Voice_Select" xml:space="preserve">
+    <value>Voice</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Voice_Volume_Tip" xml:space="preserve">
+    <value>Volume for voice announcements (0 = silent, 100 = full volume).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Voice_Volume" xml:space="preserve">
+    <value>Volume (%)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_Zoom_Tip" xml:space="preserve">
+    <value>Global UI zoom level applied across the server UI.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_Zoom" xml:space="preserve">
+    <value>Zoom</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_Theme_Tip" xml:space="preserve">
+    <value>Display theme selection for the server UI.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_Theme" xml:space="preserve">
+    <value>Display Theme</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_NotImplemented" xml:space="preserve">
+    <value>Not implemented</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
+    <value>Choose the language used by this browser. This preference is saved in a browser cookie; server defaults are used only when no supported browser preference exists.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_DisplayLanguage" xml:space="preserve">
+    <value>Display Language</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_RegionalFormat_Tip" xml:space="preserve">
+    <value>Choose the date and number conventions used by this browser. This preference is saved in a browser cookie.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_RegionalFormat" xml:space="preserve">
+    <value>Regional Format</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_AutoStartBrowser_Tip" xml:space="preserve">
+    <value>Open the default browser automatically when the server starts.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Ui_AutoStartBrowser" xml:space="preserve">
+    <value>Auto-start Browser</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_HardwarePanel" xml:space="preserve">
+    <value>Hardware Limit Values (always enforced for slew safety)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_UpperDecAlt_Tip" xml:space="preserve">
+    <value>Upper Dec/Alt hardware limit in degrees.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_UpperDecAlt" xml:space="preserve">
+    <value>Upper Dec/Alt Hardware Limit (°)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_LowerDecAlt_Tip" xml:space="preserve">
+    <value>Lower Dec/Alt hardware limit in degrees.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_LowerDecAlt" xml:space="preserve">
+    <value>Lower Dec/Alt Hardware Limit (°)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_RaAz_Tip" xml:space="preserve">
+    <value>RA/Az hardware limit in degrees.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_RaAz" xml:space="preserve">
+    <value>RA/Az Hardware Limit (°)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_ActionsPanel" xml:space="preserve">
+    <value>Tracking-Limit Actions (controlled by Limits On)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_LimitsOn" xml:space="preserve">
+    <value>Limits On</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_FlipAngle_Tip" xml:space="preserve">
+    <value>GEM safety limit in degrees around meridian.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_AfterFlip_Tip" xml:space="preserve">
+    <value>Additional GEM meridian tracking allowance in degrees past flip angle.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_HzTracking_Tip" xml:space="preserve">
+    <value>GEM horizon tracking trigger angle in degrees.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_HzGoTo_Tip" xml:space="preserve">
+    <value>Horizon go to limit angle in degrees.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_WarningOnly" xml:space="preserve">
+    <value>Warning Only</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_StopTracking" xml:space="preserve">
+    <value>Stop Tracking</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_PrimaryPark" xml:space="preserve">
+    <value>Primary Action Park Position</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_GemHorizonAction" xml:space="preserve">
+    <value>GEM Horizon Action</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_HorizonTrigger" xml:space="preserve">
+    <value>Horizon Trigger Action</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_HorizonPark" xml:space="preserve">
+    <value>Horizon Action Park Position</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_SyncPanel" xml:space="preserve">
+    <value>Sync Limits</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_EnableSyncLimit_Tip" xml:space="preserve">
+    <value>Enable sync angle limit — reject syncs that would move the model by more than this angle.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_EnableSyncLimit" xml:space="preserve">
+    <value>Enable Sync Limit</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_SyncAngle_Tip" xml:space="preserve">
+    <value>Maximum angle in degrees by which a sync may shift the pointing model.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_SyncAngle" xml:space="preserve">
+    <value>Sync Limit (°)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_NoSyncMeridian_Tip" xml:space="preserve">
+    <value>Reject sync requests when the scope is past the meridian (GEM/Polar).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_NoSyncMeridian" xml:space="preserve">
+    <value>No Sync Past Meridian</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_PrimaryLabelGem" xml:space="preserve">
+    <value>Primary Trigger Action (GEM Meridian)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_PrimaryLabelHw" xml:space="preserve">
+    <value>Primary Trigger Action (Hardware Limits)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_PrimaryHelpGem" xml:space="preserve">
+    <value>Action to take when GEM meridian limit is reached.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Lim_PrimaryHelpHw" xml:space="preserve">
+    <value>Action to take when hardware limits are reached while tracking.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_Tracking" xml:space="preserve">
+    <value>Tracking</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_PulseGuiding" xml:space="preserve">
+    <value>Pulse Guiding</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_HcPulseGuides" xml:space="preserve">
+    <value>HC Pulse Guides</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_Rate_Tip" xml:space="preserve">
+    <value>Default tracking rate (Sidereal, Lunar, Solar, King).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_Rate" xml:space="preserve">
+    <value>Tracking Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_Sidereal" xml:space="preserve">
+    <value>Sidereal</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_Lunar" xml:space="preserve">
+    <value>Lunar</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_Solar" xml:space="preserve">
+    <value>Solar</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_King" xml:space="preserve">
+    <value>King</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_SiderealRate_Tip" xml:space="preserve">
+    <value>Sidereal tracking rate in arcseconds/second.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_SiderealRate" xml:space="preserve">
+    <value>Sidereal Rate (arcsec/s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_LunarRate_Tip" xml:space="preserve">
+    <value>Lunar tracking rate in arcseconds/second.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_LunarRate" xml:space="preserve">
+    <value>Lunar Rate (arcsec/s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_SolarRate_Tip" xml:space="preserve">
+    <value>Solar tracking rate in arcseconds/second.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_SolarRate" xml:space="preserve">
+    <value>Solar Rate (arcsec/s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_KingRate_Tip" xml:space="preserve">
+    <value>King tracking rate in arcseconds/second.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_KingRate" xml:space="preserve">
+    <value>King Rate (arcsec/s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_RaOffset_Tip" xml:space="preserve">
+    <value>RA axis tracking offset in motor steps.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_RaOffset" xml:space="preserve">
+    <value>RA Tracking Offset (steps)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_AltAzInterval_Tip" xml:space="preserve">
+    <value>AltAz tracking update interval in milliseconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_AltAzInterval" xml:space="preserve">
+    <value>AltAz Update Interval (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_MinPulseRa_Tip" xml:space="preserve">
+    <value>Minimum RA pulse duration in milliseconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_MinPulseRa" xml:space="preserve">
+    <value>Min Pulse RA (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_MinPulseDec_Tip" xml:space="preserve">
+    <value>Minimum Dec pulse duration in milliseconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_MinPulseDec" xml:space="preserve">
+    <value>Min Pulse Dec (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_DecPulseToGoTo_Tip" xml:space="preserve">
+    <value>Route Dec pulse commands via GoTo instead of pulse guiding.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_DecPulseToGoTo" xml:space="preserve">
+    <value>Dec Pulse → GoTo</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_AlternatingPpec" xml:space="preserve">
+    <value>Alternating PPEC</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_St4_Tip" xml:space="preserve">
+    <value>ST4 guide rate divisor (e.g. 0=full, 1=0.75x, 2=0.5x, etc.).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_St4" xml:space="preserve">
+    <value>ST4 Guide Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_RaGuideRate_Tip" xml:space="preserve">
+    <value>RA guide rate as a percentage of sidereal (0–100, step 10).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_RaGuideRate" xml:space="preserve">
+    <value>RA Guiding Rate %</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_DecGuideRate_Tip" xml:space="preserve">
+    <value>Dec guide rate as a percentage of sidereal (0–100, step 10).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Trk_DecGuideRate" xml:space="preserve">
+    <value>Dec Guiding Rate %</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DeviceInfoPanel" xml:space="preserve">
+    <value>Device Information</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Enabled_Tip" xml:space="preserve">
+    <value>Enable this device so it is accessible via Alpaca.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Enabled" xml:space="preserve">
+    <value>Enabled for Alpaca</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DeviceName_Tip" xml:space="preserve">
+    <value>Human-readable name for this telescope device, returned as the ASCOM Name property.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DeviceName" xml:space="preserve">
+    <value>Device Name</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Description_Tip" xml:space="preserve">
+    <value>Description of the device shown in Alpaca setup.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Description" xml:space="preserve">
+    <value>Description</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_MountType_Tip" xml:space="preserve">
+    <value>Mount driver to use for this device.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_MountType" xml:space="preserve">
+    <value>Mount Type</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Simulator" xml:space="preserve">
+    <value>Simulator</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AlignMode_Tip" xml:space="preserve">
+    <value>Alignment mode: AltAz, GermanPolar, or Polar.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AlignMode" xml:space="preserve">
+    <value>Alignment Mode</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AlignGem" xml:space="preserve">
+    <value>German Equatorial (GEM)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AlignPolar" xml:space="preserve">
+    <value>Polar / Fork</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AlignAltAz" xml:space="preserve">
+    <value>Alt-Az</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_PolarSide_Tip" xml:space="preserve">
+    <value>The primary side of the pier for polar-aligned GEM mounts.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_PolarSide" xml:space="preserve">
+    <value>Polar Primary Side</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Left" xml:space="preserve">
+    <value>Left</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Right" xml:space="preserve">
+    <value>Right</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_EqCoord_Tip" xml:space="preserve">
+    <value>Equatorial coordinate type returned by the mount (J2000 or JNow).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_EqCoord" xml:space="preserve">
+    <value>Equatorial Coordinate Type</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_CoordOther" xml:space="preserve">
+    <value>Other</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_CoordTopocentric" xml:space="preserve">
+    <value>Topocentric (JNow)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_SerialPanel" xml:space="preserve">
+    <value>Serial Connection</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Port_Tip" xml:space="preserve">
+    <value>Select or type a serial port name (e.g. COM3 or /dev/ttyUSB0).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Port" xml:space="preserve">
+    <value>Port</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_PortManual" xml:space="preserve">
+    <value>{0} (manual)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_PortHelper" xml:space="preserve">
+    <value>No ports detected — type the port name manually.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Baud_Tip" xml:space="preserve">
+    <value>Serial baud rate.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Baud" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DataBits_Tip" xml:space="preserve">
+    <value>Number of data bits.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DataBits" xml:space="preserve">
+    <value>Data Bits</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Handshake_Tip" xml:space="preserve">
+    <value>Handshake protocol (None, XOnXOff, RequestToSend, etc.).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Handshake" xml:space="preserve">
+    <value>Handshake</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_ReadTimeout_Tip" xml:space="preserve">
+    <value>Read timeout in milliseconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_ReadTimeout" xml:space="preserve">
+    <value>Read Timeout (ms)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Dtr" xml:space="preserve">
+    <value>DTR Enable</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Rts" xml:space="preserve">
+    <value>RTS Enable</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_HardwarePanel" xml:space="preserve">
+    <value>Mount Hardware</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AdvCmds_Tip" xml:space="preserve">
+    <value>Enable advanced commands for mount control.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_AdvCmds" xml:space="preserve">
+    <value>Allow Advanced Commands</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Encoders_Tip" xml:space="preserve">
+    <value>Enable absolute encoder feedback for the mount axes.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Encoders" xml:space="preserve">
+    <value>Encoders Enabled</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_MaxSlew_Tip" xml:space="preserve">
+    <value>Maximum slew rate in degrees per second.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_MaxSlew" xml:space="preserve">
+    <value>Max Slew Rate (°/s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_RaBacklash_Tip" xml:space="preserve">
+    <value>RA axis backlash compensation in motor steps.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_RaBacklash" xml:space="preserve">
+    <value>RA Backlash (steps)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DecBacklash_Tip" xml:space="preserve">
+    <value>Dec axis backlash compensation in motor steps.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DecBacklash" xml:space="preserve">
+    <value>Dec Backlash (steps)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_PolarLed_Tip" xml:space="preserve">
+    <value>Polar scope LED brightness level (0–255).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_PolarLed" xml:space="preserve">
+    <value>Polar LED Level</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_FullCurrent_Tip" xml:space="preserve">
+    <value>Enable full current mode on the motor drivers.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_FullCurrent" xml:space="preserve">
+    <value>Full Current</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_GearingPanel" xml:space="preserve">
+    <value>Custom Gearing</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_CustomGearing" xml:space="preserve">
+    <value>Enable Custom Gearing</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_RaAxis" xml:space="preserve">
+    <value>RA Axis</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Ra360" xml:space="preserve">
+    <value>RA 360° Steps</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_RaWorm" xml:space="preserve">
+    <value>RA Worm Teeth</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_RaTrkOffset" xml:space="preserve">
+    <value>RA Tracking Offset</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DecAxis" xml:space="preserve">
+    <value>Dec Axis</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_Dec360" xml:space="preserve">
+    <value>Dec 360° Steps</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DecWorm" xml:space="preserve">
+    <value>Dec Worm Teeth</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MC_DecTrkOffset" xml:space="preserve">
+    <value>Dec Tracking Offset</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Title" xml:space="preserve">
+    <value>Observatories</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Description" xml:space="preserve">
+    <value>Manage observatory sites. Each telescope device can copy its location from any site listed here.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Unsaved" xml:space="preserve">
+    <value>Unsaved</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Latitude" xml:space="preserve">
+    <value>Latitude (°)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Longitude" xml:space="preserve">
+    <value>Longitude (°)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Elevation" xml:space="preserve">
+    <value>Elevation (m)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_UtcOffset" xml:space="preserve">
+    <value>UTC Offset (h)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Actions" xml:space="preserve">
+    <value>Actions</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_DataElevation" xml:space="preserve">
+    <value>Elevation</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_DataUtcOffset" xml:space="preserve">
+    <value>UTC Offset</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_CopyToAll" xml:space="preserve">
+    <value>Copy Lat/Long/Elevation to all telescope devices</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_CannotDeleteLast" xml:space="preserve">
+    <value>Cannot delete the last observatory</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Delete" xml:space="preserve">
+    <value>Delete this observatory</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Add" xml:space="preserve">
+    <value>Add Observatory</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsCard_Reset" xml:space="preserve">
+    <value>Reset</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Location" xml:space="preserve">
+    <value>Location</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CopyFrom" xml:space="preserve">
+    <value>Copy from observatory</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CopyFrom_Tip" xml:space="preserve">
+    <value>Copy Latitude, Longitude, Elevation and GPS settings from the selected observatory to this device.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_DeviceLat_Tip" xml:space="preserve">
+    <value>Geographic latitude of the device site in decimal degrees (-90 to +90).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_DeviceLon_Tip" xml:space="preserve">
+    <value>Geographic longitude of the device site in decimal degrees (-180 to +180).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Elev_Tip" xml:space="preserve">
+    <value>Elevation above sea level in metres.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_DeviceUtc_Tip" xml:space="preserve">
+    <value>UTC offset for this device site (hours).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Environmental" xml:space="preserve">
+    <value>Environmental</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Refraction_Tip" xml:space="preserve">
+    <value>Apply atmospheric refraction correction to pointing calculations.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Refraction" xml:space="preserve">
+    <value>Enable Refraction</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Temp_Tip" xml:space="preserve">
+    <value>Ambient temperature in degrees Celsius, used for refraction correction.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Temp" xml:space="preserve">
+    <value>Temperature (°C)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_DeviceGpsPort_Tip" xml:space="preserve">
+    <value>Select or type a serial port name for the GPS receiver (e.g. COM4 or /dev/ttyUSB0).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsPort" xml:space="preserve">
+    <value>GPS Port</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_DeviceGpsBaud_Tip" xml:space="preserve">
+    <value>GPS receiver baud rate.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsBaud" xml:space="preserve">
+    <value>GPS Baud Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsParity_Tip" xml:space="preserve">
+    <value>GPS receiver serial port parity.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsParity" xml:space="preserve">
+    <value>GPS Parity</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsStopBits_Tip" xml:space="preserve">
+    <value>GPS receiver serial port stop bits.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsStopBits" xml:space="preserve">
+    <value>GPS Stop Bits</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsDataBits_Tip" xml:space="preserve">
+    <value>GPS receiver serial port data bits.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsDataBits" xml:space="preserve">
+    <value>GPS Data Bits</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsTimeout_Tip" xml:space="preserve">
+    <value>GPS receiver serial port read timeout in seconds.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsTimeout" xml:space="preserve">
+    <value>GPS Timeout (s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsHandshake_Tip" xml:space="preserve">
+    <value>GPS receiver serial port handshake.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsHandshake" xml:space="preserve">
+    <value>GPS Handshake</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_GpsConnect_Tip" xml:space="preserve">
+    <value>Connect to the GPS receiver and read latitude, longitude, elevation and the local-vs-GPS time difference.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_Connect" xml:space="preserve">
+    <value>Connect</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_DeviceCdcAddress_Tip" xml:space="preserve">
+    <value>IP address or hostname of the Cartes du Ciel server for this device (e.g. 127.0.0.1).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CdcAddress" xml:space="preserve">
+    <value>CdC Address</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CdcPort_Tip" xml:space="preserve">
+    <value>TCP port the Cartes du Ciel server is listening on (default 3292).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CdcPort" xml:space="preserve">
+    <value>CdC Port</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CdcConnect_Tip" xml:space="preserve">
+    <value>Connect to the Cartes du Ciel server to read or write latitude, longitude and elevation.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_CopiedFrom" xml:space="preserve">
+    <value>Location, GPS and CdC settings copied from '{0}'.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_NoGpsPortDevice" xml:space="preserve">
+    <value>No GPS port is configured for this device.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_NoGpsPortSite" xml:space="preserve">
+    <value>No GPS port is configured for this observatory.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_UpdatedFromGps" xml:space="preserve">
+    <value>Latitude, longitude and elevation updated from GPS.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Obs_UpdatedFromCdc" xml:space="preserve">
+    <value>Latitude, longitude and elevation updated from Cartes du Ciel.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_Name_Tip" xml:space="preserve">
+    <value>User-defined name for this observatory site.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_Lat_Tip" xml:space="preserve">
+    <value>Geographic latitude of the observatory in decimal degrees (-90 to +90).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_Lon_Tip" xml:space="preserve">
+    <value>Geographic longitude of the observatory in decimal degrees (-180 to +180).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_Utc_Tip" xml:space="preserve">
+    <value>UTC offset for the observatory site (hours). Use negative values for west.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_LocationSources" xml:space="preserve">
+    <value>Location Sources</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_GpsPort_Tip" xml:space="preserve">
+    <value>Select or type a serial port name for the GPS receiver at this site (e.g. COM4 or /dev/ttyUSB0).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_GpsBaud_Tip" xml:space="preserve">
+    <value>GPS receiver baud rate for this observatory site.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_CdcAddress_Tip" xml:space="preserve">
+    <value>IP address or hostname of the Cartes du Ciel server at this observatory site (e.g. 127.0.0.1).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_CopyToAll_Tip" xml:space="preserve">
+    <value>Copy location and GPS settings from this observatory to all telescope devices.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_CopyToAll" xml:space="preserve">
+    <value>Copy to all devices</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="ObsSingle_NameDuplicate" xml:space="preserve">
+    <value>An observatory with this name already exists.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LoggingSettings" xml:space="preserve">
+    <value>Logging Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Unsaved" xml:space="preserve">
+    <value>Unsaved</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Device" xml:space="preserve">
+    <value>Device</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_ServerDevice" xml:space="preserve">
+    <value>Server Device</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Telescope" xml:space="preserve">
+    <value>Telescope</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Ui" xml:space="preserve">
+    <value>UI</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Other" xml:space="preserve">
+    <value>Other</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Category" xml:space="preserve">
+    <value>Category</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Driver" xml:space="preserve">
+    <value>Driver</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Interface" xml:space="preserve">
+    <value>Interface</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Server" xml:space="preserve">
+    <value>Server</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Mount" xml:space="preserve">
+    <value>Mount</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Alignment" xml:space="preserve">
+    <value>Alignment</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Type" xml:space="preserve">
+    <value>Type</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Information" xml:space="preserve">
+    <value>Information</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Data" xml:space="preserve">
+    <value>Data</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Error" xml:space="preserve">
+    <value>Error</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Debug" xml:space="preserve">
+    <value>Debug</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Logging" xml:space="preserve">
+    <value>Logging</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_AutoStart_Tip" xml:space="preserve">
+    <value>Must be ON for any log files to be written.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_AutoStart" xml:space="preserve">
+    <value>Auto-start</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LogMonitor_Tip" xml:space="preserve">
+    <value>Writes monitor output to GSMonitorLog*.txt. Mutually exclusive with Fast Monitor.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LogMonitor" xml:space="preserve">
+    <value>Log Monitor</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LogSession" xml:space="preserve">
+    <value>Log Session</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LogCharting" xml:space="preserve">
+    <value>Log Charting</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_FastMonitor_Tip" xml:space="preserve">
+    <value>1000-record ring buffer — lower overhead than Log Monitor. Mutually exclusive with Log Monitor.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_FastMonitor" xml:space="preserve">
+    <value>Fast Monitor</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LogPath" xml:space="preserve">
+    <value>Log Path</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_LogPath_Tip" xml:space="preserve">
+    <value>Directory path where log files are written. Leave empty for the default location (%USERPROFILE%\Documents\GreenSwamp\Server).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_QuickSetActions" xml:space="preserve">
+    <value>Quick Set Actions</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_AllDevices" xml:space="preserve">
+    <value>All Devices</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_AllCategories" xml:space="preserve">
+    <value>All Categories</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_AllTypes" xml:space="preserve">
+    <value>All Types</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_ClearAll" xml:space="preserve">
+    <value>Clear All</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Mon_Reset" xml:space="preserve">
+    <value>Reset</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Home_PageTitle" xml:space="preserve">
+    <value>Home – Green Swamp Alpaca Server</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>Welcome to &lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Home_Footer" xml:space="preserve">
+    <value>Green Swamp Alpaca Server</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MountCfg_Title" xml:space="preserve">
+    <value>Mount Configuration</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MountCfg_Export" xml:space="preserve">
+    <value>Export Settings &amp; Logs</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MountCfg_NoDevices" xml:space="preserve">
+    <value>No mount devices registered.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MountCfg_EditInExplorer" xml:space="preserve">
+    <value>Edit in Settings Explorer</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Title" xml:space="preserve">
+    <value>Monitor Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Heading" xml:space="preserve">
+    <value>Monitor</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Records" xml:space="preserve">
+    <value>Monitor Records</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_RecordsCount" xml:space="preserve">
+    <value>{0} / {1} records</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_ClearTip" xml:space="preserve">
+    <value>Clear display buffer</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Reload" xml:space="preserve">
+    <value>Reload Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_WriteBuffer" xml:space="preserve">
+    <value>Write Buffer to File</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Copied" xml:space="preserve">
+    <value>Monitor records copied to clipboard.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_CopyFailed" xml:space="preserve">
+    <value>Copy failed — clipboard access may be blocked.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Saved" xml:space="preserve">
+    <value>Monitor settings saved successfully! Changes applied immediately.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_SaveError" xml:space="preserve">
+    <value>Error saving settings: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_BufferWritten" xml:space="preserve">
+    <value>Fast monitor buffer written to file at {0:HH:mm:ss}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_BufferError" xml:space="preserve">
+    <value>Error writing buffer: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_ResetDone" xml:space="preserve">
+    <value>Logging settings reset to last saved state.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_Reloaded" xml:space="preserve">
+    <value>Settings reloaded from file</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_PresetApplied" xml:space="preserve">
+    <value>{0} preset applied (not saved yet)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_PresetDevelopment" xml:space="preserve">
+    <value>Development</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_PresetProduction" xml:space="preserve">
+    <value>Production</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_PresetTroubleshooting" xml:space="preserve">
+    <value>Troubleshooting</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_PresetProfileDebug" xml:space="preserve">
+    <value>Profile Debug</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_AllDevicesSelected" xml:space="preserve">
+    <value>All devices selected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_AllCategoriesSelected" xml:space="preserve">
+    <value>All categories selected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_AllTypesSelected" xml:space="preserve">
+    <value>All types selected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MonPage_AllFiltersCleared" xml:space="preserve">
+    <value>All filters cleared</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_PageTitle" xml:space="preserve">
+    <value>Telescope Setup - Device {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DeviceInformation" xml:space="preserve">
+    <value>Device Information</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DeviceNumber" xml:space="preserve">
+    <value>Device Number</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DeviceName" xml:space="preserve">
+    <value>Device Name</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_MountType" xml:space="preserve">
+    <value>Mount Type</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_AlignmentMode" xml:space="preserve">
+    <value>Alignment Mode</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_ConnectionStatus" xml:space="preserve">
+    <value>Connection Status</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_Connected" xml:space="preserve">
+    <value>Connected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_ObservatorySettings" xml:space="preserve">
+    <value>Observatory Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_Elevation" xml:space="preserve">
+    <value>Elevation</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_Refraction" xml:space="preserve">
+    <value>Refraction</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_SerialPortSettings" xml:space="preserve">
+    <value>Serial Port Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_Port" xml:space="preserve">
+    <value>Port</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_BaudRate" xml:space="preserve">
+    <value>Baud Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DataBits" xml:space="preserve">
+    <value>Data Bits</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_ReadTimeout" xml:space="preserve">
+    <value>Read Timeout</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_TrackingGuiding" xml:space="preserve">
+    <value>Tracking &amp; Guiding Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_AutoTrackUnpark" xml:space="preserve">
+    <value>Auto Track on Unpark</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_TrackingRate" xml:space="preserve">
+    <value>Tracking Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_SiderealRate" xml:space="preserve">
+    <value>Sidereal Rate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_MinPulseRa" xml:space="preserve">
+    <value>Min Pulse RA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_MinPulseDec" xml:space="preserve">
+    <value>Min Pulse Dec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_MountSettings" xml:space="preserve">
+    <value>Mount Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_RaBacklash" xml:space="preserve">
+    <value>RA Backlash</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DecBacklash" xml:space="preserve">
+    <value>Dec Backlash</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_Encoders" xml:space="preserve">
+    <value>Encoders</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_AllowAdvanced" xml:space="preserve">
+    <value>Allow Advanced Commands</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_TelescopeOptics" xml:space="preserve">
+    <value>Telescope Optics</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_ApertureDiameter" xml:space="preserve">
+    <value>Aperture Diameter</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_ApertureArea" xml:space="preserve">
+    <value>Aperture Area</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_FocalLength" xml:space="preserve">
+    <value>Focal Length</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_InstanceNotFound" xml:space="preserve">
+    <value>Device Instance Not Found</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_InstanceNotFoundBody" xml:space="preserve">
+    <value>Device {0} is registered but has no Mount instance. This may indicate a configuration error.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_BackToManager" xml:space="preserve">
+    <value>Back to Device Manager</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DeviceNotFound" xml:space="preserve">
+    <value>Device Not Found</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TS_DeviceNotFoundBody" xml:space="preserve">
+    <value>Device {0} does not exist in the system. Please return to the Device Manager to see available devices.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Title" xml:space="preserve">
+    <value>Settings Health Check</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Intro" xml:space="preserve">
+    <value>Validate and repair your settings configuration. This tool checks the integrity of your settings file and can automatically fix common configuration issues.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_StatusTitle" xml:space="preserve">
+    <value>Settings Health Status</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Validating" xml:space="preserve">
+    <value>Validating settings...</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_AllValid" xml:space="preserve">
+    <value>&lt;strong&gt;All settings are valid.&lt;/strong&gt;</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_WarningCount" xml:space="preserve">
+    <value>({0} warning(s))</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Failed" xml:space="preserve">
+    <value>&lt;strong&gt;Settings validation failed.&lt;/strong&gt; {0} error(s) found.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_ErrorsHeading" xml:space="preserve">
+    <value>Errors ({0})</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_WarningsHeading" xml:space="preserve">
+    <value>Warnings ({0})</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_AutoRepairable" xml:space="preserve">
+    <value>Auto-repairable</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Resolution" xml:space="preserve">
+    <value>&lt;strong&gt;Resolution:&lt;/strong&gt; {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_UnableToValidate" xml:space="preserve">
+    <value>Unable to validate settings. Click &lt;strong&gt;Re-validate&lt;/strong&gt; to try again.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Revalidate" xml:space="preserve">
+    <value>Re-validate</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_FilesTitle" xml:space="preserve">
+    <value>Settings Files</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_NoFiles" xml:space="preserve">
+    <value>No JSON files found in settings folder.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_OnlyLocalTip" xml:space="preserve">
+    <value>Only available when browsing from the server machine</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_ServiceTip" xml:space="preserve">
+    <value>Cannot open Explorer when running as a Windows service</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_OpenFolder" xml:space="preserve">
+    <value>Open Settings Folder</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_AboutTitle" xml:space="preserve">
+    <value>About Settings Validation</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_WhatValidated" xml:space="preserve">
+    <value>What is validated?</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_V_File" xml:space="preserve">
+    <value>&lt;strong&gt;File-level checks:&lt;/strong&gt; File existence, read permissions, JSON syntax, required structure</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_V_Device" xml:space="preserve">
+    <value>&lt;strong&gt;Device validation:&lt;/strong&gt; DeviceNumber uniqueness, DeviceName required, AlignmentMode valid, Mount type valid</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_V_Sync" xml:space="preserve">
+    <value>&lt;strong&gt;Synchronization:&lt;/strong&gt; Devices and AlpacaDevices arrays must be in sync</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_AutoRepairTitle" xml:space="preserve">
+    <value>Automatic Repair Actions</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_AutoRepairIntro" xml:space="preserve">
+    <value>The repair function can automatically fix:</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_R_Devices" xml:space="preserve">
+    <value>Missing or corrupted Devices array (regenerates from defaults)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_R_Names" xml:space="preserve">
+    <value>Missing device names (generates "Telescope X" names)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_R_Align" xml:space="preserve">
+    <value>Invalid AlignmentMode values (resets to GermanPolar)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_R_Mount" xml:space="preserve">
+    <value>Missing Mount values (sets to Simulator)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_R_Sync" xml:space="preserve">
+    <value>Out-of-sync AlpacaDevices array (regenerates from Devices)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_SafetyTitle" xml:space="preserve">
+    <value>Safety Features</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_S_Backup" xml:space="preserve">
+    <value>&lt;strong&gt;Automatic backup:&lt;/strong&gt; A timestamped backup is created before any changes</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_S_Validation" xml:space="preserve">
+    <value>&lt;strong&gt;Validation after repair:&lt;/strong&gt; Changes are validated before saving</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_S_Restore" xml:space="preserve">
+    <value>&lt;strong&gt;Restore on failure:&lt;/strong&gt; Settings are restored from backup if repair fails</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_S_Quarantine" xml:space="preserve">
+    <value>&lt;strong&gt;Quarantine:&lt;/strong&gt; Invalid devices are excluded from the active device list</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_ManualTitle" xml:space="preserve">
+    <value>Manual Repair</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_ManualIntro" xml:space="preserve">
+    <value>For issues that cannot be automatically fixed:</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_M_OpenFolder" xml:space="preserve">
+    <value>Use the &lt;strong&gt;Open Settings Folder&lt;/strong&gt; button above</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_M_Edit" xml:space="preserve">
+    <value>Edit &lt;code&gt;appsettings.user.json&lt;/code&gt; in a text editor</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_M_Restart" xml:space="preserve">
+    <value>Restart the application</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_M_Delete" xml:space="preserve">
+    <value>If needed, delete the file to regenerate default settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_Note" xml:space="preserve">
+    <value>&lt;strong&gt;Note:&lt;/strong&gt; This validation runs automatically during application startup. Invalid devices are quarantined and not advertised to ASCOM clients.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_ValidationError" xml:space="preserve">
+    <value>Validation error: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred during validation: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="HealthPage_CheckLogs" xml:space="preserve">
+    <value>Check application logs for details.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_AtHome" xml:space="preserve">
+    <value>At Home</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_NotAtHome" xml:space="preserve">
+    <value>Not at Home</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_Parked" xml:space="preserve">
+    <value>Parked</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_Unparked" xml:space="preserve">
+    <value>Unparked</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_Slewing" xml:space="preserve">
+    <value>Slewing</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_Stationary" xml:space="preserve">
+    <value>Stationary</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_TrackingWithRate" xml:space="preserve">
+    <value>Tracking ({0})</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_TrackingOff" xml:space="preserve">
+    <value>Tracking Off</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_PulseGuidingActive" xml:space="preserve">
+    <value>Pulse Guiding Active</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_PulseGuidingOff" xml:space="preserve">
+    <value>Pulse Guiding Off</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_PierEast" xml:space="preserve">
+    <value>Pier Side East</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_PierWest" xml:space="preserve">
+    <value>Pier Side West</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_LimitTriggered" xml:space="preserve">
+    <value>Limit Triggered</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_LimitsOn" xml:space="preserve">
+    <value>Limits On</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_LimitsOff" xml:space="preserve">
+    <value>Limits off</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_VoiceOn" xml:space="preserve">
+    <value>Voice on</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_VoiceOff" xml:space="preserve">
+    <value>Voice off</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_ActiveConnections" xml:space="preserve">
+    <value>{0} active connection(s)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_NoActiveConnectionsWas" xml:space="preserve">
+    <value>No active connections (has been connected)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="State_NoConnections" xml:space="preserve">
+    <value>No connections</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_Title" xml:space="preserve">
+    <value>Mount Control</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_Lha" xml:space="preserve">
+    <value>LHA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_Lst" xml:space="preserve">
+    <value>LST</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_HandController" xml:space="preserve">
+    <value>Hand Controller</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_MountInfo" xml:space="preserve">
+    <value>Mount Info</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_ShutdownTip" xml:space="preserve">
+    <value>Gracefully stops the server process. Use only when all mounts are parked and disconnected.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_Connecting" xml:space="preserve">
+    <value>Connecting…</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_Disconnect" xml:space="preserve">
+    <value>Disconnect from mount</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_Connect" xml:space="preserve">
+    <value>Connect to mount</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_StopFailed" xml:space="preserve">
+    <value>Stop failed: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MCtl_ConnectFailed" xml:space="preserve">
+    <value>Connect/Disconnect failed: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Title" xml:space="preserve">
+    <value>Mount Status</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_PointingCoordinates" xml:space="preserve">
+    <value>Pointing Coordinates</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Pier" xml:space="preserve">
+    <value>Pier</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AxisPositions" xml:space="preserve">
+    <value>Axis Positions</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_ActualX" xml:space="preserve">
+    <value>Actual X</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_ActualY" xml:space="preserve">
+    <value>Actual Y</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AppX" xml:space="preserve">
+    <value>App X</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AppY" xml:space="preserve">
+    <value>App Y</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_StepsX" xml:space="preserve">
+    <value>Steps X</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_StepsY" xml:space="preserve">
+    <value>Steps Y</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Status" xml:space="preserve">
+    <value>Status</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_MountConnected" xml:space="preserve">
+    <value>Mount Connected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_ActiveClients" xml:space="preserve">
+    <value>Active clients</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_LimitWarning" xml:space="preserve">
+    <value>Limit Warning</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AtPark" xml:space="preserve">
+    <value>At Park</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Mount" xml:space="preserve">
+    <value>Mount</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Type" xml:space="preserve">
+    <value>Type</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Mode" xml:space="preserve">
+    <value>Mode</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_MountModel" xml:space="preserve">
+    <value>Mount Model</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_MountFirmware" xml:space="preserve">
+    <value>Mount Firmware</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AdvancedCommands" xml:space="preserve">
+    <value>Advanced Commands</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_HomeSensor" xml:space="preserve">
+    <value>Home Sensor</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Voltage" xml:space="preserve">
+    <value>Voltage</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_PowerEvent" xml:space="preserve">
+    <value>Power Event</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_PolarLed" xml:space="preserve">
+    <value>Polar LED</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Capabilities" xml:space="preserve">
+    <value>Capabilities</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_CustomOffsetRa" xml:space="preserve">
+    <value>Custom Offset RA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_CustomOffsetDec" xml:space="preserve">
+    <value>Custom Offset Dec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_StepsRa" xml:space="preserve">
+    <value>Steps RA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_StepsDec" xml:space="preserve">
+    <value>Steps Dec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_WormStepsRa" xml:space="preserve">
+    <value>Worm Steps RA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_WormStepsDec" xml:space="preserve">
+    <value>Worm Steps Dec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_FrequencyRa" xml:space="preserve">
+    <value>Frequency RA</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_FrequencyDec" xml:space="preserve">
+    <value>Frequency Dec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_RaStepsArcSec" xml:space="preserve">
+    <value>RA Steps/ArcSec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_DecStepsArcSec" xml:space="preserve">
+    <value>Dec Steps/ArcSec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AxisDials" xml:space="preserve">
+    <value>Axis Dials</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Supported" xml:space="preserve">
+    <value>Supported</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_NotSupported" xml:space="preserve">
+    <value>Not supported</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Tracking" xml:space="preserve">
+    <value>Tracking</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_PulseGuiding" xml:space="preserve">
+    <value>Pulse Guiding</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_Slewing" xml:space="preserve">
+    <value>Slewing</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_LimitsOn" xml:space="preserve">
+    <value>Limits On</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_AtHome" xml:space="preserve">
+    <value>At Home</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="MStat_NotAvailable" xml:space="preserve">
+    <value>N/A</value>
+    <comment>TODO: machine translation</comment>
+  </data>
 </root>

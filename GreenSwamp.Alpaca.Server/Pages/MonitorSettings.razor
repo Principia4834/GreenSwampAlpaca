@@ -9,22 +9,22 @@
 @using GreenSwamp.Alpaca.Server.Components.SettingsGroups
 @inject IVersionedSettingsService SettingsService
 
-<PageTitle>Monitor Settings</PageTitle>
+<PageTitle>@Loc["MonPage_Title"]</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Monitor</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">@Loc["MonPage_Heading"]</MudText>
 
 <MudCard Class="mb-4">
 	<MudCardHeader>
 		<CardHeaderContent>
 			<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
 				<MudIcon Icon="@Icons.Material.Filled.Terminal" Color="Color.Primary" />
-				<MudText Typo="Typo.h6">Monitor Records</MudText>
+				<MudText Typo="Typo.h6">@Loc["MonPage_Records"]</MudText>
 				<MudSpacer />
-				<MudText Typo="Typo.caption">@_lines.Count / @GreenSwamp.Alpaca.Server.Services.MonitorDisplayService.Capacity records</MudText>
+				<MudText Typo="Typo.caption">@Loc["MonPage_RecordsCount", _lines.Count, GreenSwamp.Alpaca.Server.Services.MonitorDisplayService.Capacity]</MudText>
 			</MudStack>
 		</CardHeaderContent>
 		<CardHeaderActions>
-			<MudTooltip Text="Clear display buffer" RootStyle="max-width:180px">
+			<MudTooltip Text="@Loc["MonPage_ClearTip"]" RootStyle="max-width:180px">
 				<MudIconButton Icon="@Icons.Material.Filled.DeleteSweep" Color="Color.Warning"
 							   Size="Size.Small" OnClick="ClearDisplay" />
 			</MudTooltip>
@@ -39,11 +39,11 @@
 		<MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
 				   StartIcon="@Icons.Material.Filled.ContentCopy"
 				   OnClick="CopyToClipboard">
-			Copy to Clipboard
+			@Loc["MonPage_Copy"]
 		</MudButton>
 		<MudButton Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small"
 				   StartIcon="@Icons.Material.Filled.Sync" OnClick="ReloadSettings" Class="ml-2">
-			Reload Settings
+			@Loc["MonPage_Reload"]
 		</MudButton>
 		@if (_settings.FastMonitor)
 		{
@@ -54,13 +54,13 @@
 				{
 					<MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-1" />
 				}
-				Write Buffer to File
+				@Loc["MonPage_WriteBuffer"]
 			</MudButton>
 		}
 	</MudCardActions>
 </MudCard>
 <MudExpansionPanels>
-	<MudExpansionPanel Text="Monitor Settings" Expanded="false">
+	<MudExpansionPanel Text="@Loc["MonPage_Title"]" Expanded="false">
 		<MonitorSettingsCombinedPanel Settings="_settings"
 			ShowHidden="false"
 			IsDirty="_isDirty"
@@ -110,11 +110,11 @@
 		{
 			var clipboardText = string.Join('\n', _lines.Select(FormatClipboardLine));
 			await JS.InvokeVoidAsync("navigator.clipboard.writeText", clipboardText);
-			ShowSuccess("Monitor records copied to clipboard.");
+			ShowSuccess(Loc["MonPage_Copied"]);
 		}
 		catch
 		{
-			ShowError("Copy failed — clipboard access may be blocked.");
+			ShowError(Loc["MonPage_CopyFailed"]);
 		}
 	}
 
@@ -174,12 +174,12 @@
 			await SettingsService.SaveMonitorSettingsAsync(_settings);
 			GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
 			GreenSwamp.Alpaca.Shared.Settings.Load();
-			ShowSuccess("Monitor settings saved successfully! Changes applied immediately.");
+			ShowSuccess(Loc["MonPage_Saved"]);
 			_isDirty = false;
 		}
 		catch (Exception ex)
 		{
-			ShowError($"Error saving settings: {ex.Message}");
+			ShowError(Loc["MonPage_SaveError", ex.Message]);
 		}
 		finally
 		{
@@ -196,11 +196,11 @@
 		try
 		{
 			await Task.Run(() => GreenSwamp.Alpaca.Shared.MonitorQueue.WriteBuffer());
-			ShowSuccess($"Fast monitor buffer written to file at {DateTime.Now:HH:mm:ss}");
+			ShowSuccess(Loc["MonPage_BufferWritten", DateTime.Now]);
 		}
 		catch (Exception ex)
 		{
-			ShowError($"Error writing buffer: {ex.Message}");
+			ShowError(Loc["MonPage_BufferError", ex.Message]);
 		}
 		finally
 		{
@@ -211,7 +211,7 @@
 	private void ResetToDefaults()
 	{
 		LoadSettings();
-		ShowSuccess("Logging settings reset to last saved state.");
+		ShowSuccess(Loc["MonPage_ResetDone"]);
 	}
 
 	private void ReloadSettings()
@@ -219,7 +219,7 @@
 		LoadSettings();
 		GreenSwamp.Alpaca.Shared.Settings.Load();
 		GreenSwamp.Alpaca.Shared.MonitorLog.Load_Settings();
-		ShowInfo("Settings reloaded from file");
+		ShowInfo(Loc["MonPage_Reloaded"]);
 	}
 
 	private void ApplyPreset(GreenSwamp.Alpaca.Settings.Models.MonitorSettings preset)
@@ -229,14 +229,14 @@
 
 		string presetName;
 		if (preset.Data && preset.Ui && preset.Other)
-			presetName = "Development";
+			presetName = Loc["MonPage_PresetDevelopment"].Value;
 		else if (!preset.LogMonitor && !preset.Ui && !preset.Other)
-			presetName = "Production";
+			presetName = Loc["MonPage_PresetProduction"].Value;
 		else if (preset.Driver && preset.Interface && preset.LogMonitor)
-			presetName = "Troubleshooting";
+			presetName = Loc["MonPage_PresetTroubleshooting"].Value;
 		else
-			presetName = "Profile Debug";
-		ShowInfo($"{presetName} preset applied (not saved yet)");
+			presetName = Loc["MonPage_PresetProfileDebug"].Value;
+		ShowInfo(Loc["MonPage_PresetApplied", presetName]);
 	}
 
 	private void HandleQuickAction(string actionName)
@@ -247,7 +247,7 @@
 				_settings.ServerDevice = true;
 				_settings.Telescope = true;
 				_settings.Ui = true;
-				ShowInfo("All devices selected");
+				ShowInfo(Loc["MonPage_AllDevicesSelected"]);
 				break;
 			case "SelectAllCategories":
 				_settings.Other = true;
@@ -256,7 +256,7 @@
 				_settings.Server = true;
 				_settings.Mount = true;
 				_settings.Alignment = true;
-				ShowInfo("All categories selected");
+				ShowInfo(Loc["MonPage_AllCategoriesSelected"]);
 				break;
 			case "SelectAllTypes":
 				_settings.Information = true;
@@ -264,7 +264,7 @@
 				_settings.Warning = true;
 				_settings.Error = true;
 				_settings.Debug = true;
-				ShowInfo("All types selected");
+				ShowInfo(Loc["MonPage_AllTypesSelected"]);
 				break;
 			case "ClearAllFilters":
 				_settings.ServerDevice = false;
@@ -281,7 +281,7 @@
 				_settings.Warning = false;
 				_settings.Error = false;
 				_settings.Debug = false;
-				ShowInfo("All filters cleared");
+				ShowInfo(Loc["MonPage_AllFiltersCleared"]);
 				break;
 		}
 

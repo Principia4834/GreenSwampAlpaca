@@ -133,7 +133,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
         {
             var device = _alpacaDevices.FirstOrDefault(d => d.DeviceNumber == deviceNumber);
             return string.IsNullOrWhiteSpace(device?.DeviceName)
-                ? $"Device {deviceNumber}"
+                ? Loc["Home_DefaultDeviceName", deviceNumber].Value
                 : device.DeviceName;
         }
 
@@ -156,7 +156,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private string BoolToSupported(bool value)
         {
-            return value ? "Supported" : "Not supported";
+            return value ? Loc["MStat_Supported"].Value : Loc["MStat_NotSupported"].Value;
         }
 
         private string StepsToArcSecs(long steps)
@@ -166,7 +166,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private string FormatHMS(double hours)
         {
-            if (double.IsNaN(hours) || double.IsInfinity(hours)) return "N/A";
+            if (double.IsNaN(hours) || double.IsInfinity(hours)) return Loc["MStat_NotAvailable"].Value;
             var sign = hours < 0 ? "-" : "+";
             hours = Math.Abs(hours);
             var h = (int)hours;
@@ -177,7 +177,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private string FormatDMS(double degrees)
         {
-            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
+            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
             var sign = degrees < 0 ? "-" : "+";
             degrees = Math.Abs(degrees);
             var d = (int)degrees;
@@ -188,7 +188,7 @@ namespace GreenSwamp.Alpaca.Server.Pages
 
         private string FormatDegrees(double degrees)
         {
-            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return "N/A";
+            if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
             return $"{degrees:F4}°";
         }
     }

@@ -7,23 +7,23 @@
 <MudStack Spacing="3">
 
     <MudTooltip Inline="false" RootStyle="max-width:300px"
-                Text="Enable voice announcements for this device (e.g. Parked, Slewing, Tracking On)."
+                Text="@Loc["Voice_Active_Tip"]"
                 Placement="Placement.Right" Arrow="true">
         <MudSwitch T="bool"
                    @bind-Value="Device!.VoiceActive"
                    @bind-Value:after="OnVoiceActiveChanged"
-                   Label="Enable Voice Announcements"
+                   Label="@Loc["Voice_Active"]"
                    Color="Color.Primary" />
     </MudTooltip>
 
     <MudTooltip Inline="false" RootStyle="max-width:300px"
-                Text="Select a voice. Leave blank to use the browser default. Click Refresh to load voices filtered by your browser language."
+                Text="@Loc["Voice_Select_Tip"]"
                 Placement="Placement.Right" Arrow="true">
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudSelect T="string"
                        @bind-Value="Device!.VoiceName"
                        @bind-Value:after="NotifyChanged"
-                       Label="Voice"
+                       Label="@Loc["Voice_Select"]"
                        Clearable="true"
                        Style="min-width:16.25rem">
                 @foreach (var v in _voices)
@@ -38,12 +38,12 @@
     </MudTooltip>
 
     <MudTooltip Inline="false" RootStyle="max-width:300px"
-                Text="Volume for voice announcements (0 = silent, 100 = full volume)."
+                Text="@Loc["Voice_Volume_Tip"]"
                 Placement="Placement.Right" Arrow="true">
         <MudNumericField T="int"
                          @bind-Value="Device!.VoiceVolume"
                          @bind-Value:after="NotifyChanged"
-                         Label="Volume (%)"
+                         Label="@Loc["Voice_Volume"]"
                          Min="0" Max="100"
                          Immediate="true" />
     </MudTooltip>

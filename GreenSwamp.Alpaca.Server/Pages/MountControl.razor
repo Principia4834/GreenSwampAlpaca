@@ -12,17 +12,17 @@
 @inject TelescopeStateService StateService
 @implements IDisposable
 
-<PageTitle>Mount Control</PageTitle>
+<PageTitle>@Loc["MCtl_Title"]</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h3">Mount Control</MudText>
+    <MudText Typo="Typo.h3">@Loc["MCtl_Title"]</MudText>
 
     @if (IsActiveMountSimulator)
     {
         <MudPaper Elevation="0"
                   Class="d-flex align-center justify-center pa-1"
                   Style="background-color: var(--mud-palette-success); border-radius: 8px; flex: 0 0 33%; max-width: 33%;">
-            <MudText Typo="Typo.h5" Color="Color.Default">Simulator</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Default">@Loc["MC_Simulator"]</MudText>
         </MudPaper>
     }
 
@@ -31,13 +31,13 @@
                Size="Size.Small"
                StartIcon="@Icons.Material.Filled.Download"
                OnClick="OpenExportDialog">
-        Export Settings & Logs
+        @Loc["MountCfg_Export"]
     </MudButton>
 </MudStack>
 
 @if (_alpacaDevices.Count == 0)
 {
-    <MudAlert Severity="Severity.Info">No mount devices registered.</MudAlert>
+    <MudAlert Severity="Severity.Info">@Loc["MountCfg_NoDevices"]</MudAlert>
 }
 else
 {
@@ -59,27 +59,27 @@ else
                 <MudPaper Elevation="1" Class="pa-2 mb-2">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">RA</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Ra"]</MudText>
                             <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.RightAscension)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">Dec</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Dec"]</MudText>
                             <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Declination)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">Az</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Az"]</MudText>
                             <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Azimuth)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">Alt</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Alt"]</MudText>
                             <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatDMS(s.Altitude)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">LHA</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["MCtl_Lha"]</MudText>
                             <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</MudText>
                         </MudStack>
                         <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">LST</MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["MCtl_Lst"]</MudText>
                             <MudText Typo="Typo.h6" Class="gs-font-mono">@FormatHMS(s.LocalSiderealTime)</MudText>
                         </MudStack>
                     </MudStack>
@@ -92,39 +92,39 @@ else
                         @* -- Status indicators (left) *@
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
 
-                            <MudTooltip Text="@(s.AtHome ? "At Home" : "Not at Home")" Placement="Placement.Bottom" Arrow="true">
+                            <MudTooltip Text="@(s.AtHome ? Loc["State_AtHome"].Value : Loc["State_NotAtHome"].Value)" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.Home"
                                          Color="@(s.AtHome ? Color.Success : Color.Default)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.AtPark ? "Parked" : "Unparked")" Placement="Placement.Bottom" Arrow="true">
+                            <MudTooltip Text="@(s.AtPark ? Loc["State_Parked"].Value : Loc["State_Unparked"].Value)" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.LocalParking"
                                          Color="@(s.AtPark ? Color.Info : Color.Default)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.Slewing ? "Slewing" : "Stationary")" Placement="Placement.Bottom" Arrow="true">
+                            <MudTooltip Text="@(s.Slewing ? Loc["State_Slewing"].Value : Loc["State_Stationary"].Value)" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.Moving"
                                          Color="@(s.Slewing ? Color.Warning : Color.Default)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.Tracking ? $"Tracking ({s.TrackingRate})" : "Tracking Off")"
+                            <MudTooltip Text="@(s.Tracking ? Loc["State_TrackingWithRate", s.TrackingRate].Value : Loc["State_TrackingOff"].Value)"
                                         Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@Icons.Material.Filled.TrackChanges"
                                          Color="@(s.Tracking ? Color.Success : Color.Default)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.IsPulseGuidingDec || s.IsPulseGuidingRa ? $"Pulse Guiding Active" : "Pulse Guiding Off")"
+                            <MudTooltip Text="@(s.IsPulseGuidingDec || s.IsPulseGuidingRa ? Loc["State_PulseGuidingActive"].Value : Loc["State_PulseGuidingOff"].Value)"
                                         Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@PulseIcon"
                                          Color="@(s.IsPulseGuidingDec || s.IsPulseGuidingRa ? Color.Warning : Color.Default)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.SideOfPier == PointingState.Normal ? $"Pier Side East" : "Pier Side West")"
+                            <MudTooltip Text="@(s.SideOfPier == PointingState.Normal ? Loc["State_PierEast"].Value : Loc["State_PierWest"].Value)"
                                         Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Icon="@(s.SideOfPier == PointingState.Normal ? Icons.Material.Filled.NorthEast : Icons.Material.Filled.NorthWest)"
                                          Color="@(s.ConnectedClientCount > 0 ? Color.Success : Color.Default)"
@@ -138,14 +138,14 @@ else
                                          Size="Size.Large" />
                             </MudTooltip>
 
-                            <MudTooltip Text="@(s.VoiceActive ? "Voice on" : "Voice off")" Placement="Placement.Bottom" Arrow="true">
+                            <MudTooltip Text="@(s.VoiceActive ? Loc["State_VoiceOn"].Value : Loc["State_VoiceOff"].Value)" Placement="Placement.Bottom" Arrow="true">
                                 <MudIcon Color="@(isUiClientConnected ? Color.Success : Color.Default)"
                                          Icon="@(s.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
                                          Size="Size.Large" />
                             </MudTooltip>
 
                             @* -- Connections --------------------------------------- *@
-                            <MudTooltip Text="@(s.ConnectedClientCount > 0 ? $"{s.ConnectedClientCount} active connection(s)" : (s.HasEverBeenConnected ? "No active connections (has been connected)" : "No connections"))"
+                            <MudTooltip Text="@(s.ConnectedClientCount > 0 ? Loc["State_ActiveConnections", s.ConnectedClientCount].Value : (s.HasEverBeenConnected ? Loc["State_NoActiveConnectionsWas"].Value : Loc["State_NoConnections"].Value))"
                                         Placement="Placement.Bottom" Arrow="true">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
                                     <MudIcon Icon="@(s.ConnectedClientCount > 0 ? Icons.Material.Filled.Link : Icons.Material.Filled.LinkOff)"
@@ -173,12 +173,12 @@ else
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Hand Controller</MudText>
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MCtl_HandController"]</MudText>
                         <HandControllerPanel DeviceNumber="@dn" IsEnabled="@isUiClientConnected" />
                     </MudPaper>
 
                     <MudPaper Elevation="1" Class="pa-3">
-                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount Info</MudText>
+                        <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MCtl_MountInfo"]</MudText>
                         <MountInfo State="@s"
                                    DeviceNumber="@dn"
                                    IsConnected="@isUiClientConnected"
@@ -192,7 +192,7 @@ else
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 
                         @* Far left: Shutdown *@
-                        <MudTooltip Text="Gracefully stops the server process. Use only when all mounts are parked and disconnected."
+                        <MudTooltip Text="@Loc["MCtl_ShutdownTip"]"
                                     Placement="Placement.Top" Arrow="true">
                             <MudIconButton Icon="@Icons.Material.Filled.PowerSettingsNew"
                                            Color="Color.Error"
@@ -202,7 +202,7 @@ else
                         </MudTooltip>
 
                         @* Centre: Stop — same StopCircle icon as the hand controller *@
-                        <MudTooltip Text="Emergency stop all axis motion" Placement="Placement.Top" Arrow="true">
+                        <MudTooltip Text="@Loc["MountButtons_StopTooltip"]" Placement="Placement.Top" Arrow="true">
                             <MudIconButton Icon="@Icons.Material.Filled.StopCircle"
                                            Color="Color.Error"
                                            Size="Size.Large"
@@ -215,7 +215,7 @@ else
                         @{
                             var connecting = IsConnecting(dn);
                         }
-                        <MudTooltip Text="@(connecting ? "Connecting\u2026" : isUiClientConnected ? "Disconnect from mount" : "Connect to mount")"
+                        <MudTooltip Text="@(connecting ? Loc["MCtl_Connecting"].Value : isUiClientConnected ? Loc["MCtl_Disconnect"].Value : Loc["MCtl_Connect"].Value)"
                                     Placement="Placement.Top" Arrow="true">
                             <MudIconButton Color="@(isUiClientConnected ? Color.Error : Color.Success)"
                                            Size="Size.Large"

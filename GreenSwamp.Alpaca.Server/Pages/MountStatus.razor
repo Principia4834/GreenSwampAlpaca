@@ -13,17 +13,17 @@
 @inject FloatingWindowManager FloatingWindowManager
 @implements IDisposable
 
-<PageTitle>Mount Status</PageTitle>
+<PageTitle>@Loc["MStat_Title"]</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-    <MudText Typo="Typo.h3">Mount Status</MudText>
+    <MudText Typo="Typo.h3">@Loc["MStat_Title"]</MudText>
 
     @if (IsActiveMountSimulator)
     {
         <MudPaper Elevation="0"
                   Class="d-flex align-center justify-center pa-1"
                   Style="background-color: var(--mud-palette-success); border-radius: 8px; flex: 0 0 33%; max-width: 33%;">
-            <MudText Typo="Typo.h5" Color="Color.Default">Simulator</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Default">@Loc["MC_Simulator"]</MudText>
         </MudPaper>
     }
 
@@ -33,14 +33,14 @@
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.Download"
                    OnClick="OpenExportDialog">
-            Export Settings & Logs
+            @Loc["MountCfg_Export"]
         </MudButton>
     </MudStack>
 </MudStack>
 
 @if (_alpacaDevices.Count == 0)
 {
-    <MudAlert Severity="Severity.Info">No mount devices registered.</MudAlert>
+    <MudAlert Severity="Severity.Info">@Loc["MountCfg_NoDevices"]</MudAlert>
 }
 else
 {
@@ -61,31 +61,31 @@ else
 
                     <MudItem xs="12" md="4">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Pointing Coordinates</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_PointingCoordinates"]</MudText>
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td style="width:3.125rem" class="gs-kv-label">RA</td>
+                                        <td style="width:3.125rem" class="gs-kv-label">@Loc["Coord_Ra"]</td>
                                         <td class="gs-font-mono">@FormatHMS(s.RightAscension)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Dec</td>
+                                        <td class="gs-kv-label">@Loc["Coord_Dec"]</td>
                                         <td class="gs-font-mono">@FormatDMS(s.Declination)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Alt</td>
+                                        <td class="gs-kv-label">@Loc["Coord_Alt"]</td>
                                         <td class="gs-font-mono">@FormatDMS(s.Altitude)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Az</td>
+                                        <td class="gs-kv-label">@Loc["Coord_Az"]</td>
                                         <td class="gs-font-mono">@FormatDMS(s.Azimuth)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">LHA</td>
+                                        <td class="gs-kv-label">@Loc["MCtl_Lha"]</td>
                                         <td class="gs-font-mono">@FormatHMS(s.LocalHourAngle)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Pier</td>
+                                        <td class="gs-kv-label">@Loc["MStat_Pier"]</td>
                                         <td class="gs-font-mono">@s.SideOfPier</td>
                                     </tr>
                                 </tbody>
@@ -95,31 +95,31 @@ else
 
                     <MudItem xs="12" md="4">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Positions</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_AxisPositions"]</MudText>
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td style="width:5.625rem" class="gs-kv-label">Actual X</td>
+                                        <td style="width:5.625rem" class="gs-kv-label">@Loc["MStat_ActualX"]</td>
                                         <td class="gs-font-mono">@FormatDegrees(s.ActualAxisX)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Actual Y</td>
+                                        <td class="gs-kv-label">@Loc["MStat_ActualY"]</td>
                                         <td class="gs-font-mono">@FormatDegrees(s.ActualAxisY)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">App X</td>
+                                        <td class="gs-kv-label">@Loc["MStat_AppX"]</td>
                                         <td class="gs-font-mono">@FormatDegrees(s.AppAxisX)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">App Y</td>
+                                        <td class="gs-kv-label">@Loc["MStat_AppY"]</td>
                                         <td class="gs-font-mono">@FormatDegrees(s.AppAxisY)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Steps X</td>
+                                        <td class="gs-kv-label">@Loc["MStat_StepsX"]</td>
                                         <td class="gs-font-mono">@s.AxisSteps[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Steps Y</td>
+                                        <td class="gs-kv-label">@Loc["MStat_StepsY"]</td>
                                         <td class="gs-font-mono">@s.AxisSteps[1].ToString("N0")</td>
                                     </tr>
                                 </tbody>
@@ -129,28 +129,28 @@ else
 
                     <MudItem xs="12" md="4">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Status</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_Status"]</MudText>
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     @StatusTableRowWithDetail(
-                                        "Mount Connected",
+                                        Loc["MStat_MountConnected"].Value,
                                         s.IsMountRunning,
                                         mountSettings?.Mount == "SkyWatcher" ? (s.ComPort ?? string.Empty) : string.Empty,
                                         Color.Success)
                                     @ActiveClientsTableRow(s.ConnectedClientCount, s.HasEverBeenConnected)
-                                    @StatusTableRow("Slewing", s.Slewing, Color.Warning)
+                                    @StatusTableRow(Loc["MStat_Slewing"].Value, s.Slewing, Color.Warning)
                                     @StatusTableRowWithDetail(
-                                        "Pulse Guiding",
+                                        Loc["MStat_PulseGuiding"].Value,
                                         s.IsPulseGuidingRa || s.IsPulseGuidingDec,
                                         (s.IsPulseGuidingRa ? "RA" : string.Empty) +
                                         (s.IsPulseGuidingRa && s.IsPulseGuidingDec ? " " : string.Empty) +
                                         (s.IsPulseGuidingDec ? "DEC" : string.Empty),
                                         Color.Warning)
-                                    @StatusTableRowWithDetail("Tracking", s.Tracking, s.TrackingRate.ToString(), Color.Success)
-                                    @StatusTableRow("Limits On", s.LimitsOn, Color.Success)
-                                    @StatusTableRow("Limit Warning", s.LimitWarningActive, Color.Warning)
-                                    @StatusTableRow("At Park", s.AtPark, Color.Info)
-                                    @StatusTableRow("At Home", s.AtHome, Color.Info)
+                                    @StatusTableRowWithDetail(Loc["MStat_Tracking"].Value, s.Tracking, s.TrackingRate.ToString(), Color.Success)
+                                    @StatusTableRow(Loc["MStat_LimitsOn"].Value, s.LimitsOn, Color.Success)
+                                    @StatusTableRow(Loc["MStat_LimitWarning"].Value, s.LimitWarningActive, Color.Warning)
+                                    @StatusTableRow(Loc["MStat_AtPark"].Value, s.AtPark, Color.Info)
+                                    @StatusTableRow(Loc["MStat_AtHome"].Value, s.AtHome, Color.Info)
                                 </tbody>
                             </MudSimpleTable>
                         </MudPaper>
@@ -159,31 +159,31 @@ else
 
                     <MudItem xs="12" md="4">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_Mount"]</MudText>
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td style="width:9.375rem" class="gs-kv-label">Type</td>
+                                        <td style="width:9.375rem" class="gs-kv-label">@Loc["MStat_Type"]</td>
                                         <td>@(mountSettings?.Mount ?? "—")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Mode</td>
+                                        <td class="gs-kv-label">@Loc["MStat_Mode"]</td>
                                         <td>@(mountSettings?.AlignmentMode ?? "—")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Mount Model</td>
+                                        <td class="gs-kv-label">@Loc["MStat_MountModel"]</td>
                                         <td class="gs-font-mono">@s.MountName</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Mount Firmware</td>
+                                        <td class="gs-kv-label">@Loc["MStat_MountFirmware"]</td>
                                         <td class="gs-font-mono">@s.MountVersion[0] / @s.MountVersion[1]</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Advanced Commands</td>
+                                        <td class="gs-kv-label">@Loc["MStat_AdvancedCommands"]</td>
                                         <td class="gs-font-mono">@BoolToSupported(s.CanAdvancedCmdSupport)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Home Sensor</td>
+                                        <td class="gs-kv-label">@Loc["MStat_HomeSensor"]</td>
                                         <td class="gs-font-mono">@BoolToSupported(s.CanHomeSensor)</td>
                                     </tr>
                                     <tr>
@@ -197,34 +197,34 @@ else
 
                     <MudItem xs="12" md="4">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_Mount"]</MudText>
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     @if (mountSettings?.Mount == "SkyWatcher")
                                     {
                                         <tr>
-                                            <td class="gs-kv-label">Voltage</td>
+                                            <td class="gs-kv-label">@Loc["MStat_Voltage"]</td>
                                             <td class="gs-font-mono">@(double.IsNaN(s.ControllerVoltage) ? "—" : $"{s.ControllerVoltage:F2} V")</td>
                                         </tr>
                                         <tr>
-                                            <td class="gs-kv-label">Power Event</td>
+                                            <td class="gs-kv-label">@Loc["MStat_PowerEvent"]</td>
                                             <td>@BoolIcon(s.LowVoltageEvent, Color.Error)</td>
                                         </tr>
                                     }
                                     <tr>
-                                        <td class="gs-kv-label">Polar LED</td>
+                                        <td class="gs-kv-label">@Loc["MStat_PolarLed"]</td>
                                         <td class="gs-font-mono">@BoolToSupported(s.CanPolarLed)</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Capabilities</td>
+                                        <td class="gs-kv-label">@Loc["MStat_Capabilities"]</td>
                                         <td class="gs-font-mono">@s.Capabilities</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Custom Offset RA</td>
+                                        <td class="gs-kv-label">@Loc["MStat_CustomOffsetRa"]</td>
                                         <td class="gs-font-mono">@s.TrackingOffsetRate.X.ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Custom Offset Dec</td>
+                                        <td class="gs-kv-label">@Loc["MStat_CustomOffsetDec"]</td>
                                         <td class="gs-font-mono">@s.TrackingOffsetRate.Y.ToString("N0")</td>
                                     </tr>
 
@@ -235,39 +235,39 @@ else
 
                     <MudItem xs="12" md="4">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Mount</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_Mount"]</MudText>
                             <MudSimpleTable Dense="true" Elevation="0">
                                 <tbody>
                                     <tr>
-                                        <td class="gs-kv-label">Steps RA</td>
+                                        <td class="gs-kv-label">@Loc["MStat_StepsRa"]</td>
                                         <td class="gs-font-mono">@s.StepsPerRevolution[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Steps Dec</td>
+                                        <td class="gs-kv-label">@Loc["MStat_StepsDec"]</td>
                                         <td class="gs-font-mono">@s.StepsPerRevolution[1].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Worm Steps RA</td>
+                                        <td class="gs-kv-label">@Loc["MStat_WormStepsRa"]</td>
                                         <td class="gs-font-mono">@s.StepsWormPerRevolution[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Worm Steps Dec</td>
+                                        <td class="gs-kv-label">@Loc["MStat_WormStepsDec"]</td>
                                         <td class="gs-font-mono">@s.StepsWormPerRevolution[1].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Frequency RA</td>
+                                        <td class="gs-kv-label">@Loc["MStat_FrequencyRa"]</td>
                                         <td class="gs-font-mono">@s.StepsTimeFreq[0].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Frequency Dec</td>
+                                        <td class="gs-kv-label">@Loc["MStat_FrequencyDec"]</td>
                                         <td class="gs-font-mono">@s.StepsTimeFreq[1].ToString("N0")</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">RA Steps/ArcSec</td>
+                                        <td class="gs-kv-label">@Loc["MStat_RaStepsArcSec"]</td>
                                         <td class="gs-font-mono">@StepsToArcSecs(s.StepsPerRevolution[0])</td>
                                     </tr>
                                     <tr>
-                                        <td class="gs-kv-label">Dec Steps/ArcSec</td>
+                                        <td class="gs-kv-label">@Loc["MStat_DecStepsArcSec"]</td>
                                         <td class="gs-font-mono">@StepsToArcSecs(s.StepsPerRevolution[1])</td>
                                     </tr>
 
@@ -280,13 +280,13 @@ else
 
                     <MudItem xs="12">
                         <MudPaper Elevation="0" Class="pa-3">
-                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">Axis Dials</MudText>
+                            <MudText Typo="Typo.overline" Class="gs-panel-heading mb-2">@Loc["MStat_AxisDials"]</MudText>
                             <MudStack Row="true" Justify="Justify.FlexStart" Spacing="6" Class="mt-1">
-                                <AxisDial Angle="@s.Azimuth" Label="Azimuth" Size="180" />
-                                <AxisDial Angle="@s.Altitude" Label="Altitude" Size="180" />
-                                <AxisDial Angle="@(s.RightAscension * 15)" Label="Right Ascension"
+                                <AxisDial Angle="@s.Azimuth" Label="@Loc["MountInfo_Azimuth"]" Size="180" />
+                                <AxisDial Angle="@s.Altitude" Label="@Loc["MountInfo_Altitude"]" Size="180" />
+                                <AxisDial Angle="@(s.RightAscension * 15)" Label="@Loc["MountInfo_RightAscension"]"
                                           DisplayUnits="DialDisplayUnits.Hours" Size="180" />
-                                <AxisDial Angle="@s.Declination" Label="Declination" Size="180" />
+                                <AxisDial Angle="@s.Declination" Label="@Loc["MountInfo_Declination"]" Size="180" />
                             </MudStack>
                         </MudPaper>
                     </MudItem>
@@ -349,7 +349,7 @@ else
                     <MudIcon Icon="@Icons.Material.Filled.People"
                              Color="@(count > 0 ? Color.Success : Color.Default)"
                              Size="Size.Small" />
-                    <MudText Typo="Typo.body2">Active clients</MudText>
+                    <MudText Typo="Typo.body2">@Loc["MStat_ActiveClients"]</MudText>
                 </MudStack>
             </td>
             <td>
