@@ -14,31 +14,31 @@
 @inject ISnackbar Snackbar
 @inject UnifiedDeviceRegistry DeviceRegistry
 
-<PageTitle>Settings Explorer</PageTitle>
+<PageTitle>@Loc["Nav_SettingsExplorer"]</PageTitle>
 
 <MudStack Spacing="2" Class="mb-3">
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
         <MudIcon Icon="@Icons.Material.Filled.AccountTree" Color="Color.Primary" />
-        <MudText Typo="Typo.h3">Settings Explorer</MudText>
+        <MudText Typo="Typo.h3">@Loc["Nav_SettingsExplorer"]</MudText>
         <MudSpacer />
-        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Expand all sections">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["SE_ExpandAll"]">
             <MudIconButton Icon="@Icons.Material.Filled.UnfoldMore" Size="Size.Small"
                            OnClick="ExpandAll" />
         </MudTooltip>
-        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Collapse all sections">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["SE_CollapseAll"]">
             <MudIconButton Icon="@Icons.Material.Filled.UnfoldLess" Size="Size.Small"
                            OnClick="CollapseAll" />
         </MudTooltip>
-        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="Show settings that are normally hidden" Placement="Placement.Left" Arrow="true">
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["SE_ShowHiddenTip"]" Placement="Placement.Left" Arrow="true">
             <MudSwitch T="bool" Value="_showHidden" ValueChanged="OnShowHiddenChanged"
-                       Label="Show hidden" Color="Color.Warning" Size="Size.Small" />
+                       Label="@Loc["SE_ShowHidden"]" Color="Color.Warning" Size="Size.Small" />
         </MudTooltip>
         <MudButton Color="Color.Default"
             Variant="Variant.Outlined"
             Size="Size.Small"
             StartIcon="@Icons.Material.Filled.Download"
             OnClick="OpenExportDialog">
-            Export Settings & Logs
+            @Loc["MountCfg_Export"]
         </MudButton>
     </MudStack>
 
@@ -51,7 +51,7 @@
         <MudPaper Elevation="1" Class="pa-2">
             <MudTextField @bind-Value="_searchText"
                           @bind-Value:after="StateHasChanged"
-                          Placeholder="Search settings…"
+                          Placeholder="@Loc["SE_SearchPlaceholder"]"
                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                           Clearable="true" Margin="Margin.Dense" Class="mb-2" />
 
@@ -97,7 +97,7 @@
         @if (_selectedNode is null)
         {
             <MudAlert Severity="Severity.Normal">
-                Select a settings group from the tree on the left to begin editing.
+                @Loc["SE_SelectGroup"]
             </MudAlert>
         }
         else if (IsDeviceManagerNode(_selectedNode))
@@ -147,7 +147,7 @@
                         @if (_selectedNode.IsDirty)
                         {
                             <MudChip T="string" Color="Color.Warning" Size="Size.Small"
-                                     Icon="@Icons.Material.Filled.Edit">Unsaved</MudChip>
+                                     Icon="@Icons.Material.Filled.Edit">@Loc["ObsCard_Unsaved"]</MudChip>
                         }
                     </CardHeaderActions>
                 </MudCardHeader>
@@ -156,7 +156,7 @@
                     @if (_showHidden)
                     {
                         <MudAlert Severity="Severity.Normal" Dense="true" Class="mb-3">
-                            Hidden settings are shown. These are advanced values not normally needed.
+                            @Loc["SE_HiddenShown"]
                         </MudAlert>
                     }
                     <DynamicGroupEditor Node="@_selectedNode"
@@ -178,13 +178,13 @@
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
                         }
-                        Save
+                        @Loc["Common_Save"]
                     </MudButton>
                     <MudButton Variant="Variant.Outlined" Color="Color.Secondary"
                                StartIcon="@Icons.Material.Filled.RestartAlt"
                                Disabled="@(!_selectedNode.IsDirty)"
                                OnClick="ResetSelectedGroup">
-                        Reset
+                        @Loc["ObsCard_Reset"]
                     </MudButton>
                 </MudCardActions>
             </MudCard>

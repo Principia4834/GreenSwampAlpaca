@@ -3392,4 +3392,396 @@
     <value>N/A</value>
     <comment>TODO: machine translation</comment>
   </data>
+  <data name="SE_ExpandAll" xml:space="preserve">
+    <value>Expand all sections</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_CollapseAll" xml:space="preserve">
+    <value>Collapse all sections</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ShowHiddenTip" xml:space="preserve">
+    <value>Show settings that are normally hidden</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ShowHidden" xml:space="preserve">
+    <value>Show hidden</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_SearchPlaceholder" xml:space="preserve">
+    <value>Search settings…</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_SelectGroup" xml:space="preserve">
+    <value>Select a settings group from the tree on the left to begin editing.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_HiddenShown" xml:space="preserve">
+    <value>Hidden settings are shown. These are advanced values not normally needed.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeviceLabel" xml:space="preserve">
+    <value>Device {0} — {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeviceDescription" xml:space="preserve">
+    <value>Settings for telescope device {0}: {1}.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeleteDeviceTitle" xml:space="preserve">
+    <value>Delete Telescope Device</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeviceAdded" xml:space="preserve">
+    <value>Added device {0}: {1}.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ErrAddDevice" xml:space="preserve">
+    <value>Error adding device: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeviceNotFound" xml:space="preserve">
+    <value>Device {0} was not found.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeviceDeleted" xml:space="preserve">
+    <value>Deleted device {0}: {1}.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ErrDeleteDevice" xml:space="preserve">
+    <value>Error deleting device {0}: {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_HotReloaded" xml:space="preserve">
+    <value>Device registry reloaded — {0} device(s) active.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_HotReloadFailed" xml:space="preserve">
+    <value>Hot reload failed: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_HotReloadError" xml:space="preserve">
+    <value>Hot reload error: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_PresetApplied" xml:space="preserve">
+    <value>Preset applied. Review the changes and click Save when ready.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_AllDevicesSelected" xml:space="preserve">
+    <value>All devices selected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_AllCategoriesSelected" xml:space="preserve">
+    <value>All categories selected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_AllTypesSelected" xml:space="preserve">
+    <value>All types selected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_AllFiltersCleared" xml:space="preserve">
+    <value>All filters cleared</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_LoggingSaved" xml:space="preserve">
+    <value>Logging settings saved successfully.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ErrSaveLogging" xml:space="preserve">
+    <value>Error saving Logging settings: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_LoggingReset" xml:space="preserve">
+    <value>Logging settings reset to last saved state.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Saved" xml:space="preserve">
+    <value>Settings saved successfully.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ErrSave" xml:space="preserve">
+    <value>Error saving settings: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Chg_MountType" xml:space="preserve">
+    <value>Mount Type: {0} → {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Chg_ComPort" xml:space="preserve">
+    <value>COM Port: {0} → {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Chg_BaudRate" xml:space="preserve">
+    <value>Baud Rate: {0} → {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Chg_AlignmentMode" xml:space="preserve">
+    <value>Alignment Mode: {0} → {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeleteObsContent" xml:space="preserve">
+    <value>Delete observatory "{0}"? This change will not be persisted until you click Save.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DeleteObsTitle" xml:space="preserve">
+    <value>Delete Observatory</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_CopyObsContent" xml:space="preserve">
+    <value>Copy Latitude, Longitude, Elevation and GPS settings from '{0}' to all {1} telescope device(s) and save immediately?</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_CopyAndSave" xml:space="preserve">
+    <value>Copy &amp; Save</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_CopyObsTitle" xml:space="preserve">
+    <value>Copy Observatory to All Devices</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_LocationCopied" xml:space="preserve">
+    <value>Location and GPS settings from '{0}' saved to {1} device(s).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ErrCopyObs" xml:space="preserve">
+    <value>Error copying observatory to devices: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_DiscardContent" xml:space="preserve">
+    <value>You have unsaved changes. Discard them and switch groups?</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Discard" xml:space="preserve">
+    <value>Discard</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Stay" xml:space="preserve">
+    <value>Stay</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_UnsavedChangesTitle" xml:space="preserve">
+    <value>Unsaved Changes</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_ObsSiteDescription" xml:space="preserve">
+    <value>Observatory site: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_TelescopeDevices" xml:space="preserve">
+    <value>Telescope Devices</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Observatories" xml:space="preserve">
+    <value>Observatories</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Logging" xml:space="preserve">
+    <value>Logging</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_ServerConfiguration" xml:space="preserve">
+    <value>Server Configuration</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_AlpacaSettings" xml:space="preserve">
+    <value>Alpaca Settings</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_UserInterface" xml:space="preserve">
+    <value>User Interface</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Security" xml:space="preserve">
+    <value>Security</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_MountConfiguration" xml:space="preserve">
+    <value>Mount Configuration</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_ObservatoryConfiguration" xml:space="preserve">
+    <value>Observatory Configuration</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Optics" xml:space="preserve">
+    <value>Optics</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_TrackingAndGuiding" xml:space="preserve">
+    <value>Tracking &amp; Guiding</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_HomeAndPark" xml:space="preserve">
+    <value>Home and Park</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Limits" xml:space="preserve">
+    <value>Limits</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Voice" xml:space="preserve">
+    <value>Voice</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_PerformanceAndTuning" xml:space="preserve">
+    <value>Performance &amp; Tuning</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_Ppec" xml:space="preserve">
+    <value>PPEC</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Node_HandController" xml:space="preserve">
+    <value>Hand Controller</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Observatories" xml:space="preserve">
+    <value>Named observatory sites — latitude, longitude, elevation and UTC offset per site.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_ServerConfiguration" xml:space="preserve">
+    <value>Alpaca HTTP server behaviour, network binding, authentication and identity.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Logging" xml:space="preserve">
+    <value>Logging filter settings — device, category and message type filters.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_TelescopeDevices" xml:space="preserve">
+    <value>Per-device telescope mount settings.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Observatory" xml:space="preserve">
+    <value>Latitude, longitude, elevation and UTC offset for this observatory site.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_AlpacaSettings" xml:space="preserve">
+    <value>Core Alpaca server settings, including server identity, port, network access and compatibility behaviour.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_UserInterface" xml:space="preserve">
+    <value>Display zoom and frontend user-preference settings.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Security" xml:space="preserve">
+    <value>HTTP Basic authentication settings and account security.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_DeviceFilters" xml:space="preserve">
+    <value>Enable or disable log entries by device type (server, telescope, UI).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_CategoryFilters" xml:space="preserve">
+    <value>Enable or disable log entries by category (driver, interface, mount, etc.).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_MessageTypeFilters" xml:space="preserve">
+    <value>Enable or disable log entries by message type (info, warning, error, debug).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_LoggingControl" xml:space="preserve">
+    <value>File logging targets — monitor log, session log and charting data.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_DeviceIdentity" xml:space="preserve">
+    <value>Device number, name and enabled state.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_SerialConnection" xml:space="preserve">
+    <value>Serial port, baud rate, handshake and timeout settings.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_MountConfiguration" xml:space="preserve">
+    <value>Device identity, serial connection, equatorial coordinates, mount hardware (motor settings, encoders, backlash) and custom gearing.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_HomeAndPark" xml:space="preserve">
+    <value>Stored home and park axis positions.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Limits" xml:space="preserve">
+    <value>Axis / slew limits, sync limits, meridian / flip angle limit (GEM/Polar) and horizontal axis limit (AltAz).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_TrackingAndGuiding" xml:space="preserve">
+    <value>Tracking rates and pulse guiding settings.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_ObservatoryConfiguration" xml:space="preserve">
+    <value>Latitude, longitude, elevation, UTC offset, environmental conditions and GPS.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Optics" xml:space="preserve">
+    <value>Aperture diameter, aperture area and focal length.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_CoordinateSystem" xml:space="preserve">
+    <value>Equatorial coordinate type (J2000 / JNow).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Tracking" xml:space="preserve">
+    <value>Tracking rates (sidereal, lunar, solar, king) and RA tracking offset.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_CustomGearing" xml:space="preserve">
+    <value>Custom motor gearing step counts and worm-wheel tooth counts.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Backlash" xml:space="preserve">
+    <value>RA and Dec backlash compensation in motor steps.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_PulseGuiding" xml:space="preserve">
+    <value>Minimum pulse durations, ST4 guide rate and guide rate offsets.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_SyncLimits" xml:space="preserve">
+    <value>Sync angle limit and no-sync-past-meridian flag.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Ppec" xml:space="preserve">
+    <value>Predictive PEC settings.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Encoders" xml:space="preserve">
+    <value>Enable or disable absolute encoder feedback.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_HandController" xml:space="preserve">
+    <value>Hand controller speed, mode, flip and anti-backlash settings.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Gps" xml:space="preserve">
+    <value>GPS serial port and baud rate for time/location synchronisation.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_PerformanceAndTuning" xml:space="preserve">
+    <value>Loop update interval, GOTO precision and trace logging.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_HomePosition" xml:space="preserve">
+    <value>Stored home axis positions (X/Y) and auto-home axis positions.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_ParkPositions" xml:space="preserve">
+    <value>Named park position list and active park selection.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_AxisSlewLimits" xml:space="preserve">
+    <value>Upper/lower axis limits and maximum slew rate.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_HorizontalAxisLimit" xml:space="preserve">
+    <value>Horizontal axis tracking limit for AltAz mounts.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_AlignmentMode" xml:space="preserve">
+    <value>Mount alignment mode (AltAz, GermanPolar, Polar).</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="SE_Desc_Voice" xml:space="preserve">
+    <value>Voice announcement settings — enable/disable, voice selection and volume.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
 </root>
