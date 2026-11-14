@@ -30,7 +30,7 @@
   </data>
   <data name="Nav_Monitor" xml:space="preserve">
     <value>Monitor</value>
-    <comment>TODO: machine translation</comment>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Nav_SettingsExplorer" xml:space="preserve">
     <value>Explorador de configuración</value>
@@ -61,8 +61,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Cancel" xml:space="preserve">
-    <value>Cancel</value>
-    <comment>TODO: machine translation</comment>
+    <value>Cancelar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Start" xml:space="preserve">
     <value>Iniciar</value>
@@ -137,8 +137,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_Unpark" xml:space="preserve">
-    <value>Unpark</value>
-    <comment>TODO: machine translation</comment>
+    <value>Desestacionar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_UnparkFailed" xml:space="preserve">
     <value>Error al desestacionar</value>
@@ -185,16 +185,16 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_FlipTitle" xml:space="preserve">
-    <value>Flip Side of Pier</value>
-    <comment>TODO: machine translation</comment>
+    <value>Voltear lado del pilar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_FlipFailed" xml:space="preserve">
     <value>Error al voltear (SOP): {0}</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
-    <value>AutoHome</value>
-    <comment>TODO: machine translation</comment>
+    <value>Origen automático</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountButtons_LimitsToggleFailed" xml:space="preserve">
     <value>Error al cambiar los límites</value>
@@ -205,8 +205,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_Title" xml:space="preserve">
-    <value>AutoHome</value>
-    <comment>TODO: machine translation</comment>
+    <value>Origen automático</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AutoHome_Searching" xml:space="preserve">
     <value>Buscando el sensor de origen…</value>
@@ -265,8 +265,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="FlipSop_Title" xml:space="preserve">
-    <value>Flip Side of Pier</value>
-    <comment>TODO: machine translation</comment>
+    <value>Voltear lado del pilar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="FlipSop_Description" xml:space="preserve">
     <value>La montura se desplazará a la misma posición del cielo en el lado opuesto del pilar. El telescopio debe estar dentro de los límites del ángulo de volteo.</value>
@@ -305,20 +305,20 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ReSync_Button" xml:space="preserve">
-    <value>ReSync</value>
-    <comment>TODO: machine translation</comment>
+    <value>Resincronizar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Ok" xml:space="preserve">
-    <value>OK</value>
-    <comment>TODO: machine translation</comment>
+    <value>Aceptar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Accept" xml:space="preserve">
     <value>Aceptar</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Close" xml:space="preserve">
-    <value>Close</value>
-    <comment>TODO: machine translation</comment>
+    <value>Cerrar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="About_TabAbout" xml:space="preserve">
     <value>Acerca de</value>
@@ -377,8 +377,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AddDevice_MountType" xml:space="preserve">
-    <value>Mount Type</value>
-    <comment>TODO: machine translation</comment>
+    <value>Tipo de montura</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="AddDevice_MountTypeHelp" xml:space="preserve">
     <value>Aplica la configuración predeterminada del simulador o de SkyWatcher</value>
@@ -521,8 +521,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Save" xml:space="preserve">
-    <value>Save</value>
-    <comment>TODO: machine translation</comment>
+    <value>Guardar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Common_Apply" xml:space="preserve">
     <value>Aplicar</value>
@@ -793,8 +793,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Home_DeviceMountType" xml:space="preserve">
-    <value>Mount type</value>
-    <comment>TODO: machine translation</comment>
+    <value>Tipo de montura</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Home_DeviceAlignment" xml:space="preserve">
     <value>Modo de alineación</value>
@@ -905,20 +905,20 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_Azimuth" xml:space="preserve">
-    <value>Azimuth</value>
-    <comment>TODO: machine translation</comment>
+    <value>Acimut</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_Altitude" xml:space="preserve">
-    <value>Altitude</value>
-    <comment>TODO: machine translation</comment>
+    <value>Altura</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_RightAscension" xml:space="preserve">
-    <value>Right Ascension</value>
-    <comment>TODO: machine translation</comment>
+    <value>Ascensión recta</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_Declination" xml:space="preserve">
-    <value>Declination</value>
-    <comment>TODO: machine translation</comment>
+    <value>Declinación</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_XAxis" xml:space="preserve">
     <value>Eje X</value>
@@ -937,8 +937,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_Optics" xml:space="preserve">
-    <value>Optics</value>
-    <comment>TODO: machine translation</comment>
+    <value>Óptica</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MountInfo_RaDecTooltip" xml:space="preserve">
     <value>Mostrar ascensión recta y declinación</value>
@@ -1057,28 +1057,28 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_North" xml:space="preserve">
-    <value>North</value>
-    <comment>TODO: machine translation</comment>
+    <value>Norte</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_NorthEast" xml:space="preserve">
     <value>Noreste</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_West" xml:space="preserve">
-    <value>West</value>
-    <comment>TODO: machine translation</comment>
+    <value>Oeste</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_East" xml:space="preserve">
-    <value>East</value>
-    <comment>TODO: machine translation</comment>
+    <value>Este</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_SouthWest" xml:space="preserve">
     <value>Suroeste</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_South" xml:space="preserve">
-    <value>South</value>
-    <comment>TODO: machine translation</comment>
+    <value>Sur</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_SouthEast" xml:space="preserve">
     <value>Sureste</value>
@@ -1097,8 +1097,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_OneClickStart" xml:space="preserve">
-    <value>One Click Start</value>
-    <comment>TODO: machine translation</comment>
+    <value>Inicio con un clic</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HandCtl_KeysOffTooltip" xml:space="preserve">
     <value>Teclas deshabilitadas durante el desplazamiento</value>
@@ -1154,7 +1154,7 @@
   </data>
   <data name="GoTo_GoToButton" xml:space="preserve">
     <value>GoTo</value>
-    <comment>TODO: machine translation</comment>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_CopyTooltip" xml:space="preserve">
     <value>Copiar de la posición actual</value>
@@ -1169,8 +1169,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_SyncButton" xml:space="preserve">
-    <value>Sync</value>
-    <comment>TODO: machine translation</comment>
+    <value>Sincronizar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_EnterRa" xml:space="preserve">
     <value>Introduzca el valor de ascensión recta</value>
@@ -1205,8 +1205,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_ParkPositions" xml:space="preserve">
-    <value>Park Positions</value>
-    <comment>TODO: machine translation</comment>
+    <value>Posiciones de estacionamiento</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="GoTo_SelectParkPosition" xml:space="preserve">
     <value>Seleccionar posición de estacionamiento</value>
@@ -1513,8 +1513,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Set_OneClickStart" xml:space="preserve">
-    <value>One Click Start</value>
-    <comment>TODO: machine translation</comment>
+    <value>Inicio con un clic</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HcPg_Speed" xml:space="preserve">
     <value>Velocidad</value>
@@ -1577,8 +1577,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
-    <value>Track After Unpark</value>
-    <comment>TODO: machine translation</comment>
+    <value>Seguimiento tras desestacionar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="HomePark_DefinedParkPositions" xml:space="preserve">
     <value>Posiciones de estacionamiento definidas</value>
@@ -1661,8 +1661,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Voice_Select" xml:space="preserve">
-    <value>Voice</value>
-    <comment>TODO: machine translation</comment>
+    <value>Voz</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Voice_Volume_Tip" xml:space="preserve">
     <value>Volumen de los avisos de voz (0 = silencio, 100 = volumen máximo).</value>
@@ -1793,8 +1793,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Lim_SyncPanel" xml:space="preserve">
-    <value>Sync Limits</value>
-    <comment>TODO: machine translation</comment>
+    <value>Límites de sincronización</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Lim_EnableSyncLimit_Tip" xml:space="preserve">
     <value>Habilita el límite de ángulo de sincronización: rechaza las sincronizaciones que desplazarían el modelo más de este ángulo.</value>
@@ -1853,8 +1853,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_Rate" xml:space="preserve">
-    <value>Tracking Rate</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad de seguimiento</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_Sidereal" xml:space="preserve">
     <value>Sidéreo</value>
@@ -1862,15 +1862,15 @@
   </data>
   <data name="Trk_Lunar" xml:space="preserve">
     <value>Lunar</value>
-    <comment>TODO: machine translation</comment>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_Solar" xml:space="preserve">
     <value>Solar</value>
-    <comment>TODO: machine translation</comment>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_King" xml:space="preserve">
     <value>King</value>
-    <comment>TODO: machine translation</comment>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_SiderealRate_Tip" xml:space="preserve">
     <value>Velocidad de seguimiento sidérea en segundos de arco/segundo.</value>
@@ -1961,16 +1961,16 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_RaGuideRate" xml:space="preserve">
-    <value>RA Guiding Rate %</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad de guiado AR %</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_DecGuideRate_Tip" xml:space="preserve">
     <value>Velocidad de guiado de Dec como porcentaje de la sidérea (0–100, en pasos de 10).</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Trk_DecGuideRate" xml:space="preserve">
-    <value>Dec Guiding Rate %</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad de guiado Dec %</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_DeviceInfoPanel" xml:space="preserve">
     <value>Información del dispositivo</value>
@@ -2005,8 +2005,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_MountType" xml:space="preserve">
-    <value>Mount Type</value>
-    <comment>TODO: machine translation</comment>
+    <value>Tipo de montura</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_Simulator" xml:space="preserve">
     <value>Simulador</value>
@@ -2053,8 +2053,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_EqCoord" xml:space="preserve">
-    <value>Equatorial Coordinate Type</value>
-    <comment>TODO: machine translation</comment>
+    <value>Tipo de coordenadas ecuatoriales</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_CoordOther" xml:space="preserve">
     <value>Otras</value>
@@ -2089,8 +2089,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_Baud" xml:space="preserve">
-    <value>Baud Rate</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad en baudios</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_DataBits_Tip" xml:space="preserve">
     <value>Número de bits de datos.</value>
@@ -2173,16 +2173,16 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_PolarLed" xml:space="preserve">
-    <value>Polar LED Level</value>
-    <comment>TODO: machine translation</comment>
+    <value>Nivel del LED polar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_FullCurrent_Tip" xml:space="preserve">
     <value>Habilita el modo de corriente completa en los controladores de los motores.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_FullCurrent" xml:space="preserve">
-    <value>Full Current</value>
-    <comment>TODO: machine translation</comment>
+    <value>Corriente completa</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_GearingPanel" xml:space="preserve">
     <value>Engranajes personalizados</value>
@@ -2201,12 +2201,12 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_RaWorm" xml:space="preserve">
-    <value>RA Worm Teeth</value>
-    <comment>TODO: machine translation</comment>
+    <value>Dientes de corona AR</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_RaTrkOffset" xml:space="preserve">
-    <value>RA Tracking Offset</value>
-    <comment>TODO: machine translation</comment>
+    <value>Desfase de seguimiento de AR</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_DecAxis" xml:space="preserve">
     <value>Eje de Dec</value>
@@ -2217,12 +2217,12 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_DecWorm" xml:space="preserve">
-    <value>Dec Worm Teeth</value>
-    <comment>TODO: machine translation</comment>
+    <value>Dientes de corona Dec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MC_DecTrkOffset" xml:space="preserve">
-    <value>Dec Tracking Offset</value>
-    <comment>TODO: machine translation</comment>
+    <value>Desfase de seguimiento de Dec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ObsCard_Title" xml:space="preserve">
     <value>Observatorios</value>
@@ -2265,8 +2265,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ObsCard_DataUtcOffset" xml:space="preserve">
-    <value>UTC Offset</value>
-    <comment>TODO: machine translation</comment>
+    <value>Desfase UTC</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="ObsCard_CopyToAll" xml:space="preserve">
     <value>Copiar latitud/longitud/elevación a todos los dispositivos de telescopio</value>
@@ -2505,8 +2505,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Telescope" xml:space="preserve">
-    <value>Telescope</value>
-    <comment>TODO: machine translation</comment>
+    <value>Telescopio</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Ui" xml:space="preserve">
     <value>IU</value>
@@ -2521,16 +2521,16 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Driver" xml:space="preserve">
-    <value>Driver</value>
-    <comment>TODO: machine translation</comment>
+    <value>Controlador</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Interface" xml:space="preserve">
-    <value>Interface</value>
-    <comment>TODO: machine translation</comment>
+    <value>Interfaz</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Server" xml:space="preserve">
-    <value>Server</value>
-    <comment>TODO: machine translation</comment>
+    <value>Servidor</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Mount" xml:space="preserve">
     <value>Montura</value>
@@ -2549,8 +2549,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Data" xml:space="preserve">
-    <value>Data</value>
-    <comment>TODO: machine translation</comment>
+    <value>Datos</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Warning" xml:space="preserve">
     <value>Advertencia</value>
@@ -2558,7 +2558,7 @@
   </data>
   <data name="Mon_Error" xml:space="preserve">
     <value>Error</value>
-    <comment>TODO: machine translation</comment>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Debug" xml:space="preserve">
     <value>Depuración</value>
@@ -2601,8 +2601,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_LogPath" xml:space="preserve">
-    <value>Log Path</value>
-    <comment>TODO: machine translation</comment>
+    <value>Ruta del registro</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_LogPath_Tip" xml:space="preserve">
     <value>Ruta del directorio donde se escriben los archivos de registro. Déjela vacía para usar la ubicación predeterminada (%USERPROFILE%\Documents\GreenSwamp\Server).</value>
@@ -2625,8 +2625,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_ClearAll" xml:space="preserve">
-    <value>Clear All</value>
-    <comment>TODO: machine translation</comment>
+    <value>Borrar todo</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Mon_Reset" xml:space="preserve">
     <value>Restablecer</value>
@@ -2681,8 +2681,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MonPage_Copy" xml:space="preserve">
-    <value>Copy to Clipboard</value>
-    <comment>TODO: machine translation</comment>
+    <value>Copiar al portapapeles</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MonPage_Reload" xml:space="preserve">
     <value>Recargar configuración</value>
@@ -2777,8 +2777,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_MountType" xml:space="preserve">
-    <value>Mount Type</value>
-    <comment>TODO: machine translation</comment>
+    <value>Tipo de montura</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_AlignmentMode" xml:space="preserve">
     <value>Modo de alineación</value>
@@ -2805,8 +2805,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_Refraction" xml:space="preserve">
-    <value>Refraction</value>
-    <comment>TODO: machine translation</comment>
+    <value>Refracción</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_SerialPortSettings" xml:space="preserve">
     <value>Configuración del puerto serie</value>
@@ -2817,8 +2817,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_BaudRate" xml:space="preserve">
-    <value>Baud Rate</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad en baudios</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_DataBits" xml:space="preserve">
     <value>Bits de datos</value>
@@ -2837,12 +2837,12 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_TrackingRate" xml:space="preserve">
-    <value>Tracking Rate</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad de seguimiento</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_SiderealRate" xml:space="preserve">
-    <value>Sidereal Rate</value>
-    <comment>TODO: machine translation</comment>
+    <value>Velocidad sidérea</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_MinPulseRa" xml:space="preserve">
     <value>Pulso mín. AR</value>
@@ -2857,16 +2857,16 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_RaBacklash" xml:space="preserve">
-    <value>RA Backlash</value>
-    <comment>TODO: machine translation</comment>
+    <value>Holgura de AR</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_DecBacklash" xml:space="preserve">
-    <value>Dec Backlash</value>
-    <comment>TODO: machine translation</comment>
+    <value>Holgura de Dec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_Encoders" xml:space="preserve">
-    <value>Encoders</value>
-    <comment>TODO: machine translation</comment>
+    <value>Codificadores</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="TS_AllowAdvanced" xml:space="preserve">
     <value>Permitir comandos avanzados</value>
@@ -3265,8 +3265,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_LimitWarning" xml:space="preserve">
-    <value>Limit Warning</value>
-    <comment>TODO: machine translation</comment>
+    <value>Advertencia de límite</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_AtPark" xml:space="preserve">
     <value>Estacionada</value>
@@ -3281,8 +3281,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_Mode" xml:space="preserve">
-    <value>Mode</value>
-    <comment>TODO: machine translation</comment>
+    <value>Modo</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_MountModel" xml:space="preserve">
     <value>Modelo de montura</value>
@@ -3297,8 +3297,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_HomeSensor" xml:space="preserve">
-    <value>Home Sensor</value>
-    <comment>TODO: machine translation</comment>
+    <value>Sensor de origen</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_Voltage" xml:space="preserve">
     <value>Tensión</value>
@@ -3309,20 +3309,20 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_PolarLed" xml:space="preserve">
-    <value>Polar LED</value>
-    <comment>TODO: machine translation</comment>
+    <value>LED polar</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_Capabilities" xml:space="preserve">
-    <value>Capabilities</value>
-    <comment>TODO: machine translation</comment>
+    <value>Capacidades</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_CustomOffsetRa" xml:space="preserve">
-    <value>Custom Offset RA</value>
-    <comment>TODO: machine translation</comment>
+    <value>Desfase personalizado AR</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_CustomOffsetDec" xml:space="preserve">
-    <value>Custom Offset Dec</value>
-    <comment>TODO: machine translation</comment>
+    <value>Desfase personalizado Dec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_StepsRa" xml:space="preserve">
     <value>Pasos AR</value>
@@ -3333,36 +3333,36 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_WormStepsRa" xml:space="preserve">
-    <value>Worm Steps RA</value>
-    <comment>TODO: machine translation</comment>
+    <value>Pasos de sinfín AR</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_WormStepsDec" xml:space="preserve">
-    <value>Worm Steps Dec</value>
-    <comment>TODO: machine translation</comment>
+    <value>Pasos de sinfín Dec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_FrequencyRa" xml:space="preserve">
-    <value>Frequency RA</value>
-    <comment>TODO: machine translation</comment>
+    <value>Frecuencia AR</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_FrequencyDec" xml:space="preserve">
-    <value>Frequency Dec</value>
-    <comment>TODO: machine translation</comment>
+    <value>Frecuencia Dec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_RaStepsArcSec" xml:space="preserve">
-    <value>RA Steps/ArcSec</value>
-    <comment>TODO: machine translation</comment>
+    <value>Pasos AR/arcsec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_DecStepsArcSec" xml:space="preserve">
-    <value>Dec Steps/ArcSec</value>
-    <comment>TODO: machine translation</comment>
+    <value>Pasos Dec/arcsec</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_AxisDials" xml:space="preserve">
     <value>Diales de ejes</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_Supported" xml:space="preserve">
-    <value>Supported</value>
-    <comment>TODO: machine translation</comment>
+    <value>Admitido</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="MStat_NotSupported" xml:space="preserve">
     <value>No admitido</value>
@@ -3857,8 +3857,8 @@
     <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Chart_Degrees" xml:space="preserve">
-    <value>Degrees</value>
-    <comment>TODO: machine translation</comment>
+    <value>Grados</value>
+    <comment>MT: machine translated - needs review</comment>
   </data>
   <data name="Chart_YAxisMs" xml:space="preserve">
     <value>ms</value>
