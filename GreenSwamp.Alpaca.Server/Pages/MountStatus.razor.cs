@@ -169,10 +169,8 @@ namespace GreenSwamp.Alpaca.Server.Pages
             if (double.IsNaN(hours) || double.IsInfinity(hours)) return Loc["MStat_NotAvailable"].Value;
             var sign = hours < 0 ? "-" : "+";
             hours = Math.Abs(hours);
-            var h = (int)hours;
-            var m = (int)((hours - h) * 60);
-            var s = ((hours - h) * 60 - m) * 60;
-            return $"{sign}{h:00}h {m:00}m {s:00.00}s";
+            Helpers.CoordinateFormatter.Split(hours, long.MaxValue, out var h, out var m, out var s);
+            return FormattableString.Invariant($"{sign}{h:00}h {m:00}m {s:00.00}s");
         }
 
         private string FormatDMS(double degrees)
@@ -180,16 +178,14 @@ namespace GreenSwamp.Alpaca.Server.Pages
             if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
             var sign = degrees < 0 ? "-" : "+";
             degrees = Math.Abs(degrees);
-            var d = (int)degrees;
-            var m = (int)((degrees - d) * 60);
-            var s = ((degrees - d) * 60 - m) * 60;
-            return $"{sign}{d:00}° {m:00}' {s:00.00}\"";
+            Helpers.CoordinateFormatter.Split(degrees, long.MaxValue, out var d, out var m, out var s);
+            return FormattableString.Invariant($"{sign}{d:00}° {m:00}' {s:00.00}\"");
         }
 
         private string FormatDegrees(double degrees)
         {
             if (double.IsNaN(degrees) || double.IsInfinity(degrees)) return Loc["MStat_NotAvailable"].Value;
-            return $"{degrees:F4}°";
+            return FormattableString.Invariant($"{degrees:F4}°");
         }
     }
 }

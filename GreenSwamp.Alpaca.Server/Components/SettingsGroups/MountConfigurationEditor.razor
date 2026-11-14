@@ -126,7 +126,7 @@
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_MaxSlew_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.MaximumSlewRate" @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["MC_MaxSlew"]" Format="F2" Min="0" Immediate="true" />
+                                 Label="@Loc["MC_MaxSlew"]" Format="F2" Converter="@(NumericFieldConverter.Localized("F2"))" Min="0" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["MC_RaBacklash_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="int" @bind-Value="Device!.RaBacklash" @bind-Value:after="NotifyChanged"

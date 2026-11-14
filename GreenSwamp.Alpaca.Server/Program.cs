@@ -125,10 +125,7 @@ namespace GreenSwamp.Alpaca.Server
         {
             // Backend work (serial protocol, JSON, Alpaca REST, logging) is always culture invariant.
             // Only Blazor circuits opt in to a regional format (see CircuitCulture and the localization middleware below).
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+            GreenSwamp.Alpaca.Server.Helpers.BackendCulture.ApplyInvariantDefaults();
 
             // Bootstrap logger — active before the DI container is built.
             // Log level is read from the "Logging" section in appsettings.json after the host is built.
@@ -631,7 +628,7 @@ namespace GreenSwamp.Alpaca.Server
             // Regional format is a browser UI feature only. Alpaca REST, management, config and hub traffic
             // never sees the cookie or Accept-Language and stays on the invariant process culture.
             app.UseWhen(
-                context => !IsCultureInvariantPath(context.Request.Path),
+                context => !GreenSwamp.Alpaca.Server.Helpers.BackendCulture.IsInvariantPath(context.Request.Path),
                 branch => branch.UseRequestLocalization(requestLocalizationOptions));
 
             // Start Swagger on the Swagger endpoints if enabled.
@@ -882,13 +879,6 @@ namespace GreenSwamp.Alpaca.Server
 
             return $"http://localhost:{fallbackPort}";
         }
-
-        private static bool IsCultureInvariantPath(PathString path) =>
-            path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/management", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/charthub", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/telescopestatehub", StringComparison.OrdinalIgnoreCase);
 
         private static IResult SetCultureCookie(
             HttpContext context,

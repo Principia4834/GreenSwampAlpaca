@@ -51,7 +51,7 @@
                     <tbody>
                         <tr>
                             <td>@Loc["Common_Latitude"]</td>
-                            <td>@_cdcResult!.Latitude.ToString("F6")&deg;</td>
+                            <td>@_cdcResult!.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                             <td class="gs-kv-spacer">
                                 <MudTooltip Text="@Loc["Cdc_CopyLocalToCdc"]" Placement="Placement.Left">
                                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
@@ -61,11 +61,11 @@
                                                    OnClick="CopyToCdcAsync" />
                                 </MudTooltip>
                             </td>
-                            <td>@LocalLatitude.ToString("F6")&deg;</td>
+                            <td>@LocalLatitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                         </tr>
                         <tr>
                             <td>@Loc["Common_Longitude"]</td>
-                            <td>@_cdcResult!.Longitude.ToString("F6")&deg;</td>
+                            <td>@_cdcResult!.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                             <td class="gs-kv-spacer">
                                 <MudTooltip Text="@Loc["Cdc_CopyCdcToLocal"]" Placement="Placement.Right">
                                     <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
@@ -75,7 +75,7 @@
                                                    OnClick="CopyFromCdc" />
                                 </MudTooltip>
                             </td>
-                            <td>@LocalLongitude.ToString("F6")&deg;</td>
+                            <td>@LocalLongitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                         </tr>
                         <tr>
                             <td>@Loc["Common_Altitude"]</td>

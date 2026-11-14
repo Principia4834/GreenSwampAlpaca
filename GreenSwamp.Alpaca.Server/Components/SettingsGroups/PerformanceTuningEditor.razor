@@ -9,7 +9,7 @@
         @if (ShowHidden)
         {
             <MudNumericField T="double" @bind-Value="Device!.GotoPrecision" @bind-Value:after="NotifyChanged"
-                             Label="@Loc["Perf_GotoPrecision"]" Format="F5" Min="0.000001" Immediate="true" />
+                             Label="@Loc["Perf_GotoPrecision"]" Format="F5" Converter="@(NumericFieldConverter.Localized("F5"))" Min="0.000001" Immediate="true" />
         }
     </MudTooltip>
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Perf_TraceLogger_Tip"]" Placement="Placement.Right" Arrow="true">

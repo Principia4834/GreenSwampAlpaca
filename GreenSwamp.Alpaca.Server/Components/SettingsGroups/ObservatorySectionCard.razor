@@ -34,10 +34,10 @@
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="@Loc["ObsCard_Name"]"><MudText Typo="Typo.body2"><strong>@context.Name</strong></MudText></MudTd>
-                    <MudTd DataLabel="@Loc["Common_Latitude"]">@context.Latitude.ToString("F6")</MudTd>
-                    <MudTd DataLabel="@Loc["Common_Longitude"]">@context.Longitude.ToString("F6")</MudTd>
+                    <MudTd DataLabel="@Loc["Common_Latitude"]">@context.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+                    <MudTd DataLabel="@Loc["Common_Longitude"]">@context.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
                     <MudTd DataLabel="@Loc["ObsCard_DataElevation"]">@context.Elevation.ToString("F1")</MudTd>
-                    <MudTd DataLabel="@Loc["ObsCard_DataUtcOffset"]">@context.UTCOffset.TotalHours.ToString("F1")</MudTd>
+                    <MudTd DataLabel="@Loc["ObsCard_DataUtcOffset"]">@context.UTCOffset.TotalHours.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
                     <MudTd Style="text-align:right">
                         <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="0">
                             @if (DeviceSettings is { Count: > 0 })

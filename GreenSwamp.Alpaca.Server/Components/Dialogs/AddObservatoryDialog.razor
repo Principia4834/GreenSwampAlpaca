@@ -23,13 +23,13 @@
                           ErrorText="@_nameErrorText" />
 
             <MudNumericField T="double" @bind-Value="_latitude"
-                             Label="@Loc["AddObservatory_Latitude"]" Format="F6" Min="-90" Max="90" Immediate="true" />
+                             Label="@Loc["AddObservatory_Latitude"]" Format="F6" Converter="@(NumericFieldConverter.Invariant("F6"))" Min="-90" Max="90" Immediate="true" />
             <MudNumericField T="double" @bind-Value="_longitude"
-                             Label="@Loc["AddObservatory_Longitude"]" Format="F6" Min="-180" Max="180" Immediate="true" />
+                             Label="@Loc["AddObservatory_Longitude"]" Format="F6" Converter="@(NumericFieldConverter.Invariant("F6"))" Min="-180" Max="180" Immediate="true" />
             <MudNumericField T="double" @bind-Value="_elevation"
-                             Label="@Loc["AddObservatory_Elevation"]" Format="F1" Min="-500" Max="9000" Immediate="true" />
+                             Label="@Loc["AddObservatory_Elevation"]" Format="F1" Converter="@(NumericFieldConverter.Localized("F1"))" Min="-500" Max="9000" Immediate="true" />
             <MudNumericField T="double" @bind-Value="_utcOffsetHours"
-                             Label="@Loc["AddObservatory_UtcOffset"]" Format="F1" Min="-14" Max="14" Immediate="true" />
+                             Label="@Loc["AddObservatory_UtcOffset"]" Format="F1" Converter="@(NumericFieldConverter.Invariant("F1"))" Min="-14" Max="14" Immediate="true" />
         </MudStack>
     </DialogContent>
     <DialogActions>

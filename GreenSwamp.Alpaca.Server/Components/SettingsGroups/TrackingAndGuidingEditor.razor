@@ -21,19 +21,19 @@
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_SiderealRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.SiderealRate" @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["Trk_SiderealRate"]" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_SiderealRate"]" Format="F6" Converter="@(NumericFieldConverter.Localized("F6"))" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_LunarRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.LunarRate" @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["Trk_LunarRate"]" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_LunarRate"]" Format="F6" Converter="@(NumericFieldConverter.Localized("F6"))" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_SolarRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.SolarRate" @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["Trk_SolarRate"]" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_SolarRate"]" Format="F6" Converter="@(NumericFieldConverter.Localized("F6"))" Immediate="true" />
             </MudTooltip>
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Trk_KingRate_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Device!.KingRate" @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["Trk_KingRate"]" Format="F6" Immediate="true" />
+                                 Label="@Loc["Trk_KingRate"]" Format="F6" Converter="@(NumericFieldConverter.Localized("F6"))" Immediate="true" />
             </MudTooltip>
             @if (ShowHidden)
             {

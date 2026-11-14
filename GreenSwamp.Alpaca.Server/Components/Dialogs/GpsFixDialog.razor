@@ -33,11 +33,11 @@
                         </tr>
                         <tr>
                             <td>@Loc["Common_Latitude"]</td>
-                            <td>@_result.Latitude.ToString("F6")&deg;</td>
+                            <td>@_result.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                         </tr>
                         <tr>
                             <td>@Loc["Common_Longitude"]</td>
-                            <td>@_result.Longitude.ToString("F6")&deg;</td>
+                            <td>@_result.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)&deg;</td>
                         </tr>
                         <tr>
                             <td>@Loc["Common_Altitude"]</td>

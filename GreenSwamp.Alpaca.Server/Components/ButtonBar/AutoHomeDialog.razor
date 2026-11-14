@@ -46,12 +46,14 @@
                                  Variant="Variant.Outlined"
                                  Disabled="@_running"
                                  Min="85.0" Max="95.0" Step="0.1"
+                                 Converter="@(NumericFieldConverter.Invariant())"
                                  HelperText="@Loc["AutoHome_RaSensorHelp"]" />
 
                 <MudNumericField T="double" Label="@Loc["AutoHome_DecSensorPosition"]" @bind-Value="_axisY"
                                  Variant="Variant.Outlined"
                                  Disabled="@_running"
                                  Min="85.0" Max="95.0" Step="0.1"
+                                 Converter="@(NumericFieldConverter.Invariant())"
                                  HelperText="@Loc["AutoHome_DecSensorHelp"]" />
 
                 <MudButton Variant="Variant.Text" Color="Color.Secondary"

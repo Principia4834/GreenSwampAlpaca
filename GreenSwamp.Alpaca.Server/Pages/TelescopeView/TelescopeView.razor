@@ -19,7 +19,7 @@
         </MudText>
         <MudSpacer />
         <MudText Typo="Typo.caption" Class="gs-font-mono">
-            @Loc["TView_Axis1", _axisX.ToString("F2")]&nbsp;&nbsp;@Loc["TView_Axis2", _axisY.ToString("F2")]
+            @Loc["TView_Axis1", _axisX.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]&nbsp;&nbsp;@Loc["TView_Axis2", _axisY.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]
         </MudText>
         <MudIconButton Icon="@Icons.Material.Filled.Save"
                        Size="Size.Small"

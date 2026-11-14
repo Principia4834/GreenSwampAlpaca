@@ -2,6 +2,7 @@
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
+using GreenSwamp.Alpaca.Server.Helpers;
 using GreenSwamp.Alpaca.Server.Models;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -498,26 +499,9 @@ namespace GreenSwamp.Alpaca.Server.Components
             return true;
         }
 
-        private static string FormatRaSmart(double hours)
-        {
-            hours = Math.Max(0.0, hours);
-            var h = (int)hours;
-            var rem = (hours - h) * 60.0;
-            var m = (int)rem;
-            var s = (rem - m) * 60.0;
-            return $"{h:00}h {m:00}m {s:00.##}s";
-        }
+        private static string FormatRaSmart(double hours) => CoordinateParser.FormatRa(hours);
 
-        private static string FormatAngleSmart(double degrees)
-        {
-            var sign = degrees < 0 ? "-" : "+";
-            degrees = Math.Abs(degrees);
-            var d = (int)degrees;
-            var rem = (degrees - d) * 60.0;
-            var m = (int)rem;
-            var s = (rem - m) * 60.0;
-            return $"{sign}{d:00}° {m:00}′ {s:00.##}″";
-        }
+        private static string FormatAngleSmart(double degrees) => CoordinateParser.FormatAngle(degrees);
 
         private bool TryParseSmartRa(string input, out double hours, out string error)
         {
@@ -557,296 +541,38 @@ namespace GreenSwamp.Alpaca.Server.Components
 
         private string? ValidateSmartPartial(string input, bool isRa)
         {
-            if (string.IsNullOrWhiteSpace(input))
+            return CoordinateParser.ValidatePartial(input, isRa) switch
             {
-                // Empty is not an error while editing; "required" is only reported on GoTo / Sync.
-                return string.Empty;
-            }
-
-            var trimmed = input.Trim();
-            if (!isRa && (trimmed == "+" || trimmed == "-"))
-            {
-                return string.Empty;
-            }
-
-            var decimalMode = TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical);
-            if (decimalMode)
-            {
-                return string.IsNullOrEmpty(decimalCanonical) ? (isRa ? Loc["Coord_HoursRange"].Value : Loc["Coord_DegreesRange"].Value) : string.Empty;
-            }
-
-            var tokens = TokenizeSmartInput(input);
-            if (tokens.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            if (!TryParseIntegerToken(tokens[0], out var major))
-            {
-                return isRa ? Loc["Coord_HoursInteger"].Value : Loc["Coord_DegreesInteger"].Value;
-            }
-
-            var sign = 1;
-            if (!isRa && trimmed.StartsWith("-", StringComparison.Ordinal))
-            {
-                sign = -1;
-            }
-
-            var signedMajor = major * sign;
-            if (isRa)
-            {
-                if (signedMajor < 0 || signedMajor >= 24) return Loc["Coord_HoursRange"];
-            }
-            else
-            {
-                if (signedMajor < -90 || signedMajor > 90) return Loc["Coord_DegreesRange"];
-            }
-
-            if (tokens.Length > 1 && (!TryParseIntegerToken(tokens[1], out var minutes) || minutes < 0 || minutes >= 60))
-            {
-                return Loc["Coord_MinutesInteger"];
-            }
-
-            if (tokens.Length > 2 && (!TryParseDecimalToken(tokens[2], out var seconds) || seconds < 0 || seconds >= 60))
-            {
-                return Loc["Coord_SecondsRange"];
-            }
-
-            return string.Empty;
+                CoordinateParseError.NotInteger => isRa ? Loc["Coord_HoursInteger"].Value : Loc["Coord_DegreesInteger"].Value,
+                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_HoursRange"].Value : Loc["Coord_DegreesRange"].Value,
+                CoordinateParseError.MinutesNotInteger => Loc["Coord_MinutesInteger"].Value,
+                CoordinateParseError.SecondsRange => Loc["Coord_SecondsRange"].Value,
+                _ => string.Empty
+            };
         }
 
         private static string CanonicalizeSmartValue(string input, bool isRa, bool canonicalizeSign)
         {
-            var trimmed = input.Trim();
-            if (!isRa && (trimmed == "+" || trimmed == "-"))
-            {
-                return trimmed;
-            }
-
-            var decimalMode = TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical);
-            if (decimalMode && !string.IsNullOrEmpty(decimalCanonical))
-            {
-                return decimalCanonical;
-            }
-
-            var tokens = TokenizeSmartInput(input);
-            if (tokens.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            if (!TryParseIntegerToken(tokens[0], out var major))
-            {
-                return input.Trim();
-            }
-
-            var minutes = 0;
-            var seconds = 0.0;
-            if (tokens.Length > 1)
-            {
-                _ = int.TryParse(tokens[1], out minutes);
-            }
-            if (tokens.Length > 2)
-            {
-                _ = double.TryParse(tokens[2], out seconds);
-            }
-
-            if (isRa)
-            {
-                return tokens.Length > 2
-                    ? $"{major:00}h {minutes:00}m {seconds:00.##}s"
-                    : tokens.Length > 1
-                        ? $"{major:00}h {minutes:00}m"
-                        : $"{major:00}h";
-            }
-
-            var sign = string.Empty;
-            if (canonicalizeSign)
-            {
-                if (input.TrimStart().StartsWith("-", StringComparison.Ordinal)) sign = "-";
-                else if (input.TrimStart().StartsWith("+", StringComparison.Ordinal)) sign = "+";
-            }
-
-            var signedMajor = sign == "-" ? -Math.Abs(major) : Math.Abs(major);
-            return tokens.Length > 2
-                ? $"{signedMajor:+00;-00;00}° {minutes:00}′ {seconds:00.##}″"
-                : tokens.Length > 1
-                    ? $"{signedMajor:+00;-00;00}° {minutes:00}′"
-                    : $"{signedMajor:+00;-00;00}°";
-        }
-
-        private static bool TryParseSmartDecimalMode(string input, bool isRa, out string canonical)
-        {
-            canonical = string.Empty;
-            if (!input.Contains('.'))
-            {
-                return false;
-            }
-
-            var text = input.Trim();
-            var sign = string.Empty;
-            if (!isRa && (text.StartsWith("+") || text.StartsWith("-")))
-            {
-                sign = text.StartsWith("-") ? "-" : "+";
-                text = text[1..].TrimStart();
-            }
-
-            if (!double.TryParse(text, out var value))
-            {
-                return false;
-            }
-
-            if (isRa)
-            {
-                if (value < 0 || value >= 24)
-                {
-                    return true;
-                }
-
-                canonical = $"{value:0.##}";
-                return true;
-            }
-
-            if (sign == "-") value = -value;
-            if (value < -90 || value > 90)
-            {
-                return true;
-            }
-
-            canonical = $"{value:+0.##;-0.##;0.##}";
-            return true;
-        }
-
-        private static string[] TokenizeSmartInput(string input)
-        {
-            var normalized = input.Trim()
-                .Replace("º", "°")
-                .Replace('’', '′')
-                .Replace('\'', '′')
-                .Replace('"', '″')
-                .Replace(':', ' ')
-                .Replace("°", " ")
-                .Replace("h", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("m", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("s", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("′", " ")
-                .Replace("″", " ");
-
-            return normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        private static bool TryParseIntegerToken(string token, out int value)
-        {
-            return int.TryParse(token, out value);
-        }
-
-        private static bool TryParseDecimalToken(string token, out double value)
-        {
-            return double.TryParse(token, out value);
+            return CoordinateParser.Canonicalize(input, isRa, canonicalizeSign);
         }
 
         private bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa)
         {
-            value = 0;
-            error = isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value;
-
-            if (string.IsNullOrWhiteSpace(input))
+            if (CoordinateParser.TryParse(input, isRa, out value, out var parseError))
             {
-                error = isRa ? Loc["Coord_RaRequired"].Value : Loc["Coord_AngleRequired"].Value;
-                return false;
-            }
-
-            var trimmed = input.Trim();
-            if (TryParseSmartDecimalMode(trimmed, isRa, out var decimalCanonical))
-            {
-                if (string.IsNullOrEmpty(decimalCanonical))
-                {
-                    error = isRa ? Loc["Coord_RaRange"].Value : Loc["Coord_DegreesRange"].Value;
-                    return false;
-                }
-
-                if (!double.TryParse(trimmed.TrimStart('+', '-'), out value))
-                {
-                    error = isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value;
-                    return false;
-                }
-
-                if (!isRa && trimmed.StartsWith("-", StringComparison.Ordinal))
-                {
-                    value = -value;
-                }
-
-                if (isRa)
-                {
-                    if (value < 0 || value >= 24)
-                    {
-                        error = Loc["Coord_RaRange"];
-                        return false;
-                    }
-                }
-                else if (value < -90 || value > 90)
-                {
-                    error = Loc["Coord_DegreesRange"];
-                    return false;
-                }
-
                 error = string.Empty;
                 return true;
             }
 
-            var normalized = input.Trim()
-                .Replace("°", " ")
-                .Replace("º", " ")
-                .Replace("h", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("m", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("s", " ", StringComparison.OrdinalIgnoreCase)
-                .Replace("′", " ")
-                .Replace("’", " ")
-                .Replace("'", " ")
-                .Replace("″", " ")
-                .Replace("\"", " ")
-                .Replace(":", " ");
-
-            var parts = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 0 || parts.Length > 3)
+            error = parseError switch
             {
-                return false;
-            }
-
-            var sign = 1.0;
-            if (!isRa && parts[0].StartsWith("-", StringComparison.Ordinal))
-            {
-                sign = -1.0;
-            }
-
-            if (!int.TryParse(parts[0], out var a)) return false;
-            var b = 0;
-            var c = 0.0;
-
-            if (parts.Length > 1 && !int.TryParse(parts[1], out b)) return false;
-            if (parts.Length > 2 && !double.TryParse(parts[2], out c)) return false;
-
-            var major = Math.Abs(a);
-            if (parts.Length > 1 && (b < 0 || b >= 60))
-            {
-                error = Loc["Coord_MinutesRange"];
-                return false;
-            }
-
-            if (parts.Length > 2 && (c < 0 || c >= 60))
-            {
-                error = Loc["Coord_SecondsRange"];
-                return false;
-            }
-
-            value = major + b / 60.0 + c / 3600.0;
-            if (!isRa)
-            {
-                value *= sign;
-            }
-
-            error = string.Empty;
-            return true;
+                CoordinateParseError.Required => isRa ? Loc["Coord_RaRequired"].Value : Loc["Coord_AngleRequired"].Value,
+                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_RaRange"].Value : Loc["Coord_DegreesRange"].Value,
+                CoordinateParseError.MinutesRange => Loc["Coord_MinutesRange"].Value,
+                CoordinateParseError.SecondsRange => Loc["Coord_SecondsRange"].Value,
+                _ => isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value
+            };
+            return false;
         }
     }
 }

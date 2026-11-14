@@ -58,8 +58,8 @@
                     <MudCardContent Style="padding-top:6px;">
                         <MudSimpleTable Dense="true" Hover="true" Class="ts-table">
                             <tbody>
-                                <tr><th>@Loc["Common_Latitude"]</th><td>@settings.Latitude.ToString("F6")°</td></tr>
-                                <tr><th>@Loc["Common_Longitude"]</th><td>@settings.Longitude.ToString("F6")°</td></tr>
+                                <tr><th>@Loc["Common_Latitude"]</th><td>@settings.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)°</td></tr>
+                                <tr><th>@Loc["Common_Longitude"]</th><td>@settings.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)°</td></tr>
                                 <tr><th>@Loc["TS_Elevation"]</th><td>@settings.Elevation m</td></tr>
                                 <tr>
                                     <th>@Loc["TS_Refraction"]</th>

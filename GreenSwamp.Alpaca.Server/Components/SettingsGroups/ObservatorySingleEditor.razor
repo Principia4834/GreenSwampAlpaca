@@ -20,25 +20,25 @@
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["ObsSingle_Lat_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Observatory!.Latitude"
                                  @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["ObsCard_Latitude"]" Format="F6" Min="-90" Max="90" Immediate="true" />
+                                 Label="@Loc["ObsCard_Latitude"]" Format="F6" Converter="@(NumericFieldConverter.Invariant("F6"))" Min="-90" Max="90" Immediate="true" />
             </MudTooltip>
 
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["ObsSingle_Lon_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Observatory!.Longitude"
                                  @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["ObsCard_Longitude"]" Format="F6" Min="-180" Max="180" Immediate="true" />
+                                 Label="@Loc["ObsCard_Longitude"]" Format="F6" Converter="@(NumericFieldConverter.Invariant("F6"))" Min="-180" Max="180" Immediate="true" />
             </MudTooltip>
 
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Obs_Elev_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="Observatory!.Elevation"
                                  @bind-Value:after="NotifyChanged"
-                                 Label="@Loc["ObsCard_Elevation"]" Format="F1" Min="-500" Max="9000" Immediate="true" />
+                                 Label="@Loc["ObsCard_Elevation"]" Format="F1" Converter="@(NumericFieldConverter.Localized("F1"))" Min="-500" Max="9000" Immediate="true" />
             </MudTooltip>
 
             <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["ObsSingle_Utc_Tip"]" Placement="Placement.Right" Arrow="true">
                 <MudNumericField T="double" @bind-Value="_utcOffsetHours"
                                  @bind-Value:after="OnUtcOffsetChanged"
-                                 Label="@Loc["ObsCard_UtcOffset"]" Format="F1" Min="-14" Max="14" Immediate="true" />
+                                 Label="@Loc["ObsCard_UtcOffset"]" Format="F1" Converter="@(NumericFieldConverter.Invariant("F1"))" Min="-14" Max="14" Immediate="true" />
             </MudTooltip>
         </MudStack>
     </MudItem>
