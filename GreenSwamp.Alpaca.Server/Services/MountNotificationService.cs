@@ -35,6 +35,8 @@ namespace GreenSwamp.Alpaca.Server.Services
         public bool IsLimitWarning { get; init; }
         /// <summary>True when this notification should be shown as an error snackbar for a connection failure.</summary>
         public bool IsConnectionError { get; init; }
+        /// <summary>Raw connection error text, so the UI can localise the surrounding message.</summary>
+        public string ErrorDetail { get; init; } = string.Empty;
     }
 
     /// <summary>
@@ -182,6 +184,7 @@ namespace GreenSwamp.Alpaca.Server.Services
                     {
                         DeviceNumber = dn,
                         Text = $"Connection failed: {connectionError}",
+                        ErrorDetail = connectionError,
                         IsVoiceEnabled = false,
                         IsConnectionError = true,
                         VoiceName = state.VoiceName,

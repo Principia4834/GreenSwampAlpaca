@@ -36,7 +36,8 @@
         await ShutdownDialogHelper.ShowShutdownDialogAsync(
             DialogService,
             Snackbar,
-            Program.Lifetime);
+            Program.Lifetime,
+            Loc);
     }
 
     private async Task OpenChartWindowAsync(string url, string windowKey)

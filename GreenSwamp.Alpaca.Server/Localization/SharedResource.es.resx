@@ -3784,4 +3784,180 @@
     <value>Voice announcement settings — enable/disable, voice selection and volume.</value>
     <comment>TODO: machine translation</comment>
   </data>
+  <data name="Chart_PulseTitle" xml:space="preserve">
+    <value>Pulse Guide Chart — GS Alpaca</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_PulseHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;Pulse&lt;/b&gt; Guide — {0} — Device {1}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_RaDecHeader" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;{0} / {1}&lt;/b&gt; Position — {2} — Device {3}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_RaDecTitle" xml:space="preserve">
+    <value>{0} / {1} Chart</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Reconnecting" xml:space="preserve">
+    <value>Reconnecting…</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_DataWindow" xml:space="preserve">
+    <value>Data Window</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Win10s" xml:space="preserve">
+    <value>10 sec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Win30s" xml:space="preserve">
+    <value>30 sec</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Win2m" xml:space="preserve">
+    <value>2 min</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Win5m" xml:space="preserve">
+    <value>5 min</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Win15m" xml:space="preserve">
+    <value>15 min</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Win30m" xml:space="preserve">
+    <value>30 min</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_PulseUnits" xml:space="preserve">
+    <value>Pulse Units</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Scale" xml:space="preserve">
+    <value>Scale</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Milliseconds" xml:space="preserve">
+    <value>milliSeconds</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_ArcSeconds" xml:space="preserve">
+    <value>Arc Seconds</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Steps" xml:space="preserve">
+    <value>Steps</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Degrees" xml:space="preserve">
+    <value>Degrees</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_YAxisMs" xml:space="preserve">
+    <value>mS</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_ChartType" xml:space="preserve">
+    <value>Chart Type</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Bars" xml:space="preserve">
+    <value>Bars</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Points" xml:space="preserve">
+    <value>Points</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Line" xml:space="preserve">
+    <value>Line</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_PauseTip" xml:space="preserve">
+    <value>Pause (freeze to historical snapshot)</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_ResumeTip" xml:space="preserve">
+    <value>Resume realtime scrolling</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_PauseAria" xml:space="preserve">
+    <value>Pause chart updates</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_ResumeAria" xml:space="preserve">
+    <value>Resume chart updates</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_RaRejected" xml:space="preserve">
+    <value>RA rej.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_DecRejected" xml:space="preserve">
+    <value>Dec rej.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_Clear" xml:space="preserve">
+    <value>Clear chart</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Chart_RenderFailed" xml:space="preserve">
+    <value>Chart failed to render. Please close and reopen this window.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TView_Title" xml:space="preserve">
+    <value>Telescope View — Device {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TView_Header" xml:space="preserve">
+    <value>&lt;b style="color:var(--gs-accent-500);"&gt;Telescope 3D View&lt;/b&gt; — Device {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TView_Axis1" xml:space="preserve">
+    <value>Axis 1: {0}°</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TView_Axis2" xml:space="preserve">
+    <value>Axis 2: {0}°</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="TView_SaveView" xml:space="preserve">
+    <value>Save View</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="App_NotFoundTitle" xml:space="preserve">
+    <value>Not found</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="App_NotFoundMessage" xml:space="preserve">
+    <value>Sorry, there's nothing at this address.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Shutdown_Question" xml:space="preserve">
+    <value>Are you sure you want to shut down the system?</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Shutdown_OneMount" xml:space="preserve">
+    <value>There is 1 mount connected.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Shutdown_ManyMounts" xml:space="preserve">
+    <value>There are {0} mounts connected.</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Shutdown_Failed" xml:space="preserve">
+    <value>Shutdown failed: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
+  <data name="Notify_ConnectionFailed" xml:space="preserve">
+    <value>Connection failed: {0}</value>
+    <comment>TODO: machine translation</comment>
+  </data>
 </root>

@@ -1,5 +1,6 @@
 ﻿using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Server.Components.Dialogs;
+using Microsoft.Extensions.Localization;
 using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Components.Dialogs
@@ -15,25 +16,27 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
         /// <param name="dialogService">The dialog service used to show the confirmation dialog.</param>
         /// <param name="snackbar">The snackbar service used to show notifications.</param>
         /// <param name="lifetime">The application lifetime used to stop the application.</param>
+        /// <param name="loc">The localizer used for dialog and notification text.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         public static async Task ShowShutdownDialogAsync(
             IDialogService dialogService,
             ISnackbar snackbar,
-            IHostApplicationLifetime? lifetime)
+            IHostApplicationLifetime? lifetime,
+            IStringLocalizer loc)
         {
-            var contextText = "Are you sure you want to shut down the system?";
+            var contextText = loc["Shutdown_Question"].Value;
             var connectedCount = MountRegistry.ConnectedCount;
 
             if (connectedCount > 0)
             {
                 contextText = connectedCount switch
                 {
-                    1 => "There is 1 mount connected. " + contextText,
-                    _ => $"There are {connectedCount} mounts connected. " + contextText
+                    1 => loc["Shutdown_OneMount"].Value + " " + contextText,
+                    _ => loc["Shutdown_ManyMounts", connectedCount].Value + " " + contextText
                 };
             }
 
-            var confirmed = await ConfirmAsync(dialogService, contextText, "Shutdown");
+            var confirmed = await ConfirmAsync(dialogService, contextText, loc["Nav_Shutdown"].Value, loc["Common_Confirm"].Value);
             if (!confirmed) return;
 
             try
@@ -42,7 +45,7 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
             }
             catch (Exception ex)
             {
-                snackbar.Add($"Shutdown failed: {ex.Message}", Severity.Error);
+                snackbar.Add(loc["Shutdown_Failed", ex.Message].Value, Severity.Error);
             }
         }
 
@@ -56,7 +59,8 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
         private static async Task<bool> ConfirmAsync(
             IDialogService dialogService,
             string message,
-            string confirmText)
+            string confirmText,
+            string title)
         {
             var parameters = new DialogParameters<ConfirmDialog>
             {
@@ -72,7 +76,7 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
                 FullWidth = false
             };
 
-            var dialog = await dialogService.ShowAsync<ConfirmDialog>("Confirm", parameters, options);
+            var dialog = await dialogService.ShowAsync<ConfirmDialog>(title, parameters, options);
             var result = await dialog.Result;
 
             return result is { Canceled: false };

@@ -496,4 +496,8 @@
     <value>限位开启</value>
     <comment>WPF: 1021LimitsOn</comment>
   </data>
+  <data name="Chart_Degrees" xml:space="preserve">
+    <value>度</value>
+    <comment>WPF: btnHintAutoHomeLimit</comment>
+  </data>
 </root>

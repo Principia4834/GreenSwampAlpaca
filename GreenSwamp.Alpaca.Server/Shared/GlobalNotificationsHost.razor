@@ -22,7 +22,7 @@
             _ = InvokeAsync(() => Snackbar.Add(e.Text, Severity.Warning));
 
         if (e.IsConnectionError)
-            _ = InvokeAsync(() => Snackbar.Add(e.Text, Severity.Error));
+            _ = InvokeAsync(() => Snackbar.Add(Loc["Notify_ConnectionFailed", e.ErrorDetail].Value, Severity.Error));
     }
 
     public void Dispose()

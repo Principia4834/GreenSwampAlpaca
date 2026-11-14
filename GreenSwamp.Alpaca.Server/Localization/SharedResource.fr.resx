@@ -496,4 +496,8 @@
     <value>Limites sur</value>
     <comment>WPF: 1021LimitsOn</comment>
   </data>
+  <data name="Chart_Degrees" xml:space="preserve">
+    <value>Degrés</value>
+    <comment>WPF: btnHintAutoHomeLimit</comment>
+  </data>
 </root>

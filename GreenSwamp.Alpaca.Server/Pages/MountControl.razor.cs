@@ -113,7 +113,8 @@ namespace GreenSwamp.Alpaca.Server.Pages
             await ShutdownDialogHelper.ShowShutdownDialogAsync(
                 DialogService,
                 Snackbar,
-                Program.Lifetime);
+                Program.Lifetime,
+                Loc);
         }
 
         // -- Stop (inline bottom bar) ------------------------------------------

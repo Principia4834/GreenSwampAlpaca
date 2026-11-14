@@ -237,9 +237,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             var yTitle = _settings.PulseScale switch
             {
-                "ArcSeconds" => "Arc Seconds",
-                "Steps"      => "Steps",
-                _            => "mS"
+                "ArcSeconds" => Loc["Chart_ArcSeconds"].Value,
+                "Steps"      => Loc["Chart_Steps"].Value,
+                _            => Loc["Chart_YAxisMs"].Value
             };
 
             var yFormatter = _settings.PulseScale switch
