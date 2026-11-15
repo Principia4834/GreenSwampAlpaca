@@ -1,0 +1,32 @@
+﻿<MudPaper Elevation="1" Class="pa-2 mb-2">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Ra"]</MudText>
+            <MudText Typo="Typo.h6" Class="gs-font-mono">@CoordinateFormatter.FormatHMS(State.RightAscension)</MudText>
+        </MudStack>
+        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Dec"]</MudText>
+            <MudText Typo="Typo.h6" Class="gs-font-mono">@CoordinateFormatter.FormatDMS(State.Declination)</MudText>
+        </MudStack>
+        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Az"]</MudText>
+            <MudText Typo="Typo.h6" Class="gs-font-mono">@CoordinateFormatter.FormatDMS(State.Azimuth)</MudText>
+        </MudStack>
+        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["Coord_Alt"]</MudText>
+            <MudText Typo="Typo.h6" Class="gs-font-mono">@CoordinateFormatter.FormatDMS(State.Altitude)</MudText>
+        </MudStack>
+        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["MCtl_Lha"]</MudText>
+            <MudText Typo="Typo.h6" Class="gs-font-mono">@CoordinateFormatter.FormatHMS(State.LocalHourAngle)</MudText>
+        </MudStack>
+        <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1">
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Loc["MCtl_Lst"]</MudText>
+            <MudText Typo="Typo.h6" Class="gs-font-mono">@CoordinateFormatter.FormatHMS(State.LocalSiderealTime)</MudText>
+        </MudStack>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired] public TelescopeStateModel State { get; set; } = new();
+}

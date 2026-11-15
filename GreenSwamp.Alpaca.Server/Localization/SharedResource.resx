@@ -1120,6 +1120,9 @@
   <data name="Coord_DegreesRange" xml:space="preserve">
     <value>Degrees must be in the range [-90..90].</value>
   </data>
+  <data name="Coord_AzRange" xml:space="preserve">
+    <value>Azimuth must be in the range [0..360].</value>
+  </data>
   <data name="Coord_HoursInteger" xml:space="preserve">
     <value>Hours must be an integer.</value>
   </data>

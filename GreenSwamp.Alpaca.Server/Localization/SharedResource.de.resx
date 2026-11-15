@@ -928,6 +928,10 @@
     <value>Grad müssen im Bereich [-90..90] liegen.</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
+  <data name="Coord_AzRange" xml:space="preserve">
+    <value>Der Azimut muss im Bereich [0..360] liegen.</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
   <data name="Coord_HoursInteger" xml:space="preserve">
     <value>Stunden müssen eine ganze Zahl sein.</value>
     <comment>MT: machine translated - needs review</comment>

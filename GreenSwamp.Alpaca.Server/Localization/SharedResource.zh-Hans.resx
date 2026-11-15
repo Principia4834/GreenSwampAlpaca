@@ -928,6 +928,10 @@
     <value>度必须在 [-90..90] 范围内。</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
+  <data name="Coord_AzRange" xml:space="preserve">
+    <value>方位角必须在 [0..360] 范围内。</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
   <data name="Coord_HoursInteger" xml:space="preserve">
     <value>小时必须为整数。</value>
     <comment>MT: machine translated - needs review</comment>

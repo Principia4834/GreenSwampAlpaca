@@ -73,7 +73,7 @@ namespace GreenSwamp.Alpaca.Server.Helpers
         /// Handles plain decimal input such as "23.75" or "-12,5". Returns true when the input is in decimal mode.
         /// <paramref name="canonical"/> is empty when the value is out of range.
         /// </summary>
-        public static bool TryParseDecimalMode(string input, bool isRa, out double value, out string canonical)
+        public static bool TryParseDecimalMode(string input, bool isRa, out double value, out string canonical, bool isAz = false)
         {
             value = 0;
             canonical = string.Empty;
@@ -113,17 +113,17 @@ namespace GreenSwamp.Alpaca.Server.Helpers
             }
 
             if (negative) value = -value;
-            if (value < -90 || value > 90)
+            if (isAz ? value < 0 || value > 360 : value < -90 || value > 90)
             {
                 return true;
             }
 
-            canonical = value.ToString("+0.##;-0.##;0.##", Inv);
+            canonical = isAz ? value.ToString("0.##", Inv) : value.ToString("+0.##;-0.##;0.##", Inv);
             return true;
         }
 
         /// <summary>Validates input while it is being typed; empty and incomplete input is not an error.</summary>
-        public static CoordinateParseError ValidatePartial(string input, bool isRa)
+        public static CoordinateParseError ValidatePartial(string input, bool isRa, bool isAz = false)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -137,7 +137,7 @@ namespace GreenSwamp.Alpaca.Server.Helpers
                 return CoordinateParseError.None;
             }
 
-            if (TryParseDecimalMode(trimmed, isRa, out _, out var decimalCanonical))
+            if (TryParseDecimalMode(trimmed, isRa, out _, out var decimalCanonical, isAz))
             {
                 return string.IsNullOrEmpty(decimalCanonical) ? CoordinateParseError.OutOfRange : CoordinateParseError.None;
             }
@@ -159,6 +159,10 @@ namespace GreenSwamp.Alpaca.Server.Helpers
             {
                 if (signedMajor < 0 || signedMajor >= 24) return CoordinateParseError.OutOfRange;
             }
+            else if (isAz)
+            {
+                if (signedMajor < 0 || signedMajor > 360) return CoordinateParseError.OutOfRange;
+            }
             else
             {
                 if (signedMajor < -90 || signedMajor > 90) return CoordinateParseError.OutOfRange;
@@ -174,11 +178,25 @@ namespace GreenSwamp.Alpaca.Server.Helpers
                 return CoordinateParseError.SecondsRange;
             }
 
+            if (tokens.Length > 1)
+            {
+                var partialMinutes = 0;
+                var partialSeconds = 0.0;
+                _ = TryParseInteger(tokens[1], out partialMinutes);
+                if (tokens.Length > 2) _ = TryParseDecimal(tokens[2], out partialSeconds);
+                var partialValue = Math.Abs(signedMajor) + partialMinutes / 60.0 + partialSeconds / 3600.0;
+                if (signedMajor < 0) partialValue = -partialValue;
+                if (isAz ? partialValue < 0 || partialValue > 360 : !isRa && (partialValue < -90 || partialValue > 90))
+                {
+                    return CoordinateParseError.OutOfRange;
+                }
+            }
+
             return CoordinateParseError.None;
         }
 
         /// <summary>Rewrites user input into the canonical display form (always "." decimals).</summary>
-        public static string Canonicalize(string input, bool isRa, bool canonicalizeSign)
+        public static string Canonicalize(string input, bool isRa, bool canonicalizeSign, bool isAz = false)
         {
             input = NormalizeDecimalSeparator(input);
             var trimmed = input.Trim();
@@ -187,7 +205,7 @@ namespace GreenSwamp.Alpaca.Server.Helpers
                 return trimmed;
             }
 
-            if (TryParseDecimalMode(trimmed, isRa, out _, out var decimalCanonical) && !string.IsNullOrEmpty(decimalCanonical))
+            if (TryParseDecimalMode(trimmed, isRa, out _, out var decimalCanonical, isAz) && !string.IsNullOrEmpty(decimalCanonical))
             {
                 return decimalCanonical;
             }
@@ -224,10 +242,10 @@ namespace GreenSwamp.Alpaca.Server.Helpers
             }
 
             var sign = string.Empty;
-            if (canonicalizeSign)
+            if (canonicalizeSign || isAz)
             {
                 if (input.TrimStart().StartsWith('-')) sign = "-";
-                else if (input.TrimStart().StartsWith('+')) sign = "+";
+                else if (canonicalizeSign && input.TrimStart().StartsWith('+')) sign = "+";
             }
 
             var signedMajor = sign == "-" ? -Math.Abs(major) : Math.Abs(major);
@@ -239,7 +257,7 @@ namespace GreenSwamp.Alpaca.Server.Helpers
         }
 
         /// <summary>Parses user input to decimal hours (RA) or degrees.</summary>
-        public static bool TryParse(string input, bool isRa, out double value, out CoordinateParseError error)
+        public static bool TryParse(string input, bool isRa, out double value, out CoordinateParseError error, bool isAz = false)
         {
             value = 0;
             if (string.IsNullOrWhiteSpace(input))
@@ -250,7 +268,7 @@ namespace GreenSwamp.Alpaca.Server.Helpers
 
             input = NormalizeDecimalSeparator(input);
             var trimmed = input.Trim();
-            if (TryParseDecimalMode(trimmed, isRa, out var decimalValue, out var decimalCanonical))
+            if (TryParseDecimalMode(trimmed, isRa, out var decimalValue, out var decimalCanonical, isAz))
             {
                 if (string.IsNullOrEmpty(decimalCanonical))
                 {
@@ -302,7 +320,7 @@ namespace GreenSwamp.Alpaca.Server.Helpers
             value = Math.Abs(a) + b / 60.0 + c / 3600.0;
             if (negative) value = -value;
 
-            if (isRa ? (value < 0 || value >= 24) : (value < -90 || value > 90))
+            if (isRa ? (value < 0 || value >= 24) : isAz ? (value < 0 || value > 360) : (value < -90 || value > 90))
             {
                 value = 0;
                 error = CoordinateParseError.OutOfRange;

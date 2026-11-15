@@ -25,9 +25,13 @@
   <!-- Preserved source for the future .glb model-set viewer (see docs\TelescopeView-3D-ImplementationPlan.md). Not built or served. -->
   <ItemGroup>
     <Compile Remove="Preserved\**" />
+    <Compile Remove="wwwroot\models\**" />
     <Content Remove="Preserved\**" />
+    <Content Remove="wwwroot\models\**" />
     <EmbeddedResource Remove="Preserved\**" />
+    <EmbeddedResource Remove="wwwroot\models\**" />
     <None Remove="Preserved\**" />
+    <None Remove="wwwroot\models\**" />
     <RazorComponent Remove="Preserved\**" />
     <None Include="Preserved\**" />
   </ItemGroup>
@@ -137,9 +141,6 @@
 	  </Content>
 	  <Content Update="wwwroot\js\tts.js">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Update="wwwroot\models\telescope.obj">
-		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\model3d\**">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

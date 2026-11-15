@@ -72,6 +72,35 @@ namespace GreenSwamp.Alpaca.Server.Tests
         }
 
         [Theory]
+        [InlineData("0", 0.0)]
+        [InlineData("180 30", 180.5)]
+        [InlineData("360", 360.0)]
+        public void Parse_AzimuthAcceptsValuesInRange(string input, double expected)
+        {
+            Assert.True(CoordinateParser.TryParse(input, false, out var value, out _, isAz: true));
+            Assert.Equal(expected, value, 9);
+        }
+
+        [Theory]
+        [InlineData("-1")]
+        [InlineData("361")]
+        [InlineData("360 1")]
+        public void Parse_AzimuthRejectsValuesOutOfRange(string input)
+        {
+            Assert.False(CoordinateParser.TryParse(input, false, out _, out var error, isAz: true));
+            Assert.Equal(CoordinateParseError.OutOfRange, error);
+        }
+
+        [Fact]
+        public void ValidatePartial_AzimuthUsesZeroTo360Range()
+        {
+            Assert.Equal(CoordinateParseError.None, CoordinateParser.ValidatePartial("360", false, isAz: true));
+            Assert.Equal(CoordinateParseError.OutOfRange, CoordinateParser.ValidatePartial("361", false, isAz: true));
+            Assert.Equal(CoordinateParseError.OutOfRange, CoordinateParser.ValidatePartial("360 1", false, isAz: true));
+            Assert.Equal(CoordinateParseError.OutOfRange, CoordinateParser.ValidatePartial("-1", false, isAz: true));
+        }
+
+        [Theory]
         [InlineData("12,5", false, "+12.5")]
         [InlineData("1,50", true, "1.5")]
         [InlineData("5", true, "05h")]

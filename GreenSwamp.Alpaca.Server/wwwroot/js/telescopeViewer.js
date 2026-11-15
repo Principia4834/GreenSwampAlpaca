@@ -40,6 +40,14 @@ const deg = r => r * 180 / Math.PI;
 // Default camera: looking at the mount head from the south-west, a little above.
 const DEFAULT_CAMERA = { alpha: 150, beta: 60, radius: 40, target: { x: 0, y: 6, z: 0 } };
 
+// Match the mount's pace without letting the rendered model lag too far behind.
+const MAX_GLIDE_MS = 1000;
+const MIN_GLIDE_MS = 50;
+const MIN_GLIDE_DEGREES = 0.1;
+
+/** The signed change from angle a to angle b the short way round, in degrees (-180 to 180). */
+const angleDelta = (a, b) => ((((b - a) % 360) + 540) % 360) - 180;
+
 class TelescopeViewer {
     constructor(canvas, options) {
         const B = window.BABYLON;
@@ -52,11 +60,15 @@ class TelescopeViewer {
         this.modelMaterials = [];
         this.pierMeshes = [];
         this.loadCount = 0;      // so an older loadModel that finishes late is dropped
+
+        // The current displayed pose and any glide towards the latest mount position.
         this.pose = { x: 0, y: 0, z: 0, yCentre: 0 };
+        this.glide = null;
+        this.lastPoseAt = 0;
 
         this.engine = new B.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, antialias: true });
         this.scene = this.createScene();
-        this.engine.runRenderLoop(() => this.scene && this.scene.render());
+        this.engine.runRenderLoop(() => this.renderFrame());
 
         // The canvas fills a flex panel, so follow its size rather than the window.
         this.resizeObserver = new ResizeObserver(() => this.engine.resize());
@@ -331,9 +343,52 @@ class TelescopeViewer {
     /**
      * GSServer's model transform: XAxisOffset (about Z), YAxisOffset (about Y),
      * ZAxisOffset (about X), centred on (0, yCentre, 525).
+     * The model glides to new axis positions over the time since the previous update.
      */
     setPose(xAxisOffset, yAxisOffset, zAxisOffset, yAxisCentre) {
-        this.pose = { x: xAxisOffset, y: yAxisOffset, z: zAxisOffset, yCentre: yAxisCentre };
+        const target = { x: xAxisOffset, y: yAxisOffset, z: zAxisOffset, yCentre: yAxisCentre };
+        const now = performance.now();
+        const sincePrevious = now - this.lastPoseAt;
+        const first = this.lastPoseAt === 0;
+        this.lastPoseAt = now;
+
+        if (!first && !this.glide && ['x', 'y', 'z', 'yCentre'].every(k => this.pose[k] === target[k])) return;
+
+        const duration = Math.min(sincePrevious, MAX_GLIDE_MS);
+        const largest = Math.max(...['x', 'y', 'z'].map(k => Math.abs(angleDelta(this.pose[k], target[k]))));
+        if (first || document.hidden || duration < MIN_GLIDE_MS || largest < MIN_GLIDE_DEGREES
+            || target.yCentre !== this.pose.yCentre) {
+            this.glide = null;
+            this.pose = target;
+            this.applyPose();
+            return;
+        }
+
+        this.glide = { from: { ...this.pose }, to: target, start: now, duration };
+    }
+
+    renderFrame() {
+        if (!this.scene || this.scene.isDisposed) return;
+        this.stepGlide(performance.now());
+        this.scene.render();
+    }
+
+    stepGlide(now) {
+        const glide = this.glide;
+        if (!glide) return;
+
+        const t = Math.min((now - glide.start) / glide.duration, 1);
+        const angle = (from, to) => from + angleDelta(from, to) * t;
+        this.pose = {
+            x: angle(glide.from.x, glide.to.x),
+            y: angle(glide.from.y, glide.to.y),
+            z: angle(glide.from.z, glide.to.z),
+            yCentre: glide.to.yCentre
+        };
+        if (t >= 1) {
+            this.pose = glide.to;
+            this.glide = null;
+        }
         this.applyPose();
     }
 

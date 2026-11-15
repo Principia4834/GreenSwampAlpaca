@@ -1437,6 +1437,10 @@
     <value>I gradi devono essere nell'intervallo [-90..90].</value>
     <comment>MT: machine translated - needs review</comment>
   </data>
+  <data name="Coord_AzRange" xml:space="preserve">
+    <value>L'azimut deve essere nell'intervallo [0..360].</value>
+    <comment>MT: machine translated - needs review</comment>
+  </data>
   <data name="Coord_HoursInteger" xml:space="preserve">
     <value>Le ore devono essere un numero intero.</value>
     <comment>MT: machine translated - needs review</comment>
