@@ -57,6 +57,7 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// Initializes a new instance of the <see cref="TelescopeStateService"/> class and starts the background loop.
         /// </summary>
         /// <param name="activeViews"></param>
+        /// <param name="loggerFactory"></param>
         public TelescopeStateService(ActiveDeviceViewRegistry activeViews, ILoggerFactory loggerFactory)
         {
             _activeViews = activeViews;
@@ -71,10 +72,10 @@ namespace GreenSwamp.Alpaca.Server.Services
         /// <returns>A task representing the background loop.</returns>
         private async Task RunLoopAsync(CancellationToken ct)
         {
-            _diag.LogInformation("[GS.Diag] TelescopeStateService loop started");
-            var summary = System.Diagnostics.Stopwatch.StartNew();
-            long ticks = 0, idleTicks = 0, worstSnapshotMs = 0, worstHandlersMs = 0;
-            var lastActive = string.Empty;
+            // _diag.LogInformation("[GS.Diag] TelescopeStateService loop started");
+            // var summary = System.Diagnostics.Stopwatch.StartNew();
+            // long ticks = 0, idleTicks = 0, worstSnapshotMs = 0, worstHandlersMs = 0;
+            // var lastActive = string.Empty;
 
             try
             {
@@ -84,51 +85,51 @@ namespace GreenSwamp.Alpaca.Server.Services
 
                     try
                     {
-                        ticks++;
+                        // ticks++;
                         var active = _activeViews.GetActiveDeviceNumbers(TimeSpan.FromSeconds(10));
 
-                        var activeText = string.Join(",", active);
-                        if (activeText != lastActive)
-                        {
-                            _diag.LogInformation("[GS.Diag] TelescopeStateService active devices changed: [{Old}] -> [{New}]", lastActive, activeText);
-                            lastActive = activeText;
-                        }
+                        // var activeText = string.Join(",", active);
+                        // if (activeText != lastActive)
+                        // {
+                        //     _diag.LogInformation("[GS.Diag] TelescopeStateService active devices changed: [{Old}] -> [{New}]", lastActive, activeText);
+                        //     lastActive = activeText;
+                        // }
 
                         if (active.Count == 0)
                         {
-                            idleTicks++;
+                            // idleTicks++;
                             continue;
                         }
 
                         var next = new Dictionary<int, TelescopeStateModel>(active.Count);
                         foreach (var dn in active)
                         {
-                            var t0 = System.Diagnostics.Stopwatch.GetTimestamp();
+                            // var t0 = System.Diagnostics.Stopwatch.GetTimestamp();
                             var snapshot = BuildSnapshot(dn);
-                            var snapshotMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(t0).TotalMilliseconds;
-                            worstSnapshotMs = Math.Max(worstSnapshotMs, snapshotMs);
-                            if (snapshotMs >= 200)
-                                _diag.LogWarning("[GS.Diag] TelescopeStateService BuildSnapshot(dev={Dev}) took {Ms} ms", dn, snapshotMs);
+                            // var snapshotMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(t0).TotalMilliseconds;
+                            // worstSnapshotMs = Math.Max(worstSnapshotMs, snapshotMs);
+                            // if (snapshotMs >= 200)
+                            //     _diag.LogWarning("[GS.Diag] TelescopeStateService BuildSnapshot(dev={Dev}) took {Ms} ms", dn, snapshotMs);
                             next[dn] = snapshot;
 
-                            var t1 = System.Diagnostics.Stopwatch.GetTimestamp();
+                            // var t1 = System.Diagnostics.Stopwatch.GetTimestamp();
                             DeviceStateChanged?.Invoke(
                                 this,
                                 new TelescopeStateChangedEventArgs(dn, nameof(TelescopeStateModel.AxisSteps), snapshot));
-                            var deviceHandlersMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(t1).TotalMilliseconds;
-                            worstHandlersMs = Math.Max(worstHandlersMs, deviceHandlersMs);
-                            if (deviceHandlersMs >= 200)
-                                _diag.LogWarning("[GS.Diag] TelescopeStateService DeviceStateChanged handlers (dev={Dev}) took {Ms} ms", dn, deviceHandlersMs);
+                            // var deviceHandlersMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(t1).TotalMilliseconds;
+                            // worstHandlersMs = Math.Max(worstHandlersMs, deviceHandlersMs);
+                            // if (deviceHandlersMs >= 200)
+                            //     _diag.LogWarning("[GS.Diag] TelescopeStateService DeviceStateChanged handlers (dev={Dev}) took {Ms} ms", dn, deviceHandlersMs);
                         }
 
                         _cache = next;
 
-                        var t2 = System.Diagnostics.Stopwatch.GetTimestamp();
+                        // var t2 = System.Diagnostics.Stopwatch.GetTimestamp();
                         StateChanged?.Invoke(this, EventArgs.Empty);
-                        var stateHandlersMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(t2).TotalMilliseconds;
-                        worstHandlersMs = Math.Max(worstHandlersMs, stateHandlersMs);
-                        if (stateHandlersMs >= 200)
-                            _diag.LogWarning("[GS.Diag] TelescopeStateService StateChanged handlers took {Ms} ms", stateHandlersMs);
+                        // var stateHandlersMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(t2).TotalMilliseconds;
+                        // worstHandlersMs = Math.Max(worstHandlersMs, stateHandlersMs);
+                        // if (stateHandlersMs >= 200)
+                        //     _diag.LogWarning("[GS.Diag] TelescopeStateService StateChanged handlers took {Ms} ms", stateHandlersMs);
                     }
                     catch (OperationCanceledException) when (ct.IsCancellationRequested)
                     {
@@ -140,26 +141,26 @@ namespace GreenSwamp.Alpaca.Server.Services
                         _diag.LogError(ex, "[GS.Diag] TelescopeStateService tick failed");
                     }
 
-                    if (summary.Elapsed >= TimeSpan.FromSeconds(10))
-                    {
-                        _diag.LogInformation(
-                            "[GS.Diag] TelescopeStateService 10 s summary: ticks={Ticks} idle={Idle} active=[{Active}] stateSubscribers={S} deviceSubscribers={D} worstSnapshot={Snap} ms worstHandlers={Hand} ms",
-                            ticks, idleTicks, lastActive,
-                            StateChanged?.GetInvocationList().Length ?? 0,
-                            DeviceStateChanged?.GetInvocationList().Length ?? 0,
-                            worstSnapshotMs, worstHandlersMs);
-                        ticks = idleTicks = worstSnapshotMs = worstHandlersMs = 0;
-                        summary.Restart();
-                    }
+                    // if (summary.Elapsed >= TimeSpan.FromSeconds(10))
+                    // {
+                    //     _diag.LogInformation(
+                    //         "[GS.Diag] TelescopeStateService 10 s summary: ticks={Ticks} idle={Idle} active=[{Active}] stateSubscribers={S} deviceSubscribers={D} worstSnapshot={Snap} ms worstHandlers={Hand} ms",
+                    //         ticks, idleTicks, lastActive,
+                    //         StateChanged?.GetInvocationList().Length ?? 0,
+                    //         DeviceStateChanged?.GetInvocationList().Length ?? 0,
+                    //         worstSnapshotMs, worstHandlersMs);
+                    //     ticks = idleTicks = worstSnapshotMs = worstHandlersMs = 0;
+                    //     summary.Restart();
+                    // }
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
             }
-            finally
-            {
-                _diag.LogWarning("[GS.Diag] TelescopeStateService loop EXITED (cancelled={Cancelled})", ct.IsCancellationRequested);
-            }
+            // finally
+            // {
+            //     _diag.LogWarning("[GS.Diag] TelescopeStateService loop EXITED (cancelled={Cancelled})", ct.IsCancellationRequested);
+            // }
         }
 
         /// <summary>

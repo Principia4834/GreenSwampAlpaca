@@ -30,9 +30,10 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     public partial class RaDecChart
     {
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
-        [Inject] private ILoggerFactory DiagLoggerFactory { get; set; } = null!;
-        private GsDiag _diag = null!;
-        private int _axisPointsReceived;
+        // Diagnostics (disabled):
+        // [Inject] private ILoggerFactory DiagLoggerFactory { get; set; } = null!;
+        // private GsDiag _diag = null!;
+        // private int _axisPointsReceived;
         private bool _hubInitialised; // true once StartAsync completes; suppresses spurious "Disconnected" on first render
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
@@ -66,8 +67,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             if (points.Length < 2 || !CanAcceptWork()) return;
 
-            var received = Interlocked.Increment(ref _axisPointsReceived);
-            if (received <= 3 || received % 200 == 0) _diag.Mark($"ReceiveAxisPoint #{received}");
+            // var received = Interlocked.Increment(ref _axisPointsReceived);
+            // if (received <= 3 || received % 200 == 0) _diag.Mark($"ReceiveAxisPoint #{received}");
 
             _ = InvokeAsync(() =>
             {
@@ -149,8 +150,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <returns></returns>
         protected override Task OnInitializedAsync()
         {
-            _diag = GsDiag.Create(DiagLoggerFactory, "RaDecChart", DeviceNumber, _viewSessionId);
-            _diag.Mark($"OnInitializedAsync renderer={RendererInfo.Name} interactive={RendererInfo.IsInteractive}");
+            // _diag = GsDiag.Create(DiagLoggerFactory, "RaDecChart", DeviceNumber, _viewSessionId);
+            // _diag.Mark($"OnInitializedAsync renderer={RendererInfo.Name} interactive={RendererInfo.IsInteractive}");
             _settings = SettingsService.GetChartSettings();   // ← load BEFORE BuildChartOptions
             _displayMode = "Realtime"; // enforce session default, non-persisted
             _axisLabels = AxisLabels(AlignmentMode);
@@ -171,7 +172,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             if (!firstRender) return;
 
-            _diag.Mark($"OnAfterRenderAsync(firstRender) interactive={RendererInfo.IsInteractive}");
+            // _diag.Mark($"OnAfterRenderAsync(firstRender) interactive={RendererInfo.IsInteractive}");
 
             // Start the 1-second flush timer (previously in sync OnAfterRender).
             _refreshTimer ??= new System.Threading.Timer(
@@ -191,14 +192,14 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             _hub.Reconnecting += _ =>
             {
-                _diag.Warn("Hub Reconnecting");
+                // _diag.Warn("Hub Reconnecting");
                 _hubState = HubConnectionState.Reconnecting;
                 return InvokeAsync(StateHasChanged);
             };
 
             _hub.Reconnected += async _ =>
             {
-                _diag.Mark("Hub Reconnected");
+                // _diag.Mark("Hub Reconnected");
                 if (!CanAcceptWork()) return;
                 _hubState = HubConnectionState.Connected;
                 try
@@ -217,21 +218,21 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 await InvokeAsync(StateHasChanged);
             };
 
-            _hub.Closed += ex =>
+            _hub.Closed += _ =>
             {
-                _diag.Warn($"Hub Closed: {ex?.GetType().Name}: {ex?.Message}");
+                // _diag.Warn($"Hub Closed: {ex?.GetType().Name}: {ex?.Message}");
                 _hubState = HubConnectionState.Disconnected;
                 return InvokeAsync(StateHasChanged);
             };
 
-            await _diag.StepAsync($"Hub StartAsync {hubUrl}", () => _hub.StartAsync());
+            await _hub.StartAsync();
             _hubState = _hub.State;
             _hubInitialised = true;
-            await _diag.StepAsync("Hub JoinRaDecGroupAsync", () => _hub.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber));
+            await _hub.InvokeAsync("JoinRaDecGroupAsync", DeviceNumber);
 
             if (_settings.AutoStartLogging)
             {
-                await _diag.StepAsync("Logger.StartRaDecLoggingAsync", () => Logger.StartRaDecLoggingAsync());
+                await Logger.StartRaDecLoggingAsync();
                 _loggingActive = true;
             }
 
@@ -239,7 +240,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             ActiveViews.Touch(_viewSessionId, DeviceNumber);
             _ = RunViewHeartbeatAsync();
-            _diag.Mark($"Ready: hubState={_hubState}, heartbeat started, chart={(_chart is null ? "null" : "set")}");
+            // _diag.Mark($"Ready: hubState={_hubState}, heartbeat started, chart={(_chart is null ? "null" : "set")}");
         }
 
         /// <summary>
@@ -314,7 +315,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                             _forceFullSeriesRefresh = false;
                             _pendingAppendPoints.Clear();
 
-                            await _diag.StepAsync("Chart UpdateSeriesAsync", () => _chart!.UpdateSeriesAsync(animate));
+                            await _chart!.UpdateSeriesAsync(animate);
 
                             if (IsHistoricalMode)
                             {
@@ -334,11 +335,11 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         if (_pendingAppendPoints.Count == 0) continue;
                         var batch = _pendingAppendPoints.ToArray();
                         _pendingAppendPoints.Clear();
-                        await _diag.StepAsync("Chart AppendDataBySeriesNameAsync", () => _chart!.AppendDataBySeriesNameAsync(new Dictionary<string, IEnumerable<RaDecChartData>>
+                        await _chart!.AppendDataBySeriesNameAsync(new Dictionary<string, IEnumerable<RaDecChartData>>
                         {
                             [_axisLabels[0]] = batch,
                             [_axisLabels[1]] = batch
-                        }));
+                        });
                         await ApplyRollingWindowViewportAsync(batch[^1].TimestampMs);
                     }
                     catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException || ex is JSDisconnectedException)
@@ -399,7 +400,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             var windowStartMs = latestTimestampMs - RaDecRollingWindowMs;
             try
             {
-                await _diag.StepAsync("Chart ZoomXAsync (rolling)", () => _chart.ZoomXAsync((decimal)windowStartMs, (decimal)latestTimestampMs));
+                await _chart.ZoomXAsync((decimal)windowStartMs, (decimal)latestTimestampMs);
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException || ex is JSDisconnectedException)
             {

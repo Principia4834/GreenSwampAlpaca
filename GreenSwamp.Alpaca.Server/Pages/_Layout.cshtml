@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/fonts.css" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" asp-append-version="true" />
+    @* Diagnostics (disabled): browser console timing for page milestones and sockets.
     <script>
         // Passive diagnostics: timestamps page milestones, Blazor/SignalR sockets and negotiate calls, and JS errors.
         (function () {
@@ -67,6 +68,7 @@
             };
         })();
     </script>
+    *@
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
@@ -95,10 +97,10 @@
 
             window.ensureBabylonLoaded = function() {
                 if (window._babylonLoadPromise) {
-                    window.gsDiagLog && window.gsDiagLog('ensureBabylonLoaded: already started, awaiting existing promise');
+                    // window.gsDiagLog && window.gsDiagLog('ensureBabylonLoaded: already started, awaiting existing promise');
                     return window._babylonLoadPromise;
                 }
-                window.gsDiagLog && window.gsDiagLog('ensureBabylonLoaded: starting');
+                // window.gsDiagLog && window.gsDiagLog('ensureBabylonLoaded: starting');
 
                 const urls = [
                     '/lib/babylon/babylon.js',
@@ -124,13 +126,13 @@
 
                     const onLoad = () => {
                         s.dataset.gsBabylon = 'loaded';
-                        window.gsDiagLog && window.gsDiagLog('Babylon script loaded ' + src);
+                        // window.gsDiagLog && window.gsDiagLog('Babylon script loaded ' + src);
                         cleanup();
                         resolve();
                     };
 
                     const onError = () => {
-                        window.gsDiagLog && window.gsDiagLog('Babylon script FAILED ' + src);
+                        // window.gsDiagLog && window.gsDiagLog('Babylon script FAILED ' + src);
                         cleanup();
                         reject(new Error('Failed to load: ' + src));
                     };

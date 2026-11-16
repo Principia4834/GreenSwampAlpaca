@@ -31,9 +31,10 @@ public partial class TelescopeView : IAsyncDisposable
     [SupplyParameterFromQuery(Name = "model")] public string? ModelName { get; set; }
 
     [Inject] private IBrowserSettingsService BrowserSettings { get; set; } = null!;
-    [Inject] private ILoggerFactory DiagLoggerFactory { get; set; } = null!;
-
-    private GsDiag _diag = null!;
+    // Diagnostics (disabled):
+    // [Inject] private ILoggerFactory DiagLoggerFactory { get; set; } = null!;
+    //
+    // private GsDiag _diag = null!;
     private IJSObjectReference? _module;
     private double _axisX;
     private double _axisY;
@@ -51,15 +52,15 @@ public partial class TelescopeView : IAsyncDisposable
     private bool _heartbeatStarted;
     private string? _loadedMountKey;
 
-    protected override void OnInitialized()
-    {
-        _diag = GsDiag.Create(DiagLoggerFactory, "TelescopeView", DeviceNumber, _viewSessionId);
-        _diag.Mark($"OnInitialized renderer={RendererInfo.Name} interactive={RendererInfo.IsInteractive}");
-    }
+    // protected override void OnInitialized()
+    // {
+    //     _diag = GsDiag.Create(DiagLoggerFactory, "TelescopeView", DeviceNumber, _viewSessionId);
+    //     _diag.Mark($"OnInitialized renderer={RendererInfo.Name} interactive={RendererInfo.IsInteractive}");
+    // }
 
     protected override async Task OnParametersSetAsync()
     {
-        _diag.Mark($"OnParametersSetAsync module={(_module is null ? "none" : "ready")}");
+        // _diag.Mark($"OnParametersSetAsync module={(_module is null ? "none" : "ready")}");
         ActiveViews.Touch(_viewSessionId, DeviceNumber);
 
         if (_module is not null)
@@ -70,7 +71,7 @@ public partial class TelescopeView : IAsyncDisposable
     {
         if (!firstRender) return;
 
-        _diag.Mark($"OnAfterRenderAsync(firstRender) interactive={RendererInfo.IsInteractive}");
+        // _diag.Mark($"OnAfterRenderAsync(firstRender) interactive={RendererInfo.IsInteractive}");
         try
         {
             await PushStateAsync();
@@ -89,18 +90,19 @@ public partial class TelescopeView : IAsyncDisposable
                 _heartbeatStarted = true;
                 _ = RunViewHeartbeatAsync();
             }
-            _diag.Mark("First render complete: StateChanged subscribed, heartbeat started");
+            // _diag.Mark("First render complete: StateChanged subscribed, heartbeat started");
         }
     }
 
-    private int _stateChangedCount;
+    // private int _stateChangedCount;
 
     private void OnStateChanged(object? sender, EventArgs e)
-    {
-        var n = Interlocked.Increment(ref _stateChangedCount);
-        if (n <= 3) _diag.Mark($"StateChanged received #{n}");
-        _ = InvokeAsync(PushStateAsync);
-    }
+        => _ = InvokeAsync(PushStateAsync);
+    // {
+    //     var n = Interlocked.Increment(ref _stateChangedCount);
+    //     if (n <= 3) _diag.Mark($"StateChanged received #{n}");
+    //     _ = InvokeAsync(PushStateAsync);
+    // }
 
     private async Task PushStateAsync()
     {
@@ -119,13 +121,13 @@ public partial class TelescopeView : IAsyncDisposable
             if (double.IsFinite(_axisX) && double.IsFinite(_axisY))
             {
                 var pose = Model3D.GetPose(s.AlignmentMode, s.MountType, s.PolarMode, latitude, _axisX, _axisY);
-                await _diag.StepAsync("JS setPose", () => _module.InvokeVoidAsync("setPose", pose.X, pose.Y, pose.Z, pose.YCentre).AsTask());
+                await _module.InvokeVoidAsync("setPose", pose.X, pose.Y, pose.Z, pose.YCentre);
             }
 
             StateHasChanged();
         }
-        catch (JSDisconnectedException) { _diag.Warn("PushStateAsync: JSDisconnectedException"); }
-        catch (TaskCanceledException) { _diag.Warn("PushStateAsync: TaskCanceledException"); }
+        catch (JSDisconnectedException) { /* _diag.Warn("PushStateAsync: JSDisconnectedException"); */ }
+        catch (TaskCanceledException) { /* _diag.Warn("PushStateAsync: TaskCanceledException"); */ }
     }
 
     private async Task EnsureViewerInitializedForCurrentContextAsync(TelescopeStateModel state)
@@ -143,8 +145,7 @@ public partial class TelescopeView : IAsyncDisposable
         }
         else
         {
-            var selection = await _diag.StepAsync("BrowserSettings.Get model selection",
-                () => BrowserSettings.GetAsync(selectionKey, new TelescopeViewerModelSelection()));
+            var selection = await BrowserSettings.GetAsync(selectionKey, new TelescopeViewerModelSelection());
             modelType = Enum.IsDefined(typeof(Model3DType), selection.ModelType)
                 ? selection.ModelType
                 : Model3DType.Default;
@@ -158,27 +159,25 @@ public partial class TelescopeView : IAsyncDisposable
 
         if (_module is null)
         {
-            await _diag.StepAsync("JS ensureBabylonLoaded", () => JS.InvokeVoidAsync("ensureBabylonLoaded").AsTask());
-            _module = await _diag.StepAsync("JS import telescopeViewer.js",
-                () => JS.InvokeAsync<IJSObjectReference>("import", "/js/telescopeViewer.js").AsTask());
+            await JS.InvokeVoidAsync("ensureBabylonLoaded");
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/telescopeViewer.js");
         }
 
         if (_settingsStorageKey is not null)
-            await _diag.StepAsync("JS viewer dispose (re-init)", () => _module.InvokeVoidAsync("dispose").AsTask());
+            await _module.InvokeVoidAsync("dispose");
 
-        var settings = await _diag.StepAsync("BrowserSettings.Get viewer settings",
-            () => BrowserSettings.GetAsync(settingsKey, TelescopeViewerSettings.CreateDefault(modelType)));
+        var settings = await BrowserSettings.GetAsync(settingsKey, TelescopeViewerSettings.CreateDefault(modelType));
         settings.ModelType = modelType;
         settings.Normalize();
 
-        var initialised = await _diag.StepAsync("JS viewer init", () => _module.InvokeAsync<bool>("init", "telescopeCanvas", new
+        await _module.InvokeAsync<bool>("init", "telescopeCanvas", new
         {
             camera = settings.Camera,
             primaryColor = settings.ModelColor,
             background = settings.Background,
             grid = settings.ShowGrid
-        }).AsTask());
-        if (!initialised) _diag.Warn("JS viewer init returned false (canvas or BABYLON missing)");
+        });
+        // if (!initialised) _diag.Warn("JS viewer init returned false (canvas or BABYLON missing)");
 
         _activeModelType = modelType;
         _settingsStorageKey = settingsKey;
@@ -201,12 +200,12 @@ public partial class TelescopeView : IAsyncDisposable
         _loadedMountKey = mountKey;
 
         var url = ResolveUrl(Nav.BaseUri.TrimEnd('/'), Model3D.GetModelUrl(_activeModelType, s.AlignmentMode, s.PolarMode));
-        await _diag.StepAsync($"JS loadModel {url}", () => _module.InvokeAsync<string>("loadModel", url, new
+        await _module.InvokeAsync<string>("loadModel", url, new
         {
             mode = (int)s.AlignmentMode,
             latitude,
             northCompass = Model3D.UseNorthCompass(s.AlignmentMode, latitude)
-        }).AsTask());
+        });
     }
 
     private async Task RunViewHeartbeatAsync()
@@ -252,7 +251,7 @@ public partial class TelescopeView : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        _diag?.Mark("DisposeAsync");
+        // _diag?.Mark("DisposeAsync");
         if (!_disposeCts.IsCancellationRequested)
         {
             _disposeCts.Cancel();
