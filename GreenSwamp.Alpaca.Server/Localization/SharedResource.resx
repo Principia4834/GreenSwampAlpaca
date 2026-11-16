@@ -131,7 +131,6 @@
   </data>
   <data name="Nav_Monitor" xml:space="preserve">
     <value>Monitor</value>
-    <comment>WPF: optMonitor</comment>
   </data>
   <data name="Nav_SettingsExplorer" xml:space="preserve">
     <value>Settings Explorer</value>
@@ -213,7 +212,6 @@
   </data>
   <data name="MountButtons_Unpark" xml:space="preserve">
     <value>Unpark</value>
-    <comment>WPF: btnUnPark</comment>
   </data>
   <data name="MountButtons_UnparkFailed" xml:space="preserve">
     <value>Unpark failed</value>
@@ -226,7 +224,6 @@
   </data>
   <data name="MountButtons_Park" xml:space="preserve">
     <value>Park</value>
-    <comment>WPF: btnPark (ambiguous: btnPark, botTipParked, gpPark)</comment>
   </data>
   <data name="MountButtons_ParkFailed" xml:space="preserve">
     <value>Park failed</value>
@@ -251,14 +248,12 @@
   </data>
   <data name="MountButtons_FlipTitle" xml:space="preserve">
     <value>Flip Side of Pier</value>
-    <comment>WPF: btnTipFlip</comment>
   </data>
   <data name="MountButtons_FlipFailed" xml:space="preserve">
     <value>Flip SOP failed: {0}</value>
   </data>
   <data name="MountButtons_AutoHomeTitle" xml:space="preserve">
     <value>AutoHome</value>
-    <comment>WPF: btnAutoHome</comment>
   </data>
   <data name="MountButtons_LimitsToggleFailed" xml:space="preserve">
     <value>Limits toggle failed</value>
@@ -343,7 +338,6 @@
   </data>
   <data name="ReSync_Button" xml:space="preserve">
     <value>ReSync</value>
-    <comment>WPF: btnReSync</comment>
   </data>
   <data name="Common_Ok" xml:space="preserve">
     <value>OK</value>
@@ -713,7 +707,6 @@
   </data>
   <data name="Home_DeviceAlignment" xml:space="preserve">
     <value>Alignment mode</value>
-    <comment>WPF: notAlignmentMode (ambiguous: notAlignmentMode, skyAlignment)</comment>
   </data>
   <data name="Home_DeviceStatus" xml:space="preserve">
     <value>Status</value>
@@ -735,7 +728,6 @@
   </data>
   <data name="Home_Connected" xml:space="preserve">
     <value>Connected</value>
-    <comment>WPF: focuserConnected</comment>
   </data>
   <data name="Home_NotConnected" xml:space="preserve">
     <value>Not connected</value>
@@ -796,19 +788,15 @@
   </data>
   <data name="MountInfo_Azimuth" xml:space="preserve">
     <value>Azimuth</value>
-    <comment>WPF: lbAxisX</comment>
   </data>
   <data name="MountInfo_Altitude" xml:space="preserve">
     <value>Altitude</value>
-    <comment>WPF: lbAxisY</comment>
   </data>
   <data name="MountInfo_RightAscension" xml:space="preserve">
     <value>Right Ascension</value>
-    <comment>WPF: topRa</comment>
   </data>
   <data name="MountInfo_Declination" xml:space="preserve">
     <value>Declination</value>
-    <comment>WPF: topDec</comment>
   </data>
   <data name="MountInfo_XAxis" xml:space="preserve">
     <value>X Axis</value>
@@ -824,7 +812,6 @@
   </data>
   <data name="MountInfo_Optics" xml:space="preserve">
     <value>Optics</value>
-    <comment>WPF: lbOptics</comment>
   </data>
   <data name="MountInfo_RaDecTooltip" xml:space="preserve">
     <value>Show right ascension and declination</value>
@@ -1260,7 +1247,6 @@
   </data>
   <data name="Set_OneClickStart" xml:space="preserve">
     <value>One Click Start</value>
-    <comment>WPF: lbOneClickStart</comment>
   </data>
   <data name="HcPg_Speed" xml:space="preserve">
     <value>Speed</value>
@@ -1297,7 +1283,6 @@
   </data>
   <data name="HomePark_Park" xml:space="preserve">
     <value>Park</value>
-    <comment>WPF: btnPark (ambiguous: btnPark, botTipParked, gpPark)</comment>
   </data>
   <data name="HomePark_ActivePark_Tip" xml:space="preserve">
     <value>Name of the active park position.</value>
@@ -1310,7 +1295,6 @@
   </data>
   <data name="HomePark_TrackAfterUnpark" xml:space="preserve">
     <value>Track After Unpark</value>
-    <comment>WPF: capTrackAfterUnpark</comment>
   </data>
   <data name="HomePark_DefinedParkPositions" xml:space="preserve">
     <value>Defined Park Positions</value>
@@ -1374,7 +1358,6 @@
   </data>
   <data name="Voice_Select" xml:space="preserve">
     <value>Voice</value>
-    <comment>WPF: botTipVoice</comment>
   </data>
   <data name="Voice_Volume_Tip" xml:space="preserve">
     <value>Volume for voice announcements (0 = silent, 100 = full volume).</value>
@@ -1387,7 +1370,6 @@
   </data>
   <data name="Ui_Zoom" xml:space="preserve">
     <value>Zoom</value>
-    <comment>WPF: chtZoom</comment>
   </data>
   <data name="Ui_Theme_Tip" xml:space="preserve">
     <value>Display theme selection for the server UI.</value>
@@ -1508,7 +1490,6 @@
   </data>
   <data name="Trk_Tracking" xml:space="preserve">
     <value>Tracking</value>
-    <comment>WPF: btnTracking (ambiguous: btnTracking, botTracking, botTipTracking, gpTracking)</comment>
   </data>
   <data name="Trk_PulseGuiding" xml:space="preserve">
     <value>Pulse Guiding</value>
@@ -1521,23 +1502,18 @@
   </data>
   <data name="Trk_Rate" xml:space="preserve">
     <value>Tracking Rate</value>
-    <comment>WPF: skyTracking</comment>
   </data>
   <data name="Trk_Sidereal" xml:space="preserve">
     <value>Sidereal</value>
-    <comment>WPF: vceSidereal (ambiguous: vceSidereal, skySidereal)</comment>
   </data>
   <data name="Trk_Lunar" xml:space="preserve">
     <value>Lunar</value>
-    <comment>WPF: vceLunar</comment>
   </data>
   <data name="Trk_Solar" xml:space="preserve">
     <value>Solar</value>
-    <comment>WPF: vceSolar</comment>
   </data>
   <data name="Trk_King" xml:space="preserve">
     <value>King</value>
-    <comment>WPF: vceKing</comment>
   </data>
   <data name="Trk_SiderealRate_Tip" xml:space="preserve">
     <value>Sidereal tracking rate in arcseconds/second.</value>
@@ -1607,14 +1583,12 @@
   </data>
   <data name="Trk_RaGuideRate" xml:space="preserve">
     <value>RA Guiding Rate %</value>
-    <comment>WPF: skyRaGuiding</comment>
   </data>
   <data name="Trk_DecGuideRate_Tip" xml:space="preserve">
     <value>Dec guide rate as a percentage of sidereal (0–100, step 10).</value>
   </data>
   <data name="Trk_DecGuideRate" xml:space="preserve">
     <value>Dec Guiding Rate %</value>
-    <comment>WPF: skyDecGuiding</comment>
   </data>
   <data name="MC_DeviceInfoPanel" xml:space="preserve">
     <value>Device Information</value>
@@ -1834,11 +1808,9 @@
   </data>
   <data name="ObsCard_DataElevation" xml:space="preserve">
     <value>Elevation</value>
-    <comment>WPF: gpsEle (ambiguous: gpsEle, cdcEle, skyElevation)</comment>
   </data>
   <data name="ObsCard_DataUtcOffset" xml:space="preserve">
     <value>UTC Offset</value>
-    <comment>WPF: optUTCOffset</comment>
   </data>
   <data name="ObsCard_CopyToAll" xml:space="preserve">
     <value>Copy Lat/Long/Elevation to all telescope devices</value>
@@ -1854,7 +1826,6 @@
   </data>
   <data name="ObsCard_Reset" xml:space="preserve">
     <value>Reset</value>
-    <comment>WPF: btnResetSensorPos (ambiguous: btnResetSensorPos, skyReset, optReset)</comment>
   </data>
   <data name="Obs_Location" xml:space="preserve">
     <value>Location</value>
@@ -2152,7 +2123,6 @@
   </data>
   <data name="MonPage_Copy" xml:space="preserve">
     <value>Copy to Clipboard</value>
-    <comment>WPF: optCopyClip</comment>
   </data>
   <data name="MonPage_Reload" xml:space="preserve">
     <value>Reload Settings</value>
@@ -2225,11 +2195,9 @@
   </data>
   <data name="TS_MountType" xml:space="preserve">
     <value>Mount Type</value>
-    <comment>WPF: skyMount</comment>
   </data>
   <data name="TS_AlignmentMode" xml:space="preserve">
     <value>Alignment Mode</value>
-    <comment>WPF: notAlignmentMode (ambiguous: notAlignmentMode, skyAlignment)</comment>
   </data>
   <data name="TS_ConnectionStatus" xml:space="preserve">
     <value>Connection Status</value>
@@ -2245,11 +2213,9 @@
   </data>
   <data name="TS_Elevation" xml:space="preserve">
     <value>Elevation</value>
-    <comment>WPF: gpsEle (ambiguous: gpsEle, cdcEle, skyElevation)</comment>
   </data>
   <data name="TS_Refraction" xml:space="preserve">
     <value>Refraction</value>
-    <comment>WPF: skyRefraction</comment>
   </data>
   <data name="TS_SerialPortSettings" xml:space="preserve">
     <value>Serial Port Settings</value>
@@ -2259,7 +2225,6 @@
   </data>
   <data name="TS_BaudRate" xml:space="preserve">
     <value>Baud Rate</value>
-    <comment>WPF: gpsBaud</comment>
   </data>
   <data name="TS_DataBits" xml:space="preserve">
     <value>Data Bits</value>
@@ -2275,11 +2240,9 @@
   </data>
   <data name="TS_TrackingRate" xml:space="preserve">
     <value>Tracking Rate</value>
-    <comment>WPF: skyTracking</comment>
   </data>
   <data name="TS_SiderealRate" xml:space="preserve">
     <value>Sidereal Rate</value>
-    <comment>WPF: skySiderealRate</comment>
   </data>
   <data name="TS_MinPulseRa" xml:space="preserve">
     <value>Min Pulse RA</value>
@@ -2292,15 +2255,12 @@
   </data>
   <data name="TS_RaBacklash" xml:space="preserve">
     <value>RA Backlash</value>
-    <comment>WPF: bacRaLash</comment>
   </data>
   <data name="TS_DecBacklash" xml:space="preserve">
     <value>Dec Backlash</value>
-    <comment>WPF: bacDecLash</comment>
   </data>
   <data name="TS_Encoders" xml:space="preserve">
     <value>Encoders</value>
-    <comment>WPF: skyEncoders</comment>
   </data>
   <data name="TS_AllowAdvanced" xml:space="preserve">
     <value>Allow Advanced Commands</value>
@@ -2481,7 +2441,6 @@
   </data>
   <data name="State_Slewing" xml:space="preserve">
     <value>Slewing</value>
-    <comment>WPF: botSlewing (ambiguous: botSlewing, botTipSlewing, vceSlewing)</comment>
   </data>
   <data name="State_Stationary" xml:space="preserve">
     <value>Stationary</value>
@@ -2602,22 +2561,18 @@
   </data>
   <data name="MStat_LimitWarning" xml:space="preserve">
     <value>Limit Warning</value>
-    <comment>WPF: vceLimit</comment>
   </data>
   <data name="MStat_AtPark" xml:space="preserve">
     <value>At Park</value>
   </data>
   <data name="MStat_Mount" xml:space="preserve">
     <value>Mount</value>
-    <comment>WPF: mntMount (ambiguous: mntMount, optMount)</comment>
   </data>
   <data name="MStat_Type" xml:space="preserve">
     <value>Type</value>
-    <comment>WPF: optType (ambiguous: optType, chtType)</comment>
   </data>
   <data name="MStat_Mode" xml:space="preserve">
     <value>Mode</value>
-    <comment>WPF: hcMode</comment>
   </data>
   <data name="MStat_MountModel" xml:space="preserve">
     <value>Mount Model</value>
@@ -2630,7 +2585,6 @@
   </data>
   <data name="MStat_HomeSensor" xml:space="preserve">
     <value>Home Sensor</value>
-    <comment>WPF: mntHomeSensor</comment>
   </data>
   <data name="MStat_Voltage" xml:space="preserve">
     <value>Voltage</value>
@@ -2640,19 +2594,15 @@
   </data>
   <data name="MStat_PolarLed" xml:space="preserve">
     <value>Polar LED</value>
-    <comment>WPF: mntPolarLed</comment>
   </data>
   <data name="MStat_Capabilities" xml:space="preserve">
     <value>Capabilities</value>
-    <comment>WPF: mntCap</comment>
   </data>
   <data name="MStat_CustomOffsetRa" xml:space="preserve">
     <value>Custom Offset RA</value>
-    <comment>WPF: mntCustomOffsetRa</comment>
   </data>
   <data name="MStat_CustomOffsetDec" xml:space="preserve">
     <value>Custom Offset Dec</value>
-    <comment>WPF: mntCustomOffsetDec</comment>
   </data>
   <data name="MStat_StepsRa" xml:space="preserve">
     <value>Steps RA</value>
@@ -2662,52 +2612,42 @@
   </data>
   <data name="MStat_WormStepsRa" xml:space="preserve">
     <value>Worm Steps RA</value>
-    <comment>WPF: mntWormStepsRa</comment>
   </data>
   <data name="MStat_WormStepsDec" xml:space="preserve">
     <value>Worm Steps Dec</value>
-    <comment>WPF: mntWormStepsDec</comment>
   </data>
   <data name="MStat_FrequencyRa" xml:space="preserve">
     <value>Frequency RA</value>
-    <comment>WPF: mntFreqRa</comment>
   </data>
   <data name="MStat_FrequencyDec" xml:space="preserve">
     <value>Frequency Dec</value>
-    <comment>WPF: mntFreqDec</comment>
   </data>
   <data name="MStat_RaStepsArcSec" xml:space="preserve">
     <value>RA Steps/ArcSec</value>
-    <comment>WPF: mntRaSteps</comment>
   </data>
   <data name="MStat_DecStepsArcSec" xml:space="preserve">
     <value>Dec Steps/ArcSec</value>
-    <comment>WPF: mntDecSteps</comment>
   </data>
   <data name="MStat_AxisDials" xml:space="preserve">
     <value>Axis Dials</value>
   </data>
   <data name="MStat_Supported" xml:space="preserve">
     <value>Supported</value>
-    <comment>WPF: mntSupported</comment>
   </data>
   <data name="MStat_NotSupported" xml:space="preserve">
     <value>Not supported</value>
   </data>
   <data name="MStat_Tracking" xml:space="preserve">
     <value>Tracking</value>
-    <comment>WPF: btnTracking (ambiguous: btnTracking, botTracking, botTipTracking, gpTracking)</comment>
   </data>
   <data name="MStat_PulseGuiding" xml:space="preserve">
     <value>Pulse Guiding</value>
   </data>
   <data name="MStat_Slewing" xml:space="preserve">
     <value>Slewing</value>
-    <comment>WPF: botSlewing (ambiguous: botSlewing, botTipSlewing, vceSlewing)</comment>
   </data>
   <data name="MStat_LimitsOn" xml:space="preserve">
     <value>Limits On</value>
-    <comment>WPF: 1021LimitsOn (ambiguous: 1021LimitsOn, vceLimitsOn)</comment>
   </data>
   <data name="MStat_AtHome" xml:space="preserve">
     <value>At Home</value>
