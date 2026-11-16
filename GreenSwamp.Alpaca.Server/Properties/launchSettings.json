@@ -1,10 +1,11 @@
-{
+﻿{
   "profiles": {
     "GreenSwamp.Alpaca.Server": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_PREVENTHOSTINGSTARTUP": "true"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5077"
