@@ -351,6 +351,8 @@ namespace GreenSwamp.Alpaca.Server
             // Add Text To Speech browser service
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserTtsService>();
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserCultureService>();
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.IBrowserSettingsService,
+                GreenSwamp.Alpaca.Server.Services.BrowserSettingsService>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();

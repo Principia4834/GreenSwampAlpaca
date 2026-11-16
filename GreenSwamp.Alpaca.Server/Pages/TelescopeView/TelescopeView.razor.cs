@@ -16,7 +16,7 @@
 
 
 using GreenSwamp.Alpaca.Server.Models;
-using GreenSwamp.Alpaca.Settings.Models;
+using GreenSwamp.Alpaca.Server.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -29,10 +29,16 @@ public partial class TelescopeView : IAsyncDisposable
     /// <summary>Optional ?model=Reflector etc. (see <see cref="Model3DType"/>); defaults to the standard model.</summary>
     [SupplyParameterFromQuery(Name = "model")] public string? ModelName { get; set; }
 
+    [Inject] private IBrowserSettingsService BrowserSettings { get; set; } = null!;
+
     private IJSObjectReference? _module;
     private double _axisX;
     private double _axisY;
-    private string _activeModelSetName = string.Empty;
+    private string? _settingsStorageKey;
+    private string? _selectionStorageKey;
+    private string? _implicitModelTypeContextKey;
+    private Model3DType _implicitModelType = Model3DType.Default;
+    private Model3DType _activeModelType = Model3DType.Default;
     private bool _savingView;
 
     private readonly string _viewSessionId = Guid.NewGuid().ToString("N");
@@ -40,40 +46,39 @@ public partial class TelescopeView : IAsyncDisposable
     private PeriodicTimer? _viewHeartbeat;
     private bool _subscribedStateChanged;
     private bool _heartbeatStarted;
-    private int? _initializedDeviceNumber;
     private string? _loadedMountKey;
 
     protected override async Task OnParametersSetAsync()
     {
         ActiveViews.Touch(_viewSessionId, DeviceNumber);
 
-        if (_module is not null && _initializedDeviceNumber != DeviceNumber)
-        {
-            await EnsureViewerInitializedForCurrentDeviceAsync();
+        if (_module is not null)
             await PushStateAsync();
-        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        await EnsureViewerInitializedForCurrentDeviceAsync();
-
-        if (!_subscribedStateChanged)
+        try
         {
-            StateService.StateChanged += OnStateChanged;
-            _subscribedStateChanged = true;
+            await PushStateAsync();
         }
-
-        ActiveViews.Touch(_viewSessionId, DeviceNumber);
-        if (!_heartbeatStarted)
+        finally
         {
-            _heartbeatStarted = true;
-            _ = RunViewHeartbeatAsync();
-        }
+            if (!_subscribedStateChanged)
+            {
+                StateService.StateChanged += OnStateChanged;
+                _subscribedStateChanged = true;
+            }
 
-        await PushStateAsync();
+            ActiveViews.Touch(_viewSessionId, DeviceNumber);
+            if (!_heartbeatStarted)
+            {
+                _heartbeatStarted = true;
+                _ = RunViewHeartbeatAsync();
+            }
+        }
     }
 
     private void OnStateChanged(object? sender, EventArgs e)
@@ -81,14 +86,15 @@ public partial class TelescopeView : IAsyncDisposable
 
     private async Task PushStateAsync()
     {
-        if (_module is null) return;
-
         var s = StateService.GetCurrentState(DeviceNumber);
         _axisX = s.ActualAxisX;
         _axisY = s.ActualAxisY;
 
         try
         {
+            await EnsureViewerInitializedForCurrentContextAsync(s);
+            if (_module is null) return;
+
             var latitude = double.IsFinite(s.SiteLatitude) ? s.SiteLatitude : 0.0;
             await EnsureModelLoadedAsync(s, latitude);
 
@@ -104,45 +110,75 @@ public partial class TelescopeView : IAsyncDisposable
         catch (TaskCanceledException) { }
     }
 
-    private async Task EnsureViewerInitializedForCurrentDeviceAsync()
+    private async Task EnsureViewerInitializedForCurrentContextAsync(TelescopeStateModel state)
     {
-        await JS.InvokeVoidAsync("ensureBabylonLoaded");
-        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "/js/telescopeViewer.js");
-
-        if (_initializedDeviceNumber.HasValue && _initializedDeviceNumber.Value != DeviceNumber)
+        var selectionKey = TelescopeViewerSettings.GetModelSelectionStorageKey(DeviceNumber, state.MountType);
+        var requestedModelType = GetRequestedModelType();
+        Model3DType modelType;
+        if (requestedModelType.HasValue)
         {
-            try
-            {
-                await _module.InvokeVoidAsync("dispose");
-            }
-            catch (JSDisconnectedException) { }
-            catch (TaskCanceledException) { }
+            modelType = requestedModelType.Value;
+        }
+        else if (_implicitModelTypeContextKey == selectionKey)
+        {
+            modelType = _implicitModelType;
+        }
+        else
+        {
+            var selection = await BrowserSettings.GetAsync(selectionKey, new TelescopeViewerModelSelection());
+            modelType = Enum.IsDefined(typeof(Model3DType), selection.ModelType)
+                ? selection.ModelType
+                : Model3DType.Default;
+            _implicitModelTypeContextKey = selectionKey;
+            _implicitModelType = modelType;
         }
 
-        var modelSet = SettingsService.GetModelSets();
-        var activeEntry = modelSet.ModelSets
-            .FirstOrDefault(s => s.Name == modelSet.ActiveModelSet)
-            ?? new ModelSetEntry { Name = "Prototype", Models = new ModelFiles() };
+        var settingsKey = TelescopeViewerSettings.GetStorageKey(DeviceNumber, state.MountType, modelType);
+        if (_settingsStorageKey == settingsKey)
+            return;
 
-        _activeModelSetName = activeEntry.Name;
+        if (_module is null)
+        {
+            await JS.InvokeVoidAsync("ensureBabylonLoaded");
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/telescopeViewer.js");
+        }
 
-        // Camera angles are degrees. The model is (re)loaded by EnsureModelLoadedAsync on the next state push.
-        await _module.InvokeAsync<bool>("init", "telescopeCanvas", new { camera = (object?)activeEntry.Camera });
+        if (_settingsStorageKey is not null)
+            await _module.InvokeVoidAsync("dispose");
 
+        var settings = await BrowserSettings.GetAsync(settingsKey, TelescopeViewerSettings.CreateDefault(modelType));
+        settings.ModelType = modelType;
+        settings.Normalize();
+
+        await _module.InvokeAsync<bool>("init", "telescopeCanvas", new
+        {
+            camera = settings.Camera,
+            primaryColor = settings.ModelColor,
+            background = settings.Background,
+            grid = settings.ShowGrid
+        });
+
+        _activeModelType = modelType;
+        _settingsStorageKey = settingsKey;
+        _selectionStorageKey = selectionKey;
         _loadedMountKey = null;
-        _initializedDeviceNumber = DeviceNumber;
     }
+
+    private Model3DType? GetRequestedModelType()
+        => Enum.TryParse<Model3DType>(ModelName, true, out var modelType)
+           && Enum.IsDefined(typeof(Model3DType), modelType)
+            ? modelType
+            : null;
 
     private async Task EnsureModelLoadedAsync(TelescopeStateModel s, double latitude)
     {
         if (_module is null) return;
 
-        var modelType = Enum.TryParse<Model3DType>(ModelName, true, out var parsed) ? parsed : Model3DType.Default;
-        var mountKey = $"{s.AlignmentMode}|{s.MountType}|{s.PolarMode}|{Math.Round(latitude, 2)}|{modelType}";
+        var mountKey = $"{s.AlignmentMode}|{s.MountType}|{s.PolarMode}|{Math.Round(latitude, 2)}|{_activeModelType}";
         if (mountKey == _loadedMountKey) return;
         _loadedMountKey = mountKey;
 
-        var url = ResolveUrl(Nav.BaseUri.TrimEnd('/'), Model3D.GetModelUrl(modelType, s.AlignmentMode, s.PolarMode));
+        var url = ResolveUrl(Nav.BaseUri.TrimEnd('/'), Model3D.GetModelUrl(_activeModelType, s.AlignmentMode, s.PolarMode));
         await _module.InvokeAsync<string>("loadModel", url, new
         {
             mode = (int)s.AlignmentMode,
@@ -174,15 +210,15 @@ public partial class TelescopeView : IAsyncDisposable
         _savingView = true;
         try
         {
-            var cameraState = await _module.InvokeAsync<global::GreenSwamp.Alpaca.Settings.Models.CameraState?>("getCameraState");
-            if (cameraState is null) return;
+            var settings = await _module.InvokeAsync<TelescopeViewerSettings?>("getViewerSettings");
+            if (settings is null || _settingsStorageKey is null || _selectionStorageKey is null) return;
 
-            var modelSets = SettingsService.GetModelSets();
-            var entry = modelSets.ModelSets.FirstOrDefault(s => s.Name == _activeModelSetName);
-            if (entry is null) return;
+            settings.ModelType = _activeModelType;
+            settings.Normalize();
 
-            entry.Camera = cameraState;
-            await SettingsService.SaveModelSetsAsync(modelSets);
+            await BrowserSettings.SetAsync(_settingsStorageKey, settings);
+            await BrowserSettings.SetAsync(_selectionStorageKey,
+                new TelescopeViewerModelSelection { ModelType = _activeModelType });
         }
         catch (JSDisconnectedException) { }
         catch (TaskCanceledException) { }

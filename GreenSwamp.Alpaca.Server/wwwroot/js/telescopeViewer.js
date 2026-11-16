@@ -39,6 +39,13 @@ const deg = r => r * 180 / Math.PI;
 
 // Default camera: looking at the mount head from the south-west, a little above.
 const DEFAULT_CAMERA = { alpha: 150, beta: 60, radius: 40, target: { x: 0, y: 6, z: 0 } };
+const DEFAULT_BACKGROUND = 'NorthAmerica';
+const DEFAULT_BACKGROUND_COLOR = '#070b0e';
+
+function getBackgroundColor(background) {
+    if (typeof background === 'string' && /^#[0-9a-f]{6}$/i.test(background)) return `${background}ff`;
+    return `${DEFAULT_BACKGROUND_COLOR}ff`;
+}
 
 // Match the mount's pace without letting the rendered model lag too far behind.
 const MAX_GLIDE_MS = 1000;
@@ -54,6 +61,8 @@ class TelescopeViewer {
         this.canvas = canvas;
         // Green Swamp palette: primary = telescope (green), secondary = light (moon white).
         this.primaryColor = options.primaryColor || '#52b788';
+        this.background = options.background || DEFAULT_BACKGROUND;
+        this.gridVisible = true;
         this.secondaryColor = options.secondaryColor || '#e8e6df';
         this.compassRequest = 0; // so a compass image that loads late can't replace a newer one
         this.modelMeshes = [];
@@ -105,7 +114,7 @@ class TelescopeViewer {
         const B = window.BABYLON;
         const scene = new B.Scene(this.engine);
         scene.useRightHandedSystem = true; // same handedness as Helix / WPF 3D
-        scene.clearColor = B.Color4.FromHexString('#070b0eff');
+        scene.clearColor = B.Color4.FromHexString(getBackgroundColor(this.background));
 
         const d = DEFAULT_CAMERA;
         this.camera = new B.ArcRotateCamera('Camera', rad(d.alpha), rad(d.beta), d.radius,
@@ -223,7 +232,17 @@ class TelescopeViewer {
 
     /** Shows or hides the ground grid. */
     setGrid(visible) {
-        this.ground.setEnabled(!!visible);
+        this.gridVisible = !!visible;
+        this.ground.setEnabled(this.gridVisible);
+    }
+
+    getSettings() {
+        return {
+            camera: this.getCamera(),
+            modelColor: this.primaryColor,
+            background: this.background,
+            showGrid: this.gridVisible
+        };
     }
 
     /** Helix BoxVisual3D: Length = X, Width = Y, Height = Z, rotated about the X axis around a pivot. */
@@ -461,7 +480,7 @@ class TelescopeViewer {
 
 let viewer = null;
 
-/** options: { camera: { alpha, beta (degrees), radius, target: { x, y, z } } | null, primaryColor, grid } */
+/** options: { camera, primaryColor, background, grid } */
 export function init(canvasId, options) {
     dispose();
     const canvas = document.getElementById(canvasId);
@@ -482,6 +501,10 @@ export function setPose(xAxisOffset, yAxisOffset, zAxisOffset, yAxisCentre) {
 
 export function getCameraState() {
     return viewer ? viewer.getCamera() : null;
+}
+
+export function getViewerSettings() {
+    return viewer ? viewer.getSettings() : null;
 }
 
 export function dispose() {

@@ -3,10 +3,8 @@
 @using ASCOM.Common.DeviceInterfaces
 @using GreenSwamp.Alpaca.Server.Pages.Charts
 @using GreenSwamp.Alpaca.Server.Services
-@using GreenSwamp.Alpaca.Settings.Services
 @inject TelescopeStateService StateService
 @inject ActiveDeviceViewRegistry ActiveViews
-@inject IVersionedSettingsService SettingsService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
@@ -26,7 +24,9 @@
                        Title="@Loc["TView_SaveView"]"
                        OnClick="SaveViewAsync" />
     </MudStack>
-    <CompactPositionHeader State="@StateService.GetCurrentState(DeviceNumber)" />
+    <div style="zoom: 0.85">
+        <CompactPositionHeader State="@StateService.GetCurrentState(DeviceNumber)" />
+    </div>
     <canvas id="telescopeCanvas"
             style="flex:1; width:100%; display:block; touch-action:none;" />
 </div>
