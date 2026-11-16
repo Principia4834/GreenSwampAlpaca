@@ -238,6 +238,12 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         background:    rgba(0,0,0,0.35);
     }
 
+    /* MudSwipeArea registers server-side pointermove handlers; without this every mouse move
+       over the carousel is a SignalR round-trip and render. */
+    .gs-carousel .mud-carousel-swipe {
+        pointer-events: none;
+    }
+
     .gs-carousel-empty {
         color:       rgba(255,255,255,0.75);
         text-shadow: 0 1px 4px rgba(0,0,0,0.7);

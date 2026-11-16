@@ -32,7 +32,7 @@
                          @onclick="HandleClick"
                          AutoCycleTime="TimeSpan.FromSeconds(_dwellSeconds)"
                          ShowArrows="true" ShowBullets="true"
-                         EnableSwipeGesture="true">
+                         EnableSwipeGesture="false">
                 @foreach (var slide in _active.Slides)
                 {
                     <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
