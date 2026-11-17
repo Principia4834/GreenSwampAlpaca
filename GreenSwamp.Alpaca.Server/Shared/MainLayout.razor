@@ -14,6 +14,7 @@
 @inject IDialogService DialogService
 @inject BrowserCultureService BrowserCultureService
 @inject BrowserTtsService BrowserTtsService
+@inject IThemeService ThemeService
 
 <HeadContent>
     <style>
@@ -21,7 +22,7 @@
     </style>
 </HeadContent>
 
-<MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
+<MudThemeProvider Theme="@GsTheme.Get(ThemeService.Current)" IsDarkMode="@ThemeService.Current.IsDark" ObserveSystemDarkModeChange="false" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -77,6 +78,8 @@
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
+
     private async Task OpenAboutDialog()
     {
         var options = new DialogOptions
@@ -96,6 +99,7 @@
     protected override void OnInitialized()
     {
         SettingsService.ServerConfigChanged += OnServerConfigChanged;
+        ThemeService.Changed += OnThemeChanged;
         ApplyServerConfig(SettingsService.GetServerConfig());
 
         // Update immediately on load
@@ -109,6 +113,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await ThemeService.InitializeAsync();
+        }
+
         if (!firstRender || await BrowserCultureService.HasCulturePreferenceAsync())
         {
             return;
@@ -158,6 +167,7 @@
     public void Dispose()
     {
         SettingsService.ServerConfigChanged -= OnServerConfigChanged;
+        ThemeService.Changed -= OnThemeChanged;
         _timer?.Dispose();
     }
 }

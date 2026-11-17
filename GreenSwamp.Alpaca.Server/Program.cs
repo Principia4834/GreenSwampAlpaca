@@ -353,6 +353,8 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserCultureService>();
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.IBrowserSettingsService,
                 GreenSwamp.Alpaca.Server.Services.BrowserSettingsService>();
+            builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.IThemeService,
+                GreenSwamp.Alpaca.Server.Services.ThemeService>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();
