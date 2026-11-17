@@ -33,12 +33,12 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
                        Edge="Edge.Start" OnClick="ToggleDrawer" />
         <MudText Typo="Typo.h5" Class="gs-brand">
-            <span style="font-weight:700; color:var(--gs-accent-500);">GS</span>Alpaca
+            <span style="font-weight:700; color:var(--gs-accent);">GS</span>Alpaca
         </MudText>
 
         <!-- Displays current Date and Time -->
         <MudSpacer />
-        <MudText Typo="Typo.h6" Color="Color.Primary">@CurrentDateTimeString</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Tertiary">@CurrentDateTimeString</MudText>
 
         <MudSpacer />
         <MudButton Color="Color.Primary" Variant="Variant.Filled" 
@@ -52,7 +52,7 @@
                Breakpoint="Breakpoint.LgAndDown"
                ClipMode="DrawerClipMode.Always"
                Width="12.5rem"
-               Style="background-color:var(--gs-bg-sidebar); border-right:1px solid rgba(var(--gs-accent-500-rgb),0.2);">
+               Style="background-color:var(--gs-bg-sidebar); border-right:1px solid var(--gs-divider);">
         <NavMenu />
         <MudText Typo="Typo.caption" Class="mt-auto pa-3">
             @Loc["Layout_Version", ServerConfig.GetVersion()]
