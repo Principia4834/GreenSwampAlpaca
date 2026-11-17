@@ -4,57 +4,14 @@ namespace GreenSwamp.Alpaca.Server.Theme;
 
 /// <summary>
 /// GreenSwamp Alpaca — MudBlazor theme.
-/// Single source of truth for all GS design tokens; replaces the Bootstrap
-/// variable bridge that previously lived in site.css.
+/// Typography and layout live here; the palette is derived by <see cref="GsThemeBuilder"/>
+/// from a single Theme Colour and the background surfaces.
 /// </summary>
 public static class GsTheme
 {
     public static readonly MudTheme Instance = new()
     {
-        PaletteDark = new PaletteDark
-        {
-            // -- Surfaces -------------------------------------------------
-            Background       = "#121212",          // --gs-bg-app
-            Surface          = "#1e1e1e",          // --gs-bg-paper
-            BackgroundGray   = "#2a2a2a",          // --gs-bg-elevated
-            AppbarBackground = "#0d1117",          // --gs-bg-sidebar
-            DrawerBackground = "#0d1117",
-
-            // -- Accent / Primary -----------------------------------------
-            Primary          = "#4caf50",          // --gs-accent-500
-            PrimaryLighten   = "#81c784",          // --gs-accent-300
-            PrimaryDarken    = "#388e3c",          // --gs-accent-700
-
-            // -- Text -----------------------------------------------------
-            TextPrimary      = "rgba(255,255,255,0.87)",
-            TextSecondary    = "rgba(255,255,255,0.60)",
-            TextDisabled     = "rgba(255,255,255,0.38)",
-            DrawerText       = "rgba(255,255,255,0.87)",
-            DrawerIcon       = "rgba(255,255,255,0.60)",
-            AppbarText       = "rgba(255,255,255,0.87)",
-
-            // -- Lines / Dividers -----------------------------------------
-            Divider          = "rgba(255,255,255,0.12)",
-            DividerLight     = "rgba(255,255,255,0.06)",
-            TableLines       = "rgba(255,255,255,0.12)",
-            LinesDefault     = "rgba(255,255,255,0.12)",
-            LinesInputs      = "rgba(255,255,255,0.30)",
-
-            // -- Overlays -------------------------------------------------
-            OverlayDark      = "rgba(0,0,0,0.5)",
-            OverlayLight     = "rgba(0,0,0,0.3)",
-
-            // -- Status ---------------------------------------------------
-            Success          = "#66bb6a",          // --gs-success
-            Warning          = "#ffa726",          // --gs-warning
-            Error            = "#f44336",          // --gs-error
-            Info             = "#42a5f5",          // --gs-info
-
-            // -- LimitAction states --------------------------------------------
-            ActionDefault    = "rgba(255,255,255,0.60)",
-            ActionDisabled   = "rgba(255,255,255,0.26)",
-            ActionDisabledBackground = "rgba(255,255,255,0.12)",
-        },
+        PaletteDark = GsThemeBuilder.BuildDarkPalette(GsThemeBuilder.GreenThemeColour),
 
         Typography = new Typography
         {
