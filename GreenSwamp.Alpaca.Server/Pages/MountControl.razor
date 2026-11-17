@@ -111,7 +111,7 @@ else
                             </MudTooltip>
 
                             <MudTooltip Text="@(s.VoiceActive ? Loc["State_VoiceOn"].Value : Loc["State_VoiceOff"].Value)" Placement="Placement.Bottom" Arrow="true">
-                                <MudIcon Color="@(isUiClientConnected ? Color.Success : Color.Default)"
+                                <MudIcon Color="@(s.VoiceActive ? Color.Success : Color.Default)"
                                          Icon="@(s.VoiceActive ? Icons.Material.Filled.RecordVoiceOver : Icons.Material.Filled.VoiceOverOff)"
                                          Size="Size.Large" />
                             </MudTooltip>
