@@ -17,6 +17,8 @@
     @* Settings actions *@
     <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">@Loc["Nav_SettingsExplorer"]</MudNavLink>
     <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">@Loc["Nav_CheckSettings"]</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Palette"
+                OnClick="OpenDisplayPreferencesDialogAsync">@Loc["Nav_DisplayPreferences"]</MudNavLink>
 
     <MudDivider Class="my-2" />
 
@@ -30,6 +32,19 @@
 
 @code {
     [Inject] private IDialogService DialogService { get; set; } = default!;
+
+    private async Task OpenDisplayPreferencesDialogAsync()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseOnEscapeKey = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
+        await DialogService.ShowAsync<DisplayPreferencesDialog>(string.Empty, options);
+    }
 
     private async Task OpenShutdownDialogAsync()
     {
