@@ -3,7 +3,7 @@
 namespace GreenSwamp.Alpaca.Server.Theme;
 
 /// <summary>
-/// Background surfaces and neutral text for a theme. Only the dark preset exists today.
+/// Background surfaces and text colours for a theme. Line and action tokens are alpha tints of <c>TextRgb</c>.
 /// </summary>
 public sealed record GsSurfaces(
     bool IsDark,
@@ -11,7 +11,12 @@ public sealed record GsSurfaces(
     string Surface,
     string BackgroundGray,
     string Appbar,
-    string TextRgb)
+    string TextRgb,
+    string TextPrimary,
+    string TextSecondary,
+    string TextDisabled,
+    string LinesInputs,
+    string? Neutral = null)
 {
     public static readonly GsSurfaces Dark = new(
         IsDark: true,
@@ -19,7 +24,38 @@ public sealed record GsSurfaces(
         Surface: "#1e1e1e",
         BackgroundGray: "#2a2a2a",
         Appbar: "#0d1117",
-        TextRgb: "255,255,255");
+        TextRgb: "255,255,255",
+        TextPrimary: "rgba(255,255,255,0.87)",
+        TextSecondary: "rgba(255,255,255,0.60)",
+        TextDisabled: "rgba(255,255,255,0.38)",
+        LinesInputs: "rgba(255,255,255,0.30)");
+
+    public static readonly GsSurfaces Light = new(
+        IsDark: false,
+        Background: "#f5f5f5",
+        Surface: "#ffffff",
+        BackgroundGray: "#eeeeee",
+        Appbar: "#ffffff",
+        TextRgb: "0,0,0",
+        TextPrimary: "rgba(0,0,0,0.87)",
+        TextSecondary: "rgba(0,0,0,0.60)",
+        TextDisabled: "rgba(0,0,0,0.38)",
+        LinesInputs: "rgba(0,0,0,0.38)");
+
+    // Red on black only. Text is explicit because an alpha tint of red on black falls below 3:1 (60% gives 2.6:1).
+    // #f20000 is about 4.6:1 and #c80000 about 3.4:1 on the lightest surface (#140000).
+    public static readonly GsSurfaces NightRed = new(
+        IsDark: true,
+        Background: "#000000",
+        Surface: "#0a0000",
+        BackgroundGray: "#140000",
+        Appbar: "#000000",
+        TextRgb: "255,0,0",
+        TextPrimary: "#f20000",
+        TextSecondary: "#c80000",
+        TextDisabled: "#7a0000",
+        LinesInputs: "rgba(255,0,0,0.80)",
+        Neutral: "#c80000");
 }
 
 /// <summary>
@@ -35,32 +71,54 @@ public static class GsThemeBuilder
 {
     public const string GreenThemeColour = "#4caf50";
 
-    private const double ControlSaturationFactor = 0.65;
-    private const double ControlContrast = 3.0;
     private const double AccentContrast = 4.5;
     private const double StatusContrast = 3.0;
     private const double LightnessStep = 0.005;
 
-    public static PaletteDark BuildDarkPalette(string themeColour)
+    public static PaletteDark BuildDarkPalette(GsThemeDefinition theme)
     {
         var palette = new PaletteDark();
-        Fill(palette, themeColour, GsSurfaces.Dark);
+        Fill(palette, theme);
         return palette;
     }
 
-    private static void Fill(Palette p, string themeColour, GsSurfaces s)
+    public static PaletteLight BuildLightPalette(GsThemeDefinition theme)
     {
+        var palette = new PaletteLight();
+        Fill(palette, theme);
+        return palette;
+    }
+
+    private static void Fill(Palette p, GsThemeDefinition theme)
+    {
+        var s = theme.Surfaces;
         var surfaces = new[]
         {
             Rgb.Parse(s.Background), Rgb.Parse(s.Surface), Rgb.Parse(s.BackgroundGray), Rgb.Parse(s.Appbar)
         };
 
-        var seed = Rgb.Parse(themeColour);
+        var seed = Rgb.Parse(theme.ThemeColour);
         var (hue, saturation, _) = seed.ToHsl();
 
-        var control = LeastProminent(hue, saturation * ControlSaturationFactor, surfaces, ControlContrast, s.IsDark);
+        var control = LeastProminent(hue, saturation * theme.ControlSaturation, surfaces, theme.ControlContrast, s.IsDark);
         var accent = EnsureContrast(seed, surfaces, AccentContrast, s.IsDark);
-        var neutral = Blend(Rgb.ParseRgbList(s.TextRgb), Rgb.Parse(s.Surface), 0.60);
+        var neutral = s.Neutral is null
+            ? Blend(Rgb.ParseRgbList(s.TextRgb), Rgb.Parse(s.Surface), 0.60)
+            : Rgb.Parse(s.Neutral);
+
+        // Single-hue themes: lightening stops at the fully saturated colour so hover shades never turn pink or white.
+        Rgb Lighten(Rgb c, double delta)
+        {
+            if (!theme.Monochrome)
+            {
+                return c.Shift(delta);
+            }
+
+            var (h, sat, l) = c.ToHsl();
+            return Rgb.FromHsl(h, sat, Math.Min(l + delta, 0.5));
+        }
+
+        string OnFill(Rgb fill) => theme.Monochrome ? "#000000" : ContrastText(fill);
 
         // -- Surfaces -----------------------------------------------------
         p.Background = s.Background;
@@ -71,51 +129,90 @@ public static class GsThemeBuilder
 
         // -- Control (Primary) --------------------------------------------
         p.Primary = control.ToHex();
-        p.PrimaryLighten = control.Shift(0.12).ToHex();
+        p.PrimaryLighten = Lighten(control, 0.12).ToHex();
         p.PrimaryDarken = control.Shift(-0.08).ToHex();
-        p.PrimaryContrastText = ContrastText(control);
+        p.PrimaryContrastText = OnFill(control);
 
         // -- Accent (Tertiary) --------------------------------------------
         p.Tertiary = accent.ToHex();
-        p.TertiaryLighten = accent.Shift(0.15).ToHex();
+        p.TertiaryLighten = Lighten(accent, 0.15).ToHex();
         p.TertiaryDarken = accent.Shift(-0.12).ToHex();
-        p.TertiaryContrastText = ContrastText(accent);
+        p.TertiaryContrastText = OnFill(accent);
 
         // -- Neutral (Secondary) ------------------------------------------
         p.Secondary = neutral.ToHex();
-        p.SecondaryLighten = neutral.Shift(0.10).ToHex();
+        p.SecondaryLighten = Lighten(neutral, 0.10).ToHex();
         p.SecondaryDarken = neutral.Shift(-0.10).ToHex();
-        p.SecondaryContrastText = ContrastText(neutral);
+        p.SecondaryContrastText = OnFill(neutral);
 
         // -- Text ---------------------------------------------------------
-        p.TextPrimary = $"rgba({s.TextRgb},0.87)";
-        p.TextSecondary = $"rgba({s.TextRgb},0.60)";
-        p.TextDisabled = $"rgba({s.TextRgb},0.38)";
-        p.DrawerText = $"rgba({s.TextRgb},0.87)";
-        p.DrawerIcon = $"rgba({s.TextRgb},0.60)";
-        p.AppbarText = $"rgba({s.TextRgb},0.87)";
+        p.TextPrimary = s.TextPrimary;
+        p.TextSecondary = s.TextSecondary;
+        p.TextDisabled = s.TextDisabled;
+        p.DrawerText = s.TextPrimary;
+        p.DrawerIcon = s.TextSecondary;
+        p.AppbarText = s.TextPrimary;
 
         // -- Lines / Dividers ---------------------------------------------
         p.Divider = $"rgba({s.TextRgb},0.12)";
         p.DividerLight = $"rgba({s.TextRgb},0.06)";
         p.TableLines = $"rgba({s.TextRgb},0.12)";
         p.LinesDefault = $"rgba({s.TextRgb},0.12)";
-        p.LinesInputs = $"rgba({s.TextRgb},0.30)";
+        p.LinesInputs = s.LinesInputs;
 
         // -- Overlays -----------------------------------------------------
         p.OverlayDark = "rgba(0,0,0,0.5)";
         p.OverlayLight = "rgba(0,0,0,0.3)";
 
         // -- Status (not derived from the Theme Colour) -------------------
-        p.Success = EnsureContrast(Rgb.Parse("#66bb6a"), surfaces, StatusContrast, s.IsDark).ToHex();
-        p.Warning = EnsureContrast(Rgb.Parse("#ffa726"), surfaces, StatusContrast, s.IsDark).ToHex();
-        p.Error = EnsureContrast(Rgb.Parse("#f44336"), surfaces, StatusContrast, s.IsDark).ToHex();
-        p.Info = EnsureContrast(Rgb.Parse("#42a5f5"), surfaces, StatusContrast, s.IsDark).ToHex();
+        var status = theme.Status ?? GsStatusColours.Standard;
+        var success = EnsureContrast(Rgb.Parse(status.Success), surfaces, StatusContrast, s.IsDark);
+        var warning = EnsureContrast(Rgb.Parse(status.Warning), surfaces, StatusContrast, s.IsDark);
+        var error = EnsureContrast(Rgb.Parse(status.Error), surfaces, StatusContrast, s.IsDark);
+        var info = EnsureContrast(Rgb.Parse(status.Info), surfaces, StatusContrast, s.IsDark);
+        p.Success = success.ToHex();
+        p.SuccessLighten = Lighten(success, 0.10).ToHex();
+        p.SuccessDarken = success.Shift(-0.08).ToHex();
+        p.Warning = warning.ToHex();
+        p.WarningLighten = Lighten(warning, 0.10).ToHex();
+        p.WarningDarken = warning.Shift(-0.08).ToHex();
+        p.Error = error.ToHex();
+        p.ErrorLighten = Lighten(error, 0.10).ToHex();
+        p.ErrorDarken = error.Shift(-0.08).ToHex();
+        p.Info = info.ToHex();
+        p.InfoLighten = Lighten(info, 0.10).ToHex();
+        p.InfoDarken = info.Shift(-0.08).ToHex();
 
         // -- Action states ------------------------------------------------
-        p.ActionDefault = $"rgba({s.TextRgb},0.60)";
+        p.ActionDefault = s.TextSecondary;
         p.ActionDisabled = $"rgba({s.TextRgb},0.26)";
         p.ActionDisabledBackground = $"rgba({s.TextRgb},0.12)";
+
+        if (!theme.Monochrome)
+        {
+            return;
+        }
+
+        // Single-hue theme: replace every remaining MudBlazor default that is not in the hue.
+        var gray = Rgb.Parse(s.BackgroundGray);
+        p.White = s.TextPrimary;
+        p.Black = s.Background;
+        p.Dark = s.BackgroundGray;
+        p.DarkContrastText = s.TextPrimary;
+        p.DarkLighten = Lighten(gray, 0.05).ToHex();
+        p.DarkDarken = gray.Shift(-0.02).ToHex();
+        p.SuccessContrastText = "#000000";
+        p.WarningContrastText = "#000000";
+        p.ErrorContrastText = "#000000";
+        p.InfoContrastText = "#000000";
+        p.GrayDefault = Rgb.FromHsl(hue, 1, 0.40).ToHex();
+        p.GrayLight = Rgb.FromHsl(hue, 1, 0.45).ToHex();
+        p.GrayLighter = Rgb.FromHsl(hue, 1, 0.50).ToHex();
+        p.GrayDark = Rgb.FromHsl(hue, 1, 0.30).ToHex();
+        p.GrayDarker = Rgb.FromHsl(hue, 1, 0.20).ToHex();
+        p.Skeleton = $"rgba({s.TextRgb},0.12)";
+        p.TableStriped = $"rgba({s.TextRgb},0.06)";
+        p.TableHover = $"rgba({s.TextRgb},0.10)";
     }
 
     private static double MinContrast(Rgb c, Rgb[] surfaces)

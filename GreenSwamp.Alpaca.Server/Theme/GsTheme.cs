@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using System.Collections.Concurrent;
+using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Theme;
 
@@ -14,9 +15,18 @@ public static class GsTheme
     public static string ChartText => $"rgba({GsSurfaces.Dark.TextRgb},0.87)";
     public static string ChartGrid => $"rgba({GsSurfaces.Dark.TextRgb},0.12)";
 
-    public static readonly MudTheme Instance = new()
+    private static readonly ConcurrentDictionary<string, MudTheme> Cache = new();
+
+    /// <summary>Default theme (Dark Green). Used until the stored preference has been read.</summary>
+    public static MudTheme Instance => Get(GsThemeCatalog.Default);
+
+    /// <summary>Returns the cached MudTheme for a theme definition.</summary>
+    public static MudTheme Get(GsThemeDefinition theme) => Cache.GetOrAdd(theme.Id, _ => Create(theme));
+
+    private static MudTheme Create(GsThemeDefinition theme) => new()
     {
-        PaletteDark = GsThemeBuilder.BuildDarkPalette(GsThemeBuilder.GreenThemeColour),
+        PaletteLight = theme.IsDark ? new PaletteLight() : GsThemeBuilder.BuildLightPalette(theme),
+        PaletteDark = theme.IsDark ? GsThemeBuilder.BuildDarkPalette(theme) : new PaletteDark(),
 
         Typography = new Typography
         {
