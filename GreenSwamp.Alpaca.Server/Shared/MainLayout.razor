@@ -74,7 +74,9 @@
     private bool _drawerOpen = true;
     private double _fontScale = GsZoom.DefaultScale;
 
-    private string RootFontSizeStyle => GsZoom.BuildRootStyle(_fontScale);
+    private double EffectiveFontScale => ThemeService.ZoomPercent is { } percent ? percent / 100.0 : _fontScale;
+
+    private string RootFontSizeStyle => GsZoom.BuildRootStyle(EffectiveFontScale);
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
@@ -100,6 +102,7 @@
     {
         SettingsService.ServerConfigChanged += OnServerConfigChanged;
         ThemeService.Changed += OnThemeChanged;
+        ThemeService.DisplayChanged += OnThemeChanged;
         ApplyServerConfig(SettingsService.GetServerConfig());
 
         // Update immediately on load
@@ -168,6 +171,7 @@
     {
         SettingsService.ServerConfigChanged -= OnServerConfigChanged;
         ThemeService.Changed -= OnThemeChanged;
+        ThemeService.DisplayChanged -= OnThemeChanged;
         _timer?.Dispose();
     }
 }
