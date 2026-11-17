@@ -32,14 +32,6 @@ namespace GreenSwamp.Alpaca.Server.Hubs
     public class ChartHub(ChartDataService chartData) : Hub
     {
         private readonly ChartDataService _chartData = chartData;
-        // Diagnostics (disabled): ChartHub(ChartDataService chartData, ILoggerFactory loggerFactory)
-        // private readonly ILogger _diag = loggerFactory.CreateLogger("GS.Diag");
-        //
-        // public override Task OnConnectedAsync()
-        // {
-        //     _diag.LogInformation("[GS.Diag] ChartHub connected conn={Conn}", Context.ConnectionId);
-        //     return base.OnConnectedAsync();
-        // }
 
         // Tracks which chart type ("radec" | "pulse") each connection has joined.
         // Key = connectionId, Value = set of chart-type strings.

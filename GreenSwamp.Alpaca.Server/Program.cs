@@ -347,7 +347,6 @@ namespace GreenSwamp.Alpaca.Server
 
             // Register ActiveDeviceViewRegistry as singleton for DI injection
             builder.Services.AddSingleton<ActiveDeviceViewRegistry>();
-            // Diagnostics (disabled): builder.Services.AddHostedService<GreenSwamp.Alpaca.Server.Diagnostics.ThreadStallMonitor>();
 
             // Add Text To Speech browser service
             builder.Services.AddScoped<GreenSwamp.Alpaca.Server.Services.BrowserTtsService>();

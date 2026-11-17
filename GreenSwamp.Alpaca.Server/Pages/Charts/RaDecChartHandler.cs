@@ -16,7 +16,6 @@
 
 using ApexCharts;
 using GreenSwamp.Alpaca.Server.Models;
-using GreenSwamp.Alpaca.Server.Diagnostics;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using Microsoft.AspNetCore.Components;
@@ -30,10 +29,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     public partial class RaDecChart
     {
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
-        // Diagnostics (disabled):
-        // [Inject] private ILoggerFactory DiagLoggerFactory { get; set; } = null!;
-        // private GsDiag _diag = null!;
-        // private int _axisPointsReceived;
+
         private bool _hubInitialised; // true once StartAsync completes; suppresses spurious "Disconnected" on first render
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
@@ -150,8 +146,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <returns></returns>
         protected override Task OnInitializedAsync()
         {
-            // _diag = GsDiag.Create(DiagLoggerFactory, "RaDecChart", DeviceNumber, _viewSessionId);
-            // _diag.Mark($"OnInitializedAsync renderer={RendererInfo.Name} interactive={RendererInfo.IsInteractive}");
             _settings = SettingsService.GetChartSettings();   // ← load BEFORE BuildChartOptions
             _displayMode = "Realtime"; // enforce session default, non-persisted
             _axisLabels = AxisLabels(AlignmentMode);
@@ -172,8 +166,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         {
             if (!firstRender) return;
 
-            // _diag.Mark($"OnAfterRenderAsync(firstRender) interactive={RendererInfo.IsInteractive}");
-
             // Start the 1-second flush timer (previously in sync OnAfterRender).
             _refreshTimer ??= new System.Threading.Timer(
                 _ => FlushChartUpdate(), null,
@@ -188,7 +180,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 .Build();
 
             _hub.On<ChartPointDto[]>("ReceiveAxisPoint", OnAxisPoints);
-            // _hub.On<HistoricalDataDto>("ReceiveRaDecHistory", OnHistory);
 
             _hub.Reconnecting += _ =>
             {
@@ -220,7 +211,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             _hub.Closed += _ =>
             {
-                // _diag.Warn($"Hub Closed: {ex?.GetType().Name}: {ex?.Message}");
                 _hubState = HubConnectionState.Disconnected;
                 return InvokeAsync(StateHasChanged);
             };
@@ -240,7 +230,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
 
             ActiveViews.Touch(_viewSessionId, DeviceNumber);
             _ = RunViewHeartbeatAsync();
-            // _diag.Mark($"Ready: hubState={_hubState}, heartbeat started, chart={(_chart is null ? "null" : "set")}");
         }
 
         /// <summary>

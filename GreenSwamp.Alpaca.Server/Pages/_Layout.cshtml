@@ -12,63 +12,6 @@
     <link rel="stylesheet" href="css/fonts.css" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" asp-append-version="true" />
-    @* Diagnostics (disabled): browser console timing for page milestones and sockets.
-    <script>
-        // Passive diagnostics: timestamps page milestones, Blazor/SignalR sockets and negotiate calls, and JS errors.
-        (function () {
-            const t0 = performance.now();
-            const log = (m) => console.info('[GS.Diag] ' + location.pathname + ' +' + Math.round(performance.now() - t0) + 'ms ' + m);
-            window.gsDiagLog = log;
-            log('head script, readyState=' + document.readyState);
-            document.addEventListener('DOMContentLoaded', () => log('DOMContentLoaded'));
-            window.addEventListener('load', () => log('window load'));
-            window.addEventListener('error', (e) => log('window error: ' + e.message + ' at ' + e.filename + ':' + e.lineno));
-            window.addEventListener('unhandledrejection', (e) => log('unhandledrejection: ' + ((e.reason && e.reason.message) || e.reason)));
-
-            const watched = (u) => /_blazor|charthub|telescopestatehub/i.test(String(u));
-
-            const NativeWS = window.WebSocket;
-            const WrappedWS = function (url, protocols) {
-                const ws = protocols === undefined ? new NativeWS(url) : new NativeWS(url, protocols);
-                {
-                    // Log every WebSocket (not just the watched URLs): a pending handshake to any URL can block the others.
-                    const s = performance.now();
-                    log('WebSocket connecting ' + url);
-                    ws.addEventListener('open', () => log('WebSocket OPEN after ' + Math.round(performance.now() - s) + 'ms ' + url));
-                    ws.addEventListener('error', () => log('WebSocket ERROR ' + url));
-                    ws.addEventListener('close', (e) => log('WebSocket CLOSE code=' + e.code + ' reason=' + e.reason + ' ' + url));
-                }
-                return ws;
-            };
-            WrappedWS.prototype = NativeWS.prototype;
-            ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach((k) => { WrappedWS[k] = NativeWS[k]; });
-            window.WebSocket = WrappedWS;
-
-            const nativeFetch = window.fetch;
-            if (nativeFetch) {
-                window.fetch = function (input, init) {
-                    const url = typeof input === 'string' ? input : (input && input.url);
-                    if (!watched(url)) return nativeFetch.apply(this, arguments);
-                    const s = performance.now();
-                    log('fetch START ' + url);
-                    return nativeFetch.apply(this, arguments).then(
-                        (r) => { log('fetch DONE ' + r.status + ' after ' + Math.round(performance.now() - s) + 'ms ' + url); return r; },
-                        (e) => { log('fetch FAILED after ' + Math.round(performance.now() - s) + 'ms ' + url + ' ' + e); throw e; });
-                };
-            }
-
-            const nativeOpen = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function (method, url) {
-                if (watched(url)) {
-                    const s = performance.now();
-                    log('xhr ' + method + ' START ' + url);
-                    this.addEventListener('loadend', () => log('xhr loadend status=' + this.status + ' after ' + Math.round(performance.now() - s) + 'ms ' + url));
-                }
-                return nativeOpen.apply(this, arguments);
-            };
-        })();
-    </script>
-    *@
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
@@ -97,7 +40,6 @@
 
             window.ensureBabylonLoaded = function() {
                 if (window._babylonLoadPromise) {
-                    // window.gsDiagLog && window.gsDiagLog('ensureBabylonLoaded: already started, awaiting existing promise');
                     return window._babylonLoadPromise;
                 }
                 // window.gsDiagLog && window.gsDiagLog('ensureBabylonLoaded: starting');
@@ -126,13 +68,11 @@
 
                     const onLoad = () => {
                         s.dataset.gsBabylon = 'loaded';
-                        // window.gsDiagLog && window.gsDiagLog('Babylon script loaded ' + src);
                         cleanup();
                         resolve();
                     };
 
                     const onError = () => {
-                        // window.gsDiagLog && window.gsDiagLog('Babylon script FAILED ' + src);
                         cleanup();
                         reject(new Error('Failed to load: ' + src));
                     };

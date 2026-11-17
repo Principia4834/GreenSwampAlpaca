@@ -16,7 +16,6 @@
 
 
 using GreenSwamp.Alpaca.Server.Models;
-using GreenSwamp.Alpaca.Server.Diagnostics;
 using GreenSwamp.Alpaca.Server.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -31,10 +30,7 @@ public partial class TelescopeView : IAsyncDisposable
     [SupplyParameterFromQuery(Name = "model")] public string? ModelName { get; set; }
 
     [Inject] private IBrowserSettingsService BrowserSettings { get; set; } = null!;
-    // Diagnostics (disabled):
-    // [Inject] private ILoggerFactory DiagLoggerFactory { get; set; } = null!;
-    //
-    // private GsDiag _diag = null!;
+
     private IJSObjectReference? _module;
     private double _axisX;
     private double _axisY;
@@ -52,15 +48,8 @@ public partial class TelescopeView : IAsyncDisposable
     private bool _heartbeatStarted;
     private string? _loadedMountKey;
 
-    // protected override void OnInitialized()
-    // {
-    //     _diag = GsDiag.Create(DiagLoggerFactory, "TelescopeView", DeviceNumber, _viewSessionId);
-    //     _diag.Mark($"OnInitialized renderer={RendererInfo.Name} interactive={RendererInfo.IsInteractive}");
-    // }
-
     protected override async Task OnParametersSetAsync()
     {
-        // _diag.Mark($"OnParametersSetAsync module={(_module is null ? "none" : "ready")}");
         ActiveViews.Touch(_viewSessionId, DeviceNumber);
 
         if (_module is not null)
@@ -71,7 +60,6 @@ public partial class TelescopeView : IAsyncDisposable
     {
         if (!firstRender) return;
 
-        // _diag.Mark($"OnAfterRenderAsync(firstRender) interactive={RendererInfo.IsInteractive}");
         try
         {
             await PushStateAsync();
@@ -90,7 +78,6 @@ public partial class TelescopeView : IAsyncDisposable
                 _heartbeatStarted = true;
                 _ = RunViewHeartbeatAsync();
             }
-            // _diag.Mark("First render complete: StateChanged subscribed, heartbeat started");
         }
     }
 
@@ -98,11 +85,6 @@ public partial class TelescopeView : IAsyncDisposable
 
     private void OnStateChanged(object? sender, EventArgs e)
         => _ = InvokeAsync(PushStateAsync);
-    // {
-    //     var n = Interlocked.Increment(ref _stateChangedCount);
-    //     if (n <= 3) _diag.Mark($"StateChanged received #{n}");
-    //     _ = InvokeAsync(PushStateAsync);
-    // }
 
     private async Task PushStateAsync()
     {
@@ -126,8 +108,8 @@ public partial class TelescopeView : IAsyncDisposable
 
             StateHasChanged();
         }
-        catch (JSDisconnectedException) { /* _diag.Warn("PushStateAsync: JSDisconnectedException"); */ }
-        catch (TaskCanceledException) { /* _diag.Warn("PushStateAsync: TaskCanceledException"); */ }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
     }
 
     private async Task EnsureViewerInitializedForCurrentContextAsync(TelescopeStateModel state)
@@ -177,7 +159,6 @@ public partial class TelescopeView : IAsyncDisposable
             background = settings.Background,
             grid = settings.ShowGrid
         });
-        // if (!initialised) _diag.Warn("JS viewer init returned false (canvas or BABYLON missing)");
 
         _activeModelType = modelType;
         _settingsStorageKey = settingsKey;
@@ -251,7 +232,6 @@ public partial class TelescopeView : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // _diag?.Mark("DisposeAsync");
         if (!_disposeCts.IsCancellationRequested)
         {
             _disposeCts.Cancel();

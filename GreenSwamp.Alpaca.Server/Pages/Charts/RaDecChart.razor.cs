@@ -398,7 +398,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
-            // _diag?.Mark("DisposeAsync");
             _disposed = true;
 
             if (!_disposeCts.IsCancellationRequested) _disposeCts.Cancel();
