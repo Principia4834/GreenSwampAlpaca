@@ -33,21 +33,44 @@ public static class GsThemeCss
     private static string BuildBootScript()
     {
         var ids = string.Join(",", GsThemeCatalog.All.Select(t => $"\"{t.Id}\""));
+        var dims = string.Join(",", GsThemeCatalog.All
+            .Where(t => t.Dimming is not null)
+            .Select(t => $"\"{t.Id}\":[{t.Dimming!.Min},{t.Dimming.Default},{t.Dimming.Max},{t.Dimming.Step}]"));
+        var baseFontPx = (int)GsZoom.BaseFontSizePx;
         return $$"""
             (function () {
-                var ids = [{{ids}}], def = "{{GsThemeCatalog.Default.Id}}", root = document.documentElement, id = def;
+                var ids = [{{ids}}], def = "{{GsThemeCatalog.Default.Id}}", root = document.documentElement, id = def, lvl = null, zoom = null;
+                var dim = {{{dims}}};
                 try {
                     var raw = window.localStorage.getItem("{{StorageKey}}");
                     if (raw) {
                         var o = JSON.parse(raw), v = o && (o.ThemeId || o.themeId);
                         if (ids.indexOf(v) >= 0) id = v;
+                        lvl = o.NightLevel != null ? o.NightLevel : o.nightLevel;
+                        zoom = o.ZoomPercent != null ? o.ZoomPercent : o.zoomPercent;
                     }
                 } catch (e) { }
+                function paintLevel() {
+                    var d = dim[root.getAttribute("{{ThemeAttribute}}")];
+                    if (!d) return;
+                    var n = (lvl === null || lvl === undefined || !isFinite(Number(lvl))) ? d[1] : Number(lvl);
+                    n = Math.min(d[2], Math.max(d[0], n));
+                    root.style.setProperty("--gs-dim-rgb", Math.round(255 * n / 100) + ",0,0");
+                }
+                function paintZoom() {
+                    var z = Number(zoom);
+                    if (zoom === null || zoom === undefined || !isFinite(z)) root.style.removeProperty("font-size");
+                    else root.style.fontSize = ({{baseFontPx}} * Math.min({{GsZoom.MaxZoomPercent}}, Math.max({{GsZoom.MinZoomPercent}}, z)) / 100) + "px";
+                }
                 root.setAttribute("{{ThemeAttribute}}", id);
+                paintLevel();
+                paintZoom();
                 if (id === def) root.classList.add("{{ReadyClass}}");
                 else setTimeout(function () { root.classList.add("{{ReadyClass}}"); }, 3000);
                 window.gsTheme = {
-                    apply: function (v) { if (ids.indexOf(v) >= 0) root.setAttribute("{{ThemeAttribute}}", v); },
+                    apply: function (v) { if (ids.indexOf(v) >= 0) { root.setAttribute("{{ThemeAttribute}}", v); paintLevel(); } },
+                    setLevel: function (n) { lvl = n; paintLevel(); },
+                    setZoom: function (p) { zoom = p; paintZoom(); },
                     ready: function () {
                         requestAnimationFrame(function () {
                             requestAnimationFrame(function () { root.classList.add("{{ReadyClass}}"); });
@@ -62,6 +85,7 @@ public static class GsThemeCss
     {
         var css = new StringBuilder();
         css.Append($"html:not(.{ReadyClass}) body{{visibility:hidden}}\n");
+        css.Append("#gs-dim{display:none}\n");
 
         foreach (var theme in GsThemeCatalog.All)
         {
@@ -76,6 +100,12 @@ public static class GsThemeCss
             }
 
             css.Append("}\n");
+
+            if (theme.Dimming is { } dimming)
+            {
+                // Red multiply dims every pixel and removes any green or blue; it sits above MudBlazor's popovers and ignores input.
+                css.Append($"{selector} #gs-dim{{display:block;position:fixed;inset:0;z-index:2147483647;pointer-events:none;mix-blend-mode:multiply;background-color:rgb(var(--gs-dim-rgb,{GsDimming.OverlayRgb(dimming.Default)}))}}\n");
+            }
 
             if (theme.Monochrome)
             {
