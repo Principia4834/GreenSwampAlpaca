@@ -134,13 +134,22 @@
 				<File Source="$(var.PublishDir)\wwwroot\images\carousel\astronomy\M83.jpg" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
-				<File Source="$(var.PublishDir)\wwwroot\js\profileUtils.js.gz" KeyPath="yes" />
+				<File Source="$(var.PublishDir)\wwwroot\js\browserLocalStorage.js.br" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\chartWindowInterop.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\culturePreferences.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\fileDownload.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\floatingWindow.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
-				<File Source="$(var.PublishDir)\wwwroot\js\chartWindowInterop.js.gz" KeyPath="yes" />
+				<File Source="$(var.PublishDir)\wwwroot\js\goToPanelSmartInput.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\gsChartBuffer.js.gz" KeyPath="yes" />
@@ -149,16 +158,13 @@
 				<File Source="$(var.PublishDir)\wwwroot\js\handController.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
-				<File Source="$(var.PublishDir)\wwwroot\js\fileDownload.js.gz" KeyPath="yes" />
+				<File Source="$(var.PublishDir)\wwwroot\js\profileUtils.js.gz" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
+				<File Source="$(var.PublishDir)\wwwroot\js\telescopeViewer.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\tts.js.gz" KeyPath="yes" />
-			</Component>
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
-				<File Source="$(var.PublishDir)\wwwroot\js\culturePreferences.js.gz" KeyPath="yes" />
-			</Component>
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
-				<File Source="$(var.PublishDir)\wwwroot\js\goToPanelSmartInput.js.gz" KeyPath="yes" />
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\telescopeViewer.js.gz" KeyPath="yes" />
@@ -176,6 +182,58 @@
 			</Component>
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon\loaders">
 				<File Source="$(var.PublishDir)\wwwroot\lib\babylon\loaders\babylonjs.loaders.min.js" KeyPath="yes" />
+			</Component>
+			<!-- 3D Model files-->
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\compassN.png" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\compassS.png" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\Default.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\DefaultAltAz.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\DualTelescopeAltAz.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\DualTelescopePolarLeft.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\DualTelescopePolarRight.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\Reflector.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\ReflectorAltAz.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\Refractor.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\RefractorAltAz.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\RitcheyChretien.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\RitcheyChretienAltAz.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\RitcheyChretienTruss.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\RitcheyChretienTrussAltAz.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\SchmidtCassegrain.obj" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models">
+				<File Source="$(var.PublishDir)\wwwroot\model3d\models\SchmidtCassegrainAltAz.obj" KeyPath="yes" />
 			</Component>
 
 		</ComponentGroup>
