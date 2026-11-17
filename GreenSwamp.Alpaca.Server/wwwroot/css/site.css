@@ -102,6 +102,11 @@ a:not([class*="mud-"]) {
     color: var(--mud-palette-primary);
 }
 
+/* Destructive actions (Shutdown, Disconnect): neutral until hover, then the Error status colour */
+.mud-icon-button.gs-danger-on-hover:hover {
+    color: var(--mud-palette-error);
+}
+
 /* --- MudTabs: selected label and slider use the accent (Tertiary); unselected tabs stay neutral --- */
 .mud-tabs-tabbar .mud-tab.mud-tab-active {
     color: var(--mud-palette-tertiary);
