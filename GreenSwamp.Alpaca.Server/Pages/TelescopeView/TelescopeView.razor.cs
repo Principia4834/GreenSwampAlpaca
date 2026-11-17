@@ -19,6 +19,7 @@ using GreenSwamp.Alpaca.Server.Models;
 using GreenSwamp.Alpaca.Server.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Pages.TelescopeView;
 
@@ -27,8 +28,10 @@ public partial class TelescopeView : IAsyncDisposable
     [Parameter] public int DeviceNumber { get; set; }
 
     [Inject] private IBrowserSettingsService BrowserSettings { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private IJSObjectReference? _module;
+    private TelescopeViewerSettings? _settings;
     private double _axisX;
     private double _axisY;
     private string? _settingsStorageKey;
@@ -143,13 +146,24 @@ public partial class TelescopeView : IAsyncDisposable
         var settings = await BrowserSettings.GetAsync(settingsKey, TelescopeViewerSettings.CreateDefault(modelType));
         settings.ModelType = modelType;
         settings.Normalize();
+        _settings = settings;
 
         await _module.InvokeAsync<bool>("init", "telescopeCanvas", new
         {
             camera = settings.Camera,
             primaryColor = settings.ModelColor,
             background = settings.Background,
-            grid = settings.ShowGrid
+            grid = settings.ShowGrid,
+            showCardinals = settings.ShowCardinals,
+            cardinalSize = settings.CardinalSize.ToString(),
+            showHeading = settings.ShowHeading,
+            useAssembly = settings.UseAssembly,
+            assemblySupport = settings.AssemblySupport.ToString(),
+            assemblyMount = settings.AssemblyMount.ToString(),
+            assemblyOta = settings.AssemblyOta.ToString(),
+            assemblyOtaSize = settings.AssemblyOtaSize,
+            raAdjustmentDegrees = settings.RaAdjustmentDegrees,
+            decAdjustmentDegrees = settings.DecAdjustmentDegrees
         });
 
         _activeModelType = modelType;
@@ -193,18 +207,22 @@ public partial class TelescopeView : IAsyncDisposable
 
     private async Task SaveViewAsync()
     {
-        if (_module is null || _savingView) return;
+        if (_module is null || _settings is null || _savingView) return;
 
         _savingView = true;
         try
         {
-            var settings = await _module.InvokeAsync<TelescopeViewerSettings?>("getViewerSettings");
-            if (settings is null || _settingsStorageKey is null || _selectionStorageKey is null) return;
+            var viewerSettings = await _module.InvokeAsync<TelescopeViewerSettings?>("getViewerSettings");
+            if (viewerSettings is null || _settingsStorageKey is null || _selectionStorageKey is null) return;
 
-            settings.ModelType = _activeModelType;
-            settings.Normalize();
+            _settings.Camera = viewerSettings.Camera;
+            _settings.ModelColor = viewerSettings.ModelColor;
+            _settings.Background = viewerSettings.Background;
+            _settings.ShowGrid = viewerSettings.ShowGrid;
+            _settings.ModelType = _activeModelType;
+            _settings.Normalize();
 
-            await BrowserSettings.SetAsync(_settingsStorageKey, settings);
+            await BrowserSettings.SetAsync(_settingsStorageKey, _settings);
             await BrowserSettings.SetAsync(_selectionStorageKey,
                 new TelescopeViewerModelSelection { ModelType = _activeModelType });
         }
@@ -214,6 +232,47 @@ public partial class TelescopeView : IAsyncDisposable
         {
             _savingView = false;
         }
+    }
+
+    private async Task OpenOptionsAsync()
+    {
+        if (_module is null || _settings is null) return;
+
+        var viewerSettings = await _module.InvokeAsync<TelescopeViewerSettings?>("getViewerSettings");
+        if (viewerSettings is not null)
+        {
+            _settings.Camera = viewerSettings.Camera;
+            _settings.ModelColor = viewerSettings.ModelColor;
+            _settings.Background = viewerSettings.Background;
+            _settings.ShowGrid = viewerSettings.ShowGrid;
+        }
+
+        var parameters = new DialogParameters<TelescopeViewerOptionsDialog>
+        {
+            { dialog => dialog.InitialSettings, _settings }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<TelescopeViewerOptionsDialog>(Loc["TView_OptionsTitle"], parameters, options);
+        var result = await dialog.Result;
+        if (result is not { Canceled: false, Data: TelescopeViewerSettings updatedSettings }) return;
+
+        updatedSettings.Normalize();
+        var state = StateService.GetCurrentState(DeviceNumber);
+        var settingsKey = TelescopeViewerSettings.GetStorageKey(DeviceNumber, state.MountType, updatedSettings.ModelType);
+        var selectionKey = TelescopeViewerSettings.GetModelSelectionStorageKey(DeviceNumber, state.MountType);
+        await BrowserSettings.SetAsync(settingsKey, updatedSettings);
+        await BrowserSettings.SetAsync(selectionKey,
+            new TelescopeViewerModelSelection { ModelType = updatedSettings.ModelType });
+
+        _settings = updatedSettings;
+        _settingsStorageKey = null;
+        _selectionStorageKey = selectionKey;
+        _implicitModelTypeContextKey = selectionKey;
+        _implicitModelType = updatedSettings.ModelType;
+        _loadedMountKey = null;
+
+        await _module.InvokeVoidAsync("dispose");
+        await PushStateAsync();
     }
 
     public async ValueTask DisposeAsync()

@@ -3096,6 +3096,54 @@
   <data name="TView_SaveView" xml:space="preserve">
     <value>Enregistrer la vue</value>
   </data>
+  <data name="TView_Options" xml:space="preserve"><value>Options de la vue 3D</value></data>
+  <data name="TView_OptionsTitle" xml:space="preserve"><value>Options de la vue du télescope</value></data>
+  <data name="TView_Appearance" xml:space="preserve"><value>Apparence de la scène</value></data>
+  <data name="TView_Model" xml:space="preserve"><value>Modèle de télescope</value></data>
+  <data name="TView_Background" xml:space="preserve"><value>Arrière-plan</value></data>
+  <data name="TView_ModelColor" xml:space="preserve"><value>Couleur du modèle</value></data>
+  <data name="TView_ShowGrid" xml:space="preserve"><value>Afficher la grille au sol</value></data>
+  <data name="TView_ShowCardinals" xml:space="preserve"><value>Afficher les points cardinaux</value></data>
+  <data name="TView_CardinalSize" xml:space="preserve"><value>Taille des repères cardinaux</value></data>
+  <data name="TView_ShowHeading" xml:space="preserve"><value>Afficher le cap de la boussole</value></data>
+  <data name="TView_MountComposition" xml:space="preserve"><value>Composition de la monture</value></data>
+  <data name="TView_UseAssembly" xml:space="preserve"><value>Afficher la monture assemblée</value></data>
+  <data name="TView_Support" xml:space="preserve"><value>Support</value></data>
+  <data name="TView_Mount" xml:space="preserve"><value>Monture</value></data>
+  <data name="TView_Ota" xml:space="preserve"><value>Tube optique</value></data>
+  <data name="TView_OtaSize" xml:space="preserve"><value>Taille du tube optique (%)</value></data>
+  <data name="TView_AxisAdjustments" xml:space="preserve"><value>Ajustements des axes</value></data>
+  <data name="TView_RaAdjustment" xml:space="preserve"><value>Ajustement de l’axe RA (degrés)</value></data>
+  <data name="TView_DecAdjustment" xml:space="preserve"><value>Ajustement de l’axe Dec (degrés)</value></data>
+  <data name="TView_SaveSettings" xml:space="preserve"><value>Enregistrer les paramètres</value></data>
+  <data name="TView_Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="TView_Choice_Default" xml:space="preserve"><value>Par défaut</value></data>
+  <data name="TView_Choice_Reflector" xml:space="preserve"><value>Réflecteur</value></data>
+  <data name="TView_Choice_Refractor" xml:space="preserve"><value>Réfracteur</value></data>
+  <data name="TView_Choice_SchmidtCassegrain" xml:space="preserve"><value>Schmidt-Cassegrain</value></data>
+  <data name="TView_Choice_RitcheyChretien" xml:space="preserve"><value>Ritchey-Chrétien</value></data>
+  <data name="TView_Choice_RitcheyChretienTruss" xml:space="preserve"><value>Ritchey-Chrétien en treillis</value></data>
+  <data name="TView_Choice_DualTelescope" xml:space="preserve"><value>Télescope double</value></data>
+  <data name="TView_Choice_SmallTripod" xml:space="preserve"><value>Petit trépied</value></data>
+  <data name="TView_Choice_MediumTripod" xml:space="preserve"><value>Trépied moyen</value></data>
+  <data name="TView_Choice_LargeTripod" xml:space="preserve"><value>Grand trépied</value></data>
+  <data name="TView_Choice_SmallPier" xml:space="preserve"><value>Petit pilier</value></data>
+  <data name="TView_Choice_MediumPier" xml:space="preserve"><value>Pilier moyen</value></data>
+  <data name="TView_Choice_LargePier" xml:space="preserve"><value>Grand pilier</value></data>
+  <data name="TView_Choice_Newtonian" xml:space="preserve"><value>Newtonien</value></data>
+  <data name="TView_Choice_MaksutovCassegrain" xml:space="preserve"><value>Maksoutov-Cassegrain</value></data>
+  <data name="TView_Choice_Small" xml:space="preserve"><value>Petit</value></data>
+  <data name="TView_Choice_Medium" xml:space="preserve"><value>Moyen</value></data>
+  <data name="TView_Choice_Large" xml:space="preserve"><value>Grand</value></data>
+  <data name="TView_Choice_XLarge" xml:space="preserve"><value>Très grand</value></data>
+  <data name="TView_Choice_Fork" xml:space="preserve"><value>Monture à fourche</value></data>
+  <data name="TView_Background_NorthAmerica" xml:space="preserve"><value>Nébuleuse de l’Amérique du Nord</value></data>
+  <data name="TView_Background_Heart" xml:space="preserve"><value>Nébuleuse du Cœur</value></data>
+  <data name="TView_Background_Rosette" xml:space="preserve"><value>Nébuleuse de la Rosette</value></data>
+  <data name="TView_Background_M51" xml:space="preserve"><value>Galaxie du Tourbillon (M51)</value></data>
+  <data name="TView_Background_M33" xml:space="preserve"><value>Galaxie du Triangle (M33)</value></data>
+  <data name="TView_Background_Stars" xml:space="preserve"><value>Champ d’étoiles</value></data>
+  <data name="TView_Background_None" xml:space="preserve"><value>Aucun</value></data>
   <data name="App_NotFoundTitle" xml:space="preserve">
     <value>Introuvable</value>
   </data>

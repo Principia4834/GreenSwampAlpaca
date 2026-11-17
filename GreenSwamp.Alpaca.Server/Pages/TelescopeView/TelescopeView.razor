@@ -25,6 +25,12 @@
                            aria-label="@Loc["TView_SaveView"]"
                            OnClick="SaveViewAsync" />
         </MudTooltip>
+        <MudTooltip Text="@Loc["TView_Options"]">
+            <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                           Size="Size.Small"
+                           aria-label="@Loc["TView_Options"]"
+                           OnClick="OpenOptionsAsync" />
+        </MudTooltip>
     </MudStack>
     <div style="zoom: 0.85">
         <CompactPositionHeader State="@StateService.GetCurrentState(DeviceNumber)" />

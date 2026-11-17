@@ -2931,6 +2931,54 @@
   <data name="TView_SaveView" xml:space="preserve">
     <value>保存视图</value>
   </data>
+  <data name="TView_Options" xml:space="preserve"><value>3D视图选项</value></data>
+  <data name="TView_OptionsTitle" xml:space="preserve"><value>望远镜视图选项</value></data>
+  <data name="TView_Appearance" xml:space="preserve"><value>场景外观</value></data>
+  <data name="TView_Model" xml:space="preserve"><value>望远镜模型</value></data>
+  <data name="TView_Background" xml:space="preserve"><value>背景</value></data>
+  <data name="TView_ModelColor" xml:space="preserve"><value>模型颜色</value></data>
+  <data name="TView_ShowGrid" xml:space="preserve"><value>显示地面网格</value></data>
+  <data name="TView_ShowCardinals" xml:space="preserve"><value>显示方位标记</value></data>
+  <data name="TView_CardinalSize" xml:space="preserve"><value>方位标记大小</value></data>
+  <data name="TView_ShowHeading" xml:space="preserve"><value>显示罗盘方向</value></data>
+  <data name="TView_MountComposition" xml:space="preserve"><value>赤道仪组合</value></data>
+  <data name="TView_UseAssembly" xml:space="preserve"><value>显示组装式赤道仪</value></data>
+  <data name="TView_Support" xml:space="preserve"><value>支架</value></data>
+  <data name="TView_Mount" xml:space="preserve"><value>赤道仪</value></data>
+  <data name="TView_Ota" xml:space="preserve"><value>光学镜筒组件</value></data>
+  <data name="TView_OtaSize" xml:space="preserve"><value>光学镜筒尺寸（%）</value></data>
+  <data name="TView_AxisAdjustments" xml:space="preserve"><value>轴向调整</value></data>
+  <data name="TView_RaAdjustment" xml:space="preserve"><value>赤经轴调整（度）</value></data>
+  <data name="TView_DecAdjustment" xml:space="preserve"><value>赤纬轴调整（度）</value></data>
+  <data name="TView_SaveSettings" xml:space="preserve"><value>保存设置</value></data>
+  <data name="TView_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="TView_Choice_Default" xml:space="preserve"><value>默认</value></data>
+  <data name="TView_Choice_Reflector" xml:space="preserve"><value>反射式</value></data>
+  <data name="TView_Choice_Refractor" xml:space="preserve"><value>折射式</value></data>
+  <data name="TView_Choice_SchmidtCassegrain" xml:space="preserve"><value>施密特-卡塞格林</value></data>
+  <data name="TView_Choice_RitcheyChretien" xml:space="preserve"><value>里奇-克莱琴</value></data>
+  <data name="TView_Choice_RitcheyChretienTruss" xml:space="preserve"><value>里奇-克莱琴桁架式</value></data>
+  <data name="TView_Choice_DualTelescope" xml:space="preserve"><value>双筒望远镜</value></data>
+  <data name="TView_Choice_SmallTripod" xml:space="preserve"><value>小型三脚架</value></data>
+  <data name="TView_Choice_MediumTripod" xml:space="preserve"><value>中型三脚架</value></data>
+  <data name="TView_Choice_LargeTripod" xml:space="preserve"><value>大型三脚架</value></data>
+  <data name="TView_Choice_SmallPier" xml:space="preserve"><value>小型立柱</value></data>
+  <data name="TView_Choice_MediumPier" xml:space="preserve"><value>中型立柱</value></data>
+  <data name="TView_Choice_LargePier" xml:space="preserve"><value>大型立柱</value></data>
+  <data name="TView_Choice_Newtonian" xml:space="preserve"><value>牛顿式</value></data>
+  <data name="TView_Choice_MaksutovCassegrain" xml:space="preserve"><value>马克苏托夫-卡塞格林</value></data>
+  <data name="TView_Choice_Small" xml:space="preserve"><value>小</value></data>
+  <data name="TView_Choice_Medium" xml:space="preserve"><value>中</value></data>
+  <data name="TView_Choice_Large" xml:space="preserve"><value>大</value></data>
+  <data name="TView_Choice_XLarge" xml:space="preserve"><value>特大</value></data>
+  <data name="TView_Choice_Fork" xml:space="preserve"><value>叉式赤道仪</value></data>
+  <data name="TView_Background_NorthAmerica" xml:space="preserve"><value>北美洲星云</value></data>
+  <data name="TView_Background_Heart" xml:space="preserve"><value>心脏星云</value></data>
+  <data name="TView_Background_Rosette" xml:space="preserve"><value>玫瑰星云</value></data>
+  <data name="TView_Background_M51" xml:space="preserve"><value>漩涡星系（M51）</value></data>
+  <data name="TView_Background_M33" xml:space="preserve"><value>三角星系（M33）</value></data>
+  <data name="TView_Background_Stars" xml:space="preserve"><value>星野</value></data>
+  <data name="TView_Background_None" xml:space="preserve"><value>无</value></data>
   <data name="Ui_Zoom_Tip" xml:space="preserve">
     <value>应用于整个服务器界面的全局界面缩放级别。</value>
   </data>

@@ -3096,6 +3096,150 @@
   <data name="TView_SaveView" xml:space="preserve">
     <value>Save View</value>
   </data>
+  <data name="TView_Options" xml:space="preserve">
+    <value>3D view options</value>
+  </data>
+  <data name="TView_OptionsTitle" xml:space="preserve">
+    <value>Telescope view options</value>
+  </data>
+  <data name="TView_Appearance" xml:space="preserve">
+    <value>Scene appearance</value>
+  </data>
+  <data name="TView_Model" xml:space="preserve">
+    <value>Telescope model</value>
+  </data>
+  <data name="TView_Background" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="TView_ModelColor" xml:space="preserve">
+    <value>Model color</value>
+  </data>
+  <data name="TView_ShowGrid" xml:space="preserve">
+    <value>Show ground grid</value>
+  </data>
+  <data name="TView_ShowCardinals" xml:space="preserve">
+    <value>Show cardinal directions</value>
+  </data>
+  <data name="TView_CardinalSize" xml:space="preserve">
+    <value>Cardinal label size</value>
+  </data>
+  <data name="TView_ShowHeading" xml:space="preserve">
+    <value>Show compass heading</value>
+  </data>
+  <data name="TView_MountComposition" xml:space="preserve">
+    <value>Mount composition</value>
+  </data>
+  <data name="TView_UseAssembly" xml:space="preserve">
+    <value>Show assembled mount</value>
+  </data>
+  <data name="TView_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="TView_Mount" xml:space="preserve">
+    <value>Mount</value>
+  </data>
+  <data name="TView_Ota" xml:space="preserve">
+    <value>Optical tube assembly</value>
+  </data>
+  <data name="TView_OtaSize" xml:space="preserve">
+    <value>Optical tube size (%)</value>
+  </data>
+  <data name="TView_AxisAdjustments" xml:space="preserve">
+    <value>Axis adjustments</value>
+  </data>
+  <data name="TView_RaAdjustment" xml:space="preserve">
+    <value>RA axis adjustment (degrees)</value>
+  </data>
+  <data name="TView_DecAdjustment" xml:space="preserve">
+    <value>Dec axis adjustment (degrees)</value>
+  </data>
+  <data name="TView_SaveSettings" xml:space="preserve">
+    <value>Save settings</value>
+  </data>
+  <data name="TView_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TView_Choice_Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="TView_Choice_Reflector" xml:space="preserve">
+    <value>Reflector</value>
+  </data>
+  <data name="TView_Choice_Refractor" xml:space="preserve">
+    <value>Refractor</value>
+  </data>
+  <data name="TView_Choice_SchmidtCassegrain" xml:space="preserve">
+    <value>Schmidt-Cassegrain</value>
+  </data>
+  <data name="TView_Choice_RitcheyChretien" xml:space="preserve">
+    <value>Ritchey-Chrétien</value>
+  </data>
+  <data name="TView_Choice_RitcheyChretienTruss" xml:space="preserve">
+    <value>Ritchey-Chrétien truss</value>
+  </data>
+  <data name="TView_Choice_DualTelescope" xml:space="preserve">
+    <value>Dual telescope</value>
+  </data>
+  <data name="TView_Choice_SmallTripod" xml:space="preserve">
+    <value>Small tripod</value>
+  </data>
+  <data name="TView_Choice_MediumTripod" xml:space="preserve">
+    <value>Medium tripod</value>
+  </data>
+  <data name="TView_Choice_LargeTripod" xml:space="preserve">
+    <value>Large tripod</value>
+  </data>
+  <data name="TView_Choice_SmallPier" xml:space="preserve">
+    <value>Small pier</value>
+  </data>
+  <data name="TView_Choice_MediumPier" xml:space="preserve">
+    <value>Medium pier</value>
+  </data>
+  <data name="TView_Choice_LargePier" xml:space="preserve">
+    <value>Large pier</value>
+  </data>
+  <data name="TView_Choice_Newtonian" xml:space="preserve">
+    <value>Newtonian</value>
+  </data>
+  <data name="TView_Choice_MaksutovCassegrain" xml:space="preserve">
+    <value>Maksutov-Cassegrain</value>
+  </data>
+  <data name="TView_Choice_Small" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="TView_Choice_Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="TView_Choice_Large" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="TView_Choice_XLarge" xml:space="preserve">
+    <value>Extra large</value>
+  </data>
+  <data name="TView_Choice_Fork" xml:space="preserve">
+    <value>Fork mount</value>
+  </data>
+  <data name="TView_Background_NorthAmerica" xml:space="preserve">
+    <value>North America Nebula</value>
+  </data>
+  <data name="TView_Background_Heart" xml:space="preserve">
+    <value>Heart Nebula</value>
+  </data>
+  <data name="TView_Background_Rosette" xml:space="preserve">
+    <value>Rosette Nebula</value>
+  </data>
+  <data name="TView_Background_M51" xml:space="preserve">
+    <value>Whirlpool Galaxy (M51)</value>
+  </data>
+  <data name="TView_Background_M33" xml:space="preserve">
+    <value>Triangulum Galaxy (M33)</value>
+  </data>
+  <data name="TView_Background_Stars" xml:space="preserve">
+    <value>Star field</value>
+  </data>
+  <data name="TView_Background_None" xml:space="preserve">
+    <value>None</value>
+  </data>
   <data name="App_NotFoundTitle" xml:space="preserve">
     <value>Not found</value>
   </data>

@@ -1,0 +1,148 @@
+﻿@using GreenSwamp.Alpaca.Server.Models
+@using GreenSwamp.Alpaca.Settings.Models
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Loc["TView_OptionsTitle"]</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.overline" Class="gs-panel-heading">@Loc["TView_Appearance"]</MudText>
+            <MudSelect T="Model3DType" Label="@Loc["TView_Model"]" @bind-Value="_options.ModelType">
+                @foreach (var model in Enum.GetValues<Model3DType>())
+                {
+                    <MudSelectItem Value="@model">@ChoiceLabel(model.ToString())</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string" Label="@Loc["TView_Background"]" @bind-Value="_options.Background">
+                @foreach (var background in TelescopeViewerSettings.BackgroundChoices)
+                {
+                    <MudSelectItem Value="@background">@BackgroundLabel(background)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudColorPicker Label="@Loc["TView_ModelColor"]" @bind-Text="_options.ModelColor" ShowAlpha="false" />
+            <MudSwitch T="bool" @bind-Value="_options.ShowGrid" Label="@Loc["TView_ShowGrid"]" />
+            <MudSwitch T="bool" @bind-Value="_options.ShowCardinals" Label="@Loc["TView_ShowCardinals"]" />
+            @if (_options.ShowCardinals)
+            {
+                <MudSelect T="CardinalSize" Label="@Loc["TView_CardinalSize"]" @bind-Value="_options.CardinalSize">
+                    @foreach (var size in Enum.GetValues<CardinalSize>())
+                    {
+                        <MudSelectItem Value="@size">@ChoiceLabel(size.ToString())</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudSwitch T="bool" @bind-Value="_options.ShowHeading" Label="@Loc["TView_ShowHeading"]" />
+
+            <MudText Typo="Typo.overline" Class="gs-panel-heading">@Loc["TView_MountComposition"]</MudText>
+            <MudSwitch T="bool" @bind-Value="_options.UseAssembly" Label="@Loc["TView_UseAssembly"]" />
+            @if (_options.UseAssembly)
+            {
+                <MudSelect T="AssemblySupport" Label="@Loc["TView_Support"]" @bind-Value="_options.AssemblySupport">
+                    @foreach (var support in Enum.GetValues<AssemblySupport>())
+                    {
+                        <MudSelectItem Value="@support">@ChoiceLabel(support.ToString())</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="AssemblyMount" Label="@Loc["TView_Mount"]" @bind-Value="_options.AssemblyMount">
+                    @foreach (var mount in Enum.GetValues<AssemblyMount>())
+                    {
+                        <MudSelectItem Value="@mount">@MountLabel(mount)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="AssemblyOta" Label="@Loc["TView_Ota"]" @bind-Value="_options.AssemblyOta">
+                    @foreach (var ota in Enum.GetValues<AssemblyOta>())
+                    {
+                        <MudSelectItem Value="@ota">@ChoiceLabel(ota.ToString())</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="int" Label="@Loc["TView_OtaSize"]" @bind-Value="_options.AssemblyOtaSize">
+                    @foreach (var size in TelescopeViewerSettings.AssemblyOtaSizes)
+                    {
+                        <MudSelectItem Value="@size">@size%</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <MudText Typo="Typo.overline" Class="gs-panel-heading">@Loc["TView_AxisAdjustments"]</MudText>
+            <MudNumericField T="int" Label="@Loc["TView_RaAdjustment"]" @bind-Value="_options.RaAdjustmentDegrees"
+                             Min="@TelescopeViewerSettings.MinAxisAdjustment" Max="@TelescopeViewerSettings.MaxAxisAdjustment" Step="1" />
+            <MudNumericField T="int" Label="@Loc["TView_DecAdjustment"]" @bind-Value="_options.DecAdjustmentDegrees"
+                             Min="@TelescopeViewerSettings.MinAxisAdjustment" Max="@TelescopeViewerSettings.MaxAxisAdjustment" Step="1" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@Loc["TView_Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">@Loc["TView_SaveSettings"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter, EditorRequired] public TelescopeViewerSettings InitialSettings { get; set; } = new();
+
+    private TelescopeViewerSettings _options = new();
+
+    protected override void OnInitialized()
+    {
+        InitialSettings.Normalize();
+        _options = CopySettings(InitialSettings);
+    }
+
+    private string ChoiceLabel(string name) => Loc[$"TView_Choice_{name}"];
+
+    private string BackgroundLabel(string name) => Loc[$"TView_Background_{name}"];
+
+    private string MountLabel(AssemblyMount mount) => mount switch
+    {
+        AssemblyMount.Eq6rPro => "EQ6-R Pro",
+        AssemblyMount.Heq5Pro => "HEQ5 Pro",
+        AssemblyMount.Eq8rPro => "EQ8-R Pro",
+        AssemblyMount.Am5 => "AM5",
+        AssemblyMount.Cem70 => "CEM70",
+        AssemblyMount.Cq350Pro => "CQ350 Pro",
+        AssemblyMount.Eqm35Pro => "EQM-35 Pro",
+        AssemblyMount.Wave150iPro => "Wave 150i Pro",
+        AssemblyMount.Cem40 => "CEM40",
+        AssemblyMount.Fork => Loc["TView_Choice_Fork"],
+        _ => Loc["TView_Choice_Eq6rPro"]
+    };
+
+    private void Save()
+    {
+        _options.Normalize();
+        MudDialog.Close(DialogResult.Ok(_options));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private static TelescopeViewerSettings CopySettings(TelescopeViewerSettings settings)
+    {
+        var camera = settings.Camera;
+        return new TelescopeViewerSettings
+        {
+            ModelType = settings.ModelType,
+            Camera = new GreenSwamp.Alpaca.Settings.Models.CameraState
+            {
+                Alpha = camera.Alpha,
+                Beta = camera.Beta,
+                Radius = camera.Radius,
+                Target = new CameraTarget { X = camera.Target.X, Y = camera.Target.Y, Z = camera.Target.Z }
+            },
+            ModelColor = settings.ModelColor,
+            Background = settings.Background,
+            ShowGrid = settings.ShowGrid,
+            ShowCardinals = settings.ShowCardinals,
+            CardinalSize = settings.CardinalSize,
+            ShowHeading = settings.ShowHeading,
+            UseAssembly = settings.UseAssembly,
+            AssemblySupport = settings.AssemblySupport,
+            AssemblyMount = settings.AssemblyMount,
+            AssemblyOta = settings.AssemblyOta,
+            AssemblyOtaSize = settings.AssemblyOtaSize,
+            RaAdjustmentDegrees = settings.RaAdjustmentDegrees,
+            DecAdjustmentDegrees = settings.DecAdjustmentDegrees
+        };
+    }
+}
