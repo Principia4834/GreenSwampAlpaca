@@ -32,6 +32,49 @@ namespace GreenSwamp.Alpaca.Server.Models
         DualTelescope = 6
     }
 
+    public enum AssemblySupport
+    {
+        SmallTripod,
+        MediumTripod,
+        LargeTripod,
+        SmallPier,
+        MediumPier,
+        LargePier
+    }
+
+    public enum AssemblyMount
+    {
+        Eq6rPro,
+        Heq5Pro,
+        Eq8rPro,
+        Am5,
+        Cem70,
+        Cq350Pro,
+        Eqm35Pro,
+        Wave150iPro,
+        Cem40,
+        Fork
+    }
+
+    public enum AssemblyOta
+    {
+        Refractor,
+        Reflector,
+        SchmidtCassegrain,
+        RitcheyChretien,
+        RitcheyChretienTruss,
+        Newtonian,
+        MaksutovCassegrain
+    }
+
+    public enum CardinalSize
+    {
+        Small,
+        Medium,
+        Large,
+        XLarge
+    }
+
     /// <summary>
     /// The transform applied to the 3D model: rotation about Z (X), Y (Y) and X (Z), in degrees,
     /// about the centre (0, YCentre, 525) in the model's own units.
@@ -144,13 +187,14 @@ namespace GreenSwamp.Alpaca.Server.Models
         /// for the raw mount axis positions ax / ay.
         /// </summary>
         public static Model3DPose GetPose(
-            AlignmentMode mode, MountType mount, PolarMode polarMode, double latitude, double ax, double ay)
+            AlignmentMode mode, MountType mount, PolarMode polarMode, double latitude, double ax, double ay,
+            double raAdjustment = 0, double decAdjustment = 0)
         {
             var (yAxis, xAxis) = RotateModel(mount, ax, ay, latitude < 0, mode, polarMode);
             var offsets = GetAxisModelOffsets(mode);
             return new Model3DPose(
-                xAxis + offsets.X,                      // XAxisOffset = XAxis + offset.X
-                yAxis + offsets.Y,                      // YAxisOffset = YAxis + offset.Y
+                xAxis + offsets.X + decAdjustment,      // Dec adjustment rotates the X / secondary axis
+                yAxis + offsets.Y + raAdjustment,       // RA adjustment rotates the Y / primary axis
                 offsets.Z - GetZAxis(mode, latitude),   // ZAxisOffset = offset.Z - ZAxis
                 GetYAxisCentre(mode));
         }

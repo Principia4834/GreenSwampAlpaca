@@ -26,9 +26,6 @@ public partial class TelescopeView : IAsyncDisposable
 {
     [Parameter] public int DeviceNumber { get; set; }
 
-    /// <summary>Optional ?model=Reflector etc. (see <see cref="Model3DType"/>); defaults to the standard model.</summary>
-    [SupplyParameterFromQuery(Name = "model")] public string? ModelName { get; set; }
-
     [Inject] private IBrowserSettingsService BrowserSettings { get; set; } = null!;
 
     private IJSObjectReference? _module;
@@ -115,13 +112,8 @@ public partial class TelescopeView : IAsyncDisposable
     private async Task EnsureViewerInitializedForCurrentContextAsync(TelescopeStateModel state)
     {
         var selectionKey = TelescopeViewerSettings.GetModelSelectionStorageKey(DeviceNumber, state.MountType);
-        var requestedModelType = GetRequestedModelType();
         Model3DType modelType;
-        if (requestedModelType.HasValue)
-        {
-            modelType = requestedModelType.Value;
-        }
-        else if (_implicitModelTypeContextKey == selectionKey)
+        if (_implicitModelTypeContextKey == selectionKey)
         {
             modelType = _implicitModelType;
         }
@@ -165,12 +157,6 @@ public partial class TelescopeView : IAsyncDisposable
         _selectionStorageKey = selectionKey;
         _loadedMountKey = null;
     }
-
-    private Model3DType? GetRequestedModelType()
-        => Enum.TryParse<Model3DType>(ModelName, true, out var modelType)
-           && Enum.IsDefined(typeof(Model3DType), modelType)
-            ? modelType
-            : null;
 
     private async Task EnsureModelLoadedAsync(TelescopeStateModel s, double latitude)
     {
