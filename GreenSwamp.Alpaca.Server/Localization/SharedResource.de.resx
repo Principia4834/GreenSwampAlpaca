@@ -1395,6 +1395,27 @@
   <data name="Ui_Theme_NotSaved" xml:space="preserve">
     <value>Dieser Browser hat den Speicher blockiert; das Design gilt nur für diese Sitzung.</value>
   </data>
+  <data name="Nav_DisplayPreferences" xml:space="preserve">
+    <value>Anzeigeeinstellungen</value>
+  </data>
+  <data name="Ui_NightLevel" xml:space="preserve">
+    <value>Nachthelligkeit</value>
+  </data>
+  <data name="Ui_NightLevel_Tip" xml:space="preserve">
+    <value>Dimmt den gesamten Bildschirm im Nachtdesign. Wird nur in diesem Browser gespeichert.</value>
+  </data>
+  <data name="Ui_Zoom_ServerDefault" xml:space="preserve">
+    <value>Server-Standard ({0}%)</value>
+  </data>
+  <data name="Ui_Zoom_BrowserTip" xml:space="preserve">
+    <value>Zoom nur für diesen Browser. Wählen Sie Server-Standard, um der Servereinstellung zu folgen.</value>
+  </data>
+  <data name="Ui_ZoomServer" xml:space="preserve">
+    <value>Standard-Zoom (alle Browser)</value>
+  </data>
+  <data name="Ui_ZoomServer_Tip" xml:space="preserve">
+    <value>Zoom für Browser, die keinen eigenen Zoom gewählt haben.</value>
+  </data>
   <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
     <value>Wählen Sie die Sprache, die von diesem Browser verwendet wird. Diese Einstellung wird in einem Browser-Cookie gespeichert; Server-Standardwerte werden nur verwendet, wenn keine unterstützte Browsereinstellung vorhanden ist.</value>
   </data>

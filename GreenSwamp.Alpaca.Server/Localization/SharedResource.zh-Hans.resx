@@ -2958,6 +2958,27 @@
   <data name="Ui_Theme_NotSaved" xml:space="preserve">
     <value>此浏览器阻止了存储，主题仅在本次会话中生效。</value>
   </data>
+  <data name="Nav_DisplayPreferences" xml:space="preserve">
+    <value>显示偏好设置</value>
+  </data>
+  <data name="Ui_NightLevel" xml:space="preserve">
+    <value>夜间亮度</value>
+  </data>
+  <data name="Ui_NightLevel_Tip" xml:space="preserve">
+    <value>在夜间主题下调暗整个屏幕。仅保存在此浏览器中。</value>
+  </data>
+  <data name="Ui_Zoom_ServerDefault" xml:space="preserve">
+    <value>服务器默认值（{0}%）</value>
+  </data>
+  <data name="Ui_Zoom_BrowserTip" xml:space="preserve">
+    <value>仅对此浏览器生效的缩放。选择“服务器默认值”以跟随服务器设置。</value>
+  </data>
+  <data name="Ui_ZoomServer" xml:space="preserve">
+    <value>默认缩放（所有浏览器）</value>
+  </data>
+  <data name="Ui_ZoomServer_Tip" xml:space="preserve">
+    <value>未自行选择缩放的浏览器所使用的缩放。</value>
+  </data>
   <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
     <value>选择此浏览器使用的语言。此偏好保存在浏览器Cookie中；仅当不存在受支持的浏览器偏好时，才使用服务器默认值。</value>
   </data>

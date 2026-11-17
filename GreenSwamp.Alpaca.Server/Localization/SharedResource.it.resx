@@ -1395,6 +1395,27 @@
   <data name="Ui_Theme_NotSaved" xml:space="preserve">
     <value>Questo browser ha bloccato l'archiviazione; il tema vale solo per questa sessione.</value>
   </data>
+  <data name="Nav_DisplayPreferences" xml:space="preserve">
+    <value>Preferenze di visualizzazione</value>
+  </data>
+  <data name="Ui_NightLevel" xml:space="preserve">
+    <value>Luminosità notturna</value>
+  </data>
+  <data name="Ui_NightLevel_Tip" xml:space="preserve">
+    <value>Attenua l'intero schermo nel tema notturno. Salvato solo in questo browser.</value>
+  </data>
+  <data name="Ui_Zoom_ServerDefault" xml:space="preserve">
+    <value>Predefinito del server ({0}%)</value>
+  </data>
+  <data name="Ui_Zoom_BrowserTip" xml:space="preserve">
+    <value>Zoom solo per questo browser. Scegli Predefinito del server per seguire l'impostazione del server.</value>
+  </data>
+  <data name="Ui_ZoomServer" xml:space="preserve">
+    <value>Zoom predefinito (tutti i browser)</value>
+  </data>
+  <data name="Ui_ZoomServer_Tip" xml:space="preserve">
+    <value>Zoom usato dai browser che non hanno scelto il proprio zoom.</value>
+  </data>
   <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
     <value>Scegliere la lingua usata da questo browser. Questa preferenza viene salvata in un cookie del browser; i valori predefiniti del server vengono usati solo se non esiste alcuna preferenza supportata del browser.</value>
   </data>
