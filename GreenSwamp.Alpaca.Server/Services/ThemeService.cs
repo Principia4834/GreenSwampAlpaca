@@ -1,10 +1,11 @@
 ﻿using GreenSwamp.Alpaca.Server.Theme;
+using Microsoft.JSInterop;
 
 namespace GreenSwamp.Alpaca.Server.Services;
 
-public sealed class ThemeService(IBrowserSettingsService browserSettings) : IThemeService
+public sealed class ThemeService(IBrowserSettingsService browserSettings, IJSRuntime js) : IThemeService
 {
-    public const string StorageKey = "gs.theme.v1";
+    public const string StorageKey = GsThemeCss.StorageKey;
 
     private bool _initialized;
 
@@ -22,7 +23,8 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings) : IThe
         _initialized = true;
 
         var preference = await browserSettings.GetAsync(StorageKey, new ThemePreference());
-        Apply(GsThemeCatalog.Resolve(preference.ThemeId));
+        await ApplyAsync(GsThemeCatalog.Resolve(preference.ThemeId));
+        await CallBrowserAsync("gsTheme.ready");
     }
 
     public async Task<bool> SetThemeAsync(string themeId)
@@ -33,17 +35,17 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings) : IThe
             return false;
         }
 
-        Apply(theme);
+        await ApplyAsync(theme);
         return await browserSettings.SetAsync(StorageKey, new ThemePreference { ThemeId = theme.Id });
     }
 
     public async Task<bool> ResetAsync()
     {
-        Apply(GsThemeCatalog.Default);
+        await ApplyAsync(GsThemeCatalog.Default);
         return await browserSettings.RemoveAsync(StorageKey);
     }
 
-    private void Apply(GsThemeDefinition theme)
+    private async Task ApplyAsync(GsThemeDefinition theme)
     {
         if (ReferenceEquals(theme, Current))
         {
@@ -52,5 +54,18 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings) : IThe
 
         Current = theme;
         Changed?.Invoke();
+        await CallBrowserAsync("gsTheme.apply", theme.Id);
+    }
+
+    // The root-element attribute drives first paint on the next page load; a failed call must not block the theme change.
+    private async Task CallBrowserAsync(string identifier, params object[] args)
+    {
+        try
+        {
+            await js.InvokeVoidAsync(identifier, args);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException)
+        {
+        }
     }
 }

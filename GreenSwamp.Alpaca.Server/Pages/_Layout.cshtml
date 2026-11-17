@@ -1,13 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
+@using GreenSwamp.Alpaca.Server.Theme
 @namespace GreenSwamp.Alpaca.Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
-<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name" data-gs-theme="@GsThemeCatalog.Default.Id">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
+    <script>@Html.Raw(GsThemeCss.BootScript)</script>
+    <style>@Html.Raw(GsThemeCss.Critical)</style>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="stylesheet" href="css/fonts.css" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />

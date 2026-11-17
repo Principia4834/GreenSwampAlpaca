@@ -22,6 +22,8 @@
     /* Fixed brand green for the home hero, which sits on a photo rather than a theme surface. */
     --gs-brand-green: #4caf50;
     --gs-brand-green-rgb: 76, 175, 80;
+    /* Text on the hero photo; the single-hue themes override it with their text colour. */
+    --gs-hero-text-rgb: 255, 255, 255;
     /* Typography */
     --gs-font-sans: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --gs-font-mono: 'Roboto Mono', 'Courier New', monospace;
@@ -225,7 +227,7 @@ code {
 
 .gs-home-title {
     font-weight: 300;
-    color:       #fff;
+    color:       rgb(var(--gs-hero-text-rgb));
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
     letter-spacing: 0.02em;
 }
@@ -252,7 +254,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-carousel {
         min-height:    300px;
-        color:         #fff;
+        color:         rgb(var(--gs-hero-text-rgb));
         background:    rgba(0,0,0,0.35);
     }
 
@@ -263,7 +265,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     }
 
     .gs-carousel-empty {
-        color:       rgba(255,255,255,0.75);
+        color:       rgba(var(--gs-hero-text-rgb),0.75);
         text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     }
 
@@ -285,7 +287,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-slide-fallback {
         display: none;
-        color:   rgba(255,255,255,0.7);
+        color:   rgba(var(--gs-hero-text-rgb),0.7);
     }
 
     .gs-slide-missing .gs-slide-img      { display: none; }
@@ -293,7 +295,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-slide-caption {
         flex:        0 0 auto;
-        color:       rgba(255,255,255,0.92);
+        color:       rgba(var(--gs-hero-text-rgb),0.92);
         white-space: nowrap;
         overflow:    hidden;
         text-overflow: ellipsis;
@@ -315,7 +317,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     }
 
     .gs-tile-empty {
-        color: rgba(255,255,255,0.75);
+        color: rgba(var(--gs-hero-text-rgb),0.75);
     }
 
     .mud-card.gs-tile {
@@ -328,7 +330,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         border:         3px solid var(--gs-brand-green);
         border-radius:  8px;
         background:     rgba(0,0,0,0.55);
-        color:          #fff;
+        color:          rgb(var(--gs-hero-text-rgb));
         transition:     background 0.2s;
     }
 
@@ -617,4 +619,36 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 .apexcharts-reset-icon:focus-visible {
     outline: 2px solid var(--mud-palette-text-primary) !important;
     outline-offset: 1px !important;
+}
+
+/* --- Single-hue theme (Night Red) -------------------------------------------
+   Colours come from the generated per-theme rules (GsThemeCss) and the MudBlazor palette.
+   Everything is outlined, except Stop, which is a solid fill so it stays the one unmistakable control. */
+html[data-gs-theme="night-red"] .gs-home-hero {
+    /* Photo reduced to the theme hue by luminosity-blending it onto a flat colour, then darkened for text contrast */
+    background-color: rgb(var(--gs-brand-green-rgb));
+    background-blend-mode: normal, luminosity;
+    background-image:
+        linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.60) 50%, rgba(0,0,0,0.85) 100%),
+        url('/images/GreenSwamp1.webp');
+}
+
+html[data-gs-theme="night-red"] .gs-slide-img {
+    filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(6) brightness(0.7);
+}
+
+html[data-gs-theme="night-red"] .gs-stop:not(:disabled):not(.mud-disabled),
+html[data-gs-theme="night-red"] .hc-stop:not(:disabled) {
+    background-color: var(--mud-palette-error) !important;
+    color:            var(--mud-palette-error-text) !important;
+}
+
+html[data-gs-theme="night-red"] .gs-stop:not(:disabled):not(.mud-disabled):hover,
+html[data-gs-theme="night-red"] .hc-stop:not(:disabled):hover {
+    background-color: var(--mud-palette-error-darken) !important;
+}
+
+html[data-gs-theme="night-red"] .gs-stop .mud-icon-root,
+html[data-gs-theme="night-red"] .hc-stop .mud-icon-root {
+    color: var(--mud-palette-error-text) !important;
 }
