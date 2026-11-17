@@ -2943,6 +2943,21 @@
   <data name="Ui_NotImplemented" xml:space="preserve">
     <value>未实现</value>
   </data>
+  <data name="Theme_DarkGreen" xml:space="preserve">
+    <value>深色 · 绿色</value>
+  </data>
+  <data name="Theme_LightGreen" xml:space="preserve">
+    <value>浅色 · 绿色</value>
+  </data>
+  <data name="Theme_NightRed" xml:space="preserve">
+    <value>夜间 · 红色</value>
+  </data>
+  <data name="Ui_Theme_BrowserOnly" xml:space="preserve">
+    <value>仅保存在此浏览器中。</value>
+  </data>
+  <data name="Ui_Theme_NotSaved" xml:space="preserve">
+    <value>此浏览器阻止了存储，主题仅在本次会话中生效。</value>
+  </data>
   <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
     <value>选择此浏览器使用的语言。此偏好保存在浏览器Cookie中；仅当不存在受支持的浏览器偏好时，才使用服务器默认值。</value>
   </data>

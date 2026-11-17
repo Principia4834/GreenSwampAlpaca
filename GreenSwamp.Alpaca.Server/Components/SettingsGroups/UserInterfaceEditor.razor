@@ -3,9 +3,12 @@
 @using GreenSwamp.Alpaca.Server.Services
 @using Microsoft.AspNetCore.WebUtilities
 @using System.Globalization
+@using GreenSwamp.Alpaca.Server.Theme
 @inject SupportedCultureSettings SupportedCultures
 @inject BrowserCultureService BrowserCultureService
 @inject NavigationManager NavigationManager
+@inject IThemeService ThemeService
+@implements IDisposable
 
 <MudStack Spacing="3">
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Zoom_Tip"]" Placement="Placement.Right" Arrow="true">
@@ -21,10 +24,29 @@
     </MudTooltip>
 
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Theme_Tip"]" Placement="Placement.Right" Arrow="true">
-        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="pa-2 mud-border rounded">
-            <MudText Typo="Typo.body2">@Loc["Ui_Theme"]</MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">@Loc["Ui_NotImplemented"]</MudText>
-        </MudStack>
+        <MudSelect T="string"
+                   Value="ThemeService.Current.Id"
+                   ValueChanged="OnThemeChanged"
+                   Label="@Loc["Ui_Theme"]"
+                   ToStringFunc="@(id => Loc[GsThemeCatalog.Resolve(id).NameKey].Value)"
+                   HelperText="@Loc["Ui_Theme_BrowserOnly"].Value"
+                   Error="@_themeNotSaved"
+                   ErrorText="@Loc["Ui_Theme_NotSaved"].Value">
+            @foreach (var theme in GsThemeCatalog.All)
+            {
+                var palette = ThemePalette(theme);
+                <MudSelectItem T="string" Value="@theme.Id">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <span style="display:inline-flex; gap:0.125rem; padding:0.125rem; border:1px solid var(--mud-palette-lines-inputs); border-radius:0.25rem;">
+                            <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Surface);"></span>
+                            <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Primary);"></span>
+                            <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Tertiary);"></span>
+                        </span>
+                        <span>@Loc[theme.NameKey]</span>
+                    </MudStack>
+                </MudSelectItem>
+            }
+        </MudSelect>
     </MudTooltip>
 
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_DisplayLanguage_Tip"]" Placement="Placement.Right" Arrow="true">
@@ -64,6 +86,7 @@
     [Parameter] public ServerConfig Config { get; set; } = default!;
     [Parameter] public EventCallback OnChanged { get; set; }
 
+    private bool _themeNotSaved;
     private string _displayLanguage = string.Empty;
     private string _regionalFormat = string.Empty;
     private bool _culturePreferenceLoaded;
@@ -141,4 +164,29 @@
     }
 
     private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ThemeService.Changed += OnThemeServiceChanged;
+    }
+
+    // Theme is per browser and applied immediately: it is not part of the server config, so OnChanged is never raised.
+    private async Task OnThemeChanged(string themeId)
+    {
+        _themeNotSaved = !await ThemeService.SetThemeAsync(themeId);
+    }
+
+    private void OnThemeServiceChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private static Palette ThemePalette(GsThemeDefinition theme)
+    {
+        var mudTheme = GsTheme.Get(theme);
+        return theme.IsDark ? mudTheme.PaletteDark : mudTheme.PaletteLight;
+    }
+
+    private static string Hex(MudBlazor.Utilities.MudColor colour) =>
+        colour.ToString(MudBlazor.Utilities.MudColorOutputFormats.Hex);
+
+    public void Dispose() => ThemeService.Changed -= OnThemeServiceChanged;
 }

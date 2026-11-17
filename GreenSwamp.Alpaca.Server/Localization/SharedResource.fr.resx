@@ -1380,6 +1380,21 @@
   <data name="Ui_NotImplemented" xml:space="preserve">
     <value>Non implémenté</value>
   </data>
+  <data name="Theme_DarkGreen" xml:space="preserve">
+    <value>Sombre · Vert</value>
+  </data>
+  <data name="Theme_LightGreen" xml:space="preserve">
+    <value>Clair · Vert</value>
+  </data>
+  <data name="Theme_NightRed" xml:space="preserve">
+    <value>Nuit · Rouge</value>
+  </data>
+  <data name="Ui_Theme_BrowserOnly" xml:space="preserve">
+    <value>Enregistré uniquement dans ce navigateur.</value>
+  </data>
+  <data name="Ui_Theme_NotSaved" xml:space="preserve">
+    <value>Ce navigateur a bloqué le stockage ; le thème ne s'applique qu'à cette session.</value>
+  </data>
   <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
     <value>Choisissez la langue utilisée par ce navigateur. Cette préférence est enregistrée dans un cookie du navigateur ; les valeurs par défaut du serveur ne sont utilisées que si aucune préférence prise en charge n'existe dans le navigateur.</value>
   </data>

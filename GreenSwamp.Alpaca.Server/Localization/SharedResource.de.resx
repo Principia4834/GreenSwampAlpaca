@@ -1380,6 +1380,21 @@
   <data name="Ui_NotImplemented" xml:space="preserve">
     <value>Nicht implementiert</value>
   </data>
+  <data name="Theme_DarkGreen" xml:space="preserve">
+    <value>Dunkel · Grün</value>
+  </data>
+  <data name="Theme_LightGreen" xml:space="preserve">
+    <value>Hell · Grün</value>
+  </data>
+  <data name="Theme_NightRed" xml:space="preserve">
+    <value>Nacht · Rot</value>
+  </data>
+  <data name="Ui_Theme_BrowserOnly" xml:space="preserve">
+    <value>Nur in diesem Browser gespeichert.</value>
+  </data>
+  <data name="Ui_Theme_NotSaved" xml:space="preserve">
+    <value>Dieser Browser hat den Speicher blockiert; das Design gilt nur für diese Sitzung.</value>
+  </data>
   <data name="Ui_DisplayLanguage_Tip" xml:space="preserve">
     <value>Wählen Sie die Sprache, die von diesem Browser verwendet wird. Diese Einstellung wird in einem Browser-Cookie gespeichert; Server-Standardwerte werden nur verwendet, wenn keine unterstützte Browsereinstellung vorhanden ist.</value>
   </data>
