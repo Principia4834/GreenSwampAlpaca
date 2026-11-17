@@ -33,7 +33,7 @@ namespace GreenSwamp.Alpaca.Mount.Simulator
         private Action<bool>? _pulseGuideDecCallback;
 
         /// <summary>Alpaca device number stamped onto every MonitorEntry/PulseEntry the executor creates.</summary>
-        public int DeviceNumber { get; set; }
+        public new int DeviceNumber { get; set; }
 
         public void SetupCallbacks(Action<double[]>? stepsCallback, Action<bool>? pulseGuideRaCallback, Action<bool>? pulseGuideDecCallback)
         {

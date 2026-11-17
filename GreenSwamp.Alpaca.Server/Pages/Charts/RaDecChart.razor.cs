@@ -58,7 +58,6 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private ChartSettings _settings = new();
         private HubConnection? _hub;
         private bool _loggingActive;
-        private bool _loggingBusy;
         private bool _ready;
         private string _displayMode = "Realtime"; // session-only; not persisted
         private List<RaDecChartData> _pausedSnapshot = [];

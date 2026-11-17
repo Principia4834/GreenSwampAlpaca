@@ -1,0 +1,41 @@
+﻿Rebuild started at 18:12...
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Installer\GreenSwamp.Alpaca.Installer.wixproj (in 38 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Principles\GreenSwamp.Alpaca.Principles.csproj (in 38 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\ASCOM.Alpaca.Razor\ASCOM.Alpaca.Razor.csproj (in 44 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Settings\GreenSwamp.Alpaca.Settings.csproj (in 64 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Mount.Commands\GreenSwamp.Alpaca.Mount.Commands.csproj (in 96 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Mount.SkyWatcher\GreenSwamp.Alpaca.Mount.SkyWatcher.csproj (in 49 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Simulator\GreenSwamp.Alpaca.Mount.Simulator.csproj (in 97 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server\GreenSwamp.Alpaca.Server.csproj (in 57 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.MountControl\GreenSwamp.Alpaca.MountControl.csproj (in 97 ms).
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Shared\GreenSwamp.Alpaca.Shared.csproj (in 96 ms).
+1>------ Rebuild All started: Project: ASCOM.Alpaca.Razor, Configuration: Debug Any CPU ------
+2>------ Rebuild All started: Project: GreenSwamp.Alpaca.Principles, Configuration: Debug Any CPU ------
+Restored T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server.Tests\GreenSwamp.Alpaca.Server.Tests.csproj (in 128 ms).
+2>  GreenSwamp.Alpaca.Principles -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Principles\bin\Debug\net10.0\GreenSwamp.Alpaca.Principles.dll
+1>  ASCOM.Alpaca.Razor -> T:\source\repos\GreenSwampAlpacaServer\ASCOM.Alpaca.Razor\bin\Debug\net10.0\ASCOM.Alpaca.Razor.dll
+3>------ Rebuild All started: Project: GreenSwamp.Alpaca.Settings, Configuration: Debug Any CPU ------
+3>  GreenSwamp.Alpaca.Settings -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Settings\bin\Debug\net10.0\GreenSwamp.Alpaca.Settings.dll
+4>------ Rebuild All started: Project: GreenSwamp.Alpaca.Shared, Configuration: Debug Any CPU ------
+4>  GreenSwamp.Alpaca.Shared -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Shared\bin\Debug\net10.0\GreenSwamp.Alpaca.Shared.dll
+5>------ Rebuild All started: Project: GreenSwamp.Alpaca.Mount.Commands, Configuration: Debug Any CPU ------
+5>  GreenSwamp.Alpaca.Mount.Commands -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Mount.Commands\bin\Debug\net10.0\GreenSwamp.Alpaca.Mount.Commands.dll
+6>------ Rebuild All started: Project: GreenSwamp.Alpaca.Mount.SkyWatcher, Configuration: Debug Any CPU ------
+7>------ Rebuild All started: Project: GreenSwamp.Alpaca.Mount.Simulator, Configuration: Debug Any CPU ------
+7>T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Simulator\MountQueue.cs(36,20,36,32): warning CS0108: 'MountQueueImplementation.DeviceNumber' hides inherited member 'CommandQueueBase<Actions>.DeviceNumber'. Use the new keyword if hiding was intended.
+7>  GreenSwamp.Alpaca.Mount.Simulator -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Simulator\bin\Debug\net10.0\GreenSwamp.Alpaca.Mount.Simulator.dll
+6>T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Mount.SkyWatcher\SkyQueue.cs(42,20,42,32): warning CS0108: 'SkyQueueImplementation.DeviceNumber' hides inherited member 'CommandQueueBase<SkyWatcher>.DeviceNumber'. Use the new keyword if hiding was intended.
+6>  GreenSwamp.Alpaca.Mount.SkyWatcher -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Mount.SkyWatcher\bin\Debug\net10.0\GreenSwamp.Alpaca.Mount.SkyWatcher.dll
+8>------ Rebuild All started: Project: GreenSwamp.Alpaca.MountControl, Configuration: Debug Any CPU ------
+8>  GreenSwamp.Alpaca.MountControl -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.MountControl\bin\Debug\net10.0\GreenSwamp.Alpaca.MountControl.dll
+9>------ Rebuild All started: Project: GreenSwamp.Alpaca.Server, Configuration: Debug Any CPU ------
+9>T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server\Program.cs(763,17,763,23): warning CS8604: Possible null reference argument for parameter 'logger' in 'void LoggerExtensions.LogInformation(ILogger logger, string? message, params object?[] args)'.
+9>T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server\Pages\Charts\RaDecChart.razor.cs(61,22,61,34): warning CS0169: The field 'RaDecChart._loggingBusy' is never used
+9>T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server\Components\Dialogs\ShutdownDialogHelper.cs(63,20,63,25): warning CS1573: Parameter 'title' has no matching param tag in the XML comment for 'ShutdownDialogHelper.ConfirmAsync(IDialogService, string, string, string)' (but other parameters do)
+9>  GreenSwamp.Alpaca.Server -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server\bin\Debug\net10.0\GreenSwamp.Alpaca.Server.dll
+10>------ Skipped Rebuild All: Project: GreenSwamp.Alpaca.Installer, Configuration: Debug x64 ------
+10>Project not selected to build for this solution configuration 
+11>------ Rebuild All started: Project: GreenSwamp.Alpaca.Server.Tests, Configuration: Debug Any CPU ------
+11>  GreenSwamp.Alpaca.Server.Tests -> T:\source\repos\GreenSwampAlpacaServer\GreenSwamp.Alpaca.Server.Tests\bin\Debug\net10.0\GreenSwamp.Alpaca.Server.Tests.dll
+========== Rebuild All: 10 succeeded, 0 failed, 1 skipped ==========
+========== Rebuild completed at 18:13 and took 09.813 seconds ==========

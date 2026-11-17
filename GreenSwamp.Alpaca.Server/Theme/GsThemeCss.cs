@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 
 namespace GreenSwamp.Alpaca.Server.Theme;
 
@@ -91,12 +92,12 @@ public static class GsThemeCss
         {
             var s = theme.Surfaces;
             var selector = $"html[{ThemeAttribute}=\"{theme.Id}\"]";
-            css.Append($"{selector}{{color-scheme:{(theme.IsDark ? "dark" : "light")};background-color:{s.Background};color:{s.TextPrimary}");
+            css.Append(CultureInfo.InvariantCulture, $"{selector}{{color-scheme:{(theme.IsDark ? "dark" : "light")};background-color:{s.Background};color:{s.TextPrimary}");
 
             if (theme.Monochrome)
             {
                 // Hero photo, brand mark and hero text follow the single hue.
-                css.Append($";--gs-brand-green:rgb({s.TextRgb});--gs-brand-green-rgb:{s.TextRgb};--gs-hero-text-rgb:{s.TextRgb}");
+                css.Append(CultureInfo.InvariantCulture, $";--gs-brand-green:rgb({s.TextRgb});--gs-brand-green-rgb:{s.TextRgb};--gs-hero-text-rgb:{s.TextRgb}");
             }
 
             css.Append("}\n");
@@ -104,15 +105,15 @@ public static class GsThemeCss
             if (theme.Dimming is { } dimming)
             {
                 // Red multiply dims every pixel and removes any green or blue; it sits above MudBlazor's popovers and ignores input.
-                css.Append($"{selector} #gs-dim{{display:block;position:fixed;inset:0;z-index:2147483647;pointer-events:none;mix-blend-mode:multiply;background-color:rgb(var(--gs-dim-rgb,{GsDimming.OverlayRgb(dimming.Default)}))}}\n");
+                css.Append(CultureInfo.InvariantCulture, $"{selector} #gs-dim{{display:block;position:fixed;inset:0;z-index:2147483647;pointer-events:none;mix-blend-mode:multiply;background-color:rgb(var(--gs-dim-rgb,{GsDimming.OverlayRgb(dimming.Default)}))}}\n");
             }
 
             if (theme.Monochrome)
             {
                 // MudBlazor's default scrollbar thumb is a fixed light grey; keep it, the selection and the track in the hue.
-                css.Append($"{selector} ::-webkit-scrollbar-thumb{{background-color:{s.TextSecondary}}}\n");
-                css.Append($"{selector} ::-webkit-scrollbar-track{{background-color:{s.Background}}}\n");
-                css.Append($"{selector} ::selection{{background-color:rgb({s.TextRgb});color:{s.Background}}}\n");
+                css.Append(CultureInfo.InvariantCulture, $"{selector} ::-webkit-scrollbar-thumb{{background-color:{s.TextSecondary}}}\n");
+                css.Append(CultureInfo.InvariantCulture, $"{selector} ::-webkit-scrollbar-track{{background-color:{s.Background}}}\n");
+                css.Append(CultureInfo.InvariantCulture, $"{selector} ::selection{{background-color:rgb({s.TextRgb});color:{s.Background}}}\n");
             }
         }
 

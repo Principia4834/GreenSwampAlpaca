@@ -18,10 +18,6 @@
     <NoWarn>1701;1702;1591;4014;8632;8669</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Pages\Charts\PulseChartDev.razor.cs" />
-  </ItemGroup>
-
   <!-- Preserved source for the future .glb model-set viewer (see docs\TelescopeView-3D-ImplementationPlan.md). Not built or served. -->
   <ItemGroup>
     <Compile Remove="Preserved\**" />
@@ -39,7 +35,6 @@
   <ItemGroup>
     <Content Remove="appsettings.json" />
     <Content Remove="appsettings.schema.json" />
-    <Content Remove="Pages\Charts\PulseChartDev.razor" />
   </ItemGroup>
 
   <ItemGroup>

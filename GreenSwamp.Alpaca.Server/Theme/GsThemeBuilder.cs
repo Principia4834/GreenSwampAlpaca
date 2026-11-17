@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using System.Globalization;
+using MudBlazor;
 
 namespace GreenSwamp.Alpaca.Server.Theme;
 
@@ -280,9 +281,9 @@ public static class GsThemeBuilder
         {
             var parts = list.Split(',');
             return new Rgb(
-                int.Parse(parts[0].Trim()) / 255.0,
-                int.Parse(parts[1].Trim()) / 255.0,
-                int.Parse(parts[2].Trim()) / 255.0);
+                int.Parse(parts[0].Trim(), CultureInfo.InvariantCulture) / 255.0,
+                int.Parse(parts[1].Trim(), CultureInfo.InvariantCulture) / 255.0,
+                int.Parse(parts[2].Trim(), CultureInfo.InvariantCulture) / 255.0);
         }
 
         public string ToHex() =>
