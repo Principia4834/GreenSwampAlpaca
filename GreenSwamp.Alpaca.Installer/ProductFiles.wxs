@@ -166,12 +166,6 @@
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
 				<File Source="$(var.PublishDir)\wwwroot\js\tts.js.gz" KeyPath="yes" />
 			</Component>
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\js">
-				<File Source="$(var.PublishDir)\wwwroot\js\telescopeViewer.js.gz" KeyPath="yes" />
-			</Component>
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\models">
-				<File Source="$(var.PublishDir)\wwwroot\models\telescope.obj" KeyPath="yes" />
-			</Component>
 			<!-- Local Babylon.js vendor files required by TelescopeView -->
 			<!-- Packaged under wwwroot\lib\babylon so the app does not depend on the CDN at runtime -->
 			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon">
