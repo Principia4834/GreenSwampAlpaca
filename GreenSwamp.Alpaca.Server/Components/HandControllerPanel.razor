@@ -15,35 +15,35 @@
                 @* 3x3 Direction Grid *@
                 <div class="hc-grid" @ref="_gridElement">
                     @* Row 1: NW, N, NE *@
-                    <MudButton class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="@Loc["HandCtl_NorthWest"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("NorthWest"))" data-hc-dir="NorthWest" title="@Loc["HandCtl_NorthWest"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.NorthWest" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("North"))" data-hc-dir="North" title="@Loc["HandCtl_North"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("North"))" data-hc-dir="North" title="@Loc["HandCtl_North"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.North" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="@Loc["HandCtl_NorthEast"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("NorthEast"))" data-hc-dir="NorthEast" title="@Loc["HandCtl_NorthEast"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.NorthEast" />
                     </MudButton>
 
                     @* Row 2: W, Stop, E *@
-                    <MudButton class="@(GetButtonClass("West"))" data-hc-dir="West" title="@Loc["HandCtl_West"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("West"))" data-hc-dir="West" title="@Loc["HandCtl_West"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.West" />
                     </MudButton>
-                    <MudButton class="hc-btn hc-stop" data-hc-stop="true" title="@Loc["Common_Stop"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" class="hc-btn hc-stop" data-hc-stop="true" title="@Loc["Common_Stop"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Error" Size="Size.Large" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("East"))" data-hc-dir="East" title="@Loc["HandCtl_East"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("East"))" data-hc-dir="East" title="@Loc["HandCtl_East"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.East" />
                     </MudButton>
 
                     @* Row 3: SW, S, SE *@
-                    <MudButton class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="@Loc["HandCtl_SouthWest"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("SouthWest"))" data-hc-dir="SouthWest" title="@Loc["HandCtl_SouthWest"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.SouthWest" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("South"))" data-hc-dir="South" title="@Loc["HandCtl_South"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("South"))" data-hc-dir="South" title="@Loc["HandCtl_South"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.South" />
                     </MudButton>
-                    <MudButton class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="@Loc["HandCtl_SouthEast"]" disabled="@(!IsEnabled)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" class="@(GetButtonClass("SouthEast"))" data-hc-dir="SouthEast" title="@Loc["HandCtl_SouthEast"]" disabled="@(!IsEnabled)">
                         <MudIcon Icon="@Icons.Material.Filled.SouthEast" />
                     </MudButton>
                 </div>

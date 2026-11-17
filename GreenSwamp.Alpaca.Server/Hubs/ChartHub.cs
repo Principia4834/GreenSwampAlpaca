@@ -44,6 +44,7 @@ namespace GreenSwamp.Alpaca.Server.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, $"RaDecChart-{deviceNumber}");
             if (_connectionGroups.GetOrAdd(Context.ConnectionId, _ => []).Add($"radec:{deviceNumber}"))
                 _chartData.OnRaDecClientJoined(deviceNumber);
+            // _diag.LogInformation("[GS.Diag] ChartHub JoinRaDecGroup conn={Conn} dev={Dev}", Context.ConnectionId, deviceNumber);
         }
 
         /// <summary>Unsubscribes the caller from RA/Dec position chart broadcasts for the given device.</summary>
@@ -96,6 +97,7 @@ namespace GreenSwamp.Alpaca.Server.Hubs
         /// </summary>
         public override Task OnDisconnectedAsync(Exception? exception)
         {
+            // _diag.LogInformation("[GS.Diag] ChartHub disconnected conn={Conn} error={Error}", Context.ConnectionId, exception?.Message);
             if (_connectionGroups.TryRemove(Context.ConnectionId, out var groups))
             {
                 foreach (var g in groups)

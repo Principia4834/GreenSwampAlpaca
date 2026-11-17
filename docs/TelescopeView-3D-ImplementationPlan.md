@@ -1,7 +1,18 @@
 ﻿# Telescope 3D View — Implementation Plan
 **Document status:** DRAFT — awaiting Andy's review  
-**Last updated:** 2026-08-29 12:30  
+**Last updated:** 2026-11-14 18:14  
 **Requirements reference:** `Docs/TelescopeView-3D-Requirements.md` (DRAFT v4)
+
+> **NOTE (2026-11-14 18:14) — this plan is deferred (future enhancement).**
+> The live `/telescope-view` page now uses the GSServer `.obj` models posed from the raw mount axes
+> (`Models/Model3D.cs`, `wwwroot/js/telescopeViewer.js`, `wwwroot/model3d/`). The original `.glb` viewer code
+> is preserved, unchanged, in `GreenSwamp.Alpaca.Server/Preserved/GlbViewer/`
+> (`TelescopeView.razor`, `TelescopeView.razor.cs`, `telescopeViewer.js`). It is excluded from the build.
+> To resume this plan, restore those three files to `Pages/TelescopeView/` and `wwwroot/js/`.
+>
+> **Camera settings change to address on resume:** the saved camera (`CameraState` Alpha/Beta) is now stored in
+> **degrees**; the preserved `.glb` viewer reads and writes **radians**. Convert in the preserved
+> `telescopeViewer.js` (`getCameraState` / `init` camera handling) or migrate the stored values before resuming.
 
 ---
 

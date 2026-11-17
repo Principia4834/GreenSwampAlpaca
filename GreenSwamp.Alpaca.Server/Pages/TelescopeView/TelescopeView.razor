@@ -3,10 +3,8 @@
 @using ASCOM.Common.DeviceInterfaces
 @using GreenSwamp.Alpaca.Server.Pages.Charts
 @using GreenSwamp.Alpaca.Server.Services
-@using GreenSwamp.Alpaca.Settings.Services
 @inject TelescopeStateService StateService
 @inject ActiveDeviceViewRegistry ActiveViews
-@inject IVersionedSettingsService SettingsService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
@@ -21,11 +19,16 @@
         <MudText Typo="Typo.caption" Class="gs-font-mono">
             @Loc["TView_Axis1", _axisX.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]&nbsp;&nbsp;@Loc["TView_Axis2", _axisY.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)]
         </MudText>
-        <MudIconButton Icon="@Icons.Material.Filled.Save"
-                       Size="Size.Small"
-                       Title="@Loc["TView_SaveView"]"
-                       OnClick="SaveViewAsync" />
+        <MudTooltip Text="@Loc["TView_SaveView"]">
+            <MudIconButton Icon="@Icons.Material.Filled.Save"
+                           Size="Size.Small"
+                           aria-label="@Loc["TView_SaveView"]"
+                           OnClick="SaveViewAsync" />
+        </MudTooltip>
     </MudStack>
+    <div style="zoom: 0.85">
+        <CompactPositionHeader State="@StateService.GetCurrentState(DeviceNumber)" />
+    </div>
     <canvas id="telescopeCanvas"
             style="flex:1; width:100%; display:block; touch-action:none;" />
 </div>

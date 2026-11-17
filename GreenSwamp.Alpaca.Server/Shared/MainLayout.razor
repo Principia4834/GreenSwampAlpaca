@@ -14,6 +14,7 @@
 @inject IDialogService DialogService
 @inject BrowserCultureService BrowserCultureService
 @inject BrowserTtsService BrowserTtsService
+@inject IThemeService ThemeService
 
 <HeadContent>
     <style>
@@ -21,7 +22,7 @@
     </style>
 </HeadContent>
 
-<MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
+<MudThemeProvider Theme="@GsTheme.Get(ThemeService.Current)" IsDarkMode="@ThemeService.Current.IsDark" ObserveSystemDarkModeChange="false" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -33,12 +34,12 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
                        Edge="Edge.Start" OnClick="ToggleDrawer" />
         <MudText Typo="Typo.h5" Class="gs-brand">
-            <span style="font-weight:700; color:var(--gs-accent-500);">GS</span>Alpaca
+            <span style="font-weight:700; color:var(--gs-accent);">GS</span>Alpaca
         </MudText>
 
         <!-- Displays current Date and Time -->
         <MudSpacer />
-        <MudText Typo="Typo.h6" Color="Color.Primary">@CurrentDateTimeString</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Tertiary">@CurrentDateTimeString</MudText>
 
         <MudSpacer />
         <MudButton Color="Color.Primary" Variant="Variant.Filled" 
@@ -52,7 +53,7 @@
                Breakpoint="Breakpoint.LgAndDown"
                ClipMode="DrawerClipMode.Always"
                Width="12.5rem"
-               Style="background-color:var(--gs-bg-sidebar); border-right:1px solid rgba(var(--gs-accent-500-rgb),0.2);">
+               Style="background-color:var(--gs-bg-sidebar); border-right:1px solid var(--gs-divider);">
         <NavMenu />
         <MudText Typo="Typo.caption" Class="mt-auto pa-3">
             @Loc["Layout_Version", ServerConfig.GetVersion()]
@@ -73,9 +74,13 @@
     private bool _drawerOpen = true;
     private double _fontScale = GsZoom.DefaultScale;
 
-    private string RootFontSizeStyle => GsZoom.BuildRootStyle(_fontScale);
+    private double EffectiveFontScale => ThemeService.ZoomPercent is { } percent ? percent / 100.0 : _fontScale;
+
+    private string RootFontSizeStyle => GsZoom.BuildRootStyle(EffectiveFontScale);
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
 
     private async Task OpenAboutDialog()
     {
@@ -96,6 +101,8 @@
     protected override void OnInitialized()
     {
         SettingsService.ServerConfigChanged += OnServerConfigChanged;
+        ThemeService.Changed += OnThemeChanged;
+        ThemeService.DisplayChanged += OnThemeChanged;
         ApplyServerConfig(SettingsService.GetServerConfig());
 
         // Update immediately on load
@@ -109,6 +116,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await ThemeService.InitializeAsync();
+        }
+
         if (!firstRender || await BrowserCultureService.HasCulturePreferenceAsync())
         {
             return;
@@ -158,6 +170,8 @@
     public void Dispose()
     {
         SettingsService.ServerConfigChanged -= OnServerConfigChanged;
+        ThemeService.Changed -= OnThemeChanged;
+        ThemeService.DisplayChanged -= OnThemeChanged;
         _timer?.Dispose();
     }
 }

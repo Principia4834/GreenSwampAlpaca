@@ -1779,6 +1779,8 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             CheckRange(Declination, -90, 90, "SyncToCoordinates", "Declination");
             CheckParked("SyncToCoordinates");
             CheckTracking(true, "SyncToCoordinates");
+            var a = Transforms.CoordTypeToInternal(RightAscension, Declination, settings: _mount.Settings);
+            CheckRaDecSync(a.X, a.Y, "SyncToCoordinates");
 
             _mount.TargetDec = Declination;
             _mount.TargetRa = RightAscension;

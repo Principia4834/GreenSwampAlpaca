@@ -1,10 +1,12 @@
 ﻿@using GreenSwamp.Alpaca.Server.Theme
+@using GreenSwamp.Alpaca.Server.Services
 @using GreenSwamp.Alpaca.Settings.Models
 @using GreenSwamp.Alpaca.Settings.Services
 
 @inherits LocalizedLayoutComponentBase
 @implements IDisposable
 @inject IVersionedSettingsService SettingsService
+@inject IThemeService ThemeService
 
 <HeadContent>
     <style>
@@ -12,7 +14,7 @@
     </style>
 </HeadContent>
 
-<MudThemeProvider Theme="@GsTheme.Instance" IsDarkMode="true" />
+<MudThemeProvider Theme="@GsTheme.Get(ThemeService.Current)" IsDarkMode="@ThemeService.Current.IsDark" ObserveSystemDarkModeChange="false" />
 <MudPopoverProvider />
 <MudSnackbarProvider />
 
@@ -25,13 +27,29 @@
 @code {
     private double _fontScale = GsZoom.DefaultScale;
 
-    private string RootFontSizeStyle => GsZoom.BuildRootStyle(_fontScale);
+    private double EffectiveFontScale => ThemeService.ZoomPercent is { } percent ? percent / 100.0 : _fontScale;
+
+    private string RootFontSizeStyle => GsZoom.BuildRootStyle(EffectiveFontScale);
 
     protected override void OnInitialized()
     {
         SettingsService.ServerConfigChanged += OnServerConfigChanged;
+        ThemeService.Changed += OnThemeChanged;
+        ThemeService.DisplayChanged += OnThemeChanged;
         ApplyServerConfig(SettingsService.GetServerConfig());
         base.OnInitialized();
+    }
+
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ThemeService.InitializeAsync();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private void ApplyServerConfig(ServerConfig config)
@@ -51,5 +69,7 @@
     public void Dispose()
     {
         SettingsService.ServerConfigChanged -= OnServerConfigChanged;
+        ThemeService.Changed -= OnThemeChanged;
+        ThemeService.DisplayChanged -= OnThemeChanged;
     }
 }

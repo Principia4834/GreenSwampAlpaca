@@ -494,7 +494,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             error = string.Empty;
             if (string.IsNullOrWhiteSpace(_azSmart)) _azSmartError = RequiredMessage;
             if (string.IsNullOrWhiteSpace(_altSmart)) _altSmartError = RequiredMessage;
-            if (!TryParseSmartAngle(_azSmart, out az, out error)) return false;
+            if (!TryParseSmartAz(_azSmart, out az, out error)) return false;
             if (!TryParseSmartAngle(_altSmart, out alt, out error)) return false;
             return true;
         }
@@ -513,52 +513,57 @@ namespace GreenSwamp.Alpaca.Server.Components
             return TryParseSmartCoordinate(input, out degrees, out error, isRa: false);
         }
 
+        private bool TryParseSmartAz(string input, out double degrees, out string error)
+        {
+            return TryParseSmartCoordinate(input, out degrees, out error, isRa: false, isAz: true);
+        }
+
         private Task OnRaSmartChanged(string? value) => ApplySmartInputAsync(value, v => _raSmart = v, isRa: true, setError: e => _raSmartError = e);
         private Task OnDecSmartChanged(string? value) => ApplySmartInputAsync(value, v => _decSmart = v, isRa: false, setError: e => _decSmartError = e);
-        private Task OnAzSmartChanged(string? value) => ApplySmartInputAsync(value, v => _azSmart = v, isRa: false, setError: e => _azSmartError = e);
+        private Task OnAzSmartChanged(string? value) => ApplySmartInputAsync(value, v => _azSmart = v, isRa: false, setError: e => _azSmartError = e, isAz: true);
         private Task OnAltSmartChanged(string? value) => ApplySmartInputAsync(value, v => _altSmart = v, isRa: false, setError: e => _altSmartError = e);
 
         private Task OnRaSmartBlur() => ApplySmartBlurAsync(v => _raSmart = v, _raSmart, isRa: true, canonicalizeSign: false, setError: e => _raSmartError = e);
         private Task OnDecSmartBlur() => ApplySmartBlurAsync(v => _decSmart = v, _decSmart, isRa: false, canonicalizeSign: true, setError: e => _decSmartError = e);
-        private Task OnAzSmartBlur() => ApplySmartBlurAsync(v => _azSmart = v, _azSmart, isRa: false, canonicalizeSign: false, setError: e => _azSmartError = e);
+        private Task OnAzSmartBlur() => ApplySmartBlurAsync(v => _azSmart = v, _azSmart, isRa: false, canonicalizeSign: false, setError: e => _azSmartError = e, isAz: true);
         private Task OnAltSmartBlur() => ApplySmartBlurAsync(v => _altSmart = v, _altSmart, isRa: false, canonicalizeSign: true, setError: e => _altSmartError = e);
 
-        private Task ApplySmartInputAsync(string? incoming, Action<string> assign, bool isRa, Action<string?> setError)
+        private Task ApplySmartInputAsync(string? incoming, Action<string> assign, bool isRa, Action<string?> setError, bool isAz = false)
         {
             var next = incoming ?? string.Empty;
             assign(next);
-            setError(ValidateSmartPartial(next, isRa));
+            setError(ValidateSmartPartial(next, isRa, isAz));
             return Task.CompletedTask;
         }
 
-        private Task ApplySmartBlurAsync(Action<string> assign, string current, bool isRa, bool canonicalizeSign, Action<string?> setError)
+        private Task ApplySmartBlurAsync(Action<string> assign, string current, bool isRa, bool canonicalizeSign, Action<string?> setError, bool isAz = false)
         {
-            var canonical = CanonicalizeSmartValue(current, isRa, canonicalizeSign);
+            var canonical = CanonicalizeSmartValue(current, isRa, canonicalizeSign, isAz);
             assign(canonical);
-            setError(ValidateSmartPartial(canonical, isRa));
+            setError(ValidateSmartPartial(canonical, isRa, isAz));
             return Task.CompletedTask;
         }
 
-        private string? ValidateSmartPartial(string input, bool isRa)
+        private string? ValidateSmartPartial(string input, bool isRa, bool isAz = false)
         {
-            return CoordinateParser.ValidatePartial(input, isRa) switch
+            return CoordinateParser.ValidatePartial(input, isRa, isAz) switch
             {
                 CoordinateParseError.NotInteger => isRa ? Loc["Coord_HoursInteger"].Value : Loc["Coord_DegreesInteger"].Value,
-                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_HoursRange"].Value : Loc["Coord_DegreesRange"].Value,
+                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_HoursRange"].Value : isAz ? Loc["Coord_AzRange"].Value : Loc["Coord_DegreesRange"].Value,
                 CoordinateParseError.MinutesNotInteger => Loc["Coord_MinutesInteger"].Value,
                 CoordinateParseError.SecondsRange => Loc["Coord_SecondsRange"].Value,
                 _ => string.Empty
             };
         }
 
-        private static string CanonicalizeSmartValue(string input, bool isRa, bool canonicalizeSign)
+        private static string CanonicalizeSmartValue(string input, bool isRa, bool canonicalizeSign, bool isAz = false)
         {
-            return CoordinateParser.Canonicalize(input, isRa, canonicalizeSign);
+            return CoordinateParser.Canonicalize(input, isRa, canonicalizeSign, isAz);
         }
 
-        private bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa)
+        private bool TryParseSmartCoordinate(string input, out double value, out string error, bool isRa, bool isAz = false)
         {
-            if (CoordinateParser.TryParse(input, isRa, out value, out var parseError))
+            if (CoordinateParser.TryParse(input, isRa, out value, out var parseError, isAz))
             {
                 error = string.Empty;
                 return true;
@@ -567,7 +572,7 @@ namespace GreenSwamp.Alpaca.Server.Components
             error = parseError switch
             {
                 CoordinateParseError.Required => isRa ? Loc["Coord_RaRequired"].Value : Loc["Coord_AngleRequired"].Value,
-                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_RaRange"].Value : Loc["Coord_DegreesRange"].Value,
+                CoordinateParseError.OutOfRange => isRa ? Loc["Coord_RaRange"].Value : isAz ? Loc["Coord_AzRange"].Value : Loc["Coord_DegreesRange"].Value,
                 CoordinateParseError.MinutesRange => Loc["Coord_MinutesRange"].Value,
                 CoordinateParseError.SecondsRange => Loc["Coord_SecondsRange"].Value,
                 _ => isRa ? Loc["Coord_InvalidRa"].Value : Loc["Coord_InvalidAngle"].Value

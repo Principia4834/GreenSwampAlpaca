@@ -29,6 +29,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
     public partial class RaDecChart
     {
         private HubConnectionState _hubState = HubConnectionState.Disconnected;
+
         private bool _hubInitialised; // true once StartAsync completes; suppresses spurious "Disconnected" on first render
         private volatile bool _pendingChartUpdate;
         private System.Threading.Timer? _refreshTimer;
@@ -61,6 +62,9 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private void OnAxisPoints(ChartPointDto[] points)
         {
             if (points.Length < 2 || !CanAcceptWork()) return;
+
+            // var received = Interlocked.Increment(ref _axisPointsReceived);
+            // if (received <= 3 || received % 200 == 0) _diag.Mark($"ReceiveAxisPoint #{received}");
 
             _ = InvokeAsync(() =>
             {
@@ -148,6 +152,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             ChartId = string.IsNullOrEmpty(Label) ? "Position" : MyRegex().Replace(Label, string.Empty);
             ChartId += $"_{DeviceNumber.ToString()}_{DateTime.Now.ToString("yyyy-MM-dd")}";
             BuildChartOptions(ChartId);
+            ThemeService.Changed += OnThemeChanged;
             _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
 
             return Task.CompletedTask;
@@ -176,16 +181,17 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 .Build();
 
             _hub.On<ChartPointDto[]>("ReceiveAxisPoint", OnAxisPoints);
-            // _hub.On<HistoricalDataDto>("ReceiveRaDecHistory", OnHistory);
 
             _hub.Reconnecting += _ =>
             {
+                // _diag.Warn("Hub Reconnecting");
                 _hubState = HubConnectionState.Reconnecting;
                 return InvokeAsync(StateHasChanged);
             };
 
             _hub.Reconnected += async _ =>
             {
+                // _diag.Mark("Hub Reconnected");
                 if (!CanAcceptWork()) return;
                 _hubState = HubConnectionState.Connected;
                 try

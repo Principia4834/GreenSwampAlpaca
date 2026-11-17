@@ -42,6 +42,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             ChartId += $"_{DeviceNumber.ToString()}_{DateTime.Now.ToString("yyyy-MM-dd")}";
 
             BuildChartOptions();
+            ThemeService.Changed += OnThemeChanged;
 
             _raSubList     = new SubList<PulsePointDto>(_raData,     0);
             _raRejSubList  = new SubList<PulsePointDto>(_raRejData,  0);
@@ -318,6 +319,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         public async ValueTask DisposeAsync()
         {
             _disposed = true;
+            ThemeService.Changed -= OnThemeChanged;
             await _disposeCts.CancelAsync();
             _disposeCts.Dispose();
 

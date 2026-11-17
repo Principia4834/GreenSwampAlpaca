@@ -55,6 +55,7 @@ namespace GreenSwamp.Alpaca.Server.Components.Dialogs
         /// <param name="dialogService">The dialog service used to show the confirmation dialog.</param>
         /// <param name="message">The message to display in the confirmation dialog.</param>
         /// <param name="confirmText">The text for the confirm button.</param>
+        /// <param name="title">The title of the confirmation dialog.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains true if the user confirmed; otherwise, false.</returns>
         private static async Task<bool> ConfirmAsync(
             IDialogService dialogService,

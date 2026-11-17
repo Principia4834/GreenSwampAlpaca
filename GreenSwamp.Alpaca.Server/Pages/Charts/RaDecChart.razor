@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 
 @inject IVersionedSettingsService SettingsService
+@inject IThemeService ThemeService
 @inject ChartLoggingService Logger
 @inject TelescopeStateService StateService
 @inject ActiveDeviceViewRegistry ActiveViews
@@ -79,7 +80,7 @@
     @* -- Chart ------------------------------------------------------------- *@
     <div style="flex:1;min-height:0;overflow:hidden;">
         <ApexChart TItem="RaDecChartData"
-                    @key="@_chartKey"
+                    @key="@ChartRenderKey"
                     XAxisType="XAxisType.Datetime"
                     Options="@_chartOptions"
                     @ref="_chart"

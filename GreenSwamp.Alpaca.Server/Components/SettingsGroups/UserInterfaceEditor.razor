@@ -1,18 +1,12 @@
 ﻿@using GreenSwamp.Alpaca.Settings.Models
-@using GreenSwamp.Alpaca.Server.Configuration
-@using GreenSwamp.Alpaca.Server.Services
-@using Microsoft.AspNetCore.WebUtilities
-@using System.Globalization
-@inject SupportedCultureSettings SupportedCultures
-@inject BrowserCultureService BrowserCultureService
-@inject NavigationManager NavigationManager
+@using GreenSwamp.Alpaca.Server.Theme
 
 <MudStack Spacing="3">
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Zoom_Tip"]" Placement="Placement.Right" Arrow="true">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_ZoomServer_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudSelect T="int"
                    Value="ZoomPercent"
                    ValueChanged="OnZoomPercentChanged"
-                   Label="@Loc["Ui_Zoom"]">
+                   Label="@Loc["Ui_ZoomServer"]">
             @foreach (var zoom in ZoomOptions)
             {
                 <MudSelectItem T="int" Value="@zoom">@($"{zoom}%")</MudSelectItem>
@@ -20,38 +14,7 @@
         </MudSelect>
     </MudTooltip>
 
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Theme_Tip"]" Placement="Placement.Right" Arrow="true">
-        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="pa-2 mud-border rounded">
-            <MudText Typo="Typo.body2">@Loc["Ui_Theme"]</MudText>
-            <MudText Typo="Typo.caption" Color="Color.Secondary">@Loc["Ui_NotImplemented"]</MudText>
-        </MudStack>
-    </MudTooltip>
-
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_DisplayLanguage_Tip"]" Placement="Placement.Right" Arrow="true">
-        <MudSelect T="string"
-                   Value="_displayLanguage"
-                   ValueChanged="OnDisplayLanguageChanged"
-                   Disabled="@(!_culturePreferenceLoaded)"
-                   Label="@Loc["Ui_DisplayLanguage"]">
-            @foreach (var language in SupportedCultures.SupportedLanguages)
-            {
-                <MudSelectItem T="string" Value="@language">@LanguageLabel(language)</MudSelectItem>
-            }
-        </MudSelect>
-    </MudTooltip>
-
-    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_RegionalFormat_Tip"]" Placement="Placement.Right" Arrow="true">
-        <MudSelect T="string"
-                   Value="_regionalFormat"
-                   ValueChanged="OnRegionalFormatChanged"
-                   Disabled="@(!_culturePreferenceLoaded)"
-                   Label="@Loc["Ui_RegionalFormat"]">
-            @foreach (var culture in SupportedCultures.SupportedRegionalFormats)
-            {
-                <MudSelectItem T="string" Value="@culture">@CultureLabel(culture)</MudSelectItem>
-            }
-        </MudSelect>
-    </MudTooltip>
+    <DisplayPreferencesPanel />
 
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_AutoStartBrowser_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudCheckBox @bind-Value="Config.AutoStartBrowser"
@@ -64,69 +27,7 @@
     [Parameter] public ServerConfig Config { get; set; } = default!;
     [Parameter] public EventCallback OnChanged { get; set; }
 
-    private string _displayLanguage = string.Empty;
-    private string _regionalFormat = string.Empty;
-    private bool _culturePreferenceLoaded;
-
     private static IEnumerable<int> ZoomOptions => GsZoom.ZoomPercentOptions;
-
-    private static string CultureLabel(string cultureName)
-    {
-        var culture = CultureInfo.GetCultureInfo(cultureName);
-        return $"{culture.NativeName} ({culture.Name})";
-    }
-
-    private string LanguageLabel(string languageCode)
-    {
-        var culture = CultureInfo.GetCultureInfo(SupportedCultures.GetDisplayCulture(languageCode)!);
-        return $"{culture.NativeName} ({languageCode})";
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
-            return;
-        }
-
-        var preference = await BrowserCultureService.GetCulturePreferenceAsync();
-        _displayLanguage = SupportedCultures.GetDisplayLanguageCode(preference?.DisplayLanguage)
-            ?? Config.DefaultDisplayLanguage;
-        _regionalFormat = preference is not null &&
-                          SupportedCultures.IsSupportedRegionalFormat(preference.RegionalFormat)
-            ? preference.RegionalFormat
-            : Config.DefaultRegionalFormat;
-        _culturePreferenceLoaded = true;
-        StateHasChanged();
-    }
-
-    private Task OnDisplayLanguageChanged(string value)
-    {
-        _displayLanguage = value;
-        NavigateToCultureCookie();
-        return Task.CompletedTask;
-    }
-
-    private Task OnRegionalFormatChanged(string value)
-    {
-        _regionalFormat = value;
-        NavigateToCultureCookie();
-        return Task.CompletedTask;
-    }
-
-    private void NavigateToCultureCookie()
-    {
-        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
-        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
-        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
-        {
-            ["displayLanguage"] = _displayLanguage,
-            ["regionalFormat"] = _regionalFormat,
-            ["returnUrl"] = returnUrl
-        });
-
-        NavigationManager.NavigateTo(target, forceLoad: true);
-    }
 
     private int ZoomPercent
     {

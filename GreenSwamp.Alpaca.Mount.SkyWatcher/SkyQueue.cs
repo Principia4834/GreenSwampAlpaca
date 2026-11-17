@@ -39,7 +39,7 @@ namespace GreenSwamp.Alpaca.Mount.SkyWatcher
         private Action<bool>? _pulseGuideDecCallback;
 
         /// <summary>Alpaca device number stamped onto every MonitorEntry/PulseEntry the executor creates.</summary>
-        public int DeviceNumber { get; set; }
+        public new int DeviceNumber { get; set; }
 
         public ISerialPort Serial => _serial;
         public int[] CustomMount360Steps => _customMount360Steps;

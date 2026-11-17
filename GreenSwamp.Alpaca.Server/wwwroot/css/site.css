@@ -5,26 +5,25 @@
 
 /* --- CSS Custom Properties ---------------------------------- */
 :root {
-    /* Base surfaces */
-    --gs-bg-app: #121212;
-    --gs-bg-paper: #1e1e1e;
-    --gs-bg-elevated: #2a2a2a;
-    --gs-bg-sidebar: #0d1117;
-    /* Accent: Material Green */
-    --gs-accent-300: #81c784;
-    --gs-accent-500: #4caf50;
-    --gs-accent-500-rgb: 76, 175, 80;
-    --gs-accent-700: #388e3c;
-    /* Text */
-    --gs-text-primary: rgba(255, 255, 255, 0.87);
-    --gs-text-secondary: rgba(255, 255, 255, 0.60);
-    /* Dividers */
-    --gs-divider: rgba(255, 255, 255, 0.12);
-    /* Status / Semantic */
-    --gs-success: #66bb6a;
-    --gs-warning: #ffa726;
-    --gs-error: #f44336;
-    --gs-info: #42a5f5;
+    /* Surfaces, text, dividers and status are aliases of the palette MudThemeProvider emits (see GsThemeBuilder). */
+    --gs-bg-app: var(--mud-palette-background);
+    --gs-bg-paper: var(--mud-palette-surface);
+    --gs-bg-elevated: var(--mud-palette-background-gray);
+    --gs-bg-sidebar: var(--mud-palette-appbar-background);
+    --gs-text-primary: var(--mud-palette-text-primary);
+    --gs-text-secondary: var(--mud-palette-text-secondary);
+    --gs-divider: var(--mud-palette-divider);
+    --gs-success: var(--mud-palette-success);
+    --gs-warning: var(--mud-palette-warning);
+    --gs-error: var(--mud-palette-error);
+    --gs-info: var(--mud-palette-info);
+    /* Accent (Tertiary): brand mark, selected tab, clock only. Never links, outlines or focus rings. */
+    --gs-accent: var(--mud-palette-tertiary);
+    /* Fixed brand green for the home hero, which sits on a photo rather than a theme surface. */
+    --gs-brand-green: #4caf50;
+    --gs-brand-green-rgb: 76, 175, 80;
+    /* Text on the hero photo; the single-hue themes override it with their text colour. */
+    --gs-hero-text-rgb: 255, 255, 255;
     /* Typography */
     --gs-font-sans: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --gs-font-mono: 'Roboto Mono', 'Courier New', monospace;
@@ -74,12 +73,10 @@ main, .content {
     color:            var(--gs-text-primary);
 }
 
-a {
-    color: var(--gs-accent-500);
-}
-
-a:hover {
-    color: var(--gs-accent-300);
+/* Plain links: neutral text with underline. MudBlazor components (nav links, buttons) keep their own styling. */
+a:not([class*="mud-"]) {
+    color: inherit;
+    text-decoration: underline;
 }
 
 .content {
@@ -94,8 +91,31 @@ a:hover {
 /* Restore normal nav hover behavior */
 .shutdown-nav-link:hover,
 .shutdown-nav-link:focus-visible {
-    color: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-text-primary) !important;
     background-color: var(--mud-palette-action-default-hover) !important;
+}
+
+/* Active nav link: neutral label, control-colour icon (Primary is never used for text) */
+.mud-navmenu .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    color: var(--mud-palette-text-primary);
+}
+
+.mud-navmenu .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon {
+    color: var(--mud-palette-primary);
+}
+
+/* Destructive actions (Shutdown, Disconnect): neutral until hover, then the Error status colour */
+.mud-icon-button.gs-danger-on-hover:hover {
+    color: var(--mud-palette-error);
+}
+
+/* --- MudTabs: selected label and slider use the accent (Tertiary); unselected tabs stay neutral --- */
+.mud-tabs-tabbar .mud-tab.mud-tab-active {
+    color: var(--mud-palette-tertiary);
+}
+
+.mud-tabs-tabbar .mud-tab-slider {
+    background: var(--mud-palette-tertiary);
 }
 
 /* --- MudTabs: suppress uppercase on tab labels -------------- */
@@ -110,7 +130,7 @@ a:hover {
 
 /* --- Key/value tables inside MudSimpleTable: size comes from MudBlazor (td=body2, th=subtitle2) --- */
 .gs-kv-label {
-    color: var(--mud-palette-primary);
+    color: var(--mud-palette-text-secondary);
 }
 
 /* Borderless centre column holding copy buttons (CdcDialog) */
@@ -145,7 +165,7 @@ a:hover {
 /* --- Code -------------------------------------------------- */
 code {
     background-color: var(--gs-bg-elevated);
-    color:            var(--gs-accent-300);
+    color:            var(--gs-text-primary);
     padding:          1px 5px;
     border-radius:    3px;
     font-family:      var(--gs-font-mono);
@@ -207,13 +227,13 @@ code {
 
 .gs-home-title {
     font-weight: 300;
-    color:       #fff;
+    color:       rgb(var(--gs-hero-text-rgb));
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
     letter-spacing: 0.02em;
 }
 
 .gs-home-title span {
-    color:       var(--gs-accent-500);
+    color:       var(--gs-brand-green);
     font-weight: 700;
 }
 
@@ -234,12 +254,18 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-carousel {
         min-height:    300px;
-        color:         #fff;
+        color:         rgb(var(--gs-hero-text-rgb));
         background:    rgba(0,0,0,0.35);
     }
 
+    /* MudSwipeArea registers server-side pointermove handlers; without this every mouse move
+       over the carousel is a SignalR round-trip and render. */
+    .gs-carousel .mud-carousel-swipe {
+        pointer-events: none;
+    }
+
     .gs-carousel-empty {
-        color:       rgba(255,255,255,0.75);
+        color:       rgba(var(--gs-hero-text-rgb),0.75);
         text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     }
 
@@ -261,7 +287,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-slide-fallback {
         display: none;
-        color:   rgba(255,255,255,0.7);
+        color:   rgba(var(--gs-hero-text-rgb),0.7);
     }
 
     .gs-slide-missing .gs-slide-img      { display: none; }
@@ -269,7 +295,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-slide-caption {
         flex:        0 0 auto;
-        color:       rgba(255,255,255,0.92);
+        color:       rgba(var(--gs-hero-text-rgb),0.92);
         white-space: nowrap;
         overflow:    hidden;
         text-overflow: ellipsis;
@@ -291,7 +317,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     }
 
     .gs-tile-empty {
-        color: rgba(255,255,255,0.75);
+        color: rgba(var(--gs-hero-text-rgb),0.75);
     }
 
     .mud-card.gs-tile {
@@ -301,15 +327,15 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         flex:           0 0 auto;
         width:          9.375rem;
         height:         7.5rem;
-        border:         3px solid var(--gs-accent-500);
+        border:         3px solid var(--gs-brand-green);
         border-radius:  8px;
         background:     rgba(0,0,0,0.55);
-        color:          #fff;
+        color:          rgb(var(--gs-hero-text-rgb));
         transition:     background 0.2s;
     }
 
     .mud-card.gs-tile:hover {
-        background: rgba(76,175,80,0.25);
+        background: rgba(var(--gs-brand-green-rgb),0.25);
     }
 
     .mud-card.gs-tile-disabled {
@@ -361,9 +387,9 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-home-footer-text {
         font-family:    'Swamp Witch', cursive;
-        color:          var(--gs-accent-500);
+        color:          var(--gs-brand-green);
         letter-spacing: 0.06em;
-        text-shadow:    0 0 18px rgba(76,175,80,0.5), 0 2px 6px rgba(0,0,0,0.8);
+        text-shadow:    0 0 18px rgba(var(--gs-brand-green-rgb),0.5), 0 2px 6px rgba(0,0,0,0.8);
     }
 
 /* -------------------------------------------------------------- */
@@ -388,7 +414,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     touch-action: none;
 }
 
-/* MudButton root inside the grid */
+/* MudButton root inside the grid (Variant.Outlined): border, hover and focus come from MudBlazor */
 .hc-grid > .mud-button-root.hc-btn {
     width: 100%;
     height: 100%;
@@ -400,31 +426,17 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--mud-palette-primary);
     border-radius: 8px;
-    background: var(--mud-palette-surface);
-    transition: background-color 0.15s ease, box-shadow 0.15s ease; /* avoid scale overlap */
-    outline: none;
 }
 
-        /* Optional: keep visual feedback without growth overlap */
-        .hc-grid > .mud-button-root.hc-btn:hover {
-            background: var(--mud-palette-action-default-hover);
-            box-shadow: 0 0 0 1px var(--mud-palette-primary) inset;
-        }
-
-        .hc-grid > .mud-button-root.hc-btn:active {
-            background: var(--mud-palette-action-default);
-        }
-
-        .hc-grid > .mud-button-root.hc-btn.hc-stop {
-            border-color: var(--mud-palette-error);
-        }
-
+        /* Active one-click direction: filled control colour */
         .hc-grid > .mud-button-root.hc-btn.hc-active {
             background: var(--mud-palette-primary);
             color: var(--mud-palette-primary-text);
-            border-color: var(--mud-palette-primary-darken);
+        }
+
+        .hc-grid > .mud-button-root.hc-btn.hc-active:hover {
+            background: var(--mud-palette-primary-darken);
         }
 
         .hc-speed-column {
@@ -491,8 +503,6 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
     min-width: 3.125rem;
     min-height: 3.125rem;
     border-radius: 8px;
-    border-width: 2px;
-    border-style: solid;
 }
 
 .gs-goto-overlay-host {
@@ -521,8 +531,8 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 /* Toolbar shell */
 .apexcharts-theme-dark .apexcharts-toolbar,
 .apexcharts-toolbar {
-    background: #1b1f24 !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    background: var(--mud-palette-surface) !important;
+    border: 1px solid var(--mud-palette-divider) !important;
     border-radius: 10px !important;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .42) !important;
     backdrop-filter: blur(8px) !important;
@@ -550,7 +560,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 .apexcharts-zoom-icon,
 .apexcharts-zoomin-icon,
 .apexcharts-zoomout-icon {
-    color: #e8edf3 !important;
+    color: var(--mud-palette-text-primary) !important;
     border-radius: 7px !important;
 }
 
@@ -564,15 +574,15 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 .apexcharts-zoomin-icon:hover,
 .apexcharts-zoomout-icon:hover {
     color: var(--gs-text-primary) !important;
-    background: rgba(var(--gs-accent-500-rgb), .14) !important;
+    background: rgba(var(--mud-palette-primary-rgb), .14) !important;
 }
 
 /* Selected tool state */
 .apexcharts-canvas .apexcharts-selection-icon.apexcharts-selected,
 .apexcharts-canvas .apexcharts-zoom-icon.apexcharts-selected,
 .apexcharts-canvas .apexcharts-pan-icon.apexcharts-selected {
-    color: var(--gs-accent-300) !important;
-    background: rgba(var(--gs-accent-500-rgb), .22) !important;
+    color: var(--mud-palette-primary-text) !important;
+    background: var(--mud-palette-primary) !important;
 }
 
 /* Export dropdown shell */
@@ -597,7 +607,7 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
 .apexcharts-theme-dark .apexcharts-menu-item:hover,
 .apexcharts-menu-item:hover {
-    background: rgba(var(--gs-accent-500-rgb), .16) !important;
+    background: rgba(var(--mud-palette-primary-rgb), .16) !important;
 }
 
 /* Focus visibility */
@@ -607,6 +617,38 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 .apexcharts-pan-icon:focus-visible,
 .apexcharts-selection-icon:focus-visible,
 .apexcharts-reset-icon:focus-visible {
-    outline: 2px solid var(--gs-accent-500) !important;
+    outline: 2px solid var(--mud-palette-text-primary) !important;
     outline-offset: 1px !important;
+}
+
+/* --- Single-hue theme (Night Red) -------------------------------------------
+   Colours come from the generated per-theme rules (GsThemeCss) and the MudBlazor palette.
+   Everything is outlined, except Stop, which is a solid fill so it stays the one unmistakable control. */
+html[data-gs-theme="night-red"] .gs-home-hero {
+    /* Photo reduced to the theme hue by luminosity-blending it onto a flat colour, then darkened for text contrast */
+    background-color: rgb(var(--gs-brand-green-rgb));
+    background-blend-mode: normal, luminosity;
+    background-image:
+        linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.60) 50%, rgba(0,0,0,0.85) 100%),
+        url('/images/GreenSwamp1.webp');
+}
+
+html[data-gs-theme="night-red"] .gs-slide-img {
+    filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(6) brightness(0.7);
+}
+
+html[data-gs-theme="night-red"] .gs-stop:not(:disabled):not(.mud-disabled),
+html[data-gs-theme="night-red"] .hc-stop:not(:disabled) {
+    background-color: var(--mud-palette-error) !important;
+    color:            var(--mud-palette-error-text) !important;
+}
+
+html[data-gs-theme="night-red"] .gs-stop:not(:disabled):not(.mud-disabled):hover,
+html[data-gs-theme="night-red"] .hc-stop:not(:disabled):hover {
+    background-color: var(--mud-palette-error-darken) !important;
+}
+
+html[data-gs-theme="night-red"] .gs-stop .mud-icon-root,
+html[data-gs-theme="night-red"] .hc-stop .mud-icon-root {
+    color: var(--mud-palette-error-text) !important;
 }

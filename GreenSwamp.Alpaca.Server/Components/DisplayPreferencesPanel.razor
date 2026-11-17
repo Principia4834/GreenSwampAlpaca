@@ -1,0 +1,213 @@
+﻿@using Microsoft.AspNetCore.WebUtilities
+@using GreenSwamp.Alpaca.Server.Configuration
+@using System.Globalization
+@using GreenSwamp.Alpaca.Server.Theme
+@inject SupportedCultureSettings SupportedCultures
+@inject BrowserCultureService BrowserCultureService
+@inject NavigationManager NavigationManager
+@inject IThemeService ThemeService
+@inject IVersionedSettingsService SettingsService
+@implements IDisposable
+
+<MudStack Spacing="3">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Theme_Tip"]" Placement="Placement.Right" Arrow="true">
+        <MudSelect T="string"
+                   Value="ThemeService.Current.Id"
+                   ValueChanged="OnThemeChanged"
+                   Label="@Loc["Ui_Theme"]"
+                   ToStringFunc="@(id => Loc[GsThemeCatalog.Resolve(id).NameKey].Value)"
+                   HelperText="@Loc["Ui_Theme_BrowserOnly"].Value"
+                   Error="@_themeNotSaved"
+                   ErrorText="@Loc["Ui_Theme_NotSaved"].Value">
+            @foreach (var theme in GsThemeCatalog.All)
+            {
+                var palette = ThemePalette(theme);
+                <MudSelectItem T="string" Value="@theme.Id">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <span style="display:inline-flex; gap:0.125rem; padding:0.125rem; border:1px solid var(--mud-palette-lines-inputs); border-radius:0.25rem;">
+                            <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Surface);"></span>
+                            <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Primary);"></span>
+                            <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Tertiary);"></span>
+                        </span>
+                        <span>@Loc[theme.NameKey]</span>
+                    </MudStack>
+                </MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+
+    @if (ThemeService.Current.Dimming is { } dimming)
+    {
+        <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_NightLevel_Tip"]" Placement="Placement.Right" Arrow="true">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.caption">@Loc["Ui_NightLevel"]</MudText>
+                <MudSlider T="int"
+                           Value="ThemeService.NightLevel"
+                           ValueChanged="OnNightLevelChanged"
+                           Min="dimming.Min"
+                           Max="dimming.Max"
+                           Step="dimming.Step"
+                           ValueLabel="true"
+                           Color="Color.Primary" />
+            </MudStack>
+        </MudTooltip>
+    }
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Zoom_BrowserTip"]" Placement="Placement.Right" Arrow="true">
+        <MudSelect T="int"
+                   Value="BrowserZoomValue"
+                   ValueChanged="OnZoomChanged"
+                   Label="@Loc["Ui_Zoom"]"
+                   ToStringFunc="@(percent => percent == ServerDefaultZoom ? Loc["Ui_Zoom_ServerDefault", ServerZoomPercent].Value : $"{percent}%")"
+                   HelperText="@Loc["Ui_Theme_BrowserOnly"].Value"
+                   Error="@_zoomNotSaved"
+                   ErrorText="@Loc["Ui_Theme_NotSaved"].Value">
+            <MudSelectItem T="int" Value="@ServerDefaultZoom">@Loc["Ui_Zoom_ServerDefault", ServerZoomPercent]</MudSelectItem>
+            @foreach (var zoom in GsZoom.ZoomPercentOptions)
+            {
+                <MudSelectItem T="int" Value="@zoom">@($"{zoom}%")</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_DisplayLanguage_Tip"]" Placement="Placement.Right" Arrow="true">
+        <MudSelect T="string"
+                   Value="_displayLanguage"
+                   ValueChanged="OnDisplayLanguageChanged"
+                   Disabled="@(!_culturePreferenceLoaded)"
+                   Label="@Loc["Ui_DisplayLanguage"]">
+            @foreach (var language in SupportedCultures.SupportedLanguages)
+            {
+                <MudSelectItem T="string" Value="@language">@LanguageLabel(language)</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_RegionalFormat_Tip"]" Placement="Placement.Right" Arrow="true">
+        <MudSelect T="string"
+                   Value="_regionalFormat"
+                   ValueChanged="OnRegionalFormatChanged"
+                   Disabled="@(!_culturePreferenceLoaded)"
+                   Label="@Loc["Ui_RegionalFormat"]">
+            @foreach (var culture in SupportedCultures.SupportedRegionalFormats)
+            {
+                <MudSelectItem T="string" Value="@culture">@CultureLabel(culture)</MudSelectItem>
+            }
+        </MudSelect>
+    </MudTooltip>
+</MudStack>
+
+@code {
+    // Zero stands for "no browser zoom stored", so the select can carry a server-default item.
+    private const int ServerDefaultZoom = 0;
+
+    private bool _themeNotSaved;
+    private bool _zoomNotSaved;
+    private string _displayLanguage = string.Empty;
+    private string _regionalFormat = string.Empty;
+    private bool _culturePreferenceLoaded;
+
+    private int BrowserZoomValue => ThemeService.ZoomPercent ?? ServerDefaultZoom;
+
+    private int ServerZoomPercent =>
+        GsZoom.NormalizePercent((int)Math.Round(SettingsService.GetServerConfig().GlobalFontScale * 100.0));
+
+    private static string CultureLabel(string cultureName)
+    {
+        var culture = CultureInfo.GetCultureInfo(cultureName);
+        return $"{culture.NativeName} ({culture.Name})";
+    }
+
+    private string LanguageLabel(string languageCode)
+    {
+        var culture = CultureInfo.GetCultureInfo(SupportedCultures.GetDisplayCulture(languageCode)!);
+        return $"{culture.NativeName} ({languageCode})";
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ThemeService.Changed += OnThemeServiceChanged;
+        ThemeService.DisplayChanged += OnThemeServiceChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var config = SettingsService.GetServerConfig();
+        var preference = await BrowserCultureService.GetCulturePreferenceAsync();
+        _displayLanguage = SupportedCultures.GetDisplayLanguageCode(preference?.DisplayLanguage)
+            ?? config.DefaultDisplayLanguage;
+        _regionalFormat = preference is not null &&
+                          SupportedCultures.IsSupportedRegionalFormat(preference.RegionalFormat)
+            ? preference.RegionalFormat
+            : config.DefaultRegionalFormat;
+        _culturePreferenceLoaded = true;
+        StateHasChanged();
+    }
+
+    // Theme, brightness and zoom are per browser and applied immediately.
+    private async Task OnThemeChanged(string themeId)
+    {
+        _themeNotSaved = !await ThemeService.SetThemeAsync(themeId);
+    }
+
+    private async Task OnNightLevelChanged(int level)
+    {
+        await ThemeService.SetNightLevelAsync(level);
+    }
+
+    private async Task OnZoomChanged(int percent)
+    {
+        _zoomNotSaved = !await ThemeService.SetZoomPercentAsync(percent == ServerDefaultZoom ? null : percent);
+    }
+
+    private Task OnDisplayLanguageChanged(string value)
+    {
+        _displayLanguage = value;
+        NavigateToCultureCookie();
+        return Task.CompletedTask;
+    }
+
+    private Task OnRegionalFormatChanged(string value)
+    {
+        _regionalFormat = value;
+        NavigateToCultureCookie();
+        return Task.CompletedTask;
+    }
+
+    private void NavigateToCultureCookie()
+    {
+        var endpoint = NavigationManager.ToAbsoluteUri("culture/set").ToString();
+        var returnUrl = new Uri(NavigationManager.Uri).PathAndQuery;
+        var target = QueryHelpers.AddQueryString(endpoint, new Dictionary<string, string?>
+        {
+            ["displayLanguage"] = _displayLanguage,
+            ["regionalFormat"] = _regionalFormat,
+            ["returnUrl"] = returnUrl
+        });
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
+    }
+
+    private void OnThemeServiceChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private static Palette ThemePalette(GsThemeDefinition theme)
+    {
+        var mudTheme = GsTheme.Get(theme);
+        return theme.IsDark ? mudTheme.PaletteDark : mudTheme.PaletteLight;
+    }
+
+    private static string Hex(MudBlazor.Utilities.MudColor colour) =>
+        colour.ToString(MudBlazor.Utilities.MudColorOutputFormats.Hex);
+
+    public void Dispose()
+    {
+        ThemeService.Changed -= OnThemeServiceChanged;
+        ThemeService.DisplayChanged -= OnThemeServiceChanged;
+    }
+}
