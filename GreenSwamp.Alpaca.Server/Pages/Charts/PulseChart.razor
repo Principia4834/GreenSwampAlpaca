@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 
 @inject IVersionedSettingsService SettingsService
+@inject IThemeService ThemeService
 @inject ChartLoggingService Logger
 @inject TelescopeStateService StateService
 @inject IJSRuntime JS
@@ -99,7 +100,7 @@
         <ErrorBoundary>
             <ChildContent>
                 <ApexChart TItem="PulsePointDto"
-                            @key="@_chartKey"
+                            @key="@ChartRenderKey"
                             Options="@_chartOptions"
                             @ref="_chart"
                             Height="@("100%")"

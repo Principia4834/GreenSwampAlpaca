@@ -211,8 +211,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             {
                 Chart = new Chart
                 {
-                    Background = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartBackground,
-                    ForeColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartText,
+                    Background = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartBackground(ThemeService.Current),
+                    ForeColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartText(ThemeService.Current),
                     Animations = new Animations { Enabled = false },
                     Toolbar = new Toolbar
                     {
@@ -230,7 +230,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     },
                     Zoom = new Zoom { Enabled = true }
                 },
-                Theme = new ApexCharts.Theme { Mode = Mode.Dark },
+                Theme = new ApexCharts.Theme { Mode = ThemeService.Current.IsDark ? Mode.Dark : Mode.Light },
                 Xaxis = new XAxis
                 {
                     Type = XAxisType.Datetime,
@@ -240,7 +240,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         Show = true,
                         HideOverlappingLabels = false,
                         Format = "HH:mm:ss",
-                        Style = new AxisLabelStyle { Colors = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartText }
+                        Style = new AxisLabelStyle { Colors = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartText(ThemeService.Current) }
                     }
                 },
                 Yaxis =
@@ -261,7 +261,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 0, 1, 0] },
                 Markers = new Markers { Size = [0, 4, 0, 4] },
                 Legend = new Legend { Show = true },
-                Grid = new Grid { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid }
+                Grid = new Grid { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid(ThemeService.Current) }
             };
         }
 

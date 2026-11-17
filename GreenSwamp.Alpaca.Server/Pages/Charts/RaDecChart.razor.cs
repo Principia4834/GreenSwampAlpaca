@@ -72,6 +72,16 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         // (mode / scale / window). Matches the @key pattern used by PulseChart.
         private string _chartKey = "radec-init";
 
+        // The theme id is part of the key so the chart is recreated with the new chrome colours.
+        private string ChartRenderKey => $"{_chartKey}|{ThemeService.Current.Id}";
+
+        private void OnThemeChanged() => _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            BuildChartOptions(ChartId);
+            StateHasChanged();
+        });
+
         private ApexChart<RaDecChartData>? _chart;
         private ApexChartOptions<RaDecChartData> _chartOptions = new();
         private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
@@ -285,6 +295,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 },
 
                 Tooltip = new Tooltip { Enabled = false },
+                Grid = new Grid { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid(ThemeService.Current) },
                 Xaxis = new XAxis
                 {
                     Type = XAxisType.Datetime,
@@ -399,6 +410,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         public async ValueTask DisposeAsync()
         {
             _disposed = true;
+            ThemeService.Changed -= OnThemeChanged;
 
             if (!_disposeCts.IsCancellationRequested) _disposeCts.Cancel();
 

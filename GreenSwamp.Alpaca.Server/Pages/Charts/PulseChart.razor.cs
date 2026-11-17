@@ -77,6 +77,16 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
         private ApexChart<PulsePointDto>? _chart;
         private ApexChartOptions<PulsePointDto> _chartOptions = new();
         private string _chartKey = "pulse-init";
+
+        // The theme id is part of the key so the chart is recreated with the new chrome colours.
+        private string ChartRenderKey => $"{_chartKey}|{ThemeService.Current.Id}";
+
+        private void OnThemeChanged() => _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            BuildChartOptions();
+            StateHasChanged();
+        });
         private string _chartId  = "pulse";
         private const string MudDefaultAxisLabelColor = "var(--mud-palette-text-primary)";
 
@@ -332,7 +342,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     }
                 ],
                 Legend  = new Legend  { Show = true },
-                Grid    = new Grid    { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid },
+                Grid    = new Grid    { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid(ThemeService.Current) },
                 Tooltip = new Tooltip { Enabled = false }
             };
         }

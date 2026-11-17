@@ -152,6 +152,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             ChartId = string.IsNullOrEmpty(Label) ? "Position" : MyRegex().Replace(Label, string.Empty);
             ChartId += $"_{DeviceNumber.ToString()}_{DateTime.Now.ToString("yyyy-MM-dd")}";
             BuildChartOptions(ChartId);
+            ThemeService.Changed += OnThemeChanged;
             _raDecChartDataSubList = new SubList<RaDecChartData>(_raDecChartData, 0);
 
             return Task.CompletedTask;
