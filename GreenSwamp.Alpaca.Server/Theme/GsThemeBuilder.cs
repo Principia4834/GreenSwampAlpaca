@@ -32,10 +32,10 @@ public sealed record GsSurfaces(
 
     public static readonly GsSurfaces Light = new(
         IsDark: false,
-        Background: "#f5f5f5",
-        Surface: "#ffffff",
+        Background: "#f3f3f3",
+        Surface: "#fafafa",
         BackgroundGray: "#eeeeee",
-        Appbar: "#ffffff",
+        Appbar: "#eeeeee",
         TextRgb: "0,0,0",
         TextPrimary: "rgba(0,0,0,0.87)",
         TextSecondary: "rgba(0,0,0,0.60)",
