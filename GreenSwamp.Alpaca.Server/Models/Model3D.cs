@@ -136,6 +136,39 @@ namespace GreenSwamp.Alpaca.Server.Models
         public static string GetModelUrl(Model3DType modelType, AlignmentMode mode, PolarMode polarMode)
             => ModelFolder + GetModelFile(modelType, mode, polarMode);
 
+        /// <summary>Whether the selected assembly is supported for this alignment mode.</summary>
+        public static bool ShowsAssembly(AlignmentMode mode, AssemblyMount mount) => mode switch
+        {
+            AlignmentMode.AltAz => mount is AssemblyMount.Am5 or AssemblyMount.Wave150iPro or AssemblyMount.Fork,
+            AlignmentMode.Polar => mount is AssemblyMount.Fork,
+            _ => mount is not AssemblyMount.Fork
+        };
+
+        /// <summary>The static OTA model used when an assembly is disabled or unsupported in this mode.</summary>
+        public static Model3DType GetUsualModel(AssemblyOta ota) => ota switch
+        {
+            AssemblyOta.MaksutovCassegrain => Model3DType.SchmidtCassegrain,
+            AssemblyOta.Newtonian => Model3DType.Reflector,
+            AssemblyOta.Refractor => Model3DType.Refractor,
+            AssemblyOta.Reflector => Model3DType.Reflector,
+            AssemblyOta.SchmidtCassegrain => Model3DType.SchmidtCassegrain,
+            AssemblyOta.RitcheyChretien => Model3DType.RitcheyChretien,
+            AssemblyOta.RitcheyChretienTruss => Model3DType.RitcheyChretienTruss,
+            _ => Model3DType.Refractor
+        };
+
+        /// <summary>
+        /// The OBJ tube asset used by an assembled OTA, or the model folder for a built OTA which needs no OBJ.
+        /// </summary>
+        public static string GetAssemblyOtaUrl(AssemblyOta ota) => ota switch
+        {
+            AssemblyOta.Refractor or AssemblyOta.Reflector or AssemblyOta.SchmidtCassegrain
+                or AssemblyOta.RitcheyChretien or AssemblyOta.RitcheyChretienTruss
+                => ModelFolder + $"{ota}.obj",
+            AssemblyOta.Newtonian or AssemblyOta.MaksutovCassegrain => ModelFolder,
+            _ => throw new ArgumentOutOfRangeException(nameof(ota), ota, "Unsupported assembly OTA.")
+        };
+
         /// <summary>
         /// GSServer's AxisModelOffsets default for each alignment mode (X = Dec axis, Y = RA axis, Z = tilt).
         /// German polar and Polar {90, -90, 0}; Alt-Az {0, 90, 0}.

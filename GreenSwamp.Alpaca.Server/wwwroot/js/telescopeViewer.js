@@ -16,6 +16,8 @@
 //
 // Camera angles are in degrees (alpha, beta). Babylon is loaded by window.ensureBabylonLoaded().
 
+import { applyAssemblyPose, disposeAssembly, loadAssembly } from './telescopeAssembly.js';
+
 const assetBase = new URL('../model3d/', import.meta.url).href;
 
 // GSServer defaults (Server.settings): ModelPierHeight, ModelBeamWidth, ModelPierPivot.
@@ -367,7 +369,7 @@ class TelescopeViewer {
 
     getModelCenter() {
         if (!this.modelMeshes.length) return null;
-        const bounds = this.modelNode.getHierarchyBoundingVectors(true);
+        const bounds = (this.assembly?.holder || this.modelNode).getHierarchyBoundingVectors(true);
         return bounds.min.add(bounds.max).scale(0.5);
     }
 
@@ -625,6 +627,10 @@ class TelescopeViewer {
 
         this.setHemisphere(mount?.northCompass !== false);
 
+        if (mount?.assembly) return loadAssembly(this, url, mount, load);
+        if (mount?.assemblyUnavailable)
+            console.warn(`Telescope assembly is not available for alignment mode ${mode} and mount ${mount.assemblyMount}; showing the selected OTA model instead.`);
+
         // Materials are set below, so don't request a .mtl file (avoids a 404).
         if (B.OBJFileLoader) B.OBJFileLoader.SKIP_MATERIALS = true;
 
@@ -646,10 +652,12 @@ class TelescopeViewer {
             return 'Error: model has no meshes';
         }
 
-        // Replace the previous model, its materials and the pier.
-        this.modelMeshes.forEach(m => m.dispose());
+        // Replace the previous model or assembly, its materials and the pier.
+        const wasAssembly = !!this.assembly;
+        disposeAssembly(this);
+        if (!wasAssembly) this.modelMeshes.forEach(m => m.dispose());
         this.modelMeshes = [];
-        this.modelMaterials.forEach(m => m.dispose());
+        this.modelMaterials.forEach(m => m.dispose(false, true));
         this.buildPier(mode, latitude);
 
         // As GSServer: object 0 is the OTA, 1 the counterweights (German polar) or a second OTA,
@@ -734,6 +742,10 @@ class TelescopeViewer {
     applyPose() {
         const B = window.BABYLON;
         const { x, y, z, yCentre } = this.pose;
+        if (this.assembly) {
+            applyAssemblyPose(this);
+            return;
+        }
         const centre = new B.Vector3(0, yCentre, ROTATION_CENTRE_Z);
         const toCentre = B.Matrix.Translation(-centre.x, -centre.y, -centre.z);
         const back = B.Matrix.Translation(centre.x, centre.y, centre.z);
@@ -792,6 +804,8 @@ class TelescopeViewer {
     }
 
     dispose() {
+        this.loadCount++;
+        disposeAssembly(this);
         this.resizeObserver.disconnect();
         window.removeEventListener('resize', this.onWindowResize);
         for (const type of ['pointerdown', 'wheel', 'keydown'])

@@ -47,6 +47,7 @@ public partial class TelescopeView : IAsyncDisposable
     private bool _subscribedStateChanged;
     private bool _heartbeatStarted;
     private string? _loadedMountKey;
+    private string? _failedMountKey;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -172,6 +173,7 @@ public partial class TelescopeView : IAsyncDisposable
         _settingsStorageKey = settingsKey;
         _selectionStorageKey = selectionKey;
         _loadedMountKey = null;
+        _failedMountKey = null;
     }
 
     private async Task EnsureModelLoadedAsync(TelescopeStateModel s, double latitude)
@@ -179,16 +181,40 @@ public partial class TelescopeView : IAsyncDisposable
         if (_module is null) return;
 
         var mountKey = $"{s.AlignmentMode}|{s.MountType}|{s.PolarMode}|{Math.Round(latitude, 2)}|{_activeModelType}|{_settings?.UseAssembly}|{_settings?.AssemblySupport}|{_settings?.AssemblyMount}|{_settings?.AssemblyOta}|{_settings?.AssemblyOtaSize}";
-        if (mountKey == _loadedMountKey) return;
-        _loadedMountKey = mountKey;
+        if (mountKey == _loadedMountKey || mountKey == _failedMountKey) return;
 
-        var url = ResolveUrl(Nav.BaseUri.TrimEnd('/'), Model3D.GetModelUrl(_activeModelType, s.AlignmentMode, s.PolarMode));
-        await _module.InvokeAsync<string>("loadModel", url, new
+        var useAssembly = _settings?.UseAssembly == true;
+        var showAssembly = useAssembly && Model3D.ShowsAssembly(s.AlignmentMode, _settings!.AssemblyMount);
+        var modelType = useAssembly ? Model3D.GetUsualModel(_settings!.AssemblyOta) : _activeModelType;
+        var modelPath = showAssembly
+            ? Model3D.GetAssemblyOtaUrl(_settings!.AssemblyOta)
+            : Model3D.GetModelUrl(modelType, s.AlignmentMode, s.PolarMode);
+        var url = ResolveUrl(Nav.BaseUri.TrimEnd('/'), modelPath);
+        var loadResult = await _module.InvokeAsync<string>("loadModel", url, new
         {
             mode = (int)s.AlignmentMode,
             latitude,
-            northCompass = Model3D.UseNorthCompass(s.AlignmentMode, latitude)
+            northCompass = Model3D.UseNorthCompass(s.AlignmentMode, latitude),
+            assemblyUnavailable = useAssembly && !showAssembly,
+            assemblyMount = _settings?.AssemblyMount.ToString(),
+            assembly = showAssembly ? new
+            {
+                support = _settings!.AssemblySupport.ToString().ToLowerInvariant(),
+                mount = _settings.AssemblyMount.ToString().ToLowerInvariant(),
+                ota = _settings.AssemblyOta.ToString(),
+                otaSize = _settings.AssemblyOtaSize
+            } : null
         });
+        if (loadResult == "Superseded") return;
+        if (loadResult?.StartsWith("Error:", StringComparison.Ordinal) == true)
+        {
+            _failedMountKey = mountKey;
+            await JS.InvokeVoidAsync("console.error", $"Telescope viewer model load failed: {loadResult}");
+            return;
+        }
+
+        _loadedMountKey = mountKey;
+        _failedMountKey = null;
     }
 
     private async Task RunViewHeartbeatAsync()
@@ -266,6 +292,7 @@ public partial class TelescopeView : IAsyncDisposable
         _implicitModelTypeContextKey = selectionKey;
         _implicitModelType = updatedSettings.ModelType;
         _loadedMountKey = null;
+        _failedMountKey = null;
 
         await _module.InvokeVoidAsync("dispose");
         await PushStateAsync();
