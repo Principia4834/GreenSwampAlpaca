@@ -3117,6 +3117,9 @@
   <data name="TView_DecAdjustment" xml:space="preserve"><value>Dek-Achsenkorrektur (Grad)</value></data>
   <data name="TView_SaveSettings" xml:space="preserve"><value>Einstellungen speichern</value></data>
   <data name="TView_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="TView_CenterOnMount" xml:space="preserve"><value>Auf Montierung zentrieren</value></data>
+  <data name="TView_ResetCamera" xml:space="preserve"><value>Kamera zurücksetzen</value></data>
+  <data name="TView_FaceNorth" xml:space="preserve"><value>Nach Norden ausrichten</value></data>
   <data name="TView_Choice_Default" xml:space="preserve"><value>Standard</value></data>
   <data name="TView_Choice_Reflector" xml:space="preserve"><value>Reflektor</value></data>
   <data name="TView_Choice_Refractor" xml:space="preserve"><value>Refraktor</value></data>

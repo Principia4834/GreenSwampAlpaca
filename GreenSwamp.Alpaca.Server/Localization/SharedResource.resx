@@ -3159,6 +3159,15 @@
   <data name="TView_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="TView_CenterOnMount" xml:space="preserve">
+    <value>Center on mount</value>
+  </data>
+  <data name="TView_ResetCamera" xml:space="preserve">
+    <value>Reset camera</value>
+  </data>
+  <data name="TView_FaceNorth" xml:space="preserve">
+    <value>Face north</value>
+  </data>
   <data name="TView_Choice_Default" xml:space="preserve">
     <value>Default</value>
   </data>

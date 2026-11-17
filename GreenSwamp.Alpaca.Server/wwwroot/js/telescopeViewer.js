@@ -30,22 +30,46 @@ const GRID_SIZE = 160;          // width of the ground plane
 const GRID_CELL = 1;            // minor grid spacing
 const GRID_MAJOR_EVERY = 5;     // a major line every 5 cells
 const GRID_Y = -1.01;           // just under the compass base (its underside is at -1)
+const CAMERA_MIN_Y = GRID_Y + 1;
+
+const BACKGROUND_FILES = {
+    NorthAmerica: 'backgrounds/NorthAmerica.jpg',
+    Heart: 'backgrounds/Heart.jpg',
+    Rosette: 'backgrounds/Rosette.jpg',
+    M51: 'backgrounds/M51.jpg',
+    M33: 'backgrounds/M33.jpg'
+};
+const CARDINALS = [
+    { letter: 'N', bearing: 0, color: '#ef6461' },
+    { letter: 'E', bearing: 90, color: '#e8e6df' },
+    { letter: 'S', bearing: 180, color: '#e8e6df' },
+    { letter: 'W', bearing: 270, color: '#e8e6df' }
+];
+const CARDINAL_DISTANCE = 50;
+const CARDINAL_SIZE = 14;
+const CARDINAL_SIZES = { small: 8, medium: 11, large: 14, xlarge: 20 };
+const CARDINAL_SIZE_NAMES = ['small', 'medium', 'large', 'xlarge'];
+const FACE_NORTH_MS = 700;
+const MAX_PIXEL_RATIO = 2;
 
 // ASCOM AlignmentModes
 const ALT_AZ = 0, POLAR = 1, GERMAN_POLAR = 2;
 
 const rad = deg => deg * Math.PI / 180;
 const deg = r => r * 180 / Math.PI;
+const bearingOf = (x, z, northern) => {
+    const bearing = northern ? deg(Math.atan2(-x, z)) : deg(Math.atan2(x, -z));
+    return ((bearing % 360) + 360) % 360;
+};
+const directionOf = (bearing, northern) => {
+    const sin = Math.sin(rad(bearing)), cos = Math.cos(rad(bearing));
+    return northern ? { x: -sin, z: cos } : { x: sin, z: -cos };
+};
 
 // Default camera: looking at the mount head from the south-west, a little above.
 const DEFAULT_CAMERA = { alpha: 150, beta: 60, radius: 40, target: { x: 0, y: 6, z: 0 } };
 const DEFAULT_BACKGROUND = 'NorthAmerica';
 const DEFAULT_BACKGROUND_COLOR = '#070b0e';
-
-function getBackgroundColor(background) {
-    if (typeof background === 'string' && /^#[0-9a-f]{6}$/i.test(background)) return `${background}ff`;
-    return `${DEFAULT_BACKGROUND_COLOR}ff`;
-}
 
 // Match the mount's pace without letting the rendered model lag too far behind.
 const MAX_GLIDE_MS = 1000;
@@ -55,6 +79,52 @@ const MIN_GLIDE_DEGREES = 0.1;
 /** The signed change from angle a to angle b the short way round, in degrees (-180 to 180). */
 const angleDelta = (a, b) => ((((b - a) % 360) + 540) % 360) - 180;
 
+function buildStarTexture(scene) {
+    const B = window.BABYLON;
+    const width = Math.min(2048, scene.getEngine().getCaps().maxTextureSize || 2048);
+    const height = width / 2;
+    const texture = new B.DynamicTexture('StarField', { width, height }, scene, false, B.Texture.BILINEAR_SAMPLINGMODE);
+    const ctx = texture.getContext();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, width, height / 2);
+    ctx.fillStyle = '#0b1114';
+    ctx.fillRect(0, height / 2, width, height / 2);
+    const haze = ctx.createLinearGradient(0, height * 0.46, 0, height / 2);
+    haze.addColorStop(0, 'rgba(34, 58, 66, 0)');
+    haze.addColorStop(1, 'rgba(34, 58, 66, 0.85)');
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, height * 0.46, width, height * 0.04);
+
+    let seed = 0x50494e54;
+    const random = () => {
+        seed += 0x6d2b79f5;
+        let value = seed;
+        value = Math.imul(value ^ value >>> 15, value | 1);
+        value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+        return ((value ^ value >>> 14) >>> 0) / 4294967296;
+    };
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, width, height / 2);
+    ctx.clip();
+    for (let i = 0; i < 1800; i++) {
+        const x = random() * width;
+        const elevation = Math.asin(random());
+        const y = (0.5 - elevation / Math.PI) * height;
+        const brightness = 85 + Math.pow(random(), 3) * 170;
+        const radius = 0.5 + random() * 1.4;
+        const warm = Math.round((random() - 0.5) * 30);
+        ctx.fillStyle = `rgb(${Math.min(255, brightness + warm)},${brightness},${Math.max(0, brightness - warm)})`;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+    texture.update();
+    texture.coordinatesMode = B.Texture.FIXED_EQUIRECTANGULAR_MODE;
+    return texture;
+}
+
 class TelescopeViewer {
     constructor(canvas, options) {
         const B = window.BABYLON;
@@ -63,12 +133,28 @@ class TelescopeViewer {
         this.primaryColor = options.primaryColor || '#52b788';
         this.background = options.background || DEFAULT_BACKGROUND;
         this.gridVisible = true;
+        this.showCardinals = options.showCardinals === true;
+        this.showHeading = options.showHeading === true;
+        this.useAssembly = options.useAssembly === true;
+        this.assemblySupport = Number.isInteger(options.assemblySupport) ? options.assemblySupport : 1;
+        this.assemblyMount = Number.isInteger(options.assemblyMount) ? options.assemblyMount : 0;
+        this.assemblyOta = Number.isInteger(options.assemblyOta) ? options.assemblyOta : 0;
+        this.assemblyOtaSize = Number.isInteger(options.assemblyOtaSize) ? options.assemblyOtaSize : 100;
+        this.raAdjustmentDegrees = Number.isInteger(options.raAdjustmentDegrees) ? options.raAdjustmentDegrees : 0;
+        this.decAdjustmentDegrees = Number.isInteger(options.decAdjustmentDegrees) ? options.decAdjustmentDegrees : 0;
         this.secondaryColor = options.secondaryColor || '#e8e6df';
         this.compassRequest = 0; // so a compass image that loads late can't replace a newer one
+        this.backgroundRequest = 0;
         this.modelMeshes = [];
         this.modelMaterials = [];
         this.pierMeshes = [];
+        this.otaMaterial = null;
         this.loadCount = 0;      // so an older loadModel that finishes late is dropped
+        this.northern = undefined;
+        this.reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        this.turn = null;
+        this.headingElement = null;
+        this.shownHeading = null;
 
         // The current displayed pose and any glide towards the latest mount position.
         this.pose = { x: 0, y: 0, z: 0, yCentre: 0 };
@@ -80,11 +166,26 @@ class TelescopeViewer {
         this.engine.runRenderLoop(() => this.renderFrame());
 
         // The canvas fills a flex panel, so follow its size rather than the window.
-        this.resizeObserver = new ResizeObserver(() => this.engine.resize());
+        this.onWindowResize = () => this.resize();
+        this.resizeObserver = new ResizeObserver(this.onWindowResize);
         this.resizeObserver.observe(canvas);
+        window.addEventListener('resize', this.onWindowResize);
+        this.resize();
+
+        this.onCameraInput = () => { this.turn = null; };
+        for (const type of ['pointerdown', 'wheel', 'keydown'])
+            canvas.addEventListener(type, this.onCameraInput, { passive: true });
 
         this.setGrid(options.grid !== false);
+        this.setCardinalSize(options.cardinalSize);
+        this.setCardinals(this.showCardinals);
+        this.setBackground(this.background);
         this.setCamera(options.camera);
+    }
+
+    resize() {
+        this.engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
+        this.engine.resize();
     }
 
     /** Applies a saved camera ({ alpha, beta (degrees), radius, target: { x, y, z } }), or the default. */
@@ -97,6 +198,7 @@ class TelescopeViewer {
         this.camera.alpha = rad(v.alpha);
         this.camera.beta = rad(v.beta);
         this.camera.radius = v.radius;
+        this.keepCameraAboveGround();
     }
 
     getCamera() {
@@ -110,11 +212,196 @@ class TelescopeViewer {
         };
     }
 
+    setModelColor(hex) {
+        this.primaryColor = hex;
+        if (this.otaMaterial) this.otaMaterial.diffuseColor = window.BABYLON.Color3.FromHexString(hex);
+    }
+
+    setBackground(background) {
+        const B = window.BABYLON;
+        const request = ++this.backgroundRequest;
+        this.background = background;
+
+        const swap = texture => {
+            const material = this.skybox.material;
+            const old = material.reflectionTexture;
+            material.reflectionTexture = texture;
+            this.skybox.setEnabled(!!texture);
+            if (old && old !== texture) old.dispose();
+        };
+
+        if (background === 'Stars') {
+            const texture = buildStarTexture(this.scene);
+            swap(texture);
+            return;
+        }
+
+        const file = BACKGROUND_FILES[background];
+        if (!file) {
+            swap(null);
+            return;
+        }
+
+        const url = new URL(file, assetBase).href;
+        const texture = new B.Texture(url, this.scene, true, true, B.Texture.TRILINEAR_SAMPLINGMODE,
+            () => {
+                if (request !== this.backgroundRequest || this.scene.isDisposed) {
+                    texture.dispose();
+                    return;
+                }
+                swap(texture);
+            },
+            message => {
+                if (request === this.backgroundRequest) console.error(`Telescope background failed to load: ${url}`, message);
+                texture.dispose();
+            });
+        texture.coordinatesMode = B.Texture.FIXED_EQUIRECTANGULAR_MODE;
+        texture.level = 0.55;
+    }
+
+    createCardinals(scene) {
+        const B = window.BABYLON;
+        return CARDINALS.map(cardinal => {
+            const pixels = 256;
+            const texture = new B.DynamicTexture(`Cardinal${cardinal.letter}`, { width: pixels, height: pixels }, scene, true);
+            const context = texture.getContext();
+            context.clearRect(0, 0, pixels, pixels);
+            context.font = `600 ${Math.round(pixels * 0.8)}px Barlow, "Segoe UI", system-ui, sans-serif`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.lineWidth = pixels * 0.06;
+            context.strokeStyle = 'rgba(7, 11, 14, 0.85)';
+            context.strokeText(cardinal.letter, pixels / 2, pixels * 0.54);
+            context.fillStyle = cardinal.color;
+            context.fillText(cardinal.letter, pixels / 2, pixels * 0.54);
+            texture.update();
+
+            const material = new B.StandardMaterial(`Cardinal${cardinal.letter}`, scene);
+            material.diffuseTexture = texture;
+            material.useAlphaFromDiffuseTexture = true;
+            material.alpha = 0.45;
+            material.disableLighting = true;
+            material.emissiveColor = new B.Color3(1, 1, 1);
+            material.specularColor = new B.Color3(0, 0, 0);
+            material.backFaceCulling = false;
+
+            const plane = B.MeshBuilder.CreateGround(`Cardinal${cardinal.letter}`, { width: CARDINAL_SIZE, height: CARDINAL_SIZE }, scene);
+            plane.rotation.x = -Math.PI / 2;
+            plane.bakeCurrentTransformIntoVertices();
+            plane.material = material;
+            plane.billboardMode = B.TransformNode.BILLBOARDMODE_Y;
+            plane.isPickable = false;
+            plane.setEnabled(false);
+            return { ...cardinal, plane };
+        });
+    }
+
+    placeCardinals() {
+        if (!this.cardinals) return;
+        for (const cardinal of this.cardinals) {
+            const direction = directionOf(cardinal.bearing, this.northern !== false);
+            cardinal.plane.scaling.setAll(this.cardinalSize / CARDINAL_SIZE);
+            cardinal.plane.position.set(direction.x * CARDINAL_DISTANCE, GRID_Y + this.cardinalSize / 2,
+                direction.z * CARDINAL_DISTANCE);
+        }
+    }
+
+    setCardinalSize(size) {
+        const name = Number.isInteger(size) ? CARDINAL_SIZE_NAMES[size] : String(size ?? '').toLowerCase();
+        this.cardinalSizeName = CARDINAL_SIZES[name] ? name : 'large';
+        this.cardinalSize = CARDINAL_SIZES[this.cardinalSizeName];
+        this.placeCardinals();
+    }
+
+    setCardinals(visible) {
+        this.showCardinals = !!visible;
+        for (const cardinal of this.cardinals || []) cardinal.plane.setEnabled(this.showCardinals);
+    }
+
+    cameraBearing() {
+        return bearingOf(-Math.cos(this.camera.alpha), -Math.sin(this.camera.alpha), this.northern !== false);
+    }
+
+    setHeadingElement(element) {
+        if (this.headingElement && this.onHeadingClick)
+            this.headingElement.removeEventListener('click', this.onHeadingClick);
+        this.headingElement = element || null;
+        this.shownHeading = null;
+        this.onHeadingClick ??= () => this.faceNorth();
+        if (this.headingElement) {
+            this.headingElement.style.display = this.showHeading ? '' : 'none';
+            this.headingElement.addEventListener('click', this.onHeadingClick);
+        }
+        this.updateHeading();
+    }
+
+    faceNorth() {
+        const north = directionOf(0, this.northern !== false);
+        const target = Math.atan2(-north.z, -north.x);
+        const from = this.camera.alpha;
+        const delta = rad(angleDelta(deg(from), deg(target)));
+        this.camera.inertialAlphaOffset = 0;
+        if (Math.abs(delta) < 1e-4) return;
+        if (this.reducedMotion?.matches) {
+            this.turn = null;
+            this.camera.alpha = from + delta;
+        } else {
+            this.turn = { from, delta, start: performance.now(), duration: FACE_NORTH_MS };
+        }
+    }
+
+    stepTurn(now) {
+        if (!this.turn) return;
+        const progress = Math.min((now - this.turn.start) / this.turn.duration, 1);
+        this.camera.alpha = this.turn.from + this.turn.delta * (1 - Math.pow(1 - progress, 3));
+        if (progress >= 1) this.turn = null;
+    }
+
+    updateHeading() {
+        if (!this.headingElement?.isConnected) return;
+        const bearing = Math.round(this.cameraBearing()) % 360;
+        if (bearing === this.shownHeading) return;
+        this.shownHeading = bearing;
+        this.headingElement.textContent = `${String(bearing).padStart(3, '0')}°`;
+    }
+
+    getModelCenter() {
+        if (!this.modelMeshes.length) return null;
+        const bounds = this.modelNode.getHierarchyBoundingVectors(true);
+        return bounds.min.add(bounds.max).scale(0.5);
+    }
+
+    centerOnMount() {
+        const center = this.getModelCenter();
+        if (!center) return;
+        const { alpha, beta, radius } = this.camera;
+        this.camera.setTarget(center);
+        this.camera.alpha = alpha;
+        this.camera.beta = beta;
+        this.camera.radius = radius;
+    }
+
+    resetCamera() {
+        const B = window.BABYLON;
+        const center = this.getModelCenter() || new B.Vector3(DEFAULT_CAMERA.target.x, DEFAULT_CAMERA.target.y, DEFAULT_CAMERA.target.z);
+        this.setCamera({ ...DEFAULT_CAMERA, target: { x: center.x, y: center.y, z: center.z } });
+    }
+
+    keepCameraAboveGround() {
+        const B = window.BABYLON;
+        const camera = this.camera;
+        if (camera.target.y < CAMERA_MIN_Y)
+            camera.setTarget(new B.Vector3(camera.target.x, CAMERA_MIN_Y, camera.target.z), false, false, true);
+        const limit = Math.acos(Math.max(-1, Math.min(1, (CAMERA_MIN_Y - camera.target.y) / camera.radius)));
+        camera.upperBetaLimit = limit;
+        if (camera.beta > limit) camera.beta = limit;
+    }
+
     createScene() {
         const B = window.BABYLON;
         const scene = new B.Scene(this.engine);
         scene.useRightHandedSystem = true; // same handedness as Helix / WPF 3D
-        scene.clearColor = B.Color4.FromHexString(getBackgroundColor(this.background));
+        scene.clearColor = B.Color4.FromHexString(`${DEFAULT_BACKGROUND_COLOR}ff`);
 
         const d = DEFAULT_CAMERA;
         this.camera = new B.ArcRotateCamera('Camera', rad(d.alpha), rad(d.beta), d.radius,
@@ -123,6 +410,8 @@ class TelescopeViewer {
         this.camera.lowerRadiusLimit = 5;
         this.camera.upperRadiusLimit = 200;
         this.camera.wheelDeltaPercentage = 0.02;
+        this.camera.useNaturalPinchZoom = true;
+        this.camera.onAfterCheckInputsObservable.add(() => this.keepCameraAboveGround());
 
         const hemi = new B.HemisphericLight('hemisphericLight', new B.Vector3(0, 1, 0), scene);
         hemi.intensity = 0.75;
@@ -133,6 +422,17 @@ class TelescopeViewer {
         const dir = new B.DirectionalLight('directionalLight', new B.Vector3(-1, -2, -1), scene);
         dir.position = new B.Vector3(10, 20, 10);
         dir.intensity = 0.55;
+
+        this.skybox = B.MeshBuilder.CreateBox('SkyBox', { size: 400 }, scene);
+        const skyMaterial = new B.StandardMaterial('SkyBox', scene);
+        skyMaterial.backFaceCulling = false;
+        skyMaterial.disableLighting = true;
+        skyMaterial.diffuseColor = new B.Color3(0, 0, 0);
+        skyMaterial.specularColor = new B.Color3(0, 0, 0);
+        this.skybox.material = skyMaterial;
+        this.skybox.isPickable = false;
+        this.skybox.infiniteDistance = true;
+        this.skybox.setEnabled(false);
 
         // Root in Helix coordinates: Z up -> scene Y up, Helix units -> scene units.
         this.root = new B.TransformNode('Helix', scene);
@@ -157,6 +457,7 @@ class TelescopeViewer {
         this.compassBase.position.z = -thickness / 2;
 
         this.ground = this.createGround(scene);
+        this.cardinals = this.createCardinals(scene);
 
         this.pierMaterial = new B.StandardMaterial('Pier', scene);
         this.pierMaterial.diffuseColor = B.Color3.FromHexString('#34474f');
@@ -236,12 +537,27 @@ class TelescopeViewer {
         this.ground.setEnabled(this.gridVisible);
     }
 
+    setShowHeading(visible) {
+        this.showHeading = !!visible;
+        if (this.headingElement) this.headingElement.style.display = this.showHeading ? '' : 'none';
+    }
+
     getSettings() {
         return {
             camera: this.getCamera(),
             modelColor: this.primaryColor,
             background: this.background,
-            showGrid: this.gridVisible
+            showGrid: this.gridVisible,
+            showCardinals: this.showCardinals,
+            cardinalSize: CARDINAL_SIZE_NAMES.indexOf(this.cardinalSizeName),
+            showHeading: this.showHeading,
+            useAssembly: this.useAssembly,
+            assemblySupport: this.assemblySupport,
+            assemblyMount: this.assemblyMount,
+            assemblyOta: this.assemblyOta,
+            assemblyOtaSize: this.assemblyOtaSize,
+            raAdjustmentDegrees: this.raAdjustmentDegrees,
+            decAdjustmentDegrees: this.decAdjustmentDegrees
         };
     }
 
@@ -345,6 +661,7 @@ class TelescopeViewer {
         weights.diffuseColor = new B.Color3(0.25, 0.27, 0.28);
         const bar = new B.StandardMaterial('Bar', this.scene);
         bar.diffuseColor = new B.Color3(0.86, 0.86, 0.84);
+        this.otaMaterial = ota;
         this.modelMaterials = [ota, weights, bar];
         const germanPolar = mode === GERMAN_POLAR;
 
@@ -388,8 +705,11 @@ class TelescopeViewer {
 
     renderFrame() {
         if (!this.scene || this.scene.isDisposed) return;
-        this.stepGlide(performance.now());
+        const now = performance.now();
+        this.stepGlide(now);
+        this.stepTurn(now);
         this.scene.render();
+        this.updateHeading();
     }
 
     stepGlide(now) {
@@ -434,6 +754,9 @@ class TelescopeViewer {
     setHemisphere(isNorthern) {
         if (this.northern === isNorthern) return;
         this.northern = isNorthern;
+        this.placeCardinals();
+        this.shownHeading = null;
+        this.updateHeading();
 
         const B = window.BABYLON;
         const url = assetBase + (isNorthern ? 'compassN.png' : 'compassS.png');
@@ -470,6 +793,11 @@ class TelescopeViewer {
 
     dispose() {
         this.resizeObserver.disconnect();
+        window.removeEventListener('resize', this.onWindowResize);
+        for (const type of ['pointerdown', 'wheel', 'keydown'])
+            this.canvas.removeEventListener(type, this.onCameraInput);
+        this.setHeadingElement(null);
+        this.backgroundRequest++;
         this.engine.stopRenderLoop();
         this.scene.dispose();
         this.engine.dispose();
@@ -480,7 +808,7 @@ class TelescopeViewer {
 
 let viewer = null;
 
-/** options: { camera, primaryColor, background, grid } */
+/** options: persisted viewer settings for this device, mount, and model. */
 export function init(canvasId, options) {
     dispose();
     const canvas = document.getElementById(canvasId);
@@ -505,6 +833,18 @@ export function getCameraState() {
 
 export function getViewerSettings() {
     return viewer ? viewer.getSettings() : null;
+}
+
+export function setHeadingElement(elementId) {
+    if (viewer) viewer.setHeadingElement(document.getElementById(elementId));
+}
+
+export function centerOnMount() {
+    if (viewer) viewer.centerOnMount();
+}
+
+export function resetCamera() {
+    if (viewer) viewer.resetCamera();
 }
 
 export function dispose() {

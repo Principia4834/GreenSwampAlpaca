@@ -2952,6 +2952,9 @@
   <data name="TView_DecAdjustment" xml:space="preserve"><value>赤纬轴调整（度）</value></data>
   <data name="TView_SaveSettings" xml:space="preserve"><value>保存设置</value></data>
   <data name="TView_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="TView_CenterOnMount" xml:space="preserve"><value>居中于赤道仪</value></data>
+  <data name="TView_ResetCamera" xml:space="preserve"><value>重置相机</value></data>
+  <data name="TView_FaceNorth" xml:space="preserve"><value>转向北方</value></data>
   <data name="TView_Choice_Default" xml:space="preserve"><value>默认</value></data>
   <data name="TView_Choice_Reflector" xml:space="preserve"><value>反射式</value></data>
   <data name="TView_Choice_Refractor" xml:space="preserve"><value>折射式</value></data>

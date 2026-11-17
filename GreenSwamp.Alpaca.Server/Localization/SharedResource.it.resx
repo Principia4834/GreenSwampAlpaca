@@ -3117,6 +3117,9 @@
   <data name="TView_DecAdjustment" xml:space="preserve"><value>Regolazione asse Dec (gradi)</value></data>
   <data name="TView_SaveSettings" xml:space="preserve"><value>Salva impostazioni</value></data>
   <data name="TView_Cancel" xml:space="preserve"><value>Annulla</value></data>
+  <data name="TView_CenterOnMount" xml:space="preserve"><value>Centra sulla montatura</value></data>
+  <data name="TView_ResetCamera" xml:space="preserve"><value>Reimposta fotocamera</value></data>
+  <data name="TView_FaceNorth" xml:space="preserve"><value>Rivolgi a nord</value></data>
   <data name="TView_Choice_Default" xml:space="preserve"><value>Predefinito</value></data>
   <data name="TView_Choice_Reflector" xml:space="preserve"><value>Riflettore</value></data>
   <data name="TView_Choice_Refractor" xml:space="preserve"><value>Rifrattore</value></data>

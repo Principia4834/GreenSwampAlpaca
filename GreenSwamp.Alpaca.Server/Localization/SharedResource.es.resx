@@ -3117,6 +3117,9 @@
   <data name="TView_DecAdjustment" xml:space="preserve"><value>Ajuste del eje Dec (grados)</value></data>
   <data name="TView_SaveSettings" xml:space="preserve"><value>Guardar ajustes</value></data>
   <data name="TView_Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="TView_CenterOnMount" xml:space="preserve"><value>Centrar en la montura</value></data>
+  <data name="TView_ResetCamera" xml:space="preserve"><value>Restablecer cámara</value></data>
+  <data name="TView_FaceNorth" xml:space="preserve"><value>Orientar hacia el norte</value></data>
   <data name="TView_Choice_Default" xml:space="preserve"><value>Predeterminado</value></data>
   <data name="TView_Choice_Reflector" xml:space="preserve"><value>Reflector</value></data>
   <data name="TView_Choice_Refractor" xml:space="preserve"><value>Refractor</value></data>

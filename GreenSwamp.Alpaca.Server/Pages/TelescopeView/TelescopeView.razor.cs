@@ -102,7 +102,8 @@ public partial class TelescopeView : IAsyncDisposable
 
             if (double.IsFinite(_axisX) && double.IsFinite(_axisY))
             {
-                var pose = Model3D.GetPose(s.AlignmentMode, s.MountType, s.PolarMode, latitude, _axisX, _axisY);
+                var pose = Model3D.GetPose(s.AlignmentMode, s.MountType, s.PolarMode, latitude, _axisX, _axisY,
+                    _settings?.RaAdjustmentDegrees ?? 0, _settings?.DecAdjustmentDegrees ?? 0);
                 await _module.InvokeVoidAsync("setPose", pose.X, pose.Y, pose.Z, pose.YCentre);
             }
 
@@ -155,16 +156,17 @@ public partial class TelescopeView : IAsyncDisposable
             background = settings.Background,
             grid = settings.ShowGrid,
             showCardinals = settings.ShowCardinals,
-            cardinalSize = settings.CardinalSize.ToString(),
+            cardinalSize = (int)settings.CardinalSize,
             showHeading = settings.ShowHeading,
             useAssembly = settings.UseAssembly,
-            assemblySupport = settings.AssemblySupport.ToString(),
-            assemblyMount = settings.AssemblyMount.ToString(),
-            assemblyOta = settings.AssemblyOta.ToString(),
+            assemblySupport = (int)settings.AssemblySupport,
+            assemblyMount = (int)settings.AssemblyMount,
+            assemblyOta = (int)settings.AssemblyOta,
             assemblyOtaSize = settings.AssemblyOtaSize,
             raAdjustmentDegrees = settings.RaAdjustmentDegrees,
             decAdjustmentDegrees = settings.DecAdjustmentDegrees
         });
+        await _module.InvokeVoidAsync("setHeadingElement", "telescopeHeading");
 
         _activeModelType = modelType;
         _settingsStorageKey = settingsKey;
@@ -176,7 +178,7 @@ public partial class TelescopeView : IAsyncDisposable
     {
         if (_module is null) return;
 
-        var mountKey = $"{s.AlignmentMode}|{s.MountType}|{s.PolarMode}|{Math.Round(latitude, 2)}|{_activeModelType}";
+        var mountKey = $"{s.AlignmentMode}|{s.MountType}|{s.PolarMode}|{Math.Round(latitude, 2)}|{_activeModelType}|{_settings?.UseAssembly}|{_settings?.AssemblySupport}|{_settings?.AssemblyMount}|{_settings?.AssemblyOta}|{_settings?.AssemblyOtaSize}";
         if (mountKey == _loadedMountKey) return;
         _loadedMountKey = mountKey;
 
@@ -215,10 +217,7 @@ public partial class TelescopeView : IAsyncDisposable
             var viewerSettings = await _module.InvokeAsync<TelescopeViewerSettings?>("getViewerSettings");
             if (viewerSettings is null || _settingsStorageKey is null || _selectionStorageKey is null) return;
 
-            _settings.Camera = viewerSettings.Camera;
-            _settings.ModelColor = viewerSettings.ModelColor;
-            _settings.Background = viewerSettings.Background;
-            _settings.ShowGrid = viewerSettings.ShowGrid;
+            MergeViewerSettings(viewerSettings);
             _settings.ModelType = _activeModelType;
             _settings.Normalize();
 
@@ -241,10 +240,7 @@ public partial class TelescopeView : IAsyncDisposable
         var viewerSettings = await _module.InvokeAsync<TelescopeViewerSettings?>("getViewerSettings");
         if (viewerSettings is not null)
         {
-            _settings.Camera = viewerSettings.Camera;
-            _settings.ModelColor = viewerSettings.ModelColor;
-            _settings.Background = viewerSettings.Background;
-            _settings.ShowGrid = viewerSettings.ShowGrid;
+            MergeViewerSettings(viewerSettings);
         }
 
         var parameters = new DialogParameters<TelescopeViewerOptionsDialog>
@@ -273,6 +269,52 @@ public partial class TelescopeView : IAsyncDisposable
 
         await _module.InvokeVoidAsync("dispose");
         await PushStateAsync();
+    }
+
+    private void MergeViewerSettings(TelescopeViewerSettings viewerSettings)
+    {
+        if (_settings is null) return;
+
+        _settings.Camera = viewerSettings.Camera;
+        _settings.ModelColor = viewerSettings.ModelColor;
+        _settings.Background = viewerSettings.Background;
+        _settings.ShowGrid = viewerSettings.ShowGrid;
+        _settings.ShowCardinals = viewerSettings.ShowCardinals;
+        _settings.CardinalSize = viewerSettings.CardinalSize;
+        _settings.ShowHeading = viewerSettings.ShowHeading;
+        _settings.UseAssembly = viewerSettings.UseAssembly;
+        _settings.AssemblySupport = viewerSettings.AssemblySupport;
+        _settings.AssemblyMount = viewerSettings.AssemblyMount;
+        _settings.AssemblyOta = viewerSettings.AssemblyOta;
+        _settings.AssemblyOtaSize = viewerSettings.AssemblyOtaSize;
+        _settings.RaAdjustmentDegrees = viewerSettings.RaAdjustmentDegrees;
+        _settings.DecAdjustmentDegrees = viewerSettings.DecAdjustmentDegrees;
+    }
+
+    private async Task CenterOnMountAsync()
+    {
+        if (_module is null) return;
+
+        try
+        {
+            await _module.InvokeVoidAsync("centerOnMount");
+            await SaveViewAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+    }
+
+    private async Task ResetCameraAsync()
+    {
+        if (_module is null) return;
+
+        try
+        {
+            await _module.InvokeVoidAsync("resetCamera");
+            await SaveViewAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
     }
 
     public async ValueTask DisposeAsync()
