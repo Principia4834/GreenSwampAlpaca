@@ -332,7 +332,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                     }
                 ],
                 Legend  = new Legend  { Show = true },
-                Grid    = new Grid    { BorderColor = "rgba(255,255,255,0.12)" },
+                Grid    = new Grid    { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid },
                 Tooltip = new Tooltip { Enabled = false }
             };
         }

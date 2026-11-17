@@ -211,8 +211,8 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
             {
                 Chart = new Chart
                 {
-                    Background = "#1e1e1e",
-                    ForeColor = "rgba(255,255,255,0.87)",
+                    Background = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartBackground,
+                    ForeColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartText,
                     Animations = new Animations { Enabled = false },
                     Toolbar = new Toolbar
                     {
@@ -240,7 +240,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                         Show = true,
                         HideOverlappingLabels = false,
                         Format = "HH:mm:ss",
-                        Style = new AxisLabelStyle { Colors = "rgba(255,255,255,0.87)" }
+                        Style = new AxisLabelStyle { Colors = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartText }
                     }
                 },
                 Yaxis =
@@ -261,7 +261,7 @@ namespace GreenSwamp.Alpaca.Server.Pages.Charts
                 Stroke = new Stroke { Curve = Curve.Smooth, Width = [1, 0, 1, 0] },
                 Markers = new Markers { Size = [0, 4, 0, 4] },
                 Legend = new Legend { Show = true },
-                Grid = new Grid { BorderColor = "rgba(255,255,255,0.12)" }
+                Grid = new Grid { BorderColor = GreenSwamp.Alpaca.Server.Theme.GsTheme.ChartGrid }
             };
         }
 

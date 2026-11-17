@@ -9,6 +9,11 @@ namespace GreenSwamp.Alpaca.Server.Theme;
 /// </summary>
 public static class GsTheme
 {
+    // Apex cannot read CSS variables in every option, so chart chrome uses literal values from the same surfaces as the palette.
+    public static string ChartBackground => GsSurfaces.Dark.Surface;
+    public static string ChartText => $"rgba({GsSurfaces.Dark.TextRgb},0.87)";
+    public static string ChartGrid => $"rgba({GsSurfaces.Dark.TextRgb},0.12)";
+
     public static readonly MudTheme Instance = new()
     {
         PaletteDark = GsThemeBuilder.BuildDarkPalette(GsThemeBuilder.GreenThemeColour),

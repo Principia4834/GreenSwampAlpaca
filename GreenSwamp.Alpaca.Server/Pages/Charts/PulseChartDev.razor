@@ -48,7 +48,7 @@
                    Color="MudBlazor.Color.Warning" />
         <MudSwitch T="bool" Label="Dec"      Value="@_settings.ShowDecPulse"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecPulse), v))"
-                   Color="MudBlazor.Color.Secondary" />
+                   Color="MudBlazor.Color.Primary" />
         <MudSwitch T="bool" Label="Dec rej." Value="@_settings.ShowDecRejected"
                    ValueChanged="@(v => OnSeriesToggleAsync(nameof(ChartSettings.ShowDecRejected), v))"
                    Color="MudBlazor.Color.Error" />

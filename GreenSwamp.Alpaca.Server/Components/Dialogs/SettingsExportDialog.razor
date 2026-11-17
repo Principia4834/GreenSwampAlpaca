@@ -15,7 +15,7 @@
 
                 @if (_exportInfo != null)
                 {
-                    <MudStack Spacing="1" Class="mud-paper pa-3" Style="background-color: rgba(63, 81, 181, 0.1);">
+                    <MudStack Spacing="1" Class="mud-paper pa-3" Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.1);">
                         <MudText Typo="Typo.body1">
                             <strong>@Loc["Export_Files"]</strong> @_exportInfo.FileCount
                         </MudText>
