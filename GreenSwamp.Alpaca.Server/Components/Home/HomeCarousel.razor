@@ -19,7 +19,9 @@
 
     @if (_active is null)
     {
-        <MudText Typo="Typo.body1" Align="Align.Center" Class="gs-carousel-empty ma-auto">@Loc["Home_NoCarousel"]</MudText>
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="flex-grow-1 pa-4">
+            <MudText Typo="Typo.body1" Align="Align.Center">@Loc["Home_NoCarousel"]</MudText>
+        </MudStack>
     }
     else
     {
@@ -32,21 +34,34 @@
                          @onclick="HandleClick"
                          AutoCycleTime="TimeSpan.FromSeconds(_dwellSeconds)"
                          ShowArrows="true" ShowBullets="true"
+                         ArrowsColor="Color.Primary" BulletsColor="Color.Primary"
                          EnableSwipeGesture="false">
-                @foreach (var slide in _active.Slides)
-                {
-                    <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
-                        <MudStack HtmlTag="figure" Spacing="0" Class="gs-slide pt-2 px-14 pb-11">
-                            <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center" Justify="Justify.Center"
-                                      Class="flex-grow-1" Style="min-height:0;">
-                                <img class="gs-slide-img" src="@ImageUrl(_active, slide)" alt="@slide.Caption"
-                                     onerror="this.parentElement.classList.add('gs-slide-missing')" />
-                                <span class="gs-slide-fallback">@Loc["Home_ImageNotFound", slide.File]</span>
+                <PreviousButtonTemplate>
+                    <div class="mud-button-root mud-icon-button mud-icon-button-size-large mud-ripple mud-ripple-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" Size="Size.Large" Color="Color.Primary" />
+                    </div>
+                </PreviousButtonTemplate>
+                <NextButtonTemplate>
+                    <div class="mud-button-root mud-icon-button mud-icon-button-size-large mud-ripple mud-ripple-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.NavigateNext" Size="Size.Large" Color="Color.Primary" />
+                    </div>
+                </NextButtonTemplate>
+                <ChildContent>
+                    @foreach (var slide in _active.Slides)
+                    {
+                        <MudCarouselItem @key="slide.File" Transition="Transition.Fade" Color="Color.Transparent">
+                            <MudStack HtmlTag="figure" Spacing="0" Class="gs-slide pt-2 px-14 pb-11">
+                                <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center" Justify="Justify.Center"
+                                          Class="flex-grow-1" Style="min-height:0;">
+                                    <img class="gs-slide-img" src="@ImageUrl(_active, slide)" alt="@slide.Caption"
+                                         onerror="this.parentElement.classList.add('gs-slide-missing')" />
+                                    <span class="gs-slide-fallback">@Loc["Home_ImageNotFound", slide.File]</span>
+                                </MudStack>
+                                <MudText Typo="Typo.body1" HtmlTag="figcaption" Align="Align.Center" Class="gs-slide-caption pt-2">@slide.Caption</MudText>
                             </MudStack>
-                            <MudText Typo="Typo.body1" HtmlTag="figcaption" Align="Align.Center" Class="gs-slide-caption pt-2">@slide.Caption</MudText>
-                        </MudStack>
-                    </MudCarouselItem>
-                }
+                        </MudCarouselItem>
+                    }
+                </ChildContent>
             </MudCarousel>
         </MudTooltip>
 

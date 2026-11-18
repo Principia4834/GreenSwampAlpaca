@@ -211,9 +211,12 @@ code {
 
 .gs-home-hero {
     min-height: calc(100vh - 48px);
-    /* darkening gradient layered over the photo */
+    background-color: var(--gs-bg-app);
     background-image:
-        linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,0.75) 100%),
+        linear-gradient(to bottom,
+            color-mix(in srgb, var(--gs-bg-app) 80%, transparent) 0%,
+            color-mix(in srgb, var(--gs-bg-app) 60%, transparent) 50%,
+            color-mix(in srgb, var(--gs-bg-app) 90%, transparent) 100%),
         url('/images/GreenSwamp1.webp');
     background-size: cover;
     background-position: center;
@@ -227,8 +230,7 @@ code {
 
 .gs-home-title {
     font-weight: 300;
-    color:       rgb(var(--gs-hero-text-rgb));
-    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    color:       var(--gs-text-primary);
     letter-spacing: 0.02em;
 }
 
@@ -248,25 +250,16 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         min-height:     340px;
     }
 
-    .gs-carousel-toggle .mud-toggle-group {
-        background: rgba(0,0,0,0.55);
-    }
-
     .gs-carousel {
-        min-height:    300px;
-        color:         rgb(var(--gs-hero-text-rgb));
-        background:    rgba(0,0,0,0.35);
+        min-height: 300px;
+        color: var(--gs-text-primary);
+        background: transparent;
     }
 
     /* MudSwipeArea registers server-side pointermove handlers; without this every mouse move
        over the carousel is a SignalR round-trip and render. */
     .gs-carousel .mud-carousel-swipe {
         pointer-events: none;
-    }
-
-    .gs-carousel-empty {
-        color:       rgba(var(--gs-hero-text-rgb),0.75);
-        text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     }
 
     /* Each slide fills the (absolutely positioned) carousel item. The bottom padding
@@ -287,19 +280,16 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     .gs-slide-fallback {
         display: none;
-        color:   rgba(var(--gs-hero-text-rgb),0.7);
     }
 
     .gs-slide-missing .gs-slide-img      { display: none; }
     .gs-slide-missing .gs-slide-fallback { display: block; }
 
     .gs-slide-caption {
-        flex:        0 0 auto;
-        color:       rgba(var(--gs-hero-text-rgb),0.92);
-        white-space: nowrap;
-        overflow:    hidden;
+        flex:          0 0 auto;
+        white-space:   nowrap;
+        overflow:      hidden;
         text-overflow: ellipsis;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     }
 
     .gs-slide-preload {
@@ -312,12 +302,12 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
 
     /* Bottom bar: tile row above the wordmark, both centred */
     .gs-home-bottom-bar {
-        background:     rgba(0,0,0,0.45);
+        background:     color-mix(in srgb, var(--gs-bg-app) 45%, transparent);
         backdrop-filter: blur(4px);
     }
 
     .gs-tile-empty {
-        color: rgba(var(--gs-hero-text-rgb),0.75);
+        color: var(--gs-text-secondary);
     }
 
     .mud-card.gs-tile {
@@ -327,15 +317,8 @@ h1.gs-home-title[tabindex="-1"]:focus-visible {
         flex:           0 0 auto;
         width:          9.375rem;
         height:         7.5rem;
-        border:         3px solid var(--gs-brand-green);
+        border-color:   var(--mud-palette-primary);
         border-radius:  8px;
-        background:     rgba(0,0,0,0.55);
-        color:          rgb(var(--gs-hero-text-rgb));
-        transition:     background 0.2s;
-    }
-
-    .mud-card.gs-tile:hover {
-        background: rgba(var(--gs-brand-green-rgb),0.25);
     }
 
     .mud-card.gs-tile-disabled {
