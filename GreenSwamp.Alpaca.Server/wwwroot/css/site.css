@@ -648,7 +648,7 @@ html[data-gs-theme="night-red"] .hc-stop:not(:disabled):hover {
     background-color: var(--mud-palette-error-darken) !important;
 }
 
-html[data-gs-theme="night-red"] .gs-stop .mud-icon-root,
-html[data-gs-theme="night-red"] .hc-stop .mud-icon-root {
-    color: var(--mud-palette-error-text) !important;
-}
+    html[data-gs-theme="night-red"] .gs-stop .mud-icon-root,
+    html[data-gs-theme="night-red"] .hc-stop:not(:disabled) .mud-icon-root {
+        color: var(--mud-palette-error-text) !important;
+    }
