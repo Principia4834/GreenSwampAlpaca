@@ -498,7 +498,7 @@
             <response code="400" examples="Error message describing why the command cannot be processed">Method or parameter value error, check error message</response>
             <response code="500" examples="Error message describing why the command cannot be processed">Server internal error, check error message</response>
         </member>
-        <member name="M:ASCOM.Alpaca.TelescopeController.AxisRates(System.UInt32,ASCOM.Common.DeviceInterfaces.TelescopeAxis,System.UInt32,System.UInt32)">
+        <member name="M:ASCOM.Alpaca.TelescopeController.AxisRates(System.UInt32,System.Nullable{System.Int32},System.UInt32,System.UInt32)">
             <summary>
             Returns the rates at which the telescope may be moved about the specified axis.
             </summary>
@@ -509,8 +509,8 @@
             <param name="Axis">The axis about which rate information is desired. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.</param>
             <param name="ClientID">Client's unique ID.</param>
             <param name="ClientTransactionID">Client's transaction ID.</param>
-            <response code="200">Transaction complete or exception</response>
-            <response code="400" examples="Error message describing why the command cannot be processed">Method or parameter value error, check error message</response>
+            <response code="200">Axis rates (empty if the axis cannot be moved) or an Alpaca device error. NotConnected takes precedence over InvalidValue for an undefined axis.</response>
+            <response code="400">Malformed request, including a missing or non-integer Axis.</response>
             <response code="500" examples="Error message describing why the command cannot be processed">Server internal error, check error message</response>
         </member>
         <member name="M:ASCOM.Alpaca.TelescopeController.Azimuth(System.UInt32,System.UInt32,System.UInt32)">

@@ -1244,25 +1244,18 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public IAxisRates AxisRates(TelescopeAxis Axis)
         {
+            CheckAxis(Axis);
+
             var monitorItem = new MonitorEntry
             { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"   {Axis}" };
             LogMonitor(monitorItem);
 
-            return Axis switch
-            {
-                TelescopeAxis.Primary => new AxisRates(TelescopeAxis.Primary, _mount),
-                TelescopeAxis.Secondary => new AxisRates(TelescopeAxis.Secondary, _mount),
-                TelescopeAxis.Tertiary => new AxisRates(TelescopeAxis.Tertiary, _mount),
-                _ => null,
-            };
+            return _mount.CanMoveAxis(Axis) ? new AxisRates(Axis, _mount) : new AxisRates();
         }
 
         public bool CanMoveAxis(TelescopeAxis Axis)
         {
-            if (!Enum.IsDefined(Axis))
-            {
-                throw new InvalidValueException(nameof(Axis), ((int)Axis).ToString(CultureInfo.InvariantCulture), "0, 1, or 2");
-            }
+            CheckAxis(Axis);
 
             var r = _mount.CanMoveAxis(Axis);
 
@@ -1929,6 +1922,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
+        private static void CheckAxis(TelescopeAxis axis)
+        {
+            if (!Enum.IsDefined(axis))
+            {
+                throw new InvalidValueException("Axis", ((int)axis).ToString(CultureInfo.InvariantCulture), "0, 1, or 2");
+            }
+        }
+
         /// <summary>
         /// CheckRate in degrees against the axis rates
         /// </summary>
@@ -1941,6 +1942,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             LogMonitor(monitorItem);
 
             var rates = AxisRates(axis);
+            if (rates.Count == 0)
+            {
+                throw new InvalidValueException($"MoveAxis is not supported on axis {axis}.");
+            }
+
             var ratesStr = string.Empty;
             foreach (Rate item in rates)
             {

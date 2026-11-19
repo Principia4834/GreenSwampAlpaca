@@ -89,6 +89,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         private Rate[] _mRates;
         private int _pos;
 
+        internal AxisRates()
+        {
+            _mRates = [];
+            _pos = -1;
+        }
+
         //
         // Constructor - Internal prevents public creation
         // of instances. Returned by SkyServer.AxisRates.
