@@ -261,22 +261,31 @@ namespace ASCOM.Alpaca
         /// <para>True if this telescope can move the requested axis.</para>
         /// </remarks>
         /// <param name="DeviceNumber">Zero based device number as set on the server (A uint32 with a range of 0 to 4294967295)</param>
-        /// <param name="Axis">The axis about which rate information is desired. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.</param>
+        /// <param name="Axis">The requested axis. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.</param>
         /// <param name="ClientID">Client's unique ID.</param>
         /// <param name="ClientTransactionID">Client's transaction ID.</param>
-        /// <response code="200">Transaction complete or exception</response>
-        /// <response code="400" examples="Error message describing why the command cannot be processed">Method or parameter value error, check error message</response>
+        /// <response code="200">Transaction complete or Alpaca device error, including InvalidValue for an undefined axis.</response>
+        /// <response code="400">Malformed request, including a missing or non-integer Axis.</response>
         /// <response code="500" examples="Error message describing why the command cannot be processed">Server internal error, check error message</response>
         [HttpGet]
         [Produces(MediaTypeNames.Application.Json)]
         [Route("{DeviceNumber}/canmoveaxis")]
         public ActionResult<BoolResponse> CanMoveAxis(
             [Required][DefaultValue(0)][SwaggerSchema(Strings.DeviceIDDescription, Format = "uint32")][Range(0, 4294967295)] uint DeviceNumber,
-            [Required][SwaggerSchema("The axis about which rate information is desired. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.")] TelescopeAxis Axis,
+            [Required][SwaggerSchema("The requested axis. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.")] int? Axis,
             [SwaggerSchema(Strings.ClientIDDescription, Format = "uint32")][Range(0, 4294967295)] uint ClientID = 0,
             [SwaggerSchema(Strings.ClientTransactionIDDescription, Format = "uint32")][Range(0, 4294967295)] uint ClientTransactionID = 0)
         {
-            return ProcessRequest(() => DeviceManager.GetTelescope(DeviceNumber).CanMoveAxis(Axis), DeviceManager.ServerTransactionID, ClientID, ClientTransactionID);
+            return ProcessRequest(
+                () => DeviceManager.GetTelescope(DeviceNumber).CanMoveAxis((TelescopeAxis)Axis.Value),
+                DeviceManager.ServerTransactionID, ClientID, ClientTransactionID,
+                validateArguments: () =>
+                {
+                    if (Axis is not (0 or 1 or 2))
+                    {
+                        throw new InvalidValueException(nameof(Axis), Axis?.ToString(System.Globalization.CultureInfo.InvariantCulture), "0, 1, or 2");
+                    }
+                });
         }
 
         /// <summary>

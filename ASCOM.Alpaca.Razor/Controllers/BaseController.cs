@@ -151,7 +151,8 @@ namespace ASCOM.Alpaca
             uint transactionID,
             ref uint clientID,
             ref uint clientTransactionID,
-            string payload = "")
+            string payload = "",
+            Action validateArguments = null)
             where TResponse : Response, new()
         {
             try
@@ -191,6 +192,8 @@ namespace ASCOM.Alpaca
                     return BadRequest($"Unknown device in Alpaca request: {HttpContext.Request.Path.ToString()}");
                 }
 
+                validateArguments?.Invoke();
+
                 //if (DeviceManager.Configuration.RequireConnect)
                 //{
                 if (DeviceCannotAcceptOperation())
@@ -219,8 +222,7 @@ namespace ASCOM.Alpaca
         /// <summary>
         /// Processes a client request by executing the specified operation and returning a response.
         /// </summary>
-        /// <remarks>This method is intended for internal use and is not exposed through the API, as
-        /// indicated by the <see cref="ApiExplorerSettingsAttribute"/> with <c>IgnoreApi = true</c>.</remarks>
+        /// <remarks>This helper is not exposed as an HTTP action.</remarks>
         /// <param name="operation">A delegate representing the operation to execute. The operation must return a <see langword="true"/> or <see
         /// langword="false"/> value indicating success or failure.</param>
         /// <param name="transactionID">The unique identifier for the transaction. This value is used to track the request.</param>
@@ -229,11 +231,13 @@ namespace ASCOM.Alpaca
         /// <param name="clientTransactionID">The unique identifier for the client's transaction. This value is updated during the request processing.</param>
         /// <param name="payload">An optional string containing additional data or parameters for the request. Defaults to an empty string if
         /// not provided.</param>
+        /// <param name="validateArguments">Optional device argument validation, run after HTTP request checks and before connection checks.</param>
         /// <returns>An <see cref="ActionResult{T}"/> containing a <see cref="BoolResponse"/> object that indicates the result of
         /// the operation. The <see cref="BoolResponse.Value"/> property will be <see langword="true"/> if the operation
         /// succeeded; otherwise, <see langword="false"/>.</returns>
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<BoolResponse> ProcessRequest(Func<bool> operation, uint transactionID, uint clientID, uint clientTransactionID, string payload = "")
+        [NonAction]
+        public ActionResult<BoolResponse> ProcessRequest(Func<bool> operation, uint transactionID, uint clientID, uint clientTransactionID,
+            string payload = "", Action validateArguments = null)
         {
             return ExecuteRequest<BoolResponse, bool>(
                 operation,
@@ -241,7 +245,8 @@ namespace ASCOM.Alpaca
                 transactionID,
                 ref clientID,
                 ref clientTransactionID,
-                payload
+                payload,
+                validateArguments
             );
         }
 
