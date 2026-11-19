@@ -1259,6 +1259,11 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public bool CanMoveAxis(TelescopeAxis Axis)
         {
+            if (!Enum.IsDefined(Axis))
+            {
+                throw new InvalidValueException(nameof(Axis), ((int)Axis).ToString(CultureInfo.InvariantCulture), "0, 1, or 2");
+            }
+
             var r = _mount.CanMoveAxis(Axis);
 
             var monitorItem = new MonitorEntry

@@ -307,7 +307,7 @@
             <returns><see langword="true"/> if the device cannot accept the requested operation; otherwise, <see
             langword="false"/>.</returns>
         </member>
-        <member name="M:ASCOM.Alpaca.ProcessBaseController.ExecuteRequest``2(System.Func{``1},System.Func{``1,``0},System.UInt32,System.UInt32@,System.UInt32@,System.String,System.Action)">
+        <member name="M:ASCOM.Alpaca.ProcessBaseController.ExecuteRequest``2(System.Func{``1},System.Func{``1,``0},System.UInt32,System.UInt32@,System.UInt32@,System.String)">
             <summary>
             Executes a request by performing the specified operation, building a response, and handling exceptions.
             </summary>
@@ -327,7 +327,7 @@
             <returns>An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult"/> containing the response object of type <typeparamref name="TResponse"/> if the
             operation succeeds, or an appropriate error response if an exception occurs.</returns>
         </member>
-        <member name="M:ASCOM.Alpaca.ProcessBaseController.ProcessRequest(System.Func{System.Boolean},System.UInt32,System.UInt32,System.UInt32,System.String,System.Action)">
+        <member name="M:ASCOM.Alpaca.ProcessBaseController.ProcessRequest(System.Func{System.Boolean},System.UInt32,System.UInt32,System.UInt32,System.String)">
             <summary>
             Processes a client request by executing the specified operation and returning a response.
             </summary>
@@ -340,7 +340,6 @@
             <param name="clientTransactionID">The unique identifier for the client's transaction. This value is updated during the request processing.</param>
             <param name="payload">An optional string containing additional data or parameters for the request. Defaults to an empty string if
             not provided.</param>
-            <param name="validateArguments">Optional device argument validation, run after HTTP request checks and before connection checks.</param>
             <returns>An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a <see cref="T:ASCOM.Common.Alpaca.BoolResponse"/> object that indicates the result of
             the operation. The <see cref="P:ASCOM.Common.Alpaca.BoolResponse.Value"/> property will be <see langword="true"/> if the operation
             succeeded; otherwise, <see langword="false"/>.</returns>
@@ -553,7 +552,7 @@
             <param name="Axis">The requested axis. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.</param>
             <param name="ClientID">Client's unique ID.</param>
             <param name="ClientTransactionID">Client's transaction ID.</param>
-            <response code="200">Transaction complete or Alpaca device error, including InvalidValue for an undefined axis.</response>
+            <response code="200">Transaction complete or Alpaca device error. NotConnected takes precedence over InvalidValue for an undefined axis.</response>
             <response code="400">Malformed request, including a missing or non-integer Axis.</response>
             <response code="500" examples="Error message describing why the command cannot be processed">Server internal error, check error message</response>
         </member>

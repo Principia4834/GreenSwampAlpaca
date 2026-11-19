@@ -264,7 +264,7 @@ namespace ASCOM.Alpaca
         /// <param name="Axis">The requested axis. 0 = axisPrimary, 1 = axisSecondary, 2 = axisTertiary.</param>
         /// <param name="ClientID">Client's unique ID.</param>
         /// <param name="ClientTransactionID">Client's transaction ID.</param>
-        /// <response code="200">Transaction complete or Alpaca device error, including InvalidValue for an undefined axis.</response>
+        /// <response code="200">Transaction complete or Alpaca device error. NotConnected takes precedence over InvalidValue for an undefined axis.</response>
         /// <response code="400">Malformed request, including a missing or non-integer Axis.</response>
         /// <response code="500" examples="Error message describing why the command cannot be processed">Server internal error, check error message</response>
         [HttpGet]
@@ -278,14 +278,7 @@ namespace ASCOM.Alpaca
         {
             return ProcessRequest(
                 () => DeviceManager.GetTelescope(DeviceNumber).CanMoveAxis((TelescopeAxis)Axis.Value),
-                DeviceManager.ServerTransactionID, ClientID, ClientTransactionID,
-                validateArguments: () =>
-                {
-                    if (Axis is not (0 or 1 or 2))
-                    {
-                        throw new InvalidValueException(nameof(Axis), Axis?.ToString(System.Globalization.CultureInfo.InvariantCulture), "0, 1, or 2");
-                    }
-                });
+                DeviceManager.ServerTransactionID, ClientID, ClientTransactionID);
         }
 
         /// <summary>

@@ -151,8 +151,7 @@ namespace ASCOM.Alpaca
             uint transactionID,
             ref uint clientID,
             ref uint clientTransactionID,
-            string payload = "",
-            Action validateArguments = null)
+            string payload = "")
             where TResponse : Response, new()
         {
             try
@@ -192,8 +191,6 @@ namespace ASCOM.Alpaca
                     return BadRequest($"Unknown device in Alpaca request: {HttpContext.Request.Path.ToString()}");
                 }
 
-                validateArguments?.Invoke();
-
                 //if (DeviceManager.Configuration.RequireConnect)
                 //{
                 if (DeviceCannotAcceptOperation())
@@ -231,13 +228,11 @@ namespace ASCOM.Alpaca
         /// <param name="clientTransactionID">The unique identifier for the client's transaction. This value is updated during the request processing.</param>
         /// <param name="payload">An optional string containing additional data or parameters for the request. Defaults to an empty string if
         /// not provided.</param>
-        /// <param name="validateArguments">Optional device argument validation, run after HTTP request checks and before connection checks.</param>
         /// <returns>An <see cref="ActionResult{T}"/> containing a <see cref="BoolResponse"/> object that indicates the result of
         /// the operation. The <see cref="BoolResponse.Value"/> property will be <see langword="true"/> if the operation
         /// succeeded; otherwise, <see langword="false"/>.</returns>
         [NonAction]
-        public ActionResult<BoolResponse> ProcessRequest(Func<bool> operation, uint transactionID, uint clientID, uint clientTransactionID,
-            string payload = "", Action validateArguments = null)
+        public ActionResult<BoolResponse> ProcessRequest(Func<bool> operation, uint transactionID, uint clientID, uint clientTransactionID, string payload = "")
         {
             return ExecuteRequest<BoolResponse, bool>(
                 operation,
@@ -245,8 +240,7 @@ namespace ASCOM.Alpaca
                 transactionID,
                 ref clientID,
                 ref clientTransactionID,
-                payload,
-                validateArguments
+                payload
             );
         }
 
