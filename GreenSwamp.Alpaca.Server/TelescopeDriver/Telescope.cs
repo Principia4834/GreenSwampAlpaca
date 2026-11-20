@@ -971,13 +971,14 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
+        /// <summary>Gets or sets the target declination for an equatorial slew or sync.</summary>
+        /// <exception cref="ValueNotSetException">No target declination has been set when read.</exception>
         public double TargetDeclination
         {
             get
             {
-                CheckCapability(_mount.Settings.CanSlew, "TargetDeclination", false);
-                CheckRange(_mount.TargetDec, -90, 90, "TargetDeclination");
                 var r = _mount.TargetDec;
+                CheckRange(r, -90, 90, nameof(TargetDeclination));
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
@@ -991,20 +992,20 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.DegreesToDMS(value, "\u00B0 ", ":", "", 2)}" };
                 LogMonitor(monitorItem);
 
-                CheckCapability(_mount.Settings.CanSlew, "TargetDeclination", true);
-                CheckRange(value, -90, 90, "TargetDeclination");
+                CheckRange(value, -90, 90, nameof(TargetDeclination));
 
                 _mount.TargetDec = value;
             }
         }
 
+        /// <summary>Gets or sets the target right ascension for an equatorial slew or sync.</summary>
+        /// <exception cref="ValueNotSetException">No target right ascension has been set when read.</exception>
         public double TargetRightAscension
         {
             get
             {
-                CheckCapability(_mount.Settings.CanSlew, "TargetRightAscension", false);
-                CheckRange(_mount.TargetRa, 0, 24, "TargetRightAscension");
                 var r = _mount.TargetRa;
+                CheckRange(r, 0, 24, nameof(TargetRightAscension));
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
@@ -1018,8 +1019,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{Utilities.HoursToHMS(value, "h ", ":", "", 2)}" };
                 LogMonitor(monitorItem);
 
-                CheckCapability(_mount.Settings.CanSlew, "TargetRightAscension", true);
-                CheckRange(value, 0, 24, "TargetRightAscension");
+                CheckRange(value, 0, 24, nameof(TargetRightAscension));
 
                 _mount.TargetRa = value;
             }

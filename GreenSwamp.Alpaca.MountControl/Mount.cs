@@ -52,7 +52,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal TrackingCommandProcessor? _trackingProcessor;
         private Vector _homeAxes;
         private Vector _appAxes;
-        private Vector _targetRaDec;
+        private Vector _targetRaDec = new(double.NaN, double.NaN);
         internal Exception? _mountError;
         // Slew-specific error — set by SlewOperation.HandleError on any post-return
         // movement failure. Distinct from _mountError so connection/tracking errors
