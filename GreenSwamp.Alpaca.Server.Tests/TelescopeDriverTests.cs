@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using ASCOM.Common.DeviceInterfaces;
 using GreenSwamp.Alpaca.MountControl;
 using GreenSwamp.Alpaca.Principles;
@@ -21,6 +22,8 @@ public class TelescopeDriverTests
 
         Assert.Matches(@"^\d+\.\d+$", version);
         var fullVersion = Version.Parse(fullVersionText);
+        var assemblyVersion = Version.Parse(FileVersionInfo.GetVersionInfo(typeof(Telescope).Assembly.Location).FileVersion!);
+        Assert.Equal(assemblyVersion, fullVersion);
         Assert.Equal(fullVersion.ToString(2), version);
     }
 

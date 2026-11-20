@@ -1792,14 +1792,15 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         private Version GetFullDriverVersion()
         {
-            var processPath = Environment.ProcessPath;
-            if (!string.IsNullOrWhiteSpace(processPath))
+            var assembly = typeof(Telescope).Assembly;
+            var driverPath = string.IsNullOrWhiteSpace(assembly.Location) ? Environment.ProcessPath : assembly.Location;
+            if (!string.IsNullOrWhiteSpace(driverPath))
             {
                 try
                 {
-                    var fileVersion = FileVersionInfo.GetVersionInfo(processPath).FileVersion;
+                    var fileVersion = FileVersionInfo.GetVersionInfo(driverPath).FileVersion;
                     if (Version.TryParse(fileVersion, out var version)) return version;
-                    LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), $"Invalid or missing process file version: {fileVersion}");
+                    LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), $"Invalid or missing driver file version: {fileVersion}");
                 }
                 catch (IOException ex)
                 {
@@ -1812,11 +1813,10 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
             else
             {
-                LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), "Process path is unavailable");
+                LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), "Driver file path is unavailable");
             }
 
-            return Assembly.GetEntryAssembly()?.GetName().Version
-                ?? Assembly.GetExecutingAssembly().GetName().Version
+            return assembly.GetName().Version
                 ?? throw new DriverException("Driver version information is unavailable");
         }
 
