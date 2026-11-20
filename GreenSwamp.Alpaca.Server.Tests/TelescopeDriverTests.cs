@@ -21,10 +21,31 @@ public class TelescopeDriverTests
         Assert.Equal(fullVersion.ToString(2), version);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsyncEquatorialSlew_WhenNotTracking_RejectsWithoutMotion(bool useTarget)
+    {
+        var telescope = CreateTelescope();
+
+        if (useTarget)
+            Assert.Throws<ASCOM.InvalidOperationException>(() => telescope.SlewToTargetAsync());
+        else
+            Assert.Throws<ASCOM.InvalidOperationException>(() => telescope.SlewToCoordinatesAsync(0, 0));
+
+        Assert.False(telescope.Tracking);
+        Assert.False(telescope.Slewing);
+    }
+
     private static Telescope CreateTelescope()
     {
         var settingsService = DispatchProxy.Create<IVersionedSettingsService, UnusedSettingsService>();
-        var settings = new SkySettings(new GreenSwamp.Alpaca.Settings.Models.SkySettings(), settingsService);
+        var settings = new SkySettings(new GreenSwamp.Alpaca.Settings.Models.SkySettings
+        {
+            CanSlew = true,
+            CanSlewAsync = true,
+            CanPulseGuide = true
+        }, settingsService);
         return new Telescope(0, new GreenSwamp.Alpaca.MountControl.Mount("device-0", settings));
     }
 
