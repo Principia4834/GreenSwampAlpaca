@@ -1329,6 +1329,9 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             }
         }
 
+        /// <summary>Starts or stops motion on the specified axis.</summary>
+        /// <exception cref="MethodNotImplementedException">The mount cannot move the specified axis.</exception>
+        /// <exception cref="InvalidValueException">The axis is undefined, or the rate is invalid for a supported axis.</exception>
         public void MoveAxis(TelescopeAxis Axis, double Rate)
         {
             var monitorItem = new MonitorEntry
@@ -1343,8 +1346,12 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             };
             LogMonitor(monitorItem);
 
+            if (!CanMoveAxis(Axis))
+            {
+                throw new MethodNotImplementedException(nameof(MoveAxis), $"MoveAxis is not supported on axis {Axis}.");
+            }
+
             CheckRate(Axis, Rate);
-            if (!CanMoveAxis(Axis)){throw new InvalidValueException("CanMoveAxis " + Enum.GetName(Axis));}
             CheckParked("MoveAxis");
 
             switch (Axis)
@@ -1944,11 +1951,6 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             LogMonitor(monitorItem);
 
             var rates = AxisRates(axis);
-            if (rates.Count == 0)
-            {
-                throw new InvalidValueException($"MoveAxis is not supported on axis {axis}.");
-            }
-
             var ratesStr = string.Empty;
             foreach (Rate item in rates)
             {
