@@ -60,5 +60,58 @@ The launcher opens `http://localhost:31416` in the default browser; it does not 
 
 Open the DMG and drag **GreenSwamp Alpaca Server** to **Applications**. Launch the application from the **Applications** folder, then browse to `http://localhost:31416`.
 
-There is no application menu entry on macOS. The DMG does not install an automatic background service, so launch the application again after restarting your Mac.
+There is no application menu entry on macOS. The DMG does not install an automatic background service. Launch the application manually after restarting your Mac, or configure `launchd` as described below.
+
+#### Optional background startup with launchd
+
+The server supports `--service` mode under **launchd**, the macOS service manager analogous to systemd. A **LaunchAgent** runs while your account is logged in; a **LaunchDaemon** can run at boot without anyone logging in. The following setup uses a LaunchAgent and requires no administrator privileges.
+
+1. Close any manually running GreenSwamp Alpaca Server instance before enabling background startup.
+2. In **macOS Terminal** (not Windows PowerShell), run `mkdir -p "$HOME/Library/LaunchAgents"`.
+3. Using a plain-text editor, save the following as `~/Library/LaunchAgents/com.greenswamp.alpaca.server.plist`. These paths assume the application was installed in `/Applications` with its original name.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.greenswamp.alpaca.server</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Applications/GreenSwamp Alpaca Server.app/Contents/MacOS/GreenSwampAlpacaLauncher</string>
+      <string>--service</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/greenswamp-alpaca.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/greenswamp-alpaca.err.log</string>
+  </dict>
+</plist>
+```
+
+4. In **macOS Terminal**, validate the file, enable the agent, and load it to start the server:
+
+```sh
+plutil -lint "$HOME/Library/LaunchAgents/com.greenswamp.alpaca.server.plist"
+launchctl enable "gui/$(id -u)/com.greenswamp.alpaca.server"
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.greenswamp.alpaca.server.plist"
+```
+
+Proceed only if validation reports `OK`. Once loaded, the server starts at subsequent logins and launchd restarts it if it exits. Open `http://localhost:31416` yourself; service mode does not launch a browser. Do not start a second server instance from Applications while the agent is running.
+
+To check status, run `launchctl print "gui/$(id -u)/com.greenswamp.alpaca.server"`. To stop it and prevent future automatic startup, run these commands in **macOS Terminal**:
+
+```sh
+launchctl disable "gui/$(id -u)/com.greenswamp.alpaca.server"
+launchctl bootout "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.greenswamp.alpaca.server.plist"
+```
+
+Service mode uses `~/GreenSwampServer` for settings, with version subfolders, and `~/GreenSwampServer/Logs` for application logs. This differs from interactive mode, so existing settings may need to be transferred while the server is stopped. Launch output and errors are recorded in the `/tmp` files specified above.
+
+The repository's older launchd template uses a different application path; use the current DMG paths shown here. A system-wide LaunchDaemon requires a separately configured service account, writable settings/log locations and administrator installation; it is not installed by the DMG or covered by the per-user steps above. See [Apple's launchd documentation](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html) for the agent/daemon distinction.
 
