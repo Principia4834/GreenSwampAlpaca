@@ -441,6 +441,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
+
       - uses: actions/download-artifact@v5
         with:
           path: release-assets
@@ -468,8 +470,24 @@ jobs:
             gh release create "${{ github.ref_name }}" \
               --repo "${{ github.repository }}" \
               --title "GreenSwamp Alpaca Server ${{ github.ref_name }}" \
+              --notes-file .github/release-installation.md \
               --generate-notes \
               $PRERELEASE_FLAG
+          else
+            # Replace only our instructions on reruns, preserving the existing changelog.
+            gh release view "${{ github.ref_name }}" \
+              --repo "${{ github.repository }}" \
+              --json body \
+              --jq '.body | split("<!-- greenswamp-installation:end -->") | last' \
+              > "$RUNNER_TEMP/release-changelog.md"
+            {
+              cat .github/release-installation.md
+              printf '\n\n'
+              cat "$RUNNER_TEMP/release-changelog.md"
+            } > "$RUNNER_TEMP/release-notes.md"
+            gh release edit "${{ github.ref_name }}" \
+              --repo "${{ github.repository }}" \
+              --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
 
           gh release upload "${{ github.ref_name }}" \
