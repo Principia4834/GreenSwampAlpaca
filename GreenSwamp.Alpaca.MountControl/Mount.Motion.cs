@@ -133,8 +133,6 @@ namespace GreenSwamp.Alpaca.MountControl
                 catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { break; }
 
                 if (!axis1Stopped || !axis2Stopped) continue;
-                if (_slewSettleTime > 0)
-                    Tasks.DelayHandler(TimeSpan.FromSeconds(_slewSettleTime).Milliseconds);
                 break;
             }
             stopwatch.Stop();
@@ -161,6 +159,13 @@ namespace GreenSwamp.Alpaca.MountControl
             #endregion
 
             SimTasks(MountTaskName.StopAxes);
+
+            // Keep Slewing true until settling is done, without delaying cancellation.
+            var settleTime = _slewSettleTime;
+            if (settleTime > 0)
+                token.WaitHandle.WaitOne(TimeSpan.FromSeconds(settleTime));
+            token.ThrowIfCancellationRequested();
+
             return success;
         }
 
