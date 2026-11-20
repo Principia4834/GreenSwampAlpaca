@@ -597,7 +597,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             get
             {
                 var asm = Assembly.GetExecutingAssembly();
-                var r = asm.FullName;
+                var r = $"{asm.FullName}, FileVersion={GetFullDriverVersion()}";
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{r}" };
@@ -608,31 +608,13 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         }
 
         /// <summary>
-        /// Return the file version of the driver assembly, or the entry assembly if the driver file assembly version is not available
+        /// Returns the major and minor driver version.
         /// </summary>
         public string DriverVersion
         {
             get
             {
-                string driverVersion = string.Empty;
-                try
-                {
-                    var processPath = Environment.ProcessPath;
-                    if (!string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath))
-                    {
-                        var fileVersion = FileVersionInfo.GetVersionInfo(processPath).FileVersion;
-                        if (!string.IsNullOrWhiteSpace(fileVersion))
-                        {
-                            driverVersion = fileVersion;
-                        }
-                    }
-                }
-                catch
-                {
-                    driverVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString()
-                        ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-                        ?? "0.0.0";
-                }
+                string driverVersion = GetFullDriverVersion().ToString(2);
 
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Data, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = $"{driverVersion}" };
@@ -1817,6 +1799,36 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
         }
 
         #region Private Methods
+
+        private Version GetFullDriverVersion()
+        {
+            var processPath = Environment.ProcessPath;
+            if (!string.IsNullOrWhiteSpace(processPath))
+            {
+                try
+                {
+                    var fileVersion = FileVersionInfo.GetVersionInfo(processPath).FileVersion;
+                    if (Version.TryParse(fileVersion, out var version)) return version;
+                    LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), $"Invalid or missing process file version: {fileVersion}");
+                }
+                catch (IOException ex)
+                {
+                    LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), ex.Message);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), ex.Message);
+                }
+            }
+            else
+            {
+                LogMessage(MonitorType.Warning, nameof(GetFullDriverVersion), "Process path is unavailable");
+            }
+
+            return Assembly.GetEntryAssembly()?.GetName().Version
+                ?? Assembly.GetExecutingAssembly().GetName().Version
+                ?? throw new DriverException("Driver version information is unavailable");
+        }
 
         private void CheckTrackingRate(string propertyOrMethod, DriveRate enumValue)
         {
