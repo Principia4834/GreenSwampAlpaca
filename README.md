@@ -39,11 +39,26 @@ A modern .NET 10 Blazor-based ASCOM Alpaca server that provides remote control o
 - **Configuration Management** - Web-based settings and calibration
 - **Monitoring & Logging** - Real-time operation logs and diagnostics
 
-## Linux and Raspberry Pi application menu
+## Launching the application
 
-Updated: 2026-11-20 18:40
+### Windows Start menu
+
+The MSI installer adds a **GreenSwamp Alpaca Server** folder to the Start menu with two shortcuts:
+
+- **GreenSwamp Alpaca Server** launches the server application. Use this when the server is not already running as a service.
+- **GreenSwamp Alpaca Server - Management UI** opens `http://localhost:31416` in the default browser. It does not start the server.
+
+With automatic service startup selected, the installer starts the service during installation and configures it to start on future boots. If manual startup is selected, start **GreenSwamp Alpaca Server** in Windows Services before opening the management UI.
+
+### Linux and Raspberry Pi application menu
 
 The DEB installer adds **main menu > Astronomy > GreenSwamp Alpaca Server** on desktops that support XDG menu merging, including Raspberry Pi OS Bookworm's labwc desktop. It installs a menu fragment under `/etc/xdg/menus/applications-merged/` without replacing system or personal menu layouts. Menu ordering remains controlled by the desktop and personal customisations; other desktops may also list the launcher under Science.
 
 The launcher opens `http://localhost:31416` in the default browser; it does not start the server. After installation, reboot to start the enabled service, or start `greenswamp-alpaca.service` manually before using the launcher.
+
+### macOS Applications folder
+
+Open the DMG and drag **GreenSwamp Alpaca Server** to **Applications**. Launch the application from the **Applications** folder, then browse to `http://localhost:31416`.
+
+There is no application menu entry on macOS. The DMG does not install an automatic background service, so launch the application again after restarting your Mac.
 
