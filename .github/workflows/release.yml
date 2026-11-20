@@ -324,6 +324,10 @@ jobs:
           SH
           chmod +x "$MACOS_DIR/$LAUNCHER_NAME"
 
+          cp "Installer/MacOS/Configure Background Startup.command" "dist/Configure Background Startup.command"
+          chmod +x "dist/Configure Background Startup.command"
+          bash -n "dist/Configure Background Startup.command"
+
           cat > "$CONTENTS/Info.plist" <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -386,8 +390,10 @@ jobs:
           STAGE_DIR="$RUNNER_TEMP/dmg-root"
 
           rm -rf "$STAGE_DIR"
-          mkdir -p "$STAGE_DIR"
-          cp -R "$APP_PATH" "$STAGE_DIR/"
+          mkdir -p "$STAGE_DIR/${APP_NAME}"
+          cp -R "$APP_PATH" "$STAGE_DIR/${APP_NAME}/"
+          cp "dist/Configure Background Startup.command" "$STAGE_DIR/${APP_NAME}/"
+          chmod +x "$STAGE_DIR/${APP_NAME}/Configure Background Startup.command"
           ln -s /Applications "$STAGE_DIR/Applications"
 
           if brew list create-dmg >/dev/null 2>&1 || brew install create-dmg; then
@@ -397,7 +403,7 @@ jobs:
               --window-pos 200 120 \
               --window-size 800 400 \
               --icon-size 100 \
-              --icon "${APP_NAME}.app" 200 190 \
+              --icon "${APP_NAME}" 200 190 \
               --app-drop-link 600 185 \
               "$DMG_NAME" \
               "$STAGE_DIR"

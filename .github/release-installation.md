@@ -1,7 +1,7 @@
 ﻿<!-- greenswamp-installation:start -->
 ## Installation
 
-Updated: 2026-11-20 18:45
+Updated: 2026-11-20 19:03
 
 Download the installer for your operating system from **Assets** below. These installers include the .NET runtime; a separate .NET installation is not required.
 
@@ -35,10 +35,12 @@ The menu entry opens the management UI; it does not start the service. On a head
 Requires macOS 12 or later.
 
 1. Download the DMG ending in `osx-arm64.dmg` for an Apple silicon Mac, or `osx-x64.dmg` for an Intel Mac. Check **Apple menu > About This Mac** if unsure.
-2. Open the DMG and drag **GreenSwamp Alpaca Server** to **Applications**.
-3. Open **GreenSwamp Alpaca Server** from Applications, then browse to http://localhost:31416.
+2. Open the DMG and drag the entire **GreenSwamp Alpaca Server** folder to **Applications**. Keep the application and its command helper together.
+3. Open that folder in Applications and launch **GreenSwamp Alpaca Server**, then browse to http://localhost:31416.
 
-Launch the application again after restarting your Mac; the DMG does not install an automatic background service.
+For optional startup at login, close any manually running server, then double-click **Configure Background Startup.command** in the installed folder. Choose **Enable**, read the warnings, and type **ENABLE** to accept. This creates a LaunchAgent for your account without administrator access; it runs while you are logged in, not at boot before login. Service settings use `~/GreenSwampServer` and are not automatically copied from interactive settings. Use the same helper to check status or disable startup; disabling requires typing **DISABLE** and stops the background server without deleting settings. Do not move or rename the installed folder while enabled.
+
+Without this opt-in setup, launch the application manually after restarting your Mac. During upgrades, disable background startup before replacing the installed folder, then enable it again using the new helper. If macOS blocks the downloaded helper, review the warning and use **System Settings > Privacy & Security > Open Anyway** only if you trust this release; do not disable Gatekeeper globally.
 
 ### Access from another computer
 

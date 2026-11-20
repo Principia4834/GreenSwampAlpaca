@@ -1,5 +1,6 @@
 ﻿# Shell scripts must always use LF, never CRLF
 *.sh text eol=lf
+*.command text eol=lf
 Installer/Linux/**/*.sh text eol=lf
 Installer/Linux/debian/* text eol=lf
 Installer/Linux/systemd/* text eol=lf
