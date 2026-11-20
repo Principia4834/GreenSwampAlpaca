@@ -185,8 +185,8 @@ namespace GreenSwamp.Alpaca.MountControl
         private bool _canSetRightAscensionRate = true;
         private bool _canSetTracking = true;
         private bool _canSiderealTime = true;
-        private bool _canSlew = true;
-        private bool _canSlewAltAz = true;
+        private bool _canSlew = false;
+        private bool _canSlewAltAz = false;
         private bool _canSlewAltAzAsync = true;
         private bool _canSlewAsync = true;
         private bool _canSync = true;
