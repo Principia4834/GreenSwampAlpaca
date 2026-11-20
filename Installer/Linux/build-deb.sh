@@ -34,11 +34,12 @@ SYSTEMD_DIR="${PKG_ROOT}/lib/systemd/system"
 DIRECTORIES_DIR="${PKG_ROOT}/usr/share/desktop-directories"
 APPLICATIONS_DIR="${PKG_ROOT}/usr/share/applications"
 ICONS_DIR="${PKG_ROOT}/usr/share/icons/hicolor/256x256/apps"
+MENUS_DIR="${PKG_ROOT}/etc/xdg/menus/applications-merged"
 
 echo "==> Building ${PKG_NAME}.deb ..."
 rm -rf "${PKG_ROOT}"
 
-mkdir -p "${INSTALL_DIR}" "${DEBIAN_DIR}" "${SYSTEMD_DIR}" "${DIRECTORIES_DIR}"  "${APPLICATIONS_DIR}" "${ICONS_DIR}"
+mkdir -p "${INSTALL_DIR}" "${DEBIAN_DIR}" "${SYSTEMD_DIR}" "${DIRECTORIES_DIR}" "${APPLICATIONS_DIR}" "${ICONS_DIR}" "${MENUS_DIR}"
 
 # Stage publish output
 cp -r "publish/${RID}/." "${INSTALL_DIR}/"
@@ -50,8 +51,9 @@ cp "${SCRIPT_DIR}/systemd/greenswamp-alpaca.service" "${SYSTEMD_DIR}/"
 # Stage XDG desktop entry (browser-launch menu item)
 cp "${SCRIPT_DIR}/greenswamp-alpaca.desktop" "${APPLICATIONS_DIR}/"
 
-# Stage desktop directory file (for application menu organization)
-cp "${SCRIPT_DIR}/astronomy.directory" "${DIRECTORIES_DIR}/"
+# Stage the Astronomy submenu without replacing the desktop's main menu.
+cp "${SCRIPT_DIR}/astronomy.directory" "${DIRECTORIES_DIR}/greenswamp-astronomy.directory"
+cp "${SCRIPT_DIR}/greenswamp-alpaca.menu" "${MENUS_DIR}/"
 
 # Stage application icon for desktop environments
 cp "${SCRIPT_DIR}/greenswamp1.png" "${ICONS_DIR}/greenswamp-alpaca.png"

@@ -39,3 +39,11 @@ A modern .NET 10 Blazor-based ASCOM Alpaca server that provides remote control o
 - **Configuration Management** - Web-based settings and calibration
 - **Monitoring & Logging** - Real-time operation logs and diagnostics
 
+## Linux and Raspberry Pi application menu
+
+Updated: 2026-11-20 18:40
+
+The DEB installer adds **main menu > Astronomy > GreenSwamp Alpaca Server** on desktops that support XDG menu merging, including Raspberry Pi OS Bookworm's labwc desktop. It installs a menu fragment under `/etc/xdg/menus/applications-merged/` without replacing system or personal menu layouts. Menu ordering remains controlled by the desktop and personal customisations; other desktops may also list the launcher under Science.
+
+The launcher opens `http://localhost:31416` in the default browser; it does not start the server. After installation, reboot to start the enabled service, or start `greenswamp-alpaca.service` manually before using the launcher.
+

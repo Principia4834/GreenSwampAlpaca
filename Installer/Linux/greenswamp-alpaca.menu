@@ -1,0 +1,12 @@
+﻿<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+	<Name>Astronomy</Name>
+	<Directory>greenswamp-astronomy.directory</Directory>
+	<Include>
+	  <Filename>greenswamp-alpaca.desktop</Filename>
+	</Include>
+  </Menu>
+</Menu>
