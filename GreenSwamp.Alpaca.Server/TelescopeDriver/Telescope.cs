@@ -1420,37 +1420,32 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
 
         public void PulseGuide(GuideDirection Direction, int Duration)
         {
+            if (_mount.AtPark) { throw new ParkedException(); }
+
+            var request = new MonitorEntry
+                { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{Direction},{Duration}") };
+            LogMonitor(request);
+
+            CheckCapability(_mount.Settings.CanPulseGuide, "PulseGuide");
+            CheckRange(Duration, 0, 30000, "PulseGuide", "Duration");
+            if (!Enum.IsDefined(Direction))
+                throw new InvalidValueException("Direction", ((int)Direction).ToString(CultureInfo.InvariantCulture), "0 to 3");
+            CheckTracking(true, "PulseGuide");
+            if (_mount.IsSlewing) throw new InvalidOperationException("PulseGuide is not allowed while slewing");
+
+            var isRa = Direction == GuideDirection.East || Direction == GuideDirection.West;
+            var wasGuiding = isRa ? _mount.IsPulseGuidingRa : _mount.IsPulseGuidingDec;
             try
             {
-                if (_mount.AtPark) { throw new ParkedException(); }
-
-                var monitorItem = new MonitorEntry
-                    { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Information, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{Direction},{Duration}") };
-                LogMonitor(monitorItem);
-
-                CheckCapability(_mount.Settings.CanPulseGuide, "PulseGuide");
-                CheckRange(Duration, 0, 30000, "PulseGuide", "Duration");
-
-                switch (Direction)
-                {
-                    case GuideDirection.North:
-                    case GuideDirection.South:
-                        _mount.IsPulseGuidingDec = true;
-                        break;
-                    case GuideDirection.East:
-                    case GuideDirection.West:
-                        _mount.IsPulseGuidingRa = true;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(Direction), Direction, null);
-                }
-
                 _mount.PulseGuide(Direction, Duration, 0);
             }
             catch (Exception e)
             {
-                _mount.IsPulseGuidingRa = false;
-                _mount.IsPulseGuidingDec = false;
+                if (!wasGuiding)
+                {
+                    if (isRa) _mount.IsPulseGuidingRa = false;
+                    else _mount.IsPulseGuidingDec = false;
+                }
                 var monitorItem = new MonitorEntry
                 { Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Telescope, Category = MonitorCategory.Driver, Type = MonitorType.Warning, Method = MethodBase.GetCurrentMethod()?.Name, Thread = Environment.CurrentManagedThreadId, Message = FormattableString.Invariant($"{e.Message}") };
                 LogMonitor(monitorItem);

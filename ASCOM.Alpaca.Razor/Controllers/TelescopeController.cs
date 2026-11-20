@@ -2,6 +2,7 @@
 using ASCOM.Common.Alpaca;
 using ASCOM.Common.DeviceInterfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.ComponentModel;
@@ -1029,11 +1030,16 @@ namespace ASCOM.Alpaca
         [Route("{DeviceNumber}/pulseguide")]
         public ActionResult<Response> PulseGuide(
             [Required][DefaultValue(0)][SwaggerSchema(Strings.DeviceIDDescription, Format = "uint32")][Range(0, 4294967295)] uint DeviceNumber,
-            [Required][FromForm][SwaggerSchema("The direction in which the guide-rate motion is to be made. 0 = guideNorth, 1 = guideSouth, 2 = guideEast, 3 = guideWest")] GuideDirection Direction,
+            [BindRequired][FromForm][SwaggerSchema("The direction in which the guide-rate motion is to be made. 0 = guideNorth, 1 = guideSouth, 2 = guideEast, 3 = guideWest")] int Direction,
             [Required][FromForm][SwaggerSchema("The duration of the guide-rate motion (milliseconds)")] int Duration, [FromForm][SwaggerSchema(Strings.ClientIDDescription, Format = "uint32")][Range(0, 4294967295)] uint ClientID = 0,
             [FromForm][SwaggerSchema(Strings.ClientTransactionIDDescription, Format = "uint32")][Range(0, 4294967295)] uint ClientTransactionID = 0)
         {
-            return ProcessRequest(() => DeviceManager.GetTelescope(DeviceNumber).PulseGuide(Direction, Duration), DeviceManager.ServerTransactionID, ClientID, ClientTransactionID);
+            return ProcessRequest(() =>
+            {
+                if (!Enum.IsDefined(typeof(GuideDirection), Direction))
+                    throw new ASCOM.InvalidValueException("Direction", Direction.ToString(System.Globalization.CultureInfo.InvariantCulture), "0 to 3");
+                DeviceManager.GetTelescope(DeviceNumber).PulseGuide((GuideDirection)Direction, Duration);
+            }, DeviceManager.ServerTransactionID, ClientID, ClientTransactionID);
         }
 
         /// <summary>
