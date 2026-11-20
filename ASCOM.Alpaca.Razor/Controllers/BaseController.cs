@@ -122,8 +122,7 @@ namespace ASCOM.Alpaca
             bool isConnected = DeviceManager.DeviceDrivers.TryGetValue((deviceType, deviceNumber), out var driver) && driver.Connected;
             if (isConnected)
                 return false;
-            List<string> allowedList = ["connect", "disconnect", "connected", "connecting", "interfaceversion", "driverversion", "driverinfo", "name", "description"];
-            ;
+            List<string> allowedList = new List<string> { "connect", "disconnect", "connected", "connecting", "interfaceversion", "driverversion", "driverinfo", "name", "description", "supportedactions" };
             return !(allowedList.Contains(operation));
         }
 

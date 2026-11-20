@@ -1344,7 +1344,7 @@ namespace GreenSwamp.Alpaca.Server.TelescopeDriver
             LogMonitor(monitorItem);
 
             CheckRate(Axis, Rate);
-            if (!CanMoveAxis(Axis)){throw new MethodNotImplementedException("CanMoveAxis " + Enum.GetName(Axis));}
+            if (!CanMoveAxis(Axis)){throw new InvalidValueException("CanMoveAxis " + Enum.GetName(Axis));}
             CheckParked("MoveAxis");
 
             switch (Axis)

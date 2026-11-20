@@ -96,7 +96,8 @@ namespace ASCOM.Alpaca.Razor
         public static void ConfigureAlpacaAPIBehavoir(IServiceCollection services)
         {
             //Add MVC
-            services.AddMvc();
+            services.AddMvc(options =>
+                options.ModelBinderProviders.Insert(0, new ClientTransactionIdModelBinderProvider()));
 
             //Do not automatically change JSON to Camel Case
             services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
