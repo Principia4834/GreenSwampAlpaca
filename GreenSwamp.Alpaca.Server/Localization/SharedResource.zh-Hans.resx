@@ -1293,9 +1293,6 @@
   <data name="Home_Welcome" xml:space="preserve">
     <value>欢迎使用&lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
   </data>
-  <data name="Home_Footer" xml:space="preserve">
-    <value>Green Swamp Alpaca Server</value>
-  </data>
   <data name="HomePark_Home" xml:space="preserve">
     <value>归位</value>
   </data>
@@ -2991,17 +2988,22 @@
   <data name="Ui_Theme" xml:space="preserve">
     <value>显示主题</value>
   </data>
+  <data name="Ui_ThemeMode" xml:space="preserve"><value>外观</value></data>
+  <data name="Ui_ThemeMode_Tip" xml:space="preserve"><value>选择浅色、深色或跟随系统外观。红光始终保持深色。</value></data>
+  <data name="Ui_ThemeColour" xml:space="preserve"><value>主题颜色</value></data>
+  <data name="Ui_Theme_RedAlwaysDark" xml:space="preserve"><value>红光始终保持深色；您的外观选择会保留供其他颜色使用。</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="Theme_System" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Theme_Green" xml:space="preserve"><value>绿色</value></data>
+  <data name="Theme_Forest" xml:space="preserve"><value>森林</value></data>
+  <data name="Theme_Ocean" xml:space="preserve"><value>海洋</value></data>
+  <data name="Theme_Steel" xml:space="preserve"><value>钢铁</value></data>
+  <data name="Theme_Nebula" xml:space="preserve"><value>星云</value></data>
+  <data name="Theme_Copper" xml:space="preserve"><value>铜色</value></data>
+  <data name="Theme_RedLight" xml:space="preserve"><value>红光</value></data>
   <data name="Ui_NotImplemented" xml:space="preserve">
     <value>未实现</value>
-  </data>
-  <data name="Theme_DarkGreen" xml:space="preserve">
-    <value>深色 · 绿色</value>
-  </data>
-  <data name="Theme_LightGreen" xml:space="preserve">
-    <value>浅色 · 绿色</value>
-  </data>
-  <data name="Theme_NightRed" xml:space="preserve">
-    <value>夜间 · 红色</value>
   </data>
   <data name="Ui_Theme_BrowserOnly" xml:space="preserve">
     <value>仅保存在此浏览器中。</value>

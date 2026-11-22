@@ -70,9 +70,7 @@ public sealed record GsSurfaces(
 /// </summary>
 public static class GsThemeBuilder
 {
-    public const string GreenThemeColour = "#4caf50";
-
-    private const double AccentContrast = 4.5;
+    private const double AccentContrast = 4.55;
     private const double StatusContrast = 3.0;
     private const double LightnessStep = 0.005;
 

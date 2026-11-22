@@ -1377,17 +1377,22 @@
   <data name="Ui_Theme" xml:space="preserve">
     <value>Display Theme</value>
   </data>
+  <data name="Ui_ThemeMode" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Ui_ThemeMode_Tip" xml:space="preserve"><value>Choose light, dark, or follow the system appearance. Red Light always stays dark.</value></data>
+  <data name="Ui_ThemeColour" xml:space="preserve"><value>Theme colour</value></data>
+  <data name="Ui_Theme_RedAlwaysDark" xml:space="preserve"><value>Red Light always stays dark; your appearance choice is retained for other colours.</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Light</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Theme_System" xml:space="preserve"><value>Follow System</value></data>
+  <data name="Theme_Green" xml:space="preserve"><value>Green</value></data>
+  <data name="Theme_Forest" xml:space="preserve"><value>Forest</value></data>
+  <data name="Theme_Ocean" xml:space="preserve"><value>Ocean</value></data>
+  <data name="Theme_Steel" xml:space="preserve"><value>Steel</value></data>
+  <data name="Theme_Nebula" xml:space="preserve"><value>Nebula</value></data>
+  <data name="Theme_Copper" xml:space="preserve"><value>Copper</value></data>
+  <data name="Theme_RedLight" xml:space="preserve"><value>Red Light</value></data>
   <data name="Ui_NotImplemented" xml:space="preserve">
     <value>Not implemented</value>
-  </data>
-  <data name="Theme_DarkGreen" xml:space="preserve">
-    <value>Dark · Green</value>
-  </data>
-  <data name="Theme_LightGreen" xml:space="preserve">
-    <value>Light · Green</value>
-  </data>
-  <data name="Theme_NightRed" xml:space="preserve">
-    <value>Night · Red</value>
   </data>
   <data name="Ui_Theme_BrowserOnly" xml:space="preserve">
     <value>Saved in this browser only.</value>
@@ -2126,9 +2131,6 @@
   </data>
   <data name="Home_Welcome" xml:space="preserve">
     <value>Welcome to &lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
-  </data>
-  <data name="Home_Footer" xml:space="preserve">
-    <value>Green Swamp Alpaca Server</value>
   </data>
   <data name="MountCfg_Title" xml:space="preserve">
     <value>Mount Configuration</value>

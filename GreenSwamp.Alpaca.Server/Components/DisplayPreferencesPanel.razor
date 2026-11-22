@@ -10,26 +10,41 @@
 @implements IDisposable
 
 <MudStack Spacing="3">
+    <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_ThemeMode_Tip"]" Placement="Placement.Right" Arrow="true">
+        <MudSelect T="string"
+                   Value="ThemeService.Mode"
+                   ValueChanged="OnModeChanged"
+                   Label="@Loc["Ui_ThemeMode"]"
+                   ToStringFunc="@ModeLabel"
+                   HelperText="@(ThemeService.Colour == GsThemeCatalog.Red ? Loc["Ui_Theme_RedAlwaysDark"].Value : Loc["Ui_Theme_BrowserOnly"].Value)"
+                   Error="@_themeNotSaved"
+                   ErrorText="@Loc["Ui_Theme_NotSaved"].Value">
+            <MudSelectItem T="string" Value="@GsThemeCatalog.Light">@Loc["Theme_Light"]</MudSelectItem>
+            <MudSelectItem T="string" Value="@GsThemeCatalog.Dark">@Loc["Theme_Dark"]</MudSelectItem>
+            <MudSelectItem T="string" Value="@GsThemeCatalog.System">@Loc["Theme_System"]</MudSelectItem>
+        </MudSelect>
+    </MudTooltip>
+
     <MudTooltip Inline="false" RootStyle="max-width:260px" Text="@Loc["Ui_Theme_Tip"]" Placement="Placement.Right" Arrow="true">
         <MudSelect T="string"
-                   Value="ThemeService.Current.Id"
-                   ValueChanged="OnThemeChanged"
-                   Label="@Loc["Ui_Theme"]"
-                   ToStringFunc="@(id => Loc[GsThemeCatalog.Resolve(id).NameKey].Value)"
+                   Value="ThemeService.Colour"
+                   ValueChanged="OnColourChanged"
+                   Label="@Loc["Ui_ThemeColour"]"
+                   ToStringFunc="@ColourLabel"
                    HelperText="@Loc["Ui_Theme_BrowserOnly"].Value"
                    Error="@_themeNotSaved"
                    ErrorText="@Loc["Ui_Theme_NotSaved"].Value">
-            @foreach (var theme in GsThemeCatalog.All)
+            @foreach (var colour in GsThemeCatalog.Colours.Values)
             {
-                var palette = ThemePalette(theme);
-                <MudSelectItem T="string" Value="@theme.Id">
+                var palette = ThemePalette(GsThemeCatalog.ForColour(colour.Id, ThemeService.Current.IsDark));
+                <MudSelectItem T="string" Value="@colour.Id">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                         <span style="display:inline-flex; gap:0.125rem; padding:0.125rem; border:1px solid var(--mud-palette-lines-inputs); border-radius:0.25rem;">
                             <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Surface);"></span>
                             <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Primary);"></span>
                             <span style="width:0.75rem; height:0.75rem; border-radius:0.125rem; background-color:@Hex(palette.Tertiary);"></span>
                         </span>
-                        <span>@Loc[theme.NameKey]</span>
+                        <MudText Typo="Typo.body1">@Loc[colour.NameKey]</MudText>
                     </MudStack>
                 </MudSelectItem>
             }
@@ -151,10 +166,24 @@
     }
 
     // Theme, brightness and zoom are per browser and applied immediately.
-    private async Task OnThemeChanged(string themeId)
+    private async Task OnModeChanged(string mode)
     {
-        _themeNotSaved = !await ThemeService.SetThemeAsync(themeId);
+        _themeNotSaved = !await ThemeService.SetModeAsync(mode);
     }
+
+    private async Task OnColourChanged(string colour)
+    {
+        _themeNotSaved = !await ThemeService.SetColourAsync(colour);
+    }
+
+    private string ModeLabel(string mode) => Loc[mode switch
+    {
+        GsThemeCatalog.Light => "Theme_Light",
+        GsThemeCatalog.System => "Theme_System",
+        _ => "Theme_Dark"
+    }].Value;
+
+    private string ColourLabel(string colour) => Loc[GsThemeCatalog.Colours[colour].NameKey].Value;
 
     private async Task OnNightLevelChanged(int level)
     {

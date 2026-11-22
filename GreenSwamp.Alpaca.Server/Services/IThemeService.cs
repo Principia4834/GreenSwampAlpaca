@@ -10,6 +10,12 @@ public interface IThemeService
     /// <summary>The active theme. Dark Green until <see cref="InitializeAsync"/> has read the stored preference.</summary>
     GsThemeDefinition Current { get; }
 
+    /// <summary>The selected light, dark, or system appearance mode.</summary>
+    string Mode { get; }
+
+    /// <summary>The selected theme colour.</summary>
+    string Colour { get; }
+
     /// <summary>Raised after <see cref="Current"/> changes. May be raised on any thread; marshal to the renderer before use.</summary>
     event Action? Changed;
 
@@ -27,6 +33,12 @@ public interface IThemeService
 
     /// <summary>Applies a theme immediately, then stores it. Returns false when the id is unknown or storage failed.</summary>
     Task<bool> SetThemeAsync(string themeId);
+
+    /// <summary>Sets the appearance mode and stores it in this browser.</summary>
+    Task<bool> SetModeAsync(string mode);
+
+    /// <summary>Sets the theme colour and stores it in this browser.</summary>
+    Task<bool> SetColourAsync(string colour);
 
     /// <summary>Applies a brightness level at once and stores it shortly afterwards. Returns false when the active theme cannot be dimmed.</summary>
     Task<bool> SetNightLevelAsync(int level);

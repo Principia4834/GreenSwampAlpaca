@@ -10,6 +10,9 @@ public sealed class ThemePreference
 
     public string? ThemeId { get; set; }
 
+    /// <summary>Light, dark, or system; null means the default mode.</summary>
+    public string? Mode { get; set; }
+
     /// <summary>Brightness percentage for themes that support dimming; null means the theme default.</summary>
     public int? NightLevel { get; set; }
 

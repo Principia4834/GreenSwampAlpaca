@@ -11,10 +11,16 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings, IJSRun
     private static readonly TimeSpan PersistDelay = TimeSpan.FromMilliseconds(400);
 
     private bool _initialized;
+    private bool _systemDark;
     private int? _nightLevel;
     private CancellationTokenSource? _persistCts;
+    private DotNetObjectReference<ThemeService>? _systemObserver;
 
     public GsThemeDefinition Current { get; private set; } = GsThemeCatalog.Default;
+
+    public string Mode { get; private set; } = GsThemeCatalog.Dark;
+
+    public string Colour => GsThemeCatalog.ColourOf(Current);
 
     public int NightLevel => Current.Dimming is { } dimming ? dimming.Normalize(_nightLevel ?? dimming.Default) : 100;
 
@@ -34,9 +40,14 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings, IJSRun
         _initialized = true;
 
         var preference = await browserSettings.GetAsync(StorageKey, new ThemePreference());
+        var savedTheme = GsThemeCatalog.Resolve(preference.ThemeId);
+        Mode = preference.Mode is GsThemeCatalog.Light or GsThemeCatalog.Dark or GsThemeCatalog.System
+            ? preference.Mode : GsThemeCatalog.Dark;
         _nightLevel = preference.NightLevel;
         ZoomPercent = preference.ZoomPercent is { } zoom ? GsZoom.NormalizePercent(zoom) : null;
-        await ApplyAsync(GsThemeCatalog.Resolve(preference.ThemeId));
+        _systemObserver = DotNetObjectReference.Create(this);
+        _systemDark = await js.InvokeAsync<bool>("gsTheme.watchSystem", _systemObserver);
+        await ApplyAsync(GsThemeCatalog.ForColour(GsThemeCatalog.ColourOf(savedTheme), IsDark()));
         DisplayChanged?.Invoke();
         await CallBrowserAsync("gsTheme.ready");
     }
@@ -49,9 +60,47 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings, IJSRun
             return false;
         }
 
+        Mode = theme.IsDark ? GsThemeCatalog.Dark : GsThemeCatalog.Light;
         await ApplyAsync(theme);
+        DisplayChanged?.Invoke();
         return await PersistAsync();
     }
+
+    public async Task<bool> SetModeAsync(string mode)
+    {
+        if (mode is not (GsThemeCatalog.Light or GsThemeCatalog.Dark or GsThemeCatalog.System))
+        {
+            return false;
+        }
+
+        Mode = mode;
+        await ApplyAsync(GsThemeCatalog.ForColour(Colour, IsDark()));
+        DisplayChanged?.Invoke();
+        return await PersistAsync();
+    }
+
+    public async Task<bool> SetColourAsync(string colour)
+    {
+        if (!GsThemeCatalog.Colours.ContainsKey(colour))
+        {
+            return false;
+        }
+
+        await ApplyAsync(GsThemeCatalog.ForColour(colour, IsDark()));
+        return await PersistAsync();
+    }
+
+    [JSInvokable]
+    public async Task SystemDarkChanged(bool isDark)
+    {
+        _systemDark = isDark;
+        if (Mode == GsThemeCatalog.System)
+        {
+            await ApplyAsync(GsThemeCatalog.ForColour(Colour, isDark));
+        }
+    }
+
+    private bool IsDark() => Mode == GsThemeCatalog.Dark || (Mode == GsThemeCatalog.System && _systemDark);
 
     public async Task<bool> SetNightLevelAsync(int level)
     {
@@ -80,13 +129,22 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings, IJSRun
         CancelPendingPersist();
         _nightLevel = null;
         ZoomPercent = null;
+        Mode = GsThemeCatalog.Dark;
         await ApplyAsync(GsThemeCatalog.Default);
         DisplayChanged?.Invoke();
         await CallBrowserAsync("gsTheme.setZoom", ZoomPercent);
         return await browserSettings.RemoveAsync(StorageKey);
     }
 
-    public void Dispose() => CancelPendingPersist();
+    public void Dispose()
+    {
+        CancelPendingPersist();
+        if (_systemObserver is not null)
+        {
+            _ = CallBrowserAsync("gsTheme.unwatchSystem");
+            _systemObserver.Dispose();
+        }
+    }
 
     private Task<bool> PersistAsync()
     {
@@ -94,6 +152,7 @@ public sealed class ThemeService(IBrowserSettingsService browserSettings, IJSRun
         return browserSettings.SetAsync(StorageKey, new ThemePreference
         {
             ThemeId = Current.Id,
+            Mode = Mode,
             NightLevel = _nightLevel,
             ZoomPercent = ZoomPercent
         });

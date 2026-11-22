@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Text.Json;
 
 namespace GreenSwamp.Alpaca.Server.Theme;
 
@@ -37,16 +38,28 @@ public static class GsThemeCss
         var dims = string.Join(",", GsThemeCatalog.All
             .Where(t => t.Dimming is not null)
             .Select(t => $"\"{t.Id}\":[{t.Dimming!.Min},{t.Dimming.Default},{t.Dimming.Max},{t.Dimming.Step}]"));
+        var variants = JsonSerializer.Serialize(GsThemeCatalog.Colours.Values
+            .SelectMany(colour => new[] { colour.Light.Id, colour.Dark.Id }.Distinct()
+                .Select(id => new { Id = id, colour.Light, colour.Dark }))
+            .ToDictionary(entry => entry.Id, entry => new { light = entry.Light.Id, dark = entry.Dark.Id }));
         var baseFontPx = (int)GsZoom.BaseFontSizePx;
         return $$"""
             (function () {
                 var ids = [{{ids}}], def = "{{GsThemeCatalog.Default.Id}}", root = document.documentElement, id = def, lvl = null, zoom = null;
-                var dim = {{{dims}}};
+                var dim = {{{dims}}}, variants = {{variants}};
+                var media = window.matchMedia("(prefers-color-scheme: dark)"), observer = null;
+                function systemChanged(event) {
+                    if (observer) observer.invokeMethodAsync("SystemDarkChanged", event.matches).catch(function (error) { console.error("Theme system preference update failed", error); });
+                }
                 try {
                     var raw = window.localStorage.getItem("{{StorageKey}}");
                     if (raw) {
                         var o = JSON.parse(raw), v = o && (o.ThemeId || o.themeId);
                         if (ids.indexOf(v) >= 0) id = v;
+                        var mode = o.Mode || o.mode;
+                        if (mode === "{{GsThemeCatalog.System}}") {
+                            id = variants[id][media.matches ? "dark" : "light"];
+                        }
                         lvl = o.NightLevel != null ? o.NightLevel : o.nightLevel;
                         zoom = o.ZoomPercent != null ? o.ZoomPercent : o.zoomPercent;
                     }
@@ -70,6 +83,8 @@ public static class GsThemeCss
                 else setTimeout(function () { root.classList.add("{{ReadyClass}}"); }, 3000);
                 window.gsTheme = {
                     apply: function (v) { if (ids.indexOf(v) >= 0) { root.setAttribute("{{ThemeAttribute}}", v); paintLevel(); } },
+                    watchSystem: function (dotnet) { observer = dotnet; media.addEventListener("change", systemChanged); return media.matches; },
+                    unwatchSystem: function () { media.removeEventListener("change", systemChanged); observer = null; },
                     setLevel: function (n) { lvl = n; paintLevel(); },
                     setZoom: function (p) { zoom = p; paintZoom(); },
                     ready: function () {

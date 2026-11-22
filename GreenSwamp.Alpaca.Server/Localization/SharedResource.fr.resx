@@ -1377,17 +1377,22 @@
   <data name="Ui_Theme" xml:space="preserve">
     <value>Thème d'affichage</value>
   </data>
+  <data name="Ui_ThemeMode" xml:space="preserve"><value>Apparence</value></data>
+  <data name="Ui_ThemeMode_Tip" xml:space="preserve"><value>Choisissez le mode clair, sombre ou celui du système. La lumière rouge reste toujours sombre.</value></data>
+  <data name="Ui_ThemeColour" xml:space="preserve"><value>Couleur du thème</value></data>
+  <data name="Ui_Theme_RedAlwaysDark" xml:space="preserve"><value>La lumière rouge reste sombre ; votre choix est conservé pour les autres couleurs.</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Clair</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Sombre</value></data>
+  <data name="Theme_System" xml:space="preserve"><value>Suivre le système</value></data>
+  <data name="Theme_Green" xml:space="preserve"><value>Vert</value></data>
+  <data name="Theme_Forest" xml:space="preserve"><value>Forêt</value></data>
+  <data name="Theme_Ocean" xml:space="preserve"><value>Océan</value></data>
+  <data name="Theme_Steel" xml:space="preserve"><value>Acier</value></data>
+  <data name="Theme_Nebula" xml:space="preserve"><value>Nébuleuse</value></data>
+  <data name="Theme_Copper" xml:space="preserve"><value>Cuivre</value></data>
+  <data name="Theme_RedLight" xml:space="preserve"><value>Lumière rouge</value></data>
   <data name="Ui_NotImplemented" xml:space="preserve">
     <value>Non implémenté</value>
-  </data>
-  <data name="Theme_DarkGreen" xml:space="preserve">
-    <value>Sombre · Vert</value>
-  </data>
-  <data name="Theme_LightGreen" xml:space="preserve">
-    <value>Clair · Vert</value>
-  </data>
-  <data name="Theme_NightRed" xml:space="preserve">
-    <value>Nuit · Rouge</value>
   </data>
   <data name="Ui_Theme_BrowserOnly" xml:space="preserve">
     <value>Enregistré uniquement dans ce navigateur.</value>
@@ -2126,9 +2131,6 @@
   </data>
   <data name="Home_Welcome" xml:space="preserve">
     <value>Bienvenue sur &lt;span&gt;Green Swamp&lt;/span&gt; Alpaca Server</value>
-  </data>
-  <data name="Home_Footer" xml:space="preserve">
-    <value>Green Swamp Alpaca Server</value>
   </data>
   <data name="MountCfg_Title" xml:space="preserve">
     <value>Configuration de la monture</value>

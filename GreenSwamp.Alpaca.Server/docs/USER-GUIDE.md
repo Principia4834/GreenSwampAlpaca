@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-07-09 22:51**
+**2026-11-22 11:54**
 
 ---
 
@@ -412,6 +412,8 @@ Four groups, each covering a different aspect of the Alpaca HTTP server:
 | **Network** | Port, remote access, UDP discovery, loopback discovery |
 | **User Interface** | Zoom, browser auto-start, display theme, language |
 | **Authentication** | Enable auth, username |
+
+Display preferences are saved per browser. Choose Light, Dark, or Follow System independently of the theme colour: Green (Green Swamp), Forest (forest green), Ocean (teal), Steel (steel blue), Nebula (deep violet), Copper (burnt orange), or Red Light. Follow System responds to system appearance changes. Red Light always remains dark and retains its night brightness control; the chosen appearance is restored when another colour is selected.
 
 ### 6.5 Logging Settings
 
