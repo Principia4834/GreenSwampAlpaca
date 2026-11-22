@@ -9,12 +9,15 @@
     <DialogContent>
         <MudStack Spacing="2">
             <MudText Typo="Typo.overline" Class="gs-panel-heading">@Loc["TView_Appearance"]</MudText>
-            <MudSelect T="Model3DType" Label="@Loc["TView_Model"]" @bind-Value="_options.ModelType">
-                @foreach (var model in Enum.GetValues<Model3DType>())
-                {
-                    <MudSelectItem Value="@model">@ChoiceLabel(model.ToString())</MudSelectItem>
-                }
-            </MudSelect>
+            @if (!_options.UseAssembly)
+            {
+                <MudSelect T="Model3DType" Label="@Loc["TView_Model"]" @bind-Value="_options.ModelType">
+                    @foreach (var model in Enum.GetValues<Model3DType>())
+                    {
+                        <MudSelectItem Value="@model">@ChoiceLabel(model.ToString())</MudSelectItem>
+                    }
+                </MudSelect>
+            }
             <MudSelect T="string" Label="@Loc["TView_Background"]" @bind-Value="_options.Background">
                 @foreach (var background in TelescopeViewerSettings.BackgroundChoices)
                 {
