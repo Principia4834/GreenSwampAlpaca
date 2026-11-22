@@ -52,7 +52,7 @@ public static class GsTheme
             {
                 FontSize = "0.8125rem",
                 FontWeight = "500",
-                TextTransform = "uppercase",
+                TextTransform = "none",
                 LetterSpacing = "0.06em",
             },
             Caption = new CaptionTypography { FontSize = "0.75rem", LineHeight = "1.4" },
@@ -62,12 +62,13 @@ public static class GsTheme
                 FontWeight = "500",
                 LineHeight = "2.66",
                 LetterSpacing = "0.08333em",
-                TextTransform = "uppercase",
+                TextTransform = "none",
             },
         },
 
         LayoutProperties = new LayoutProperties
         {
+            DefaultBorderRadius = "0.625rem",
             DrawerWidthLeft  = "15.625rem",
             DrawerWidthRight = "15.625rem",
             AppbarHeight     = "3.5rem",
