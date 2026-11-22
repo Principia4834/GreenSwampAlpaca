@@ -15,11 +15,14 @@
  */
 
 using ASCOM.Common.DeviceInterfaces;
+using GreenSwamp.Alpaca.Mount.Commands;
+using GreenSwamp.Alpaca.Mount.SkyWatcher;
 using GreenSwamp.Alpaca.Principles;
 using GreenSwamp.Alpaca.Settings.Models;
 using GreenSwamp.Alpaca.Shared;
 using System.Diagnostics;
 using System.Reflection;
+using Range = GreenSwamp.Alpaca.Principles.Range;
 
 namespace GreenSwamp.Alpaca.MountControl
 {
@@ -153,6 +156,7 @@ namespace GreenSwamp.Alpaca.MountControl
         internal void MountStopAxes()
         {
             _ctsGoTo?.Cancel();
+            PrepareMoveAxisStopChecks();
             _moveAxisActive = false;
             _rateMoveAxes = new Vector(0, 0);
             _rateRaDec = new Vector(0, 0);
@@ -171,6 +175,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _slewState = SlewType.SlewNone;
             Tracking = false;
             TrackingMode = TrackingMode.Off;
+            StartMoveAxisStopChecks();
         }
 
         /// <summary>
@@ -295,25 +300,187 @@ namespace GreenSwamp.Alpaca.MountControl
             Thread.Sleep(50);
         }
 
-        /// <summary>
-        /// Sets/reset tracking and slewing state while MoveAxis is active.
-        /// Mirrors SkyServer.SetRateMoveSlewState using this device's own fields.
-        /// </summary>
+        /// <summary>Retains MoveAxis slew state until requested motion and measured stopping are complete.</summary>
         private void SetRateMoveSlewState()
         {
-            bool primaryActive = _rateMoveAxes.X != 0.0;
-            bool secondaryActive = _rateMoveAxes.Y != 0.0;
-            if (primaryActive || secondaryActive)
+            lock (_moveAxisStopLock)
             {
-                _moveAxisActive = true;
-                _slewState = SlewType.SlewMoveAxis;
+                _moveAxisActive = _rateMoveAxes.X != 0.0 || _rateMoveAxes.Y != 0.0
+                    || _moveAxisStopPending[0] || _moveAxisStopPending[1];
+                if (_slewState == SlewType.SlewNone || _slewState == SlewType.SlewMoveAxis)
+                {
+                    _slewState = _moveAxisActive ? SlewType.SlewMoveAxis : SlewType.SlewNone;
+                    if (_rateMoveAxes.X == 0.0 && _rateMoveAxes.Y == 0.0 && Tracking)
+                        SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                }
             }
-            if (!primaryActive && !secondaryActive)
+        }
+
+        private bool MoveAxisStopPending
+        {
+            get
             {
+                lock (_moveAxisStopLock)
+                    return _moveAxisStopPending[0] || _moveAxisStopPending[1];
+            }
+        }
+
+        private int PrepareMoveAxisRateChange(int axis, double rate)
+        {
+            lock (_moveAxisStopLock)
+            {
+                _moveAxisStopPending[axis] = rate == 0.0;
+                _moveAxisStopRate[axis] = rate;
+                return ++_moveAxisStopVersion[axis];
+            }
+        }
+
+        private void PrepareMoveAxisStopChecks()
+        {
+            lock (_moveAxisStopLock)
+            {
+                if (_rateMoveAxes.X != 0.0 || _moveAxisStopPending[0]) PrepareMoveAxisRateChange(0, 0.0);
+                if (_rateMoveAxes.Y != 0.0 || _moveAxisStopPending[1]) PrepareMoveAxisRateChange(1, 0.0);
+            }
+        }
+
+        private void StartMoveAxisStopChecks()
+        {
+            lock (_moveAxisStopLock)
+            {
+                for (var axis = 0; axis < 2; axis++)
+                    if (_moveAxisStopPending[axis]) StartMoveAxisStopCheck(axis, _moveAxisStopVersion[axis]);
+            }
+        }
+
+        private void ResetMoveAxisStopChecks()
+        {
+            lock (_moveAxisStopLock)
+            {
+                for (var axis = 0; axis < 2; axis++)
+                {
+                    _moveAxisStopVersion[axis]++;
+                    _moveAxisStopPending[axis] = false;
+                }
+                _rateMoveAxes = new Vector(0, 0);
                 _moveAxisActive = false;
-                _slewState = SlewType.SlewNone;
-                if (Tracking) SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
+                if (_slewState == SlewType.SlewMoveAxis) _slewState = SlewType.SlewNone;
             }
+        }
+
+        private bool IsMoveAxisStopCheckCurrent(int axis, int version)
+        {
+            lock (_moveAxisStopLock)
+                return _moveAxisStopPending[axis] && _moveAxisStopVersion[axis] == version;
+        }
+
+        private void StartMoveAxisStopCheck(int axis, int version) =>
+            _ = Task.Run(() => ConfirmMoveAxisStopAsync(axis, version));
+
+        private async Task ConfirmMoveAxisStopAsync(int axis, int version)
+        {
+            try
+            {
+                var timer = Stopwatch.StartNew();
+                (double Position, double Seconds)? previous = null;
+                double previousRate = 0;
+                var stableSamples = 0;
+                while (timer.Elapsed.TotalSeconds < 15)
+                {
+                    await Task.Delay(200).ConfigureAwait(false);
+                    if (!IsMoveAxisStopCheckCurrent(axis, version)) return;
+                    if (!IsMountRunning)
+                        throw new InvalidOperationException($"Mount stopped before MoveAxis velocity could be confirmed for axis {axis + 1}.");
+                    var sample = ReadMoveAxisPosition(axis);
+                    if (timer.Elapsed.TotalSeconds >= 15) break;
+                    var expectedRate = GetMoveAxisStopRate(axis);
+                    if (!double.IsFinite(sample.Position) || !double.IsFinite(expectedRate) || _stepsPerRevolution[axis] <= 0)
+                        throw new InvalidOperationException($"Invalid MoveAxis stop position, rate or axis resolution for axis {axis + 1}.");
+
+                    if (previous.HasValue)
+                    {
+                        var elapsed = sample.Seconds - previous.Value.Seconds;
+                        if (elapsed <= 0)
+                            throw new InvalidOperationException($"Non-increasing MoveAxis position timestamp for axis {axis + 1}.");
+                        // One position step of quantisation plus 1 arcsecond/second of rate tolerance.
+                        var tolerance = 360.0 / _stepsPerRevolution[axis] / elapsed + 1.0 / 3600;
+                        var velocity = Range.Range180(sample.Position - previous.Value.Position) / elapsed;
+                        var guiding = axis == 0 ? IsPulseGuidingRa : IsPulseGuidingDec;
+                        stableSamples = !guiding && Math.Abs(expectedRate - previousRate) <= tolerance
+                            && Math.Abs(velocity - expectedRate) <= tolerance ? stableSamples + 1 : 0;
+                        if (stableSamples >= 3)
+                        {
+                            lock (_moveAxisStopLock)
+                            {
+                                if (!IsMoveAxisStopCheckCurrent(axis, version)) return;
+                                if ((axis == 0 ? _rateMoveAxes.X : _rateMoveAxes.Y) != 0.0) return;
+                                if (_moveAxisStopRate[axis] != expectedRate || (axis == 0 ? IsPulseGuidingRa : IsPulseGuidingDec))
+                                {
+                                    stableSamples = 0;
+                                    previous = sample;
+                                    previousRate = expectedRate;
+                                    continue;
+                                }
+                                _moveAxisStopPending[axis] = false;
+                                SetRateMoveSlewState();
+                            }
+                            LogMount($"MoveAxis stopped|axis:{axis + 1}|velocity:{velocity}|expected:{expectedRate}|tolerance:{tolerance}");
+                            return;
+                        }
+                    }
+                    previous = sample;
+                    previousRate = expectedRate;
+                }
+                throw new TimeoutException($"MoveAxis stop velocity was not confirmed within 15 seconds for axis {axis + 1}.");
+            }
+            catch (Exception ex)
+            {
+                lock (_moveAxisStopLock)
+                {
+                    if (!IsMoveAxisStopCheckCurrent(axis, version)) return;
+                    // Keep stopping pending: missing evidence must not report successful completion.
+                    _slewException = ex;
+                }
+                LogMount(new MonitorEntry
+                {
+                    Datetime = HiResDateTime.UtcNow, Device = MonitorDevice.Server,
+                    Category = MonitorCategory.Server, Type = MonitorType.Error,
+                    Method = nameof(ConfirmMoveAxisStopAsync), Thread = Environment.CurrentManagedThreadId,
+                    Message = $"Axis:{axis + 1}|{ex}"
+                });
+            }
+        }
+
+        private (double Position, double Seconds) ReadMoveAxisPosition(int axis)
+        {
+            if (Settings.Mount == MountType.SkyWatcher)
+            {
+                var queue = SkyQueue;
+                var command = new SkyGetAxisPositionDate(queue.NewId, queue, axis == 0 ? Axis.Axis1 : Axis.Axis2);
+                var result = queue.GetCommandResult(command);
+                if (!result.Successful || result.Exception != null
+                    || result.Result is not Tuple<double?, DateTime> sample || !sample.Item1.HasValue
+                    || !double.IsFinite(sample.Item1.Value) || sample.Item2 == DateTime.MinValue)
+                    throw result.Exception ?? new InvalidOperationException($"Could not read a fresh MoveAxis position for axis {axis + 1}.");
+                return (ConvertStepsToDegrees(sample.Item1.Value, axis), (double)sample.Item2.Ticks / TimeSpan.TicksPerSecond);
+            }
+
+            var positions = GetRawDegrees();
+            if (positions == null || positions.Length < 2 || !double.IsFinite(positions[axis]))
+                throw new InvalidOperationException($"Could not read a fresh MoveAxis position for axis {axis + 1}.");
+            return (positions[axis], (double)Stopwatch.GetTimestamp() / Stopwatch.Frequency);
+        }
+
+        private double GetMoveAxisStopRate(int axis)
+        {
+            lock (_moveAxisStopLock)
+                return _moveAxisStopRate[axis];
+        }
+
+        private void RecordMoveAxisStopRate(int axis, double rate)
+        {
+            lock (_moveAxisStopLock)
+                _moveAxisStopRate[axis] = rate;
         }
 
         /// <summary>

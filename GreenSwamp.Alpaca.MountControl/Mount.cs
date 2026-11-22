@@ -87,6 +87,10 @@ namespace GreenSwamp.Alpaca.MountControl
         // Backing fields
         internal Vector _rateMoveAxes;
         internal bool _moveAxisActive;
+        private readonly object _moveAxisStopLock = new();
+        private readonly bool[] _moveAxisStopPending = new bool[2];
+        private readonly int[] _moveAxisStopVersion = new int[2];
+        private readonly double[] _moveAxisStopRate = new double[2];
         private bool _flipOnNextGoto;
         internal SlewType _slewState;
         internal bool _snapPort1Result;
@@ -378,6 +382,7 @@ namespace GreenSwamp.Alpaca.MountControl
         public bool IsSlewing =>
             (_slewController?.IsSlewing == true) ||
             (Math.Abs(_rateMoveAxes.X) + Math.Abs(_rateMoveAxes.Y)) > 0 ||
+            MoveAxisStopPending ||
             _moveAxisActive ||
             _slewState != SlewType.SlewNone;
 
@@ -698,6 +703,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_rateMoveAxes.X - value) < 0.0000000001) return;
                 _rateMoveAxes.X = value;
+                var stopVersion = PrepareMoveAxisRateChange(0, value);
                 CancelAllAsync();
                 SetRateMoveSlewState();
                 switch (Settings.Mount)
@@ -706,12 +712,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         _ = new CmdMoveAxisRate(SimQueue!.NewId, SimQueue, Axis.Axis1, _rateMoveAxes.X);
                         break;
                     case MountType.SkyWatcher:
-                        _ = new SkyAxisSlew(SkyQueue!.NewId, SkyQueue, Axis.Axis1, _rateMoveAxes.X);
+                        // When ending MoveAxis with tracking enabled, SetTracking supplies the final rate directly.
+                        if (_rateMoveAxes.X != 0.0 || !Tracking)
+                            _ = new SkyAxisSlew(SkyQueue!.NewId, SkyQueue, Axis.Axis1, _rateMoveAxes.X);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (Tracking) this.SetTracking();
+                if (Tracking) this.SetTracking(TelescopeAxis.Primary);
+                if (value == 0.0) StartMoveAxisStopCheck(0, stopVersion);
                 LogMount($"RateMovePrimaryAxis|{_rateMoveAxes.X}|offset:{_skyTrackingOffset[0]}");
             }
         }
@@ -724,6 +733,7 @@ namespace GreenSwamp.Alpaca.MountControl
             {
                 if (Math.Abs(_rateMoveAxes.Y - value) < 0.0000000001) return;
                 _rateMoveAxes.Y = value;
+                var stopVersion = PrepareMoveAxisRateChange(1, value);
                 CancelAllAsync();
                 SetRateMoveSlewState();
                 switch (Settings.Mount)
@@ -732,12 +742,15 @@ namespace GreenSwamp.Alpaca.MountControl
                         _ = new CmdMoveAxisRate(SimQueue!.NewId, SimQueue, Axis.Axis2, -_rateMoveAxes.Y);
                         break;
                     case MountType.SkyWatcher:
-                        _ = new SkyAxisSlew(SkyQueue!.NewId, SkyQueue, Axis.Axis2, _rateMoveAxes.Y);
+                        // When ending MoveAxis with tracking enabled, SetTracking supplies the final rate directly.
+                        if (_rateMoveAxes.Y != 0.0 || !Tracking)
+                            _ = new SkyAxisSlew(SkyQueue!.NewId, SkyQueue, Axis.Axis2, _rateMoveAxes.Y);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                if (Tracking) this.SetTracking();
+                if (Tracking) this.SetTracking(TelescopeAxis.Secondary);
+                if (value == 0.0) StartMoveAxisStopCheck(1, stopVersion);
                 LogMount($"RateMoveSecondaryAxis|{_rateMoveAxes.Y}|offset:{_skyTrackingOffset[1]}");
             }
         }
@@ -868,6 +881,7 @@ namespace GreenSwamp.Alpaca.MountControl
             // Mount.IsSlewing stays true via _slewController?.IsSlewing until that completes.
             _slewController?.RequestCancellation();
             CancelAllAsync();
+            PrepareMoveAxisStopChecks();
             _moveAxisActive = false;
             _rateMoveAxes = new Vector(0, 0);
             _rateRaDec = new Vector(0, 0);
@@ -886,6 +900,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             ApplyTracking(tracking);
             _slewState = SlewType.SlewNone;
+            StartMoveAxisStopChecks();
             LogMount($"AbortSlewAsync|restored tracking:{tracking}");
         }
 

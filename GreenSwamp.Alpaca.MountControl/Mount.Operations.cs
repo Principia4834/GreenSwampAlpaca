@@ -48,6 +48,7 @@ namespace GreenSwamp.Alpaca.MountControl
             };
             LogMount(monitorItem);
             CancelAllAsync();
+            PrepareMoveAxisStopChecks();
             _moveAxisActive = false;
             _rateMoveAxes.X = 0.0;
             _rateMoveAxes.Y = 0.0;
@@ -70,6 +71,7 @@ namespace GreenSwamp.Alpaca.MountControl
             _slewState = SlewType.SlewNone;
             Tracking = false;
             TrackingMode = TrackingMode.Off;
+            StartMoveAxisStopChecks();
         }
 
         /// <summary>Abort any active slew with optional start notification — instance version.</summary>
@@ -115,6 +117,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 _slewController.RequestCancellation();
             }
             CancelAllAsync();
+            PrepareMoveAxisStopChecks();
             _moveAxisActive = false;
             _rateMoveAxes.X = 0.0;
             _rateMoveAxes.Y = 0.0;
@@ -137,6 +140,7 @@ namespace GreenSwamp.Alpaca.MountControl
                 SkyPredictor.Set(RightAscensionXForm, DeclinationXForm);
             }
             ApplyTracking(tracking);
+            StartMoveAxisStopChecks();
             LogMount(new MonitorEntry
             {
                 Datetime = HiResDateTime.UtcNow,
