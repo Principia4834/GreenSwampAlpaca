@@ -15,6 +15,7 @@
     <MudDivider Class="my-2" />
 
     @* Settings actions *@
+    <MudNavLink Icon="@Icons.Material.Filled.AddCircleOutline" OnClick="OpenAddTelescopeAsync">@Loc["TW_Title"]</MudNavLink>
     <MudNavLink Href="/settings-explorer" Icon="@Icons.Material.Filled.AccountTree">@Loc["Nav_SettingsExplorer"]</MudNavLink>
     <MudNavLink Href="/check-settings" Icon="@Icons.Material.Filled.MonitorHeart">@Loc["Nav_CheckSettings"]</MudNavLink>
     <MudNavLink Icon="@Icons.Material.Filled.Palette"
@@ -32,6 +33,15 @@
 
 @code {
     [Inject] private IDialogService DialogService { get; set; } = default!;
+
+    private async Task OpenAddTelescopeAsync()
+    {
+        var dialog = await DialogService.ShowAsync<AddTelescopeWizard>(Loc["TW_Title"],
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = false, BackdropClick = false });
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is AddTelescopeWizard.CreationResult creation && creation.Reloaded)
+            Snackbar.Add(Loc["TW_Reloaded"], Severity.Success);
+    }
 
     private async Task OpenDisplayPreferencesDialogAsync()
     {

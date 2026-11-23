@@ -56,7 +56,7 @@
 .gs-panel-heading {
     color:          var(--gs-text-secondary);
     letter-spacing: 0.08em;
-    text-transform: uppercase;
+    text-transform: none;
 }
 
 /* --- Base --------------------------------------------------- */

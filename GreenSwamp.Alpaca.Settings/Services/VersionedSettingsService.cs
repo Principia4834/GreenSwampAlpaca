@@ -590,7 +590,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
             try
             {
-                var devices = ReadAlpacaDevicesUnlocked();
+                var devices = ReadAlpacaDevicesForAddUnlocked();
 
                 if (devices.Count >= 100)
                     throw new InvalidOperationException("Maximum of 100 devices reached.");
@@ -622,6 +622,18 @@ namespace GreenSwamp.Alpaca.Settings.Services
             {
                 _alpacaFileLock.Release();
             }
+        }
+
+        private List<AlpacaDevice> ReadAlpacaDevicesForAddUnlocked()
+        {
+            if (!File.Exists(AlpacaDevicesSettingsPath)) return [];
+
+            var json = File.ReadAllText(AlpacaDevicesSettingsPath);
+            var doc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+            if (doc == null || !doc.TryGetValue("AlpacaDevices", out var element))
+                throw new InvalidDataException("AlpacaDevices is missing from devices.alpaca.user.json.");
+            return element.Deserialize<List<AlpacaDevice>>()
+                ?? throw new InvalidDataException("AlpacaDevices must be an array in devices.alpaca.user.json.");
         }
 
         private List<AlpacaDevice> ReadAlpacaDevicesUnlocked()
@@ -1075,7 +1087,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         // -- Mode-aware device creation and change -----------------------------
 
-        public async Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, MountType type, AlignmentMode mode)
+        public SkySettings BuildDeviceForMode(int deviceNumber, string deviceName, MountType type, AlignmentMode mode)
         {
             var modeName = mode.ToString(); // "GermanPolar", "Polar", or "AltAz"
             var typeName = type.ToString(); // "Simulator" or "SkyWatcher"
@@ -1097,9 +1109,14 @@ namespace GreenSwamp.Alpaca.Settings.Services
             device.DeviceNumber = deviceNumber;
             device.DeviceName = deviceName;
             device.Enabled = true;
+            return device;
+        }
 
+        public async Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, MountType type, AlignmentMode mode)
+        {
+            var device = BuildDeviceForMode(deviceNumber, deviceName, type, mode);
             await SaveDeviceSettingsAsync(deviceNumber, device);
-            LogSafe("INFO", $"Created device {deviceNumber} ({deviceName}) for mount {typeName} and mode {modeName}");
+            LogSafe("INFO", $"Created device {deviceNumber} ({deviceName}) for mount {type} and mode {mode}");
         }
 
         public async Task ChangeAlignmentModeAsync(int deviceNumber, AlignmentMode newMode)

@@ -39,6 +39,7 @@ public class SettingsTreeItemData : TreeItemData<SettingsNode>
 public partial class SettingsExplorer : IDisposable
 {
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private GreenSwamp.Alpaca.Server.Services.TelescopeCreationService TelescopeCreationService { get; set; } = default!;
 
     // -- Working copies ------------------------------------------------------
     private ObservatorySettings       _observatoryWork  = new();
@@ -192,6 +193,8 @@ public partial class SettingsExplorer : IDisposable
     {
         SettingsService.DeviceSettingsChanged  += OnDeviceSettingsChanged;
         SettingsService.MonitorSettingsChanged += OnMonitorSettingsChanged;
+        TelescopeCreationService.DeviceCreated += OnDeviceCreated;
+        TelescopeCreationService.DevicesReloaded += OnDevicesReloaded;
         await LoadSettingsAsync();
     }
 
@@ -211,6 +214,8 @@ public partial class SettingsExplorer : IDisposable
         // GetAllDeviceSettings returns List<SkySettings>; key by DeviceNumber.
         var devsList = SettingsService.GetAllDeviceSettings();
         var devs     = devsList.ToDictionary(d => d.DeviceNumber);
+        var configuredNumbers = devsList.Where(d => d.Enabled).Select(d => d.DeviceNumber).ToHashSet();
+        _hasPendingDeviceReload |= !configuredNumbers.SetEquals(MountRegistry.GetAllInstances().Keys);
 
         _observatoryWork  = Clone(obs);
         _serverConfigWork = Clone(srv);
@@ -442,41 +447,18 @@ public partial class SettingsExplorer : IDisposable
 
     private async Task AddDeviceAsync()
     {
-        var dialog = await DialogService.ShowAsync<AddDeviceDialog>(
-            Loc["AddDevice_Title"],
-            new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        var dialog = await DialogService.ShowAsync<AddTelescopeWizard>(
+            Loc["TW_Title"],
+            new DialogOptions { CloseOnEscapeKey = false, BackdropClick = false, MaxWidth = MaxWidth.Small, FullWidth = true });
 
         var result = await dialog.Result;
-        if (result.Canceled || result.Data is not ValueTuple<string, MountType, AlignmentMode> add)
+        if (result.Canceled || result.Data is not AddTelescopeWizard.CreationResult creation)
             return;
 
-        _deviceManagerBusy = true;
-        try
-        {
-            var (deviceName, mountType, alignmentMode) = add;
-            var nextDeviceNumber = _deviceWork.Keys.DefaultIfEmpty(-1).Max() + 1;
-
-            await SettingsService.CreateDeviceForModeAsync(nextDeviceNumber, deviceName, mountType, alignmentMode);
-            await SettingsService.AddAlpacaDeviceAsync(new AlpacaDevice
-            {
-                DeviceNumber = nextDeviceNumber,
-                DeviceName = deviceName,
-                DeviceType = "Telescope"
-            });
-
-            _hasPendingDeviceReload = true;
-            await LoadSettingsAsync();
-            SelectDeviceManagerNode();
-            ShowSuccess(Loc["SE_DeviceAdded", nextDeviceNumber, deviceName]);
-        }
-        catch (Exception ex)
-        {
-            ShowError(Loc["SE_ErrAddDevice", ex.Message]);
-        }
-        finally
-        {
-            _deviceManagerBusy = false;
-        }
+        _hasPendingDeviceReload = !creation.Reloaded;
+        await LoadSettingsAsync();
+        SelectDeviceManagerNode();
+        ShowSuccess(Loc["SE_DeviceAdded", creation.DeviceNumber, _deviceWork[creation.DeviceNumber].DeviceName]);
     }
 
     private async Task DeleteDeviceAsync(int deviceNumber)
@@ -1111,6 +1093,37 @@ public partial class SettingsExplorer : IDisposable
     }
 
     // -- External settings-change callbacks --------------------------------
+    private void OnDevicesReloaded(object? sender, EventArgs args)
+    {
+        _ = InvokeAsync(() =>
+        {
+            var configured = SettingsService.GetAllDeviceSettings().Where(d => d.Enabled).Select(d => d.DeviceNumber).ToHashSet();
+            _hasPendingDeviceReload = !configured.SetEquals(MountRegistry.GetAllInstances().Keys);
+            StateHasChanged();
+        });
+    }
+
+    private void OnDeviceCreated(object? sender, SkySettings device)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _hasPendingDeviceReload = true;
+            if (!_deviceWork.ContainsKey(device.DeviceNumber))
+            {
+                _deviceWork[device.DeviceNumber] = Clone(device);
+                _deviceOrigJson[device.DeviceNumber] = Serialize(device);
+                var section = _treeItems.OfType<SettingsTreeItemData>().FirstOrDefault(item => IsDeviceManagerNode(item.Node));
+                if (section is not null)
+                {
+                    var node = BuildDeviceNodes().First(n => n.DeviceNumber == device.DeviceNumber);
+                    section.Node.Children.Add(node);
+                    section.Children = [.. section.Children ?? [], new SettingsTreeItemData(node)];
+                }
+            }
+            StateHasChanged();
+        });
+    }
+
     private void OnDeviceSettingsChanged(object? sender, SkySettings updated)
     {
         // Skip when we triggered the save ourselves — the working copy is already current
@@ -1153,5 +1166,7 @@ public partial class SettingsExplorer : IDisposable
     {
         SettingsService.DeviceSettingsChanged  -= OnDeviceSettingsChanged;
         SettingsService.MonitorSettingsChanged -= OnMonitorSettingsChanged;
+        TelescopeCreationService.DeviceCreated -= OnDeviceCreated;
+        TelescopeCreationService.DevicesReloaded -= OnDevicesReloaded;
     }
 }
