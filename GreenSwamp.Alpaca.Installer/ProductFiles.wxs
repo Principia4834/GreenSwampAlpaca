@@ -61,17 +61,9 @@
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\images\carousel\astronomy" Include="$(var.PublishDir)\wwwroot\images\carousel\astronomy\*.jpg" />
 			<!-- Local script files required by app -->
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\js" Include="$(var.PublishDir)\wwwroot\js\*.gz" />
-			<!-- Local Babylon.js vendor files required by TelescopeView -->
+			<!-- Tree-shaken Babylon.js bundle required by TelescopeView (built from tools\babylon-build) -->
 			<!-- Packaged under wwwroot\lib\babylon so the app does not depend on the CDN at runtime -->
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon">
-				<File Source="$(var.PublishDir)\wwwroot\lib\babylon\babylon.js.gz" KeyPath="yes" />
-			</Component>
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon\materialsLibrary">
-				<File Source="$(var.PublishDir)\wwwroot\lib\babylon\materialsLibrary\babylonjs.materials.min.js.gz" KeyPath="yes" />
-			</Component>
-			<Component Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon\loaders">
-				<File Source="$(var.PublishDir)\wwwroot\lib\babylon\loaders\babylonjs.loaders.min.js.gz" KeyPath="yes" />
-			</Component>
+			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon" Include="$(var.PublishDir)\wwwroot\lib\babylon\*.gz" />
 			<!-- 3D Model files-->
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\model3d" Include="$(var.PublishDir)\wwwroot\model3d\*.png" />
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models" Include="$(var.PublishDir)\wwwroot\model3d\models\*.obj" />

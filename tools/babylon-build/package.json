@@ -1,0 +1,16 @@
+﻿{
+  "name": "greenswamp-babylon-build",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Builds the tree-shaken Babylon.js bundle used by the TelescopeView 3D page.",
+  "scripts": {
+    "build": "esbuild src/entry.js --bundle --minify --format=iife --target=es2020 --legal-comments=none --banner:js=\"/* Babylon.js 9.27.0 (Apache-2.0) tree-shaken build - see tools/babylon-build */\" --outfile=../../GreenSwamp.Alpaca.Server/wwwroot/lib/babylon/babylon.slim.js"
+  },
+  "dependencies": {
+    "@babylonjs/core": "9.27.0",
+    "@babylonjs/loaders": "9.27.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
