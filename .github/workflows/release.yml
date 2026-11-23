@@ -71,6 +71,16 @@ jobs:
           -p:PublishTrimmed=false
           -o publish/${{ matrix.rid }}
 
+      # Ship each compressible web asset once: the .gz copy only (the server picks it for
+      # Accept-Encoding: gzip). Drops the .br copies and the raw files that have a .gz beside them.
+      # Applies to every RID, so the MSI, DEB and DMG packages contain the same wwwroot.
+      - name: Prune redundant static web asset variants
+        run: |
+          WWWROOT="publish/${{ matrix.rid }}/wwwroot"
+          find "$WWWROOT" -type f -name '*.br' -delete
+          find "$WWWROOT" -type f -name '*.gz' | while IFS= read -r gz; do rm -f "${gz%.gz}"; done
+          echo "wwwroot files after pruning: $(find "$WWWROOT" -type f | wc -l)"
+
       - name: Ensure executable bit for Unix RIDs
         if: startsWith(matrix.rid, 'linux-') || startsWith(matrix.rid, 'osx-')
         run: chmod +x "publish/${{ matrix.rid }}/GreenSwamp.Alpaca.Server"

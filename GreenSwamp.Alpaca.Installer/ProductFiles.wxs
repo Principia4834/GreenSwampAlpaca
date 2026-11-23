@@ -66,6 +66,7 @@
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\lib\babylon" Include="$(var.PublishDir)\wwwroot\lib\babylon\*.gz" />
 			<!-- 3D Model files-->
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\model3d" Include="$(var.PublishDir)\wwwroot\model3d\*.png" />
+			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\backgrounds" Include="$(var.PublishDir)\wwwroot\model3d\backgrounds\*.jpg" />
 			<Files Directory="INSTALLDIR" Subdirectory="wwwroot\model3d\models" Include="$(var.PublishDir)\wwwroot\model3d\models\*.obj" />
 
 		</ComponentGroup>
