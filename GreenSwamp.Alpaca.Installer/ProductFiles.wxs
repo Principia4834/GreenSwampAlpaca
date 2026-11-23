@@ -5,7 +5,15 @@
 	<Fragment>
 		<ComponentGroup Id="GreenSwampAlpacaServerFiles">
 			<!-- XML files -->
-			<Files Directory="INSTALLDIR" Include="$(var.PublishDir)\*.xml" />
+			<Component Directory="INSTALLDIR">
+				<File Source="$(var.PublishDir)\ASCOM.Alpaca.Razor.xml" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR">
+				<File Source="$(var.PublishDir)\ASCOM.Common.xml" KeyPath="yes" />
+			</Component>
+			<Component Directory="INSTALLDIR">
+				<File Source="$(var.PublishDir)\GreenSwamp.Alpaca.Server.xml" KeyPath="yes" />
+			</Component>
 			<!-- DLL files -->
 			<Files Directory="INSTALLDIR" Include="$(var.PublishDir)\*.dll" />
 			<!-- json files -->
