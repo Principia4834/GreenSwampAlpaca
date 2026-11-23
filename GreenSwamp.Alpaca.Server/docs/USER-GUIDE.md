@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-22 11:54**
+**2026-11-23 18:20**
 
 ---
 
@@ -443,16 +443,23 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 
 ### 7.1 Adding a Device
 
-1. Open **Settings Explorer** from the navigation menu.
-2. Select **Telescope Devices** in the tree (the top-level section node).
-3. Click **Add Device** in the Device Manager card.
-4. In the dialog, enter:
-   - **Device Number** — a unique integer (0, 1, 2, …); must not already be in use
-   - **Device Name** — a descriptive name (e.g. "SkyWatcher EQ6-R" or "Simulator AltAz")
-   - **Alignment Mode** — GermanPolar, Polar, or AltAz
-5. Click **Add**. The new device appears immediately in the tree and in the Status/Settings tabs.
-6. Select the device's **Mount Configuration** leaf to complete the configuration (serial port,
-   mount type, etc.) and save.
+1. Select **Add Telescope** in the navigation menu, or select **Telescope Devices** in
+   **Settings Explorer** and click **Add Device**.
+2. Enter a name and choose **Simulator** or **SkyWatcher**.
+3. Choose German equatorial (GEM), polar/fork, or alt-azimuth; for polar, choose the primary side.
+4. Enter and confirm the latitude, longitude and elevation, or copy an existing observatory and
+   confirm its values. North and east are positive; elevation is in metres. Copying an observatory
+   does not link the telescope to it, so later observatory edits do not update the telescope.
+5. For SkyWatcher, choose or enter a serial port and baud rate, or leave the port blank to
+   configure it later. The telescope can still be activated, but needs a valid port before connecting.
+6. Review the settings and click **Create Telescope**. A device number is assigned automatically.
+   Creating the device saves its settings but does not connect it.
+7. Choose **Apply Hot Reload** to activate the telescope now, or **Not now** to defer activation.
+   Hot reload rebuilds all device registrations and disconnects connected clients after confirmation.
+   If you defer, the telescope is not usable until you apply changes in **Settings Explorer →
+   Telescope Devices** or restart the server; it may already be listed on some pages.
+
+Review the device's remaining settings, including mount limits, before connecting hardware.
 
 ### 7.2 Removing a Device
 

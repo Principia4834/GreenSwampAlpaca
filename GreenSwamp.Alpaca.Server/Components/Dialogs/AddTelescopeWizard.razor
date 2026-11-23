@@ -1,0 +1,296 @@
+﻿@using GreenSwamp.Alpaca.Shared
+@using GreenSwamp.Alpaca.MountControl
+@inject IVersionedSettingsService SettingsService
+@inject TelescopeCreationService CreationService
+@inject UnifiedDeviceRegistry DeviceRegistry
+@inject IDialogService DialogService
+@inject ILogger<AddTelescopeWizard> Logger
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.TravelExplore" Color="Color.Primary" />
+            <MudText Typo="Typo.h6">@Loc["TW_Title"]</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form">
+        <MudStack Spacing="3" Class="mt-2">
+            <MudText Typo="Typo.subtitle1" Class="gs-panel-heading">@Loc["TW_Step", _step + 1, 5, StepTitle]</MudText>
+            <MudProgressLinear Color="Color.Primary" Value="@((_step + 1) * 20)" />
+            @if (_createdDeviceNumber.HasValue)
+            {
+                <MudAlert Severity="@(_reloadDeclined ? Severity.Warning : Severity.Info)">
+                    @Loc[_reloadDeclined ? "TW_ReloadDeferred" : "TW_ReloadQuestion"]
+                </MudAlert>
+            }
+            else if (_step == 0)
+            {
+                <MudTextField @bind-Value="_draft.Name" Label="@Loc["AddDevice_DeviceName"]"
+                              Placeholder="@Loc["AddDevice_DeviceNamePlaceholder"]" MaxLength="100" Immediate="true" Required="true" />
+                <MudSelect @bind-Value="_draft.MountType" Label="@Loc["AddDevice_MountType"]">
+                    <MudSelectItem Value="MountType.Simulator">@Loc["AddDevice_Simulator"]</MudSelectItem>
+                    <MudSelectItem Value="MountType.SkyWatcher">@Loc["AddDevice_SkyWatcher"]</MudSelectItem>
+                </MudSelect>
+            }
+            else if (_step == 1)
+            {
+                <MudSelect @bind-Value="_draft.AlignmentMode" Label="@Loc["AddDevice_AlignmentMode"]">
+                    <MudSelectItem Value="AlignmentMode.GermanPolar">@Loc["AddDevice_Gem"]</MudSelectItem>
+                    <MudSelectItem Value="AlignmentMode.Polar">@Loc["AddDevice_Polar"]</MudSelectItem>
+                    <MudSelectItem Value="AlignmentMode.AltAz">@Loc["AddDevice_AltAz"]</MudSelectItem>
+                </MudSelect>
+                @if (_draft.AlignmentMode == AlignmentMode.Polar)
+                {
+                    <MudSelect @bind-Value="_draft.PolarSide" Label="@Loc["MC_PolarSide"]">
+                        <MudSelectItem Value="@("Left")">@Loc["MC_Left"]</MudSelectItem>
+                        <MudSelectItem Value="@("Right")">@Loc["MC_Right"]</MudSelectItem>
+                    </MudSelect>
+                }
+            }
+            else if (_step == 2)
+            {
+                @if (_observatories.Count > 0)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudSelect T="string" @bind-Value="_observatoryId" Label="@Loc["Obs_CopyFrom"]">
+                            @foreach (var observatory in _observatories)
+                            {
+                                <MudSelectItem Value="@observatory.Id">@observatory.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="CopyObservatory"
+                                   Disabled="@string.IsNullOrEmpty(_observatoryId)">@Loc["TW_Copy"]</MudButton>
+                    </MudStack>
+                }
+                <MudText Typo="Typo.body2">@Loc["TW_LocationHelp"]</MudText>
+                <MudNumericField T="double" @bind-Value="_draft.Latitude" @bind-Value:after="LocationChanged"
+                                 Label="@Loc["ObsCard_Latitude"]" Format="F6" Converter="@(NumericFieldConverter.Invariant("F6"))" Min="-90" Max="90" Immediate="true" />
+                <MudNumericField T="double" @bind-Value="_draft.Longitude" @bind-Value:after="LocationChanged"
+                                 Label="@Loc["ObsCard_Longitude"]" Format="F6" Converter="@(NumericFieldConverter.Invariant("F6"))" Min="-180" Max="180" Immediate="true" />
+                <MudNumericField T="double" @bind-Value="_draft.Elevation" @bind-Value:after="LocationChanged"
+                                 Label="@Loc["ObsCard_Elevation"]" Format="F1" Converter="@(NumericFieldConverter.Localized("F1"))" Min="-500" Max="9000" Immediate="true" />
+                <MudCheckBox @bind-Value="_locationConfirmed" Label="@Loc["TW_ConfirmLocation"]" Color="Color.Primary" />
+            }
+            else if (_step == 3)
+            {
+                @if (_draft.MountType == MountType.SkyWatcher)
+                {
+                    <MudText Typo="Typo.body2">@Loc["TW_SerialHelp"]</MudText>
+                    @if (_ports.Length > 0)
+                    {
+                        <MudSelect T="string" @bind-Value="_selectedPort" Label="@Loc["TW_DetectedPort"]" @bind-Value:after="UseSelectedPort">
+                            @foreach (var port in _ports)
+                            {
+                                <MudSelectItem Value="@port">@port</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    <MudTextField @bind-Value="_draft.Port" Label="@Loc["MC_Port"]" HelperText="@Loc["MC_Port_Tip"]" Immediate="true" />
+                    <MudSelect T="int?" @bind-Value="_draft.BaudRate" Label="@Loc["MC_Baud"]">
+                        <MudSelectItem T="int?" Value="9600">9600</MudSelectItem>
+                        <MudSelectItem T="int?" Value="19200">19200</MudSelectItem>
+                        <MudSelectItem T="int?" Value="38400">38400</MudSelectItem>
+                        <MudSelectItem T="int?" Value="57600">57600</MudSelectItem>
+                        <MudSelectItem T="int?" Value="115200">115200</MudSelectItem>
+                        <MudSelectItem T="int?" Value="230400">230400</MudSelectItem>
+                    </MudSelect>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info">@Loc["TW_SimulatorNoSerial"]</MudAlert>
+                }
+            }
+            else
+            {
+                <MudText Typo="Typo.body1">@Loc["AddDevice_DeviceName"]: @_draft.Name.Trim()</MudText>
+                <MudText Typo="Typo.body1">@Loc["AddDevice_MountType"]: @MountTypeLabel</MudText>
+                <MudText Typo="Typo.body1">@Loc["AddDevice_AlignmentMode"]: @AlignmentLabel</MudText>
+                @if (_draft.AlignmentMode == AlignmentMode.Polar)
+                {
+                    <MudText Typo="Typo.body1">@Loc["MC_PolarSide"]: @(_draft.PolarSide == "Left" ? Loc["MC_Left"] : Loc["MC_Right"])</MudText>
+                }
+                <MudText Typo="Typo.body1">@Loc["ObsCard_Latitude"]: @_draft.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)</MudText>
+                <MudText Typo="Typo.body1">@Loc["ObsCard_Longitude"]: @_draft.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)</MudText>
+                <MudText Typo="Typo.body1">@Loc["ObsCard_Elevation"]: @_draft.Elevation.ToString("F1")</MudText>
+                @if (_draft.MountType == MountType.SkyWatcher)
+                {
+                    <MudText Typo="Typo.body1">@Loc["MC_Port"]: @(string.IsNullOrWhiteSpace(_draft.Port) ? Loc["TW_ConfigureLater"].Value : _draft.Port)</MudText>
+                    <MudText Typo="Typo.body1">@Loc["MC_Baud"]: @_draft.BaudRate</MudText>
+                }
+                <MudAlert Severity="Severity.Info">@Loc["TW_ActivationInfo"]</MudAlert>
+            }
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <MudAlert Severity="Severity.Error">@_error</MudAlert>
+            }
+        </MudStack>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        @if (_createdDeviceNumber.HasValue)
+        {
+            <MudSpacer />
+            @if (_reloadDeclined)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CloseAfterSave">@Loc["Common_Close"]</MudButton>
+            }
+            else
+            {
+                <MudButton OnClick="DeclineReload" Disabled="@_busy">@Loc["TW_ReloadLater"]</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync" Disabled="@_busy">@Loc["HotReload_Apply"]</MudButton>
+            }
+        }
+        else
+        {
+            <MudButton OnClick="Cancel" Disabled="@_busy">@Loc["Common_Cancel"]</MudButton>
+            <MudSpacer />
+            <MudButton OnClick="Back" Disabled="@(_busy || _step == 0)">@Loc["TW_Back"]</MudButton>
+            @if (_step < 4)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Next" Disabled="@(!CanContinue || _busy)">@Loc["TW_Next"]</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAsync" Disabled="@_busy">@Loc["TW_Create"]</MudButton>
+            }
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private readonly TelescopeCreationRequest _draft = new() { BaudRate = 9600 };
+    private List<ObservatoryInfo> _observatories = [];
+    private string[] _ports = [];
+    private string _observatoryId = string.Empty;
+    private string _selectedPort = string.Empty;
+    private string _error = string.Empty;
+    private int _step;
+    private int? _createdDeviceNumber;
+    private bool _reloadDeclined;
+    private bool _busy;
+    private bool _locationConfirmed;
+
+    public record CreationResult(int DeviceNumber, bool Reloaded);
+
+    private string StepTitle => Loc[_step switch { 0 => "TW_Identity", 1 => "TW_Geometry", 2 => "TW_Location", 3 => "TW_Connection", _ => "TW_Review" }].Value;
+    private string MountTypeLabel => _draft.MountType == MountType.Simulator ? Loc["MC_Simulator"].Value : "SkyWatcher";
+    private string AlignmentLabel => Loc[_draft.AlignmentMode switch { AlignmentMode.GermanPolar => "MC_AlignGem", AlignmentMode.Polar => "MC_AlignPolar", _ => "MC_AlignAltAz" }].Value;
+    private bool ValidLocation => double.IsFinite(_draft.Latitude) && _draft.Latitude is >= -90 and <= 90 &&
+                                  double.IsFinite(_draft.Longitude) && _draft.Longitude is >= -180 and <= 180 &&
+                                  double.IsFinite(_draft.Elevation) && _draft.Elevation is >= -500 and <= 9000;
+    private bool CanContinue => _step switch { 0 => !string.IsNullOrWhiteSpace(_draft.Name) && _draft.Name.Trim().Length <= 100, 2 => ValidLocation && _locationConfirmed, _ => true };
+
+    protected override void OnInitialized()
+    {
+        _observatories = SettingsService.GetObservatorySettings().Observatories;
+        _ports = SerialPortDiscovery.GetPortNames();
+    }
+
+    private void CopyObservatory()
+    {
+        var observatory = _observatories.FirstOrDefault(o => o.Id == _observatoryId);
+        if (observatory is null) return;
+        _draft.CopiedObservatory = observatory;
+        _draft.Latitude = observatory.Latitude;
+        _draft.Longitude = observatory.Longitude;
+        _draft.Elevation = observatory.Elevation;
+        _locationConfirmed = false;
+    }
+
+    private void LocationChanged() => _locationConfirmed = false;
+    private void UseSelectedPort() => _draft.Port = _selectedPort;
+    private void Back() { _step--; _error = string.Empty; }
+    private async Task Next()
+    {
+        await _form.Validate();
+        if (CanContinue && _form.IsValid) { _step++; _error = string.Empty; }
+    }
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task CreateAsync()
+    {
+        if (!ValidLocation || !_locationConfirmed || string.IsNullOrWhiteSpace(_draft.Name))
+        {
+            _error = Loc["TW_Invalid"].Value;
+            return;
+        }
+        _busy = true;
+        try
+        {
+            _createdDeviceNumber = await CreationService.CreateAsync(_draft);
+            _error = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to create telescope");
+            _error = Loc["SE_ErrAddDevice", ex.Message].Value;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void DeclineReload()
+    {
+        _reloadDeclined = true;
+        _error = string.Empty;
+    }
+
+    private void CloseAfterSave() => MudDialog.Close(DialogResult.Ok(new CreationResult(_createdDeviceNumber!.Value, false)));
+
+    private async Task ReloadAsync()
+    {
+        if (!_createdDeviceNumber.HasValue || _busy) return;
+        _busy = true;
+        _error = string.Empty;
+        try
+        {
+            var connectedDevices = MountRegistry.GetAllInstances()
+                .Where(kvp => kvp.Value.IsConnected)
+                .Select(kvp => Loc["SE_DeviceLabel", kvp.Key, kvp.Value.DeviceName].Value)
+                .ToList();
+            var parameters = new DialogParameters<HotReloadDevicesDialog>
+            {
+                { d => d.ConnectedDevices, connectedDevices }
+            };
+            var dialog = await DialogService.ShowAsync<HotReloadDevicesDialog>(
+                Loc["HotReload_Title"], parameters,
+                new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+            var confirmation = await dialog.Result;
+            if (confirmation.Canceled)
+            {
+                DeclineReload();
+                return;
+            }
+
+            var result = await DeviceRegistry.ReloadAllDevicesAsync();
+            if (!result.Success)
+            {
+                _error = Loc["SE_HotReloadFailed", result.ErrorMessage ?? string.Empty].Value;
+                return;
+            }
+            var configured = SettingsService.GetAllDeviceSettings().Where(d => d.Enabled).Select(d => d.DeviceNumber).ToHashSet();
+            if (!configured.SetEquals(DeviceRegistry.GetAllDevices().Keys))
+            {
+                _error = Loc["TW_ReloadIncomplete"].Value;
+                return;
+            }
+            CreationService.NotifyDevicesReloaded();
+            MudDialog.Close(DialogResult.Ok(new CreationResult(_createdDeviceNumber.Value, true)));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to reload telescope devices after creation");
+            _error = Loc["SE_HotReloadError", ex.Message].Value;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

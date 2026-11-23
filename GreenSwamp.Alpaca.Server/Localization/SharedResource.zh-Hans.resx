@@ -3065,4 +3065,29 @@
   <data name="Voice_Volume" xml:space="preserve">
     <value>音量（%）</value>
   </data>
+  <data name="TW_Title" xml:space="preserve"><value>添加望远镜</value></data>
+  <data name="TW_Step" xml:space="preserve"><value>第 {0} 步，共 {1} 步：{2}</value></data>
+  <data name="TW_Identity" xml:space="preserve"><value>基本信息</value></data>
+  <data name="TW_Geometry" xml:space="preserve"><value>赤道仪类型</value></data>
+  <data name="TW_Location" xml:space="preserve"><value>位置</value></data>
+  <data name="TW_Connection" xml:space="preserve"><value>连接</value></data>
+  <data name="TW_Review" xml:space="preserve"><value>检查</value></data>
+  <data name="TW_Copy" xml:space="preserve"><value>复制</value></data>
+  <data name="TW_LocationHelp" xml:space="preserve"><value>请输入十进制度：北纬和东经为正，南纬和西经为负。海拔单位为米。复制天文台不会创建关联。</value></data>
+  <data name="TW_ConfirmLocation" xml:space="preserve"><value>我已检查此位置</value></data>
+  <data name="TW_SerialHelp" xml:space="preserve"><value>选择或输入串口，也可留空以便稍后配置。连接设备需要有效的串口。</value></data>
+  <data name="TW_DetectedPort" xml:space="preserve"><value>检测到的串口</value></data>
+  <data name="TW_SimulatorNoSerial" xml:space="preserve"><value>模拟器不需要串口连接。</value></data>
+  <data name="TW_ConfigureLater" xml:space="preserve"><value>稍后配置</value></data>
+  <data name="TW_ActivationInfo" xml:space="preserve"><value>创建望远镜只保存设置，不会连接设备。请在设置浏览器中应用设备更改或重启服务器以启用。</value></data>
+  <data name="TW_Invalid" xml:space="preserve"><value>请检查名称并确认有效的位置。</value></data>
+  <data name="TW_Back" xml:space="preserve"><value>上一步</value></data>
+  <data name="TW_Next" xml:space="preserve"><value>下一步</value></data>
+  <data name="TW_Create" xml:space="preserve"><value>创建望远镜</value></data>
+  <data name="TW_Saved" xml:space="preserve"><value>望远镜已保存。请在设置浏览器中应用设备更改或重启服务器。</value></data>
+  <data name="TW_ReloadQuestion" xml:space="preserve"><value>望远镜已保存。是否立即通过热重载应用设备更改？</value></data>
+  <data name="TW_ReloadLater" xml:space="preserve"><value>暂不应用</value></data>
+  <data name="TW_ReloadDeferred" xml:space="preserve"><value>新望远镜已保存，但在应用设备更改或重启服务器之前，无法在主页或选项卡页面中使用。激活前它仍可能出现在列表中。</value></data>
+  <data name="TW_ReloadIncomplete" xml:space="preserve"><value>热重载未能注册所有已启用的设备。请检查日志并重试，或稍后应用更改。</value></data>
+  <data name="TW_Reloaded" xml:space="preserve"><value>望远镜已保存，设备更改已应用。</value></data>
 </root>

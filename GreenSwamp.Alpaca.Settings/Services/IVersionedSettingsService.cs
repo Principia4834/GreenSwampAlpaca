@@ -104,6 +104,9 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         // -- Mode-aware device creation and change ----------------------------
 
+        /// <summary>Builds device settings from the mode template and default observatory without saving them.</summary>
+        SkySettings BuildDeviceForMode(int deviceNumber, string deviceName, MountType type, AlignmentMode mode);
+
         /// <summary>Creates a new device-nn.settings.json populated with app defaults for the specified
         /// alignment mode and observatory properties from observatory.settings.json.</summary>
         Task CreateDeviceForModeAsync(int deviceNumber, string deviceName, MountType type, AlignmentMode mode);

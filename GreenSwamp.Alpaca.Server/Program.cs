@@ -388,6 +388,7 @@ namespace GreenSwamp.Alpaca.Server
 
             // Register UnifiedDeviceRegistry as singleton for DI injection
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.UnifiedDeviceRegistry>();
+            builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.TelescopeCreationService>();
 
             // Register MonitorDisplayService for live monitor-record display
             builder.Services.AddSingleton<GreenSwamp.Alpaca.Server.Services.MonitorDisplayService>();
