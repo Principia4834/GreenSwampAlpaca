@@ -1,16 +1,16 @@
 ﻿## Populating the carousel
 
-Last updated: 2026-10-01 16:15
+Last updated: 2026-11-23 21:30
 
 1. Add the images
   Put jpg files in `GreenSwamp.Alpaca.Server\wwwroot\images\carousel\<folder>\`, for example `...\carousel\astronomy\M42.jpg`.
-  •	The two folders are reference (server screenshots) and astronomy (astronomical images).
+  •	The default folders are reference (server screenshots) and astronomy (astronomical images); other immediate folders with images become additional shows.
   •	Folder and file names must be plain: no subfolders, .. or \.
   •	Aim for about 1600–1920 px wide and under 500 KB each.
-  use the `wwwroot\images\carousel\<folder>\` folder under
 2. List them and add captions
-  •	Edit carousel.settings.json in the versioned settings folder, for example %AppData%\GreenSwampAlpaca\0.2.0\carousel.settings.json.
-  •	The app creates this file on first run.
+  •	When no carousel.settings.json exists, the app scans the immediate show folders for .jpg files at startup and creates the file, using each filename without its extension as the caption.
+  •	Existing or migrated settings files are never replaced or automatically updated. Add new images to the file manually, or back it up and remove it before restarting to regenerate it.
+  •	Edit carousel.settings.json in the versioned settings folder, for example %AppData%\GreenSwampAlpaca\0.2.0\carousel.settings.json for an interactive Windows user, or the service's settings folder when running as a service.
   •	Slides play in the order listed. Each caption is one line.
 
 `{`

@@ -323,7 +323,7 @@ namespace GreenSwamp.Alpaca.Server
             builder.Services.AddSingleton(supportedCultureSettings);
 
             // Register all settings services (VersionedSettings, Template, Profile)
-            builder.Services.AddVersionedSettings(builder.Configuration);
+            builder.Services.AddVersionedSettings(builder.Configuration, builder.Environment.WebRootPath);
 
             // Configure Server Settings from configuration
             builder.Services.AddSingleton(sp =>

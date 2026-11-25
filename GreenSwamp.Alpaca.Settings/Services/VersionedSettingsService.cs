@@ -74,7 +74,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         public event EventHandler<CarouselSettings>? CarouselSettingsChanged;
 
-        public VersionedSettingsService(IConfiguration configuration)
+        public VersionedSettingsService(IConfiguration configuration, string? webRootPath = null)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
@@ -93,7 +93,7 @@ namespace GreenSwamp.Alpaca.Settings.Services
             // After migration this creates only the files that were not copied.
             RunFirstRunDeviceInit();
 
-            EnsureCarouselSettingsFile();
+            EnsureCarouselSettingsFile(webRootPath ?? Path.Combine(AppContext.BaseDirectory, "wwwroot"));
         }
 
         // -- Path helpers ------------------------------------------------------
@@ -1223,17 +1223,68 @@ namespace GreenSwamp.Alpaca.Settings.Services
 
         // -- Carousel settings -------------------------------------------------
 
-        // Seeds carousel.settings.json with factory defaults so the developer has a file to edit.
         // Never overwrites an existing (possibly migrated) file.
-        private void EnsureCarouselSettingsFile()
+        private void EnsureCarouselSettingsFile(string webRootPath)
         {
+            if (File.Exists(CarouselSettingsPath)) return;
+
             try
             {
-                if (File.Exists(CarouselSettingsPath)) return;
-                var json = JsonSerializer.Serialize(CarouselSettings.CreateDefault(), _jsonOptions);
-                File.WriteAllText(CarouselSettingsPath, json, Encoding.UTF8);
+                var carouselPath = Path.Combine(webRootPath, "images", "carousel");
+                var settings = CarouselSettings.CreateDefault();
+                foreach (var directory in Directory.EnumerateDirectories(carouselPath).OrderBy(Path.GetFileName, StringComparer.Ordinal))
+                {
+                    var folder = Path.GetFileName(directory);
+                    if (!CarouselSettings.IsPlainName(folder))
+                    {
+                        LogSafe("WARNING", $"Carousel folder ignored: invalid name '{folder}'");
+                        continue;
+                    }
+
+                    var slides = new List<CarouselSlide>();
+                    foreach (var file in Directory.EnumerateFiles(directory).OrderBy(Path.GetFileName, StringComparer.Ordinal))
+                    {
+                        if (!string.Equals(Path.GetExtension(file), ".jpg", StringComparison.OrdinalIgnoreCase)) continue;
+                        var name = Path.GetFileName(file);
+                        if (!CarouselSettings.IsPlainName(name))
+                        {
+                            LogSafe("WARNING", $"Carousel image ignored: invalid name '{name}'");
+                            continue;
+                        }
+                        slides.Add(new CarouselSlide { File = name, Caption = Path.GetFileNameWithoutExtension(name) });
+                    }
+
+                    var show = settings.Shows.FirstOrDefault(s => string.Equals(s.Id, folder, StringComparison.OrdinalIgnoreCase));
+                    if (show is not null && show.Slides.Count > 0)
+                    {
+                        LogSafe("WARNING", $"Carousel folder ignored: show id '{folder}' already exists");
+                        continue;
+                    }
+                    if (show is null && slides.Count > 0)
+                    {
+                        show = new CarouselShow { Id = folder, Title = folder };
+                        settings.Shows.Add(show);
+                    }
+                    if (show is not null)
+                    {
+                        show.Folder = folder;
+                        show.Slides = slides;
+                    }
+                }
+
+                var json = JsonSerializer.Serialize(settings, _jsonOptions);
+                var tempPath = CarouselSettingsPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                try
+                {
+                    File.WriteAllText(tempPath, json, Encoding.UTF8);
+                    File.Move(tempPath, CarouselSettingsPath, overwrite: false);
+                }
+                finally
+                {
+                    if (File.Exists(tempPath)) File.Delete(tempPath);
+                }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 LogSafe("WARNING", $"Could not create carousel settings file: {ex.Message}");
             }

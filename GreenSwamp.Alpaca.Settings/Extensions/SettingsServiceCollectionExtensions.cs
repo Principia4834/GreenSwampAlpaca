@@ -1,4 +1,4 @@
-/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
+﻿/* Copyright(C) 2019-2026 Rob Morgan (robert.morgan.e@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -31,14 +31,16 @@ namespace GreenSwamp.Alpaca.Settings.Extensions
         /// </summary>
         /// <param name="services">The service collection</param>
         /// <param name="configuration">The configuration root</param>
+        /// <param name="webRootPath">The physical web root used for carousel image discovery.</param>
         /// <returns>The service collection for chaining</returns>
         public static IServiceCollection AddVersionedSettings(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            string? webRootPath = null)
         {
             // Register the versioned settings service as singleton
             services.AddSingleton<IVersionedSettingsService>(sp =>
-                new VersionedSettingsService(configuration));
+                new VersionedSettingsService(configuration, webRootPath));
 
             // Register template service as singleton
             services.AddSingleton<ISettingsTemplateService, SettingsTemplateService>();
