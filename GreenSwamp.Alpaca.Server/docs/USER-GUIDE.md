@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-25 16:53**
+**2026-11-25 17:07**
 
 ---
 
@@ -316,7 +316,14 @@ In **Control**, connect the selected telescope and select **Axis Chart** in **Mo
 | **Axis switches** | Show or hide either axis series. |
 | **Clear** | Clear the displayed chart data. |
 
-When paused, the chart exposes controls for inspecting the snapshot, including zoom, pan and export. The data-window selector is unavailable until live display resumes. A disconnected or reconnecting indicator refers to the chart's connection to the server. Allow pop-ups if the window does not open.
+#### Axis Chart control details
+
+- **Title and axes:** the title identifies the device and plotted axes. The horizontal axis is time; the vertical axis uses the selected scale. The axis names follow the alignment mode, for example RA/Dec or Az/Alt. The switches hide or show individual lines; they do not stop the mount.
+- **Data window:** choose **10 seconds, 30 seconds, 2 minutes, 5 minutes, 15 minutes or 30 minutes** of recent data. It is unavailable while paused.
+- **Scale:** choose **Steps**, **Degrees** or **Arc-seconds**. Changing scale changes the presentation of position data, not the mount's tracking speed.
+- **Pause / Resume:** Pause takes a snapshot of the visible window. The paused chart exposes download, zoom, pan and reset controls; Resume returns to the rolling live view. A paused snapshot is not a permanent recording.
+- **Clear:** clears the chart's collected points and paused snapshot. If paused, the Axis Chart returns to live mode. New samples can appear afterwards.
+- **Connection indicator:** Reconnecting or Disconnected describes the chart's connection to the server, not a physical limit or safety status. Allow browser pop-ups if the window does not open. The chart has no point-hover tooltip enabled.
 
 ---
 
@@ -339,6 +346,16 @@ Open **Pulse Chart** from the connected telescope's **Mount Info** panel. It dis
 
 A guide pulse is a timed correction requested by a guiding client; it is not itself a measurement of the star's tracking error. Use the RA and Dec switches to isolate one axis, and compare the rejected series with the guiding client's own logs. The minimum pulse settings are per axis in **Tracking & Guiding**; check those and the client configuration before adjusting them. Chart units and appearance change the presentation, not the guiding commands.
 
+#### Pulse Chart control details
+
+- **Title and axes:** the title identifies the device; time is horizontal and the selected pulse units are vertical. Accepted and rejected RA and Dec are separate series. Point-hover tooltips are disabled.
+- **Data window:** select **10 seconds, 30 seconds, 2 minutes, 5 minutes, 15 minutes or 30 minutes**. This selector is disabled while paused.
+- **Units:** **Milliseconds** displays pulse duration; **Arc-seconds** and **Steps** express the correction in other units. Positive and negative values distinguish correction direction.
+- **Chart type:** **Bars**, **Points** or **Line** changes accepted-pulse series; rejected series remain points. The four named switches independently show or hide accepted and rejected RA and Dec.
+- **Pause / Resume:** Pause freezes the visible data as a snapshot and exposes download, zoom, pan and reset controls. Resume returns to the rolling live view. A paused snapshot is not a permanent recording.
+- **Clear:** clears the collected live pulse lists. Unlike the Axis Chart, Clear does not itself leave paused mode or discard its frozen snapshot; use Resume to return to the cleared live display. New pulses can appear afterwards.
+- **Connection indicator:** Reconnecting or Disconnected reports the chart-to-server connection. An empty chart may also mean that there are no pulses, or that the relevant series are switched off.
+
 Both charts save their display selections. The charts are diagnostic views; do not infer mount safety from them.
 
 ---
@@ -359,11 +376,27 @@ Select a telescope tab, then use **Connect** at the lower right to connect the U
 
 ![Mount Info panel showing the chart and 3D view launchers](images/user-guide/mount-info-launchers.png)
 
+#### Page header, indicators and bottom bar
+
+The telescope tabs select the device; a **Simulator** badge identifies the simulator. **Export** opens a settings and logs archive dialog showing the estimated file count and size. **Create** starts the download and shows progress; **Cancel** closes before creation, and an error offers **Retry** or **Close**. Review the archive for sensitive information before sharing.
+
+The coordinate header displays RA, Dec, azimuth, altitude, local hour angle (LHA) and local sidereal time (LST). LST is the RA currently crossing the local meridian; LHA describes a pointing's position relative to that meridian. Accurate location, time and a correctly established mount position matter when interpreting these values.
+
+| Indicator | Meaning |
+|---|---|
+| Home / P | At home / at park, respectively; inactive appearance means the corresponding state is not active. |
+| Moving / tracking / pulse | Slewing, tracking including rate, and active pulse guiding. These are status indicators, not buttons. |
+| Pier-side arrow | Reported side of pier; its tooltip identifies the side. |
+| Limits | Shows off, on, or triggered; hover for the current state. An enabled limit is not proof of safe clearance. |
+| Voice / link and count | Voice announcement state and the number of connected clients. The UI has its own connection; another client's connection does not enable its controls. |
+
+The bottom **power** button opens a shutdown confirmation, including a warning when mounts are connected; cancel it to leave the server running. The red **Stop** requests an emergency stop for the selected mount and is enabled after the mount has connected at least once. The **Connect / Disconnect** button controls the UI client; a spinner indicates connection is in progress. Disconnecting the UI is not a substitute for stopping a moving mount or parking it.
+
 #### Coordinates and Go To
 
-The header displays RA, Dec, azimuth, altitude, local hour angle (LHA) and local sidereal time (LST). LST is the RA currently crossing the local meridian; LHA describes a pointing's position relative to that meridian. Accurate location, time and a correctly established mount position matter when interpreting these values.
-
 Select **RA/Dec** or **Alt/Az** below the target fields. RA accepts hours, minutes and seconds or decimal hours, for example `23 15 12.55` or `23.75`. Dec accepts signed degrees, minutes and seconds or decimal degrees, for example `+56 19 25.57` or `-56.32`. Altitude and azimuth also accept degrees/minutes/seconds or decimal degrees. Check field validation, sign and units before selecting **Go To**. **Copy** puts the current coordinates into the fields; it does not move the mount. **Sync** associates the entered RA/Dec with the current pointing rather than slewing to it; it is available only in RA/Dec mode when the device supports it. A bad sync can make subsequent pointing unreliable.
+
+Both **Go To** and **Sync** show a confirmation with the formatted coordinate pair: inspect it and choose **Accept** or **Cancel**. Go To checks the target against the configured horizon Go To limit before confirmation; a rejected target does not initiate a slew. Accepting a valid Go To requests motion; accepting Sync changes the assumed pointing. Watch for warning or error messages.
 
 #### Mount actions and park positions
 
@@ -378,13 +411,48 @@ Select **RA/Dec** or **Alt/Az** below the target fields. RA accepts hours, minut
 | **Limits** | Toggle the configured limits. Check their thresholds and actions; warning-only is not an automatic stop. |
 | **Settings** | Open the Go To settings panel to select/manage park positions and edit the available tracking and horizon limit controls. Save changes in the panel. |
 
-To create a named park position, connect the mount, carefully place it at the desired safe position and open **Settings → Park Positions → Manage**. Select **Add New**, enter a name of up to 12 characters and create it. **Update** replaces a selected position with the current mount position; **Delete** removes a position, but the last one cannot be deleted. Select the intended park position in the Go To settings panel and save it before parking. Check the position and the travel path on the real mount.
+Park, unpark and home each request confirmation. Buttons can be disabled by connection, parked/slewing state or device capability; the flip button appears for GEM mode only. Tracking and the limits toggle act directly without a confirmation dialog.
+
+**Flip Side of Pier dialog:** **Flip Now** requests the opposite pier side while retaining the sky position, subject to the flip limits. **Flip on next GoTo** changes the deferred-flip setting. The dialog's **Cancel** closes without an immediate flip, but still applies the current switch value; restore the switch first if you do not want to change it. Check physical clearance for either operation.
+
+**Re-sync dialog:** select **Home** or **Park**; for Park, choose a named position. **Re-sync** applies the selected reference, and **Cancel** closes the dialog. Park is unavailable if no named positions exist. This changes the assumed reference, not the physical location.
+
+**AutoHome dialog:** **Degree limit** is the maximum search travel (20–179°, initially 100°). In GEM mode, **Dec offset** offers 0, −90 or +90° after finding home; the RA and Dec sensor-position fields accept 85–95° in 0.1° steps. **Reset sensor positions to 90** changes both entries to 90°. **Start** begins the search, the progress bar shows progress, and **Stop** requests a stop while it is running; **Cancel** closes before starting. Confirm sensor support on Status, watch the mount and verify the resulting reference before further slews.
+
+#### Go To settings cog and nested controls
+
+Open the cog in the Go To panel. Expand each section to reveal its controls:
+
+| Section or control | Meaning |
+|---|---|
+| **Park Positions** | The dropdown selects the intended active park position. The adjacent cog opens the park manager; selection is disabled if the UI is disconnected or parking is unsupported. |
+| **Tracking Limits** | Select **No action**, **Stop tracking** or **Park**. Its cog reveals **Flip Angle** (0–30°) and **Tracking Limit After Flip Angle** (0–15°). These are angular settings, not time values. |
+| **Horizon Limits** | Select **No action**, **Stop tracking** or **Park**. Its cog reveals **Horizon Tracking Limit** and **Horizon Go To Limit**; the latter accepts −20 to 30°. The Go To limit is distinct from the tracking action. |
+| **Voice announcements** | Enable or disable voice announcements for the connected device. |
+| **Save / Cancel / Close** | Save applies pending panel edits; Cancel discards those edits and closes. With no pending edits, Close exits the panel. The separate park-manager actions below are applied as they are performed, not staged by this panel. |
+
+In the **park manager**, select a position; **Update** replaces it with the current mount position and **Delete** removes it, but the final position cannot be deleted. **Add New** reveals a name field (up to 12 characters), **Create**, and **Cancel**. Creating or updating requires a running mount; **Close** closes the manager. To create a safe position, connect the mount, carefully move it to the desired position, then create the name. Select the intended position in the Go To panel and save it. Check the entire route before parking. When a limit action is set to Park, verify the corresponding park destination in **Settings Explorer → Limits** too.
 
 #### Hand Controller
 
 The arrows operate the selected device; the speed slider has eight steps. **Axes** uses axis motion, **Guiding** uses guiding directions, and **Pulse** uses the configurable pulse settings. Diagonal buttons combine directions. Start at a low speed and check the actual movement before relying on direction labels. The centre **Stop** button stops motion.
 
-**One Click Start** switches to click-to-start and click-to-stop operation; when it is off, use the normal press-and-release control. **Direction Keys Off** disables the direction controls while slewing. The gear opens axis options for reversing RA/Az or Dec/Alt and enabling anti-backlash, plus a Pulse tab with duration, interval and rate for each speed step. Save edits in the Pulse tab. Backlash compensation addresses mechanical play; coordinate its use with the guiding application rather than applying multiple compensations blindly.
+**One Click Start** switches to click-to-start and click-to-stop operation; when it is off, use the normal press-and-release control. Clicking a different direction in one-click mode stops the previous direction before starting the new one. **Keys Off for Go To** requests that direction keys be disabled while slewing. The speed, mode and these checkboxes are saved as they change.
+
+The hand-controller cog opens **HC Settings** for the selected device:
+
+| Tab / field | Meaning |
+|---|---|
+| **Axis Settings → Flip RA/Az** | Reverse the RA/azimuth direction. |
+| **Axis Settings → Flip Dec/Alt** | Reverse the Dec/altitude direction. |
+| **Axis Settings → Anti-backlash RA/Az, Dec/Alt** | Enable compensation separately for each axis. These four checkboxes apply and save immediately; closing or cancelling the Pulse tab does not undo them. |
+| **Pulse Guide Rates → Speed** | Identifies one of the eight speed-slider steps. |
+| **Duration (ms)** | Pulse duration for that speed, minimum 1 ms. |
+| **Interval (ms)** | Interval for that speed, minimum 1 ms. |
+| **Rate** | Motion rate for that speed, from 0.001 up to the displayed maximum slew rate. |
+| **Save / Cancel** | On the Pulse tab, Save applies the edited pulse table; Cancel closes without saving its pending table edits. |
+
+Backlash compensation addresses mechanical play; coordinate its use with the guiding application rather than applying multiple compensations blindly.
 
 #### Mount Info dials
 
@@ -408,13 +476,26 @@ The toolbar provides **Save View**, **Center on Mount**, **Reset Camera** and **
 
 ![3D telescope view options](images/user-guide/telescope-3d-options.png)
 
-| Options group | What it changes |
-|---|---|
-| **Appearance** | Choose the background and model colour; toggle the grid, cardinal labels and heading. Cardinal size is available when labels are shown. The model selector is available when assembly mode is off. |
-| **Mount composition** | Enable assembly mode to choose separate support, mount and telescope components and telescope size. These choices change the visualization, not the connected hardware. |
-| **Axis adjustments** | Adjust the displayed RA and Dec orientation to suit the model. These visual adjustments do not establish the mount's physical position or correct alignment. |
+The top row identifies the device and displays actual axis 1 and axis 2 angles; the header beneath shows RA, Dec, Az, Alt, LHA and LST. Drag the model view to change perspective and use the mouse wheel to zoom. **Save View** retains the camera view in this browser; **Center on Mount** recentres it and **Reset Camera** restores the camera. If compass heading is enabled, the numbered heading button shows the camera bearing; click it to face north.
 
-**Save View** retains the current camera view; **Center on Mount** recentres it and **Reset Camera** restores the camera. The model is a visual aid, not a collision detector. If the mount starts in an unknown position or its reference position is wrong, the displayed orientation may also be wrong. Always check the physical mount and its surroundings.
+#### Options cog: field reference
+
+| Field | What it changes |
+|---|---|
+| **Telescope model** | Select a built-in model when **Use Assembly** is off. |
+| **Background** | Choose North America, Heart or Rosette Nebula, M51, M33, star field or none. |
+| **Model color** | Choose the displayed model colour. |
+| **Show ground grid** | Show or hide the grid. |
+| **Show cardinal directions / Cardinal size** | Show or hide direction labels; choose Small, Medium, Large or Extra Large when shown. |
+| **Show compass heading** | Show or hide the clickable camera-bearing button. |
+| **Use Assembly** | Switch from the built-in model selection to separate support, mount and optical tube choices; compatibility depends on alignment and mount selection. |
+| **Support** | Choose small, medium or large tripod or pier in assembly mode. |
+| **Mount** | Choose the visual mount model in assembly mode; it does not change the connected driver. |
+| **Optical tube assembly / size** | Select the visual tube type and 50%, 75%, 100%, 125%, 150% or 200% size in assembly mode. |
+| **RA / Dec axis adjustment** | Adjust displayed orientation by −90 to +90° in one-degree steps. This does not change the physical mount reference or alignment. |
+| **Save Settings / Cancel** | Save applies and stores the selected viewer options in this browser; Cancel discards the dialog's pending choices. |
+
+The model is a visual aid, not a collision detector. If the mount starts in an unknown position or its reference position is wrong, the displayed orientation may also be wrong. Always check the physical mount and its surroundings.
 
 ---
 
