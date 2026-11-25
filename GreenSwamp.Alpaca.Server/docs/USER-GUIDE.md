@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-25 17:07**
+**2026-11-25 17:24**
 
 ---
 
@@ -255,8 +255,7 @@ Expand the logging panel to adjust filters also available in Settings Explorer �
 - **Message Type Filters** — which severity levels appear (Info, Warning, Error, Debug, Data)
 - **Logging Control** — enable/disable the session log file, monitor log file, and charting data file
 
-Preset buttons at the top of the logging section apply commonly used filter combinations
-(Development, Production, Troubleshooting, Profile Debug) in one click.
+Use **Quick Set Actions** to select filter categories or clear filters; see [Section 6.5](#65-logging-settings). The Logging editor is a combined panel, not a set of separate tree leaves.
 
 ---
 
@@ -274,7 +273,7 @@ See [Section 6](#6-settings-explorer-in-depth) for a full description.
 
 ### 5.6 Server Configuration
 
-Open **Settings Explorer** → **Server Configuration** to edit network, user-interface and authentication settings. Save the relevant group after editing. Changes such as the listening port require a server restart. Display preferences for the current browser are also available directly from the navigation menu; see [Section 5.12](#512-display-preferences).
+Open **Settings Explorer** → **Server Configuration** and select **Alpaca Settings**, **User Interface** or **Security**. Save server configuration changes after editing. Changes such as the listening port require a server restart. Display preferences for the current browser are also available directly from the navigation menu; see [Section 5.12](#512-display-preferences).
 
 ---
 
@@ -511,78 +510,91 @@ Open **Display Preferences** from the navigation menu to choose light, dark or s
 
 ### 6.1 Tree Structure
 
-The settings tree has three levels:
+The left tree and right editor have these branches. Expand nodes with their disclosure arrows; selecting a leaf displays its editor. Some top-level sections also have an action card.
 
+```text
+Telescope Devices                       [device manager]
+  Device number — name
+    Mount Configuration; Observatory Configuration; Tracking & Guiding;
+    Home and Park; Limits; Voice
+    Optics; Performance & Tuning; PPEC; Hand Controller  [Show Hidden]
+Observatories                            [site manager]
+  Individual named observatories
+Logging                                  [combined logging panel; no child leaves]
+Server Configuration
+  Alpaca Settings; User Interface; Security
 ```
-Section
-  └- Group (leaf node — clicking shows the editor)
-```
 
-The top-level sections are:
-
-| Section | Description |
-|---|---|
-| **Observatory** | Shared physical site properties (latitude, longitude, elevation, UTC offset) |
-| **Logging** | Monitor filter settings — device, category, message type filters and log file targets |
-| **Server Configuration** | HTTP server behaviour, network binding, authentication, identity |
-| **Telescope Devices** | Per-device mount settings, one section per registered device |
-
-Select the **Telescope Devices** section to show the Device Manager card for adding, removing or applying device changes. Expand a device and select a leaf group to edit its settings.
-
-**Toolbar controls:**
+Selecting **Telescope Devices** shows the device manager: **Add Device**, delete on each device row, and **Apply Changes** when registration changes are pending. Apply Changes asks for confirmation and reloads all registrations; connected clients may be disconnected. Expand a device to edit its leaves. Select **Observatories** for the site list, or an individual site to edit it. Select **Logging** for the combined editor. **Server Configuration** is expanded to select its three leaves.
 
 | Control | Action |
 |---|---|
-| Expand All (↕ icon) | Opens all tree nodes |
-| Collapse All (↕ icon) | Closes all tree nodes |
-| Search box | Filters the tree to matching group names |
-| Show Hidden (toggle) | Reveals advanced groups normally hidden from casual use (Optics, PEC/PPEC, Performance & Tuning, Hand Controller) |
+| **Expand All / Collapse All** | Open or close tree branches. |
+| **Search** | Filter the tree; clear the search to restore the full view. |
+| **Show Hidden** | Reveal the four advanced device leaves above and additional advanced fields in some editors, GPS and Logging. |
+| **Export** | Create a settings and logs archive; inspect it for sensitive information before sharing. |
 
 ### 6.2 Dirty-State Tracking and Saving
 
-Any change you make to a setting is held in memory as a **working copy** and is not written to disk until you explicitly save. The tree indicates unsaved changes with:
+Ordinary editor changes use a **working copy**. A dirty indicator and enabled **Save / Reset** show pending changes. Save writes the relevant backing settings object, not just the visible field: server configuration, all observatories, logging, or the selected device. Reset restores that object's last saved copy; it is not a factory reset. Selecting another node while the current node is dirty asks whether to discard the changes.
 
-- A small **amber dot badge** (●) next to any leaf group that has unsaved changes
-- **Save** and **Reset** buttons that become available when changes are pending
+Some actions are exceptions: browser appearance and regional preferences apply independently, and **Copy to all devices** immediately saves affected device files after confirmation. Device add/delete also have their own dialogs and registration workflow. Do not rely on the current editor's Reset to undo those actions.
 
-**Save** writes the working copy to disk. **Reset** discards the selected working changes and reverts to the last saved state.
-
-The selected group is marked dirty when its working settings differ from the saved copy. Device settings are saved per device, not as separate files for each group.
-
-> **Warning:** Navigating away from a dirty (unsaved) node will show a confirmation dialog
-> asking whether you want to discard changes. Confirm to continue navigating, or cancel to
-> stay and save first.
+Saving a changed mount type, serial port, baud rate or alignment mode on a running mount can replace the device; connected clients are warned and must reconnect. Review physical position and settings before reconnecting. Some server changes, including port, require a server restart.
 
 ### 6.3 Observatory Settings
 
-**Group: Observatory Settings**
+Select **Observatories** for the site list. **Add Observatory** opens a dialog with a unique name, latitude, longitude, elevation and UTC offset. Delete requires confirmation and the last site cannot be deleted. Add/delete changes are working-copy changes until saved; select a named site in the tree to edit it.
 
-Shared observatory location used as defaults when new devices are created. Fields:
-
-| Field | Description |
+| Site field | Meaning |
 |---|---|
-| Latitude | Observatory latitude in decimal degrees (−90 to +90) |
-| Longitude | Observatory longitude in decimal degrees (−180 to +180) |
-| Elevation | Elevation above sea level in metres |
-| UTC Offset | Local time offset from UTC (e.g. `01:00:00` for UTC+1) |
+| **Name** | A non-empty name unique among sites. |
+| **Latitude / Longitude** | Decimal degrees, −90 to +90 and −180 to +180 respectively; north and east are positive. |
+| **Elevation** | Metres above sea level, −500 to 9000. |
+| **UTC Offset** | Hours relative to UTC, −14 to +14; for example, `1` means UTC+1. |
+| **GPS / Cartes du Ciel** | Location-source connection settings and dialogs, described below. |
+
+**Copy to all devices** asks for confirmation and immediately saves latitude, longitude, elevation, GPS port and GPS baud rate to every device. It is a copy, not a live link; later edits to the site do not propagate automatically. It does not copy UTC offset or every advanced GPS/CdC setting. This saves the complete device working copies, including any other pending device edits; review those before confirming.
+
+#### GPS and Cartes du Ciel location sources
+
+Both an observatory leaf and a telescope's **Observatory Configuration** provide these panels. GPS offers port and baud rate; **Show Hidden** reveals parity, stop bits, data bits, timeout in seconds and handshake. Set them to match the receiver. **Connect** reads a fix; the dialog displays NMEA type, latitude, longitude, altitude, GPS UTC, PC UTC and their difference when available. **Apply** copies the received location into the current working editor; **Cancel/Close** does not. Review the fix and save the editor. The time comparison does not set the computer clock.
+
+For **Cartes du Ciel**, enter its server address and port and open **Connect**. With CdC running, **Fetch** displays its latitude, longitude and altitude beside the local values. The left arrow sends the local location to CdC immediately; the right arrow copies the CdC location to the current editor and closes the dialog. Save the editor to retain a copied-in location; Cancel cannot undo a location already sent to CdC.
 
 ### 6.4 Server Configuration
 
-These groups cover different aspects of the Alpaca HTTP server:
+#### Alpaca Settings
 
-| Group | Key Settings |
+| Field | Purpose |
 |---|---|
-| **Network** | Port, remote access, UDP discovery, loopback discovery |
-| **User Interface** | Zoom, browser auto-start, display theme, language |
-| **Authentication** | Enable auth, username |
+| **Server Name / Server Port** | Discovery name and listening TCP port (1–65535). Restart the server after changing the port. |
+| **Allow Remote Access** | Bind for remote network access; otherwise use localhost. The address panel shows available addresses or localhost. |
+| **Local Respond Only to Localhost** | Restrict responses to localhost-sourced discovery to the loopback adapter. |
+| **Allow Alpaca Discovery** | Advertise via Alpaca UDP discovery. |
+| **Run in Strict Alpaca Mode** | Reject non-compliant Alpaca requests. |
+| **Prevent Remote Disconnects** | Prevent remote clients from disconnecting devices. |
+| **Enable Swagger UI** | Expose the OpenAPI interface at `/swagger`. |
 
-Display preferences are saved per browser. Choose Light, Dark, or Follow System independently of the theme colour: Green (Green Swamp), Forest (forest green), Ocean (teal), Steel (steel blue), Nebula (deep violet), Copper (burnt orange), or Red Light. Follow System responds to system appearance changes. Red Light always remains dark and retains its night brightness control; the chosen appearance is restored when another colour is selected.
+#### User Interface and Security
+
+**User Interface** contains the server's default zoom for browsers without their own zoom, **Auto-start Browser**, and the browser-specific display controls: appearance, theme colour, Red Light brightness, zoom, display language and regional format. Browser preferences apply separately from the server working-copy Save; changing language or regional format navigates to apply the choice. See [Display Preferences](#512-display-preferences).
+
+**Security** contains **Enable Authentication**, **User Name**, **Password** and **Repeat Password**. The credential inputs are disabled until authentication is enabled. Enter matching non-empty passwords, save, and verify access before relying on the setting. Editing the password fields to mismatching or empty values clears the working stored password; do not save until both match. HTTP Basic authentication is not transport encryption; restrict network exposure and use appropriate network protection. Do not share credentials or unreviewed exports.
 
 ### 6.5 Logging Settings
 
-When the **Logging** section node is selected, a special presets card is shown instead of a plain editor. Four quick-action buttons allow bulk filter changes (select all devices, all categories, all types, or clear all). Four pre-set buttons load commonly used filter profiles.
+Select **Logging** to open one combined panel; Device, Category, Type and Logging are rows in that panel, not separate tree leaves.
 
-The individual filter leaf groups (Device Filters, Category Filters, Message Type Filters, Logging Control) each open a dedicated editor with checkboxes for fine-grained control.
+| Row | Controls |
+|---|---|
+| **Device** | Server Device, Telescope, UI and Other filters. |
+| **Category** | Driver, Interface, Server, Mount and Alignment filters. |
+| **Type** | Information, Data, Warning, Error and Debug filters. |
+| **Logging** | Auto-start, Log Monitor, Log Session and Log Charting. Auto-start must be on for log files to be written. |
+| **Hidden** | **Fast Monitor** uses a 1,000-record ring buffer; it and Log Monitor are mutually exclusive. **Log Path** overrides the default directory when supplied. |
+
+**Quick Set Actions** provides All Devices, All Categories, All Types and Clear All. Check the resulting boxes before saving. **Save** writes the logging working copy; **Reset** restores the last saved copy. Use the Monitor page to view records and, in Fast Monitor mode, write the buffer to a file. More filters and trace logging can increase volume and may reveal sensitive information.
 
 ### 6.6 Telescope Device Settings
 
@@ -595,9 +607,10 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 | **Tracking & Guiding** | Sidereal/lunar/solar/king tracking rates, RA offset, pulse guiding parameters, ST4 guide rate |
 | **Home and Park** | Home axis positions (X/Y), auto-home positions, named park positions, active park selection |
 | **Limits** | Hardware axis limits, tracking-limit actions, horizon GOTO limit and sync limits; GEM-specific flip and horizon tracking settings |
-| **Optics** *(hidden)* | Aperture diameter, aperture area, focal length |
-| **Performance & Tuning** *(hidden)* | Loop update interval, GOTO precision, trace logging |
-| **PEC / PPEC** *(hidden)* | Periodic error correction and predictive PEC settings |
+| **Voice** | Announcements, browser voice and volume |
+| **Optics** *(hidden)* | Aperture diameter, aperture area, focal length and eyepiece field of view |
+| **Performance & Tuning** *(hidden)* | Display refresh interval, GOTO precision, trace logging |
+| **PPEC** *(hidden)* | PPEC enable setting |
 | **Hand Controller** *(hidden)* | HC speed, mode, flip behaviour, anti-backlash |
 
 ![Example telescope limits settings](images/user-guide/settings-limits.png)
@@ -612,11 +625,46 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 | **Home and Park** | The home and AutoHome axis values are displayed separately from the named park positions. The panel shows the active park name and the Track After Unpark option. Use the Control page's park manager to capture or update a position from the connected mount. |
 | **Limits** | Hardware limits specify axis travel values. Limits On enables the configured limit behaviour; the GEM flip angle and additional tracking allowance, horizon tracking threshold and horizon Go To limit have different purposes. Choose warning only, stop tracking or park as applicable, and select the park position when using a park action. Sync limits restrict sync operations independently. |
 | **Optics** | Aperture and focal-length values describe the attached optics; enter actual equipment values rather than using them as motion controls. |
-| **Performance & Tuning** | Polling interval, Go To precision and trace logging are diagnostic or advanced settings. Change them deliberately, as shorter intervals and extra logging can increase workload. |
-| **PEC / PPEC** | The editor exposes a PPEC enable setting. PPEC is mount-dependent correction for repeatable drive error; check support on Status and the mount's own documentation. The legacy desktop manual's training controls should not be assumed to exist here. |
+| **Performance & Tuning** | Display refresh interval, Go To precision and trace logging are diagnostic or advanced settings. Change them deliberately, as shorter intervals and extra logging can increase workload. |
+| **PPEC** | The editor exposes a PPEC enable setting. PPEC is mount-dependent correction for repeatable drive error; check support on Status and the mount's own documentation. The legacy desktop manual's training controls should not be assumed to exist here. |
+| **Voice** | Enable announcements, select a browser voice and set volume. |
 | **Hand Controller** | Configure speed, mode, direction reversals, anti-backlash, direction keys during Go To and one-click operation. The Control page provides the operating controls. |
 
-Review limits for your own mount and cables; the values in the illustration are not recommended settings for every installation. A limit action that parks the mount also requires a safe, reachable park position. Verify the settings and actual behaviour while supervising the equipment.
+#### Mount Configuration fields
+
+Expand **Device Information** for Enabled, device name and description, driver type (Simulator or SkyWatcher), alignment (GEM, Polar or Alt-Az), Polar primary side when applicable, and equatorial coordinate type (Other, Topocentric, J2000, J2050 or B1950). Choose the geometry and coordinate system to match the mount and clients.
+
+**Serial Connection** contains the COM port and baud rate; Show Hidden adds data bits, handshake, read timeout (ms), DTR and RTS. Match the physical connection. **Mount Hardware** contains advanced commands, encoders, maximum slew rate (degrees/second), RA and Dec backlash (motor steps), polar LED brightness (0–255) and full motor current. Availability depends on the hardware. Backlash compensates mechanical play; avoid stacking compensation blindly with the guiding application.
+
+**Custom Gearing** enables separate RA and Dec values for steps per revolution, worm teeth and tracking offset. The fields are disabled until enabled. Use measured, correct values only for modified gearing: incorrect gearing can produce unexpected motion. The legacy [GS Server manual](https://greenswamp.org/manual/main-window) explains the underlying concepts, but its desktop controls and defaults are not necessarily those of this server.
+
+#### Observatory Configuration fields
+
+**Location** has a saved-observatory selector and copy button, latitude, longitude and elevation; UTC offset appears with Show Hidden. Copying a site copies latitude, longitude, elevation, GPS and CdC connection values into the device working copy, but not UTC offset; it is not a continuing link. Save the device editor. **Environmental** contains refraction correction and temperature in °C. **GPS** and **Cartes du Ciel** have their own connection settings and dialogs as described in [Section 6.3](#63-observatory-settings).
+
+#### Tracking & Guiding fields
+
+**Tracking** has Track After Unpark, the Sidereal/Lunar/Solar/King selection and editable rates in arcseconds per second. Show Hidden adds RA tracking offset in steps and Alt-Az update interval in milliseconds. Use the relevant rate and avoid changing numerical values without understanding the mount and client.
+
+**Pulse Guiding** contains separate minimum RA and Dec pulse durations (5–50 ms), Dec Pulse → GoTo, Alternating PPEC, ST4 guide-rate divisor, and RA/Dec guiding rates (0–100% of sidereal). Rejected pulse corrections can be inspected on the Pulse Chart; coordinate changes with the guiding software rather than changing thresholds blindly. Alternating PPEC and Dec Pulse → GoTo are advanced, mount-dependent choices.
+
+**HC Pulse Guides** defines eight hand-controller speed rows. For each, enter Duration and Interval in milliseconds (minimum 1) and Rate (minimum 0.001, capped by maximum slew rate), then Save the device editor. These values govern the hand controller's Pulse mode, not the external guiding client's calibration. The Control page also has a pulse settings dialog; see [Mount Control](#510-mount-control).
+
+#### Home, limits and safety
+
+**Home and Park → Home** displays the Home and AutoHome X/Y axis values. **Park** displays named park positions and their axes, and provides an active-park name and Track After Unpark checkbox. Create or update named positions from the connected mount using the Control page's park manager.
+
+**Limits → Hardware Limit Values** provides upper/lower Dec/Alt and RA/Az limits in degrees. **Tracking-Limit Actions** provides Limits On; the horizon Go To limit; and, for GEM, flip angle, tracking allowance after flip angle and horizon tracking limit. The primary trigger action is GEM meridian or hardware-limit tracking according to alignment. Choose Warning Only, Stop Tracking or Park, and select the primary park destination for Park. GEM also has a separate horizon trigger action and park destination. **Sync Limits** contains enable, maximum sync angle (0–60°) and No Sync Past Meridian.
+
+Review limits for your own mount and cables; the values in the illustration are not recommended settings for every installation. Hardware slew limits and tracking actions serve different purposes; warning-only is not an automatic stop. A park action requires a safe, reachable destination. Test settings while supervising the equipment.
+
+#### Voice and advanced leaves
+
+- **Voice:** enable announcements, select a browser-provided voice (or clear it for the default), refresh the voice list and set volume from 0 to 100. Available voices depend on the browser and language.
+- **Optics:** aperture diameter and focal length in metres, effective aperture area in square metres, and **Eyepiece FS** (eyepiece field of view) in arcminutes. Enter the actual optical configuration; these fields do not move the mount.
+- **Performance & Tuning:** display check interval in milliseconds (minimum 100), Go To precision in arcseconds and per-device trace logging. Tune deliberately; a shorter refresh interval or extra logging can increase workload.
+- **PPEC:** enable PPEC only where supported. It compensates for repeatable drive error; this leaf does not provide the legacy desktop training controls. Consult the mount documentation and [legacy PPEC explanation](https://greenswamp.org/manual/ppec).
+- **Hand Controller:** HC speed and mode, RA/Dec anti-backlash, E/W and N/S reversal, Disable Keys on GoTo and One Click Start. These are device settings; use the Control page for operation and its cog for the pulse table.
 
 ---
 
