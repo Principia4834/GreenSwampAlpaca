@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-25 17:43**
+**2026-11-25 17:49**
 
 ---
 
