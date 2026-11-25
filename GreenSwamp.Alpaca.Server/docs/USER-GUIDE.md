@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-23 18:20**
+**2026-11-25 10:31**
 
 ---
 
@@ -21,13 +21,16 @@
 5. [Page Reference](#5-page-reference)
    - 5.1 [Home](#51-home)
    - 5.2 [Mount Status](#52-mount-status)
-   - 5.3 [Mount Settings](#53-mount-configuration)
+   - 5.3 [Mount Configuration](#53-mount-configuration)
    - 5.4 [Monitor](#54-monitor)
    - 5.5 [Settings Explorer](#55-settings-explorer)
-   - 5.6 [Alpaca Settings](#56-alpaca-settings)
+   - 5.6 [Server Configuration](#56-server-configuration)
    - 5.7 [Check Settings](#57-check-settings)
-   - 5.8 [RA / Dec Chart](#58-ra--dec-chart)
-   - 5.9 [Pulse Guide Chart](#59-pulse-guide-chart)
+   - 5.8 [Axis Chart](#58-axis-chart)
+   - 5.9 [Pulse Chart](#59-pulse-chart)
+   - 5.10 [Mount Control](#510-mount-control)
+   - 5.11 [3D Telescope View](#511-3d-telescope-view)
+   - 5.12 [Display Preferences](#512-display-preferences)
 6. [Settings Explorer In Depth](#6-settings-explorer-in-depth)
    - 6.1 [Tree Structure](#61-tree-structure)
    - 6.2 [Dirty-State Tracking and Saving](#62-dirty-state-tracking-and-saving)
@@ -61,7 +64,7 @@ planetarium, imaging, or automation application can connect to them over a stand
 
 | Capability | Detail |
 |---|---|
-| **Alpaca REST API** | Full ASCOM Telescope v3 interface over HTTP/JSON |
+| **Alpaca REST API** | ASCOM Telescope interface version 4 over HTTP/JSON |
 | **Multi-mount** | Drive several mounts simultaneously, each with its own device number |
 | **Mount types** | German Equatorial (GEM), Polar / Fork Equatorial, Alt-Azimuth |
 | **Hardware driver** | SkyWatcher motor controllers via serial (RS-232 / USB-Serial) |
@@ -70,7 +73,14 @@ planetarium, imaging, or automation application can connect to them over a stand
 | **Logging** | Configurable real-time monitor with session and file logging |
 | **Settings health** | Automatic validation and repair of the configuration file |
 
-The server runs as a Windows process and hosts a Blazor web application. Once running, you interact with it entirely through a web browser — either on the same machine (`http://localhost:31416`) or from any device on your local network when remote access is enabled.
+The server hosts a browser-based application. Once running, open it on the server computer at `http://localhost:31416`, or from another device on your local network when remote access is enabled.
+
+### Before moving a physical mount
+
+- Check clearance around the telescope, pier and observatory, and make sure cables can move freely throughout the intended travel.
+- Configure and test limits and park positions for your own equipment. A warning indicator, configured limit or 3D model is not a substitute for observing the mount or an independent safety system.
+- Know how to stop motion. Supervise initial slews, flips, homing and parking, and be especially careful when the mount's position is uncertain after a power interruption.
+- Practice unfamiliar controls with a simulator first.
 
 ---
 
@@ -80,7 +90,11 @@ The server runs as a Windows process and hosts a Blazor web application. Once ru
 
 **ASCOM** (Astronomy Common Object Model) is the industry-standard interface specification for astronomy equipment. The traditional COM-based driver requires the driver software to be installed on every client PC.
 
-**ASCOM Alpaca** is the modern, platform-independent version: it uses HTTP/REST so any client on the same network can connect without installing drivers. Green Swamp Alpaca Server implements the Alpaca Telescope interface and also supports Alpaca UDP discovery, allowing compatible clients tofind the server automatically.
+**ASCOM Alpaca** uses HTTP/REST so compatible clients can communicate over the network. Green Swamp Alpaca Server implements the Alpaca Telescope interface and supports Alpaca UDP discovery. Some legacy ASCOM clients need an Alpaca-compatible chooser or bridge.
+
+**Right ascension (RA)** and **declination (Dec)** describe a sky position. **Altitude** and **azimuth** describe a direction relative to the observer's horizon. Accurate site coordinates and time are important for converting between them. A GEM's **pier side** describes its pointing orientation; a meridian flip changes that orientation. **Home** is a reference position, while **park** is a selected position for stopping or storing the mount.
+
+Guiding applications send short RA or Dec correction pulses. Backlash is mechanical play when an axis reverses; periodic error correction (PEC/PPEC) compensates for repeating errors in the mount's gearing when supported. Review the mount and guiding software documentation before changing these advanced settings.
 
 ### 2.2 Mount Types Supported
 
@@ -130,9 +144,11 @@ On first launch the server creates a default configuration containing a single *
 | Default Alpaca port | **31416** |
 | Local UI URL | `http://localhost:31416` |
 | Alpaca base URL | `http://localhost:31416/api/v1/telescope/{deviceNumber}/` |
-| Setup redirect (legacy) | `http://localhost:31416/setup/v1/Telescope/{deviceNumber}/setup` → redirects to Mount Status |
+| Setup redirect (legacy) | `http://localhost:31416/setup/v1/Telescope/{deviceNumber}/setup` → redirects to Mount Configuration |
 
-The port can be changed in **Alpaca Settings** → Network. A server restart is required for a port change to take effect.
+The port can be changed in **Settings Explorer** → **Server Configuration** → **Network**. A server restart is required for a port change to take effect.
+
+To try the simulator, open **Control**, select its device tab and click the Connect icon at the lower right. If no simulator is configured, use **Add Telescope** as described in [Section 7](#71-adding-a-device). After creating one, apply hot reload or restart to activate it. Once connected, explore the readouts and controls before connecting physical hardware.
 
 ### 3.3 Connecting an ASCOM Client
 
@@ -150,28 +166,26 @@ In your planetarium or imaging application (e.g. Cartes du Ciel, Sequence Genera
 
 ## 4. Navigating the User Interface
 
-The application is a single-page web application. All pages are reachable from the left-side navigation drawer without needing to reload the browser.
+Use the left-side navigation drawer to move between pages and open dialogs.
 
 ### 4.1 Navigation Menu
 
-```
-Home
----------------------
-Status              ← Real-time mount telemetry
-Settings            ← Per-device quick settings overview
-Monitor             ← Live log stream + filter controls
----------------------
-RA / Dec Chart      ← Opens live position chart in a new window
-Pulse Chart         ← Opens live pulse-guide chart in a new window
----------------------
-Settings Explorer   ← Full settings tree (all groups)
-Alpaca Settings     ← Server-level network and auth settings
-Check Settings      ← Settings validation and auto-repair
-```
+| Entry | Purpose |
+|---|---|
+| **Home** | Welcome page, carousel and device tiles |
+| **Control** | Connect and operate a selected telescope |
+| **Status** | Live mount telemetry |
+| **Configuration** | Per-device configuration overview |
+| **Monitor** | Live log records and logging filters |
+| **Add Telescope** | Create a simulator or SkyWatcher device |
+| **Settings Explorer** | Edit application and telescope settings |
+| **Check Settings** | Validate settings and locate settings files |
+| **Display Preferences** | Change this browser's appearance, zoom and language preferences |
+| **Shutdown** | Open the shutdown confirmation |
 
-The divider separates the everyday operational pages (top) from administrative / configuration pages (bottom). Device links (Camera, Dome, etc.) are added automatically if those ASCOM device types are registered.
+![Navigation drawer showing the application pages and actions](images/user-guide/navigation-menu.png)
 
-Clicking a navigation link navigates immediately; there is no page reload.
+To open the **Axis Chart**, **Pulse Chart** or **3D View**, go to **Control**, select and connect the telescope, then use the buttons in its **Mount Info** panel. They open in separate browser windows. Allow pop-ups for the server if necessary.
 
 ---
 
@@ -179,7 +193,9 @@ Clicking a navigation link navigates immediately; there is no page reload.
 
 ### 5.1 Home
 
-The landing page. Summarises what the server does and provides links to the Green Swamp Software website and the ASCOM Standards site. No user action is required here.
+The landing page shows a welcome message, an image carousel and a row of telescope tiles. Select a tile to open its Control page. Its information button shows device details, its connection indicator shows mount connection status, and its settings button opens the device's Configuration page.
+
+![Home page with carousel and telescope device tiles](images/user-guide/home-devices.png)
 
 ---
 
@@ -189,28 +205,21 @@ The landing page. Summarises what the server does and provides links to the Gree
 
 Displays real-time telemetry for all registered telescope devices. If more than one device is registered, each appears as a separate **tab**. Clicking a tab navigates to `/mount-status/{deviceNumber}` so the view is bookmarkable and deep-linkable.
 
-The status for each device is arranged in four panels:
+The page groups pointing coordinates, axis positions, status and mount information. Status includes connection count, slewing, guiding, tracking, limits, park and home. Mount details can include model, firmware, supported capabilities and, for SkyWatcher, controller voltage when available.
 
-| Panel | Content |
-|---|---|
-| **Position** | RA, Dec, Altitude, Azimuth, Local Hour Angle (LHA), Pier Side |
-| **Status** | Mount connected / COM port, active client count, Slewing, Pulse Guiding (RA and Dec separately), Tracking rate, At Park, At Home |
-| **Axis Positions** | Actual and apparent axis angles in degrees (X = RA/Az, Y = Dec/Alt), raw motor step counts |
-| **Mount** | Mount type string, alignment mode, current local date/time |
-| **Axis Dials** | Graphical circular dials showing the current Azimuth and Altitude angles |
+![Mount Status page with live telescope telemetry](images/user-guide/mount-status.png)
 
-The page subscribes to live state updates and refreshes automatically; you do not need to reload
-the browser.
+The page subscribes to live state updates and refreshes automatically; you do not need to reload the browser.
 
 ---
 
-### 5.3 Mount Settings
+### 5.3 Mount Configuration
 
 **URL:** `/mount-configuration` or `/mount-configuration/{deviceNumber}`
 
-Provides a quick read-only overview of each device's configuration, one tab per device. Each tab shows the device identity, serial connection details, and mount hardware summary.
+Provides a read-only overview of each device's configuration, one tab per device. **Edit in Settings Explorer** opens the device's settings for editing. The export button downloads a settings and logs archive.
 
-An **Edit in Settings Explorer** button navigates directly to that device's Mount Configuration group in the Settings Explorer, where all settings can be changed.
+![Mount Configuration page showing a device overview](images/user-guide/mount-configuration.png)
 
 ---
 
@@ -218,10 +227,11 @@ An **Edit in Settings Explorer** button navigates directly to that device's Moun
 
 **URL:** `/monitor`
 
-A two-part page:
+The page displays recent **Monitor Records** and an expandable **Logging Settings** panel.
 
-**Top half — Monitor Records**
-A scrollable, monospaced log buffer showing up to the last _N_ records captured since the server started (or since the buffer was cleared). Records are colour-coded by message type. Controls:
+![Monitor page showing records and logging controls](images/user-guide/monitor.png)
+
+The scrollable, monospaced buffer shows recent captured records. Controls:
 
 | Button | Action |
 |---|---|
@@ -230,8 +240,8 @@ A scrollable, monospaced log buffer showing up to the last _N_ records captured 
 | Reload Settings | Re-reads filter settings from disk |
 | Write Buffer to File | (Fast Monitor mode only) Flushes the in-memory buffer to a log file |
 
-**Bottom half — Logging Settings**
-Inline filter controls (identical to those in Settings Explorer → Logging). Changes here are saved to disk with the **Save** button and take effect immediately. Four filter categories:
+**Logging Settings**
+Expand the logging panel to adjust filters also available in Settings Explorer → Logging. Save changes with **Save**. Four filter categories:
 
 - **Device Filters** — which device types produce log entries (Server, Telescope, UI)
 - **Category Filters** — which subsystem categories appear (Driver, Interface, Server, Mount, etc.)
@@ -247,32 +257,17 @@ Preset buttons at the top of the logging section apply commonly used filter comb
 
 **URL:** `/settings-explorer`
 
-The primary settings management page. All application settings are accessible here, organised into a hierarchical tree on the left, with the editor for the selected group displayed on the right.
+The primary settings management page organises settings into a tree on the left and displays the selected group on the right. Use **Export** to download a settings and logs archive; review it for sensitive information before sharing.
+
+![Settings Explorer showing its settings tree and selected editor](images/user-guide/settings-explorer.png)
 
 See [Section 6](#6-settings-explorer-in-depth) for a full description.
 
 ---
 
-### 5.6 Alpaca Settings
+### 5.6 Server Configuration
 
-**URL:** `/setup`
-
-A focused card-based editor for the most common server-level settings that users need to adjust when first setting up the server. Organised into four cards:
-
-| Card | Settings |
-|---|---|
-| **Network** | Server location label, Alpaca port, remote access on/off, UDP discovery on/off, loopback-only discovery |
-| **Runtime Configuration** | Strict Alpaca mode, prevent remote disconnects, image-bytes download |
-| **UI Options** | Auto-start browser on launch, Swagger/OpenAPI UI |
-| **Authentication** | Enable HTTP Basic auth, username |
-
-The current server IP address(es) are shown live in the Network card when remote access is enabled.
-
-> **Note:** The password is never stored in plain text. Use the password-change facility
-> (if available in your build) to set or update it. The Alpaca Settings page shows the
-> username field only.
-
-A **Save** button at the bottom of each card saves that card's settings immediately.
+Open **Settings Explorer** → **Server Configuration** to edit network, user-interface and authentication settings. Save the relevant group after editing. Changes such as the listening port require a server restart. Display preferences for the current browser are also available directly from the navigation menu; see [Section 5.12](#512-display-preferences).
 
 ---
 
@@ -292,52 +287,94 @@ Each issue includes:
 - A suggested resolution
 - An **Auto-repairable** chip if the server can fix it automatically
 
-An **Auto-repair** button is shown when at least one auto-repairable issue exists. Clicking it applies all available automatic fixes and re-validates. You can also re-run validation manually at any time with the **Validate** button.
+Use the revalidation button to check again after making changes. The page also shows the settings folder and its JSON files, plus information about automatic repair and manual recovery. It does not provide an Auto-repair action button. Back up your settings before changing or restoring files.
+
+![Check Settings page showing validation and settings file information](images/user-guide/check-settings.png)
 
 ---
 
-### 5.8 RA / Dec Chart
+### 5.8 Axis Chart
 
-**URL:** `/charts/radec`
+**URL:** `/charts/radec/{deviceNumber}`
 
-Opens in a **separate browser window** when clicked in the navigation menu. The window hosts an
-independent Blazor circuit connected to the server via SignalR.
+In **Control**, connect the selected telescope and select **Axis Chart** in **Mount Info**. The chart opens in a separate window and plots the two mount axes over time. The labels reflect the mount's alignment mode.
+
+![Axis Chart with axis traces and chart controls](images/user-guide/axis-chart.png)
 
 | Control | Purpose |
 |---|---|
-| **Scale** drop-down | Switches the Y-axis between Steps, Degrees, and Arc-seconds |
-| **Axis 1 / Axis 2** toggles | Show or hide each position series |
-| **Record** (●) button | Starts writing received data points to a `GSChartingLogRaDec` file in the log directory |
-| **Stop** (■) button | Stops disk logging for this session |
-| **Clear** (🧹) button | Removes all plotted points from the current view |
+| **Data window** | Select the recent time span, from 10 seconds to 30 minutes. |
+| **Scale** | Display values in steps, degrees or arc-seconds. |
+| **Pause / Resume** | Freeze the current display for inspection, then return to the rolling live view. |
+| **Axis switches** | Show or hide either axis series. |
+| **Clear** | Clear the displayed chart data. |
 
-On opening, the chart pre-populates with up to 5 000 buffered historical points from the server
-before live streaming begins. Settings (scale, series visibility) are saved automatically and
-restored the next time the chart window is opened.
-
-> **Popup blocker:** If the window does not open, a warning snackbar is shown in the main
-> application window. See [Troubleshooting — Chart window is blocked](#chart-window-is-blocked-by-the-browser).
+When paused, the chart exposes controls for inspecting the snapshot, including zoom, pan and export. The data-window selector is unavailable until live display resumes. A disconnected or reconnecting indicator refers to the chart's connection to the server. Allow pop-ups if the window does not open.
 
 ---
 
-### 5.9 Pulse Guide Chart
+### 5.9 Pulse Chart
 
-**URL:** `/charts/pulse`
+**URL:** `/charts/pulse/{deviceNumber}`
 
-Opens in a **separate browser window** identical in structure to the RA/Dec chart. Shows four
-series for guide pulse data received from the mount driver:
+Open **Pulse Chart** from the connected telescope's **Mount Info** panel. It displays accepted and rejected RA and Dec guide pulses sent to the mount. Rejected pulses were not processed; investigate repeated rejections using the mount and guiding software settings rather than changing thresholds blindly. An empty plot can simply mean no guiding pulses have been received.
 
-| Series | Colour | Description |
-|---|---|---|
-| **RA** | Green | Accepted RA pulse durations |
-| **RA rej.** | Amber | Rejected RA pulses (scatter plot) |
-| **Dec** | Blue | Accepted Dec pulse durations |
-| **Dec rej.** | Red | Rejected Dec pulses (scatter plot) |
+![Pulse Chart with pulse series and chart controls](images/user-guide/pulse-chart.png)
 
-The **Scale** drop-down switches the Y-axis between Milliseconds (pulse duration), Arc-seconds
-(rate), and Steps.
+| Control | Purpose |
+|---|---|
+| **Data window** | Choose the recent time span. |
+| **Units** | Select milliseconds, arc-seconds or steps. |
+| **Chart type** | Show accepted pulses as bars, points or lines; rejected pulses are points. |
+| **RA / RA rejected / Dec / Dec rejected** | Show or hide the corresponding series. |
+| **Pause / Resume** | Inspect a frozen snapshot or return to live display. |
+| **Clear** | Clear the displayed pulse data. |
 
-All toolbar controls (logging, clear, series toggles) are identical to the RA/Dec chart.
+Both charts save their display selections. The charts are diagnostic views; do not infer mount safety from them.
+
+---
+
+### 5.10 Mount Control
+
+**URL:** `/mount-control` or `/mount-control/{deviceNumber}`
+
+Select a telescope tab, then use **Connect** at the lower right to connect the UI client. Connection from another application does not replace this step for enabling the UI controls. Use the disconnect icon when finished. The top readout and indicator row show coordinates, connection count and mount state; hover over an icon for its description.
+
+![Mount Control page with GOTO, hand controller and Mount Info panels](images/user-guide/mount-control.png)
+
+- **GOTO:** select RA/Dec or Alt/Az, enter the target and use **Go To**. **Copy** fills the target from the current position; **Sync** is available for supported RA/Dec operations. Check the target and mount clearance before moving.
+- **Mount actions:** the icon buttons provide park/unpark, home, tracking, GEM pier-side flip, re-sync, AutoHome, limits and settings where available. Availability depends on connection, state and mount capability. The settings panel includes park-position and tracking-limit controls.
+- **Hand Controller:** choose Axes, Guiding or Pulse mode, set the speed and use the direction buttons. The centre Stop button stops motion. The settings button opens hand-controller and pulse options.
+- **Mount Info:** choose RA/Dec, Alt/Az or Optics dials, or open the Axis Chart, Pulse Chart and 3D View. These buttons require the UI connection.
+- **Bottom bar:** use the red Stop button to stop motion, the connection icon to connect/disconnect and the power icon to open the shutdown dialog.
+
+![Mount Info panel showing the chart and 3D view launchers](images/user-guide/mount-info-launchers.png)
+
+> **Safety:** A flip, home, park or AutoHome operation can move the mount. Check the route and cables and supervise the movement. Re-sync changes the server's assumed position; ensure the physical mount is actually at the selected reference position first. Test configured limits on your equipment and do not assume that a warning alone stops motion.
+
+---
+
+### 5.11 3D Telescope View
+
+**URL:** `/telescope-view/{deviceNumber}`
+
+From **Control** → **Mount Info**, connect the selected telescope and choose **3D View**. The separate window shows a visual model driven by the reported axis positions, with a coordinate header.
+
+![3D telescope view with model and toolbar](images/user-guide/telescope-3d-view.png)
+
+The toolbar provides **Save View**, **Center on Mount**, **Reset Camera** and **Options**. Options include model and background, colour, grid, cardinal directions and heading, as well as assembly support, mount, telescope and axis adjustments where applicable. Save the options to apply them.
+
+![3D telescope view options](images/user-guide/telescope-3d-options.png)
+
+The model is a visual aid, not a collision detector. If the mount starts in an unknown position or its reference position is wrong, the displayed orientation may also be wrong. Always check the physical mount and its surroundings.
+
+---
+
+### 5.12 Display Preferences
+
+Open **Display Preferences** from the navigation menu to choose light, dark or system appearance; theme colour; zoom; display language; and regional format. The Red Light theme remains dark and provides a brightness control. Browser-specific preferences are independent of another browser's settings.
+
+![Display preferences showing appearance and regional options](images/user-guide/settings-preferences.png)
 
 ---
 
@@ -361,9 +398,7 @@ The top-level sections are:
 | **Server Configuration** | HTTP server behaviour, network binding, authentication, identity |
 | **Telescope Devices** | Per-device mount settings, one section per registered device |
 
-Within **Telescope Devices**, each registered device has its own section node. Selecting a device
-section shows the **Device Manager** card (add/remove devices). Selecting a leaf group below a
-device shows the editor for that group.
+Select the **Telescope Devices** section to show the Device Manager card for adding, removing or applying device changes. Expand a device and select a leaf group to edit its settings.
 
 **Toolbar controls:**
 
@@ -379,12 +414,11 @@ device shows the editor for that group.
 Any change you make to a setting is held in memory as a **working copy** and is not written to disk until you explicitly save. The tree indicates unsaved changes with:
 
 - A small **amber dot badge** (●) next to any leaf group that has unsaved changes
-- **Save** and **Reset** buttons that appear in the editor card header when any change is pending
+- **Save** and **Reset** buttons that become available when changes are pending
 
-**Save** writes the working copy to disk. **Reset** discards all unsaved changes and reverts to
-the last saved state.
+**Save** writes the working copy to disk. **Reset** discards the selected working changes and reverts to the last saved state.
 
-The dirty-state badge covers all settings within the device: changing any field in any group of a device marks the device's leaf nodes as dirty. Saving from any leaf saves the entire device's settings in one operation.
+The selected group is marked dirty when its working settings differ from the saved copy. Device settings are saved per device, not as separate files for each group.
 
 > **Warning:** Navigating away from a dirty (unsaved) node will show a confirmation dialog
 > asking whether you want to discard changes. Confirm to continue navigating, or cancel to
@@ -405,7 +439,7 @@ Shared observatory location used as defaults when new devices are created. Field
 
 ### 6.4 Server Configuration
 
-Four groups, each covering a different aspect of the Alpaca HTTP server:
+These groups cover different aspects of the Alpaca HTTP server:
 
 | Group | Key Settings |
 |---|---|
@@ -431,11 +465,15 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 | **Observatory Configuration** | Per-device latitude, longitude, elevation, UTC offset, environmental inputs, GPS |
 | **Tracking & Guiding** | Sidereal/lunar/solar/king tracking rates, RA offset, pulse guiding parameters, ST4 guide rate |
 | **Home and Park** | Home axis positions (X/Y), auto-home positions, named park positions, active park selection |
-| **Limits** | Axis/slew limits (upper/lower Dec/Alt, RA/Az axis), sync limit, no-sync-past-meridian, meridian/hour angle limit *(GEM/Polar only)*, horizontal axis limit *(AltAz only)* |
+| **Limits** | Hardware axis limits, tracking-limit actions, horizon GOTO limit and sync limits; GEM-specific flip and horizon tracking settings |
 | **Optics** *(hidden)* | Aperture diameter, aperture area, focal length |
 | **Performance & Tuning** *(hidden)* | Loop update interval, GOTO precision, trace logging |
 | **PEC / PPEC** *(hidden)* | Periodic error correction and predictive PEC settings |
 | **Hand Controller** *(hidden)* | HC speed, mode, flip behaviour, anti-backlash |
+
+![Example telescope limits settings](images/user-guide/settings-limits.png)
+
+Review limits for your own mount and cables; the values in the illustration are not recommended settings for every installation.
 
 ---
 
@@ -459,6 +497,16 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
    If you defer, the telescope is not usable until you apply changes in **Settings Explorer →
    Telescope Devices** or restart the server; it may already be listed on some pages.
 
+The wizard presents identity, geometry, location, connection and review steps. These examples show the identity, location, review and activation screens:
+
+![Add Telescope wizard identity step](images/user-guide/add-telescope-identity.png)
+
+![Add Telescope wizard location step](images/user-guide/add-telescope-location.png)
+
+![Add Telescope wizard review step](images/user-guide/add-telescope-review.png)
+
+![Add Telescope wizard activation and hot reload choice](images/user-guide/add-telescope-reload.png)
+
 Review the device's remaining settings, including mount limits, before connecting hardware.
 
 ### 7.2 Removing a Device
@@ -478,8 +526,7 @@ After adding a device, configure it fully before connecting a client. At minimum
    and for SkyWatcher devices, the serial Port and Baud Rate.
 2. **Observatory Configuration** — Set your site latitude, longitude and elevation so coordinate
    transforms are accurate.
-3. **Limits** — Review axis limits and, for GEM/Polar mounts, set the Hour Angle Limit to a
-   safe value for your mount.
+3. **Limits** — Review hardware axis limits, tracking actions and any GEM-specific flip and horizon limits for your mount.
 
 ---
 
@@ -489,41 +536,25 @@ After adding a device, configure it fully before connecting a client. At minimum
 
 Select **Alignment Mode: German Equatorial (GEM)** in Mount Configuration.
 
-**Key settings unique to GEM:**
+A GEM can point to the same region of sky from either side of the pier. A meridian flip changes its orientation to help maintain clearance as the sky moves.
 
-| Setting | Location | Notes |
-|---|---|---|
-| Polar Primary Side | Mount Configuration | Which pier side is the primary pointing side (Left or Right) |
-| Hour Angle Limit | Limits → Meridian / Hour Angle Limit | Hour angle (0–12 h) at which tracking stops to prevent over-rotation; 0 disables the limit |
-| No Sync Past Meridian | Limits → Sync Limits | Rejects sync commands when the scope is past the meridian |
+In **Limits**, review the GEM flip angle, tracking limit after the flip angle, horizon limits and the selected actions. The available action can be warning only, stop tracking or park; do not assume the mount will stop unless the selected configuration calls for it. Configure a safe park position before choosing a park action. Coordinate flip timing with your automation client, and supervise and test it on the actual equipment.
 
-The GEM tracks past the meridian up to the configured hour angle limit then stops. The client application is responsible for issuing a meridian flip (a GOTO to the same sky position on the opposite pier side) before the limit is reached.
-
-**Status page** will report the current Pier Side (East/West) alongside the RA/Dec position.
+The Status page reports the current pier side alongside RA/Dec. Sync restrictions, including **No Sync Past Meridian**, are also available in Limits.
 
 ### 8.2 Polar / Fork Equatorial Mount
 
 Select **Alignment Mode: Polar / Fork** in Mount Configuration.
 
-A polar mount behaves similarly to a GEM but with no meridian flip — the RA axis can rotate freely. The **Polar Primary Side** setting (Left or Right) determines the default orientation.
+A polar or fork mount has equatorial axes, but its mechanical travel depends on the mount and installation. The **Polar Primary Side** setting (Left or Right) determines the default orientation. Review axis limits and cable clearance for your particular equipment; do not assume the axes can rotate freely.
 
-The Hour Angle Limit in the **Limits** group is still applicable for polar mounts to prevent cable wrap.
+Review the hardware axis limits and their configured action in **Limits** for your polar mount.
 
 ### 8.3 Alt-Azimuth Mount
 
 Select **Alignment Mode: Alt-Az** in Mount Configuration.
 
-**Key settings unique to AltAz:**
-
-| Setting | Location | Notes |
-|---|---|---|
-| Horizontal Axis Limit | Limits → Horizontal Axis Limit | Enables a tracking stop at a configured altitude angle |
-| Hz Tracking Limit (°) | Limits → Horizontal Axis Limit | Altitude angle at which tracking stops |
-| Park at Hz Limit | Limits → Horizontal Axis Limit | Automatically parks the mount when the limit is reached |
-| Park Hz Limit Position | Limits → Horizontal Axis Limit | Named park position used for the auto-park at limit |
-| AltAz Update Interval | Tracking & Guiding *(hidden)* | How often the tracking correction is issued (ms) |
-
-AltAz mounts do not have RA/Dec axes so the **Meridian / Hour Angle Limit** panel is automatically hidden for AltAz devices.
+Alt-Az mounts use azimuth and altitude axes. Tracking a celestial target requires movement of both axes; the field can rotate during imaging without a field de-rotator. Review hardware limits, the horizon GOTO limit and the selected limit action for the actual mount. Pay particular attention to azimuth cable wrap and altitude clearance. GEM-specific flip-angle controls are not shown for Alt-Az devices.
 
 ---
 
@@ -584,25 +615,17 @@ immediately functional without any hardware or configuration change.
 
 ## 11. Settings Files and Persistence
 
-All settings are stored as JSON files in a versioned folder under the Windows AppData directory:
+Settings are stored in several JSON files in a versioned folder. For an interactive Windows user the default folder is `%AppData%\GreenSwampAlpaca\{version}\`; services and overrides use different roots. **Check Settings** shows the active folder. See [Appendix A](#14-appendix-a--file-and-directory-locations) for the file names and other run modes.
 
-```
-%AppData%\GreenSwampAlpaca\{version}\
-  appsettings.user.json         ← main settings (devices, server config, observatory)
-  appsettings.server.user.json  ← server configuration (port, auth, network)
-  monitor.settings.json         ← logging filter settings
-```
+Changes in Settings Explorer require **Save**; other actions, such as creating a device or changing chart display options, save as part of their own workflow. Some display preferences are stored in the browser rather than the server's settings folder.
 
-Settings are not written to disk until you click **Save** in the Settings Explorer or a settings card. The **Check Settings** page can detect and repair common problems with the settings file (missing required fields, out-of-range values, duplicate device numbers, etc.).
-
-> **Backup tip:** Copy the entire `%AppData%\GreenSwampAlpaca\{version}\` folder to preserve
-> a complete working configuration.
+For a backup, stop the server and copy the entire active versioned folder to a safe location. The **Export** button also downloads an archive of settings and logs; treat the archive as sensitive and verify its contents before sharing or relying on it for recovery.
 
 ---
 
 ## 12. ASCOM Client Compatibility
 
-The server implements the full ASCOM Alpaca Telescope v3 interface. It has been designed for compatibility with:
+The server reports ASCOM Telescope interface version 4. It has been designed for use with Alpaca-compatible clients, including:
 
 - **Cartes du Ciel (Skychart)**
 - **Sequence Generator Pro (SGP)**
@@ -615,8 +638,8 @@ Legacy clients that use the ASCOM COM telescope driver continue to work if they 
 to connect via the Alpaca Chooser in the ASCOM Platform.
 
 **Legacy setup URL redirect:** Some ASCOM clients open the setup page via the URL
-`/setup/v1/Telescope/{N}/setup`. The server automatically redirects this URL to
-`/mount-status/{N}` so the device status page is displayed instead of an error.
+`/setup/v1/Telescope/{N}/setup`. The server redirects this URL to
+`/mount-configuration/{N}`, the device configuration overview.
 
 ---
 
@@ -624,12 +647,11 @@ to connect via the Alpaca Chooser in the ASCOM Platform.
 
 ### The browser does not open automatically on startup
 
-Enable **Auto-start Browser** in Alpaca Settings → UI Options, or navigate manually to
-`http://localhost:31416`.
+Check the browser auto-start option under **Settings Explorer** → **Server Configuration** → **User Interface**, or navigate manually to `http://localhost:31416`.
 
 ### An ASCOM client cannot find the server via discovery
 
-- Ensure **Allow Discovery** is checked in Alpaca Settings → Network.
+- Ensure discovery is enabled under **Settings Explorer** → **Server Configuration** → **Network**.
 - If the client is on the same machine, ensure **Allow Remote Access** is off (localhost only)
   or on (all interfaces) as appropriate.
 - Check that no firewall is blocking UDP port 32227 (Alpaca discovery) or TCP port 31416.
@@ -645,11 +667,9 @@ Enable **Auto-start Browser** in Alpaca Settings → UI Options, or navigate man
 
 ### Settings appear to have been reset or lost
 
-- Open **Check Settings** and run validation. Look for errors indicating missing or corrupted
-  settings sections.
-- Click **Auto-repair** if auto-repairable issues are shown.
-- If the problem persists, the settings file can be restored from a backup copy of the
-  `%AppData%\GreenSwampAlpaca\{version}\` folder.
+- Open **Check Settings** and revalidate. Read the reported issue and suggested resolution.
+- Check the settings folder shown on that page; its location depends on how the server runs.
+- Back up the current folder before attempting recovery. Restore a known-good versioned folder if necessary, with the server stopped.
 
 ### The Status page shows stale or zero position data
 
@@ -663,30 +683,29 @@ Enable **Auto-start Browser** in Alpaca Settings → UI Options, or navigate man
   dot on the tree node.
 - Some server settings (e.g. port number) require a server restart to take effect.
 
-### Chart window is blocked by the browser
+### A chart or 3D window does not open
 
-Chart windows open via `window.open()`. Most modern browsers block pop-ups by default for sites
-that have not been explicitly allowed.
+1. On **Control**, select the telescope and connect the UI client. The launch buttons in **Mount Info** are disabled while it is disconnected.
+2. If the browser blocks the window, allow pop-ups for the server's address and try again.
+3. The device-specific URLs are `/charts/radec/{deviceNumber}`, `/charts/pulse/{deviceNumber}` and `/telescope-view/{deviceNumber}`.
 
-**Symptoms:** Clicking *RA / Dec Chart* or *Pulse Chart* in the navigation menu shows a
-yellow **"Chart window was blocked"** snackbar at the top of the main window. The browser may
-also show a pop-up blocked indicator in the address bar.
+### A chart is empty or disconnected
 
-**Resolution:**
+- Confirm that the telescope and chart are connected and that the required series are enabled.
+- The Pulse Chart needs guiding pulses; a connected mount alone does not produce them. Resume live display if the chart is paused.
+- If a reconnecting or disconnected indicator persists, check the server and browser network connection.
 
-1. Click the pop-up blocked icon in the browser's address bar.
-2. Choose **Always allow pop-ups from `http://localhost:31416`** (or whichever port is configured).
-3. Click the chart link again — the window will open normally.
+### The 3D model is missing or looks wrong
 
-> Charts can also be opened directly by navigating to `/charts/radec` or `/charts/pulse` in
-> any browser tab; the launcher in the navigation menu is a convenience shortcut only.
+- Confirm the correct telescope and alignment mode are selected and that the mount's reported reference position is correct.
+- Use **Reset Camera** or **Center on Mount**, and review the model and axis adjustments in **Options**.
+- Check the browser's graphics support and reload the view if the model fails to render. Do not use an uncertain model position to judge physical clearance.
 
 ---
 
 ## 14. Appendix A — File and Directory Locations
 
-This appendix lists every directory and file that the application reads or writes at runtime,
-covering both the Windows installer deployment and the Linux `.deb` package deployment.
+This appendix describes the principal application, configuration and log locations. Actual paths depend on installation, service mode and overrides.
 
 ---
 
@@ -724,153 +743,43 @@ The service runs as the dedicated system account **greenswamp**.
 
 ### A.2 User Configuration Files
 
-All settings that you can change through the UI are stored in a versioned sub-folder whose
-name matches the application version (e.g. `1.2.3`). The folder is created automatically on
-first run.
+The server places settings in a version subfolder under its settings root. **Check Settings** displays the active folder. Typical files include:
 
 | File | Contents |
 |---|---|
-| `appsettings.user.json` | Main settings: all telescope devices, observatory location, and most server options |
-| `appsettings.server.user.json` | Server configuration: port, network binding, authentication, identity |
-| `monitor.settings.json` | Logging filter settings: device, category, and message-type filters; log file targets |
+| `appsettings.server.user.json` | Server network, authentication and UI defaults |
+| `devices.alpaca.user.json` | Registered Alpaca device metadata |
+| `device-00.settings.json`, `device-01.settings.json`, … | Settings for each numbered telescope |
+| `observatory.settings.json` | Observatory settings |
+| `monitor.settings.user.json` | Monitor and logging settings |
+| `chart.settings.user.json` | Chart display settings |
+| `modelsets.settings.json`, `carousel.settings.json` | Model-set and carousel settings |
 
-#### Interactive user — Windows
+Default roots, before the version subfolder is appended:
 
-```
-%AppData%\GreenSwampAlpaca\{version}\
-  appsettings.user.json
-  appsettings.server.user.json
-  monitor.settings.json
-```
+| Run mode | Settings root |
+|---|---|
+| Windows interactive | `%AppData%\GreenSwampAlpaca` |
+| Windows service | `%PUBLIC%\Documents\GreenSwampServer` |
+| Linux interactive | `~/.config/GreenSwampAlpaca` |
+| Linux systemd service | `STATE_DIRECTORY`, typically `/var/lib/greenswamp-alpaca`; otherwise the service user's `GreenSwampServer` folder or `/var/lib/greenswamp-alpaca` |
 
-Typical resolved path:
-```
-C:\Users\{YourName}\AppData\Roaming\GreenSwampAlpaca\1.2.3\
-```
-
-#### Interactive user — Linux
-
-```
-~/.config/GreenSwampAlpaca/{version}/
-  appsettings.user.json
-  appsettings.server.user.json
-  monitor.settings.json
-```
-
-Typical resolved path:
-```
-/home/{yourname}/.config/GreenSwampAlpaca/1.2.3/
-```
-
-#### Windows Service (MSI installer)
-
-When running as a Windows SCM service the settings root moves to the shared-documents area
-so all Windows user accounts can share the same configuration:
-
-```
-C:\Users\Public\Documents\GreenSwampServer\{version}\
-  appsettings.user.json
-  appsettings.server.user.json
-  monitor.settings.json
-```
-
-#### Linux systemd service (.deb package)
-
-When running as the **greenswamp** system account the settings root is that account's home
-directory:
-
-```
-/home/greenswamp/GreenSwampServer/{version}/
-  appsettings.user.json
-  appsettings.server.user.json
-  monitor.settings.json
-```
-
-> **Override:** The settings root can be redirected independently of the run mode using the
-> `GREENSWAMP_SETTINGS_PATH` environment variable or the
-> `--service-settings-path=<path>` command-line argument. When either override is active
-> the log files also move into a `Logs\` sub-folder of that root (see Section A.3).
-
-> **Backup tip:** Copy the entire versioned folder to preserve a complete working
-> configuration. Restoring it to the same path will fully recover all settings.
+`--service-settings-path=<path>` takes precedence over `GREENSWAMP_SETTINGS_PATH`; either overrides the default root. A version subfolder is still used. Service and override logs are placed in a `Logs` subfolder of the root, not the version folder. Browser display and 3D-view preferences are not included in the server settings folder.
 
 ---
 
 ### A.3 Log and Monitor Files
 
-Log files record session activity, errors, and detailed mount communication for
-diagnostics. All log file names include a `YYYY-MM-DD` date stamp appended before the
-extension, so a new file is created each day.
+Log files record session activity, errors and mount communication according to the monitor settings. Review logs and exported archives for sensitive information before sharing them.
 
-| File prefix | Contents | Enabled by |
-|---|---|---|
-| `GSSessionLog` | Information, Warning, and Error entries — the primary session record | **Log Session** toggle in Monitor → Logging Control |
-| `GSErrorLog` | Warnings and errors only — a focused error-only record | Always written when monitoring is active |
-| `GSMonitorLog` | All filtered monitor entries — verbose full log | **Log Monitor** toggle in Monitor → Logging Control |
+| Run mode | Default log folder |
+|---|---|
+| Windows interactive | `Documents\GreenSwamp\AlpacaServer` under the current user |
+| Linux interactive | `~/GreenSwamp/AlpacaServer` |
+| Service or settings-root override | `Logs` under the active settings root |
 
-#### Interactive user — Windows
-
-```
-%USERPROFILE%\Documents\GreenSwamp\Server\
-  GSSessionLog_YYYY-MM-DD.txt
-  GSErrorLog_YYYY-MM-DD.txt
-  GSMonitorLog_YYYY-MM-DD.txt
-```
-
-Typical resolved path:
-```
-C:\Users\{YourName}\Documents\GreenSwamp\Server\
-```
-
-#### Interactive user — Linux
-
-```
-~/GreenSwamp/Server/
-  GSSessionLog_YYYY-MM-DD.txt
-  GSErrorLog_YYYY-MM-DD.txt
-  GSMonitorLog_YYYY-MM-DD.txt
-```
-
-#### Windows Service / Linux systemd service (or path override)
-
-When a service or path override is active the log files move into a `Logs\` sub-folder of
-the settings root:
-
-**Windows service:**
-```
-C:\Users\Public\Documents\GreenSwampServer\Logs\
-  GSSessionLog_YYYY-MM-DD.txt
-  GSErrorLog_YYYY-MM-DD.txt
-  GSMonitorLog_YYYY-MM-DD.txt
-```
-
-**Linux systemd service:**
-```
-/home/greenswamp/GreenSwampServer/Logs/
-  GSSessionLog_YYYY-MM-DD.txt
-  GSErrorLog_YYYY-MM-DD.txt
-  GSMonitorLog_YYYY-MM-DD.txt
-```
-
-On Linux, systemd also captures `stdout` and `stderr` from the process and sends them
-to the journal. Use `journalctl -u greenswamp-alpaca` to view these entries.
-
-> **Custom log path:** The log directory can be redirected by setting a custom path in
-> **Settings Explorer → Logging → Logging Control → Log Path**. When the field is blank
-> the defaults described above apply.
+The Linux systemd unit also sends standard output and errors to the journal. The actual configured log path and logging options may differ; check **Monitor** or **Settings Explorer** → **Logging**.
 
 ---
 
-### A.4 Summary Table
-
-| Item | Windows (interactive) | Windows (service) | Linux (interactive) | Linux (systemd service) |
-|---|---|---|---|---|
-| **Binaries** | `%ProgramFiles%\GreenSwamp\Alpaca Server\` | same | — | `/opt/greenswamp/alpaca-server/` |
-| **Config files** | `%AppData%\GreenSwampAlpaca\{ver}\` | `%PUBLIC%\Documents\GreenSwampServer\{ver}\` | `~/.config/GreenSwampAlpaca/{ver}/` | `/home/greenswamp/GreenSwampServer/{ver}/` |
-| **Log files** | `%USERPROFILE%\Documents\GSServer\` | `%PUBLIC%\Documents\GreenSwampServer\Logs\` | `~/GSServer/` | `/home/greenswamp/GreenSwampServer/Logs/` |
-| **systemd unit** | — | — | — | `/lib/systemd/system/greenswamp-alpaca.service` |
-| **Service account** | LocalSystem (SCM) | LocalSystem (SCM) | — | `greenswamp` (system user) |
-
----
-
-*Green Swamp Alpaca Server — User Guide — 2026-07-09 22:51*
+*Green Swamp Alpaca Server — User Guide — 2026-11-25 10:31*
