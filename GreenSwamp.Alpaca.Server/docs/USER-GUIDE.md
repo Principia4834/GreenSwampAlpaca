@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-25 17:24**
+**2026-11-25 17:43**
 
 ---
 
@@ -146,7 +146,7 @@ On first launch the server creates a default configuration containing a single *
 | Alpaca base URL | `http://localhost:31416/api/v1/telescope/{deviceNumber}/` |
 | Setup redirect (legacy) | `http://localhost:31416/setup/v1/Telescope/{deviceNumber}/setup` → redirects to Mount Configuration |
 
-The port can be changed in **Settings Explorer** → **Server Configuration** → **Network**. A server restart is required for a port change to take effect.
+The port can be changed in **Settings Explorer** → **Server Configuration** → **Alpaca Settings**. A server restart is required for a port change to take effect.
 
 To try the simulator, open **Control**, select its device tab and click the Connect icon at the lower right. If no simulator is configured, use **Add Telescope** as described in [Section 7](#71-adding-a-device). After creating one, apply hot reload or restart to activate it. Once connected, explore the readouts and controls before connecting physical hardware.
 
@@ -248,12 +248,12 @@ The scrollable, monospaced buffer shows recent captured records. Controls:
 | Write Buffer to File | (Fast Monitor mode only) Flushes the in-memory buffer to a log file |
 
 **Logging Settings**
-Expand the logging panel to adjust filters also available in Settings Explorer → Logging. Save changes with **Save**. Four filter categories:
+Expand the logging panel to adjust filters also available in Settings Explorer → Logging. Save changes with **Save**. The panel groups its controls into four rows:
 
-- **Device Filters** — which device types produce log entries (Server, Telescope, UI)
-- **Category Filters** — which subsystem categories appear (Driver, Interface, Server, Mount, etc.)
-- **Message Type Filters** — which severity levels appear (Info, Warning, Error, Debug, Data)
-- **Logging Control** — enable/disable the session log file, monitor log file, and charting data file
+- **Device** — Server Device, Telescope, UI and Other filters
+- **Category** — subsystem categories such as Driver, Interface, Server, Mount and Alignment
+- **Type** — Information, Data, Warning, Error and Debug filters
+- **Logging** — Auto-start, Log Monitor, Log Session and Log Charting controls
 
 Use **Quick Set Actions** to select filter categories or clear filters; see [Section 6.5](#65-logging-settings). The Logging editor is a combined panel, not a set of separate tree leaves.
 
@@ -393,7 +393,11 @@ The bottom **power** button opens a shutdown confirmation, including a warning w
 
 #### Coordinates and Go To
 
-Select **RA/Dec** or **Alt/Az** below the target fields. RA accepts hours, minutes and seconds or decimal hours, for example `23 15 12.55` or `23.75`. Dec accepts signed degrees, minutes and seconds or decimal degrees, for example `+56 19 25.57` or `-56.32`. Altitude and azimuth also accept degrees/minutes/seconds or decimal degrees. Check field validation, sign and units before selecting **Go To**. **Copy** puts the current coordinates into the fields; it does not move the mount. **Sync** associates the entered RA/Dec with the current pointing rather than slewing to it; it is available only in RA/Dec mode when the device supports it. A bad sync can make subsequent pointing unreliable.
+Select **RA/Dec** or **Alt/Az** below the target fields. Enter either decimal values or one, two or three coordinate components. Components may be separated by spaces or colons; RA also accepts `h`, `m` and `s` suffixes, while angular coordinates accept degree and prime marks. Examples include `23 15 12.55`, `23:15:12.55`, `23h 15m 12.55s`, `23.75`, `+56° 19′ 25.57″` and `-56.32`. A single comma is accepted as a decimal separator when there is no period in the input; do not use a comma to separate coordinate components. Decimal values are displayed with a period.
+
+RA is in hours and must be at least 0 and less than 24. Dec and altitude are in degrees from −90 to +90; azimuth is from 0 to 360. In component form, minutes must be whole numbers from 0 to 59 and seconds may be decimal but must be at least 0 and less than 60. RA and azimuth cannot be negative; Dec and altitude may have a leading sign. Invalid or out-of-range input is rejected before motion.
+
+**Copy** puts the current coordinates into the fields; it does not move the mount. **Sync** associates the entered RA/Dec with the current pointing rather than slewing to it; it is available only in RA/Dec mode when the device supports it. A bad sync can make subsequent pointing unreliable.
 
 Both **Go To** and **Sync** show a confirmation with the formatted coordinate pair: inspect it and choose **Accept** or **Cancel**. Go To checks the target against the configured horizon Go To limit before confirmation; a rejected target does not initiate a slew. Accepting a valid Go To requests motion; accepting Sync changes the assumed pointing. Watch for warning or error messages.
 
@@ -410,7 +414,18 @@ Both **Go To** and **Sync** show a confirmation with the formatted coordinate pa
 | **Limits** | Toggle the configured limits. Check their thresholds and actions; warning-only is not an automatic stop. |
 | **Settings** | Open the Go To settings panel to select/manage park positions and edit the available tracking and horizon limit controls. Save changes in the panel. |
 
-Park, unpark and home each request confirmation. Buttons can be disabled by connection, parked/slewing state or device capability; the flip button appears for GEM mode only. Tracking and the limits toggle act directly without a confirmation dialog.
+Park, unpark and home each request confirmation. Tracking and the limits toggle act directly without a confirmation dialog.
+
+| Button | Availability |
+|---|---|
+| **Park / Unpark** | Requires the UI connection and the corresponding mount capability (**Can Park** or **Can Unpark**). |
+| **Home** | Requires the UI connection, a home-capable mount and a mount that is not parked. |
+| **Tracking** | Requires the UI connection. |
+| **Flip** | Shown only in GEM mode; requires the UI connection and is disabled while slewing. |
+| **Re-sync** | Requires the UI connection and is disabled while slewing. |
+| **AutoHome** | Requires the UI connection and is disabled while parked. The button does not establish that the hardware has home sensors; confirm support before starting. |
+| **Limits** | Requires the UI connection. |
+| **Go To settings cog** | The panel is within the UI-connection-disabled Go To controls. |
 
 **Flip Side of Pier dialog:** **Flip Now** requests the opposite pier side while retaining the sky position, subject to the flip limits. **Flip on next GoTo** changes the deferred-flip setting. The dialog's **Cancel** closes without an immediate flip, but still applies the current switch value; restore the switch first if you do not want to change it. Check physical clearance for either operation.
 
@@ -428,9 +443,9 @@ Open the cog in the Go To panel. Expand each section to reveal its controls:
 | **Tracking Limits** | Select **No action**, **Stop tracking** or **Park**. Its cog reveals **Flip Angle** (0–30°) and **Tracking Limit After Flip Angle** (0–15°). These are angular settings, not time values. |
 | **Horizon Limits** | Select **No action**, **Stop tracking** or **Park**. Its cog reveals **Horizon Tracking Limit** and **Horizon Go To Limit**; the latter accepts −20 to 30°. The Go To limit is distinct from the tracking action. |
 | **Voice announcements** | Enable or disable voice announcements for the connected device. |
-| **Save / Cancel / Close** | Save applies pending panel edits; Cancel discards those edits and closes. With no pending edits, Close exits the panel. The separate park-manager actions below are applied as they are performed, not staged by this panel. |
+| **Save / Cancel / Close** | Save applies pending edits to the running mount settings; this panel does not write the device settings file. To retain settings across a restart, make and save the corresponding changes in Settings Explorer. Cancel discards pending panel edits; with no pending edits, Close exits. Park-manager actions below apply immediately and are not staged by this panel. |
 
-In the **park manager**, select a position; **Update** replaces it with the current mount position and **Delete** removes it, but the final position cannot be deleted. **Add New** reveals a name field (up to 12 characters), **Create**, and **Cancel**. Creating or updating requires a running mount; **Close** closes the manager. To create a safe position, connect the mount, carefully move it to the desired position, then create the name. Select the intended position in the Go To panel and save it. Check the entire route before parking. When a limit action is set to Park, verify the corresponding park destination in **Settings Explorer → Limits** too.
+In the **park manager**, select a position; **Update** replaces it with the current mount position and **Delete** removes it immediately without a confirmation dialog. At least one position must remain, so Delete is disabled when only one exists. **Add New** reveals a name field (up to 12 characters), **Create**, and **Cancel**. Creating or updating requires a running mount; **Close** closes the manager. To create a safe position, connect the mount, carefully move it to the desired position, then create the name. Select the intended position in the Go To panel and save it. Check the entire route before parking. When a limit action is set to Park, verify the corresponding park destination in **Settings Explorer → Limits** too.
 
 #### Hand Controller
 
@@ -455,7 +470,9 @@ Backlash compensation addresses mechanical play; coordinate its use with the gui
 
 #### Mount Info dials
 
-**RA/Dec** shows celestial-coordinate dials, **Alt/Az** shows horizon-coordinate dials, and **Optics** shows the actual X/Y axis positions. The three launch buttons open the Axis Chart, Pulse Chart and 3D View for this device; each requires the UI connection.
+Choose **RA/Dec** for the right-ascension and declination dials, **Alt/Az** for azimuth and altitude, or **Optics** for the actual X/Y axis positions. The three launch buttons open the Axis Chart, Pulse Chart and 3D View for this device; all three are disabled until the UI client is connected.
+
+The legacy [GS Server manual's Main Window reference](https://greenswamp.org/manual/main-window) remains useful for interpreting coordinate readouts such as LHA/LST and for the distinction between axis motion and guiding directions. It describes the older desktop program: controls such as mouse lock, scheduled parking and spiral search are not features of this web page.
 
 > **Safety:** A flip, home, park or AutoHome operation can move the mount. Check the route and cables and supervise the movement. Re-sync changes the server's assumed position; ensure the physical mount is actually at the selected reference position first. Test configured limits on your equipment and do not assume that a warning alone stops motion.
 
@@ -530,9 +547,11 @@ Selecting **Telescope Devices** shows the device manager: **Add Device**, delete
 | Control | Action |
 |---|---|
 | **Expand All / Collapse All** | Open or close tree branches. |
-| **Search** | Filter the tree; clear the search to restore the full view. |
+| **Search** | Filter nodes by their displayed label or description; clear the search to restore the full tree. |
 | **Show Hidden** | Reveal the four advanced device leaves above and additional advanced fields in some editors, GPS and Logging. |
 | **Export** | Create a settings and logs archive; inspect it for sensitive information before sharing. |
+
+Each tree node has a hover description. Settings Explorer can also open a device editor directly with `?device=N&group=GroupName` query parameters; for example, `/settings-explorer?device=0&group=Tracking%20%26%20Guiding` selects the Tracking & Guiding leaf for device 0 when it exists.
 
 ### 6.2 Dirty-State Tracking and Saving
 
@@ -558,7 +577,7 @@ Select **Observatories** for the site list. **Add Observatory** opens a dialog w
 
 #### GPS and Cartes du Ciel location sources
 
-Both an observatory leaf and a telescope's **Observatory Configuration** provide these panels. GPS offers port and baud rate; **Show Hidden** reveals parity, stop bits, data bits, timeout in seconds and handshake. Set them to match the receiver. **Connect** reads a fix; the dialog displays NMEA type, latitude, longitude, altitude, GPS UTC, PC UTC and their difference when available. **Apply** copies the received location into the current working editor; **Cancel/Close** does not. Review the fix and save the editor. The time comparison does not set the computer clock.
+Both an observatory leaf and a telescope's **Observatory Configuration** provide these panels. GPS offers detected serial ports (or a text field for a port when none are detected) and baud rates **4800, 9600, 19200, 38400, 57600** and **115200**. **Show Hidden** reveals parity (**None, Odd, Even, Mark, Space**), stop bits (**None, One, OnePointFive, Two**), data bits (**5–8**), handshake (**None, XOnXOff, RequestToSend, RequestToSendXOnXOff**) and a timeout of **1–30 seconds**. Match these settings to the receiver rather than changing them experimentally. **Connect** reads a fix; the dialog displays NMEA type, latitude, longitude, altitude, GPS UTC, PC UTC and their difference when available. **Apply** copies the received location into the current working editor; **Cancel/Close** does not. Review the fix and save the editor. The time comparison does not set the computer clock.
 
 For **Cartes du Ciel**, enter its server address and port and open **Connect**. With CdC running, **Fetch** displays its latitude, longitude and altitude beside the local values. The left arrow sends the local location to CdC immediately; the right arrow copies the CdC location to the current editor and closes the dialog. Save the editor to retain a copied-in location; Cancel cannot undo a location already sent to CdC.
 
@@ -620,8 +639,8 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 | Editor | What to check |
 |---|---|
 | **Mount Configuration** | Identity and geometry determine the device and coordinate mode. For SkyWatcher, select the correct serial port and baud rate. Hardware options include maximum slew rate, backlash, encoder and advanced-command settings; capabilities depend on the controller. Custom gearing is for known non-standard gearing, not routine tuning. |
-| **Observatory Configuration** | Latitude, longitude and elevation belong to this device. Copying an observatory copies values rather than creating a live link. The editor also has environmental/refraction, GPS and Cartes du Ciel connection panels; check the relevant connection and review any received coordinates before applying them. |
-| **Tracking & Guiding** | Select Sidereal for stars, Lunar for the Moon, Solar for the Sun or King when appropriate. Rate values are editable; avoid changing them without a specific reason. Track After Unpark controls whether tracking resumes after unparking. RA and Dec minimum pulse durations are in milliseconds; guide rates are percentages of sidereal. The hand-controller pulse table has a duration, interval and rate for each of its eight speed steps. |
+| **Observatory Configuration** | Latitude, longitude and elevation belong to this device. Copying an observatory copies values rather than creating a live link. The editor also has environmental/refraction, GPS and Cartes du Ciel connection panels; temperature is limited to **−50 to +60 °C**. Check the relevant connection and review any received coordinates before applying them. |
+| **Tracking & Guiding** | Select Sidereal for stars, Lunar for the Moon, Solar for the Sun or King when appropriate. Rate values are editable; avoid changing them without a specific reason. Track After Unpark controls whether tracking resumes after unparking. RA and Dec minimum pulse durations are **5–50 ms**; RA and Dec guide-rate percentages are **0–100% in 10% steps**. The hand-controller pulse table has a duration, interval and rate for each of its eight speed steps. |
 | **Home and Park** | The home and AutoHome axis values are displayed separately from the named park positions. The panel shows the active park name and the Track After Unpark option. Use the Control page's park manager to capture or update a position from the connected mount. |
 | **Limits** | Hardware limits specify axis travel values. Limits On enables the configured limit behaviour; the GEM flip angle and additional tracking allowance, horizon tracking threshold and horizon Go To limit have different purposes. Choose warning only, stop tracking or park as applicable, and select the park position when using a park action. Sync limits restrict sync operations independently. |
 | **Optics** | Aperture and focal-length values describe the attached optics; enter actual equipment values rather than using them as motion controls. |
@@ -634,9 +653,9 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 
 Expand **Device Information** for Enabled, device name and description, driver type (Simulator or SkyWatcher), alignment (GEM, Polar or Alt-Az), Polar primary side when applicable, and equatorial coordinate type (Other, Topocentric, J2000, J2050 or B1950). Choose the geometry and coordinate system to match the mount and clients.
 
-**Serial Connection** contains the COM port and baud rate; Show Hidden adds data bits, handshake, read timeout (ms), DTR and RTS. Match the physical connection. **Mount Hardware** contains advanced commands, encoders, maximum slew rate (degrees/second), RA and Dec backlash (motor steps), polar LED brightness (0–255) and full motor current. Availability depends on the hardware. Backlash compensates mechanical play; avoid stacking compensation blindly with the guiding application.
+**Serial Connection** contains the COM port and baud rate; the baud choices are **9600, 19200, 38400, 57600, 115200** and **230400**. Show Hidden adds data bits (5–8), handshake, read timeout (ms), DTR and RTS. Match the physical connection. **Mount Hardware** contains advanced commands, encoders, maximum slew rate (degrees/second), RA and Dec backlash (motor steps), polar LED brightness (0–255) and full motor current. Availability depends on the hardware. Backlash compensates mechanical play; avoid stacking compensation blindly with the guiding application.
 
-**Custom Gearing** enables separate RA and Dec values for steps per revolution, worm teeth and tracking offset. The fields are disabled until enabled. Use measured, correct values only for modified gearing: incorrect gearing can produce unexpected motion. The legacy [GS Server manual](https://greenswamp.org/manual/main-window) explains the underlying concepts, but its desktop controls and defaults are not necessarily those of this server.
+The **Custom Gearing** panel is available within Mount Configuration; it is not one of the Show Hidden tree leaves. Its checkbox enables separate RA and Dec values for steps per revolution, worm teeth and tracking offset. The fields are disabled until enabled. Use measured, correct values only for modified gearing: incorrect gearing can produce unexpected motion. The legacy [GS Server manual](https://greenswamp.org/manual/main-window) explains the underlying concepts, but its desktop controls and defaults are not necessarily those of this server.
 
 #### Observatory Configuration fields
 
@@ -663,8 +682,8 @@ Review limits for your own mount and cables; the values in the illustration are 
 - **Voice:** enable announcements, select a browser-provided voice (or clear it for the default), refresh the voice list and set volume from 0 to 100. Available voices depend on the browser and language.
 - **Optics:** aperture diameter and focal length in metres, effective aperture area in square metres, and **Eyepiece FS** (eyepiece field of view) in arcminutes. Enter the actual optical configuration; these fields do not move the mount.
 - **Performance & Tuning:** display check interval in milliseconds (minimum 100), Go To precision in arcseconds and per-device trace logging. Tune deliberately; a shorter refresh interval or extra logging can increase workload.
-- **PPEC:** enable PPEC only where supported. It compensates for repeatable drive error; this leaf does not provide the legacy desktop training controls. Consult the mount documentation and [legacy PPEC explanation](https://greenswamp.org/manual/ppec).
-- **Hand Controller:** HC speed and mode, RA/Dec anti-backlash, E/W and N/S reversal, Disable Keys on GoTo and One Click Start. These are device settings; use the Control page for operation and its cog for the pulse table.
+- **PPEC:** enable PPEC only where supported. It compensates for repeatable drive error; this leaf does not provide the legacy desktop training controls. The legacy [PPEC explanation](https://greenswamp.org/manual/ppec) describes training and playback on the desktop application; do not infer that the Alpaca Server UI exposes those controls. Consult the mount documentation.
+- **Hand Controller:** HC speed and mode, RA/Dec anti-backlash, E/W and N/S reversal, Disable Keys on GoTo and One Click Start. These are device settings; use the Control page for operation and its cog for the **Axis Settings** and **Pulse Guide Rates** tabs.
 
 ---
 
@@ -760,7 +779,7 @@ To connect a physical SkyWatcher mount:
 3. In Settings Explorer, navigate to the device's **Mount Configuration**.
 4. Set **Mount Type** to `SkyWatcher`.
 5. Set **Port** to the COM port (e.g. `COM3`).
-6. Set **Baud Rate** — SkyWatcher typically uses `9600`; some hand controllers use `115200`.
+6. Set **Baud Rate**. The available choices are **9600, 19200, 38400, 57600, 115200** and **230400**; use the rate required by your mount and connection. The legacy [GS Server manual](https://greenswamp.org/manual/main-window) describes older hardware defaults, which are not a substitute for checking the current device documentation.
 7. Leave other serial settings (Data Bits, Handshake, DTR/RTS) at their defaults unless you
    have a specific reason to change them.
 8. Save and connect from your ASCOM client.
@@ -774,8 +793,8 @@ To connect a physical SkyWatcher mount:
 | Max Slew Rate (°/s) | Cap on the maximum slew speed sent to the hardware |
 | RA / Dec Backlash (steps) | Compensation steps applied when reversing direction |
 
-**Custom Gearing** (within Mount Configuration, Show Hidden):
-For modified or non-standard gearing ratios — step counts per revolution and worm-wheel tooth counts for both axes. Leave at defaults for standard SkyWatcher mounts.
+**Custom Gearing** (within Mount Configuration):
+For modified or non-standard gearing ratios — step counts per revolution and worm-wheel tooth counts for both axes. Leave at defaults for standard SkyWatcher mounts. The panel is available without Show Hidden; its input fields remain disabled until Custom Gearing is enabled.
 
 ---
 
@@ -844,7 +863,7 @@ Check the browser auto-start option under **Settings Explorer** → **Server Con
 
 ### An ASCOM client cannot find the server via discovery
 
-- Ensure discovery is enabled under **Settings Explorer** → **Server Configuration** → **Network**.
+- Ensure discovery is enabled under **Settings Explorer** → **Server Configuration** → **Alpaca Settings**.
 - If the client is on the same machine, ensure **Allow Remote Access** is off (localhost only)
   or on (all interfaces) as appropriate.
 - Check that no firewall is blocking UDP port 32227 (Alpaca discovery) or TCP port 31416.
