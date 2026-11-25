@@ -1,6 +1,6 @@
 ﻿# Green Swamp Alpaca Server — User Guide
 
-**2026-11-25 10:31**
+**2026-11-25 16:53**
 
 ---
 
@@ -209,7 +209,14 @@ The page groups pointing coordinates, axis positions, status and mount informati
 
 ![Mount Status page with live telescope telemetry](images/user-guide/mount-status.png)
 
-The page subscribes to live state updates and refreshes automatically; you do not need to reload the browser.
+| Panel or value | How to read it |
+|---|---|
+| **Pointing Coordinates** | RA and Dec locate the target on the celestial sphere; altitude and azimuth describe its direction relative to the local horizon. Local hour angle (LHA) indicates its position relative to the local meridian. Pier side reports the mount's orientation. |
+| **Axis Positions** | Actual and application X/Y positions are shown in degrees, with the corresponding axis step counts. These are mount-axis values, not interchangeable with sky coordinates. |
+| **Status** | Mount Connected and Active Clients describe the connection; Slewing, Pulse Guiding and Tracking describe activity. Limits On and Limit Warning are separate: an enabled limit is not itself a warning, and a warning does not guarantee that motion will stop. At Park and At Home report the mount state. |
+| **Mount information** | Mount type, alignment mode, model, firmware and supported features help identify the connected equipment. A home sensor, PPEC or polar LED is not available on every mount. SkyWatcher voltage and power-event fields appear when applicable; a dash means a voltage reading is unavailable. |
+
+Use **Export** to collect settings and logs for diagnosis; inspect the archive for sensitive information before sharing. The page subscribes to live state updates and refreshes automatically; you do not need to reload the browser.
 
 ---
 
@@ -330,6 +337,8 @@ Open **Pulse Chart** from the connected telescope's **Mount Info** panel. It dis
 | **Pause / Resume** | Inspect a frozen snapshot or return to live display. |
 | **Clear** | Clear the displayed pulse data. |
 
+A guide pulse is a timed correction requested by a guiding client; it is not itself a measurement of the star's tracking error. Use the RA and Dec switches to isolate one axis, and compare the rejected series with the guiding client's own logs. The minimum pulse settings are per axis in **Tracking & Guiding**; check those and the client configuration before adjusting them. Chart units and appearance change the presentation, not the guiding commands.
+
 Both charts save their display selections. The charts are diagnostic views; do not infer mount safety from them.
 
 ---
@@ -350,7 +359,40 @@ Select a telescope tab, then use **Connect** at the lower right to connect the U
 
 ![Mount Info panel showing the chart and 3D view launchers](images/user-guide/mount-info-launchers.png)
 
+#### Coordinates and Go To
+
+The header displays RA, Dec, azimuth, altitude, local hour angle (LHA) and local sidereal time (LST). LST is the RA currently crossing the local meridian; LHA describes a pointing's position relative to that meridian. Accurate location, time and a correctly established mount position matter when interpreting these values.
+
+Select **RA/Dec** or **Alt/Az** below the target fields. RA accepts hours, minutes and seconds or decimal hours, for example `23 15 12.55` or `23.75`. Dec accepts signed degrees, minutes and seconds or decimal degrees, for example `+56 19 25.57` or `-56.32`. Altitude and azimuth also accept degrees/minutes/seconds or decimal degrees. Check field validation, sign and units before selecting **Go To**. **Copy** puts the current coordinates into the fields; it does not move the mount. **Sync** associates the entered RA/Dec with the current pointing rather than slewing to it; it is available only in RA/Dec mode when the device supports it. A bad sync can make subsequent pointing unreliable.
+
+#### Mount actions and park positions
+
+| Action | Purpose and precautions |
+|---|---|
+| **Park / Unpark** | Park moves to the selected named park position; unpark releases the parked state. Tracking after unparking is a device setting. Ensure the entire route to the selected park position is clear. |
+| **Home** | Move to the mount's configured home reference. Home and a named park position are distinct concepts, even if they happen to have the same coordinates. |
+| **Tracking** | Turn tracking on or off. The selected rate is configured under **Tracking & Guiding**. |
+| **Flip** | For a GEM, request the opposite side-of-pier orientation. Check clearance and cable travel before proceeding. |
+| **Re-sync** | Choose Home or a named park position as the mount's assumed reference. Put the physical mount at that exact reference first; re-sync is not a substitute for moving it there. |
+| **AutoHome** | Search for home sensors. Set the maximum search travel; for a GEM the dialog also offers a Dec offset and sensor-position adjustments. The dialog shows progress and offers Stop during the search. Not all mounts have sensors. Observe the actual motion, especially after power loss. |
+| **Limits** | Toggle the configured limits. Check their thresholds and actions; warning-only is not an automatic stop. |
+| **Settings** | Open the Go To settings panel to select/manage park positions and edit the available tracking and horizon limit controls. Save changes in the panel. |
+
+To create a named park position, connect the mount, carefully place it at the desired safe position and open **Settings → Park Positions → Manage**. Select **Add New**, enter a name of up to 12 characters and create it. **Update** replaces a selected position with the current mount position; **Delete** removes a position, but the last one cannot be deleted. Select the intended park position in the Go To settings panel and save it before parking. Check the position and the travel path on the real mount.
+
+#### Hand Controller
+
+The arrows operate the selected device; the speed slider has eight steps. **Axes** uses axis motion, **Guiding** uses guiding directions, and **Pulse** uses the configurable pulse settings. Diagonal buttons combine directions. Start at a low speed and check the actual movement before relying on direction labels. The centre **Stop** button stops motion.
+
+**One Click Start** switches to click-to-start and click-to-stop operation; when it is off, use the normal press-and-release control. **Direction Keys Off** disables the direction controls while slewing. The gear opens axis options for reversing RA/Az or Dec/Alt and enabling anti-backlash, plus a Pulse tab with duration, interval and rate for each speed step. Save edits in the Pulse tab. Backlash compensation addresses mechanical play; coordinate its use with the guiding application rather than applying multiple compensations blindly.
+
+#### Mount Info dials
+
+**RA/Dec** shows celestial-coordinate dials, **Alt/Az** shows horizon-coordinate dials, and **Optics** shows the actual X/Y axis positions. The three launch buttons open the Axis Chart, Pulse Chart and 3D View for this device; each requires the UI connection.
+
 > **Safety:** A flip, home, park or AutoHome operation can move the mount. Check the route and cables and supervise the movement. Re-sync changes the server's assumed position; ensure the physical mount is actually at the selected reference position first. Test configured limits on your equipment and do not assume that a warning alone stops motion.
+
+Some astronomical and operational concepts in this guide are informed by the legacy [GS Server manual](https://greenswamp.org/manual/main-window). That manual describes the separate desktop application; its controls and procedures should not be assumed to exist in Alpaca Server.
 
 ---
 
@@ -366,7 +408,13 @@ The toolbar provides **Save View**, **Center on Mount**, **Reset Camera** and **
 
 ![3D telescope view options](images/user-guide/telescope-3d-options.png)
 
-The model is a visual aid, not a collision detector. If the mount starts in an unknown position or its reference position is wrong, the displayed orientation may also be wrong. Always check the physical mount and its surroundings.
+| Options group | What it changes |
+|---|---|
+| **Appearance** | Choose the background and model colour; toggle the grid, cardinal labels and heading. Cardinal size is available when labels are shown. The model selector is available when assembly mode is off. |
+| **Mount composition** | Enable assembly mode to choose separate support, mount and telescope components and telescope size. These choices change the visualization, not the connected hardware. |
+| **Axis adjustments** | Adjust the displayed RA and Dec orientation to suit the model. These visual adjustments do not establish the mount's physical position or correct alignment. |
+
+**Save View** retains the current camera view; **Center on Mount** recentres it and **Reset Camera** restores the camera. The model is a visual aid, not a collision detector. If the mount starts in an unknown position or its reference position is wrong, the displayed orientation may also be wrong. Always check the physical mount and its surroundings.
 
 ---
 
@@ -473,7 +521,21 @@ Each device has the following leaf groups. Groups marked *(hidden by default)* a
 
 ![Example telescope limits settings](images/user-guide/settings-limits.png)
 
-Review limits for your own mount and cables; the values in the illustration are not recommended settings for every installation.
+#### Understanding the device editors
+
+| Editor | What to check |
+|---|---|
+| **Mount Configuration** | Identity and geometry determine the device and coordinate mode. For SkyWatcher, select the correct serial port and baud rate. Hardware options include maximum slew rate, backlash, encoder and advanced-command settings; capabilities depend on the controller. Custom gearing is for known non-standard gearing, not routine tuning. |
+| **Observatory Configuration** | Latitude, longitude and elevation belong to this device. Copying an observatory copies values rather than creating a live link. The editor also has environmental/refraction, GPS and Cartes du Ciel connection panels; check the relevant connection and review any received coordinates before applying them. |
+| **Tracking & Guiding** | Select Sidereal for stars, Lunar for the Moon, Solar for the Sun or King when appropriate. Rate values are editable; avoid changing them without a specific reason. Track After Unpark controls whether tracking resumes after unparking. RA and Dec minimum pulse durations are in milliseconds; guide rates are percentages of sidereal. The hand-controller pulse table has a duration, interval and rate for each of its eight speed steps. |
+| **Home and Park** | The home and AutoHome axis values are displayed separately from the named park positions. The panel shows the active park name and the Track After Unpark option. Use the Control page's park manager to capture or update a position from the connected mount. |
+| **Limits** | Hardware limits specify axis travel values. Limits On enables the configured limit behaviour; the GEM flip angle and additional tracking allowance, horizon tracking threshold and horizon Go To limit have different purposes. Choose warning only, stop tracking or park as applicable, and select the park position when using a park action. Sync limits restrict sync operations independently. |
+| **Optics** | Aperture and focal-length values describe the attached optics; enter actual equipment values rather than using them as motion controls. |
+| **Performance & Tuning** | Polling interval, Go To precision and trace logging are diagnostic or advanced settings. Change them deliberately, as shorter intervals and extra logging can increase workload. |
+| **PEC / PPEC** | The editor exposes a PPEC enable setting. PPEC is mount-dependent correction for repeatable drive error; check support on Status and the mount's own documentation. The legacy desktop manual's training controls should not be assumed to exist here. |
+| **Hand Controller** | Configure speed, mode, direction reversals, anti-backlash, direction keys during Go To and one-click operation. The Control page provides the operating controls. |
+
+Review limits for your own mount and cables; the values in the illustration are not recommended settings for every installation. A limit action that parks the mount also requires a safe, reachable park position. Verify the settings and actual behaviour while supervising the equipment.
 
 ---
 
@@ -539,6 +601,8 @@ Select **Alignment Mode: German Equatorial (GEM)** in Mount Configuration.
 A GEM can point to the same region of sky from either side of the pier. A meridian flip changes its orientation to help maintain clearance as the sky moves.
 
 In **Limits**, review the GEM flip angle, tracking limit after the flip angle, horizon limits and the selected actions. The available action can be warning only, stop tracking or park; do not assume the mount will stop unless the selected configuration calls for it. Configure a safe park position before choosing a park action. Coordinate flip timing with your automation client, and supervise and test it on the actual equipment.
+
+The flip angle is expressed in degrees around the meridian, while the tracking allowance is an additional angular amount past that angle. As a rough planning aid, one degree corresponds to about four minutes of sidereal motion; this is not a clearance guarantee. Flip behaviour also depends on the mount's pointing and the client command. The legacy [flip explanation](https://greenswamp.org/manual/flips) provides background, but its suggested desktop settings are not universal settings for this application or your equipment.
 
 The Status page reports the current pier side alongside RA/Dec. Sync restrictions, including **No Sync Past Meridian**, are also available in Limits.
 
