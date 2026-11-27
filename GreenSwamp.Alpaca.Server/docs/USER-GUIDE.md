@@ -8,28 +8,34 @@
 
 - [Green Swamp Alpaca Server — User Guide](#green-swamp-alpaca-server--user-guide)
   - [Table of Contents](#table-of-contents)
-  - [1. Overview](#1-overview)
+    - [Where to start](#where-to-start)
     - [What the application does](#what-the-application-does)
+    - [How the pieces fit together](#how-the-pieces-fit-together)
+    - [Before moving a physical mount](#before-moving-a-physical-mount)
     - [More in depth](#more-in-depth)
       - [ASCOM and Alpaca](#ascom-and-alpaca)
       - [Real mounts and the simulator](#real-mounts-and-the-simulator)
       - [Several mounts at once](#several-mounts-at-once)
-    - [Physical configuration](#physical-configuration)
-    - [Before moving a physical mount](#before-moving-a-physical-mount)
   - [2. System Requirements](#2-system-requirements)
     - [Server computer](#server-computer)
+    - [What else you need](#what-else-you-need)
+    - [Network ports](#network-ports)
     - [Supported mounts](#supported-mounts)
+    - [Astronomy software (Alpaca clients)](#astronomy-software-alpaca-clients)
     - [Browser](#browser)
   - [3. Installation](#3-installation)
-    - [Running as a service or as a user-launched application](#running-as-a-service-or-as-a-user-launched-application)
-    - [Windows (MSI)](#windows-msi)
-    - [Linux (DEB)](#linux-deb)
-    - [macOS (DMG)](#macos-dmg)
-    - [Updates, backups and overrides](#updates-backups-and-overrides)
+    - [3.1 Choose and download the package](#31-choose-and-download-the-package)
+    - [3.2 Choose how the server will run](#32-choose-how-the-server-will-run)
+    - [3.3 Windows (MSI)](#33-windows-msi)
+    - [3.4 Linux (DEB)](#34-linux-deb)
+    - [3.5 macOS (DMG)](#35-macos-dmg)
+    - [3.6 Updates, backups and overrides](#36-updates-backups-and-overrides)
   - [4. Getting Started](#4-getting-started)
-    - [4.1 First Launch](#41-first-launch)
-    - [4.2 Default Port and URL](#42-default-port-and-url)
-    - [4.3 Connecting an ASCOM Client](#43-connecting-an-ascom-client)
+    - [4.1 First launch](#41-first-launch)
+    - [4.2 Default port and URL](#42-default-port-and-url)
+    - [4.3 Try the simulator](#43-try-the-simulator)
+    - [4.4 Connecting an ASCOM client](#44-connecting-an-ascom-client)
+    - [4.5 Connecting a real mount](#45-connecting-a-real-mount)
   - [5. Navigating the User Interface](#5-navigating-the-user-interface)
     - [5.1 Navigation Menu](#51-navigation-menu)
   - [6. Page Reference](#6-page-reference)
@@ -105,9 +111,21 @@
 
 ---
 
-## 1. Overview
+﻿## 1. Overview
 
 **Green Swamp Alpaca Server** lets the astronomy software you already use control your telescope mount, whether that is a real SkyWatcher mount or a built-in simulator.
+
+### Where to start
+
+If you are new to the application, follow this path. Each step points to the part of the guide that covers it.
+
+1. Check that your computer and mount are supported: [System Requirements](#2-system-requirements).
+2. Install the server: [Installation](#3-installation).
+3. Open the web pages and try the built-in simulator: [Try the simulator](#43-try-the-simulator).
+4. Connect your planetarium or imaging software: [Connecting an ASCOM client](#44-connecting-an-ascom-client).
+5. When you are ready, set up your real mount: [Connecting a real mount](#45-connecting-a-real-mount).
+
+If a word is unfamiliar, such as *declination* or *meridian flip*, look it up in the [Glossary](#appendix-a--glossary).
 
 ### What the application does
 
@@ -115,14 +133,29 @@ Think of Green Swamp Alpaca Server as a translator that sits between your telesc
 
 Here is what you can do with it:
 
-- **Control your mount from your usual software.** Programs such as Cartes du Ciel, N.I.N.A., Sequence Generator Pro and Voyager can find the server on your network, connect to your mount, and point, track and guide it. Several programs can share the same mount at the same time. The computers running those programs don't need any COM ports or special telescope drivers installed. They just need to reach the server over the network.
+- **Control your mount from your usual software.** Programs such as Cartes du Ciel, N.I.N.A., Sequence Generator Pro and Voyager can find the server on your network, connect to your mount, and point, track and guide it. Typically a planetarium, an imaging program and a guiding program can all use the same mount at the same time. The computers running those programs don't need any COM ports or special telescope drivers installed. They just need to reach the server over the network.
 - **Connect SkyWatcher mounts.** The server works with SkyWatcher mounts, using a USB, serial or Wi-Fi connection. It handles the technical details of talking to the mount's controller. See [System Requirements](#2-system-requirements) for the list of supported mounts.
 - **Run more than one mount.** If you have several telescopes, each one appears as its own device, and each keeps its own settings.
 - **Practise without any equipment.** A built-in simulator behaves like a real mount, so you can learn the controls, try your software or test a new setup on a cloudy night. It works with all three kinds of mount: German equatorial, polar or fork equatorial, and alt-azimuth.
-- **Manage everything from your web browser.** The server has its own web pages where you can move the mount, watch live position and status, change settings, view charts and a 3D picture of the telescope, and see a running log of what the server is doing. You don't install anything extra to use them. Just open the address `http://localhost:31416` in a browser on the server computer, or from another device on your network once you have allowed remote access.
-- **Spot and fix settings problems.** The server checks its settings for mistakes and can repair many of them automatically, so a bad entry is less likely to stop you getting started.
+- **Manage everything from your web browser.** The server has its own web pages where you can move the mount, watch live position and status, change settings, view charts and a 3D picture of the telescope, and see a running log of what the server is doing. You don't install anything extra to use them. Just open the address `http://localhost:31416` in a browser on the server computer, or use the server computer's address from another device on your network.
+- **Catch settings mistakes.** The server checks its settings and can repair many problems automatically, so a bad entry is less likely to stop you getting started.
 
-ASCOM Alpaca is designed for use inside a protected local network, such as your observatory or home network, rather than directly on the public internet. Keep your server on a network you trust.
+### How the pieces fit together
+
+The server runs on the computer that has the mount connected to it (by USB, a serial or EQ Direct cable, or SkyWatcher Wi-Fi). That computer can run Windows, macOS or Linux, including a Raspberry Pi.
+
+You use the server through a web page. You can open that page in a browser on the same computer, or on any other Windows, macOS or Linux device that can reach the server over your network, such as a laptop in the house while the server sits in the observatory. Your astronomy programs (the *Alpaca clients*) connect to the server over the same network, and they share the mount with the browser.
+
+![Physical configuration: the server computer connected to the mount, with local and remote browsers and Alpaca clients](images/user-guide/physical-configuration.png)
+
+> **Network access and security.** In the standard settings the server accepts connections from other computers on your network (**Allow Remote Access** is switched on), and password protection is switched off. This means anyone who can reach the server's port (31416) could open the web pages and move your mount. Only use the server on a network you trust, such as your home or observatory network, and never expose it directly to the internet. To tighten this, turn on authentication or turn off remote access; see [Server Configuration](#74-server-configuration) (Alpaca Settings, and User Interface and Security).
+
+### Before moving a physical mount
+
+- Check clearance around the telescope, pier and observatory, and make sure cables can move freely throughout the intended travel.
+- Configure and test limits and park positions for your own equipment. A warning indicator, configured limit or 3D model is not a substitute for observing the mount or an independent safety system.
+- Know how to stop motion. Supervise initial slews, flips, homing and parking, and be especially careful when the mount's position is uncertain after a power interruption.
+- Practise unfamiliar controls with a simulator first.
 
 ### More in depth
 
@@ -130,13 +163,13 @@ ASCOM Alpaca is designed for use inside a protected local network, such as your 
 
 **ASCOM** (Astronomy Common Object Model) is an industry-standard way for astronomy software to talk to equipment.
 
-**ASCOM Alpaca** does the same job over a network using web protocols (HTTP), so compatible programs can talk to the server from any computer. Green Swamp Alpaca Server provides the Alpaca *Telescope* interface and supports Alpaca discovery, so many programs can find it automatically. Some older ASCOM programs need an Alpaca-compatible chooser or bridge to connect. See [ASCOM Client Compatibility](#13-ascom-client-compatibility).
+**ASCOM Alpaca** does the same job over a network using web protocols (HTTP), so compatible programs can talk to the server from any computer. Green Swamp Alpaca Server provides the Alpaca *Telescope* interface (the set of commands for controlling a mount) and supports Alpaca *discovery*, which lets many programs find the server on your network automatically. Some older ASCOM programs need an Alpaca-compatible chooser or bridge to connect. See [ASCOM Client Compatibility](#13-ascom-client-compatibility).
 
 Unfamiliar terms such as right ascension, declination, backlash or meridian flip are explained in the [Glossary](#appendix-a--glossary). Review the mount and guiding software documentation before changing advanced settings such as backlash or PEC/PPEC.
 
 #### Real mounts and the simulator
 
-Each telescope you add is either a **SkyWatcher** device or a **Simulator** device. You choose this with the **Mount Type** field in Mount Configuration.
+Each telescope you add is either a **SkyWatcher** device or a **Simulator** device. You choose this with the **Mount Type** field in Mount Configuration. (Do not confuse this with the *alignment mode*, which describes the shape of the mount: German equatorial, polar or alt-azimuth. See the [Glossary](#a2-mount-types).)
 
 - **SkyWatcher** devices control a real SkyWatcher mount using the SynScan/SkyWatcher command protocol. A USB or COM port must be set up for the connection.
 - **Simulator** devices are pure software. A simulated mount tracks, slews, parks and pulse-guides just like a real one, so it is ideal for testing planetarium software, trying automation scripts, or learning the application without any hardware. It can imitate any of the three mount types described in the [Glossary](#a2-mount-types).
@@ -145,27 +178,14 @@ Both kinds behave as full Alpaca telescope devices, and one running server can h
 
 #### Several mounts at once
 
-The server can run any number of telescopes at the same time. Each has its own **device number** (0, 1, 2, …) and:
+The server can run several telescopes at the same time. Each has its own **device number** (0, 1, 2, …), which the server assigns when you add the telescope, and:
 
 - keeps its own complete set of settings, such as serial port, mount type, limits and gearing;
-- appears to Alpaca clients as a separate telescope, at an address like `http://{host}:{port}/api/v1/telescope/{deviceNumber}/...`;
+- appears to Alpaca clients as a separate telescope. Clients normally choose it from a list, or you can enter its device number;
 - has its own tab on the **Mount Status** and **Mount Configuration** pages;
 - can be driven by one or more ASCOM clients independently.
 
-There is no fixed limit on the number of devices. In practice you are limited by the serial ports available for SkyWatcher mounts, or by computer resources for simulators.
-
-### Physical configuration
-
-The server runs on the computer that owns the mount connection (USB, serial/EQ Direct cable or SkyWatcher Wi-Fi). That computer can run Windows, macOS or Linux. The user interface is a web page served by the server, so it can be opened in a browser on the same computer or on any other Windows, macOS or Linux device that can reach the server over the network. ASCOM Alpaca clients, such as planetarium and imaging applications, connect to the server over the same network and share the mount with the browser. Remote browsers and clients require **Allow Remote Access** to be enabled on the server (see [Alpaca Settings](#alpaca-settings)).
-
-![Physical configuration: the server computer connected to the mount, with local and remote browsers and Alpaca clients](images/user-guide/physical-configuration.png)
-
-### Before moving a physical mount
-
-- Check clearance around the telescope, pier and observatory, and make sure cables can move freely throughout the intended travel.
-- Configure and test limits and park positions for your own equipment. A warning indicator, configured limit or 3D model is not a substitute for observing the mount or an independent safety system.
-- Know how to stop motion. Supervise initial slews, flips, homing and parking, and be especially careful when the mount's position is uncertain after a power interruption.
-- Practice unfamiliar controls with a simulator first.
+In practice you are limited by the serial ports available for SkyWatcher mounts, or by the computer's resources for simulators.
 
 ---
 
@@ -173,45 +193,78 @@ The server runs on the computer that owns the mount connection (USB, serial/EQ D
 
 ### Server computer
 
-The server is built on .NET 10 and is published as a self-contained package, so the .NET runtime does not need to be installed separately. Installers are provided for the following platforms; the operating system must also be supported by .NET 10 (see the [.NET 10 supported OS list](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)).
+The server is built on .NET 10 and is published as a self-contained package, so you do not need to install .NET separately. Installers are provided for the platforms below. The operating system must also be supported by .NET 10 (see the [.NET 10 supported OS list](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)).
 
 | Platform | Architectures | Package | Minimum operating system |
 | --- | --- | --- | --- |
-| **Windows** | x64, x86 (32-bit) | MSI installer | Windows 10 (version 1607 or later) or Windows 11; Windows Server 2012 or later (x64) |
-| **Linux** | x64, arm64, arm (32-bit) | DEB package | A distribution supported by .NET 10, for example Ubuntu 22.04 or later or Debian 13 |
+| **Windows** | x64, x86 (32-bit) | MSI installer | Windows 10 (version 1607 or later) or Windows 11 |
+| **Linux** | x64, arm64, arm (32-bit) | DEB package | A systemd-based distribution supported by .NET 10, for example Ubuntu 22.04 or later or Debian 13 |
 | **macOS** | Intel (x64), Apple silicon (arm64) | DMG disk image | macOS 15 or later |
 
-- A SkyWatcher mount, or no hardware at all when using the built-in simulator
-- A USB, serial (RS-232 / USB-serial) or SkyWatcher Wi-Fi connection between the mount and the server computer. Connect the mount to the computer before you start.
-- Network connectivity between the server computer and any remote browsers or ASCOM Alpaca clients
+- Windows Server 2012 or later (x64) can also be used.
+- The smallest supported computer is a **Raspberry Pi 4**. Use the arm64 package with a 64-bit Raspberry Pi OS; the 32-bit arm package is for 32-bit systems.
 
-Use the USB port on newer mounts. For mounts without a USB port or Wi-Fi, an EQ Direct cable is the preferred connection. Suitable cables are available online; one popular supplier is <http://www.store.shoestringastronomy.com>.
+### What else you need
+
+- A SkyWatcher mount, or no hardware at all if you only use the built-in simulator.
+- A USB, serial (RS-232 or USB-serial) or SkyWatcher Wi-Fi connection between the mount and the server computer. Connect the mount to the computer before you start the server.
+- A network connection between the server computer and any other browsers or ASCOM Alpaca clients. A computer running everything itself (server, browser and astronomy software) needs no network.
+
+Use the USB port on newer mounts. For mounts without a USB port or Wi-Fi, an EQ Direct cable is the preferred connection. Suitable cables are available online; one supplier is <http://www.store.shoestringastronomy.com>.
+
+**Wi-Fi mounts:** a SkyWatcher Wi-Fi adapter is often set up to create its own Wi-Fi network. If your server computer joins that network, it may lose its normal network or internet connection while it controls the mount. Plan the network so the server computer can reach both the mount and your other computers.
+
+### Network ports
+
+If you use a firewall, allow these ports on the server computer so that other computers can reach it:
+
+| Port | Used for |
+| --- | --- |
+| TCP **31416** | The web pages and the Alpaca interface. This is the default; you can change it in the settings. |
+| UDP **32227** | Alpaca discovery, which lets client programs find the server automatically. If discovery finds nothing, you can still enter the server's address and port by hand. |
+
+The Windows installer adds a firewall exception for the web port. Other firewalls, including those on Linux and macOS, are not configured for you.
 
 ### Supported mounts
 
-The server supports mounts that use the SkyWatcher (Synta) protocol, including: EQ8, EQ8-R, HDX110, AZ-EQ5GT, Sirius Pro AZ/EQ-G, AZ-EQ6GT, Orion Atlas Pro AZ/EQ-G, EQ6-R Pro, NEQ6, HEQ5-R Pro, HEQ5, EQ5, EQ4, EQ3 Pro, AZ-GTi, Star Discovery, CQ350, Fusion-120i, Wave 100i and Wave 150i.
+The server supports mounts that use the SkyWatcher (Synta) protocol, including:
+
+- **EQ series:** EQ8, EQ8-R, EQ6-R Pro, NEQ6, HEQ5-R Pro, HEQ5, EQ5, EQ4, EQ3 Pro
+- **AZ-EQ and AZ series:** AZ-EQ6GT, AZ-EQ5GT, AZ-GTi, Sirius Pro AZ/EQ-G, Orion Atlas Pro AZ/EQ-G
+- **Other models:** HDX110, Star Discovery, CQ350, Fusion-120i, Wave 100i, Wave 150i
+
+Other mounts that use the same protocol may work, but they are not listed here.
+
+### Astronomy software (Alpaca clients)
+
+Your planetarium, imaging or guiding program must support **ASCOM Alpaca**. Older programs that only support the traditional ASCOM Platform on Windows need an Alpaca-compatible chooser or bridge. See [ASCOM Client Compatibility](#13-ascom-client-compatibility).
 
 ### Browser
 
-The user interface runs in a current version of a mainstream web browser (such as Edge, Chrome, Firefox or Safari) on the server computer or on any other device that can reach the server. Allow pop-ups for the server's address so the chart and 3D windows can open. The 3D view also requires browser graphics (WebGL) support.
+The web pages work in a current version of a mainstream browser (such as Edge, Chrome, Firefox or Safari) on the server computer or on any other device that can reach the server. Allow pop-ups for the server's address, because the chart and 3D view windows open separately. The 3D view also needs browser graphics (WebGL) support.
 
 ---
 
 ## 3. Installation
 
-Download the package for your platform and architecture from the project's GitHub Releases page, then follow the steps below. The packages are self-contained; no separate .NET installation is needed. See [Section 2](#2-system-requirements) for supported platforms.
+### 3.1 Choose and download the package
 
-| Platform | Package |
-| --- | --- |
-| Windows x64 / x86 | MSI installer (one per architecture) |
-| Linux x64 / arm64 / arm | DEB package (one per architecture) |
-| macOS Intel / Apple silicon | DMG disk image (one per architecture) |
+Download the package for your computer from the project's [GitHub Releases page](https://github.com/Principia4834/GreenSwampAlpaca/releases). The packages are self-contained, so you do not need to install .NET. Choose the one that matches your platform and processor:
 
-After installing, open `http://localhost:31416` in a browser on the server computer. A first launch creates a default Simulator (GEM) device; see [Section 4](#4-getting-started).
+| Your computer | Package | How to tell which one you need |
+| --- | --- | --- |
+| Windows | MSI installer: x64 or x86 | Open **Settings → System → About** and read **System type**. Most modern PCs are x64. |
+| Linux, including Raspberry Pi | DEB package: x64, arm64 or arm | Run `dpkg --print-architecture` in a terminal. It prints `amd64` (use x64), `arm64` or `armhf` (use arm). |
+| macOS | DMG disk image: Intel (x64) or Apple silicon (arm64) | Choose **Apple menu → About This Mac**. Look for **Chip** (Apple silicon) or **Processor** (Intel). |
 
-### Running as a service or as a user-launched application
+Your computer may warn you about a downloaded installer. Windows SmartScreen may ask for confirmation; if you downloaded the file from the project's Releases page, choose **More info** and then **Run anyway**. The macOS application is signed and notarized by the project.
 
-On every platform the server can run in either of two ways:
+### 3.2 Choose how the server will run
+
+On every platform the server can run in either of two ways. Most people should pick one and ignore the other.
+
+- **Run it yourself (user-launched application).** You start the server from the Start menu, Applications or the application menu, and it runs while you are logged in. This suits a laptop or a computer you also use for other things.
+- **Run it as a background service.** The server starts by itself when the computer starts, with no one logged in, and keeps running. This suits a computer dedicated to the observatory.
 
 | | Background service | User-launched application |
 | --- | --- | --- |
@@ -220,13 +273,15 @@ On every platform the server can run in either of two ways:
 | Opens the browser at start-up | No | Yes, if **Auto-start Browser** is enabled in **Settings Explorer** → **Server Configuration** → **User Interface** |
 | Settings and logs | The service locations in the tables below | The interactive locations in the tables below |
 
-The two modes keep separate settings and both listen on port 31416, so run only one at a time. Stop or disable the service before launching the application yourself, and the reverse.
+> **Run only one at a time.** The two ways of running keep separate settings and both use port 31416. If the service is already running and you start the application yourself, the application detects this and just opens your browser on the running service, so you will be looking at the service's settings, not your own. If you start a service while the application is running, the second one cannot use the port. Stop or disable one before you use the other.
 
-### Windows (MSI)
+### 3.3 Windows (MSI)
 
 1. Run the MSI and follow the setup wizard. You can change the installation folder.
-2. On the **Service Configuration** page choose how the Windows service starts: **Automatic** (start on boot, recommended for a permanent observatory setup) or **Manual** (start and stop from the Services console).
+2. On the **Service Configuration** page choose how the Windows service starts: **Automatic** (the default; starts at boot and is started as soon as the installation finishes) or **Manual** (you start and stop it from the Services console). Choose **Manual** if you plan to launch the server yourself from the Start menu. Choose **Automatic** for a dedicated observatory computer.
 3. The installer registers the **GreenSwampAlpacaServer** service (running as Local System), adds a Windows Firewall exception for TCP port 31416, and creates two Start menu entries in a **GreenSwamp Alpaca Server** folder: one launches the server as a user application, and the other (**Management UI**) opens `http://localhost:31416` in your browser.
+
+**Check that it worked.** If you chose Automatic, the service is already running, so open `http://localhost:31416` in a browser, or use the **Management UI** Start menu entry. The browser does not open by itself for a service. If you chose Manual, start the server from the Start menu and the browser opens automatically.
 
 | Item | Default location |
 | --- | --- |
@@ -238,7 +293,9 @@ The two modes keep separate settings and both listen on port 31416, so run only 
 
 Because the service runs as Local System, it uses the Public Documents location rather than your personal folders. To use the Start menu entry instead of the service, first stop the service in the Services console, and set its start type to Manual or Disabled if it should not start at boot.
 
-### Linux (DEB)
+**Uninstall.** Remove **Green Swamp Alpaca Server** from **Settings → Apps → Installed apps**. If you want a completely clean start afterwards, you can also delete the settings folders listed above.
+
+### 3.4 Linux (DEB)
 
 Install with `sudo apt install ./<package>.deb` (or `sudo dpkg -i <package>.deb`). The installer:
 
@@ -246,6 +303,10 @@ Install with `sudo apt install ./<package>.deb` (or `sudo dpkg -i <package>.deb`
 - creates a system account named **greenswamp**, added to the `dialout` group for serial port access;
 - installs and enables the `greenswamp-alpaca` systemd service, but does not start it. It starts on the next boot, or immediately with `sudo systemctl start greenswamp-alpaca.service`;
 - adds two application menu entries under Science → Astronomy: **GreenSwamp Alpaca Server**, which launches the server as a user application, and **GreenSwamp Alpaca Server - Management UI**, which only opens `http://localhost:31416` in your browser.
+
+> **Choose one way of running.** Because the service is enabled, it starts at the next boot. If you intend to launch the server yourself from the menu, disable the service first (see below). Otherwise the menu entry will only open your browser on the running service.
+
+**Check that it worked.** Start the service (`sudo systemctl start greenswamp-alpaca.service`), then run `systemctl status greenswamp-alpaca.service`, which should report `active (running)`. Open `http://localhost:31416` in a browser. On a computer without a screen, such as a Raspberry Pi in an observatory, open `http://<server address>:31416` from another computer on your network, using the server's host name or IP address (find it with `hostname -I`). The package does not change your firewall. If you use `ufw`, allow the ports with `sudo ufw allow 31416/tcp` and `sudo ufw allow 32227/udp`.
 
 | Item | Default location |
 | --- | --- |
@@ -256,15 +317,19 @@ Install with `sudo apt install ./<package>.deb` (or `sudo dpkg -i <package>.deb`
 | Settings, interactive run | `~/.config/GreenSwampAlpaca/{version}/` |
 | Logs, interactive run | `~/GreenSwamp/AlpacaServer/` |
 
-To run the server as a user-launched application instead of the service, stop and disable the service (`sudo systemctl disable --now greenswamp-alpaca.service`), then start **GreenSwamp Alpaca Server** from the application menu, or run `/opt/greenswamp/alpaca-server/GreenSwamp.Alpaca.Server` from a terminal, as your own account and without the `--service` option. Your account needs access to the serial port (usually membership of the `dialout` group). The server runs until you close it, and the browser opens automatically when Auto-start Browser is enabled and a desktop session is available.
+**To run the server as a user-launched application instead of the service,** stop and disable the service (`sudo systemctl disable --now greenswamp-alpaca.service`), then start **GreenSwamp Alpaca Server** from the application menu, or run `/opt/greenswamp/alpaca-server/GreenSwamp.Alpaca.Server` from a terminal, as your own account and without the `--service` option. Your account needs access to the serial port (usually membership of the `dialout` group). The server runs until you close it, and the browser opens automatically when Auto-start Browser is enabled and a desktop session is available.
 
-If a USB-serial adapter is not accessible, confirm that the account running the server belongs to the `dialout` group. Removing the package with purge also deletes the program files and the `/var/log/greenswamp` folder.
+If a USB-serial adapter is not accessible, confirm that the account running the server belongs to the `dialout` group.
 
-### macOS (DMG)
+**Uninstall.** Run `sudo apt remove greenswamp-alpaca-server`. This stops and disables the service and removes the program files. Use `sudo apt purge greenswamp-alpaca-server` to also remove the `greenswamp` account and the `/var/log/greenswamp` folder. Settings in `/var/lib/greenswamp-alpaca/` and in your home folder are not removed by either command.
+
+### 3.5 macOS (DMG)
 
 1. Open the DMG and copy the **entire folder** (the application together with *Configure Background Startup.command*) into **Applications**, or into your personal Applications folder. Do not run it from the disk image.
-2. Start **GreenSwamp Alpaca Server** from Applications. This runs it as a user-launched application. The application is signed and notarized.
-3. Optional: to run the server in the background whenever you log in, run **Configure Background Startup.command** from the installed folder in Terminal and choose *Enable*. This creates a per-user launch agent; it is not a boot-time service and stops at logout. Use the same helper to disable it or show its status.
+2. Start **GreenSwamp Alpaca Server** from Applications. This runs it as a user-launched application. The application is signed and notarized, so macOS may ask you to confirm that you want to open an application downloaded from the internet.
+3. Optional: to run the server in the background whenever you log in, run **Configure Background Startup.command** from the installed folder in Terminal and choose *Enable*. This creates a per-user launch agent; it is not a boot-time service and stops at logout. Use the same helper to disable it or show its status. If macOS blocks the helper, open **System Settings → Privacy & Security** and allow it, or run it from Terminal with `bash`.
+
+**Check that it worked.** The browser opens automatically when you start the application (if Auto-start Browser is enabled). Otherwise open `http://localhost:31416`.
 
 | Item | Default location |
 | --- | --- |
@@ -274,43 +339,74 @@ If a USB-serial adapter is not accessible, confirm that the account running the 
 | Settings, background startup | `~/GreenSwampServer/{version}/` |
 | Logs, background startup | `~/GreenSwampServer/Logs/` and `~/Library/Logs/GreenSwampAlpaca/` (launchd output) |
 
-Background startup uses a different settings folder from interactive launches, and existing settings are not migrated automatically. Do not start a second instance while the background agent is running, because both use port 31416.
+Background startup uses a different settings folder from interactive launches, and existing settings are **not** migrated automatically. Do not start a second instance while the background agent is running, because both use port 31416.
 
-### Updates, backups and overrides
+**Uninstall.** If you enabled background startup, run **Configure Background Startup.command** and choose *Disable* first. Then delete the application folder from Applications. Settings and logs in the folders above are not removed.
 
-After installing an update, settings are migrated to a new version folder. For a backup, stop the server and copy the active versioned folder. **Check Settings** shows the folder in use. The settings location can be overridden; see [Appendix B](#appendix-b--file-and-directory-locations) for the full list of files, run modes and overrides.
+### 3.6 Updates, backups and overrides
+
+After installing an update, the server creates a new version folder for its settings and migrates your settings into it. For a backup, stop the server and copy the active versioned folder. **Check Settings** shows the folder in use. The settings location can be overridden; see [Appendix B](#appendix-b--file-and-directory-locations) for the full list of files, run modes and overrides.
 
 ---
 
 ## 4. Getting Started
 
-### 4.1 First Launch
+### 4.1 First launch
 
-On first launch the server creates a default configuration containing a single **Simulator (GEM)** device. This means the application is immediately usable without any hardware. You will see the home page and the device will appear in the status and settings views.
+Start the server (see [Installation](#3-installation)) and open `http://localhost:31416` in a web browser on the server computer. When the server starts as a user-launched application, the browser opens for you.
 
-### 4.2 Default Port and URL
+On first launch the server creates a default configuration with a single **Simulator (GEM)** device, so the application is usable straight away without any hardware. You will see the **Home** page. The simulator appears on the status and settings pages.
+
+If the page does not open, check that the server is running (a service does not open the browser by itself), and that you are using the correct port. See [Troubleshooting](#14-troubleshooting).
+
+### 4.2 Default port and URL
 
 | | Value |
 | --- | --- |
 | Default Alpaca port | **31416** |
-| Local UI URL | `http://localhost:31416` |
-| Alpaca base URL | `http://localhost:31416/api/v1/telescope/{deviceNumber}/` |
+| Web pages on the server computer | `http://localhost:31416` |
+| Web pages from another computer | `http://<server address>:31416` |
+| Alpaca interface for client programs | `http://<server address>:31416/api/v1/telescope/{deviceNumber}/` |
 | Setup redirect (legacy) | `http://localhost:31416/setup/v1/Telescope/{deviceNumber}/setup` → redirects to Mount Configuration |
 
-The port can be changed in **Settings Explorer** → **Server Configuration** → **Alpaca Settings**. A server restart is required for a port change to take effect.
+Most astronomy programs find the server automatically, so you will rarely type the Alpaca interface address yourself. It is shown for programs that need it. The device number is the number the server gave the telescope (the first is 0).
 
-To try the simulator, open **Control**, select its device tab and click the Connect icon at the lower right. If no simulator is configured, use **Add Telescope** as described in [Section 8](#8-adding-a-telescope-device). After creating one, apply hot reload or restart to activate it. Once connected, explore the readouts and controls before connecting physical hardware.
+You can change the port in **Settings Explorer** → **Server Configuration** → **Alpaca Settings**. Restart the server for a port change to take effect. If you change the port, update your firewall too, because the Windows installer only opens the default port.
 
-### 4.3 Connecting an ASCOM Client
+### 4.3 Try the simulator
 
-In your planetarium, imaging or guiding application (e.g. Cartes du Ciel, N.I.N.A., Sequence Generator Pro, PHD2, SharpCap etc.):
+Before you connect a real mount, spend a few minutes with the simulator.
 
-1. Choose **ASCOM Alpaca** as the telescope type.
-2. Use Alpaca UDP Auto-Discovery **or** enter the server IP and port manually.
-3. Select the device number matching the mount you want to control.
-4. Connect — the server will accept the connection and the mount will begin reporting status.
+1. Open **Control** in the navigation menu.
+2. Select the simulator's device tab.
+3. Click the **Connect** icon at the lower right of the page.
+4. Once connected, try the readouts and controls: start tracking, slew to a position, and watch the position change.
 
-> **Tip:** Multiple ASCOM clients can connect to the same device simultaneously. The server tracks connected client count per device and displays it on the Status page.
+If there is no simulator in the list, add one with **Add Telescope** and choose **Simulator**; see [Adding a Telescope Device](#8-adding-a-telescope-device). When the wizard finishes it offers **Apply Hot Reload**. Hot reload makes the server switch on the new telescope straight away, and it disconnects any clients that are connected at the time. Choose **Not now** if you would rather restart the server yourself later.
+
+### 4.4 Connecting an ASCOM client
+
+In your planetarium, imaging or guiding application (for example Cartes du Ciel, N.I.N.A., Sequence Generator Pro, PHD2 or SharpCap):
+
+1. Choose **ASCOM Alpaca** as the telescope type. If your program only offers the traditional ASCOM chooser, see [ASCOM Client Compatibility](#13-ascom-client-compatibility).
+2. Let the program search for the server (Alpaca discovery), **or** enter the server's IP address and port by hand.
+3. Select the device number or name that matches the mount you want to control.
+4. Connect. The mount should then begin reporting its position and status. You can confirm the connection on the **Mount Status** page, which shows the number of connected clients.
+
+If the program finds nothing, check that the server is running, that it is on the same network as the client, and that your firewall allows the ports listed in [Network ports](#network-ports). Remote clients also need **Allow Remote Access** to be switched on (see [Alpaca Settings](#alpaca-settings)). You can always connect by entering the address by hand.
+
+> **Tip:** Several ASCOM clients can connect to the same device at the same time. The server counts the connected clients for each device and shows the number on the **Mount Status** page.
+
+### 4.5 Connecting a real mount
+
+When you are comfortable with the simulator, set up your real mount. Read [Before moving a physical mount](#before-moving-a-physical-mount) first.
+
+1. Connect the mount to the server computer (USB, serial or EQ Direct cable, or SkyWatcher Wi-Fi) and power it on.
+2. Add a SkyWatcher device with **Add Telescope**: choose **SkyWatcher**, choose the alignment mode that matches your mount (German equatorial, polar/fork or alt-azimuth), enter your observing site (latitude, longitude and elevation), and choose the serial port and baud rate. See [Adding a Telescope Device](#8-adding-a-telescope-device) and [SkyWatcher Driver Configuration](#10-skywatcher-driver-configuration).
+3. Apply the change (**Apply Hot Reload**) so the new telescope is active.
+4. Check the settings that protect your equipment, especially limits and park positions, before you move the mount. See [Mount Type Configuration Detail](#9-mount-type-configuration-detail) and the **Limits** and **Home and Park** groups in [Telescope Device Settings](#76-telescope-device-settings).
+5. Check that the computer's date, time and time zone are correct, and that your site location is right. Pointing and tracking depend on them.
+6. Open **Control**, select the device tab, click **Connect**, and make a small, supervised move first.
 
 ---
 
