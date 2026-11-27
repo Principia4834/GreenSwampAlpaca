@@ -218,18 +218,15 @@ namespace GreenSwamp.Alpaca.Principles
                     while (g > 360.0) g -= 360.0;
                 }
                 //calculate e Obliquity of the Ecliptic
-                var h = 23.439 - 0.0000004 * b;
-                if (h < 0.0)
-                {
-                    while (h < 0.0) h += 360.0;
-                }
-                else
-                {
-                    while (h > 360.0) h -= 360.0;
-                }
-                var i = (-17.2 * Math.Sin(e)) - (1.32 * Math.Sin(2 * f)) - (0.23 * Math.Sin(2 * g)) + (0.21 * Math.Sin(2 * e));
-                var j = (i * Math.Cos(h)) / 3600;               // Nutation correction for true values
-                d += j;                                      // True Local Sidereal Time (LST)
+                var h = 23.4392911 + b * (-0.0130042 + b * (-0.00000016389 + b * 0.00000050361));
+
+                var degreesToRadians = Math.PI / 180.0;
+                var i = (-17.2 * Math.Sin(e * degreesToRadians))
+                    - (1.32 * Math.Sin(2 * f * degreesToRadians))
+                    - (0.23 * Math.Sin(2 * g * degreesToRadians))
+                    + (0.21 * Math.Sin(2 * e * degreesToRadians));
+                var j = (i * Math.Cos(h * degreesToRadians)) / 3600; // Nutation correction for true values
+                d += j;                                              // True Local Sidereal Time (LST)
             }
             var m = d * 24.0 / 360.0;
             var lst = Range.Range24(m);
