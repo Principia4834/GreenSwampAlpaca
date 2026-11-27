@@ -83,7 +83,7 @@
                            Variant="Variant.Outlined"
                            Size="Size.Large"
                            Class="ma-2 gs-icon-button-rounded"
-                           Disabled="@(!IsConnected || State.AtPark)"
+                           Disabled="@(!IsConnected || State.AtPark || !State.CanHomeSensor)"
                            OnClick="OnAutoHomeClickAsync" />
         </MudTooltip>
 
