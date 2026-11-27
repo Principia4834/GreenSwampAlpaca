@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # build-deb.sh — Build a .deb package for one RID
 # -----------------------------------------------------------------------------
@@ -48,7 +48,8 @@ chmod +x "${INSTALL_DIR}/GreenSwamp.Alpaca.Server" 2>/dev/null || true
 # Stage systemd unit file
 cp "${SCRIPT_DIR}/systemd/greenswamp-alpaca.service" "${SYSTEMD_DIR}/"
 
-# Stage XDG desktop entry (browser-launch menu item)
+# Stage XDG desktop entries: user-launched server and browser-launch (management UI) menu items
+cp "${SCRIPT_DIR}/greenswamp-alpaca-server.desktop" "${APPLICATIONS_DIR}/"
 cp "${SCRIPT_DIR}/greenswamp-alpaca.desktop" "${APPLICATIONS_DIR}/"
 
 # Stage the Astronomy submenu without replacing the desktop's main menu.

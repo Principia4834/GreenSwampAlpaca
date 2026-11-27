@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GreenSwamp Alpaca Server
+Comment=Run the GreenSwamp Alpaca Server as a user application
+Exec=/opt/greenswamp/alpaca-server/GreenSwamp.Alpaca.Server
+Path=/opt/greenswamp/alpaca-server
+Icon=greenswamp-alpaca
+Terminal=false
+StartupNotify=true
+Categories=Science;Astronomy;
+Keywords=alpaca;ascom;telescope;astronomy;

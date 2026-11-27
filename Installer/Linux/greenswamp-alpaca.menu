@@ -6,6 +6,7 @@
 	<Name>Astronomy</Name>
 	<Directory>greenswamp-astronomy.directory</Directory>
 	<Include>
+	  <Filename>greenswamp-alpaca-server.desktop</Filename>
 	  <Filename>greenswamp-alpaca.desktop</Filename>
 	</Include>
   </Menu>
